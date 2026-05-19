@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "obsidian",
+  "story_slug": "obsidian",
+  "story_title": "Obsidian's Local-First Bet",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/obsidian/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/obsidian/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot beside local files with a crossed-out cloud, representing Obsidian's local-first positioning.",
+      "caption": "Hatch mascot beside local files with a crossed-out cloud, representing Obsidian's local-first positioning.",
+      "prompt": "Obsidian's Local-First Bet | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) sitting at a desk with a large folder labeled \"Your Files\" in the foreground, and a cloud with a red X behind it. Hatch's expression is calm and certain — this is a considered choice, not a protest. Cream background, no speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/obsidian/hero.png",
+      "generated_image_sha256": "f3d7fcb0421c052adf9bff61b33f0fa0aa1ab6afffbe30d1f4b7d32b4dc3b591",
+      "final_image_sha256": "31a82073440b93f58bdb5afc8bc3c14d33442da5e70d52d9468d03eb7de8e2ed",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/obsidian/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/obsidian/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/obsidian/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward local storage versus cloud, setting up Obsidian's founding choice.",
+      "caption": "Hatch gesturing toward local storage versus cloud, setting up Obsidian's founding choice.",
+      "prompt": "Obsidian's Local-First Bet | hatch-narrator: Hatch in narrator pose, gesturing toward a split scene: on one side a glowing cloud (labeled faintly \"somewhere else\"), on the other a folder sitting on a desk (labeled faintly \"right here\"). Hatch is pointing at the folder side. Cream background, no copy beyond the two faint labels. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/obsidian/hatch-narrator.png",
+      "generated_image_sha256": "1abb046c384ac42d696573870137faf7882caec94ffca0b4aea50ab13ff58928",
+      "final_image_sha256": "2a5ff7579878272c183ad143ea8591900b8fe45e1f3fc49712ef3e82ec70233f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/obsidian/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/obsidian/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/obsidian/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch tracing the data portability of Markdown files — readable by any tool.",
+      "caption": "Hatch tracing the data portability of Markdown files — readable by any tool.",
+      "prompt": "Obsidian's Local-First Bet | failure-mechanism: Hatch in thinking pose, looking at a simplified diagram: a plain text file labeled \"note.md\" with arrows leading to three destinations — \"any text editor,\" \"any other notes app,\" and \"Obsidian.\" The three arrows are equal weight. Hatch is tracing the arrows with a finger. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/obsidian/failure-mechanism.png",
+      "generated_image_sha256": "0774a6d102ce57bf415f37d1e8b59a2a2b5bcd92d59f8f9116a47c99639365fa",
+      "final_image_sha256": "aa40a6d0dabc41f6d36de5b05b316151a362a27a9e6d57d67f18528b1a003336",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/obsidian/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/obsidian/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/obsidian/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Obsidian's plugin count as evidence of deep community commitment.",
+      "caption": "Hatch pointing at Obsidian's plugin count as evidence of deep community commitment.",
+      "prompt": "Obsidian's Local-First Bet | evidence-card: Hatch pointing at a counter showing \"1,000+ plugins\" with a grid of small plugin icons behind it. Hatch's expression is impressed. The plugins are tiny, diverse-looking — the grid suggests a large, varied community. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/obsidian/evidence-card.png",
+      "generated_image_sha256": "337dd41e2be32d2524ba35b9e1a05be54ff71ca87d3c2b0d2c9c7ca4e3b22ff5",
+      "final_image_sha256": "eb6cd7f0247f3a235dd7288d41eea7d9c9202ea55f3dc150769467892142b66f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/obsidian/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/obsidian/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/obsidian/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching pose with a faint image of a developer user — the specific audience Obsidian targeted.",
+      "caption": "Hatch in coaching pose with a faint image of a developer user — the specific audience Obsidian targeted.",
+      "prompt": "Obsidian's Local-First Bet | lesson-frame: Hatch in coaching pose, calm and slightly turned toward the viewer, on a cream background. Behind Hatch, a very faint silhouette of a specific kind of user: a developer at a desk with files open. The image communicates: this product knows exactly who it is for. No speech bubble, no copy. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/obsidian/lesson-frame.png",
+      "generated_image_sha256": "0877ce337ef325e1e2c9cf7986c1a96e9f56e8bcb1de993f642185c04d93edb6",
+      "final_image_sha256": "2e4ae544804a67fe6c2212545f29f7c179267c58cb6c1d0d0ccdd5ecac24553f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/obsidian/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/obsidian/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/obsidian/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a local notes folder for the Obsidian story thumbnail.",
+      "caption": "Hatch holding a local notes folder for the Obsidian story thumbnail.",
+      "prompt": "Hatch mascot small and centered, holding a tiny folder labeled \"notes.\" Cream background, no text. Clean, simple, immediately readable at small size. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/obsidian/hero.png",
+      "generated_image_sha256": "f3d7fcb0421c052adf9bff61b33f0fa0aa1ab6afffbe30d1f4b7d32b4dc3b591",
+      "final_image_sha256": "285f6fb2a96c1a1300ee112699fcd9a02fa36106ef1426690cdc346572627f47",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/obsidian/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/obsidian/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/obsidian/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Social share card for the Obsidian autopsy.",
+      "caption": "Social share card for the Obsidian autopsy.",
+      "prompt": "Hero composition adapted for OG share card: Hatch beside local files with the crossed-out cloud, title \"Obsidian's Local-First Bet\" in large Literata-style serif type above. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/obsidian/hero.png",
+      "generated_image_sha256": "f3d7fcb0421c052adf9bff61b33f0fa0aa1ab6afffbe30d1f4b7d32b4dc3b591",
+      "final_image_sha256": "3e92315bb0f0d0cff31353e2de582d7d540a63befee7b50876f28ba166eaf2f2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/obsidian/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/obsidian/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/obsidian/v1"
+}

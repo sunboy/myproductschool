@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "socketio",
+  "story_slug": "socket-io",
+  "story_title": "Socket.IO and the Abstraction Bet",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/socket-io/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/socket-io/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch connecting four browser cables into a single Socket.IO socket on a cream background.",
+      "caption": "Hatch connecting four browser cables into a single Socket.IO socket on a cream background.",
+      "prompt": "Socket.IO and the Abstraction Bet | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) standing in front of a stylized browser grid showing four different logos (Chrome, Firefox, Safari, IE) each with a different colored cable plugging into a single glowing socket labeled \"Socket.IO\". Cream background. Cap slightly tilted, expression confident. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/socket-io/hero.png",
+      "generated_image_sha256": "49f05609a28566c5b921711581cd1f4be407b1c9f59b08144323db792737454b",
+      "final_image_sha256": "6c30e5b6b57c645f967c3c3c2fdfc65a0004d2e8ca0a356fedd2d1cf76dfc962",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/socket-io/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/socket-io/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/socket-io/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at a browser compatibility wall showing fragmented WebSocket support in 2010.",
+      "caption": "Hatch gesturing at a browser compatibility wall showing fragmented WebSocket support in 2010.",
+      "prompt": "Socket.IO and the Abstraction Bet | hatch-narrator: Hatch in narrator pose, gesturing at a wall of browser compatibility cards circa 2010. Some cards show green checkmarks (Chrome), some show orange question marks (Firefox), some show red X marks (IE). Hatch's expression is wry, acknowledging the chaos. Cream background. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/socket-io/hatch-narrator.png",
+      "generated_image_sha256": "841430e0781657bb2790df935f185e519eae94800638013ceaea1ae36de51cc8",
+      "final_image_sha256": "912146bbf32e67f7692e336fe3e95983d2a069cd57a77dd8ce22f1b7a150fbf8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/socket-io/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/socket-io/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/socket-io/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a transport negotiation diagram showing Socket.IO's automatic fallback and upgrade system.",
+      "caption": "Hatch examining a transport negotiation diagram showing Socket.IO's automatic fallback and upgrade system.",
+      "prompt": "Socket.IO and the Abstraction Bet | failure-mechanism: Hatch in thinking pose, looking at a diagram showing a connection negotiation flow. At the top: a single API call \"socket.on('message')\". Below it, three branches: WebSocket (green, priority 1), long-polling (orange, priority 2), Flash socket (red, priority 3). An arrow shows the connection upgrading from polling to WebSocket once available. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/socket-io/failure-mechanism.png",
+      "generated_image_sha256": "4602a30b2048b5abe4730b452930cfb33e9301411e83b071e459b6efe525ce7c",
+      "final_image_sha256": "2477096cacfc59c7e4957d0e34a97e3dba2634b97150f4395d484896a6ed4b47",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/socket-io/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/socket-io/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/socket-io/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a Socket.IO download growth chart that keeps climbing even after WebSocket became universal.",
+      "caption": "Hatch pointing at a Socket.IO download growth chart that keeps climbing even after WebSocket became universal.",
+      "prompt": "Socket.IO and the Abstraction Bet | evidence-card: Hatch pointing at a simple bar chart showing Socket.IO npm downloads growing from 2010 through 2020. The bars grow steadily even after 2015 (marked \"WebSocket near-universal\"). Hatch's expression is slightly surprised, as if the persistence of growth is the interesting finding. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/socket-io/evidence-card.png",
+      "generated_image_sha256": "4401edec3179ccee2f19f71559da80910d217422f3b3b68cd8483f6d4c921da5",
+      "final_image_sha256": "6fafda13b91877636094f45384a4853afcb00903b9f4dca8531632818211959c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/socket-io/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/socket-io/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/socket-io/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a layered cake showing Socket.IO's abstraction built into durable features over time.",
+      "caption": "Hatch beside a layered cake showing Socket.IO's abstraction built into durable features over time.",
+      "prompt": "Socket.IO and the Abstraction Bet | lesson-frame: Hatch in coaching pose, calm, standing beside a layered cake diagram. Bottom layer labeled \"Transport abstraction (2010)\". Middle layer labeled \"Rooms and namespaces (2011)\". Top layer labeled \"Acknowledgements and broadcasting (2012+)\". The cake is still standing in 2022. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/socket-io/lesson-frame.png",
+      "generated_image_sha256": "8cbdcc180d386c5a50b270870683c14dc241cedaa8132a618fe11345007edf41",
+      "final_image_sha256": "bf59fba5fe768dfbaa6314bcd50fc98ed280d7789a77ade437873729b15c3cff",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/socket-io/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/socket-io/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/socket-io/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a glowing socket connector on a cream background.",
+      "caption": "Hatch holding a glowing socket connector on a cream background.",
+      "prompt": "Hatch small and recognisable, holding a glowing socket connector in one hand. Cream background. Simple, clean composition. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/socket-io/hero.png",
+      "generated_image_sha256": "49f05609a28566c5b921711581cd1f4be407b1c9f59b08144323db792737454b",
+      "final_image_sha256": "cde831e971bbe5d6b435318d82e13040aad1761de0a33667e6f5219f21cf400f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/socket-io/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/socket-io/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/socket-io/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch with a giant Socket.IO socket for social share card.",
+      "caption": "Hatch with a giant Socket.IO socket for social share card.",
+      "prompt": "Hatch hero pose adapted for OG share card. Hatch in center, one hand resting on a giant socket labeled \"Socket.IO\". Text area left clear for title overlay. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/socket-io/hero.png",
+      "generated_image_sha256": "49f05609a28566c5b921711581cd1f4be407b1c9f59b08144323db792737454b",
+      "final_image_sha256": "af7d553f3bde2e1bac745653be1c5155fdea0287488d14c86dc967a54d9c013b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/socket-io/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/socket-io/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/socket-io/v1"
+}

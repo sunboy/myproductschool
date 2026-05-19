@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "bear",
+  "story_slug": "bear-notes",
+  "story_title": "Bear Notes",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/bear-notes/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/bear-notes/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch sitting at a minimal writing desk, surrounded by unused tools set aside, representing Bear's philosophy of deliberate omission.",
+      "caption": "Bear Notes — the design philosophy of doing less, better.",
+      "prompt": "Bear Notes | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) sitting at a minimal writing desk with a single open notebook, surrounded by shelves of unused tools and features that have been neatly set aside. The composition conveys focus through deliberate omission. Cap tilted, serene expression. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/bear-notes/hero.png",
+      "generated_image_sha256": "8ae98f5ec48a97828364bbbc7a3067d63945ece1760301ab06aee667ddec5734",
+      "final_image_sha256": "af4d90e41bae555f2d397afe6e260317077165750576babf83406236b09c78fc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bear-notes/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bear-notes/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/bear-notes/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between a cluttered productivity app and a minimal Bear-style writing surface.",
+      "caption": "Hatch gesturing between a cluttered productivity app and a minimal Bear-style writing surface.",
+      "prompt": "Bear Notes | hatch-narrator: Hatch in narrator pose, gesturing at two contrasting interfaces side by side: on the left, a cluttered app with sidebars, toolbars, integration icons, and notifications; on the right, a clean white writing surface with a single line of text and a blinking cursor. The contrast is the point. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/bear-notes/hatch-narrator.png",
+      "generated_image_sha256": "bdbaf619db1e24d5278f9c33dc0fb91bf2749e2af3fdb484f8577b85173fa219",
+      "final_image_sha256": "f5b57c10e7b6aae79ea86e0bf88cfed76eecf0f080cb4b47913ba53fa61e636f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bear-notes/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bear-notes/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/bear-notes/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch watching inline Markdown rendering where typed syntax immediately becomes formatted text.",
+      "caption": "Hatch watching inline Markdown rendering where typed syntax immediately becomes formatted text.",
+      "prompt": "Bear Notes | failure-mechanism: Hatch in thinking pose looking at text appearing rendered in real time: a user types \"# Header\" and it instantly becomes a large heading; \"**bold**\" becomes bold text. The mechanism of inline Markdown rendering is the visual. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/bear-notes/failure-mechanism.png",
+      "generated_image_sha256": "2c7eaf88b1a3844d268eb8884fe70d42f5969fa945a482b23906f900dd3eba43",
+      "final_image_sha256": "4b02044e557c37a6c201802783dcd0b3158938ec968f5c47457a595bd45e6e57",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bear-notes/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bear-notes/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/bear-notes/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at an Apple Design Award trophy from WWDC 2017.",
+      "caption": "Hatch pointing at an Apple Design Award trophy from WWDC 2017.",
+      "prompt": "Bear Notes | evidence-card: Hatch pointing at an Apple Design Award trophy, with a small calendar showing \"WWDC 2017\" and a crowd of developer conference attendees in stylized background silhouette. The image communicates Apple's institutional recognition of Bear's design quality. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/bear-notes/evidence-card.png",
+      "generated_image_sha256": "a58bb129994192249403939ddc2d14e0ff5bbf7889f0d957a70dcd37af8ffd6b",
+      "final_image_sha256": "650fcb67dabe1eb2ef09afe889a0386733d78f08a8f95c8ae89f9ceb2eb21545",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bear-notes/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bear-notes/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/bear-notes/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a single sharp pencil surrounded by multi-function tools set aside, representing Bear's focus philosophy.",
+      "caption": "Hatch beside a single sharp pencil surrounded by multi-function tools set aside, representing Bear's focus philosophy.",
+      "prompt": "Bear Notes | lesson-frame: Hatch in calm coaching pose standing beside a visual of a single sharp pencil, surrounded by a collection of multi-function Swiss Army knives laid aside. The composition communicates that focus produces a different kind of excellence than breadth. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/bear-notes/lesson-frame.png",
+      "generated_image_sha256": "7ee0b83b32b29526d3c98d38210404bea8ff6d383e220d9d8a6f8d76c59d7f3c",
+      "final_image_sha256": "b5d25286708121f3188a21e14359d0de018687f20c8953b6930175dc6c9ae684",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bear-notes/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bear-notes/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/bear-notes/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a single pencil representing Bear's writing-first focus.",
+      "caption": "Hatch holding a single pencil representing Bear's writing-first focus.",
+      "prompt": "Small, recognisable Hatch mascot holding a single pencil, with a minimalist notebook in the background. Clean cream background, no text, no speech. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/bear-notes/hero.png",
+      "generated_image_sha256": "8ae98f5ec48a97828364bbbc7a3067d63945ece1760301ab06aee667ddec5734",
+      "final_image_sha256": "53464d5709fc633dd9f663d8873b384e5c959318d914a2d31dc7e896673d5d9c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bear-notes/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bear-notes/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/bear-notes/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at a minimal writing desk for Bear Notes social sharing.",
+      "caption": "Hatch at a minimal writing desk for Bear Notes social sharing.",
+      "prompt": "Hero Hatch adapted for OG share: Hatch at a minimal desk with a single open notebook, \"BEAR NOTES\" as a visual backdrop. Cream background, HackProduct watermark bottom-right 60% opacity JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/bear-notes/hero.png",
+      "generated_image_sha256": "8ae98f5ec48a97828364bbbc7a3067d63945ece1760301ab06aee667ddec5734",
+      "final_image_sha256": "adb57fcce3b708458e7086fe584aab8134d9f52f7aab52bb852c1820635856f9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bear-notes/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bear-notes/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/bear-notes/v1"
+}

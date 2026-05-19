@@ -1,5 +1,6 @@
 'use client'
 import React from 'react'
+import Image from 'next/image'
 import type { StorySection } from '@/lib/types'
 
 interface Props {
@@ -9,20 +10,18 @@ interface Props {
 }
 
 export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
-  const { label, headline, subline, meta } = section.content
-  const [entered, setEntered] = React.useState(false)
-
-  React.useEffect(() => {
-    const t = setTimeout(() => setEntered(true), 80)
-    return () => clearTimeout(t)
-  }, [])
+  const { label, headline, subline, meta, backdropWord = 'BLOCKS', image } = section.content
+  const entered = true
 
   const words = headline.split(' ')
 
   return (
     <div
-      className="relative flex flex-col justify-end overflow-hidden"
-      style={{ minHeight: 'calc(100dvh - 52px)', background: '#faf6f0' }}
+      className={`relative flex flex-col overflow-hidden ${image ? 'justify-start md:justify-end' : 'justify-end'}`}
+      style={{
+        minHeight: image ? 'clamp(520px, 68dvh, 650px)' : 'clamp(520px, 76dvh, 700px)',
+        background: '#faf6f0',
+      }}
     >
       {/* Ambient radial glow - top left */}
       <div
@@ -47,7 +46,7 @@ export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
           className="font-headline font-extrabold uppercase tracking-tighter"
           style={{ fontSize: 'clamp(120px, 20vw, 280px)', lineHeight: 1, whiteSpace: 'nowrap', color: 'rgba(46,50,48,0.04)' }}
         >
-          BLOCKS
+          {backdropWord}
         </span>
       </div>
 
@@ -59,10 +58,36 @@ export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
       />
 
       {/* Content - bottom aligned */}
-      <div className="relative z-10 px-8 md:px-16 pb-20 pt-32 max-w-5xl">
+      {image && (
+        <figure
+          className="order-2 relative z-10 mx-6 mb-8 overflow-hidden rounded-[18px] border border-outline-variant/50 bg-surface-container-low shadow-sm md:absolute md:bottom-8 md:right-12 md:order-none md:mx-0 md:mb-0 md:w-[42vw] md:max-w-[600px]"
+          style={{
+            opacity: entered ? 1 : 0,
+            transform: entered ? 'none' : 'translateY(16px) scale(0.98)',
+            transition: 'opacity 0.8s ease, transform 0.8s ease',
+            transitionDelay: '220ms',
+          }}
+        >
+          <Image
+            src={image.src}
+            alt={image.alt}
+            width={image.width ?? 1080}
+            height={image.height ?? 607}
+            priority
+            className="h-auto w-full object-contain"
+          />
+          {image.caption && (
+            <figcaption className="border-t border-outline-variant/40 bg-background/80 px-4 py-3 text-[11px] font-label leading-5 text-on-surface-variant">
+              {image.caption}
+            </figcaption>
+          )}
+        </figure>
+      )}
+
+      <div className={`order-1 relative z-10 px-8 md:px-16 ${image ? 'pb-6 pt-14 md:pb-10 md:pt-16 md:max-w-[54vw]' : 'pb-14 pt-20 max-w-5xl'}`}>
         {/* Label */}
         <div
-          className="mb-8 transition-all duration-700"
+          className="mb-5 transition-all duration-700"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? 'none' : 'translateY(12px)',
@@ -79,7 +104,7 @@ export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
 
         {/* Headline - word by word stagger */}
         <h1
-          className="font-headline font-extrabold leading-[1.05] mb-8"
+          className="mb-5 font-headline font-extrabold leading-[1.05]"
           style={{
             fontSize: 'clamp(36px, 5.5vw, 80px)',
             letterSpacing: '-0.02em',
@@ -88,23 +113,25 @@ export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
           } as React.CSSProperties}
         >
           {words.map((word, i) => (
-            <span
-              key={i}
-              className="inline-block mr-[0.25em] transition-all duration-700"
-              style={{
-                opacity: entered ? 1 : 0,
-                transform: entered ? 'none' : 'translateY(20px)',
-                transitionDelay: `${80 + i * 40}ms`,
-              }}
-            >
-              {word}
-            </span>
+            <React.Fragment key={`${word}-${i}`}>
+              <span
+                className="inline-block mr-[0.25em] transition-all duration-700"
+                style={{
+                  opacity: entered ? 1 : 0,
+                  transform: entered ? 'none' : 'translateY(20px)',
+                  transitionDelay: `${80 + i * 40}ms`,
+                }}
+              >
+                {word}
+              </span>
+              {i < words.length - 1 ? ' ' : null}
+            </React.Fragment>
           ))}
         </h1>
 
         {/* Divider */}
         <div
-          className="mb-8 transition-all duration-700"
+          className="mb-5 transition-all duration-700"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? 'none' : 'translateY(8px)',
@@ -116,7 +143,7 @@ export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
 
         {/* Subline */}
         <p
-          className="font-body leading-relaxed mb-6 transition-all duration-700"
+          className="mb-5 font-body leading-relaxed transition-all duration-700"
           style={{
             fontSize: 'clamp(16px, 1.5vw, 20px)',
             maxWidth: '56ch',

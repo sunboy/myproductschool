@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "notion",
+  "story_slug": "notion-no-offline-mode",
+  "story_title": "Notion — No Offline Mode",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/notion-no-offline-mode/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/notion-no-offline-mode/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch sitting on a plane with a No Connection screen, calmly contemplating the offline trade-off.",
+      "caption": "Notion's offline mode — what the constraint cost and what it protected.",
+      "prompt": "Notion — No Offline Mode | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) sitting cross-legged on an airplane seat, looking at a laptop showing \"No connection\" with a calm expression — not frustrated, just aware of the constraint. The scene is wry, not dramatic. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-no-offline-mode/hero.png",
+      "generated_image_sha256": "995cf2882dc89a6c62f12bf2fbc5d66f03894774bfe56d1ec9a5c915956386a3",
+      "final_image_sha256": "9248f4246cc8cc081df5b505dd71e9a4fd2946a5874ca80ed812fe22797a5950",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-no-offline-mode/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-no-offline-mode/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/notion-no-offline-mode/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at two overlapping circles representing real-time collaboration and offline editing as partially incompatible goals.",
+      "caption": "Hatch gesturing at two overlapping circles representing real-time collaboration and offline editing as partially incompatible goals.",
+      "prompt": "Notion — No Offline Mode | hatch-narrator: Hatch in narrator pose, gesturing at two overlapping circles: one labeled \"Real-time collaboration\" and one labeled \"Offline editing.\" The overlap region is small and labeled \"Very hard.\" The scene communicates the architectural tension between the two goals. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-no-offline-mode/hatch-narrator.png",
+      "generated_image_sha256": "82983701fa8bce744c1dee460a28fa820dc50fa34b93b34da9cfe1b202042837",
+      "final_image_sha256": "7170868e1066d0c3f0c94e1be1cf23edadcb4206ded226e3a09a488baf98fc24",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-no-offline-mode/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-no-offline-mode/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/notion-no-offline-mode/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining two architectural diagrams — server-authoritative sync versus local-first sync — showing the complexity difference.",
+      "caption": "Hatch examining two architectural diagrams — server-authoritative sync versus local-first sync — showing the complexity difference.",
+      "prompt": "Notion — No Offline Mode | failure-mechanism: Hatch in thinking pose looking at a diagram showing: user edit → network → server → confirmation → reflected back. The diagram shows where the connection requirement enters the loop. Below it, a second diagram shows a local-first model with a sync layer, marked as significantly more complex. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-no-offline-mode/failure-mechanism.png",
+      "generated_image_sha256": "fd9ab692ba2e7c6eedaea099a963fa5b509f381566b691070a5b8dd958a31363",
+      "final_image_sha256": "9f643132858dd5275e16ad9f2e9c75528c2d897aee3ab7204a8c94316a051f99",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-no-offline-mode/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-no-offline-mode/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/notion-no-offline-mode/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a user segmentation showing offline-first users on one side and collaboration users on the other.",
+      "caption": "Hatch pointing at a user segmentation showing offline-first users on one side and collaboration users on the other.",
+      "prompt": "Notion — No Offline Mode | evidence-card: Hatch pointing at a user segmentation visual: on one side, users who chose Bear/Obsidian for offline access; on the other side, users who chose Notion for collaboration and flexibility. An arrow labels the dividing line \"connectivity requirement.\" Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-no-offline-mode/evidence-card.png",
+      "generated_image_sha256": "861fb247519132e3d325c09ef8a62dad18caf2be00d597e17f14a3b49080ad86",
+      "final_image_sha256": "32c5e79f6938130f3f38f6102b3dd33f4339354958eddcea883e9eb2bcbf4a49",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-no-offline-mode/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-no-offline-mode/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/notion-no-offline-mode/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a scale tipped toward collaboration over offline access, representing a deliberate architectural trade-off.",
+      "caption": "Hatch beside a scale tipped toward collaboration over offline access, representing a deliberate architectural trade-off.",
+      "prompt": "Notion — No Offline Mode | lesson-frame: Hatch in calm coaching pose standing beside a balance scale with \"Real-time collaboration\" on one side and \"Offline access\" on the other. The scale is tipped toward collaboration. The visual communicates that the choice was deliberate, not an oversight. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-no-offline-mode/lesson-frame.png",
+      "generated_image_sha256": "5c57014e1aa8265a046d1e3a339ded001653b1ad719572929436352d0d8b0c6f",
+      "final_image_sha256": "9f3b8ff7a752769124e015de458a0b52e611f3a9000f76104cb967b87401fc16",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-no-offline-mode/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-no-offline-mode/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/notion-no-offline-mode/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch weighing Wi-Fi connectivity against collaboration, representing Notion's architectural trade-off.",
+      "caption": "Hatch weighing Wi-Fi connectivity against collaboration, representing Notion's architectural trade-off.",
+      "prompt": "Small, recognisable Hatch mascot holding a Wi-Fi signal icon in one hand and a collaboration icon in the other, with a clear visual preference for the collaboration side. Clean cream background, no text, no speech. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-no-offline-mode/hero.png",
+      "generated_image_sha256": "995cf2882dc89a6c62f12bf2fbc5d66f03894774bfe56d1ec9a5c915956386a3",
+      "final_image_sha256": "40a89c610c1f7194abc430b2815e38b9d5b67de32a613b2b32b60c915f7de192",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-no-offline-mode/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-no-offline-mode/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/notion-no-offline-mode/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch on a plane with Notion's no-connection screen for social sharing.",
+      "caption": "Hatch on a plane with Notion's no-connection screen for social sharing.",
+      "prompt": "Hero Hatch adapted for OG share: Hatch on a plane seat with a no-connection screen, looking thoughtfully at the viewer, with \"NOTION\" as a visual backdrop and a small balance scale icon. Cream background, HackProduct watermark bottom-right 60% opacity JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-no-offline-mode/hero.png",
+      "generated_image_sha256": "995cf2882dc89a6c62f12bf2fbc5d66f03894774bfe56d1ec9a5c915956386a3",
+      "final_image_sha256": "a8afb3524b9add7e6e6eea2d951b6381e77d5ad4f01103ba30466d0b17a8c66b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-no-offline-mode/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-no-offline-mode/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/notion-no-offline-mode/v1"
+}

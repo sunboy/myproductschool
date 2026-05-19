@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "slack",
+  "story_slug": "slack-hn-launch",
+  "story_title": "Slack's Hacker News Launch",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/slack-hn-launch/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/slack-hn-launch/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch composing a message on a laptop with the Hacker News orange logo visible in the background, illustrating Slack's launch announcement.",
+      "caption": "Hatch composing a message on a laptop with the Hacker News orange logo visible in the background, illustrating Slack's launch announcement.",
+      "prompt": "Slack's Hacker News Launch | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) sitting at a laptop, composing a message — the screen shows a simple text field and the Hacker News orange logo in the background. Hatch's expression is calm and deliberate, not excited. The scene reads as a thoughtful announcement, not a press moment. Cream background, no speech bubble. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/slack-hn-launch/hero.png",
+      "generated_image_sha256": "c34c663975b8e87a3872deebe1a98ed7d2c7d7ee4221760935743ae947727404",
+      "final_image_sha256": "4d8338c9c74bde70ed22e2fb9588ed45be08b8d79dc16c51b176e3ce213a2364",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-hn-launch/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-hn-launch/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/slack-hn-launch/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward an old-style IRC terminal chat window, showing what team communication looked like before Slack.",
+      "caption": "Hatch gesturing toward an old-style IRC terminal chat window, showing what team communication looked like before Slack.",
+      "prompt": "Slack's Hacker News Launch | hatch-narrator: Hatch in narrator pose, gesturing toward a floating \"chat window\" that is clearly old-school — an IRC-style terminal interface showing scrolling text. The scene reads as \"this is what team communication looked like before.\" Cream background, no copy overlay, no speech bubble. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/slack-hn-launch/hatch-narrator.png",
+      "generated_image_sha256": "a3e7ca6d37d194864208f48b696345042cbc7eaa478d0d404c9a079376cc41e0",
+      "final_image_sha256": "9bef0790364b48400bf7349c0167e0f7899d2cab0f1e6c283d3cff198ac057d5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-hn-launch/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-hn-launch/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/slack-hn-launch/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a diagram comparing a press launch reaching a wide crowd versus an HN post reaching a small, engaged group of beta testers.",
+      "caption": "Hatch examining a diagram comparing a press launch reaching a wide crowd versus an HN post reaching a small, engaged group of beta testers.",
+      "prompt": "Slack's Hacker News Launch | failure-mechanism: Hatch in thinking pose, looking at a simple two-column diagram: on the left, a \"press launch\" box with thin arrows pointing to a crowd of tiny indistinct figures; on the right, an \"HN post\" box with thick arrows pointing to a small group of clearly engaged figures holding notepads. The point is feedback density versus reach breadth. Cream background. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/slack-hn-launch/failure-mechanism.png",
+      "generated_image_sha256": "0ac62bb0c2b0b302b709ff2a63ec2afa4064052015d9bba12c57272c519f79d4",
+      "final_image_sha256": "af6e13cabc085148a518f8860fa68425e55765efb499143853a01c488811ca61",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-hn-launch/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-hn-launch/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/slack-hn-launch/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a growth chart showing Slack's trajectory from the August 2013 HN launch to $12M ARR by February 2014.",
+      "caption": "Hatch examining a growth chart showing Slack's trajectory from the August 2013 HN launch to $12M ARR by February 2014.",
+      "prompt": "Slack's Hacker News Launch | evidence-card: Hatch pointing at a simple timeline chart: a small dot labeled \"August 2013 HN launch,\" a rising line, and a larger milestone labeled \"February 2014 — $12M ARR.\" The line continues rising steeply. Hatch's expression is analytical. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/slack-hn-launch/evidence-card.png",
+      "generated_image_sha256": "f3aebd7f0bea08615e9e6d3983969251f93b24ca2456ae2692ca6d30ebc5b373",
+      "final_image_sha256": "5ce96ad0b3293a5d240bd9086754adf5a53286edc67ae3a6f89f3c15a351be4b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-hn-launch/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-hn-launch/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/slack-hn-launch/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm coaching pose, illustrating the lesson from Slack's Hacker News launch strategy.",
+      "caption": "Hatch in a calm coaching pose, illustrating the lesson from Slack's Hacker News launch strategy.",
+      "prompt": "Slack's Hacker News Launch | lesson-frame: Hatch in coaching pose — calm, grounded, one hand extended as if offering an insight. Clean cream background, no charts, no text. The image reads as the quiet conclusion of a well-told story. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/slack-hn-launch/lesson-frame.png",
+      "generated_image_sha256": "2e5d9991e617a59a1187e4f7f1ed79b547b9b085e5fb94f2e9036db4f7ec303a",
+      "final_image_sha256": "3e8dcc0f5643500014ee8b9215e73f2aab174bc2f40e1c26144e6100995e3e53",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-hn-launch/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-hn-launch/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/slack-hn-launch/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at a laptop with the Hacker News logo visible, thumbnail image for the Slack HN launch autopsy.",
+      "caption": "Hatch at a laptop with the Hacker News logo visible, thumbnail image for the Slack HN launch autopsy.",
+      "prompt": "Hatch mascot, small and centered, sitting at a laptop with the Hacker News orange logo visible in miniature on screen. Clean cream background. Readable at small sizes — clear silhouette. HackProduct watermark bottom-right, 60% opacity. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/slack-hn-launch/hero.png",
+      "generated_image_sha256": "c34c663975b8e87a3872deebe1a98ed7d2c7d7ee4221760935743ae947727404",
+      "final_image_sha256": "4c04e8833581e1e00c4e6f20220ff0b2926cbe79486eaa1bd779a60e136fe522",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-hn-launch/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-hn-launch/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/slack-hn-launch/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at a laptop with the Hacker News logo visible, social share image for the Slack HN launch autopsy.",
+      "caption": "Hatch at a laptop with the Hacker News logo visible, social share image for the Slack HN launch autopsy.",
+      "prompt": "Hatch mascot in hero pose at a laptop, Hacker News orange logo in background. Large enough to read clearly on a social card. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Text area left clear for OG title overlay. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/slack-hn-launch/hero.png",
+      "generated_image_sha256": "c34c663975b8e87a3872deebe1a98ed7d2c7d7ee4221760935743ae947727404",
+      "final_image_sha256": "a9eccd7a13b3e08ee8151ce517cc606f1d0e4cdcd98441247374512f06860b77",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-hn-launch/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-hn-launch/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/slack-hn-launch/v1"
+}

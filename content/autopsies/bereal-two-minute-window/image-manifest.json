@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "bereal",
+  "story_slug": "bereal-two-minute-window",
+  "story_title": "BeReal's 2-Min Window",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/bereal-two-minute-window/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/bereal-two-minute-window/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central deep-forest clock face with a two-minute amber arc, flanked by two simultaneous camera frames in forest green, with scattered mist avatar circles and Hatch narrating from the upper right.",
+      "caption": "Two minutes. Every user. Same moment.",
+      "prompt": "BeReal's 2-Min Window | hero: Create a flat geometric HackProduct autopsy hero illustration for BeReal's 2-minute window. Canvas role: hero, aspect 2400x1350. On a warm cream #faf6f0 background, compose a central clock face rendered in deep forest #244232, showing a two-minute arc highlighted in soft amber #c9ad68. From the clock, draw two simultaneous camera frames side by side in forest green #4a7c59: a front-facing self-portrait frame on the left and a rear-camera scene frame on the right, both captured in the same instant. Around the clock, scatter small mist #dfe6dc avatar circles to suggest every user receiving the notification at once. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator figure in the upper right, pointing at the clock with one mitten hand, wearing its graduation cap and showing the growth arrow. Preserve Hatch's rounded green head frame, cream face and body, H chest mark, bright eyes, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no app-store screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/bereal-two-minute-window/hero.png",
+      "generated_image_sha256": "321ca0626c5194a1ad51a9e2d10b04a640585473c738b3bfa8148433e1dde890",
+      "final_image_sha256": "9659d9076cdfd211be49374d84ee22b024848c12dc41a8e766c92f7cb52f4097",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bereal-two-minute-window/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bereal-two-minute-window/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/bereal-two-minute-window/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing between a raw camera production rig and a laptop showing a sterile Instagram-style polished grid, gesturing away from the screen.",
+      "caption": "Hatch standing between a raw camera production rig and a laptop showing a sterile Instagram-style polished grid, gesturing away from the screen.",
+      "prompt": "BeReal's 2-Min Window | hatch-narrator: Flat geometric scene illustration for Alexis Barreyat's GoPro-to-Paris origin moment, aspect 1600x1600. On warm cream #faf6f0, show a minimalist Munich studio space: a deep forest #244232 camera rig on a stand in the background suggesting extreme-sports production work, and a small desk in the foreground with a laptop screen displaying a simplified Instagram-style grid of polished identical-looking cream squares with amber #705c30 highlight borders. Contrast the two: the camera rig is raw and physical, the grid is sterile and repeated. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator standing between the rig and the laptop, gesturing with one mitten hand toward the grid and looking away from it, as if pointing out the disconnect. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use soft amber #c9ad68 for studio accent lights, mist #dfe6dc for studio wall. No human figures other than Hatch, no logos, no photorealism. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/bereal-two-minute-window/hatch-narrator.png",
+      "generated_image_sha256": "bdd3e2a89c290e77ea1325c329334e3a317dacfa6793603c9d469e4c4de74003",
+      "final_image_sha256": "c4526d5ee0ab92e3d0b4689e768bebfd243ff04054aefc5530dbd12f800ac615",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bereal-two-minute-window/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bereal-two-minute-window/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/bereal-two-minute-window/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage pipeline from broadcast notification through two-minute window, dual capture, and reciprocity gate, with Hatch pointing at the gate.",
+      "caption": "A four-stage pipeline from broadcast notification through two-minute window, dual capture, and reciprocity gate, with Hatch pointing at the gate.",
+      "prompt": "BeReal's 2-Min Window | failure-mechanism: Flat geometric mechanism diagram for BeReal's coordinated compulsion design, aspect 1800x1200. On cream #faf6f0, lay out four horizontal stages. Stage one: a deep forest #244232 broadcast tower sending identical mist #dfe6dc notification bubbles to five small avatar circles arranged in a row, labelled SAME MOMENT. Stage two: a soft amber #c9ad68 countdown bar at two minutes, labelled 2-MIN WINDOW. Stage three: two side-by-side forest green #4a7c59 camera frame rectangles (front and back), labelled DUAL CAPTURE. Stage four: a charcoal #1e211c gate icon with a key, labelled POST TO SEE. Connect stages with thin charcoal lines. Below stage three, add a small amber warning stamp labelled LATE, offset slightly to show it appears on delayed posts. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at lower right, pointing at the gate in stage four to mark the reciprocity rule as the key constraint. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no app UI recreations, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/bereal-two-minute-window/failure-mechanism.png",
+      "generated_image_sha256": "28855eb3f2b45c302f5c12a4fc9ff35caf414aacb48998847facdf0a2104cffd",
+      "final_image_sha256": "50e3fe500f2f604fe9502d5b0f8090c38bb50bf9f9d9a232b9c1ae66f96c94c7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bereal-two-minute-window/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bereal-two-minute-window/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/bereal-two-minute-window/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A line chart showing BeReal's steep 2022 growth to a peak labelled 20M DAU followed by a declining plateau, with four crossed-out clone icons below and Hatch pointing at the descent.",
+      "caption": "A line chart showing BeReal's steep 2022 growth to a peak labelled 20M DAU followed by a declining plateau, with four crossed-out clone icons below and Hatch pointing at the descent.",
+      "prompt": "BeReal's 2-Min Window | evidence-card: Flat geometric evidence card showing BeReal's explosive 2022 growth followed by the plateau, aspect 1600x1000. On warm cream #faf6f0, render a simple line chart running left to right. The line starts near zero at the left (2020), climbs steeply through 2022 in forest green #4a7c59, peaks sharply in a soft amber #c9ad68 summit labeled PEAK 20M DAU OCT 2022, then descends and flattens toward a mist #dfe6dc plateau on the right (2024). Below the plateau, add four small mist icons labeled INSTAGRAM, TIKTOK, SNAP, and TIKTOK NOW to represent the failed clones, each crossed with a thin charcoal #1e211c line. Background is warm cream. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing at the peak, pointing downward at the descent with one mitten hand, expression curious not alarmed. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no dense labels, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/bereal-two-minute-window/evidence-card.png",
+      "generated_image_sha256": "592df7e1f05e77f907d3773dac1d5202fdf956193b3bad1667b42e40bc42e1a2",
+      "final_image_sha256": "a9c16f63f6daf60db169aad26fa6bfeda0104736ad34de6c75876e302817e8ab",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bereal-two-minute-window/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bereal-two-minute-window/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/bereal-two-minute-window/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two side-by-side panels contrasting individual choice (uneven mist avatars) with platform constraint (synchronized forest avatars), with Hatch coaching below the connecting arrow.",
+      "caption": "Two side-by-side panels contrasting individual choice (uneven mist avatars) with platform constraint (synchronized forest avatars), with Hatch coaching below the connecting arrow.",
+      "prompt": "BeReal's 2-Min Window | lesson-frame: Flat geometric lesson illustration for the principle that platform-level constraints solve coordination problems individual choice cannot, aspect 1800x1200. On cream #faf6f0, draw two contrasting panels side by side. Left panel: labelled INDIVIDUAL CHOICE, shows five avatar circles in mist #dfe6dc each with a different-sized curated photo frame, suggesting uneven participation. Right panel: labelled PLATFORM CONSTRAINT, shows five avatar circles in forest green #4a7c59 all with identical same-size camera frames captured simultaneously, connected by a deep forest #244232 horizontal bar representing the shared notification. Between the panels, place a single soft amber #c9ad68 arrow pointing from left to right, labelled COORDINATION. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose below the arrow, one mitten hand resting on the bar, facing the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no app screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/bereal-two-minute-window/lesson-frame.png",
+      "generated_image_sha256": "ed9b09f2f2add318a7fcb975adb6912457b33a41e8bc21811981128d016f75ec",
+      "final_image_sha256": "7e37f020e843268d092b7a96b1f48b3a1b035cc1c8a313ed7902533841a2a7c8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bereal-two-minute-window/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bereal-two-minute-window/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/bereal-two-minute-window/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A deep-forest clock with an amber two-minute arc and two small forest-green camera frames at the nine and three positions, with a tiny Hatch mark in the lower left corner.",
+      "caption": "A deep-forest clock with an amber two-minute arc and two small forest-green camera frames at the nine and three positions, with a tiny Hatch mark in the lower left corner.",
+      "prompt": "Flat geometric thumbnail for BeReal's 2-minute window autopsy, aspect 1200x900. On warm cream #faf6f0, render one bold focal shape: a deep forest #244232 clock face with a soft amber #c9ad68 two-minute arc, and two small forest green #4a7c59 camera frame rectangles overlapping the clock at the nine and three o'clock positions to suggest simultaneous front and back capture. Keep the composition readable at small size with high contrast. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower left corner, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No labels, no app screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/bereal-two-minute-window/hero.png",
+      "generated_image_sha256": "321ca0626c5194a1ad51a9e2d10b04a640585473c738b3bfa8148433e1dde890",
+      "final_image_sha256": "d3b8b0f2058ed8e8bfea58f09bfb1b2c361170e68eaf485a211a9f0bd7653d5f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bereal-two-minute-window/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bereal-two-minute-window/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/bereal-two-minute-window/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image showing a deep-forest clock with an amber two-minute arc at centre, five mist avatar circles connected to it in a ring, and a small Hatch narrator in the upper right.",
+      "caption": "A wide cover image showing a deep-forest clock with an amber two-minute arc at centre, five mist avatar circles connected to it in a ring, and a small Hatch narrator in the upper right.",
+      "prompt": "Flat geometric social cover image for BeReal's 2-minute window autopsy, aspect 2400x1260. On warm cream #faf6f0, place a central composition occupying the centre 70 percent: a large deep forest #244232 clock face with a soft amber #c9ad68 arc marking two minutes, and five mist #dfe6dc avatar circles arranged in a ring around it, each connected to the clock by a thin charcoal #1e211c line, suggesting every user receiving the same notification simultaneously. Label the amber arc with a single charcoal text mark: 2 MIN. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand toward the clock. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep centre 70 percent clear of edge-critical details. No human faces, no app screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/bereal-two-minute-window/hero.png",
+      "generated_image_sha256": "321ca0626c5194a1ad51a9e2d10b04a640585473c738b3bfa8148433e1dde890",
+      "final_image_sha256": "25b29b3954a19400cba7e1c7b6efafbe35c8539564a46c335d49fde236fbfa22",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/bereal-two-minute-window/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/bereal-two-minute-window/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/bereal-two-minute-window/v1"
+}

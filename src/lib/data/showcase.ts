@@ -1140,11 +1140,15 @@ export async function getShowcaseProducts(): Promise<AutopsyProduct[]> {
   })) as AutopsyProduct[]
 }
 
+export function getMockShowcaseProduct(slug: string): AutopsyProductDetail | null {
+  if (slug === 'notion') return MOCK_NOTION_DETAIL
+  if (slug === 'airbnb') return MOCK_AIRBNB_DETAIL
+  return null
+}
+
 export async function getShowcaseProduct(slug: string): Promise<AutopsyProductDetail | null> {
   if (IS_MOCK) {
-    if (slug === 'notion') return MOCK_NOTION_DETAIL
-    if (slug === 'airbnb') return MOCK_AIRBNB_DETAIL
-    return null
+    return getMockShowcaseProduct(slug)
   }
 
   const { createClient } = await import('@/lib/supabase/server')

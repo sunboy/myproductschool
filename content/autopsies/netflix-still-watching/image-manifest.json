@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "netflix",
+  "story_slug": "netflix-still-watching",
+  "story_title": "Netflix 'Are You Still Watching?'",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/netflix-still-watching/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/netflix-still-watching/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream editorial illustration of a mist-coloured television with a paused playback dialog and a small data-node graph to its right, with Hatch narrating from the upper-left.",
+      "caption": "A prompt that cost viewing minutes and bought cleaner data.",
+      "prompt": "Netflix 'Are You Still Watching?' | hero: Create a flat geometric HackProduct autopsy hero illustration for Netflix's \"Are You Still Watching?\" interstitial. Canvas role: hero, aspect 2400x1350. Background is warm cream #faf6f0. In the centre, draw a large television-shaped rectangle in mist #dfe6dc with a deep forest #244232 frame. Inside the screen, show a paused playback indicator: a soft amber #c9ad68 pause icon centred on a dark screen area, with a single dialog box in cream #faf6f0 containing two short charcoal #1e211c text lines and a forest-green #4a7c59 button below them. To the right of the television, draw a small cluster of three charcoal data nodes connected by thin forest-green lines, suggesting a recommendation graph being fed clean signals. Hatch appears in the upper-left corner in narrator pose, one mitten hand extended toward the television screen, wearing the graduation cap with growth arrow, cream face, H chest mark, bright eyes. The composition should feel quiet and editorial. Leave the upper-right quadrant clear for title overlay. No photorealism, no real Netflix UI, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/netflix-still-watching/hero.png",
+      "generated_image_sha256": "1fecbf68c4c89c4ce78499f9efac1f693a82d0acfb935ae6c050fb145240b327",
+      "final_image_sha256": "11b1802f5bec3f6651d63e212dc83ffa0ea0c797ec2ac0d143067c3319721821",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/netflix-still-watching/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/netflix-still-watching/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/netflix-still-watching/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing between two desks in a cream room, pointing from a cost-data laptop to a polluted-recommendation-row laptop, with a DATA label on the connecting arrow.",
+      "caption": "Hatch standing between two desks in a cream room, pointing from a cost-data laptop to a polluted-recommendation-row laptop, with a DATA label on the connecting arrow.",
+      "prompt": "Netflix 'Are You Still Watching?' | hatch-narrator: Flat geometric scene illustration for Netflix's Los Gatos offices in late 2012, aspect 1600x1600. Show a warm cream #faf6f0 room with two areas separated by a soft amber #c9ad68 vertical divider. On the left, a forest-green #4a7c59 desk with a laptop showing a column-chart silhouette suggesting CDN cost data. On the right, a mist #dfe6dc desk with a second laptop showing a small recommendation-row grid with misaligned tiles, suggesting a polluted signal. Between the two desks, draw a single deep forest #244232 arrow pointing from the right laptop toward the left, labelled with a short charcoal #1e211c tag reading DATA. Hatch stands at the centre between the two desks in a narrator pose, graduation cap and growth arrow visible, one mitten hand pointing at the right laptop, the other extended open toward the left. No human figures other than Hatch. No photorealism, no real logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/netflix-still-watching/hatch-narrator.png",
+      "generated_image_sha256": "c6ff9a3c0b5d4a91c414002ce74b54c6db0bdacddac31ee8340d8555a73af240",
+      "final_image_sha256": "9f7c933dcfc44dee9e2d9f19345058e6f6250a0bc06ffb9f914cf6408d1af966",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/netflix-still-watching/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/netflix-still-watching/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/netflix-still-watching/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage pipeline from autoplay start to the binary yes/no split at the interstitial, with Hatch pointing at the dialog stage.",
+      "caption": "A four-stage pipeline from autoplay start to the binary yes/no split at the interstitial, with Hatch pointing at the dialog stage.",
+      "prompt": "Netflix 'Are You Still Watching?' | failure-mechanism: Flat geometric mechanism diagram for Netflix's \"Are You Still Watching?\" circuit-breaker, aspect 1800x1200. Lay out four horizontal stages from left to right on warm cream #faf6f0. Stage one: a deep forest #244232 play icon labelled AUTOPLAY BEGINS. Stage two: a mist #dfe6dc clock face labelled 3 EPISODES with a soft amber #c9ad68 tick at the 90-minute mark. Stage three: a cream dialog rectangle with a forest-green #4a7c59 button labelled STILL WATCHING? and a charcoal #1e211c pause bar above it. Stage four splits into two paths: an upward forest-green arrow labelled YES → CLEAN SIGNAL and a downward amber arrow labelled NO → PLAYBACK STOPS. Connect all stages with thin charcoal lines. Hatch appears at the lower-right in a thinking pose, one mitten hand on chin, pointing at the stage-three dialog with the other hand. Graduation cap and growth arrow visible, H chest mark, bright eyes, mitten hands. No screenshots, no real UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/netflix-still-watching/failure-mechanism.png",
+      "generated_image_sha256": "01424c760cee9ed38a426045d0c1943a620e013832289176ed6053bc36db4461",
+      "final_image_sha256": "c739287a5675f5365b4262db0adc525254076beed2c92c4defd5c95d245ba4f6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/netflix-still-watching/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/netflix-still-watching/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/netflix-still-watching/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two bar charts comparing autoplay-on versus autoplay-off session length, with Hatch pointing at the hatched passive-viewing region on the taller bar.",
+      "caption": "Two bar charts comparing autoplay-on versus autoplay-off session length, with Hatch pointing at the hatched passive-viewing region on the taller bar.",
+      "prompt": "Netflix 'Are You Still Watching?' | evidence-card: Flat geometric evidence card for the viewing-time tradeoff in Netflix's autoplay design, aspect 1600x1000. Background is warm cream #faf6f0. Draw two side-by-side bar charts. Left chart: a tall mist #dfe6dc bar labelled AUTOPLAY ON with a soft amber #c9ad68 hatched region at the top representing the passive-viewing portion (~21 minutes). Right chart: a shorter forest-green #4a7c59 bar labelled AUTOPLAY OFF representing active session length. Between the two bars, draw a small deep forest #244232 arrow pointing from the tall bar to the short bar with a charcoal label: -21 MIN / DAY. Hatch stands between the two charts in a pointing pose, one mitten hand on the tall bar's hatched region, gaze directed at the gap. Graduation cap with growth arrow, H chest mark, bright eyes. One concise label per chart, no dense text, no fake screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/netflix-still-watching/evidence-card.png",
+      "generated_image_sha256": "521f8e9667fa66910ed136d1f495fa2aad011ad34f31ef935145f7b63ed14e26",
+      "final_image_sha256": "9ee748f55764639012cc598ef6e3c9082fc845491c82aea4eb4caec5232284cc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/netflix-still-watching/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/netflix-still-watching/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/netflix-still-watching/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A funnel illustration filtering passive-view and active-view streams, with only the active stream reaching a recommendation grid, and Hatch coaching from the left.",
+      "caption": "A funnel illustration filtering passive-view and active-view streams, with only the active stream reaching a recommendation grid, and Hatch coaching from the left.",
+      "prompt": "Netflix 'Are You Still Watching?' | lesson-frame: Flat geometric lesson illustration for the takeaway that every unverified signal is a design choice, aspect 1800x1200. Background is warm cream #faf6f0. In the centre, draw a large deep forest #244232 funnel shape. Into the wide top, pour two streams: a mist #dfe6dc stream labelled PASSIVE VIEWS and a forest-green #4a7c59 stream labelled ACTIVE VIEWS. At the narrow funnel exit, show only the forest-green stream continuing as a clean line into a recommendation-row grid of four small amber #c9ad68 tiles. The mist stream terminates at a small charcoal X before reaching the exit. Above the funnel entrance, place a small soft amber interstitial rectangle labelled STILL WATCHING?, positioned as the filter between input and funnel. Hatch stands to the left of the funnel in a calm coaching pose, one mitten hand resting on the funnel edge, graduation cap and growth arrow visible, H chest mark, bright eyes. No human faces, no photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/netflix-still-watching/lesson-frame.png",
+      "generated_image_sha256": "009e4ed7aa9912dfa77bdcccb1973c4d22386f71942856f29231eae427bbf925",
+      "final_image_sha256": "959a3035c5cf209eec36e27184e23e96ffe0d5eee4d8735344298d895d895401",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/netflix-still-watching/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/netflix-still-watching/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/netflix-still-watching/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A mist television with a forest-green pause button and a cream dialog bubble with an amber question mark, and a tiny Hatch mark in the corner.",
+      "caption": "A mist television with a forest-green pause button and a cream dialog bubble with an amber question mark, and a tiny Hatch mark in the corner.",
+      "prompt": "Flat geometric thumbnail for Netflix's \"Are You Still Watching?\" autopsy, aspect 1200x900. On warm cream #faf6f0, draw a single bold focal shape: a mist #dfe6dc television rectangle with a forest-green #4a7c59 pause button centred on its screen and a small cream dialog bubble rising from the screen top with a soft amber #c9ad68 question mark inside. Keep the shape bold and readable at small size. Hatch appears as a small mark in the bottom-left, no larger than 10 percent of canvas height, in a simplified narrator silhouette with graduation cap and growth arrow. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/netflix-still-watching/hero.png",
+      "generated_image_sha256": "1fecbf68c4c89c4ce78499f9efac1f693a82d0acfb935ae6c050fb145240b327",
+      "final_image_sha256": "7d352bd18859eab3d26bc2b57dae67e166f285185e7ff86567e14e982efe78ff",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/netflix-still-watching/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/netflix-still-watching/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/netflix-still-watching/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide social cover showing a mist television with a still-watching dialog and a small recommendation graph to its right, with Hatch narrating from the upper-left.",
+      "caption": "A wide social cover showing a mist television with a still-watching dialog and a small recommendation graph to its right, with Hatch narrating from the upper-left.",
+      "prompt": "Flat geometric social cover for Netflix's \"Are You Still Watching?\" autopsy, aspect 2400x1260. Background is warm cream #faf6f0. Centre composition occupies the middle 70 percent of the canvas: a large mist #dfe6dc television with a deep forest #244232 frame, a cream dialog box on screen with a forest-green #4a7c59 button, and to its right a small charcoal #1e211c recommendation-node graph with three amber #c9ad68 nodes. A single short charcoal label on the dialog reads STILL WATCHING? Leave the centre 70 percent clear of edge-critical details. Hatch appears in the upper-left corner as a small narrator, one mitten hand pointing at the television, graduation cap and growth arrow visible, H chest mark, bright eyes, mitten hands. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/netflix-still-watching/hero.png",
+      "generated_image_sha256": "1fecbf68c4c89c4ce78499f9efac1f693a82d0acfb935ae6c050fb145240b327",
+      "final_image_sha256": "bdf3af65b59e487261b63abcb90b615ee6d3ba84770effb3a0e63dd7c69da17d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/netflix-still-watching/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/netflix-still-watching/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/netflix-still-watching/v1"
+}

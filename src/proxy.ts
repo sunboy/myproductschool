@@ -35,6 +35,8 @@ const MARKETING_ROUTES = [
   '/companies',
   '/study-plans',
   '/practice',
+  '/autopsies',
+  '/autopsy',
   '/glossary',
   '/interviews',
   '/alternatives',
@@ -92,6 +94,10 @@ export async function proxy(request: NextRequest) {
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
   const isPureMarketing = (isMarketing && !isRoot && !isWaitlist) || isExactMarketing
+  if (isRoot || isWaitlist || isAuthRoute) {
+    return NextResponse.next()
+  }
+
   if (isPureMarketing || isAuthCallback || isPublicScorecard || (isApi && !isAdminApi)) {
     return NextResponse.next()
   }

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "loom",
+  "story_slug": "loom",
+  "story_title": "Loom",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/loom/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/loom/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot beside a Loom recording interface with a share link extending to multiple recipients, illustrating the product-led growth mechanism.",
+      "caption": "Hatch mascot beside a Loom recording interface with a share link extending to multiple recipients, illustrating the product-led growth mechanism.",
+      "prompt": "Loom | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing next to a large video recording interface. A visible \"Share\" button glows on the recording, and a link URL extends outward like a thread connecting to multiple recipient icons. Hatch's expression is calm and knowing. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/loom/hero.png",
+      "generated_image_sha256": "ef314f7391d8852bb29d40f12bb1e7805b83659d84440734d0408025da8dd3de",
+      "final_image_sha256": "987f398a0e20cdc72940793dfa6c2d19a1570680f8c9c7a63104114504b1d806",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/loom/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/loom/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/loom/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing from a cluttered meeting calendar to a simple video recording window, illustrating async video as a meeting replacement.",
+      "caption": "Hatch gesturing from a cluttered meeting calendar to a simple video recording window, illustrating async video as a meeting replacement.",
+      "prompt": "Loom | hatch-narrator: Hatch in narrator stance, gesturing toward a cluttered calendar view on one side and a simple video recording window on the other. The gesture suggests \"this replaces that.\" Cream background, no speech bubble. Hatch is slightly turned, pointing at the recording window. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/loom/hatch-narrator.png",
+      "generated_image_sha256": "a92d9e1677c4bb89ef568c23a1d8169214677ad543ab7d3b7ce01026ed4549ff",
+      "final_image_sha256": "82b4144114146856d68e803c1f49df7deb2157770cb2ef92d20b58f3769d2b6d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/loom/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/loom/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/loom/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining the Loom acquisition loop — from recording through link share to viewer becoming a new sender.",
+      "caption": "Hatch examining the Loom acquisition loop — from recording through link share to viewer becoming a new sender.",
+      "prompt": "Loom | failure-mechanism: Hatch in thinking pose, looking at a simple flow diagram: Record → Generate link → Recipient views → Recipient records reply → New Loom user. Each step is a simple icon connected by arrows. Hatch points to the last step — the recipient becoming a sender. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/loom/failure-mechanism.png",
+      "generated_image_sha256": "5a4ef9ced33a0fb9e512af596a0c5bb821057cc5fc50284f6c56a990ef0187a5",
+      "final_image_sha256": "74fc5cafe3789cd4f8f4011be89a9377e7db3dbb22523f3ac1bbd302c9b6af0a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/loom/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/loom/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/loom/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to Loom user growth chart showing the 2020 remote work surge and 14 million user milestone by 2021.",
+      "caption": "Hatch pointing to Loom user growth chart showing the 2020 remote work surge and 14 million user milestone by 2021.",
+      "prompt": "Loom | evidence-card: Hatch pointing at a bar chart showing Loom user growth from 2015 to 2021, with a sharp uptick in 2020 labeled \"Remote work surge.\" The 14M user milestone is marked. Expression is analytical, calm. Cream background. Watermark same as hero. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/loom/evidence-card.png",
+      "generated_image_sha256": "11bbcd491c19fb1b749d31dd5001237fe265becde72e15c6375af407d3271e96",
+      "final_image_sha256": "ec53f46bf8ac2646d7b528ef9bb29cad02d5a67f82020f17c9714a3e5386d524",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/loom/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/loom/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/loom/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance with video frames radiating outward, representing recordings as the distribution mechanism.",
+      "caption": "Hatch in coaching stance with video frames radiating outward, representing recordings as the distribution mechanism.",
+      "prompt": "Loom | lesson-frame: Hatch in coaching pose — upright, calm, graduation cap settled — next to a large quotation mark. Behind Hatch, faint video frames suggest recordings being sent outward in all directions. The mood is conclusive and wise. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/loom/lesson-frame.png",
+      "generated_image_sha256": "84e917c732eb09e325468755f0a0700757865ba158ecfd493470c3b23311d4b3",
+      "final_image_sha256": "597b439e5dbe74917cd79ad28f59aa0fc41f69e70c18fb56a25158b69fd7dbac",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/loom/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/loom/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/loom/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a video recording share icon — thumbnail for the Loom async video autopsy.",
+      "caption": "Hatch beside a video recording share icon — thumbnail for the Loom async video autopsy.",
+      "prompt": "Small, recognizable Hatch mascot bust next to a video recording icon with a share arrow. Clean cream background. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/loom/hero.png",
+      "generated_image_sha256": "ef314f7391d8852bb29d40f12bb1e7805b83659d84440734d0408025da8dd3de",
+      "final_image_sha256": "62ab28bfbc02d019bb5bb1fcfd5df6d4c327a748f1df2cd824d396cc6ea5cfa8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/loom/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/loom/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/loom/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot with Loom recording interface for the Loom async video social share card.",
+      "caption": "Hatch mascot with Loom recording interface for the Loom async video social share card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG share card. Video recording interface with share link behind Hatch. \"HackProduct\" wordmark prominent bottom-right. Cream background. The scene reads as: the message is the marketing. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/loom/hero.png",
+      "generated_image_sha256": "ef314f7391d8852bb29d40f12bb1e7805b83659d84440734d0408025da8dd3de",
+      "final_image_sha256": "a32c6b81f99036534a7c108ce08262d06212a1ce027607bcf2b325101a57369a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/loom/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/loom/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/loom/v1"
+}

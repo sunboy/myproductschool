@@ -1,0 +1,177 @@
+{
+  "ok": true,
+  "state": "interview-speaking",
+  "frames": 8,
+  "cellWidth": 192,
+  "cellHeight": 208,
+  "stripSize": [
+    1536,
+    208
+  ],
+  "hasAlpha": true,
+  "durationsMs": [
+    260,
+    170,
+    160,
+    170,
+    260,
+    170,
+    180,
+    280
+  ],
+  "loopDurationMs": 1650,
+  "framesDetail": [
+    {
+      "index": 0,
+      "path": "/Users/sandeep/Projects/myproductschool/public/mascots/hatch/generated/interview-speaking-v1/frames/00.png",
+      "size": [
+        192,
+        208
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "bbox": [
+        37,
+        5,
+        154,
+        201
+      ],
+      "nontransparentPixels": 16463
+    },
+    {
+      "index": 1,
+      "path": "/Users/sandeep/Projects/myproductschool/public/mascots/hatch/generated/interview-speaking-v1/frames/01.png",
+      "size": [
+        192,
+        208
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "bbox": [
+        37,
+        5,
+        154,
+        201
+      ],
+      "nontransparentPixels": 16412
+    },
+    {
+      "index": 2,
+      "path": "/Users/sandeep/Projects/myproductschool/public/mascots/hatch/generated/interview-speaking-v1/frames/02.png",
+      "size": [
+        192,
+        208
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "bbox": [
+        37,
+        5,
+        154,
+        201
+      ],
+      "nontransparentPixels": 16375
+    },
+    {
+      "index": 3,
+      "path": "/Users/sandeep/Projects/myproductschool/public/mascots/hatch/generated/interview-speaking-v1/frames/03.png",
+      "size": [
+        192,
+        208
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "bbox": [
+        37,
+        5,
+        154,
+        201
+      ],
+      "nontransparentPixels": 16359
+    },
+    {
+      "index": 4,
+      "path": "/Users/sandeep/Projects/myproductschool/public/mascots/hatch/generated/interview-speaking-v1/frames/04.png",
+      "size": [
+        192,
+        208
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "bbox": [
+        37,
+        6,
+        154,
+        202
+      ],
+      "nontransparentPixels": 16322
+    },
+    {
+      "index": 5,
+      "path": "/Users/sandeep/Projects/myproductschool/public/mascots/hatch/generated/interview-speaking-v1/frames/05.png",
+      "size": [
+        192,
+        208
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "bbox": [
+        37,
+        6,
+        154,
+        202
+      ],
+      "nontransparentPixels": 16341
+    },
+    {
+      "index": 6,
+      "path": "/Users/sandeep/Projects/myproductschool/public/mascots/hatch/generated/interview-speaking-v1/frames/06.png",
+      "size": [
+        192,
+        208
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "bbox": [
+        37,
+        6,
+        154,
+        202
+      ],
+      "nontransparentPixels": 16275
+    },
+    {
+      "index": 7,
+      "path": "/Users/sandeep/Projects/myproductschool/public/mascots/hatch/generated/interview-speaking-v1/frames/07.png",
+      "size": [
+        192,
+        208
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "bbox": [
+        37,
+        8,
+        154,
+        203
+      ],
+      "nontransparentPixels": 16204
+    }
+  ]
+}

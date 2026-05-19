@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "telegram",
+  "story_slug": "telegram-bot-platform",
+  "story_title": "Telegram Bot Platform",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/telegram-bot-platform/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/telegram-bot-platform/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch inside a messaging interface surrounded by diverse bot icons representing the breadth of the Telegram bot ecosystem",
+      "caption": "Hatch inside a messaging interface surrounded by diverse bot icons representing the breadth of the Telegram bot ecosystem",
+      "prompt": "Telegram Bot Platform | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) standing inside a messaging chat interface, surrounded by various small bot icons — a news bot, a shopping bot, a game bot — all accessible directly in the chat. The scene feels like a bazaar inside a conversation. Cream background, no text overlays. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/telegram-bot-platform/hero.png",
+      "generated_image_sha256": "2ecb866e209d8a4b2fa03fef8a7f438acad73ae5709314e8bae218168a946aee",
+      "final_image_sha256": "f446e4ae10c4964d5b1f8308293ddae9196cfc3a99523973c63bb8c9aa2c3fce",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/telegram-bot-platform/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/telegram-bot-platform/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/telegram-bot-platform/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a developer receiving a bot API token from BotFather in a simple chat window",
+      "caption": "Hatch gesturing toward a developer receiving a bot API token from BotFather in a simple chat window",
+      "prompt": "Telegram Bot Platform | hatch-narrator: Hatch in narrator pose, gesturing toward a developer sitting at a laptop. On the screen: a chat window with BotFather, the Telegram bot that creates bots. The developer is receiving an API token in the conversation. No app store, no approval process, no download — just a message thread that unlocks a distribution channel. Cream background, no speech bubble. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/telegram-bot-platform/hatch-narrator.png",
+      "generated_image_sha256": "d8cb7d5c1dff9dd160b253db6ff8ee96fb38f2efff4f843f83162482ef83dcf7",
+      "final_image_sha256": "b04aeca326f88fe036448bd7db8df50ad88a14e03c5234113c39d628a92502a7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/telegram-bot-platform/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/telegram-bot-platform/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/telegram-bot-platform/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch observing a three-step diagram from developer message to BotFather to global bot distribution",
+      "caption": "Hatch observing a three-step diagram from developer message to BotFather to global bot distribution",
+      "prompt": "Telegram Bot Platform | failure-mechanism: Hatch in a thinking pose, observing a three-step diagram: a developer sends a message to BotFather → receives an API token → a bot appears in Telegram search accessible to all users worldwide. The path from idea to distribution is three steps inside a messaging app. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/telegram-bot-platform/failure-mechanism.png",
+      "generated_image_sha256": "24fe87137ede8905a45e00a5b42bb7a7772d3eeed0398c785afda233a4e1dba3",
+      "final_image_sha256": "d48c3579f0120891ef492f02abc43e49d3beeb1e94f6875593b0cdfc7ea612ef",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/telegram-bot-platform/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/telegram-bot-platform/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/telegram-bot-platform/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a grid of diverse bot category icons representing the ecosystem breadth",
+      "caption": "Hatch pointing at a grid of diverse bot category icons representing the ecosystem breadth",
+      "prompt": "Telegram Bot Platform | evidence-card: Hatch pointing at a diverse grid of bot category icons: news, games, shopping, customer service, group management, payments. The grid represents the breadth of use cases that emerged from the bot platform — variety that no single team would have designed. Cream background. Watermark same. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/telegram-bot-platform/evidence-card.png",
+      "generated_image_sha256": "84e629cb8e5bb9372795199f20c1c5b390cf91cf0ba7ea342bc1b3ec4a018147",
+      "final_image_sha256": "701afbe4b735acfd084528e3c5dea0713c4b0bbf449b821e94794fc20dc10938",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/telegram-bot-platform/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/telegram-bot-platform/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/telegram-bot-platform/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a diagram showing a chat bubble containing software distributing to a large audience",
+      "caption": "Hatch beside a diagram showing a chat bubble containing software distributing to a large audience",
+      "prompt": "Telegram Bot Platform | lesson-frame: Hatch in a coaching pose, calm, standing beside a simple diagram: a Telegram chat bubble containing a small software tool, with a distribution arrow pointing outward to a large audience. The message is that the chat is the distribution channel. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/telegram-bot-platform/lesson-frame.png",
+      "generated_image_sha256": "148a3fc5cbcac9f197a97c0dc480daabbede41ef936fedf4c62ec106217084a3",
+      "final_image_sha256": "2b02ffa59f77dd43f9e28f2eb4ab5ace80f3fb541f17b59e213158a0c161549b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/telegram-bot-platform/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/telegram-bot-platform/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/telegram-bot-platform/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Small Hatch holding a chat bubble containing a bot icon",
+      "caption": "Small Hatch holding a chat bubble containing a bot icon",
+      "prompt": "Small, recognisable Hatch holding a miniature chat bubble with a tiny bot icon inside. The bot icon represents software delivered through conversation. High-contrast, readable at small size. Cream background. Watermark same. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/telegram-bot-platform/hero.png",
+      "generated_image_sha256": "2ecb866e209d8a4b2fa03fef8a7f438acad73ae5709314e8bae218168a946aee",
+      "final_image_sha256": "82338c5ed1232f53cc096da13b23f40a92990f726593593793e5fc4bb3eb03fe",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/telegram-bot-platform/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/telegram-bot-platform/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/telegram-bot-platform/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a messaging interface showing diverse bots active in conversation",
+      "caption": "Hatch beside a messaging interface showing diverse bots active in conversation",
+      "prompt": "Hatch in hero pose to the left of a large messaging interface showing multiple bot categories active in a chat. Wide OG card format. No text. Cream background, HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/telegram-bot-platform/hero.png",
+      "generated_image_sha256": "2ecb866e209d8a4b2fa03fef8a7f438acad73ae5709314e8bae218168a946aee",
+      "final_image_sha256": "fbb381a1c79b6f1e96fb5cc82a16d2bbe2cd171acdd1d8e70f06c60a657dbd40",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/telegram-bot-platform/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/telegram-bot-platform/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/telegram-bot-platform/v1"
+}

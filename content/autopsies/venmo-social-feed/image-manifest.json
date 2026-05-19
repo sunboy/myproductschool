@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "venmo",
+  "story_slug": "venmo-social-feed",
+  "story_title": "Venmo Social Feed",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/venmo-social-feed/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/venmo-social-feed/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A smartphone feed showing abstracted payment rows with emoji notes and a hidden amount field, with Hatch narrating from the right.",
+      "caption": "The amount hidden, everything else on display.",
+      "prompt": "Venmo Social Feed | hero: Create a flat geometric HackProduct autopsy hero illustration for Venmo's 2012 public-by-default social feed. Canvas role: hero, aspect 2400x1350. Background is warm cream #faf6f0. Compose a smartphone silhouette in forest green #4a7c59 in the centre, showing a simplified payment feed: three rows of abstracted avatar circles in mist #dfe6dc connected by thin charcoal #1e211c lines to emoji strings (rendered as simple coloured geometric shapes: a pizza triangle in amber #705c30, a beer circle in soft amber #c9ad68, a flame in deep forest #244232). Each row shows a sender circle and a recipient circle with a note glyph between them. A single bold charcoal label at the top of the feed reads PUBLIC. The dollar amount field is visibly absent, replaced by a small mist rectangle labelled HIDDEN. Hatch, using the canonical mascot reference at public/images/hatch/hatch-official-mascot.png, stands to the right of the phone in a narrator pose, one mitten hand gesturing toward the feed, wearing its graduation cap and growth arrow, with bright eyes and a friendly coach expression. Leave upper left open for title overlay. No photorealism, no real Venmo UI, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/venmo-social-feed/hero.png",
+      "generated_image_sha256": "a1929c05e3f4799d1edce653c673493ea4daa48a485cd10f876f4e26302761aa",
+      "final_image_sha256": "2ef86503040505afb4278f3bc551b8fadf13da18b9b0246ca7c4939331cbd368",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/venmo-social-feed/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/venmo-social-feed/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/venmo-social-feed/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a desk in a small apartment, looking at a text message thread that resembles a social feed.",
+      "caption": "Hatch standing beside a desk in a small apartment, looking at a text message thread that resembles a social feed.",
+      "prompt": "Venmo Social Feed | hatch-narrator: Flat geometric scene illustration for a Philadelphia apartment in early 2010, aspect 1600x1600. Show a small warm cream #faf6f0 room with a worn desk, a laptop open to a text message thread rendered as simple alternating cream and mist #dfe6dc speech bubbles, and a whiteboard leaning against the wall with a rough arrow sketch connecting two stick-circle heads. Stack of takeout containers in soft amber #c9ad68 on the corner of the desk. A single window shows a grey cityscape silhouette. Hatch, using the canonical mascot reference at public/images/hatch/hatch-official-mascot.png, stands beside the laptop in a thinking pose, one mitten hand resting on the keyboard, gaze toward the message thread, graduation cap and growth arrow visible. The character has a rounded forest green #4a7c59 head frame, cream face, charcoal #1e211c H chest mark, bright eyes, and mitten hands. No human figures, no real phone UI, no dense text, no logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/venmo-social-feed/hatch-narrator.png",
+      "generated_image_sha256": "38a416b96621cbf69d2ea4d3ef67abe55502d7f1d9c3d363293e3c6c7449bbe6",
+      "final_image_sha256": "c8d9457e994b467e3f3c9831e9e47d828bcab0328d8fcbb221d510676f08a8d9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/venmo-social-feed/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/venmo-social-feed/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/venmo-social-feed/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-column pipeline from payment form to public feed, with the amount field crossed out and Hatch pointing at the public-default toggle.",
+      "caption": "A four-column pipeline from payment form to public feed, with the amount field crossed out and Hatch pointing at the public-default toggle.",
+      "prompt": "Venmo Social Feed | failure-mechanism: Flat geometric mechanism diagram for Venmo's public-by-default feed design, aspect 1800x1200. Background is warm cream #faf6f0. Draw a four-column horizontal pipeline. Column one: a forest green #4a7c59 payment form with three filled fields labelled WHO, NOTE, AMOUNT, with the AMOUNT field crossed out by a soft amber #c9ad68 diagonal bar. Column two: a deep forest #244232 toggle switch in the ON position labelled PUBLIC DEFAULT, with a small mist #dfe6dc lock icon beside it showing an unlocked padlock. Column three: a mist #dfe6dc feed panel with three rows of abstracted sender-recipient pairs and emoji glyphs, no dollar values visible. Column four: a branching charcoal #1e211c tree showing three user silhouettes: FRIENDS, FRIENDS-OF-FRIENDS, and a globe shape labelled EVERYONE. Connect columns with thin charcoal lines. Hatch, using the canonical mascot reference at public/images/hatch/hatch-official-mascot.png, stands at the lower centre in a pointing pose with one mitten hand on the toggle in column two, graduation cap and growth arrow visible. No dense text, no real UI screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/venmo-social-feed/failure-mechanism.png",
+      "generated_image_sha256": "3c3bf4f71e500293749988f264849abd2da2e8ff5a8f046f9a6c0eb293408469",
+      "final_image_sha256": "a41b81db258f23fbbe303eedaebfb2bb0b49f53d318962e22080bcbd1028da2f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/venmo-social-feed/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/venmo-social-feed/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/venmo-social-feed/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three bars showing Venmo's payment volume at 2012 acquisition, 2013 PayPal acquisition, and 2023 current scale, with Hatch pointing at the tallest.",
+      "caption": "Three bars showing Venmo's payment volume at 2012 acquisition, 2013 PayPal acquisition, and 2023 current scale, with Hatch pointing at the tallest.",
+      "prompt": "Venmo Social Feed | evidence-card: Flat geometric evidence card showing Venmo's growth trajectory, aspect 1600x1000. Background is warm cream #faf6f0. Draw three vertical bars in a timeline from left to right. Bar one (2012): a small forest green #4a7c59 column labelled $10M/MONTH. Bar two (2013): a medium deep forest #244232 column labelled $1B/YEAR. Bar three (2023): a very tall mist #dfe6dc column with a charcoal #1e211c top labelled $275B/YEAR. A soft amber #c9ad68 trend arrow runs across the top of all three bars. Below the bars, draw a thin horizontal timeline with three date markers: AUG 2012, DEC 2013, 2023. Hatch, using the canonical mascot reference at public/images/hatch/hatch-official-mascot.png, stands beside bar three in a pointing pose, one mitten hand raised toward the top, graduation cap and growth arrow visible, bright eyes looking at bar three. No dense text beyond the three labels. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/venmo-social-feed/evidence-card.png",
+      "generated_image_sha256": "8b473e3f8a2a424f987302bcb11afe5dd451f68e049a331b454e1a21d103cbac",
+      "final_image_sha256": "4b726d70f4ff995792dd20eeb31f966c56aea8412a4e559d19dfbe4f8cd6491a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/venmo-social-feed/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/venmo-social-feed/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/venmo-social-feed/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A payment card with WHO and NOTE fields visible and AMOUNT field hidden, with Hatch in a coaching pose touching the hidden field as arrows branch out to viewers.",
+      "caption": "A payment card with WHO and NOTE fields visible and AMOUNT field hidden, with Hatch in a coaching pose touching the hidden field as arrows branch out to viewers.",
+      "prompt": "Venmo Social Feed | lesson-frame: Flat geometric lesson illustration for the takeaway that social layers survive by hiding the number that makes the experience feel like banking, aspect 1800x1200. Background is warm cream #faf6f0. In the centre, draw a large forest green #4a7c59 card with two visible fields: one labelled WHO and one labelled NOTE, rendered as soft cream text placeholder bars. Where the AMOUNT field would appear, draw a deep forest #244232 rectangle with the label HIDDEN in soft amber #c9ad68 text. From the top of the card, draw three thin charcoal #1e211c arrows branching outward, each pointing to a small mist #dfe6dc avatar circle representing different viewers. Label the arrows FRIENDS, COLLEAGUES, STRANGERS. Hatch, using the canonical mascot reference at public/images/hatch/hatch-official-mascot.png, stands to the left of the card in a calm coaching pose, one mitten hand resting on the HIDDEN field, graduation cap and growth arrow visible, facing toward the viewer. No human figures, no photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/venmo-social-feed/lesson-frame.png",
+      "generated_image_sha256": "370e1158b28102d93987cca0243a98607f845a2082a3c15e68ce6cf7045bdfc8",
+      "final_image_sha256": "d10552ae0cf81e8c9561ae030da0c808bf442392e7db9162a9f4d73ac5c4dd15",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/venmo-social-feed/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/venmo-social-feed/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/venmo-social-feed/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A tilted smartphone with one abstracted payment row, with an arc spreading to three viewer circles and a small Hatch mark in the corner.",
+      "caption": "A tilted smartphone with one abstracted payment row, with an arc spreading to three viewer circles and a small Hatch mark in the corner.",
+      "prompt": "Flat geometric thumbnail for Venmo's social feed autopsy, aspect 1200x900. Background is warm cream #faf6f0. Single bold focal composition: a smartphone silhouette in forest green #4a7c59, slightly tilted, showing one abstracted payment row with a sender circle, a pizza emoji triangle in amber #705c30, and a recipient circle. A soft amber #c9ad68 arc sweeps from the phone toward three small mist #dfe6dc circles arranged in a fan to the right, suggesting the payment becoming visible to multiple viewers. Hatch, using the canonical mascot reference at public/images/hatch/hatch-official-mascot.png, appears as a very small mark in the bottom-left corner, no larger than 10 percent of canvas height, graduation cap and growth arrow visible. One design element only at full size. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/venmo-social-feed/hero.png",
+      "generated_image_sha256": "a1929c05e3f4799d1edce653c673493ea4daa48a485cd10f876f4e26302761aa",
+      "final_image_sha256": "8b131a1f2d33337cdaa0ca80c93bd1a3cc2d710534bd8b1f17f59c431fe0da09",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/venmo-social-feed/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/venmo-social-feed/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/venmo-social-feed/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A smartphone payment feed labelled PUBLIC with emoji-decorated rows and no dollar amounts visible, with an open lock icon and small Hatch narrator in the corner.",
+      "caption": "A smartphone payment feed labelled PUBLIC with emoji-decorated rows and no dollar amounts visible, with an open lock icon and small Hatch narrator in the corner.",
+      "prompt": "Flat geometric social cover for Venmo's social feed autopsy, aspect 2400x1260. Background is warm cream #faf6f0. Centre composition (occupying the centre 70 percent of canvas): a smartphone silhouette in forest green #4a7c59 showing a simplified three-row payment feed with emoji glyphs in amber and mist, no dollar amounts visible. A single charcoal #1e211c label hovers above the phone reading PUBLIC. A soft amber #c9ad68 glow radiates from the phone edges. To the upper right, a small deep forest #244232 lock icon with an open shackle and the label AMOUNT HIDDEN. Hatch, using the canonical mascot reference at public/images/hatch/hatch-official-mascot.png, stands as a small narrator figure in the upper right corner, pointing one mitten hand toward the phone, graduation cap and growth arrow visible. Keep edge zones clear of critical details. No real Venmo UI, no dense text, no photorealism. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/venmo-social-feed/hero.png",
+      "generated_image_sha256": "a1929c05e3f4799d1edce653c673493ea4daa48a485cd10f876f4e26302761aa",
+      "final_image_sha256": "97a9b18286a57a590cd6acb3bea0788761de375a299e99ba692b7df7aab29b1a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/venmo-social-feed/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/venmo-social-feed/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/venmo-social-feed/v1"
+}

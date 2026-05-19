@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "elevenlabs",
+  "story_slug": "elevenlabs",
+  "story_title": "ElevenLabs Voice Cloning",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/elevenlabs/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/elevenlabs/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a microphone with waveform arcs representing ElevenLabs' voice synthesis capability.",
+      "caption": "Hatch beside a microphone with waveform arcs representing ElevenLabs' voice synthesis capability.",
+      "prompt": "ElevenLabs Voice Cloning | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing beside a large glowing microphone, with a waveform arc surrounding it. Floating from the waveform are small voice clips represented as audio cards. Hatch looks satisfied and calm. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/elevenlabs/hero.png",
+      "generated_image_sha256": "754103c65c5ba43db7e606a1ab330e03494627c26efdb913e714ecbb1ca8f91b",
+      "final_image_sha256": "038cebbd631648df1a6b14d5406908bd6127f33998bad72b0a494e7a8d15888f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/elevenlabs/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/elevenlabs/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/elevenlabs/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at the gap between a research lab and a public browser product, representing ElevenLabs' fast path to launch.",
+      "caption": "Hatch gesturing at the gap between a research lab and a public browser product, representing ElevenLabs' fast path to launch.",
+      "prompt": "ElevenLabs Voice Cloning | hatch-narrator: Hatch in narrator pose, gesturing toward a split timeline. On the left: \"Research Lab — 2022\" showing a dense academic paper. On the right: \"Public Browser — January 2023\" showing a simple web interface with a microphone button. The jump looks deliberate. Cream background. HackProduct wordmark watermark. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/elevenlabs/hatch-narrator.png",
+      "generated_image_sha256": "82fe677efed1a9e840b92772bab06b67e7f6a48ea9f0ca759955de19bd0836cb",
+      "final_image_sha256": "d5a57bbf36ea78a576702cb22f683734a7ddeffab3e0a67df862c52c563da482",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/elevenlabs/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/elevenlabs/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/elevenlabs/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a diagram showing voice cloning from one minute of audio and API distribution across products.",
+      "caption": "Hatch pointing at a diagram showing voice cloning from one minute of audio and API distribution across products.",
+      "prompt": "ElevenLabs Voice Cloning | failure-mechanism: Hatch in thinking pose, pointing at a two-step diagram: Step 1 shows a small audio clip being uploaded (labeled \"1 minute of audio\"). Step 2 shows a voice clone card generated from it. On the right, multiple product icons (podcast, app, video) show the clone being used everywhere via API. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/elevenlabs/failure-mechanism.png",
+      "generated_image_sha256": "1c6a9500eb0c0c90aa2adb683ddff55d6783050467ffda31ab7448b819e9c7dd",
+      "final_image_sha256": "2b9f42a275a5c0b5a10f364ad3179bfb4e8a25c208a3cea2593ce81131558804",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/elevenlabs/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/elevenlabs/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/elevenlabs/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at ElevenLabs' $80M Series B metrics and quality advantage over competitors.",
+      "caption": "Hatch pointing at ElevenLabs' $80M Series B metrics and quality advantage over competitors.",
+      "prompt": "ElevenLabs Voice Cloning | evidence-card: Hatch pointing at two floating metric cards: \"$80M Series B\" and \"January 2024.\" Behind Hatch, a simple quality comparison bar — ElevenLabs clearly higher than a generic competitor bar. Hatch expression: quietly confident. Cream background. HackProduct wordmark watermark. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/elevenlabs/evidence-card.png",
+      "generated_image_sha256": "54b037ea1fc215a3d33241f17b6934e1eaa7e549b2c212703e3d61f6ad6d8e15",
+      "final_image_sha256": "a6d78c45d8e301e82283ead153fc8f57bee13e6cb1674838f4186ab97d815c66",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/elevenlabs/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/elevenlabs/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/elevenlabs/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a quality gap chart representing ElevenLabs' competitive advantage through voice quality.",
+      "caption": "Hatch pointing at a quality gap chart representing ElevenLabs' competitive advantage through voice quality.",
+      "prompt": "ElevenLabs Voice Cloning | lesson-frame: Hatch in calm coaching pose, standing beside a simple bar chart where one bar is significantly taller than the others. The tall bar is labeled \"Quality Gap.\" Hatch points at the gap. Expression: instructive and warm. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/elevenlabs/lesson-frame.png",
+      "generated_image_sha256": "7c1337a97bb1bf73467fcd0fbfd97dbfc17b2392ea431b6eafc07ded2d55f16f",
+      "final_image_sha256": "14c6fbd924449515fcc84f77d44e8ddface31ece44e5c8030077fafb22fc9d83",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/elevenlabs/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/elevenlabs/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/elevenlabs/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a microphone with waveform, representing ElevenLabs' voice cloning product.",
+      "caption": "Hatch holding a microphone with waveform, representing ElevenLabs' voice cloning product.",
+      "prompt": "Hatch mascot holding a small glowing microphone with a tiny waveform. Expression: pleased and ready. Square composition. Cream background. HackProduct wordmark watermark. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/elevenlabs/hero.png",
+      "generated_image_sha256": "754103c65c5ba43db7e606a1ab330e03494627c26efdb913e714ecbb1ca8f91b",
+      "final_image_sha256": "20c1e75e99924a72a42c53c4e03320d3bd4a014a248449541c6b8d8b33cd2f86",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/elevenlabs/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/elevenlabs/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/elevenlabs/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside microphone with waveform, social share cover for ElevenLabs autopsy.",
+      "caption": "Hatch beside microphone with waveform, social share cover for ElevenLabs autopsy.",
+      "prompt": "Hatch beside the microphone, wide OG card format. Title text area at left: \"The Voice AI That Clones in One Minute.\" Cream background. HackProduct wordmark watermark. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/elevenlabs/hero.png",
+      "generated_image_sha256": "754103c65c5ba43db7e606a1ab330e03494627c26efdb913e714ecbb1ca8f91b",
+      "final_image_sha256": "7aeb85245bd694c87008911bd554e5b345bc476e940e37daa6de52f12d5540e7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/elevenlabs/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/elevenlabs/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/elevenlabs/v1"
+}

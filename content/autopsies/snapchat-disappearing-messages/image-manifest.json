@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "snap",
+  "story_slug": "snapchat-disappearing-messages",
+  "story_title": "Snapchat's Disappearing Messages",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/snapchat-disappearing-messages/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/snapchat-disappearing-messages/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot holding a phone with a fading photo on the screen, symbolising Snapchat's ephemeral format.",
+      "caption": "Hatch mascot holding a phone with a fading photo on the screen, symbolising Snapchat's ephemeral format.",
+      "prompt": "Snapchat's Disappearing Messages | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) holding a translucent phone with a photo that is visibly fading — the image on the screen has a gentle dissolve effect suggesting ephemerality. Cream background. Hatch's expression is curious and present. No speech bubble, no copy. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/snapchat-disappearing-messages/hero.png",
+      "generated_image_sha256": "c1204869864f2522e8f3a8d6c1773021e14f414f4440359573e5274aed3d6de4",
+      "final_image_sha256": "9993ddc70c6722193f9d5df55665665129ee4c70d4bf9fa42c4e09af13764467",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/snapchat-disappearing-messages/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/snapchat-disappearing-messages/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/snapchat-disappearing-messages/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between a permanent photo gallery and a single ephemeral photo, showing the contrast between the two approaches.",
+      "caption": "Hatch gesturing between a permanent photo gallery and a single ephemeral photo, showing the contrast between the two approaches.",
+      "prompt": "Snapchat's Disappearing Messages | hatch-narrator: Hatch in narrator pose, gesturing toward two phones side by side: on the left, a phone with a permanent photo grid (a curated gallery); on the right, a phone with a single glowing moment that is visibly fading. The contrast between the archive and the moment. Cream background, no speech bubble. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/snapchat-disappearing-messages/hatch-narrator.png",
+      "generated_image_sha256": "1790aea5497ba7f50819c6007892ac31852d2965250077f31dda492e19beb3f2",
+      "final_image_sha256": "4344b21c7258dce7d372bd21f48794c626a3b04109e3e409259e184ce2aea172",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/snapchat-disappearing-messages/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/snapchat-disappearing-messages/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/snapchat-disappearing-messages/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a diagram showing the lifecycle of a Snapchat snap from send to expiration.",
+      "caption": "Hatch examining a diagram showing the lifecycle of a Snapchat snap from send to expiration.",
+      "prompt": "Snapchat's Disappearing Messages | failure-mechanism: Hatch in a thinking pose, looking at a simple timeline diagram: send snap → recipient opens → 5-second window with a small countdown timer → photo disappears, replaced by a notification. The lifecycle of an ephemeral message made visual. Cream background. Watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/snapchat-disappearing-messages/failure-mechanism.png",
+      "generated_image_sha256": "e72db71a5137460c06680b66c63eaafc0966d0175582bafc3f7e8674779e186e",
+      "final_image_sha256": "e752c25031c4a2f66fd5ee77e4e9b394a22fba5752305c9bc4014412d21377db",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/snapchat-disappearing-messages/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/snapchat-disappearing-messages/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/snapchat-disappearing-messages/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a grid showing multiple platforms that adopted the ephemeral story format after Snapchat.",
+      "caption": "Hatch pointing at a grid showing multiple platforms that adopted the ephemeral story format after Snapchat.",
+      "prompt": "Snapchat's Disappearing Messages | evidence-card: Hatch pointing at a simple icon grid showing multiple platform logos (represented as abstract colored circles, not actual logos) that all adopted the ephemeral story format after Snapchat, arranged chronologically 2011–2017. Shows the format propagation. Cream background. Watermark bottom-right. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/snapchat-disappearing-messages/evidence-card.png",
+      "generated_image_sha256": "b6d38270b12f19157ba781f917fb46745d1fa77c7a59415d9d8a4110b46d83df",
+      "final_image_sha256": "fda70e8aa73fbd5f11d95c14ed0f5182c8b21c1288bedb8bd1b37310ecf1f841",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/snapchat-disappearing-messages/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/snapchat-disappearing-messages/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/snapchat-disappearing-messages/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm coaching pose against a cream background with a faint dissolving circle suggesting impermanence.",
+      "caption": "Hatch in a calm coaching pose against a cream background with a faint dissolving circle suggesting impermanence.",
+      "prompt": "Snapchat's Disappearing Messages | lesson-frame: Hatch in coaching pose, calm and settled, standing slightly turned. Background is cream with a very faint dissolving circle at low opacity, suggesting impermanence without being literal. No copy, no speech bubble. Considered and complete feeling. Watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/snapchat-disappearing-messages/lesson-frame.png",
+      "generated_image_sha256": "e38d83ce4e14cc307ee3e1e048195d464f54e5b410a4579a3bfc56ea3acce4a5",
+      "final_image_sha256": "743c572f2245cfc48099ac8492119687866efa1076b29e2c6de2c3c8ee0a520e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/snapchat-disappearing-messages/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/snapchat-disappearing-messages/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/snapchat-disappearing-messages/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a phone with a fading photo on the screen.",
+      "caption": "Hatch holding a phone with a fading photo on the screen.",
+      "prompt": "Hatch mascot small and recognisable, holding a phone with a fading photo. Cream background, no text. Watermark bottom-right at small scale. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/snapchat-disappearing-messages/hero.png",
+      "generated_image_sha256": "c1204869864f2522e8f3a8d6c1773021e14f414f4440359573e5274aed3d6de4",
+      "final_image_sha256": "f64ec281ef6d46017a0081c26be2826430a95adfe0228f0fcee91c20b3a6ee55",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/snapchat-disappearing-messages/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/snapchat-disappearing-messages/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/snapchat-disappearing-messages/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot holding a phone with a fading photo, HackProduct wordmark visible.",
+      "caption": "Hatch mascot holding a phone with a fading photo, HackProduct wordmark visible.",
+      "prompt": "Hero composition adapted for OG share card: Hatch holding the translucent phone with the fading photo, cream background, \"HackProduct\" wordmark visible at bottom-right. Composition tightened for 2400x1260 format. No additional copy.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/snapchat-disappearing-messages/hero.png",
+      "generated_image_sha256": "c1204869864f2522e8f3a8d6c1773021e14f414f4440359573e5274aed3d6de4",
+      "final_image_sha256": "a1cc6b36b6ec0e11018b6f69376a089ef7c74c44735931feb461789208df9f93",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/snapchat-disappearing-messages/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/snapchat-disappearing-messages/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/snapchat-disappearing-messages/v1"
+}

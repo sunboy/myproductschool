@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Raleway, Literata } from "next/font/google";
+import { Raleway, Literata, Geist } from "next/font/google";
 import { AnalyticsGate } from "@/components/legal/AnalyticsGate";
 import { CookieBanner } from "@/components/legal/CookieBanner";
 import { MotionProvider } from "@/components/motion";
@@ -18,6 +18,12 @@ const literata = Literata({
   variable: "--font-literata",
   subsets: ["latin"],
   weight: ["400", "600", "700", "800"],
+});
+
+const geist = Geist({
+  variable: "--font-geist",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -96,7 +102,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${raleway.variable} ${literata.variable} h-full antialiased`}>
+    <html lang="en" className={`${raleway.variable} ${literata.variable} ${geist.variable} h-full antialiased`}>
       <head>
         {/* Material Symbols Outlined icon font */}
         <link

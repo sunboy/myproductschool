@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "meta",
+  "story_slug": "whatsapp-status",
+  "story_title": "WhatsApp Status",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/whatsapp-status/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/whatsapp-status/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside two identical story format UI frames showing the same format at different audience scales",
+      "caption": "Hatch beside two identical story format UI frames showing the same format at different audience scales",
+      "prompt": "WhatsApp Status | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) standing next to two identical story format UI frames — one labeled with an older year and a smaller audience icon, one labeled with a newer year and a much larger audience icon. The format is identical; the scale is different. Cream background, no text overlays. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/whatsapp-status/hero.png",
+      "generated_image_sha256": "f09179bb42cd810ab65abfa6770c1ca1ee4c94b0db02f0bfdcb3b5d02b0b963c",
+      "final_image_sha256": "c5e50f7587f340c50cf452095e48b2f11931138fc472660258c97ab3b25b3169",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-status/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-status/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/whatsapp-status/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between an innovative small team and a massive network deploying the same format at different scales",
+      "caption": "Hatch gesturing between an innovative small team and a massive network deploying the same format at different scales",
+      "prompt": "WhatsApp Status | hatch-narrator: Hatch in narrator pose, gesturing toward a comparison: on one side a small but innovative team launching a new format to a modest audience; on the other side a massive established network with the same format reaching its entire existing user base. The scene conveys the asymmetry between invention and distribution. Cream background, no speech bubble. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/whatsapp-status/hatch-narrator.png",
+      "generated_image_sha256": "fce7d3a6dbd6ca9f609484437621ed539a101fd160a72579d191f9d5d509358d",
+      "final_image_sha256": "4c11ef14b1ee6479b59ee4530f82b4e20f9079807e26e591905b3a777cb62ecf",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-status/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-status/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/whatsapp-status/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch observing a bar chart comparing the innovator's user count to the distributor's nine-month count",
+      "caption": "Hatch observing a bar chart comparing the innovator's user count to the distributor's nine-month count",
+      "prompt": "WhatsApp Status | failure-mechanism: Hatch in a thinking pose, observing a simple bar chart: one bar labeled with a smaller count (the innovator's audience), one bar labeled with a much larger count (the distributor's audience after nine months). The bars are dramatically different heights. The format label is the same. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/whatsapp-status/failure-mechanism.png",
+      "generated_image_sha256": "32d0512c20ae49ec68382d7cc85cc4362b114dcca1ecf474d1e1390bf00b3061",
+      "final_image_sha256": "76db52b86de674cf02f5bf2e06221bb7aa60bdac9b16ab6159063b3a21cadbe6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-status/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-status/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/whatsapp-status/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a comparison showing WhatsApp Status daily active users exceeding Snapchat's total user count",
+      "caption": "Hatch pointing at a comparison showing WhatsApp Status daily active users exceeding Snapchat's total user count",
+      "prompt": "WhatsApp Status | evidence-card: Hatch pointing at a timeline showing two data points: Snapchat Stories total users versus WhatsApp Status daily active users at the nine-month mark after Status launch. The WhatsApp number is larger. Simple, clean comparison. Cream background. Watermark same. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/whatsapp-status/evidence-card.png",
+      "generated_image_sha256": "126f7c7daa640433152f2f3b5d82a879fdbd8d36fc52966b2c3c0b7ac42463c6",
+      "final_image_sha256": "b3b7b33b326de55838d562b48622543eaf5e97655956225855638fa8948bd15a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-status/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-status/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/whatsapp-status/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a diagram showing a small invention connected to a large distribution network",
+      "caption": "Hatch beside a diagram showing a small invention connected to a large distribution network",
+      "prompt": "WhatsApp Status | lesson-frame: Hatch in a coaching pose, calm, standing beside a simple diagram: an invention (a lightbulb) on one side connected by an arrow to a distribution network (a web of people icons) on the other. The network is much larger than the lightbulb. The lesson is about the relative size of the two advantages. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/whatsapp-status/lesson-frame.png",
+      "generated_image_sha256": "fd41988eb4e93ba4c41b77bc74d725d5c9b163631f5be82fab7e015736a8df1a",
+      "final_image_sha256": "1ee76c0699b5b6f3d114953e95a9e5d6ce021b0c628db175758ef2c278da51f4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-status/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-status/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/whatsapp-status/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Small Hatch holding a miniature story format circle representing WhatsApp Status",
+      "caption": "Small Hatch holding a miniature story format circle representing WhatsApp Status",
+      "prompt": "Small, recognisable Hatch holding a miniature story format frame — a circle with a colorful arc indicating a status. High-contrast, readable at small size. Cream background. Watermark same. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/whatsapp-status/hero.png",
+      "generated_image_sha256": "f09179bb42cd810ab65abfa6770c1ca1ee4c94b0db02f0bfdcb3b5d02b0b963c",
+      "final_image_sha256": "03301ebdbe8f0116e13705ff0860d7d4a469431bdd88d29ba7f9b1bde62cce4c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-status/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-status/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/whatsapp-status/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside two identical story format frames at different audience scales",
+      "caption": "Hatch beside two identical story format frames at different audience scales",
+      "prompt": "Hatch in hero pose to the left of two story format frames side by side — same design, dramatically different audience scale indicators. Wide OG card format. No text. Cream background, HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/whatsapp-status/hero.png",
+      "generated_image_sha256": "f09179bb42cd810ab65abfa6770c1ca1ee4c94b0db02f0bfdcb3b5d02b0b963c",
+      "final_image_sha256": "c186656a457362a367c4741807873a63931c07160e3c3e39974190e5523cf752",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-status/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-status/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/whatsapp-status/v1"
+}

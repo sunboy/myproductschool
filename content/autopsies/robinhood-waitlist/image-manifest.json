@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "robinhood",
+  "story_slug": "robinhood-waitlist",
+  "story_title": "Robinhood Waitlist",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/robinhood-waitlist/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/robinhood-waitlist/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A tall numbered queue on cream background, with one slot highlighted in forest green at the top and a forking line showing a referral splitting into two new positions, with Hatch pointing at the top slot.",
+      "caption": "The queue was the product.",
+      "prompt": "Robinhood Waitlist | hero: Create a flat geometric HackProduct autopsy hero illustration for Robinhood's 2013 waitlist mechanism. Canvas role: hero, aspect 2400x1350. On warm cream #faf6f0, draw a tall vertical queue of simple charcoal #1e211c numbered slots descending from top to bottom, the topmost slot highlighted in forest green #4a7c59 with a soft amber #c9ad68 pulse. From one slot in the middle, draw a single thin deep forest #244232 line forking outward into two new slots below it, each with mist #dfe6dc fill, representing a referral splitting into two positions. To the right of the queue, show a simple phone outline in mist with one forest-green rectangle representing the app not yet available. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right, pointing one mitten hand at the highlighted top slot. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No real app screenshots, no logos, no human faces, no photorealism. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/robinhood-waitlist/hero.png",
+      "generated_image_sha256": "4927c0a940c42bd71d7d91e41bcfb9047e7e6d74d9b32229def838bf9a4667e7",
+      "final_image_sha256": "8ad82ef701fd326915853080f11e929e8b7fc0a6d9f355e11de74ad2fc73e991",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/robinhood-waitlist/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/robinhood-waitlist/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/robinhood-waitlist/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a desk with a laptop showing a landing page and a rising bar chart, with a stack of numbered papers representing the queue.",
+      "caption": "Hatch standing beside a desk with a laptop showing a landing page and a rising bar chart, with a stack of numbered papers representing the queue.",
+      "prompt": "Robinhood Waitlist | hatch-narrator: Flat geometric scene illustration for Robinhood's founding moment in late 2013, aspect 1600x1600. Show a warm cream #faf6f0 room with a low forest-green #4a7c59 desk, a single laptop screen showing two abstract rectangles side by side, one labelled LANDING PAGE in charcoal #1e211c monospace and one showing a rising amber #705c30 bar chart. On the desk, place a small stack of paper sheets with simple number labels descending (1, 2, 3...) to represent the queue concept. Use soft amber #c9ad68 for the lamp glow and mist #dfe6dc for the wall. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing beside the desk in a narrator pose, one mitten hand resting on the desk surface, looking at the laptop. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no real screenshots, no logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/robinhood-waitlist/hatch-narrator.png",
+      "generated_image_sha256": "fd7a330d5ae8b1d3ad80271a4e8933ecc196a3fd46d6c5c213e08e2f17748620",
+      "final_image_sha256": "15a5b6248814591b4678df5b75751fd0cb88be2fad1be7a19f052058f9ac9077",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/robinhood-waitlist/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/robinhood-waitlist/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/robinhood-waitlist/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three-stage mechanism from sign-up form to position card with referral link to an upward-moving queue slot, with Hatch pointing at the referral link in stage two.",
+      "caption": "Three-stage mechanism from sign-up form to position card with referral link to an upward-moving queue slot, with Hatch pointing at the referral link in stage two.",
+      "prompt": "Robinhood Waitlist | failure-mechanism: Flat geometric mechanism diagram for Robinhood's referral queue, aspect 1800x1200. Lay out three vertical stages from left to right on cream #faf6f0. Stage one on the left: a simple form outline with one email field and a large forest-green #4a7c59 button labelled SIGN UP. Stage two in the centre: a thank-you card outline showing a large bold number in charcoal #1e211c at top (YOUR POSITION) and a smaller number below it (PEOPLE BEHIND YOU), with a soft amber #c9ad68 link underline labelled SHARE YOUR LINK and three small icon squares for email, Twitter, and a generic share. Stage three on the right: a vertical queue strip in mist #dfe6dc with three slots, the target user's slot moving visibly upward marked with a deep forest #244232 arrow. Connect stages with thin charcoal lines. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, pointing one mitten hand at stage two's referral link. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake UI detail beyond labelled shapes, no real logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/robinhood-waitlist/failure-mechanism.png",
+      "generated_image_sha256": "976f5f2ccf8dc76017da59bf15d829ca408562cc99f71721fdf8df1292e0dbd0",
+      "final_image_sha256": "46dea71d1fc0c826fcad490285a2bae92a544387ffbdfc8a2c511153b11c745b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/robinhood-waitlist/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/robinhood-waitlist/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/robinhood-waitlist/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three ascending bars labelled Day 1 (10K), Week 1 (50K), and Year 1 (1M), with a referral loop arc between the second and third bars, and Hatch pointing at the tallest bar.",
+      "caption": "Three ascending bars labelled Day 1 (10K), Week 1 (50K), and Year 1 (1M), with a referral loop arc between the second and third bars, and Hatch pointing at the tallest bar.",
+      "prompt": "Robinhood Waitlist | evidence-card: Flat geometric evidence card showing Robinhood's waitlist growth timeline in three columns, aspect 1600x1000. Background is warm cream #faf6f0. Draw three side-by-side vertical bars in increasing heights from left to right. First bar in mist #dfe6dc, small, labelled DAY 1 with a charcoal #1e211c cap label 10K. Second bar in soft amber #c9ad68, medium, labelled WEEK 1 with cap label 50K. Third bar in forest green #4a7c59, tall, labelled YEAR 1 with cap label 1M. Below all three, a thin baseline in charcoal marks zero. Between the second and third bar, draw a small deep forest #244232 arrow arcing over the gap labelled REFERRAL LOOP. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing to the right of the tallest bar in a pointing pose, one mitten hand at the bar's cap. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No dense text, no fake charts. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/robinhood-waitlist/evidence-card.png",
+      "generated_image_sha256": "b62a7a349a11ea121e45369753076eb7783e5dba605279bd438bcb12e4cb99d0",
+      "final_image_sha256": "fb4d7da71f6abe840fc5deb526be3cc97227eda93799951f4c104dbf15be5b6c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/robinhood-waitlist/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/robinhood-waitlist/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/robinhood-waitlist/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A deep forest wall with a forest-green doorway opening, a soft amber queue line snaking through it, and Hatch coaching from the left beside the head of the queue.",
+      "caption": "A deep forest wall with a forest-green doorway opening, a soft amber queue line snaking through it, and Hatch coaching from the left beside the head of the queue.",
+      "prompt": "Robinhood Waitlist | lesson-frame: Flat geometric lesson illustration for the principle that a constraint is a product surface, aspect 1800x1200. Background is warm cream #faf6f0. In the centre, draw a large deep forest #244232 wall rectangle spanning most of the vertical space. In the wall, cut a single forest-green #4a7c59 doorway-shaped opening. Through the opening, show a soft amber #c9ad68 queue line of five simple rounded circles (representing people) snaking back toward the left. Above the doorway, draw a small charcoal #1e211c sign with three horizontal label lines representing the queue number display. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left of the wall, standing next to the head of the queue line, one mitten hand raised toward the doorway. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no photorealism, no logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/robinhood-waitlist/lesson-frame.png",
+      "generated_image_sha256": "2ac2cfe3faed7693c1e70dc6c4e74640efef8d4beeeef8d0a865303e3ccca1c3",
+      "final_image_sha256": "82c9674e1cf5d71fe4a295fc6b4a2838d72d6dd458d40e8f22032dbcd563f250",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/robinhood-waitlist/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/robinhood-waitlist/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/robinhood-waitlist/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A forest-green queue position card with a soft amber referral line below it branching into two new mist rectangles, with a tiny Hatch mark in the lower left.",
+      "caption": "A forest-green queue position card with a soft amber referral line below it branching into two new mist rectangles, with a tiny Hatch mark in the lower left.",
+      "prompt": "Flat geometric thumbnail for the Robinhood waitlist story, aspect 1200x900. On warm cream #faf6f0, render one bold focal shape: a forest-green #4a7c59 rectangle with a large bold number inside it in cream text representing a queue position. Below the number, draw a single soft amber #c9ad68 line representing the referral link. From the line, draw two thin deep forest #244232 arrows branching outward and downward, each ending in a smaller mist #dfe6dc rectangle to suggest new signups joining. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower left, no larger than 10 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the image legible at small size with one strong focal shape. No labels, no screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/robinhood-waitlist/hero.png",
+      "generated_image_sha256": "4927c0a940c42bd71d7d91e41bcfb9047e7e6d74d9b32229def838bf9a4667e7",
+      "final_image_sha256": "300ed6338641191cbf066f01f280beb4bff71d51ed0c7dace7745ce7c8ab8b57",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/robinhood-waitlist/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/robinhood-waitlist/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/robinhood-waitlist/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover showing a vertical queue with a highlighted top slot and a soft amber fork branching into two new referral slots, with small Hatch narrator in the upper right.",
+      "caption": "A wide cover showing a vertical queue with a highlighted top slot and a soft amber fork branching into two new referral slots, with small Hatch narrator in the upper right.",
+      "prompt": "Flat geometric social cover image for the Robinhood waitlist story, aspect 2400x1260. On warm cream #faf6f0, place a central composition in the middle 70 percent of the canvas: a tall vertical queue of five charcoal #1e211c numbered slots on the left, with the topmost slot highlighted in forest green #4a7c59. From the topmost slot, draw a soft amber #c9ad68 fork line branching into two new slots to the right of the queue, labelled with small charcoal numbers. Between the queue and the fork, use a single short charcoal label reading REFERRAL MOVES YOU UP. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand at the fork. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no real screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/robinhood-waitlist/hero.png",
+      "generated_image_sha256": "4927c0a940c42bd71d7d91e41bcfb9047e7e6d74d9b32229def838bf9a4667e7",
+      "final_image_sha256": "e32c74c0d1d782492d3eac2989613d2a18bcc322796ed86406847ad6f9531cb1",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/robinhood-waitlist/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/robinhood-waitlist/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/robinhood-waitlist/v1"
+}

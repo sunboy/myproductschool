@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "thehustle",
+  "story_slug": "the-hustle",
+  "story_title": "The Hustle Newsletter",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/the-hustle/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/the-hustle/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a bold email envelope representing The Hustle's opinionated newsletter approach.",
+      "caption": "Hatch holding a bold email envelope representing The Hustle's opinionated newsletter approach.",
+      "prompt": "The Hustle Newsletter | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) holding an oversized email envelope with a bold newspaper-headline style subject line visible. Hatch's expression is confident and slightly irreverent, cap tilted at an angle. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/the-hustle/hero.png",
+      "generated_image_sha256": "2b3e906114453376191fdc14a8f6695d822988cb0c9ecc603593138079092e17",
+      "final_image_sha256": "9ed50aaacae220bac4e552df4f05be83d1adb327020e395aed6c85b56772de33",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/the-hustle/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/the-hustle/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/the-hustle/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch showing two contrasting newsletter styles — hedged trade press versus The Hustle's blunt approach.",
+      "caption": "Hatch showing two contrasting newsletter styles — hedged trade press versus The Hustle's blunt approach.",
+      "prompt": "The Hustle Newsletter | hatch-narrator: Hatch in narrator pose, gesturing at two contrasting newspaper-style front pages side by side: one filled with careful hedged language and unnamed sources (labeled \"Trade press, 2016\"), one with bold specific numbers and a clear opinion (labeled \"The Hustle\"). Cream background, no speech. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/the-hustle/hatch-narrator.png",
+      "generated_image_sha256": "79fa5dffff5355008039e9d71b4a9588c8f1f22565d1b9f7761debea5f4b8310",
+      "final_image_sha256": "76d0b2f13d5561f3ae8345daf7dfe07aeb8d2ed6e4ed8dc75f24c70b0c5fdbf7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/the-hustle/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/the-hustle/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/the-hustle/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a forwarding chain diagram showing how The Hustle spread through word of mouth.",
+      "caption": "Hatch examining a forwarding chain diagram showing how The Hustle spread through word of mouth.",
+      "prompt": "The Hustle Newsletter | failure-mechanism: Hatch in thinking pose, looking at a diagram showing an email being opened, then forwarded, then forwarded again across a network of stick figures. The forwarding chain is the visual center. Simple arrows, cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/the-hustle/failure-mechanism.png",
+      "generated_image_sha256": "cd98c1c8ef8d06c804f9105aae6e38e23c1d896f1bc43aaeac47b7c62dfddff5",
+      "final_image_sha256": "f9aed24c4920eb8caf0cdf26ee457f4379eb6ff057b1d4777a84db3b54e00afe",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/the-hustle/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/the-hustle/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/the-hustle/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a subscriber growth chart from 2016 to 2021, ending with the HubSpot acquisition.",
+      "caption": "Hatch pointing at a subscriber growth chart from 2016 to 2021, ending with the HubSpot acquisition.",
+      "prompt": "The Hustle Newsletter | evidence-card: Hatch pointing at a simple line chart showing subscriber growth from 0 to 1.5 million between 2016 and 2021, with a small acquisition label at the top right. Minimal style, cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/the-hustle/evidence-card.png",
+      "generated_image_sha256": "9b46fa639f1a61b114e3d05d6c4615d24b327b09b01222e91d67e48fa42aea59",
+      "final_image_sha256": "318a384bc42b867cb7844c2f6157a5c5f1b6b9d5506778558c4ee543df246d13",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/the-hustle/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/the-hustle/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/the-hustle/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a megaphone projecting a clear opinion into a sea of grey noise.",
+      "caption": "Hatch beside a megaphone projecting a clear opinion into a sea of grey noise.",
+      "prompt": "The Hustle Newsletter | lesson-frame: Hatch in calm coaching pose, standing beside a large megaphone that has a specific, bold opinion coming out of it rather than generic noise. The contrast with the surrounding grey background noise is visual. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/the-hustle/lesson-frame.png",
+      "generated_image_sha256": "21e72dbc17225f9920aa34db5b422f279652c300844c84af247e1792477a12eb",
+      "final_image_sha256": "5401af91c2b4045aed808498811b882f283242ba531419a64bb656c30fbd5c6c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/the-hustle/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/the-hustle/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/the-hustle/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small bold email envelope, thumbnail version.",
+      "caption": "Hatch holding a small bold email envelope, thumbnail version.",
+      "prompt": "Hatch mascot small and recognizable, holding a tiny bold email envelope. Cream background, no text. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/the-hustle/hero.png",
+      "generated_image_sha256": "2b3e906114453376191fdc14a8f6695d822988cb0c9ecc603593138079092e17",
+      "final_image_sha256": "b3204e289a74ce60bd0ac042bbdcde76b802c347473a5e9e23c8edebafd57798",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/the-hustle/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/the-hustle/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/the-hustle/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a bold email envelope for social sharing card.",
+      "caption": "Hatch holding a bold email envelope for social sharing card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG card: holding the oversized bold email envelope. Title text area below. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/the-hustle/hero.png",
+      "generated_image_sha256": "2b3e906114453376191fdc14a8f6695d822988cb0c9ecc603593138079092e17",
+      "final_image_sha256": "c87450268b02b2270db921e613dba0cffb70f47f8e31ff884a90680a0724421c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/the-hustle/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/the-hustle/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/the-hustle/v1"
+}

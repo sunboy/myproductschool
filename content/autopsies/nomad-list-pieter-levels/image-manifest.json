@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "nomadlist",
+  "story_slug": "nomad-list-pieter-levels",
+  "story_title": "Nomad List and the Tweet That Launched a Product",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/nomad-list-pieter-levels/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/nomad-list-pieter-levels/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch on a world map holding a laptop open to a city spreadsheet on a cream background.",
+      "caption": "Hatch on a world map holding a laptop open to a city spreadsheet on a cream background.",
+      "prompt": "Nomad List and the Tweet That Launched a Product | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) sitting cross-legged on a world map, holding a laptop open to a colorful Google Spreadsheet with city names and numbers. Expression engaged, slightly surprised at the response. Cream background. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/nomad-list-pieter-levels/hero.png",
+      "generated_image_sha256": "7fa80a1d3fd57982de728efa15caa5cf8132de784a472e19c29f8c277f652e3b",
+      "final_image_sha256": "d4f9ec63105c19dce8a8e5c05b11c79771f0b97b9210dce8fa14c68b8f7159af",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/nomad-list-pieter-levels/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/nomad-list-pieter-levels/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/nomad-list-pieter-levels/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a laptop showing a viral tweet linking to a city spreadsheet.",
+      "caption": "Hatch pointing at a laptop showing a viral tweet linking to a city spreadsheet.",
+      "prompt": "Nomad List and the Tweet That Launched a Product | hatch-narrator: Hatch in narrator pose, gesturing at a laptop screen showing a tweet with thousands of retweets and a simple Google Spreadsheet link. The scene reads as: the moment a personal research document became public. Cream background. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/nomad-list-pieter-levels/hatch-narrator.png",
+      "generated_image_sha256": "c547a63c5eaa971b471ea480ad8cb2f1af4d719d79330e7c8a69ff43df2d6112",
+      "final_image_sha256": "b47ee3b1dead54b04e61a0e14ddb8f8dcc1cafce5883fd665b65dd1c67dd807c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/nomad-list-pieter-levels/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/nomad-list-pieter-levels/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/nomad-list-pieter-levels/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a community feedback loop diagram for Nomad List's data quality cycle.",
+      "caption": "Hatch examining a community feedback loop diagram for Nomad List's data quality cycle.",
+      "prompt": "Nomad List and the Tweet That Launched a Product | failure-mechanism: Hatch in thinking pose, looking at a diagram showing a community feedback loop. Step 1: \"Tweet the spreadsheet.\" Step 2: \"Community finds errors.\" Step 3: \"Errors corrected publicly.\" Step 4: \"Community trusts the data more.\" Arrow from Step 4 back to Step 2, forming a loop. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/nomad-list-pieter-levels/failure-mechanism.png",
+      "generated_image_sha256": "561f91e5875ae9ff64676b0fbf5ce2381e23cb2954ae8430c55290ce27a7a3a9",
+      "final_image_sha256": "35d3738536d57b9be345f222d8483579a244cd08edfa85ad8ea90340d0012acb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/nomad-list-pieter-levels/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/nomad-list-pieter-levels/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/nomad-list-pieter-levels/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Nomad List's growth timeline from spreadsheet to $1M ARR.",
+      "caption": "Hatch pointing at Nomad List's growth timeline from spreadsheet to $1M ARR.",
+      "prompt": "Nomad List and the Tweet That Launched a Product | evidence-card: Hatch pointing at a simple timeline chart showing Nomad List's growth from a spreadsheet in July 2014 to $1M annual run rate in 2016. Key milestones marked: Tweet, HN, TechCrunch, Paid Membership, $1M ARR. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/nomad-list-pieter-levels/evidence-card.png",
+      "generated_image_sha256": "6ef30935d6a0ee56545c69b27521f737cce691cf7cb6bb6d2df1b17391e52d2e",
+      "final_image_sha256": "b725a71a44703ec26c9746b0e2ed20cee2c64ea158a842f03068b11003eec004",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/nomad-list-pieter-levels/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/nomad-list-pieter-levels/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/nomad-list-pieter-levels/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a before/after showing polished-empty versus rough-collaborative product launches.",
+      "caption": "Hatch beside a before/after showing polished-empty versus rough-collaborative product launches.",
+      "prompt": "Nomad List and the Tweet That Launched a Product | lesson-frame: Hatch in coaching pose, calm, standing beside a before/after comparison. Left: a polished, empty product labeled \"Launch when ready.\" Right: a rough spreadsheet surrounded by community speech bubbles with corrections, labeled \"Launch now, build together.\" Hatch's body language clearly favors the right. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/nomad-list-pieter-levels/lesson-frame.png",
+      "generated_image_sha256": "804fd22de9990de5fed041d38d50bafa4e19cb91ced0c9f6b0b0fd2654d513a3",
+      "final_image_sha256": "948c6319f5350cf059a7a29aa94d1dcc8749001f02de81749a37f251f5e9fadf",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/nomad-list-pieter-levels/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/nomad-list-pieter-levels/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/nomad-list-pieter-levels/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small world map on a cream background.",
+      "caption": "Hatch holding a small world map on a cream background.",
+      "prompt": "Hatch small and recognisable, holding a tiny world map. Expression curious. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/nomad-list-pieter-levels/hero.png",
+      "generated_image_sha256": "7fa80a1d3fd57982de728efa15caa5cf8132de784a472e19c29f8c277f652e3b",
+      "final_image_sha256": "de15d0ee270fa33575b1d9510c053266c2ddb52fa559961071fbb966d574aa17",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/nomad-list-pieter-levels/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/nomad-list-pieter-levels/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/nomad-list-pieter-levels/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch with a giant city spreadsheet behind it for Nomad List social share card.",
+      "caption": "Hatch with a giant city spreadsheet behind it for Nomad List social share card.",
+      "prompt": "Hatch hero pose adapted for OG share card. Hatch in center with a giant spreadsheet grid behind it, city names visible. Expression warm and slightly conspiratorial, as if sharing a secret. Text area left clear for title overlay. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/nomad-list-pieter-levels/hero.png",
+      "generated_image_sha256": "7fa80a1d3fd57982de728efa15caa5cf8132de784a472e19c29f8c277f652e3b",
+      "final_image_sha256": "47009909ec1d3c109368898bd2bf2f3c190c06522a13be6be77facfc8d81bb66",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/nomad-list-pieter-levels/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/nomad-list-pieter-levels/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/nomad-list-pieter-levels/v1"
+}

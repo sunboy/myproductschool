@@ -1113,8 +1113,16 @@ export interface AarrrStageContent {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+export interface StoryImageAsset {
+  src: string
+  alt: string
+  caption?: string
+  width?: number
+  height?: number
+}
+
 export type StorySection =
-  | { id: string; layout: 'fullbleed_cover'; content: { label: string; headline: string; subline: string; meta: string } }
+  | { id: string; layout: 'fullbleed_cover'; content: { label: string; headline: string; subline: string; meta: string; backdropWord?: string; image?: StoryImageAsset } }
   | { id: string; layout: 'split_panel'; content: { label: string; title: string; paragraphs: string[]; textSide: 'left' | 'right' }; illustration: IllustrationConfig }
   | { id: string; layout: 'fullbleed_stat'; content: { stat: string; context: string; source?: string } }
   | { id: string; layout: 'before_after'; content: { title: string; before: { label: string; items: string[]; summary?: string }; after: { label: string; items: string[]; summary?: string } } }
@@ -1122,6 +1130,10 @@ export type StorySection =
   | { id: string; layout: 'fullbleed_cta'; content: { headline: string; subline?: string; buttonText: string; targetPath: string } }
   | { id: string; layout: 'quote'; content: { quote: string; attribution: string; context?: string } }
   | { id: string; layout: 'timeline'; content: { title: string; events: Array<{ date: string; label: string; description: string; type: string }> } }
+  | { id: string; layout: 'quick_read'; content: { label: string; title: string; cards: Array<{ eyebrow: string; title: string; body: string; confidence: string; sourceIds: string[] }> } }
+  | { id: string; layout: 'image_panel'; content: { label: string; title: string; paragraphs: string[]; textSide: 'left' | 'right'; image: StoryImageAsset } }
+  | { id: string; layout: 'evidence_ledger'; content: { label: string; title: string; summary: string; rows: Array<{ label: string; value: string; confidence: string; sourceIds: string[] }> } }
+  | { id: string; layout: 'source_pack'; content: { label: string; title: string; summary: string; sources: Array<{ id: string; title: string; publisher: string; tier: string; url: string; supports: string }>; correctionSubject: string } }
   | { id: string; layout: 'aarrr_stage'; content: AarrrStageContent }
   | { id: string; layout: 'aarrr_hero'; content: { product_name: string; tagline: string; meta: string; accent_color: string } }
   | { id: string; layout: 'aarrr_closing'; content: { headline: string; summary: string; cta_text: string; cta_path: string } }

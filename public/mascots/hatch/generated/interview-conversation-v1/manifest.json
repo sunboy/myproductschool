@@ -1,0 +1,25 @@
+{
+  "id": "hatch-interview-conversation-v1",
+  "displayName": "Hatch Interview Conversation",
+  "description": "Two transparent animated WebP states for switching Hatch between listening and speaking during interview turns.",
+  "cellWidth": 192,
+  "cellHeight": 208,
+  "states": {
+    "interview-listening": {
+      "webp": "/mascots/hatch/generated/interview-conversation-v1/listening.webp",
+      "gif": "/mascots/hatch/generated/interview-conversation-v1/listening.gif",
+      "strip": "/mascots/hatch/generated/interview-conversation-v1/listening-strip.webp",
+      "frames": 8,
+      "durationsMs": [600, 520, 130, 150, 620, 700, 600, 680],
+      "loopDurationMs": 4000
+    },
+    "interview-speaking": {
+      "webp": "/mascots/hatch/generated/interview-conversation-v1/speaking.webp",
+      "gif": "/mascots/hatch/generated/interview-conversation-v1/speaking.gif",
+      "strip": "/mascots/hatch/generated/interview-conversation-v1/speaking-strip.webp",
+      "frames": 8,
+      "durationsMs": [260, 170, 160, 170, 260, 170, 180, 280],
+      "loopDurationMs": 1650
+    }
+  }
+}

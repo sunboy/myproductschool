@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "meta",
+  "story_slug": "instagram-filters",
+  "story_title": "Instagram Filters and the Burbn Pivot",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/instagram-filters/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/instagram-filters/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cluttered column of crossed-out feature labels on the left transitions via a green arrow to a single filtered photo square containing a dog silhouette while Hatch points at the square.",
+      "caption": "Pivot by subtraction, then add one feature that removes one objection.",
+      "prompt": "Instagram Filters and the Burbn Pivot | hero: A flat geometric HackProduct autopsy hero illustration for Instagram filters and the Burbn pivot. Canvas role hero at aspect 2400x1350. Show a vertical split. On the left half a cluttered cream column containing six small overlapping shapes labelled in tiny charcoal type with words like check in, points, badges, photo, friends, places, rendered in mist with a faint diagonal soft amber strike-through line cutting across the whole column. On the right half a single forest green square frame containing one stylised dog silhouette with a soft amber filter wash on top to evoke the X-Pro II look. A thick forest green arrow runs from left to right between the two halves. Hatch as a small narrator at the lower right, about 14 percent of canvas height, in narrator pose pointing at the right square, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream background. Leave quiet space in the upper left for title overlay. No human faces, no fake Instagram UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/instagram-filters/hero.png",
+      "generated_image_sha256": "66c721b7d696a354d766d16536ee6c04ae5c58b70297b898c918d427c44e26f1",
+      "final_image_sha256": "3feef9552d84073dbc5f54c811c83c8e96ec5e5df6228f129a2c9f10ad25836d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-filters/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-filters/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/instagram-filters/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A laptop on a hotel desk shows three small filter previews while a small dog silhouette walks past at the canvas edge and Hatch gestures from beside the desk.",
+      "caption": "A laptop on a hotel desk shows three small filter previews while a small dog silhouette walks past at the canvas edge and Hatch gestures from beside the desk.",
+      "prompt": "Instagram Filters and the Burbn Pivot | hatch-narrator: A flat geometric HackProduct illustration of a hotel desk in Mexico, late evening. Canvas role hatch-narrator at aspect 1600x1600. Show an open laptop in deep forest with a glowing cream rectangle on the screen displaying three small colour-graded preview squares stacked vertically, a window in the background with mist coloured curtains, a small soft amber lamp on the desk, and a tiny outline of a dog silhouette walking by the lower left edge of the canvas. The background is cream with a faint mist diagonal. Hatch at center right, about 30 percent of canvas height, in narrator pose with a hand toward the laptop screen, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no real Instagram UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/instagram-filters/hatch-narrator.png",
+      "generated_image_sha256": "b78b5f9097cb7f83cfc212ca9cbba42e90743cc0387c0da0e008bbf893f98457",
+      "final_image_sha256": "037ecbca1cc4c25c60aad9d46c8f4600cb97b7daa28d45aee78520cbd7ee679e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-filters/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-filters/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/instagram-filters/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three numbered square frames show a raw image, a filtered image, and a published image with checkmark while Hatch points at the middle filter step.",
+      "caption": "Three numbered square frames show a raw image, a filtered image, and a published image with checkmark while Hatch points at the middle filter step.",
+      "prompt": "Instagram Filters and the Burbn Pivot | failure-mechanism: A flat geometric HackProduct mechanism illustration of the three-tap publish flow. Canvas role failure-mechanism at aspect 1800x1200. Show three forest green square frames arranged in a horizontal sequence labelled in small charcoal type as one, two, three. The leftmost square contains a small raw photo silhouette in mist. The middle square contains the same silhouette with a soft amber filter wash applied. The rightmost square contains the same image with a small forest green tick at the top right corner to suggest published. Thick forest green arrows connect the three squares in sequence. Cream background, deep forest linework. Hatch in thinking pose at the lower left, about 18 percent of canvas height, pointing at the middle square, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no fake Instagram UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/instagram-filters/failure-mechanism.png",
+      "generated_image_sha256": "ee17da61306577cb816fdacde00c0a0ec5982cce83cc90fb45f9ad0ff0b15dd4",
+      "final_image_sha256": "710a59def25bdf6955e8bd5134689e446c6ec981c68d251529c75fbbcbc8e571",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-filters/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-filters/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/instagram-filters/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A green ascending step chart labelled Day 1 25K, Week 1 100K, December 1M sits in front of a faint photo frame while Hatch points at the tallest step.",
+      "caption": "A green ascending step chart labelled Day 1 25K, Week 1 100K, December 1M sits in front of a faint photo frame while Hatch points at the tallest step.",
+      "prompt": "Instagram Filters and the Burbn Pivot | evidence-card: A flat geometric HackProduct evidence card visualising the explosive launch week. Canvas role evidence-card at aspect 1600x1000. Show a forest green ascending step chart with three steps, each step taller than the one before it, labelled in small charcoal type as Day 1 25K, Week 1 100K, December 1M. The chart sits on a cream background with a soft amber baseline. Behind the chart, a faint mist coloured square frame to suggest a single photo holding the data. Hatch in pointing pose at the lower right, about 18 percent of canvas height, with one mitten hand toward the tallest step. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use one short label per step and one visible artifact shape only. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/instagram-filters/evidence-card.png",
+      "generated_image_sha256": "7dd387b3ed4a4e3bd8d12261ac81de24b76df984bdcb8dc5b6dcc734b41fbf89",
+      "final_image_sha256": "27c3cf50dcfdfa79593bfa10b0b355fec10d78fd9682769a7e4082ee9fe1e676",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-filters/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-filters/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/instagram-filters/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Five small crossed-out rectangles on the left transition to a single green plus sign and one framed square on the right while Hatch watches in coaching pose.",
+      "caption": "Five small crossed-out rectangles on the left transition to a single green plus sign and one framed square on the right while Hatch watches in coaching pose.",
+      "prompt": "Instagram Filters and the Burbn Pivot | lesson-frame: A flat geometric HackProduct lesson illustration. Canvas role lesson-frame at aspect 1800x1200. Show a vertical stack of five small mist coloured rectangles on the left with charcoal strike-through lines across each one. To the right of the stack, a single bold forest green plus sign and a single forest green square frame next to it. A thick forest green arrow runs from the stack of crossed rectangles to the lone framed square. Cream background. Hatch in coaching pose at the lower right, about 22 percent of canvas height, calm and explanatory, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no fake Instagram UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/instagram-filters/lesson-frame.png",
+      "generated_image_sha256": "3aba923b747e86eef72dcd18057c19bebca9563da81e3c164b2f4e46c75ec465",
+      "final_image_sha256": "ccd91dc09c20b20a707917e3ffda2247923b3d6623fd38b443f7a3f5b7a61c25",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-filters/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-filters/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/instagram-filters/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A bold green square frame holds a simple dog silhouette with a soft amber filter wash and a tiny Hatch silhouette in the corner.",
+      "caption": "A bold green square frame holds a simple dog silhouette with a soft amber filter wash and a tiny Hatch silhouette in the corner.",
+      "prompt": "A flat geometric HackProduct thumbnail composition for Instagram filters and the Burbn pivot. Canvas role thumbnail at aspect 1200x900. Show one forest green square frame filling the center two-thirds of the canvas containing a simple cream dog silhouette with a soft amber filter wash on top. A tiny Hatch mark, just the rounded green head silhouette with cap and growth arrow, sits in the bottom left at about 8 percent of canvas height. Make the decision readable at small size with one strong focal shape. Cream background. No human faces, no fake Instagram UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/instagram-filters/hero.png",
+      "generated_image_sha256": "66c721b7d696a354d766d16536ee6c04ae5c58b70297b898c918d427c44e26f1",
+      "final_image_sha256": "3bc638de7ae2bac120ca57b2a64e94107ce4c43293cf5e2704699786ce560a87",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-filters/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-filters/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/instagram-filters/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three square frames in a row each hold the same dog silhouette with different filter washes and a small Hatch in the corner.",
+      "caption": "Three square frames in a row each hold the same dog silhouette with different filter washes and a small Hatch in the corner.",
+      "prompt": "A flat geometric HackProduct social cover for Instagram filters and the Burbn pivot. Canvas role social-cover at aspect 2400x1260. Show a horizontal arrangement of three forest green square frames across the centre, each holding the same simple dog silhouette, each frame filtered differently using different blends of cream, mist, and soft amber to evoke filter variations. Behind the frames a cream field with a faint forest green baseline. A small Hatch in narrator pose at the lower right at about 12 percent of canvas height, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the center 70 percent clear of edge-critical details. No human faces, no fake Instagram UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/instagram-filters/hero.png",
+      "generated_image_sha256": "66c721b7d696a354d766d16536ee6c04ae5c58b70297b898c918d427c44e26f1",
+      "final_image_sha256": "d0839e8f895138c451aa043f5797553667ccd6933ce35d89efa326180ec1b741",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-filters/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-filters/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/instagram-filters/v1"
+}

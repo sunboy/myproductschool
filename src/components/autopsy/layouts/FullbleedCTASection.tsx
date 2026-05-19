@@ -12,7 +12,7 @@ interface Props {
 
 export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
   const { headline, subline, buttonText, targetPath } = section.content
-  const [entered, setEntered] = React.useState(false)
+  const [entered, setEntered] = React.useState(hasBeenVisible)
   const words = headline.split(' ')
 
   React.useEffect(() => {

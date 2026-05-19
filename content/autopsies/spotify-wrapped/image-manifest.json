@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "spotify",
+  "story_slug": "spotify-wrapped",
+  "story_title": "Spotify Wrapped",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/spotify-wrapped/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/spotify-wrapped/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A tall phone-shaped frame holding a stack of story cards above a calendar band, with Hatch pointing from the right edge toward the topmost card.",
+      "caption": "Hatch frames Wrapped as a stack of listening cards built on top of a year of logs.",
+      "prompt": "Spotify Wrapped | hero: Flat geometric HackProduct autopsy hero illustration for Spotify Wrapped. Canvas role hero at aspect 2400x1350 with quiet space in the upper left for a title overlay. Show a tall vertical phone-shaped frame at the center holding a stack of four story cards rising out of a horizontal calendar band labelled with twelve small ticks for months. Each card carries one abstract listening icon, a soft amber waveform, a small green play triangle, a numeric badge, and a pair of headphones. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small pointing narrator at the right edge, gesturing toward the topmost story card with one mitten hand. Preserve Hatch's rounded forest green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, mitten hands, and friendly coach expression. Background warm cream #faf6f0, structure in forest #4a7c59 and deep forest #244232, accents in amber #705c30 and soft amber #c9ad68, linework in charcoal #1e211c, mist #dfe6dc for inner card panels. No real Spotify logo, no real album art, no human faces, no photorealism. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/spotify-wrapped/hero.png",
+      "generated_image_sha256": "5ccc25a9c65671669cf490cbfa73fcfc02abb7131f09fcf767ff40ffd9282e59",
+      "final_image_sha256": "d969c9aea0440e89bbad76e9ed81b26e552ed5d7a4e081fa2d4f50b1da1fe612",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/spotify-wrapped/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/spotify-wrapped/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/spotify-wrapped/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A horizontal stack of data rows on the left and an empty tall mobile panel on the right, with Hatch in the center pointing between them.",
+      "caption": "A horizontal stack of data rows on the left and an empty tall mobile panel on the right, with Hatch in the center pointing between them.",
+      "prompt": "Spotify Wrapped | hatch-narrator: Flat geometric HackProduct autopsy scene illustration showing Spotify's product team in late summer 2019 facing the question of what to do with a year of listening logs. Canvas role scene at aspect 1600x1600. Show a wide horizontal stack of small data rows on the left labelled with abstract genre marks, a low chart of monthly listening minutes underneath, and a single arrow pointing from the data stack toward a tall mobile-shaped panel on the right that is still empty, marked with a small dashed outline of a story card to suggest what could go there. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a narrator pose at the center, slightly larger than usual for this role, gesturing with one mitten hand toward the data stack and the other toward the empty mobile panel, holding a small notepad. Preserve Hatch's rounded forest green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 chart strokes, deep forest #244232 ground line, amber #705c30 highlight on the empty mobile panel, mist #dfe6dc inner fill, charcoal #1e211c labels. No real product UI, no recognisable interface chrome, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/spotify-wrapped/hatch-narrator.png",
+      "generated_image_sha256": "1b52d243cece739a4f4d0a045d877f002406408b1de73fe2d2a17e2c103a352b",
+      "final_image_sha256": "7a18ab128405925cd5d0b0017b6f2fa2d0a82a0e487e09c7dc1d10c55105ba02",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/spotify-wrapped/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/spotify-wrapped/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/spotify-wrapped/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three-stage diagram showing listening event dots flowing into a vertical story card and then out to social tile crops, with Hatch pointing at the middle stage.",
+      "caption": "Three-stage diagram showing listening event dots flowing into a vertical story card and then out to social tile crops, with Hatch pointing at the middle stage.",
+      "prompt": "Spotify Wrapped | failure-mechanism: Flat geometric HackProduct autopsy mechanism diagram for Spotify Wrapped's 2019 story format. Canvas role mechanism at aspect 1800x1200. Show three stages from left to right, each separated by a short forward arrow. Stage one a small grid of listening event dots labelled minute, song, artist, genre. Stage two a single vertical story card shape with a stacked layout of headline, statistic, supporting line, and a tiny share icon at the bottom. Stage three a row of four small social tile crops in three aspect ratios with arrows pointing outward to suggest distribution beyond the app. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, pointing one mitten hand at stage two to call out the story card as the load-bearing unit. Preserve Hatch's rounded forest green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 arrows and frames, deep forest #244232 stage labels, amber #705c30 fill on the story card highlight, mist #dfe6dc card backgrounds, charcoal #1e211c thin labels. No real Spotify interface elements, no real app icons, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/spotify-wrapped/failure-mechanism.png",
+      "generated_image_sha256": "58b6ad98a74bd3f77bed47d2842480ea7617311fc638e9fb5c2d815081c30b17",
+      "final_image_sha256": "d4725680483d9ee8462742f8646ac12b8f0bbc081e54dcad932723930f24c83e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/spotify-wrapped/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/spotify-wrapped/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/spotify-wrapped/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central rounded panel showing the 225 million figure with a split bar beneath labelled forty percent growth and 170 markets, with Hatch pointing at the number from the lower left.",
+      "caption": "A central rounded panel showing the 225 million figure with a split bar beneath labelled forty percent growth and 170 markets, with Hatch pointing at the number from the lower left.",
+      "prompt": "Spotify Wrapped | evidence-card: Flat geometric HackProduct autopsy evidence illustration showing the 2023 Wrapped reach number as the anchor data point. Canvas role evidence at aspect 1600x1000. Show a single oversized rounded panel at the center holding the label two hundred and twenty five million as a large numeric block in forest green, with a small line underneath in deep forest reading engaged in Wrapped 2023. Beneath the panel place a slim horizontal bar split into two segments, one labelled forty percent year over year growth in amber, one labelled 170 markets in mist. Around the panel place six small dot clusters to suggest reach across regions. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png at the lower left, pointing one mitten hand at the large numeric block. Preserve Hatch's rounded forest green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 numeric block, deep forest #244232 caption line, amber #705c30 and soft amber #c9ad68 split bar, mist #dfe6dc panel fill, charcoal #1e211c thin frame. No fake screenshots, no real Spotify UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/spotify-wrapped/evidence-card.png",
+      "generated_image_sha256": "9f22afa1a8d165f9dfed361485caa9f222dbaa50a88f331391575af92bb1223e",
+      "final_image_sha256": "2cc9ce34858df21a120c6345285c83c1621da8aa0f7491f28b6004a733876507",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/spotify-wrapped/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/spotify-wrapped/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/spotify-wrapped/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A two-row composition showing a database flowing through a portrait card into a share-ready avatar, with a deep forest label band reading data, story, identity, and Hatch coaching from the right.",
+      "caption": "A two-row composition showing a database flowing through a portrait card into a share-ready avatar, with a deep forest label band reading data, story, identity, and Hatch coaching from the right.",
+      "prompt": "Spotify Wrapped | lesson-frame: Flat geometric HackProduct autopsy lesson illustration about turning personal data into a shareable identity object. Canvas role lesson at aspect 1800x1200. Show two stacked rows. The top row a small grey database cylinder on the left, an arrow forward, and a tall portrait card in the middle holding three abstract identity glyphs, then a second arrow forward, and a small avatar bubble on the right with a tiny tap indicator above the share icon. The bottom row a thin horizontal label band in deep forest spelling out the words data, story, identity in three evenly spaced positions, each a separate flat tile. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose at the right side of the top row, gesturing one mitten hand back toward the database and the other toward the avatar bubble. Preserve Hatch's rounded forest green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 arrows, deep forest #244232 label band, amber #705c30 identity glyphs, mist #dfe6dc card fills, charcoal #1e211c outline weight. No human faces, no real product chrome. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/spotify-wrapped/lesson-frame.png",
+      "generated_image_sha256": "b8fd77073a112ba0f391c7f616afa08b9a88b5f2bbf12d785becb4362a21ed1f",
+      "final_image_sha256": "ca9d604935eaa4fb259bcaea6b5a3a8bdca1eb321caec4cf14d5f804d13c974c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/spotify-wrapped/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/spotify-wrapped/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/spotify-wrapped/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A single tall portrait story card with three horizontal bands of listening graphics on a cream background, with a tiny Hatch mark in the lower right corner.",
+      "caption": "A single tall portrait story card with three horizontal bands of listening graphics on a cream background, with a tiny Hatch mark in the lower right corner.",
+      "prompt": "Flat geometric HackProduct autopsy thumbnail illustration for Spotify Wrapped. Canvas role thumbnail at aspect 1200x900, readable at 320 pixels wide. Show one single tall portrait story card centered on a cream background, divided into three horizontal bands. Top band a small amber play triangle on a mist fill. Middle band a large soft amber abstract waveform across the full width. Bottom band a forest green numeric badge with a small green tag below it. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny narrator mark in the lower right corner, sized at roughly twelve percent of canvas height, with one mitten hand visible. Preserve Hatch's rounded forest green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 numeric badge, deep forest #244232 thin frame outline, amber #705c30 play triangle, soft amber #c9ad68 waveform, mist #dfe6dc band fills, charcoal #1e211c hairlines. No human faces, no real Spotify branding. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/spotify-wrapped/thumbnail.png",
+      "generated_image_sha256": "5ccc25a9c65671669cf490cbfa73fcfc02abb7131f09fcf767ff40ffd9282e59",
+      "final_image_sha256": "bc5beb96a61f292311faccafeb60adb13777f0ffa36e2806dc3937e8d0c66e2d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/spotify-wrapped/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/spotify-wrapped/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/spotify-wrapped/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A fan of three tall story cards overlapping above a thin calendar band, with Hatch pointing at the front card from the lower right.",
+      "caption": "A fan of three tall story cards overlapping above a thin calendar band, with Hatch pointing at the front card from the lower right.",
+      "prompt": "Flat geometric HackProduct autopsy social cover illustration for Spotify Wrapped. Canvas role social-cover at aspect 2400x1260 with the center seventy percent kept clear of edge-critical details. Show a wide horizontal arrangement of three tall story cards in slight overlap, each carrying one abstract listening element, a numeric badge, a small waveform, and a play triangle, arranged like a fan of cards being slid out for sharing. Behind the cards a soft horizontal calendar band runs across the lower third with twelve small ticks. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator at the lower right, pointing one mitten hand at the front card. Preserve Hatch's rounded forest green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 card frames, deep forest #244232 calendar ticks, amber #705c30 and soft amber #c9ad68 highlights inside the cards, mist #dfe6dc card fills, charcoal #1e211c labels. No fake product UI, no real album art, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/spotify-wrapped/social-cover.png",
+      "generated_image_sha256": "5ccc25a9c65671669cf490cbfa73fcfc02abb7131f09fcf767ff40ffd9282e59",
+      "final_image_sha256": "63c6e5098b23ec31d2741be86b454fb2a6275222239a0e0af91b22521d2b858d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/spotify-wrapped/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/spotify-wrapped/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/spotify-wrapped/v1"
+}
