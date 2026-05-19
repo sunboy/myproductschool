@@ -13,6 +13,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { HatchFeedbackItem } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 import { appendReturnTo, sanitizeReturnTo } from '@/lib/navigation/return-to'
+import { CanvasSnapshotViewer } from '@/components/v2/CanvasSnapshotViewer'
 
 const dimensionConfig: Record<string, { label: string; icon: string }> = {
   diagnostic_accuracy: { label: 'Diagnostic Accuracy', icon: 'manage_search' },
@@ -70,6 +71,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   let mentalModelsBreakdown: MentalModelStep[] | null = null
   let weakestCompetency: string | null = null
   let nextChallenge: NextChallenge | null = null
+  let canvasSnapshot: Record<string, unknown> | null = null
+  type CanvasAnnotation = { target_label: string; text: string; severity?: string | null }
+  let canvasAnnotations: CanvasAnnotation[] | null = null
+
+  const isCanvasChallenge = challenge.challenge_type === 'system_design' || challenge.challenge_type === 'data_modeling'
 
   if (!isMock && attempt) {
     try {
@@ -80,7 +86,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         const adminClient = createAdminClient()
         const { data: attemptData } = await adminClient
           .from('challenge_attempts')
-          .select('feedback_json, completed_at, response_text, mental_models_breakdown, weakest_competency, total_score, max_score, grade_label')
+          .select('feedback_json, completed_at, response_text, mental_models_breakdown, weakest_competency, total_score, max_score, grade_label, canvas_final_snapshot')
           .eq('id', attempt)
           .eq('user_id', user.id)
           .single()
@@ -165,6 +171,21 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           }
           if (!mentalModelsBreakdown && Array.isArray(feedbackJson?.mental_models_breakdown)) {
             mentalModelsBreakdown = feedbackJson.mental_models_breakdown as MentalModelStep[]
+          }
+
+          if (isCanvasChallenge && attemptData.canvas_final_snapshot && typeof attemptData.canvas_final_snapshot === 'object') {
+            canvasSnapshot = attemptData.canvas_final_snapshot as Record<string, unknown>
+          }
+        }
+
+        if (isCanvasChallenge && canvasSnapshot) {
+          const { data: gradeRow } = await adminClient
+            .from('interview_grades')
+            .select('canvas_annotations')
+            .eq('attempt_id', attempt)
+            .maybeSingle()
+          if (gradeRow?.canvas_annotations && Array.isArray(gradeRow.canvas_annotations)) {
+            canvasAnnotations = gradeRow.canvas_annotations as CanvasAnnotation[]
           }
         }
 
@@ -394,6 +415,17 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               })}
             </div>
           </MotionSection>
+
+          {/* Canvas Snapshot Viewer (system_design / data_modeling only) */}
+          {isCanvasChallenge && canvasSnapshot && (
+            <div className="bg-surface-container rounded-xl p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-xl">schema</span>
+                <h3 className="font-headline text-base font-semibold text-on-surface">Your diagram</h3>
+              </div>
+              <CanvasSnapshotViewer snapshot={canvasSnapshot} annotations={canvasAnnotations} />
+            </div>
+          )}
 
           {/* What Worked / What to Fix */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
