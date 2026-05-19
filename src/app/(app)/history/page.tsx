@@ -5,15 +5,19 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 export const metadata = { title: 'Submission History | HackProduct' }
 
+const CANVAS_TYPES = new Set(['system_design', 'data_modeling'])
+
 interface SubmissionRow {
   attemptId: string
   challengeId: string
   challengeTitle: string
+  challengeType: string | null
   language: string | null
   testsPassed: number | null
   testsTotal: number | null
   overallScore: number | null
   submittedAt: string
+  canvasPngUrl: string | null
 }
 
 export default async function HistoryPage() {
@@ -23,7 +27,7 @@ export default async function HistoryPage() {
   if (!user) redirect('/login')
 
   // Query: interview_grades joined through challenge_attempts to challenges
-  // Only coding submissions (challenge_type IN ('sql', 'algorithm'))
+  // Includes coding (sql, algorithm) and canvas (system_design, data_modeling) submissions
   const { data: grades, error } = await supabase
     .from('interview_grades')
     .select(`
@@ -37,6 +41,7 @@ export default async function HistoryPage() {
         challenge_id,
         final_language,
         test_results,
+        canvas_png_url,
         challenges!inner (
           id,
           title
@@ -44,7 +49,7 @@ export default async function HistoryPage() {
       )
     `)
     .eq('challenge_attempts.user_id', user.id)
-    .in('challenge_type', ['sql', 'algorithm'])
+    .in('challenge_type', ['sql', 'algorithm', 'system_design', 'data_modeling'])
     .order('graded_at', { ascending: false })
     .limit(50)
 
@@ -60,11 +65,13 @@ export default async function HistoryPage() {
       : grade.challenge_attempts
     type AttemptWithChallenge = {
       challenges: { id: string; title: string } | { id: string; title: string }[]
+      canvas_png_url?: string | null
     }
-    const challenge = attempt
-      ? Array.isArray((attempt as unknown as AttemptWithChallenge).challenges)
-        ? ((attempt as unknown as AttemptWithChallenge).challenges as { id: string; title: string }[])[0]
-        : (attempt as unknown as AttemptWithChallenge).challenges as { id: string; title: string }
+    const typedAttempt = attempt as unknown as AttemptWithChallenge | null
+    const challenge = typedAttempt
+      ? Array.isArray(typedAttempt.challenges)
+        ? typedAttempt.challenges[0]
+        : typedAttempt.challenges as { id: string; title: string }
       : null
 
     const testResults = attempt?.test_results as
@@ -76,11 +83,13 @@ export default async function HistoryPage() {
       attemptId: grade.attempt_id,
       challengeId: challenge?.id ?? '',
       challengeTitle: challenge?.title ?? 'Unknown challenge',
+      challengeType: grade.challenge_type ?? null,
       language: attempt?.final_language ?? null,
       testsPassed: testResults?.tests_passed ?? null,
       testsTotal: testResults?.tests_total ?? null,
       overallScore: grade.overall_score ?? null,
       submittedAt: grade.graded_at ?? '',
+      canvasPngUrl: typedAttempt?.canvas_png_url ?? null,
     }
   })
 
@@ -104,7 +113,7 @@ export default async function HistoryPage() {
           </span>
           <p className="font-headline text-lg text-on-surface mb-1">No submissions yet</p>
           <p className="text-sm text-on-surface-variant font-body mb-6">
-            Complete a coding challenge to see your history here.
+            Complete a coding or design challenge to see your history here.
           </p>
           <Link
             href="/explore"
@@ -130,6 +139,13 @@ export default async function HistoryPage() {
 // ---------------------------------------------------------------------------
 
 function SubmissionRowCard({ row }: { row: SubmissionRow }) {
+  const isCanvas = CANVAS_TYPES.has(row.challengeType ?? '')
+
+  // Canvas types link to the feedback page; coding types go back to workspace
+  const href = isCanvas
+    ? `/challenges/${row.challengeId}/feedback?attempt=${row.attemptId}`
+    : `/workspace/challenges/${row.challengeId}?attempt=${row.attemptId}`
+
   const date = row.submittedAt
     ? new Date(row.submittedAt).toLocaleDateString('en-US', {
         month: 'short',
@@ -148,6 +164,11 @@ function SubmissionRowCard({ row }: { row: SubmissionRow }) {
     row.testsPassed !== null && row.testsTotal !== null
       ? `${row.testsPassed}/${row.testsTotal} tests`
       : null
+
+  const typeLabel =
+    row.challengeType === 'system_design' ? 'System design'
+    : row.challengeType === 'data_modeling' ? 'Data modeling'
+    : null
 
   const scoreColor =
     row.overallScore === null
@@ -169,11 +190,29 @@ function SubmissionRowCard({ row }: { row: SubmissionRow }) {
 
   return (
     <Link
-      href={`/workspace/challenges/${row.challengeId}?attempt=${row.attemptId}`}
+      href={href}
       data-testid="submission-row"
-      className="block bg-surface-container rounded-xl border border-outline-variant/60 hover:border-outline-variant hover:bg-surface-container-high transition-all p-4 group"
+      className="block bg-surface-container rounded-xl border border-outline-variant/60 hover:border-outline-variant hover:bg-surface-container-high transition-all group overflow-hidden"
     >
-      <div className="flex items-center gap-4 flex-wrap">
+      {/* Canvas thumbnail strip */}
+      {isCanvas && row.canvasPngUrl && (
+        <div className="relative w-full bg-surface-container-low border-b border-outline-variant/40" style={{ height: '100px' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={row.canvasPngUrl}
+            alt="Canvas diagram"
+            className="w-full h-full object-cover object-top"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-container/60" />
+        </div>
+      )}
+      {isCanvas && !row.canvasPngUrl && (
+        <div className="w-full h-10 bg-surface-container-low border-b border-outline-variant/40 flex items-center justify-center">
+          <span className="material-symbols-outlined text-on-surface-variant/30 text-[24px]">schema</span>
+        </div>
+      )}
+
+      <div className="flex items-center gap-4 flex-wrap p-4">
         {/* Challenge title */}
         <div className="flex-1 min-w-0">
           <p className="font-label font-semibold text-on-surface group-hover:text-primary transition-colors truncate">
@@ -183,6 +222,11 @@ function SubmissionRowCard({ row }: { row: SubmissionRow }) {
             <span className="text-xs text-on-surface-variant font-body">
               {date} {time && `· ${time}`}
             </span>
+            {typeLabel && (
+              <span className="text-xs font-label px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container">
+                {typeLabel}
+              </span>
+            )}
             {row.language && (
               <span className="text-xs font-label px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container">
                 {row.language}
