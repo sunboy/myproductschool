@@ -10,6 +10,7 @@ const RequestSchema = z.object({
   attemptId: z.string().uuid(),
   canvasFinalSnapshot: z.record(z.string(), z.unknown()).nullable().optional(),
   contextPack: z.string().max(50000).nullable().optional(),
+  canvasPngUrl: z.string().url().nullable().optional(),
 })
 
 function validationIssues(error: ZodError) {
@@ -65,7 +66,7 @@ export async function POST(
     }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { attemptId, canvasFinalSnapshot, contextPack } = body
+  const { attemptId, canvasFinalSnapshot, contextPack, canvasPngUrl } = body
 
   // Verify ownership
   const { data: attempt } = await supabase
@@ -119,6 +120,7 @@ export async function POST(
     .from('challenge_attempts')
     .update({
       canvas_final_snapshot: snapshotWithContext,
+      canvas_png_url: canvasPngUrl ?? null,
     })
     .eq('id', attemptId)
 
