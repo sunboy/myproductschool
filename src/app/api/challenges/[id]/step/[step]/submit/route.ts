@@ -14,7 +14,6 @@ import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limi
 
 // ── Request body ─────────────────────────────────────────────
 
-<<<<<<< HEAD
 const RequestSchema = z.object({
   attempt_id: z.string().uuid(),
   question_id: z.string().uuid(),

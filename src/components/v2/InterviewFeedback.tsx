@@ -6,6 +6,7 @@ import type { InterviewGrade, ChallengeType } from '@/lib/types'
 interface InterviewFeedbackProps {
   grade: InterviewGrade
   challengeType: ChallengeType
+  canvasPngUrl?: string | null
   onRetry?: () => void
   onBackToCanvas?: () => void
 }
@@ -186,7 +187,7 @@ function DimensionTile({
   )
 }
 
-export function InterviewFeedback({ grade, challengeType: _challengeType, onRetry, onBackToCanvas }: InterviewFeedbackProps) {
+export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, onRetry, onBackToCanvas }: InterviewFeedbackProps) {
   const [calloutVisible, setCalloutVisible] = useState(false)
 
   // Lift expanded state up so parent can collapse grid to 1-col when any tile is open
@@ -214,7 +215,21 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, onRetr
           </h2>
         </div>
 
-        {/* ── 2. PATH FORWARD CALLOUTS (above dimensions) ────── */}
+        {/* ── 2. CANVAS SNAPSHOT ─────────────────────────────── */}
+        {canvasPngUrl && (
+          <div className="rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low">
+            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-3 py-2 border-b border-outline-variant">
+              Your diagram
+            </p>
+            <img
+              src={canvasPngUrl}
+              alt="Canvas snapshot"
+              className="w-full object-contain max-h-64"
+            />
+          </div>
+        )}
+
+        {/* ── 3. PATH FORWARD CALLOUTS (above dimensions) ────── */}
         {(grade.top_strength || grade.top_improvement) && (
           <div
             className="space-y-3 transition-all duration-500"
@@ -241,7 +256,7 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, onRetr
           </div>
         )}
 
-        {/* ── 3. DIMENSIONS GRID ─────────────────────────────── */}
+        {/* ── 4. DIMENSIONS GRID ─────────────────────────────── */}
         {/* Collapse to 1-col when any tile is expanded so heights stay even */}
         <div>
           <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-3">
@@ -263,7 +278,7 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, onRetr
         </div>
       </div>
 
-      {/* ── 4. STICKY BOTTOM ACTIONS ───────────────────────── */}
+      {/* ── 5. STICKY BOTTOM ACTIONS ───────────────────────── */}
       {(onBackToCanvas || onRetry) && (
         <div className="mt-auto pt-4 sticky bottom-0 bg-surface border-t border-outline-variant px-5 pb-5 flex flex-col gap-2">
           {onBackToCanvas && (

@@ -36,6 +36,7 @@ import type { SchemaDiagramData } from '@/components/challenge/SchemaDiagram'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import type { ChallengeDiscussion } from '@/lib/types'
+import { createClient } from '@/lib/supabase/client'
 
 const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
@@ -300,6 +301,7 @@ interface SessionRecord {
   xpAwarded: number
   stepResults: MirrorStepResult[]
   competencyDeltas: MirrorCompetencyDelta[]
+  canvasPngUrl?: string | null
 }
 
 type FlowWorkspaceProps =
@@ -356,6 +358,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [queuedHatchPrompt, setQueuedHatchPrompt] = useState<QueuedHatchPrompt | null>(null)
   const [hintForceOpen, setHintForceOpen] = useState(false)
   const [interviewGrade, setInterviewGrade] = useState<InterviewGrade | null>(null)
+  const [submittedCanvasPngUrl, setSubmittedCanvasPngUrl] = useState<string | null>(null)
   const [historyInterviewGrade, setHistoryInterviewGrade] = useState<InterviewGrade | null>(null)
   const [historyCodingFeedback, setHistoryCodingFeedback] = useState<GradingFeedback | null>(null)
   const [historyCodingCorrectness, setHistoryCodingCorrectness] = useState<RunResult | null>(null)
@@ -587,6 +590,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         score: number | null
         max_score: number | null
         submitted_at: string | null
+        canvas_png_url?: string | null
         feedback_json: {
           step_breakdown?: Array<{ step: string; score: number; max_score: number }>
           step_signals?: Array<{ step: string; quality_label: string; hatch_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
@@ -632,6 +636,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               xpAwarded: fb?.xp_awarded ?? 0,
               stepResults,
               competencyDeltas,
+              canvasPngUrl: (r.canvas_png_url as string | null) ?? null,
             }
           })
         setSessionHistory(past)
@@ -713,6 +718,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Excalidraw API + library refs (for canvas action execution)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const excalidrawApiRef = useRef<any>(null)
+  const canvasExportRef = useRef<(() => Promise<Blob | null>) | null>(null)
   const libraryItemsRef = useRef<Array<{ id: string; name?: string; elements: unknown[] }>>([])
 
   const handleCanvasActions = useCallback((response: { message: string; actions: unknown[] }) => {
@@ -1306,6 +1312,21 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props, setHatch])
 
+  const uploadCanvasPng = useCallback(async (attemptId: string): Promise<string | null> => {
+    if (!canvasExportRef.current) return null
+    const blob = await canvasExportRef.current()
+    if (!blob) return null
+    const supabase = createClient()
+    const path = `canvas-snapshots/${attemptId}.png`
+    const { error } = await supabase.storage.from('challenge-assets').upload(path, blob, {
+      contentType: 'image/png',
+      upsert: true,
+    })
+    if (error) return null
+    const { data } = supabase.storage.from('challenge-assets').getPublicUrl(path)
+    return data.publicUrl
+  }, [])
+
   // Submit handler for canvas / interview challenge types (does NOT touch FLOW submit logic)
   const handleInterviewSubmit = useCallback(async () => {
     const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
@@ -1313,6 +1334,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     playHatchSound('submit')
     setIsSubmittingInterview(true)
     try {
+      const canvasPngUrl = await uploadCanvasPng(attemptId)
+      if (canvasPngUrl) setSubmittedCanvasPngUrl(canvasPngUrl)
       const res = await fetch(`/api/challenges/${challengeId}/interview-submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1324,6 +1347,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             context_pack_fields: contextPack,
           },
           contextPack: contextPackText || null,
+          canvasPngUrl: canvasPngUrl ?? null,
         }),
       })
       if (!res.ok) throw new Error('Submit failed')
@@ -1337,7 +1361,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setIsSubmittingInterview(false)
     }
-  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, playHatchSound])
+  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, playHatchSound, uploadCanvasPng])
 
   // Run handler for coding challenges - fires visible test cases only
   const handleCodingRun = useCallback(async () => {
@@ -3097,6 +3121,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 <InterviewFeedback
                   grade={interviewGrade}
                   challengeType={apiChallengeType ?? 'system_design'}
+                  canvasPngUrl={submittedCanvasPngUrl}
                   onRetry={() => window.location.reload()}
                   onBackToCanvas={() => {
                     setPhase('question')
@@ -3116,6 +3141,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   <InterviewFeedback
                     grade={historyInterviewGrade}
                     challengeType={apiChallengeType ?? 'system_design'}
+                    canvasPngUrl={historyRecord.canvasPngUrl}
                   />
                 </div>
               ) : (
@@ -3261,6 +3287,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     onSnapshot={setCanvasScene}
                     onElementsAdded={(count) => requestNudge(count)}
                     apiRef={excalidrawApiRef}
+                    exportRef={canvasExportRef}
                   />
                   <CanvasHintCard
                     challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
