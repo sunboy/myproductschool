@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
+import { buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 import { HATCH_VOICE } from '@/lib/hatch/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -90,7 +91,11 @@ export async function POST() {
 
       await assertPlanLimit(userId, userPlan, 'hatch_chat_msgs')
 
-      const contextString = buildHatchContextString(hatchCtx, 'coaching')
+      const contextString = await buildSkillContextPrompt(userId, {
+        surface: 'reflection',
+        challengeType: null,
+        includePracticeLink: true,
+      }).catch(() => buildHatchContextString(hatchCtx, 'coaching'))
       const userPrompt =
         contextString +
         '\n\nWrite a growth reflection for this learner. Use 2 short paragraphs: one naming a specific strength, one naming the specific growth area and what to do next. Keep each paragraph to 2 sentences. Use the learner\'s first name if known. Be direct and specific. No filler. Return JSON: {"reflection": "..."}'

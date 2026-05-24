@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
+import { buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
@@ -286,7 +287,11 @@ export async function POST(req: NextRequest) {
 
   if (process.env.ANTHROPIC_API_KEY) {
     try {
-      const contextString = buildHatchContextString(hatchCtx, 'coaching')
+      const contextString = await buildSkillContextPrompt(userId, {
+        surface: 'study_plan',
+        challengeType: null,
+        includePracticeLink: false,
+      }).catch(() => buildHatchContextString(hatchCtx, 'coaching'))
       const challengeList = availableChallenges
         .map((c) => `${c.id} - "${c.title}" [type: ${c.challenge_type ?? 'unknown'}; difficulty: ${c.difficulty ?? 'unknown'}; roles: ${(c.relevant_roles ?? []).join(', ') || 'any'}; tags: ${(c.tags ?? []).join(', ')}]`)
         .join('\n')

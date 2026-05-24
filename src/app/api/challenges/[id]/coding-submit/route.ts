@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { gradeCodingAttempt } from '@/lib/coding-grading/grader'
+import { gradeCodingAttempt, shouldUseDeterministicCodingGrade } from '@/lib/coding-grading/grader'
 import type { RunResult } from '@/lib/coding/types'
 import type { SessionEvent } from '@/lib/coding-grading/grader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
 
 const TestResultSchema = z.object({
   id: z.string().min(1).max(200),
@@ -125,6 +126,43 @@ function getGradeLabel(score: number): string {
   if (score >= 4.5) return 'best'
   if (score >= 3) return 'good'
   return 'surface'
+}
+
+function codingNotReadyResponse({
+  reason,
+  language,
+  challengeType,
+}: {
+  reason: 'missing_code' | 'missing_test_signal'
+  language: string
+  challengeType: 'sql' | 'algorithm'
+}) {
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: language === 'sql' || challengeType === 'sql' ? 'data' : 'software',
+    challengeType,
+  })
+  const summary = reason === 'missing_test_signal'
+    ? (language === 'sql' || challengeType === 'sql'
+      ? 'I need a runnable query result before I can give useful feedback.'
+      : 'I need a runnable test result before I can give useful feedback.')
+    : emptyState.summary
+  const nextActions = reason === 'missing_test_signal'
+    ? ['Run the visible tests once so feedback can point to a real failure or passing path.']
+    : emptyState.next_actions
+
+  return NextResponse.json({
+    status: 'not_ready',
+    ready_to_grade: false,
+    reason,
+    empty_state: {
+      ...emptyState,
+      summary,
+      next_actions: nextActions,
+    },
+    summary,
+    next_actions: nextActions,
+  }, { status: 422 })
 }
 
 function serializeTestResults(correctnessPayload: RunResult) {
@@ -298,6 +336,14 @@ export async function POST(
     return NextResponse.json({ partId, score, weighted_score: weightedScore, testsPassed, testsTotal })
   }
 
+  const challengeType = challenge.challenge_type as 'sql' | 'algorithm'
+  if (!finalCode.trim()) {
+    return codingNotReadyResponse({ reason: 'missing_code', language, challengeType })
+  }
+  if (correctnessPayload.testsTotal === 0) {
+    return codingNotReadyResponse({ reason: 'missing_test_signal', language, challengeType })
+  }
+
   // Pull session events (paste events, run events) from conversation_summary
   const sessionEvents = parseEventLog(attempt.conversation_summary)
   const userPlan = await getUserPlanForBudget(user.id)
@@ -339,7 +385,9 @@ export async function POST(
   // Grade the attempt
   let grade
   try {
-    await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+    if (!shouldUseDeterministicCodingGrade(gradingInput)) {
+      await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+    }
     grade = await gradeCodingAttempt(gradingInput)
   } catch (err) {
     const response = aiLimitResponse(err)
@@ -369,11 +417,26 @@ export async function POST(
     rubric_scores: grade.dimensions,
     top_strength: grade.top_strength,
     top_improvement: grade.top_improvement,
-    canvas_annotations: grade.what_a_5_would_look_like ? [{
-      target_label: '5.0 bar',
-      text: grade.what_a_5_would_look_like,
-      severity: 'info',
-    }] : null,
+    canvas_annotations: [
+      ...(grade.what_a_5_would_look_like ? [{
+        target_label: '5.0 bar',
+        text: grade.what_a_5_would_look_like,
+        severity: 'info',
+      }] : []),
+      ...(grade.score_breakdown ? [
+        {
+          target_label: 'Correctness',
+          text: grade.score_breakdown.correctness.summary,
+          severity: 'info',
+          score_breakdown: grade.score_breakdown,
+        },
+        {
+          target_label: 'Process',
+          text: grade.score_breakdown.process.summary,
+          severity: 'info',
+        },
+      ] : []),
+    ],
   })
 
   return NextResponse.json({ grade })

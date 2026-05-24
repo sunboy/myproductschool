@@ -4,13 +4,13 @@ export function resolveNudge(baseNudge: string | null, step: FlowStep, roleLens:
   const roleNudge = roleLens[`${step}_nudge` as keyof RoleLens] as string | null
   const parts: string[] = []
   if (reasoningMove) {
-    parts.push(`🧠 ${reasoningMove}`)
+    parts.push(reasoningMove)
   }
   if (baseNudge) {
     parts.push(baseNudge)
   }
   if (roleNudge) {
-    parts.push(`💡 As a ${roleLens.short_label}: ${roleNudge}`)
+    parts.push(`${roleLens.short_label} lens: ${roleNudge}`)
   }
   return parts.join('\n\n')
 }

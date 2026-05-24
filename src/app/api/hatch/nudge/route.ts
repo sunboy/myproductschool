@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT, buildNudgeUserPrompt } from '@/lib/hatch/system-prompt'
+import { IS_MOCK } from '@/lib/mock'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
@@ -9,6 +10,7 @@ import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limi
 import { rateLimit } from '@/lib/security/rate-limit'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import { apiError } from '@/lib/api/error'
+import { buildEmptyStateResponse, buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 import type { FlowStep } from '@/lib/types'
 
 const MOCK_NUDGES = [
@@ -52,10 +54,15 @@ export async function POST(req: NextRequest) {
   const { challengePrompt, draft, attemptId, step } = body
 
   if (!draft?.trim()) {
-    return NextResponse.json({ nudge: null })
+    const emptyState = buildEmptyStateResponse({
+      surface: 'nudge',
+      discipline: 'product',
+      challengeType: 'flow',
+    })
+    return NextResponse.json({ nudge: emptyState.next_actions[0], reason: 'empty_draft' })
   }
 
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     const randomNudge = MOCK_NUDGES[Math.floor(Math.random() * MOCK_NUDGES.length)]
     return NextResponse.json({ nudge: randomNudge })
   }
@@ -128,6 +135,17 @@ export async function POST(req: NextRequest) {
     const flowStep: FlowStep | undefined = step ?? undefined
 
     let userPrompt = buildNudgeUserPrompt(challengePrompt ?? '', draft)
+    const contextBlock = await buildSkillContextPrompt(user.id, {
+      surface: 'nudge',
+      challengeType: 'flow',
+      challengePrompt,
+      currentStep: flowStep,
+      submissionText: draft,
+      includePracticeLink: false,
+    }).catch(() => '')
+    if (contextBlock) {
+      userPrompt = `${contextBlock}\n\n${userPrompt}`
+    }
     if (flowStep) {
       const reasoningMove = getReasoningMove(flowStep)
       userPrompt += `\n\nThe user is currently on the ${flowStep} step, practicing: ${reasoningMove}. Reference this reasoning move in your nudge.`

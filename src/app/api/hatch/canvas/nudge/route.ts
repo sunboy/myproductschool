@@ -7,6 +7,7 @@ import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budg
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
+import { buildEmptyStateResponse, buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 
 const NUDGE_GATE_MS = 30_000
 const MAX_ELEMENT_COUNT_FOR_NUDGE = 40 // skip if canvas is large; user is mid-deep-work
@@ -157,15 +158,33 @@ export async function POST(req: NextRequest) {
 
   // Gate 5: empty / near-empty canvas (nothing useful to say yet)
   if (body.scene.elementCount < 2) {
-    return NextResponse.json({ nudge: null, reason: 'canvas_too_small' })
+    const emptyState = buildEmptyStateResponse({
+      surface: 'nudge',
+      discipline: body.challengeType === 'data_modeling' ? 'data' : 'software',
+      challengeType: body.challengeType,
+    })
+    return NextResponse.json({
+      nudge: body.scene.elementCount === 0
+        ? emptyState.next_actions[0]
+        : 'Add one related component or table and show how it connects.',
+      reason: 'canvas_too_small',
+    })
   }
 
+  const contextBlock = await buildSkillContextPrompt(user.id, {
+    surface: 'nudge',
+    challengeType: body.challengeType === 'data_modeling' ? 'data_modeling' : 'system_design',
+    currentStep: body.challengeType,
+    includePracticeLink: false,
+  }).catch(() => '')
+
   const userContent = [
+    contextBlock,
     `Challenge type: ${body.challengeType ?? 'system_design'}`,
     `# Canvas state\n${sceneToPrompt(body.scene)}`,
     `# Recent change\nUser just added ${body.recentDelta.added} element(s).`,
     `Decide: nudge or stay silent. Respond with the JSON schema.`,
-  ].join('\n\n')
+  ].filter(Boolean).join('\n\n')
 
   try {
     await assertPlanLimit(user.id, userPlan, 'hatch_nudges')

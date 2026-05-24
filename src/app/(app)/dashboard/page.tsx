@@ -251,7 +251,7 @@ export default async function DashboardPage() {
   try {
     const { data: pausedLoops } = await adminClient
       .from('interview_loops' as string)
-      .select('*')
+      .select('id, user_id, status, created_at, updated_at, scenario_id, company_id, round_count, config')
       .eq('user_id', userId)
       .eq('status', 'paused')
       .order('created_at', { ascending: false })
@@ -260,7 +260,7 @@ export default async function DashboardPage() {
     if (pausedLoops?.length) {
       const { data: rounds } = await adminClient
         .from('loop_rounds' as string)
-        .select('*')
+        .select('id, loop_id, round_index, status, score, feedback_json, created_at, updated_at')
         .eq('loop_id', (pausedLoops[0] as { id: string }).id)
         .order('round_index', { ascending: true })
       pausedLoopData = { loop: pausedLoops[0] as Record<string, unknown>, rounds: rounds ?? [] }

@@ -8,6 +8,7 @@ import {
   buildFeedbackUserPrompt
 } from '@/lib/hatch/system-prompt'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
+import { IS_MOCK } from '@/lib/mock'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { HatchFeedbackSchema, clampFeedbackScores, V2FeedbackSchema, clampV2FeedbackScores } from '@/lib/hatch/feedback-schema'
@@ -24,6 +25,7 @@ import {
 } from '@/lib/scoring/competency-rollup'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { apiError } from '@/lib/api/error'
+import { buildEmptyStateResponse, buildSkillContextPrompt, detectSubmissionQuality } from '@/lib/hatch/skill-context'
 
 const ROUTE_KEY = 'hatch_feedback'
 const V2_ROUTE_KEY = 'hatch_feedback_v2'
@@ -36,7 +38,7 @@ const RequestSchema = z.object({
   attemptId: z.string().uuid().nullable().optional(),
   attempt_id: z.string().uuid().nullable().optional(),
 }).superRefine((body, ctx) => {
-  if (!body.attempt_id && !body.response?.trim()) {
+  if (!body.attempt_id && body.response == null) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['response'],
@@ -110,6 +112,35 @@ function mergeModelBreakdown(
   })
 }
 
+function emptyFeedbackResponse(challengeType: string | null | undefined) {
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: 'product',
+    challengeType,
+  })
+  const dimension = (name: 'diagnostic_accuracy' | 'metric_fluency' | 'framing_precision' | 'recommendation_strength') => ({
+    dimension: name,
+    score: 0,
+    commentary: emptyState.summary,
+    suggestions: emptyState.next_actions,
+  })
+  return {
+    overall_score: 0,
+    overall: emptyState.summary,
+    dimensions: [
+      dimension('diagnostic_accuracy'),
+      dimension('metric_fluency'),
+      dimension('framing_precision'),
+      dimension('recommendation_strength'),
+    ],
+    strengths: ['No substantive response yet.'],
+    improvements: emptyState.next_actions,
+    detected_patterns: [],
+    summary: emptyState.summary,
+    next_actions: emptyState.next_actions,
+  }
+}
+
 export async function POST(req: NextRequest) {
   let body: z.infer<typeof RequestSchema>
   try {
@@ -133,7 +164,7 @@ export async function POST(req: NextRequest) {
   // ── V1 path (legacy) ──────────────────────────────────────
 
   // Mock mode: return fixture feedback as a stream
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(MOCK_FEEDBACK_FULL)
   }
 
@@ -162,15 +193,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (detectSubmissionQuality(userResponse) !== 'substantive') {
+      return NextResponse.json(emptyFeedbackResponse('freeform'))
+    }
+
     await assertPlanLimit(authenticatedUserId, userPlan, 'ai_grading_runs')
 
     const budget = { userId: authenticatedUserId, userPlan, route: ROUTE_KEY }
 
-    const userContent = buildFeedbackUserPrompt(
-      challengeTitle ?? 'Product Challenge',
-      challengePrompt ?? '',
-      userResponse ?? ''
-    )
+    const contextBlock = await buildSkillContextPrompt(authenticatedUserId, {
+      surface: 'grading',
+      challengeType: 'freeform',
+      challengeTitle,
+      challengePrompt,
+      submissionText: userResponse,
+      includePracticeLink: true,
+    }).catch(() => '')
+
+    const userContent = [
+      contextBlock,
+      buildFeedbackUserPrompt(
+        challengeTitle ?? 'Product Challenge',
+        challengePrompt ?? '',
+        userResponse ?? ''
+      ),
+    ].filter(Boolean).join('\n\n')
 
     const message = await guardedCachedMessage(HATCH_FEEDBACK_SYSTEM_PROMPT, userContent, {
       model: 'claude-sonnet-4-6',
@@ -251,7 +298,7 @@ export async function POST(req: NextRequest) {
 // ── V2 Feedback Handler (FLOW-based) ──────────────────────────
 
 async function handleV2Feedback(attemptId: string, challengeId: string | undefined) {
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(MOCK_FEEDBACK_FULL)
   }
 
@@ -344,7 +391,15 @@ async function handleV2Feedback(attemptId: string, challengeId: string | undefin
     return `### ${step.toUpperCase()} step\n${answers}${signals ? '\n' + signals : ''}`
   }).join('\n\n')
 
-  const userContent = `Challenge: ${challenge?.title ?? 'Unknown'}
+  const contextBlock = await buildSkillContextPrompt(authenticatedUserId, {
+    surface: 'grading',
+    challengeType: 'flow',
+    challengeTitle: challenge?.title,
+    challengePrompt: `${challenge?.scenario_context ?? ''} ${challenge?.scenario_trigger ?? ''}`,
+    includePracticeLink: true,
+  }).catch(() => '')
+
+  const userContent = `${contextBlock ? `${contextBlock}\n\n` : ''}Challenge: ${challenge?.title ?? 'Unknown'}
 Context: ${challenge?.scenario_context ?? ''} ${challenge?.scenario_trigger ?? ''}
 
 ## Learner's FLOW Responses

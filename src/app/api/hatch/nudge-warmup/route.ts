@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT } from '@/lib/hatch/system-prompt'
+import { IS_MOCK } from '@/lib/mock'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import { createClient } from '@/lib/supabase/server'
@@ -26,7 +27,7 @@ function validationIssues(error: ZodError) {
 }
 
 export async function POST(req: NextRequest) {
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ ok: true })
   }
 

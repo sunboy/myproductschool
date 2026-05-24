@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { gradeCodingAttempt } from '@/lib/coding-grading/grader'
+import { gradeCodingAttempt, shouldUseDeterministicCodingGrade } from '@/lib/coding-grading/grader'
 import type { ChatMessage, SessionEvent } from '@/lib/coding-grading/grader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
 
 const RequestSchema = z.object({
   attemptId: z.string().uuid(),
@@ -39,6 +40,44 @@ function aiLimitResponse(error: unknown) {
   }
 
   return null
+}
+
+function codingNotReadyResponse({
+  reason,
+  language,
+  challengeType,
+}: {
+  reason: 'missing_code' | 'missing_test_signal'
+  language: string
+  challengeType: string
+}) {
+  const isSql = language === 'sql' || challengeType === 'sql'
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: isSql ? 'data' : 'software',
+    challengeType: isSql ? 'sql' : 'algorithm',
+  })
+  const summary = reason === 'missing_test_signal'
+    ? (isSql
+      ? 'I need a runnable query result before I can give useful feedback.'
+      : 'I need a runnable test result before I can give useful feedback.')
+    : emptyState.summary
+  const nextActions = reason === 'missing_test_signal'
+    ? ['Run the visible tests once so feedback can point to a real failure or passing path.']
+    : emptyState.next_actions
+
+  return NextResponse.json({
+    status: 'not_ready',
+    ready_to_grade: false,
+    reason,
+    empty_state: {
+      ...emptyState,
+      summary,
+      next_actions: nextActions,
+    },
+    summary,
+    next_actions: nextActions,
+  }, { status: 422 })
 }
 
 // ---------------------------------------------------------------------------
@@ -325,6 +364,14 @@ export async function POST(
     },
   }
 
+  if (shouldUseDeterministicCodingGrade(gradingInput)) {
+    return codingNotReadyResponse({
+      reason: representativeCode.trim() ? 'missing_test_signal' : 'missing_code',
+      language: representativeLanguage,
+      challengeType: challenge.challenge_type ?? '',
+    })
+  }
+
   // ---------------------------------------------------------------------------
   // Call grader for 5-dim rubric
   // ---------------------------------------------------------------------------
@@ -367,7 +414,11 @@ export async function POST(
       rubric_scores: grade.dimensions,
       top_strength: grade.top_strength,
       top_improvement: grade.top_improvement,
-      canvas_annotations: { parts_breakdown: partsBreakdown } as unknown as never[],
+      canvas_annotations: {
+        parts_breakdown: partsBreakdown,
+        score_breakdown: grade.score_breakdown,
+        what_a_5_would_look_like: grade.what_a_5_would_look_like,
+      } as unknown as never[],
     })
     .select()
     .single()
@@ -396,6 +447,9 @@ export async function POST(
   return NextResponse.json({
     grade: insertedGrade,
     weighted_total: weightedTotal,
+    score_breakdown: grade.score_breakdown,
+    summary: grade.summary,
+    next_actions: grade.next_actions,
     parts: partsBreakdown.map((p) => ({
       id: p.id,
       title: p.title,

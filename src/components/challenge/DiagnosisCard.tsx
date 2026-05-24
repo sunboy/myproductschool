@@ -1,4 +1,4 @@
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 import type { FailurePattern } from '@/lib/types'
 
 interface DiagnosisCardProps {
@@ -26,14 +26,14 @@ export function DiagnosisCard({ pattern, occurrenceCount, isNew = false, intervi
 
       {pattern.evidence && (
         <blockquote className="border-l-2 border-primary pl-4 italic text-sm text-on-surface-variant">
-          &ldquo;{pattern.evidence}&rdquo;
+          <FeedbackText className="text-on-surface-variant">{pattern.evidence}</FeedbackText>
         </blockquote>
       )}
 
       {interviewRisk && (
         <div className="flex gap-2 text-sm">
           <span className="material-symbols-outlined text-base text-error shrink-0 mt-0.5" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>warning</span>
-          <p className="text-on-surface-variant italic">{interviewRisk}</p>
+          <FeedbackText className="italic text-on-surface-variant">{interviewRisk}</FeedbackText>
         </div>
       )}
     </div>

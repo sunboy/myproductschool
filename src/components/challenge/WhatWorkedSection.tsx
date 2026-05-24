@@ -1,3 +1,7 @@
+'use client'
+
+import { FeedbackText } from '@/components/ui/FeedbackText'
+
 interface WhatWorkedSectionProps {
   whatWorked: string[]
   whatToFix: string[]
@@ -15,7 +19,7 @@ export function WhatWorkedSection({ whatWorked, whatToFix }: WhatWorkedSectionPr
           {whatWorked.map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-on-surface">
               <span className="material-symbols-outlined text-primary text-base mt-0.5 shrink-0" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>check_circle</span>
-              {item}
+              <FeedbackText className="flex-1 text-on-surface">{item}</FeedbackText>
             </li>
           ))}
         </ul>
@@ -29,7 +33,7 @@ export function WhatWorkedSection({ whatWorked, whatToFix }: WhatWorkedSectionPr
           {whatToFix.map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-on-surface">
               <span className="material-symbols-outlined text-error text-base mt-0.5 shrink-0" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>cancel</span>
-              {item}
+              <FeedbackText className="flex-1 text-on-surface">{item}</FeedbackText>
             </li>
           ))}
         </ul>

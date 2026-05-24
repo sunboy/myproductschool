@@ -154,7 +154,7 @@ function getDiscipline(searchParams: SearchParamGetter): Discipline {
 
 function matchesDiscipline(challenge: ChallengeWithDomain, discipline: Discipline) {
   if (discipline === 'all') return true
-  if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(challenge.challenge_type ?? '')
+  if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take', 'claude_code_analytics'].includes(challenge.challenge_type ?? '')
   return challenge.challenge_type === discipline
 }
 
@@ -466,7 +466,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
                 algorithm: 'text-[#3a5a7c]',
               }
               const discChallenges = filteredChallenges.filter((c) => {
-                if (disc === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(c.challenge_type ?? '')
+                if (disc === 'product_sense') return ['flow', 'freeform', 'quick_take', 'claude_code_analytics'].includes(c.challenge_type ?? '')
                 return c.challenge_type === disc
               })
               if (discChallenges.length === 0) return null

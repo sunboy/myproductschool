@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 
 interface DimensionPanel {
   index: number
@@ -106,9 +107,7 @@ export function FeedbackAccordion({ dimensions, detectedPatterns }: FeedbackAcco
               <div className="overflow-hidden">
                 <div className="px-16 pb-4 pt-0 space-y-4">
                   {/* Commentary */}
-                  <p className="text-sm text-on-surface-variant leading-relaxed">
-                    {dim.commentary}
-                  </p>
+                  <FeedbackText className="text-on-surface-variant">{dim.commentary}</FeedbackText>
 
                   {/* Suggestions */}
                   {dim.suggestions.length > 0 && (
@@ -122,7 +121,7 @@ export function FeedbackAccordion({ dimensions, detectedPatterns }: FeedbackAcco
                             <span className="material-symbols-outlined text-base text-primary flex-shrink-0 mt-0.5">
                               arrow_forward
                             </span>
-                            <span>{s}</span>
+                            <FeedbackText className="flex-1 text-on-surface-variant">{s}</FeedbackText>
                           </li>
                         ))}
                       </ul>
@@ -159,9 +158,7 @@ export function FeedbackAccordion({ dimensions, detectedPatterns }: FeedbackAcco
               {detectedPatterns.map((pattern, i) => (
                 <div key={i} className="space-y-1">
                   <p className="text-sm font-semibold text-tertiary">{pattern.pattern_name}</p>
-                  <p className="text-sm text-on-surface-variant leading-relaxed">
-                    {pattern.evidence}
-                  </p>
+                  <FeedbackText className="text-on-surface-variant">{pattern.evidence}</FeedbackText>
                 </div>
               ))}
             </div>

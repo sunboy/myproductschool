@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { sanitizeAiOutput } from '@/lib/ai/sanitize'
 import { sendWeeklyDigestEmail } from '@/lib/email/transactional'
+import { buildSkillContextPack } from '@/lib/hatch/skill-context'
 import { createUnsubscribeToken } from '@/lib/notifications/unsubscribe'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -219,6 +220,18 @@ function pickRecommendation(options: {
   return available[0]
 }
 
+function digestRecommendationCopy(options: {
+  recommendationTitle: string | null
+  focus: string | null
+  discipline: string | null
+}) {
+  const focus = options.focus ?? (options.discipline ? `${options.discipline} fundamentals` : 'one focused improvement')
+  if (!options.recommendationTitle) {
+    return `Next: pick one practice rep and use it to work on ${focus}.`
+  }
+  return `Next: ${options.recommendationTitle}. Use it to work on ${focus}, then write one concrete action before you submit.`
+}
+
 export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) return unauthorized()
 
@@ -384,18 +397,25 @@ export async function GET(request: NextRequest) {
     const strongestCompetency = labelFromSlug(strongestRaw)
     const weakestCompetency = labelFromSlug(weakestRaw)
     const weakestMove = weakestMoveByUser.get(userId) ?? null
+    const skillPack = await buildSkillContextPack({
+      userId,
+      surface: 'digest',
+      includePracticeLink: false,
+    }).catch(() => null)
     const recommendation = pickRecommendation({
       userId,
       challengePool,
       completedByUser,
       weakestCompetency: weakestRaw,
-      weakestMove,
+      weakestMove: skillPack?.weakestFlowMove ?? weakestMove,
     })
     const recommendationTitle = recommendation?.title ?? null
     const recommendationCopy = sanitizeDigestCopy(
-      recommendationTitle
-        ? `Next: ${recommendationTitle}${weakestCompetency ? ` targets ${weakestCompetency}` : ' is ready for another focused practice rep'}.`
-        : 'Review last week, then pick the next focused practice rep.',
+      digestRecommendationCopy({
+        recommendationTitle,
+        focus: skillPack?.weakestCompetency ?? weakestCompetency ?? (skillPack?.weakestFlowMove ? `${skillPack.weakestFlowMove} move` : null),
+        discipline: skillPack?.discipline ?? null,
+      }),
       userId
     )
     const challengeTitles = userAttempts

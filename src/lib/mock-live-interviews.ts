@@ -44,6 +44,12 @@ export interface LiveInterviewDebrief {
   strengths: string[]
   improvements: string[]
   nextChallengeRecommendation: string
+  nextActions?: Array<{
+    title: string
+    description: string
+    href?: string
+    type?: 'challenge' | 'module' | 'study_plan' | 'practice' | 'artifact'
+  }>
 }
 
 export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
@@ -339,4 +345,18 @@ export const MOCK_LIVE_DEBRIEF: LiveInterviewDebrief = {
     'Complete the FLOW arc: Optimize and Win steps were not reached — practice driving the conversation to a recommendation with a named success metric',
   ],
   nextChallengeRecommendation: 'Spotify: Redesign the podcast discovery experience for non-podcast listeners',
+  nextActions: [
+    {
+      title: 'Practice a recommendation pass',
+      description: 'Do one round where you force a decision, a success metric, and a risk before ending.',
+      href: '/live-interviews',
+      type: 'practice',
+    },
+    {
+      title: 'Try a follow-up challenge',
+      description: 'Use a product-sense prompt that makes you move from diagnosis to a concrete bet.',
+      href: '/workspace/challenges',
+      type: 'challenge',
+    },
+  ],
 }

@@ -1,8 +1,13 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { FlowWorkspaceShell } from '@/components/v2/FlowWorkspaceShell'
+import dynamic from 'next/dynamic'
 import type { UserRoleV2 } from '@/lib/types'
+
+const FlowWorkspaceShell = dynamic(() => import('@/components/v2/FlowWorkspaceShell').then(m => ({ default: m.FlowWorkspaceShell })), {
+  ssr: false,
+  loading: () => <div className="flex-1 bg-surface-container animate-pulse rounded-xl" />,
+})
 import { IS_MOCK } from '@/lib/mock'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 

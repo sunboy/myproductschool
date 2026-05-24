@@ -4,7 +4,8 @@ import React from 'react'
 import Link from 'next/link'
 import { motion, motionTokens } from '@/components/motion'
 import { appendReturnTo } from '@/lib/navigation/return-to'
-import { cleanDisplayCopy, cardSummary } from '@/lib/copy/display'
+import { cleanDisplayCopy } from '@/lib/copy/display'
+import { challengeTaskSummary } from '@/lib/challenges/presentation'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 
@@ -193,7 +194,12 @@ export function ChallengeCard({
   const diff = DIFFICULTY_CONFIG[challenge.difficulty] ?? { label: challenge.difficulty, dot: '#74796e' }
   const attempts = challenge.attempt_count ?? 0
   const title = cleanDisplayCopy(challenge.title) || challenge.title
-  const promptText = cardSummary(challenge.prompt_text)
+  const promptText = challengeTaskSummary(challenge as ChallengeWithDomain & {
+    scenario_context?: string | null
+    scenario_trigger?: string | null
+    scenario_question?: string | null
+    metadata?: Record<string, unknown> | null
+  })
   const challengePath = `/workspace/challenges/${challenge.slug ?? challenge.id}`
   const challengeHref = appendReturnTo(challengePath, returnHref)
   const discussionHref = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
@@ -398,6 +404,21 @@ export function ChallengeCard({
           {title}
         </h3>
       </Link>
+
+      {promptText && (
+        <p
+          className="font-body text-[12px] leading-snug font-semibold"
+          style={{
+            color: `${style.fg}d0`,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {promptText}
+        </p>
+      )}
 
       {/* Tag chips + real interview badge */}
       {(() => {

@@ -10,6 +10,7 @@ import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limi
 import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { buildCompletedQuickTakeResult } from '@/lib/scoring/completed-attempt-result'
+import { buildEmptyStateResponse, buildSkillContextPrompt, detectSubmissionQuality } from '@/lib/hatch/skill-context'
 
 // XP base for quick-takes (lower than full challenges)
 const QUICK_TAKE_XP_BASE = 20
@@ -17,7 +18,7 @@ const ROUTE_KEY = 'quick_take_submit'
 
 const RequestSchema = z.object({
   challenge_id: z.string().uuid(),
-  response_text: z.string().trim().min(1).max(6000),
+  response_text: z.string().trim().max(6000),
 })
 
 const MOCK_RESPONSE = {
@@ -37,6 +38,23 @@ function validationIssues(error: ZodError) {
   }))
 }
 
+function notReadyResponse(reason: 'empty' | 'too_thin') {
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: 'product',
+    challengeType: 'quick_take',
+  })
+
+  return NextResponse.json({
+    status: 'not_ready',
+    ready_to_grade: false,
+    reason,
+    empty_state: emptyState,
+    summary: emptyState.summary,
+    next_actions: emptyState.next_actions,
+  }, { status: 422 })
+}
+
 /**
  * Grade a quick-take response with Haiku.
  * Returns a quality score 0.0–1.0 and structured coaching feedback.
@@ -44,6 +62,7 @@ function validationIssues(error: ZodError) {
 async function gradeWithHaiku(
   responseText: string,
   promptText: string,
+  contextBlock: string,
   budget: { userId: string; userPlan: string; route: string }
 ): Promise<{ score: number; feedback: string }> {
   const systemPrompt = `You are Hatch, a product thinking coach. Grade a quick-take response and give direct, specific coaching.
@@ -64,7 +83,11 @@ Return valid JSON only:
   "example_move": "<a short example of the sharper thinking move they should make>"
 }`
 
-  const userContent = `Challenge prompt: "${promptText}"\n\nUser's response: "${responseText}"`
+  const userContent = [
+    contextBlock,
+    `Challenge prompt: "${promptText}"`,
+    `User's response: "${responseText}"`,
+  ].filter(Boolean).join('\n\n')
 
   try {
     const msg = await guardedCachedMessage(systemPrompt, userContent, {
@@ -161,15 +184,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(buildCompletedQuickTakeResult(completedAttempt))
   }
 
+  const submissionQuality = detectSubmissionQuality(response_text)
+  if (submissionQuality !== 'substantive') {
+    return notReadyResponse(submissionQuality)
+  }
+
   // Grade with Haiku - quality score 0.0–1.0
   let score: number
   let feedback: string
   try {
     await assertPlanLimit(user.id, userPlan, 'quick_takes')
 
+    const contextBlock = await buildSkillContextPrompt(user.id, {
+      surface: 'grading',
+      challengeType: 'quick_take',
+      challengeTitle: challenge.title,
+      challengePrompt: challenge.prompt_text,
+      submissionText: response_text,
+      includePracticeLink: true,
+    }).catch(() => '')
     const result = await gradeWithHaiku(
       response_text,
       challenge.prompt_text ?? challenge.title ?? challenge_id,
+      contextBlock,
       { userId: user.id, userPlan, route: ROUTE_KEY }
     )
     score = result.score

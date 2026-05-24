@@ -4,7 +4,7 @@ import { HATCH_CHAT_SYSTEM_PROMPT, HATCH_GLOBAL_CHAT_SYSTEM_PROMPT } from '@/lib
 import { IS_MOCK } from '@/lib/mock'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
+import { buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
@@ -453,13 +453,17 @@ export async function POST(req: NextRequest) {
     const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
     // Build all context blocks in parallel
-    const [hatchCtx, pageContextBlock, recommendedBlock] = await Promise.all([
-      getHatchContext(user.id),
+    const [contextBlock, pageContextBlock, recommendedBlock] = await Promise.all([
+      buildSkillContextPrompt(user.id, {
+        surface: 'chat',
+        challengeType: challengeType === 'coding' ? 'algorithm' : (challengeType ?? null),
+        challengePrompt,
+        submissionText: message,
+        includePracticeLink: true,
+      }).catch(() => ''),
       pageContext ? buildPageContextBlock(pageContext) : Promise.resolve(''),
       buildRecommendedChallengesBlock(user.id),
     ])
-
-    const contextBlock = hatchCtx ? buildHatchContextString(hatchCtx, 'chat') : ''
 
     const basePrompt = challengeId ? HATCH_CHAT_SYSTEM_PROMPT : HATCH_GLOBAL_CHAT_SYSTEM_PROMPT
 

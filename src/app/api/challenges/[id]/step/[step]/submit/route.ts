@@ -11,6 +11,7 @@ import { STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { buildEmptyStateResponse, detectSubmissionQuality } from '@/lib/hatch/skill-context'
 
 // ── Request body ─────────────────────────────────────────────
 
@@ -53,6 +54,25 @@ function aiLimitResponse(error: unknown) {
   }
 
   return null
+}
+
+function notReadyFreeformResponse(reason: 'empty' | 'too_thin', options: FlowOption[]) {
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: 'product',
+    challengeType: 'flow',
+  })
+
+  return NextResponse.json({
+    status: 'not_ready',
+    ready_to_grade: false,
+    reason,
+    empty_state: emptyState,
+    summary: emptyState.summary,
+    next_actions: emptyState.next_actions,
+    step_complete: false,
+    revealed_options: revealedOptionsPayload(options),
+  }, { status: 422 })
 }
 
 // ── FLOW steps in order ──────────────────────────────────────
@@ -345,8 +365,9 @@ export async function POST(
   } else {
     // modified_option or freeform - full AI evaluation
     const textToGrade = response_type === 'modified_option' ? (user_text ?? '') : (user_text ?? '')
-    if (!textToGrade.trim()) {
-      return NextResponse.json({ error: 'user_text required for freeform/modified_option' }, { status: 400 })
+    const submissionQuality = detectSubmissionQuality(textToGrade)
+    if (submissionQuality !== 'substantive') {
+      return notReadyFreeformResponse(submissionQuality, options)
     }
     const { gradeFreeform } = await import('@/lib/v2/skills/ai/freeform-grader')
     let aiResult

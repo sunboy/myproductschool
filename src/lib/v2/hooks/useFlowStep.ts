@@ -122,7 +122,10 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? `Submit failed: ${res.status}`)
+        const nextAction = Array.isArray(body.next_actions) ? body.next_actions[0] : undefined
+        throw new Error(body.status === 'not_ready'
+          ? [body.summary, nextAction].filter(Boolean).join(' ')
+          : body.error ?? `Submit failed: ${res.status}`)
       }
       const result: SubmitResult = await res.json()
       setSubmitResult(result)

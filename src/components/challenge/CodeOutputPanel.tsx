@@ -153,8 +153,8 @@ function SqlTabbedResults({ results }: { results: RunResult }) {
         <div className="flex items-start gap-2 rounded-lg border border-outline-variant bg-surface p-4">
           <span className="material-symbols-outlined text-[18px] text-on-surface-variant">visibility_off</span>
           <div>
-            <p className="font-label text-sm font-bold text-on-surface">Hidden test</p>
-            <p className="mt-0.5 text-xs leading-relaxed text-on-surface-variant">
+            <p className="font-label text-sm font-semibold text-on-surface">Private grader test</p>
+            <p className="mt-0.5 text-xs font-medium leading-relaxed text-on-surface-variant">
               Hatch runs this on submit, but row-level output is hidden so the test cannot be reverse-engineered.
             </p>
           </div>
@@ -238,8 +238,8 @@ function SqlTabbedResults({ results }: { results: RunResult }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-label text-xs font-bold text-on-surface">{result.label}</span>
-                  <span className="block truncate text-[10.5px] text-on-surface-variant">
-                    {result.hidden ? 'Hidden' : result.status}
+                  <span className="block truncate text-[10.5px] font-medium text-on-surface-variant">
+                    {result.hidden ? 'Private' : result.status}
                   </span>
                 </span>
               </button>
@@ -304,7 +304,7 @@ function TestResultRow({ result, isSqlMode }: { result: TestResult; isSqlMode: b
         </span>
         <span className="text-sm font-label text-on-surface flex-1">
           {result.hidden ? (
-            <span className="italic text-on-surface-variant">{result.label} (hidden)</span>
+            <span className="italic text-on-surface-variant">{result.label} (private)</span>
           ) : (
             result.label
           )}

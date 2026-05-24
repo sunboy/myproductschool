@@ -80,7 +80,9 @@ export async function createTestUser(opts: { executionsToday?: number } = {}): P
   const { error: profileError } = await admin.from('profiles').upsert({
     id: userId,
     display_name: 'Test User',
-    role: 'engineer',
+    role: 'user',
+    preferred_role: 'SWE',
+    active_role: 'swe',
     plan: 'free',
     streak_days: 0,
     xp_total: 0,

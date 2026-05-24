@@ -7,6 +7,7 @@ import { AnimatedProgress, MotionSection } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { Md } from '@/components/ui/Md'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -178,32 +179,25 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           }
         }
 
-        if (isCanvasChallenge && canvasSnapshot) {
-          const { data: gradeRow } = await adminClient
-            .from('interview_grades')
-            .select('canvas_annotations')
-            .eq('attempt_id', attempt)
-            .maybeSingle()
-          if (gradeRow?.canvas_annotations && Array.isArray(gradeRow.canvas_annotations)) {
-            canvasAnnotations = gradeRow.canvas_annotations as CanvasAnnotation[]
-          }
+        const [gradeResult, recommendationResult] = await Promise.all([
+          isCanvasChallenge && canvasSnapshot
+            ? adminClient.from('interview_grades').select('canvas_annotations').eq('attempt_id', attempt).maybeSingle()
+            : Promise.resolve({ data: null }),
+          weakestCompetency
+            ? adminClient.rpc('next_user_challenge', { p_user_id: user.id, p_competency: weakestCompetency }).maybeSingle()
+            : Promise.resolve({ data: null }),
+        ])
+
+        if (gradeResult.data?.canvas_annotations && Array.isArray(gradeResult.data.canvas_annotations)) {
+          canvasAnnotations = gradeResult.data.canvas_annotations as CanvasAnnotation[]
         }
 
-        if (weakestCompetency) {
-          const { data: recommendation } = await adminClient
-            .rpc('next_user_challenge', {
-              p_user_id: user.id,
-              p_competency: weakestCompetency,
-            })
-            .maybeSingle()
-
-          if (recommendation) {
-            const recommendedChallenge = recommendation as Record<string, unknown>
-            nextChallenge = {
-              id: String(recommendedChallenge.id),
-              slug: typeof recommendedChallenge.slug === 'string' ? recommendedChallenge.slug : null,
-              title: String(recommendedChallenge.title),
-            }
+        if (recommendationResult.data) {
+          const recommendedChallenge = recommendationResult.data as Record<string, unknown>
+          nextChallenge = {
+            id: String(recommendedChallenge.id),
+            slug: typeof recommendedChallenge.slug === 'string' ? recommendedChallenge.slug : null,
+            title: String(recommendedChallenge.title),
           }
         }
       }
@@ -391,7 +385,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <p className="text-sm text-on-surface-variant mb-4">{scoreDescriptor}</p>
 
             {/* Overall assessment */}
-            <p className="text-sm text-on-surface leading-relaxed mb-6">{full.overall}</p>
+            <FeedbackText className="mb-6 text-on-surface">{full.overall}</FeedbackText>
 
             {/* Progress Bars for each dimension (summary) */}
             <div className="space-y-2">
@@ -438,7 +432,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                 {full.what_worked.map((item, i) => (
                   <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
                     <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
-                    <span>{item}</span>
+                    <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
                   </li>
                 ))}
               </ul>
@@ -452,7 +446,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                 {full.what_to_fix.map((item, i) => (
                   <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
                     <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
-                    <span>{item}</span>
+                    <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
                   </li>
                 ))}
               </ul>
@@ -480,7 +474,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
             <div>
               <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
-              <p className="text-sm text-on-tertiary-fixed-variant">{full.key_insight}</p>
+              <FeedbackText className="text-on-tertiary-fixed-variant">{full.key_insight}</FeedbackText>
             </div>
           </div>
 

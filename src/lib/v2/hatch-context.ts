@@ -1,7 +1,4 @@
-import {
-  getHatchContext as _getHatchContext,
-  buildHatchContextString,
-} from '@/lib/hatch-context'
+import { buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 import type { FlowStep } from '@/lib/types'
 
 /**
@@ -15,8 +12,13 @@ import type { FlowStep } from '@/lib/types'
 export async function getHatchContext(
   userId: string,
   _challengeId: string,
-  _step: FlowStep | string
+  step: FlowStep | string
 ): Promise<string> {
-  const ctx = await _getHatchContext(userId)
-  return buildHatchContextString(ctx, 'coaching')
+  return buildSkillContextPrompt(userId, {
+    surface: 'coaching',
+    challengeType: 'flow',
+    challengeTitle: null,
+    currentStep: step,
+    includePracticeLink: true,
+  })
 }
