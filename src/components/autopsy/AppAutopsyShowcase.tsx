@@ -125,7 +125,7 @@ export function AppAutopsyShowcaseIndex({ companies, stories, legacyProducts = [
             description="Each hub keeps the teardown and feature reads together, so the story has a home."
           />
           <Link
-            href="/autopsies"
+            href="/explore/showcase"
             className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-primary no-underline hover:text-primary/80"
           >
             Public library
