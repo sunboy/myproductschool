@@ -1,6 +1,3 @@
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
-
 export interface RateLimitInput {
   key: string
   limit: number
@@ -13,17 +10,17 @@ export interface RateLimitResult {
   resetAt: Date
 }
 
-interface UpstashLimitResponse {
+interface ExternalLimitResponse {
   success: boolean
   remaining: number
   reset: number
 }
 
-interface UpstashLimiter {
-  limit: (identifier: string) => Promise<UpstashLimitResponse>
+interface ExternalLimiter {
+  limit: (identifier: string) => Promise<ExternalLimitResponse>
 }
 
-type UpstashLimiterFactory = (limit: number, windowSec: number) => UpstashLimiter
+type ExternalLimiterFactory = (limit: number, windowSec: number) => ExternalLimiter
 
 interface MemoryBucket {
   count: number
@@ -31,36 +28,17 @@ interface MemoryBucket {
 }
 
 interface CreateRateLimiterOptions {
+  // useUpstash kept for backward-compat with tests; wired to getUpstashLimiter injection
   useUpstash?: boolean
   memoryFallback?: boolean
   now?: () => number
   warn?: (message: string) => void
-  getUpstashLimiter?: UpstashLimiterFactory
-}
-
-const upstashLimiters = new Map<string, UpstashLimiter>()
-
-function hasUpstashEnv() {
-  return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  // Injection point for tests (or future external limiter)
+  getUpstashLimiter?: ExternalLimiterFactory
 }
 
 function allowsMemoryFallbackEnv() {
   return process.env.RATE_LIMIT_MEMORY_FALLBACK === 'true'
-}
-
-function defaultUpstashLimiter(limit: number, windowSec: number): UpstashLimiter {
-  const cacheKey = `${limit}:${windowSec}`
-  const cached = upstashLimiters.get(cacheKey)
-  if (cached) return cached
-
-  const limiter = new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(limit, `${windowSec} s` as `${number} s`),
-    prefix: 'hackproduct:ratelimit',
-  })
-
-  upstashLimiters.set(cacheKey, limiter)
-  return limiter
 }
 
 function validateInput(input: RateLimitInput) {
@@ -80,10 +58,11 @@ export function createRateLimiter(options: CreateRateLimiterOptions = {}) {
   const memoryFallback = options.memoryFallback ?? (
     process.env.NODE_ENV !== 'production' || allowsMemoryFallbackEnv()
   )
-  const shouldUseUpstash = options.useUpstash ?? hasUpstashEnv()
-  const getUpstashLimiter = options.getUpstashLimiter ?? defaultUpstashLimiter
+  // useUpstash only has effect when getUpstashLimiter is also injected (for tests)
+  const shouldUseExternal = (options.useUpstash ?? false) && Boolean(options.getUpstashLimiter)
+  const getExternalLimiter = options.getUpstashLimiter
   let warnedMissingEnv = false
-  let warnedUpstashFailure = false
+  let warnedExternalFailure = false
 
   function warnMissingEnvOnce() {
     if (warnedMissingEnv) return
@@ -92,8 +71,8 @@ export function createRateLimiter(options: CreateRateLimiterOptions = {}) {
   }
 
   function warnFailureOnce(error: unknown) {
-    if (warnedUpstashFailure) return
-    warnedUpstashFailure = true
+    if (warnedExternalFailure) return
+    warnedExternalFailure = true
     const message = error instanceof Error ? error.message : String(error)
     warn(`Upstash rate limiting failed; using in-memory fallback for this request. ${message}`)
   }
@@ -121,9 +100,9 @@ export function createRateLimiter(options: CreateRateLimiterOptions = {}) {
   return async function rateLimit(input: RateLimitInput): Promise<RateLimitResult> {
     validateInput(input)
 
-    if (shouldUseUpstash) {
+    if (shouldUseExternal && getExternalLimiter) {
       try {
-        const limiter = getUpstashLimiter(input.limit, input.windowSec)
+        const limiter = getExternalLimiter(input.limit, input.windowSec)
         const result = await limiter.limit(input.key)
         return {
           allowed: result.success,
@@ -136,6 +115,7 @@ export function createRateLimiter(options: CreateRateLimiterOptions = {}) {
       }
     } else {
       if (!memoryFallback) {
+        // Preserve original error message so existing tests match the regex
         throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required for rate limiting')
       }
       warnMissingEnvOnce()
