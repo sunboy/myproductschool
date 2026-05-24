@@ -2,6 +2,19 @@ import type { NextConfig } from 'next'
 import path from 'node:path'
 import { withSentryConfig } from '@sentry/nextjs'
 
+if (
+  process.env.NEXT_PUBLIC_MOCK_MODE === 'true' ||
+  process.env.USE_MOCK_DATA === 'true' ||
+  process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+) {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+    throw new Error(
+      'CRITICAL SECURITY ERROR: Mock mode is enabled in a production build. ' +
+      'Set NEXT_PUBLIC_MOCK_MODE, USE_MOCK_DATA, and NEXT_PUBLIC_USE_MOCK_DATA to false before building.'
+    )
+  }
+}
+
 const projectRoot = process.cwd().includes(`${path.sep}.worktrees${path.sep}`)
   ? path.resolve(process.cwd(), '../..')
   : process.cwd()

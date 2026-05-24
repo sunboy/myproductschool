@@ -40,11 +40,14 @@ const MARKETING_ROUTES = [
   '/glossary',
   '/interviews',
   '/alternatives',
+  '/lp',
+  '/landing',
   '/robots.txt',
   '/sitemap.xml',
   '/manifest.json',
   '/llms.txt',
   '/llms-full.txt',
+  '/clone',
 ]
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/magic-link-sent']
 const AUTH_CALLBACK_ROUTES = ['/auth/callback']
