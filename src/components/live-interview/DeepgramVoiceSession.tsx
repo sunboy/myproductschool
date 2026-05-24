@@ -52,6 +52,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
     const scheduledSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set())
     const suppressedAgentMessagesRef = useRef<string[]>([])
     const connectedRef = useRef(false)
+    const hasReceivedTranscriptRef = useRef(false)
 
     const sendJson = useCallback((payload: unknown) => {
       const ws = wsRef.current
@@ -262,6 +263,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
               }
 
               if (payload.type === 'ConversationText' && payload.content) {
+                hasReceivedTranscriptRef.current = true
                 if (payload.role === 'agent') {
                   const idx = suppressedAgentMessagesRef.current.findIndex((msg) => msg === payload.content)
                   if (idx !== -1) {
@@ -309,8 +311,14 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
             if (!intentionallyClosed) onError('Voice connection error. Using chat mode.')
           })
 
-          ws.addEventListener('close', () => {
-            if (!intentionallyClosed && connectedRef.current) {
+          ws.addEventListener('close', (event) => {
+            if (intentionallyClosed) return
+            // Code 1000 after transcripts have flowed = natural session end (Deepgram closed its turn).
+            // Surface the fallback only for abnormal closes or sessions that never produced a transcript.
+            const isNormalClose = event.code === 1000
+            const hadActivity = hasReceivedTranscriptRef.current
+            if (isNormalClose && hadActivity) return
+            if (connectedRef.current) {
               onError('Voice connection closed. Using chat mode.')
             }
           })
@@ -324,6 +332,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
       return () => {
         intentionallyClosed = true
         connectedRef.current = false
+        hasReceivedTranscriptRef.current = false
 
         stopScheduledAudio()
 

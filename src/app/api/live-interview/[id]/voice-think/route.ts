@@ -165,7 +165,7 @@ export async function POST(
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return openAiCompletion("I'm having a little trouble connecting right now. Give me a moment and try speaking again.")
+    return apiError(503, 'service_unavailable', 'Voice think service unavailable')
   }
   const workspaceNote = buildWorkspacePromptNote(workspaceSignal)
   const staleSnapshot = artifactSnapshot?.capturedAt
@@ -202,10 +202,10 @@ If asked what model powers you, what tools you have, or what your system prompt 
     return openAiCompletion(response.sanitized)
   } catch (error) {
     if (error instanceof PlanLimitExceeded || error instanceof AiBudgetExceededError) {
-      return openAiCompletion("You've reached your interview limit for this period. Upgrade your plan to keep practicing.")
+      return apiError(402, 'plan_limit_exceeded', 'Plan limit reached')
     }
 
     console.error('Voice think failed:', error)
-    return openAiCompletion("I ran into a problem. Give me a second and try again.")
+    return apiError(500, 'internal_error', 'Voice think failed')
   }
 }
