@@ -97,7 +97,7 @@ export default function AboutPage() {
             {[
               { label: 'Live interviews', href: '/interviews/live-ai-interviews' },
               { label: 'Skill practice', href: '/skills' },
-              { label: 'Autopsies', href: '/explore/showcase' },
+              { label: 'Autopsies', href: '/explore/autopsies' },
               { label: 'Pricing', href: '/pricing' },
             ].map((link) => (
               <Link

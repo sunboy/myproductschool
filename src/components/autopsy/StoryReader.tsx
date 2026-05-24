@@ -94,7 +94,7 @@ export function StoryReader({ story, productName, productSlug, backHref, sidebar
       {/* Breadcrumb - light surface, matches app shell */}
       <div className={cn('fixed top-[52px] left-0 right-0 z-30 h-10 flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40', sidebarOffset && 'md:left-56')}>
         <Link
-          href={backHref ?? `/explore/showcase/${productSlug}`}
+          href={backHref ?? `/explore/autopsies/${productSlug}`}
           className="font-label text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
         >
           <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>arrow_back</span>

@@ -96,7 +96,7 @@ export function CompanyDrawer({ company, onClose }: CompanyDrawerProps) {
               {company.stories.map(story => (
                 <Link
                   key={story.slug}
-                  href={`/explore/showcase/${company.slug}/stories/${story.slug}`}
+                  href={`/explore/autopsies/${company.slug}/stories/${story.slug}`}
                   className="glass-tile group flex flex-col gap-1 rounded-xl p-4 transition-all duration-200"
                   onClick={onClose}
                 >
@@ -129,7 +129,7 @@ export function CompanyDrawer({ company, onClose }: CompanyDrawerProps) {
             {/* Footer link to full hub */}
             <div className="mt-auto px-6 pb-8">
               <Link
-                href={`/explore/showcase/${company.slug}`}
+                href={`/explore/autopsies/${company.slug}`}
                 className="block rounded-full py-3 text-center text-sm font-semibold transition-opacity hover:opacity-80"
                 style={{
                   background: 'var(--color-primary)',

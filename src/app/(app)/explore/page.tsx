@@ -273,7 +273,7 @@ export default async function ExplorePage() {
 
       {autopsies.length > 0 && (
         <>
-          <SectionHeading title="Autopsies" href="/explore/showcase" linkLabel={`See all (${totalAutopsyHubs})`} />
+          <SectionHeading title="Autopsies" href="/explore/autopsies" linkLabel={`See all (${totalAutopsyHubs})`} />
           <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {autopsies.map((item, index) => (
               <AutopsyCard key={item.product.slug} item={item} index={index} />
@@ -506,7 +506,7 @@ function AutopsyCard({ item, index }: { item: ExploreAutopsyCardItem; index: num
 
   return (
     <Link
-      href={`/explore/showcase/${product.slug}`}
+      href={`/explore/autopsies/${product.slug}`}
       data-hatch-sound="open"
       className="animate-fade-in-up group relative flex min-h-[142px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline shadow-[0_20px_42px_-30px_rgba(20,24,22,0.9)] transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_56px_-32px_rgba(20,24,22,0.98)]"
       style={{ background: bg, border: '1px solid rgba(255,255,255,0.10)', animationDelay: `${index * 60}ms` }}

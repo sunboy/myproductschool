@@ -34,7 +34,7 @@ function storyKindLabel(story: FeatureAutopsy) {
 }
 
 function routeForStory(story: FeatureAutopsy) {
-  return `/explore/showcase/${story.companySlug}/stories/${story.slug}`;
+  return `/explore/autopsies/${story.companySlug}/stories/${story.slug}`;
 }
 
 export function ShowcaseIndexExperience({
@@ -352,7 +352,7 @@ function ReadingPathShelf({
           const firstStory = firstItem ? storyMap.get(firstItem.storySlug) : undefined;
           const company = firstStory ? companyMap.get(firstStory.companySlug) : undefined;
           return (
-            <Link key={path.slug} href="/explore/showcase" className="sc-reading-path-card">
+            <Link key={path.slug} href="/explore/autopsies" className="sc-reading-path-card">
               <div className="sc-reading-path-art">
                 {firstStory ? (
                   <StoryVisual story={firstStory} company={company} variant="rail" />
@@ -399,7 +399,7 @@ function CompanyBrowseStrip({
         {companies.slice(0, 12).map(company => {
           const count = companyStories.get(company.slug)?.length ?? 0;
           return (
-            <Link key={company.slug} href={`/explore/showcase/${company.slug}`} className="sc-company-card">
+            <Link key={company.slug} href={`/explore/autopsies/${company.slug}`} className="sc-company-card">
               <span className="sc-company-card__name">
                 <span className="sc-dot" style={{ background: company.accent }} aria-hidden="true" />
                 {company.name}
@@ -572,7 +572,7 @@ function SearchOverlay({
           {companyMatches.length > 0 && (
             <SearchSection label="Companies">
               {companyMatches.map(company => (
-                <Link key={company.slug} href={`/explore/showcase/${company.slug}`} className="sc-search-row" onClick={onClose}>
+                <Link key={company.slug} href={`/explore/autopsies/${company.slug}`} className="sc-search-row" onClick={onClose}>
                   <span className="sc-search-company-dot" style={{ background: company.accent }} />
                   <span className="sc-search-row__body">
                     <span>{company.name}</span>
@@ -637,7 +637,7 @@ function LibraryCompanyDrawer({
           {companies.map(company => {
             const count = companyStories.get(company.slug)?.length ?? 0;
             return (
-              <Link key={company.slug} href={`/explore/showcase/${company.slug}`} className="sc-company-drawer-row" onClick={onClose}>
+              <Link key={company.slug} href={`/explore/autopsies/${company.slug}`} className="sc-company-drawer-row" onClick={onClose}>
                 <span className="sc-company-drawer-art">
                   <CompanyArt name={company.name} slug={company.slug} accent={company.accent} variant="mini" />
                 </span>

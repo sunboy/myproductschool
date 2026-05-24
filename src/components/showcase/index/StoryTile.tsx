@@ -16,7 +16,7 @@ function storyKindLabel(story: FeatureAutopsy) {
 }
 
 function getStoryHref(story: FeatureAutopsy) {
-  return `/explore/showcase/${story.companySlug}/stories/${story.slug}`;
+  return `/explore/autopsies/${story.companySlug}/stories/${story.slug}`;
 }
 
 export function StoryTile({

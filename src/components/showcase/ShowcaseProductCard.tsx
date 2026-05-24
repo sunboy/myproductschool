@@ -69,7 +69,7 @@ export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcasePro
       {/* Hover overlay - dark scrim + two action buttons */}
       <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-[2px]">
         <Link
-          href={`/explore/showcase/${product.slug}`}
+          href={`/explore/autopsies/${product.slug}`}
           className="w-[80%] text-center bg-primary text-on-primary rounded-full px-4 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
           onClick={e => e.stopPropagation()}
         >
@@ -77,7 +77,7 @@ export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcasePro
         </Link>
         {hasStories && (
           <Link
-            href={`/explore/showcase/${product.slug}#stories`}
+            href={`/explore/autopsies/${product.slug}#stories`}
             className="w-[80%] text-center bg-white/90 text-on-background rounded-full px-4 py-2.5 font-label font-semibold text-sm hover:bg-white transition-colors"
             onClick={e => e.stopPropagation()}
           >

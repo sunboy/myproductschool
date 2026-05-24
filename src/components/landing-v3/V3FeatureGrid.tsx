@@ -46,7 +46,7 @@ const featureCells: FeatureCell[] = [
   { title: 'Live loops', icon: Mic2, href: '/live-interviews' },
   { title: 'Challenges', icon: Target, href: '/challenges' },
   { title: 'FLOW', icon: Route, href: '/flow' },
-  { title: 'Autopsies', icon: FileSearch, href: '/explore/showcase' },
+  { title: 'Autopsies', icon: FileSearch, href: '/explore/autopsies' },
   { title: 'Study plans', icon: GraduationCap, href: '/study-plans' },
   { title: 'Learn', icon: BookOpen, href: '/explore/modules' },
   { title: 'Scoring', icon: BarChart3, href: '/progress' },
@@ -72,7 +72,7 @@ const spotlightFeatures: SpotlightFeature[] = [
     title: 'Airbnb decoded',
     eyebrow: 'Autopsy',
     icon: FileSearch,
-    href: '/explore/showcase/airbnb-craigslist-hack',
+    href: '/explore/autopsies/airbnb-craigslist-hack',
     image: '/images/autopsies/airbnb-craigslist-hack/final/thumbnail.webp',
   },
   {
@@ -80,7 +80,7 @@ const spotlightFeatures: SpotlightFeature[] = [
     title: 'Stripe integration',
     eyebrow: 'Teardown',
     icon: Code2,
-    href: '/explore/showcase/stripe-seven-line-integration',
+    href: '/explore/autopsies/stripe-seven-line-integration',
     image: '/images/autopsies/stripe-seven-line-integration/final/thumbnail.webp',
   },
   {

@@ -10,7 +10,7 @@ interface Props {
 export function StoryCard({ story, productSlug, coverColor }: Props) {
   return (
     <Link
-      href={`/explore/showcase/${productSlug}/stories/${story.slug}`}
+      href={`/explore/autopsies/${productSlug}/stories/${story.slug}`}
       className="group block rounded-xl overflow-hidden bg-surface-container hover:bg-surface-container-high transition-colors"
     >
       {/* Thumbnail */}

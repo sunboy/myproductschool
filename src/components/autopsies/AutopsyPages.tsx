@@ -373,7 +373,7 @@ function LockedStoryPage({ company, story, access }: StoryPageProps) {
               <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-[#244232] px-4 py-3 text-sm font-bold text-[#faf6f0] no-underline">
                 Sign up to read <ArrowRight size={16} />
               </Link>
-              <Link href="/explore/showcase" className="inline-flex items-center gap-2 rounded-lg border border-[#d8d0c0] px-4 py-3 text-sm font-bold text-[#244232] no-underline">
+              <Link href="/explore/autopsies" className="inline-flex items-center gap-2 rounded-lg border border-[#d8d0c0] px-4 py-3 text-sm font-bold text-[#244232] no-underline">
                 View public reads
               </Link>
             </div>
@@ -403,7 +403,7 @@ function AutopsyShell({ children }: { children: React.ReactNode }) {
             HackProduct
           </Link>
           <div className="hidden items-center gap-5 text-sm font-semibold text-[#565d52] md:flex">
-            <Link className="hover:text-[#244232]" href="/explore/showcase">Autopsies</Link>
+            <Link className="hover:text-[#244232]" href="/explore/autopsies">Autopsies</Link>
             <Link className="hover:text-[#244232]" href="/skills">Skills</Link>
             <Link className="hover:text-[#244232]" href="/study-plans">Study plans</Link>
           </div>
@@ -426,7 +426,7 @@ function AutopsyShell({ children }: { children: React.ReactNode }) {
             </p>
           </div>
           <div className="flex flex-wrap gap-4 text-sm font-semibold text-[#faf6f0]/70">
-            <Link className="hover:text-white" href="/explore/showcase">Library</Link>
+            <Link className="hover:text-white" href="/explore/autopsies">Library</Link>
             <Link className="hover:text-white" href="/help">Help</Link>
           </div>
         </div>

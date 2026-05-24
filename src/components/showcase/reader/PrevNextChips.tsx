@@ -36,7 +36,7 @@ export function PrevNextChips({ prevNext }: PrevNextChipsProps) {
       <div className="flex-1">
         {prev && (
           <Link
-            href={`/explore/showcase/${prev.companySlug}/stories/${prev.storySlug}`}
+            href={`/explore/autopsies/${prev.companySlug}/stories/${prev.storySlug}`}
             className="glass-tile group flex items-center gap-3 rounded-xl p-4 transition-all duration-200"
           >
             <span
@@ -68,7 +68,7 @@ export function PrevNextChips({ prevNext }: PrevNextChipsProps) {
       <div className="flex-1">
         {next && (
           <Link
-            href={`/explore/showcase/${next.companySlug}/stories/${next.storySlug}`}
+            href={`/explore/autopsies/${next.companySlug}/stories/${next.storySlug}`}
             className="glass-tile group flex items-center justify-end gap-3 rounded-xl p-4 text-right transition-all duration-200"
           >
             <div className="min-w-0">

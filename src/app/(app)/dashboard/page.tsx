@@ -129,7 +129,7 @@ function HatchOperatingSystemCard() {
     {
       label: 'Autopsies',
       sub: 'Read the decision trees behind real products.',
-      href: '/explore/showcase',
+      href: '/explore/autopsies',
       icon: 'biotech',
       tone: '#c9933a',
     },

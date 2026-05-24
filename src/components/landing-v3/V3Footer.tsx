@@ -16,7 +16,7 @@ const footerColumns = [
     links: [
       { label: 'Skills', href: '/skills' },
       { label: 'Study plans', href: '/study-plans' },
-      { label: 'Autopsies', href: '/explore/showcase' },
+      { label: 'Autopsies', href: '/explore/autopsies' },
       { label: 'Practice previews', href: '/practice' },
     ],
   },

@@ -96,7 +96,7 @@ const FORMAT_CARDS = [
     description: 'Diagnose real product decisions that shipped.',
     bullets: ['126 cases, new weekly', 'Why did the team choose this?', 'What did they trade away?'],
     cta: 'Read one →',
-    href: '/explore/showcase',
+    href: '/explore/autopsies',
     highlight: true,
   },
   {
@@ -555,7 +555,7 @@ export function SolidLanding() {
         <div className="solid-footer__col">
           <strong>Reps</strong>
           <Link href="/practice">Practice</Link>
-          <Link href="/explore/showcase">Autopsies</Link>
+          <Link href="/explore/autopsies">Autopsies</Link>
           <Link href="/interviews/live-ai-interviews">Live Sessions</Link>
           <Link href="/study-plans">Study Plans</Link>
           <Link href="#flow">FLOW</Link>

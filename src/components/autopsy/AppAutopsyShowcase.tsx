@@ -31,7 +31,7 @@ const fallbackImages = [
 ]
 
 function storyHref(story: FeatureAutopsy) {
-  return `/explore/showcase/${story.companySlug}/stories/${story.slug}`
+  return `/explore/autopsies/${story.companySlug}/stories/${story.slug}`
 }
 
 function getStoryImage(story: FeatureAutopsy, role: AutopsyImageRole) {
@@ -125,7 +125,7 @@ export function AppAutopsyShowcaseIndex({ companies, stories, legacyProducts = [
             description="Each hub keeps the teardown and feature reads together, so the story has a home."
           />
           <Link
-            href="/explore/showcase"
+            href="/explore/autopsies"
             className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-primary no-underline hover:text-primary/80"
           >
             Public library
@@ -219,7 +219,7 @@ export function AppAutopsyCompanyHubWithLegacy({ company, legacyProduct }: Compa
   return (
     <div className="mx-auto flex max-w-[1180px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
       <nav className="flex items-center gap-2 font-label text-sm text-on-surface-variant">
-        <Link href="/explore/showcase" className="font-bold text-primary no-underline hover:text-primary/80">
+        <Link href="/explore/autopsies" className="font-bold text-primary no-underline hover:text-primary/80">
           Showcase
         </Link>
         <span className="material-symbols-outlined text-[16px]" aria-hidden>
@@ -334,7 +334,7 @@ export function AppLegacyCompanyHub({ product }: LegacyCompanyHubProps) {
   return (
     <div className="mx-auto flex max-w-[1180px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
       <nav className="flex items-center gap-2 font-label text-sm text-on-surface-variant">
-        <Link href="/explore/showcase" className="font-bold text-primary no-underline hover:text-primary/80">
+        <Link href="/explore/autopsies" className="font-bold text-primary no-underline hover:text-primary/80">
           Showcase
         </Link>
         <span className="material-symbols-outlined text-[16px]" aria-hidden>
@@ -516,7 +516,7 @@ function CompanyHubRow({
 
   return (
     <Link
-      href={`/explore/showcase/${company.slug}`}
+      href={`/explore/autopsies/${company.slug}`}
       className="group relative min-h-[210px] overflow-hidden rounded-2xl border border-outline-variant/45 bg-surface-container-low p-4 text-on-surface no-underline transition hover:-translate-y-0.5 hover:bg-surface-container hover:ring-1 hover:ring-primary/25 active:translate-y-0"
     >
       <div
@@ -573,7 +573,7 @@ function LegacyCompanyHubRow({ product, index }: { product: AutopsyProduct; inde
 
   return (
     <Link
-      href={`/explore/showcase/${product.slug}`}
+      href={`/explore/autopsies/${product.slug}`}
       className="group relative min-h-[210px] overflow-hidden rounded-2xl border border-outline-variant/45 bg-surface-container-low p-4 text-on-surface no-underline transition hover:-translate-y-0.5 hover:bg-surface-container hover:ring-1 hover:ring-primary/25 active:translate-y-0"
     >
       <div
@@ -701,7 +701,7 @@ function LegacyTeardownTile({
 
   return (
     <Link
-      href={`/explore/showcase/${product.slug}`}
+      href={`/explore/autopsies/${product.slug}`}
       className="group grid overflow-hidden rounded-2xl border border-outline-variant/45 bg-surface-container-low text-on-surface no-underline transition hover:-translate-y-0.5 hover:bg-surface-container hover:ring-1 hover:ring-primary/25 active:translate-y-0"
     >
       <div className="relative aspect-[16/9] overflow-hidden bg-[#143321]">
@@ -754,7 +754,7 @@ function LegacyStoryRow({
 
   return (
     <Link
-      href={`/explore/showcase/${product.slug}/stories/${story.slug}`}
+      href={`/explore/autopsies/${product.slug}/stories/${story.slug}`}
       className="group grid overflow-hidden rounded-2xl border border-outline-variant/45 bg-surface-container-low text-on-surface no-underline transition hover:-translate-y-0.5 hover:bg-surface-container hover:ring-1 hover:ring-primary/25 active:translate-y-0 sm:grid-cols-[220px_minmax(0,1fr)]"
     >
       <div className="relative min-h-40 overflow-hidden bg-[#143321]">

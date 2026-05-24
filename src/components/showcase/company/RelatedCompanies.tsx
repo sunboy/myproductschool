@@ -25,7 +25,7 @@ export function RelatedCompanies({ companies, currentSlug }: RelatedCompaniesPro
       </div>
       <div className="sc-related-grid">
         {related.map(company => (
-          <Link key={company.slug} href={`/explore/showcase/${company.slug}`} className="sc-related-card">
+          <Link key={company.slug} href={`/explore/autopsies/${company.slug}`} className="sc-related-card">
             <div className="sc-related-card__art">
               <CompanyArt
                 name={company.name}

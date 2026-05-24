@@ -50,7 +50,7 @@ export function GradientFooter() {
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="/explore/showcase">
+                <Link className="hover:text-white transition-colors" href="/explore/autopsies">
                   Case Studies
                 </Link>
               </li>

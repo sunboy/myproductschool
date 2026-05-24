@@ -41,7 +41,7 @@ export const landingMenuItems: LandingMenuItem[] = [
     title: 'Autopsies',
     eyebrow: 'Decisions with receipts',
     description: 'Read product stories through the choice, trade-off, mechanism, and consequence instead of a generic case-study recap.',
-    href: '/explore/showcase',
+    href: '/explore/autopsies',
     status: 'Public preview',
   },
   {
@@ -97,7 +97,7 @@ export const landingPreviewCards: LandingPreview[] = [
     title: 'Autopsy library',
     eyebrow: 'Autopsies',
     description: 'Browse product stories with receipts, visuals, and explicit judgment calls instead of motivational summaries.',
-    href: '/explore/showcase',
+    href: '/explore/autopsies',
     image: '/hackproduct-marketing/landing/screenshots/autopsies-live.png',
     alt: 'HackProduct autopsy library page with product stories and Hatch reading illustration',
     hatchNote: 'Look for the decision that made the curve bend.',

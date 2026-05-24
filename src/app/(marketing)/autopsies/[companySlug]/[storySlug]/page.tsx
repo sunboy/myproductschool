@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { AutopsyReaderClient } from '@/app/(app)/explore/showcase/[slug]/AutopsyReaderClient'
+import { AutopsyReaderClient } from '@/app/(app)/explore/autopsies/[slug]/AutopsyReaderClient'
 import { PublicFeatureAutopsyPage } from '@/components/autopsy/PublicFeatureAutopsyPage'
 import { StoryReader } from '@/components/autopsy/StoryReader'
 import { getAutopsyAccess } from '@/lib/autopsies/access'

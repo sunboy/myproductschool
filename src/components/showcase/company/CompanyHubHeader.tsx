@@ -13,7 +13,7 @@ export function CompanyHubHeader({ company, storyCount }: CompanyHubHeaderProps)
       <div className="sc-hero-ink-dotgrid" />
       <div className="sc-company-header__glow" />
       <div className="sc-company-header__inner">
-        <Link href="/explore/showcase" className="sc-company-header__back">
+        <Link href="/explore/autopsies" className="sc-company-header__back">
           <span className="material-symbols-outlined msi-sm" aria-hidden="true">arrow_back</span>
           All stories
         </Link>

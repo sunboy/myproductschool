@@ -65,7 +65,7 @@ export function CinematicReader({
   ];
 
   const { scrollPct, activeSection } = useReaderScroll(sectionIds, contentRef);
-  const backHref = `/explore/showcase/${story.companySlug}`;
+  const backHref = `/explore/autopsies/${story.companySlug}`;
 
   return (
     <div className="relative min-h-screen pb-32">

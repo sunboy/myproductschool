@@ -44,7 +44,7 @@ function PublicAutopsyTopBar() {
     <header
       className="z-40 flex h-[52px] items-center border-b border-outline-variant/60 bg-background/85 px-3 backdrop-blur md:px-6"
     >
-      <Link href="/explore/showcase" className="flex min-w-0 items-center no-underline">
+      <Link href="/explore/autopsies" className="flex min-w-0 items-center no-underline">
         <Image
           src="/images/wordmark.png"
           alt="HackProduct"
@@ -56,7 +56,7 @@ function PublicAutopsyTopBar() {
       </Link>
       <nav className="ml-auto flex items-center gap-2">
         <Link
-          href="/explore/showcase"
+          href="/explore/autopsies"
           className="hidden rounded-full px-3 py-2 text-xs font-label font-bold text-on-surface-variant no-underline hover:bg-surface-container-low sm:inline-flex"
         >
           Autopsies
@@ -102,7 +102,7 @@ function LockedFeatureAutopsy({ company, story, access }: Props) {
           <Link href="/signup" className="rounded-full bg-primary px-5 py-3 text-sm font-label font-bold text-on-primary no-underline">
             Sign up to read
           </Link>
-          <Link href="/explore/showcase" className="rounded-full border border-outline-variant px-5 py-3 text-sm font-label font-bold text-primary no-underline">
+          <Link href="/explore/autopsies" className="rounded-full border border-outline-variant px-5 py-3 text-sm font-label font-bold text-primary no-underline">
             Back to autopsies
           </Link>
         </div>

@@ -20,7 +20,7 @@ export function ShowcaseHero({ totalStories, totalCompanies }: ShowcaseHeroProps
     const q = query.trim();
     if (!q) return;
     startTransition(() => {
-      router.push(`/explore/showcase?q=${encodeURIComponent(q)}`);
+      router.push(`/explore/autopsies?q=${encodeURIComponent(q)}`);
     });
   };
 

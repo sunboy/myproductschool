@@ -13,8 +13,8 @@ export function FeaturedAutopsyCard({
   const visual = story.images.find(image => image.role === 'thumbnail')
     ?? story.images.find(image => image.role === 'social-cover')
     ?? story.images.find(image => image.role === 'hero')
-  const storyHref = `/explore/showcase/${story.companySlug}/stories/${story.slug}`
-  const hubHref = `/explore/showcase/${story.companySlug}`
+  const storyHref = `/explore/autopsies/${story.companySlug}/stories/${story.slug}`
+  const hubHref = `/explore/autopsies/${story.companySlug}`
 
   return (
     <section className="overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3 shadow-[0_18px_42px_-38px_rgba(30,27,20,0.45)]">
