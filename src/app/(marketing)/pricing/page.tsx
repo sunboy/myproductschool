@@ -3,9 +3,9 @@ import { buildMetadata } from '@/lib/seo/site'
 import { PricingClient } from './PricingClient'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Pricing | HackProduct',
+  title: 'Pricing | HackProduct AI-Native Practice System',
   description:
-    'Start free or try HackProduct Pro free for 7 days. Compare challenge starts, Hatch AI coaching, live interview practice, study plans, and billing options.',
+    'Choose monthly or annual access to HackProduct Pro. Train with live interviews, Hatch AI coaching, scoring, study plans, autopsies, code, and canvas practice.',
   path: '/pricing',
   keywords: [
     'HackProduct pricing',

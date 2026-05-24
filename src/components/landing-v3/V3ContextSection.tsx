@@ -1,0 +1,160 @@
+import Image from 'next/image'
+
+type CompanyTickerItem = {
+  name: string
+  src?: string
+}
+
+const logoCompanies: CompanyTickerItem[] = [
+  { name: 'Meta', src: '/landing-v3/logos/meta.svg' },
+  { name: 'Google', src: '/landing-v3/logos/google.svg' },
+  { name: 'Stripe', src: '/landing-v3/logos/stripe.svg' },
+  { name: 'Airbnb', src: '/landing-v3/logos/airbnb.svg' },
+  { name: 'Uber', src: '/landing-v3/logos/uber.svg' },
+  { name: 'DoorDash', src: '/landing-v3/logos/doordash.svg' },
+]
+
+const textCompanies: CompanyTickerItem[] = [
+  { name: 'Amazon' },
+  { name: 'Apple' },
+  { name: 'Microsoft' },
+  { name: 'Netflix' },
+  { name: 'LinkedIn' },
+  { name: 'TikTok' },
+  { name: 'YouTube' },
+  { name: 'Shopify' },
+  { name: 'Salesforce' },
+  { name: 'Adobe' },
+  { name: 'Coinbase' },
+  { name: 'Robinhood' },
+  { name: 'Instacart' },
+  { name: 'Lyft' },
+  { name: 'Pinterest' },
+  { name: 'Snap' },
+  { name: 'Reddit' },
+  { name: 'Discord' },
+  { name: 'Figma' },
+  { name: 'Notion' },
+  { name: 'Linear' },
+  { name: 'OpenAI' },
+  { name: 'Anthropic' },
+  { name: 'Datadog' },
+  { name: 'Snowflake' },
+  { name: 'Palantir' },
+  { name: 'Dropbox' },
+  { name: 'Atlassian' },
+  { name: 'NVIDIA' },
+  { name: 'Tesla' },
+]
+
+const tickerCompanies = [...logoCompanies, ...textCompanies]
+const tickerLoops = [tickerCompanies, tickerCompanies]
+
+const cards = [
+  {
+    title: 'Solo Grind',
+    body: 'Scattered drills make practice feel busy, but keep the signal fragmented.',
+    image: '/landing-v3/section-2/solo-grid.png',
+    alt: 'Abstract scattered practice tiles for interview disciplines.',
+    width: 1254,
+    height: 1254,
+  },
+  {
+    title: 'Blind Spots',
+    body: 'You can repeat reps for hours and still miss the evidence interviewers score.',
+    image: '/landing-v3/section-2/blind-spots.png',
+    alt: 'Abstract tangled path with hidden evaluation gaps.',
+    width: 1402,
+    height: 1122,
+  },
+  {
+    title: 'Calibrated Feedback',
+    body: 'Hatch converges each attempt, rubric, artifact, and next rep into coaching.',
+    image: '/landing-v3/section-2/calibrated-feedback.png',
+    alt: 'Abstract organized feedback loop with rubric signals.',
+    width: 1536,
+    height: 1024,
+    hasHatch: true,
+  },
+]
+
+export function V3ContextSection() {
+  return (
+    <section className="context-section" aria-labelledby="context-heading">
+      <div className="shell">
+        <div className="context-logo-row" aria-label="Practice for interview loops at">
+          <div className="context-logo-label">Practice for interview loops at</div>
+          <div className="context-logo-marquee" tabIndex={0}>
+            <div className="context-logo-track">
+              {tickerLoops.map((companies, loopIndex) => (
+                <div className="context-logo-group" aria-hidden={loopIndex > 0} key={loopIndex}>
+                  {companies.map((company) => (
+                    <div className="context-logo" key={`${loopIndex}-${company.name}`}>
+                      {company.src ? (
+                        <Image src={company.src} alt="" aria-hidden="true" width={24} height={24} />
+                      ) : (
+                        <span className="context-logo-initial" aria-hidden="true">
+                          {company.name.slice(0, 1)}
+                        </span>
+                      )}
+                      <span>{company.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="context-copy">
+          <h2 id="context-heading">
+            Prep breaks when practice, blind spots, and feedback stay fragmented.
+          </h2>
+          <p>HackProduct brings the rep, rubric, artifact, and coach into one AI-native loop.</p>
+        </div>
+
+        <div className="context-map">
+          <Image
+            className="context-connector"
+            src="/landing-v3/section-2/context-connector.png"
+            alt=""
+            aria-hidden="true"
+            width={1920}
+            height={819}
+            sizes="100vw"
+          />
+
+          <div className="context-card-grid">
+            {cards.map((card) => (
+              <article className="context-card" key={card.title}>
+                <div className="context-card-art">
+                  <Image
+                    src={card.image}
+                    alt={card.alt}
+                    width={card.width}
+                    height={card.height}
+                    sizes="(max-width: 700px) 68vw, (max-width: 1100px) 28vw, 320px"
+                  />
+                  {card.hasHatch ? (
+                    <Image
+                      className="context-hatch"
+                      src="/landing-v3/section-2/hatch-coach-cutout.png"
+                      alt="Hatch, the HackProduct coach."
+                      width={1254}
+                      height={1254}
+                      sizes="96px"
+                    />
+                  ) : null}
+                </div>
+                <div className="context-card-copy">
+                  <h3>{card.title}</h3>
+                  <p>{card.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

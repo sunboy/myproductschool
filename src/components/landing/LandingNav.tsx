@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Search } from 'lucide-react'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 const DISCIPLINES = ['Product', 'Systems', 'Data', 'SQL', 'Coding', 'AI-native']
 
@@ -8,8 +9,7 @@ export function LandingNav() {
     <header className="mkt-nav">
       <div className="mkt-nav-top">
         <Link href="/" className="mkt-wordmark">
-          <span aria-hidden>HP</span>
-          HackProduct
+          <HackProductWordmark className="mkt-wordmark-image" priority />
         </Link>
         <Link href="/practice" className="mkt-search">
           <Search aria-hidden size={17} />

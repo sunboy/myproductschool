@@ -15,6 +15,10 @@ const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/hatch-preview', '/hatch-
 // never be blocked by an auth-service hiccup.
 const MARKETING_ROUTES = [
   '/',
+  '/v3',
+  '/about',
+  '/contact',
+  '/security',
   '/waitlist',
   '/waitlist-quick',
   '/waitlist-flow',

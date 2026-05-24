@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Raleway, Literata, Geist } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AnalyticsGate } from "@/components/legal/AnalyticsGate";
 import { CookieBanner } from "@/components/legal/CookieBanner";
 import { MotionProvider } from "@/components/motion";
@@ -116,6 +117,7 @@ export default function RootLayout({
             <HatchSonicSurface />
             {children}
             <CookieBanner />
+            <SpeedInsights />
           </PostHogProvider>
         </MotionProvider>
         <AnalyticsGate />

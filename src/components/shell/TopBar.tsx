@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { HatchGlyph } from './HatchGlyph'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 interface ProfileBadge {
   streak_days: number
@@ -63,8 +63,7 @@ export function TopBar() {
       <div className="flex items-center justify-between gap-3 px-4 h-13 w-full">
 
         {/* Wordmark - mobile and desktop */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/wordmark.png" alt="HackProduct" className="h-5 shrink-0" />
+        <HackProductWordmark className="h-6 w-[148px] shrink-0 object-cover" />
 
         {/* Spacer - pushes badges to right */}
         <div className="flex-1" />

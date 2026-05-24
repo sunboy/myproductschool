@@ -67,6 +67,12 @@ body {
   font-weight: 900;
 }
 
+.mkt-wordmark-image {
+  width: 178px;
+  height: 48px;
+  object-fit: cover;
+}
+
 .mkt-search {
   display: flex;
   align-items: center;

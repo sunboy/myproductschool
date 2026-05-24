@@ -611,6 +611,8 @@ export function getGlossaryTerm(slug: string) {
 
 export const PUBLIC_DIRECTORY_PATHS = [
   '/',
+  '/v3',
+  '/about',
   '/interview-prep',
   '/role-transitions',
   '/uplevel',
@@ -634,6 +636,8 @@ export const PUBLIC_DIRECTORY_PATHS = [
   '/interviews/live-ai-interviews',
   '/alternatives/leetcode',
   '/pricing',
+  '/contact',
+  '/security',
   '/privacy',
   '/terms',
   '/help',
@@ -648,7 +652,7 @@ export function organizationJsonLd() {
     '@id': `${SITE_URL}/#organization`,
     name: SITE_NAME,
     url: SITE_URL,
-    logo: imageUrl('/images/hackylogo.png'),
+    logo: imageUrl('/images/logo.png'),
     description: HACKPRODUCT_POSITIONING.llmSummary,
   }
 }

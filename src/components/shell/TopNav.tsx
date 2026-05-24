@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { FreemiumUsageSummary, SpendIndicator } from '@/components/billing/FreemiumUsageSummary'
 import { TrialBanner } from '@/components/billing/TrialBanner'
 import { DunningBanner } from '@/components/billing/DunningBanner'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 const NAV_ITEMS = [
   { id: 'home',       href: '/',               icon: 'home',          label: 'Home'       },
@@ -144,8 +145,7 @@ export function TopNav() {
         {/* Column 1: Brand. Wordmark file has padding around the glyphs, so it
             needs more pixels than the visible text suggests. */}
         <Link href="/dashboard" className="flex min-w-0 shrink items-center no-underline sm:shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/wordmark.png" alt="HackProduct" className="h-8 w-auto max-w-[190px] object-contain sm:h-12 sm:max-w-none" />
+          <HackProductWordmark className="h-8 w-[168px] object-cover sm:h-12 sm:w-[242px]" />
         </Link>
 
         {/* Column 2: Nav pills (centered) */}
