@@ -15,7 +15,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export type MdVariant = 'default' | 'compact' | 'chat'
+export type MdVariant = 'default' | 'compact' | 'chat' | 'feedback'
 export type MdTone = 'default' | 'inherit'
 
 const ALLOWED_TAGS = [
@@ -98,6 +98,18 @@ const variantClass = {
     blockquote: 'border-l-4 border-outline-variant pl-2 text-inherit opacity-80 my-1.5',
     table: 'my-1.5 w-full border-collapse text-[11px]',
     cell: 'border border-outline-variant px-1.5 py-1 text-left align-top',
+  },
+  feedback: {
+    p: 'font-body text-sm leading-relaxed text-inherit mb-2 last:mb-0',
+    h1: 'font-headline text-lg font-bold leading-tight text-inherit mt-3 mb-1.5 first:mt-0',
+    h2: 'font-headline text-base font-bold leading-tight text-inherit mt-3 mb-1.5 first:mt-0',
+    h3: 'font-headline text-sm font-bold leading-tight text-inherit mt-2 mb-1 first:mt-0',
+    list: 'ml-4 space-y-1.5 mb-2 last:mb-0',
+    code: 'bg-surface-container-high px-1 rounded text-[0.92em] font-mono text-inherit',
+    pre: 'bg-surface-container-highest p-3 rounded-lg overflow-x-auto text-xs font-mono text-on-surface my-2',
+    blockquote: 'border-l-4 border-outline-variant pl-3 text-inherit opacity-80 my-2',
+    table: 'my-2 w-full border-collapse text-xs',
+    cell: 'border border-outline-variant px-2 py-1 text-left align-top',
   },
 }
 

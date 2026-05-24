@@ -6,7 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { cn } from '@/lib/utils'
-import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
+import { FreemiumUsageSummary, SpendIndicator } from '@/components/billing/FreemiumUsageSummary'
+import { TrialBanner } from '@/components/billing/TrialBanner'
+import { DunningBanner } from '@/components/billing/DunningBanner'
 
 const NAV_ITEMS = [
   { id: 'home',       href: '/',               icon: 'home',          label: 'Home'       },
@@ -112,7 +114,22 @@ export function TopNav() {
     return pathname.startsWith(item.href)
   }
 
+  // Derive trial/dunning banners from already-fetched profile data
+  const sub = profile?.subscription
+  const isTrialing = sub?.status === 'trialing' && sub?.current_period_end
+  const trialDaysLeft = isTrialing
+    ? Math.ceil((new Date(sub!.current_period_end!).getTime() - Date.now()) / 86400000)
+    : null
+  const isDunning = sub?.status === 'past_due'
+
   return (
+    <>
+    {trialDaysLeft !== null && trialDaysLeft <= 7 && (
+      <TrialBanner daysLeft={trialDaysLeft} trialEndsAt={sub!.current_period_end!} />
+    )}
+    {isDunning && (
+      <DunningBanner message="Your payment failed. Pro access will be suspended soon." />
+    )}
     <header
       className="sticky top-0 z-40 w-full max-w-full border-b"
       style={{
@@ -235,6 +252,13 @@ export function TopNav() {
             </button>
           </AppTooltip>
 
+          {/* Live AI spend indicator — only visible when not pro */}
+          {!isPro && (
+            <div className="hidden sm:flex">
+              <SpendIndicator />
+            </div>
+          )}
+
           {/* Avatar button + dropdown */}
           <div className="relative" ref={menuRef}>
             <button
@@ -321,5 +345,6 @@ export function TopNav() {
       </div>
 
     </header>
+    </>
   )
 }

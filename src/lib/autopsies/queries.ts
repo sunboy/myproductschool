@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { autopsyStories, companyHubs } from './data'
 import { getSupabaseAutopsyLibrary } from './db'
 import type { FeatureAutopsy } from './types'
+import { IS_MOCK } from '@/lib/mock'
 
 function sortStoriesForHub(a: FeatureAutopsy, b: FeatureAutopsy) {
   if (a.storyType !== b.storyType) {
@@ -12,8 +13,7 @@ function sortStoriesForHub(a: FeatureAutopsy, b: FeatureAutopsy) {
 
 function shouldUseLocalFallback() {
   return process.env.AUTOPSY_LOCAL_FALLBACK === 'true'
-    || process.env.USE_MOCK_DATA === 'true'
-    || process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+    || IS_MOCK
 }
 
 function getLocalAutopsyLibrary() {

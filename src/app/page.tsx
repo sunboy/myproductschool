@@ -1,40 +1,29 @@
-import '@/app/(marketing)/home/marketplace.css'
-import { LandingNav } from '@/components/landing/LandingNav'
-import { LandingHero } from '@/components/landing/LandingHero'
-import { LogoStrip } from '@/components/landing/LogoStrip'
-import { DisciplinesSection } from '@/components/landing/DisciplinesSection'
-import { FeatureRows } from '@/components/landing/FeatureRows'
-import { Quotes } from '@/components/landing/Quotes'
-import { FomoBlock } from '@/components/landing/FomoBlock'
-import { LandingFooter } from '@/components/landing/LandingFooter'
+import '@/app/(marketing)/home/solid-landing.css'
+import { SolidLanding } from '@/components/landing-solid/SolidLanding'
 import { JsonLdScript } from '@/lib/seo/json-ld'
 import { buildMetadata } from '@/lib/seo/site'
-import {
-  HACKPRODUCT_POSITIONING,
-  organizationJsonLd,
-  softwareApplicationJsonLd,
-  websiteJsonLd,
-} from '@/lib/seo/directory-content'
+import { organizationJsonLd, softwareApplicationJsonLd, websiteJsonLd } from '@/lib/seo/directory-content'
 
 export const metadata = buildMetadata({
-  title: 'HackProduct | Train Product and Technical Judgment',
-  description: HACKPRODUCT_POSITIONING.subhead,
+  title: 'HackProduct | Build Product Judgment Before the Room Tests It',
+  description:
+    'Practice messy product, system, data, SQL, coding, and AI-workflow scenarios. Hatch pushes your reasoning. FLOW shows the weak move.',
   path: '/',
-  keywords: ['interview prep', 'product sense practice', 'staff engineer promotion readiness', 'engineer to product', 'AI-native workflows'],
+  keywords: [
+    'product judgment practice',
+    'product sense practice',
+    'system design practice',
+    'SQL interview practice',
+    'AI workflow practice',
+    'live AI interview practice',
+  ],
 })
 
 export default function RootPage() {
   return (
     <>
       <JsonLdScript data={[organizationJsonLd(), websiteJsonLd(), softwareApplicationJsonLd()]} />
-      <LandingNav />
-      <LandingHero />
-      <LogoStrip />
-      <DisciplinesSection />
-      <FeatureRows />
-      <Quotes />
-      <FomoBlock />
-      <LandingFooter />
+      <SolidLanding />
     </>
   )
 }

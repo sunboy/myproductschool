@@ -71,19 +71,7 @@ function routeCue(pathname: string): HatchCueInput | null {
     }
   }
 
-  if (pathname.startsWith('/live-interviews')) {
-    return {
-      surface: 'interviews',
-      message: 'Want a pressure test? Pick a loop and I will make the room feel real.',
-      state: 'listening',
-      animation: 'wake',
-      target: 'nav-interviews',
-      cooldownKey: 'interviews',
-      source: 'route',
-      cta: { label: 'Ask Hatch', action: 'open-chat' },
-      autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
-    }
-  }
+  if (pathname.startsWith('/live-interviews')) return null
 
   if (pathname.startsWith('/progress') || pathname.startsWith('/history')) {
     return {

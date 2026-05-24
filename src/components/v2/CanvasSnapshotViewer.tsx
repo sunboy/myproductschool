@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import type { BinaryFiles } from '@excalidraw/excalidraw/types'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 
 const Excalidraw = dynamic(
   () => import('@excalidraw/excalidraw').then(m => m.Excalidraw),
@@ -63,7 +64,7 @@ export function CanvasSnapshotViewer({ snapshot, annotations }: CanvasSnapshotVi
                 <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${colors.dot}`} />
                 <div className="min-w-0">
                   <p className="font-label text-xs font-semibold mb-0.5">{ann.target_label}</p>
-                  <p className="font-body text-sm leading-relaxed">{ann.text}</p>
+                  <FeedbackText>{ann.text}</FeedbackText>
                 </div>
               </div>
             )

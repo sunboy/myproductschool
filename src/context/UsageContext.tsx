@@ -29,7 +29,17 @@ export function UsageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetch('/api/usage/me')
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setUsage(data) })
+      .then(data => {
+        if (data) {
+          // API returns both legacy shape (challenges, interviews, hatchAiCents)
+          // and extended spend-indicator fields — pick out what UsageContext needs
+          setUsage({
+            challenges: data.challenges ?? DEFAULT_USAGE.challenges,
+            interviews: data.interviews ?? DEFAULT_USAGE.interviews,
+            hatchAiCents: data.hatchAiCents ?? DEFAULT_USAGE.hatchAiCents,
+          })
+        }
+      })
       .catch(() => {/* silent — defaults are safe */})
   }, [])
 

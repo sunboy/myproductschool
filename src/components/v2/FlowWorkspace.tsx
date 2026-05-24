@@ -37,6 +37,7 @@ import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import type { ChallengeDiscussion } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
+import { buildChallengeBrief, type ChallengeBriefSection } from '@/lib/challenges/presentation'
 
 const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
@@ -110,6 +111,7 @@ const CHALLENGE_TYPE_FILTER_COPY: Record<string, { label: string; discipline: st
   flow: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
   freeform: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
   quick_take: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
+  claude_code_analytics: { label: 'Analytics', discipline: 'product_sense', icon: 'analytics' },
   system_design: { label: 'System design', discipline: 'system_design', icon: 'hub' },
   data_modeling: { label: 'Data modeling', discipline: 'data_modeling', icon: 'account_tree' },
   sql: { label: 'SQL', discipline: 'sql', icon: 'database' },
@@ -184,29 +186,24 @@ function buildContextFieldPrompt(challengeType: string | undefined, fieldLabel: 
   return `Focus on the "${fieldLabel}" section of my Context Pack and compare it to the current canvas. Tell me what it implies for the ${copy.artifact}; if a small canvas update is clearly missing, make it.`
 }
 
-// Strip a leading `# Title\n` so it doesn't duplicate the workspace's own h2
-function stripLeadingH1(md: string): string {
-  return md.replace(/^\s*#\s+[^\n]+\n+/, '')
-}
-
 const codingMarkdownComponents = {
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h3 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 600, color: 'var(--color-on-surface)', margin: '18px 0 8px' }} />
+    <h3 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: 'var(--color-on-surface)', margin: '18px 0 8px', lineHeight: 1.25 }} />
   ),
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h4 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 600, color: 'var(--color-on-surface)', margin: '16px 0 6px' }} />
+    <h4 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, color: 'var(--color-on-surface)', margin: '16px 0 6px', lineHeight: 1.3 }} />
   ),
   h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h5 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 600, color: 'var(--color-on-surface)', margin: '14px 0 6px' }} />
+    <h5 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 700, color: 'var(--color-on-surface)', margin: '14px 0 6px', lineHeight: 1.3 }} />
   ),
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-    <p {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.7, color: 'var(--color-on-surface-variant)', margin: '0 0 12px' }} />
+    <p {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, fontWeight: 500, color: 'var(--color-on-surface)', margin: '0 0 12px' }} />
   ),
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.7, color: 'var(--color-on-surface-variant)', margin: '0 0 12px', paddingLeft: 22 }} />
+    <ul {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, fontWeight: 500, color: 'var(--color-on-surface)', margin: '0 0 12px', paddingLeft: 22 }} />
   ),
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.7, color: 'var(--color-on-surface-variant)', margin: '0 0 12px', paddingLeft: 22 }} />
+    <ol {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, fontWeight: 500, color: 'var(--color-on-surface)', margin: '0 0 12px', paddingLeft: 22 }} />
   ),
   li: (props: React.HTMLAttributes<HTMLLIElement>) => (
     <li {...props} style={{ marginBottom: 4 }} />
@@ -256,6 +253,71 @@ const codingMarkdownComponents = {
       fontStyle: 'italic',
     }} />
   ),
+}
+
+function BriefSectionCard({ section }: { section: ChallengeBriefSection }) {
+  const isTask = section.tone === 'task'
+  const isSupport = section.tone === 'support'
+  const bodyWeight = isTask ? 650 : 500
+  const briefMarkdownComponents = {
+    ...codingMarkdownComponents,
+    p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
+      <p {...props} style={{ fontFamily: 'var(--font-body)', fontSize: isTask ? 14.75 : 14.25, lineHeight: 1.68, fontWeight: bodyWeight, color: 'var(--color-on-surface)', margin: '0 0 10px' }} />
+    ),
+    ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
+      <ul {...props} style={{ fontFamily: 'var(--font-body)', fontSize: isTask ? 14.75 : 14.25, lineHeight: 1.68, fontWeight: bodyWeight, color: 'var(--color-on-surface)', margin: '0 0 10px', paddingLeft: 22 }} />
+    ),
+    ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
+      <ol {...props} style={{ fontFamily: 'var(--font-body)', fontSize: isTask ? 14.75 : 14.25, lineHeight: 1.68, fontWeight: bodyWeight, color: 'var(--color-on-surface)', margin: '0 0 10px', paddingLeft: 22 }} />
+    ),
+  }
+  const background = isTask
+    ? 'var(--color-primary-container)'
+    : isSupport
+      ? 'var(--color-surface-container-high)'
+      : 'var(--color-surface-container-low)'
+  const border = isTask
+    ? '1px solid rgba(74,124,89,0.28)'
+    : '1px solid var(--color-outline-variant)'
+
+  return (
+    <section
+      style={{
+        marginBottom: 14,
+        background,
+        border,
+        borderRadius: 14,
+        padding: '14px 16px',
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 800,
+          letterSpacing: '0.065em',
+          textTransform: 'uppercase',
+          color: isTask ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+          marginBottom: 7,
+          fontFamily: 'var(--font-label)',
+        }}
+      >
+        {section.title}
+      </div>
+      <div
+        style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: isTask ? 14.75 : 14.25,
+          lineHeight: 1.68,
+          color: 'var(--color-on-surface)',
+          fontWeight: bodyWeight,
+        }}
+      >
+        <ReactMarkdown components={briefMarkdownComponents}>
+          {section.body}
+        </ReactMarkdown>
+      </div>
+    </section>
+  )
 }
 
 const FLOW_STEPS: FlowStep[] = ['frame', 'list', 'optimize', 'win']
@@ -401,8 +463,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     weighted_total?: number
     weighted_score?: number
     max_score?: number
+    score_breakdown?: GradingFeedback['score_breakdown']
+    summary?: string
+    next_actions?: string[]
     parts?: Array<{ id?: string; part_id?: string; title?: string; score?: number; weight?: number }>
   } | null>(null)
+  const [finalizeError, setFinalizeError] = useState<string | null>(null)
   const [isFinalizingParts, setIsFinalizingParts] = useState(false)
 
   // Left panel collapse state - persisted to localStorage
@@ -413,9 +479,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Accumulates per-question results for the reveal screen
   const [questionRevealHistory, setQuestionRevealHistory] = useState<QuestionRevealRecord[]>([])
-
-  // Context panel (situation + trigger) collapsed by default
-  const [showContext, setShowContext] = useState(false)
 
   // Adapter-mode state
   const [adapterChallenge, setAdapterChallenge] = useState<SyntheticChallenge | null>(null)
@@ -1418,6 +1481,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
         if (!gradingRes.ok) {
           const payload = await gradingRes.json().catch(() => null)
+          if (payload?.status === 'not_ready') {
+            setPhase('question')
+            const nextAction = Array.isArray(payload.next_actions) ? payload.next_actions[0] : undefined
+            throw new Error([payload.summary, nextAction].filter(Boolean).join(' '))
+          }
           throw new Error(payload?.details ?? payload?.error ?? `Grading failed: ${gradingRes.status}`)
         }
 
@@ -1794,6 +1862,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const scenarioRole = isApiMode ? detail?.challenge.scenario_role : adapterChallenge?.scenario_role
   const scenarioContext = isApiMode ? detail?.challenge.scenario_context : adapterChallenge?.scenario_context
   const scenarioTrigger = isApiMode ? detail?.challenge.scenario_trigger : adapterChallenge?.scenario_trigger
+  const challenge = isApiMode ? detail?.challenge : adapterChallenge
+  const challengeBriefSections = buildChallengeBrief({
+    challenge_type: isApiMode
+      ? ((challenge as { challenge_type?: string } | null | undefined)?.challenge_type ?? apiChallengeType)
+      : 'flow',
+    title: challengeTitle,
+    scenario_context: scenarioContext,
+    scenario_trigger: scenarioTrigger,
+    scenario_question: challengeScenarioQ,
+    prompt_text: (challenge as { prompt_text?: string | null } | null | undefined)?.prompt_text,
+    metadata: (challenge as { metadata?: Record<string, unknown> | null } | null | undefined)?.metadata,
+  })
 
   const handleRunAnother = () => {
     setMirrorStepResults([])
@@ -1923,48 +2003,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
       {/* Title */}
       {challengeTitle && (
-        <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 22, fontWeight: 600, lineHeight: 1.3, letterSpacing: '-0.01em', color: 'var(--color-on-surface)', marginBottom: 10 }}>
+        <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 23, fontWeight: 700, lineHeight: 1.22, letterSpacing: '-0.01em', color: 'var(--color-on-surface)', marginBottom: 10 }}>
           {challengeTitle}
         </h2>
       )}
 
       {/* Meta row */}
       {scenarioRole && (
-        <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--color-on-surface-variant)', marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 12, fontSize: 12, fontWeight: 650, color: 'var(--color-on-surface-variant)', marginBottom: 20, fontFamily: 'var(--font-label)' }}>
           <span>{scenarioRole}</span>
         </div>
       )}
 
-      {/* Context */}
-      {scenarioContext && (
+      {/* Plain-language brief sections */}
+      {challengeBriefSections.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <ReactMarkdown components={codingMarkdownComponents}>
-            {isCodingChallenge ? stripLeadingH1(scenarioContext) : scenarioContext}
-          </ReactMarkdown>
-        </div>
-      )}
-
-      {/* The trigger - hidden for coding challenges (the markdown body covers it) */}
-      {!isCodingChallenge && scenarioTrigger && (
-        <div style={{ marginBottom: 20, background: 'var(--color-amber-soft, #f3e2b9)', border: '1px solid #e8d09a', borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#8a5c00', marginBottom: 6 }}>
-            The trigger
-          </div>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, lineHeight: 1.6, color: '#5c3a00' }}>
-            {scenarioTrigger}
-          </p>
-        </div>
-      )}
-
-      {/* Your challenge - hidden for coding challenges */}
-      {!isCodingChallenge && challengeScenarioQ && (
-        <div style={{ marginBottom: 20, background: 'var(--color-primary-container)', border: '1px solid rgba(74,124,89,0.25)', borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 6 }}>
-            Your challenge
-          </div>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, lineHeight: 1.6, color: 'var(--color-on-surface)', fontWeight: 500 }}>
-            {challengeScenarioQ}
-          </p>
+          {challengeBriefSections.map((section) => (
+            <BriefSectionCard key={section.id} section={section} />
+          ))}
         </div>
       )}
 
@@ -2161,7 +2217,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           <div style={{ marginTop: 8 }}>
             {schemaDiagram && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 8, fontFamily: 'var(--font-label)' }}>
                   Schema
                 </div>
                 <SchemaDiagram schema_diagram={schemaDiagram} />
@@ -2169,7 +2225,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             )}
             {sampleDataPreview && Object.keys(sampleDataPreview).length > 0 && (
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 8, fontFamily: 'var(--font-label)' }}>
                   Sample Data
                 </div>
                 <SampleDataPreview sample_data_preview={sampleDataPreview} />
@@ -2178,41 +2234,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         )
       })()}
-
-      {/* Context disclosure (situation + trigger) - FLOW challenges */}
-      {!isCodingChallenge && (scenarioContext || scenarioTrigger) && (
-        <div className="space-y-3">
-          <button
-            onClick={() => setShowContext(v => !v)}
-            className="flex items-center gap-1.5 font-label text-xs text-on-surface-variant hover:text-primary transition-colors"
-          >
-            <span
-              className="material-symbols-outlined text-[14px] transition-transform"
-              style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", transform: showContext ? 'rotate(90deg)' : 'rotate(0deg)' }}
-            >
-              chevron_right
-            </span>
-            Background context
-          </button>
-
-          {showContext && (
-            <div className="space-y-3 pl-4 border-l-2 border-outline-variant">
-              {scenarioContext && (
-                <div className="space-y-1">
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">The situation</p>
-                  <p className="font-body text-sm text-on-surface leading-relaxed">{scenarioContext}</p>
-                </div>
-              )}
-              {scenarioTrigger && (
-                <div className="space-y-1">
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">What just happened</p>
-                  <p className="font-body text-sm text-on-surface leading-relaxed">{scenarioTrigger}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ── Parts list - multi-part coding challenges only ── */}
       {isCodingChallenge && codingParts.length > 0 && (
@@ -2455,17 +2476,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                         if (partTcs.length === 0) return null
                         return (
                           <div style={{ marginBottom: 8 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 6 }}>
+                            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 6, fontFamily: 'var(--font-label)' }}>
                               Test cases for this part
                             </div>
                             {partTcs.map(tc => (
-                              <div key={tc.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0', fontSize: 12, color: 'var(--color-on-surface-variant)' }}>
+                              <div key={tc.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0', fontSize: 12, fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: 13, color: (tc as { hidden?: boolean }).hidden ? 'var(--color-outline)' : 'var(--color-primary)' }}>
                                   {(tc as { hidden?: boolean }).hidden ? 'visibility_off' : 'visibility'}
                                 </span>
                                 <span>{tc.label}</span>
                                 <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.7 }}>
-                                  {(tc as { hidden?: boolean }).hidden ? 'hidden' : 'visible'}
+                                  {(tc as { hidden?: boolean }).hidden ? 'private' : 'visible'}
                                 </span>
                               </div>
                             ))}
@@ -2497,48 +2518,81 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     </div>
                   )
                 })}
+                {finalizeResult.score_breakdown && (
+                  <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, color: 'var(--color-on-surface)' }}>
+                      <span style={{ fontWeight: 700 }}>Correctness</span>
+                      <span>{finalizeResult.score_breakdown.correctness.score.toFixed(1)} / 5</span>
+                    </div>
+                    <div style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
+                      {finalizeResult.score_breakdown.correctness.summary}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, color: 'var(--color-on-surface)' }}>
+                      <span style={{ fontWeight: 700 }}>Process</span>
+                      <span>{finalizeResult.score_breakdown.process.score.toFixed(1)} / 5</span>
+                    </div>
+                    <div style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
+                      {finalizeResult.score_breakdown.process.summary}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              <button
-                data-testid="submit-all-parts-button"
-                disabled={Object.values(partSubmissions).filter(s => s.submitted).length === 0 || isFinalizingParts}
-                onClick={async () => {
-                  if (!challengeId || !attemptId) return
-                  setIsFinalizingParts(true)
-                  try {
-                    const res = await fetch(`/api/challenges/${challengeId}/finalize`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ attemptId }),
-                    })
-                    if (res.ok) {
-                      const data = await res.json()
-                      setFinalizeResult(data)
-                      setPhase('complete')
+              <>
+                <button
+                  data-testid="submit-all-parts-button"
+                  disabled={Object.values(partSubmissions).filter(s => s.submitted).length === 0 || isFinalizingParts}
+                  onClick={async () => {
+                    if (!challengeId || !attemptId) return
+                    setIsFinalizingParts(true)
+                    setFinalizeError(null)
+                    try {
+                      const res = await fetch(`/api/challenges/${challengeId}/finalize`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ attemptId }),
+                      })
+                      const data = await res.json().catch(() => null)
+                      if (res.ok) {
+                        setFinalizeResult(data)
+                        setPhase('complete')
+                      } else if (data?.status === 'not_ready') {
+                        const nextAction = Array.isArray(data.next_actions) ? data.next_actions[0] : undefined
+                        setFinalizeError([data.summary, nextAction].filter(Boolean).join(' '))
+                      } else {
+                        setFinalizeError(data?.details ?? data?.error ?? `Final grading failed: ${res.status}`)
+                      }
+                    } catch (error) {
+                      setFinalizeError(error instanceof Error ? error.message : 'Final grading failed')
+                    } finally {
+                      setIsFinalizingParts(false)
                     }
-                  } catch { /* swallow */ } finally {
-                    setIsFinalizingParts(false)
-                  }
-                }}
-                style={{
-                  width: '100%',
-                  padding: '10px 0',
-                  borderRadius: 10,
-                  background: Object.values(partSubmissions).filter(s => s.submitted).length > 0 ? 'var(--color-primary)' : 'var(--color-surface-container)',
-                  color: Object.values(partSubmissions).filter(s => s.submitted).length > 0 ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-                  border: 'none',
-                  cursor: Object.values(partSubmissions).filter(s => s.submitted).length > 0 ? 'pointer' : 'not-allowed',
-                  fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 600,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}
-              >
-                {isFinalizingParts ? (
-                  <>
-                    <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
-                    Grading…
-                  </>
-                ) : 'Submit all parts'}
-              </button>
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 0',
+                    borderRadius: 10,
+                    background: Object.values(partSubmissions).filter(s => s.submitted).length > 0 ? 'var(--color-primary)' : 'var(--color-surface-container)',
+                    color: Object.values(partSubmissions).filter(s => s.submitted).length > 0 ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+                    border: 'none',
+                    cursor: Object.values(partSubmissions).filter(s => s.submitted).length > 0 ? 'pointer' : 'not-allowed',
+                    fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 600,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  }}
+                >
+                  {isFinalizingParts ? (
+                    <>
+                      <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+                      Grading…
+                    </>
+                  ) : 'Submit all parts'}
+                </button>
+                {finalizeError && (
+                  <div style={{ marginTop: 8, border: '1px solid var(--color-outline-variant)', background: 'var(--color-surface-container-low)', borderRadius: 10, padding: '10px 12px', fontFamily: 'var(--font-body)', fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
+                    {finalizeError}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

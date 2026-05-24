@@ -24,6 +24,7 @@ const PAGE_PROMPTS: { pattern: RegExp; message: string }[] = [
   { pattern: /^\/explore\/domains\//, message: "Want to know which challenges here will help you most?" },
   { pattern: /^\/explore/, message: "Not sure where to start? Tell me your role." },
   { pattern: /^\/challenges/, message: "I can filter these to the FLOW move you need most." },
+  { pattern: /^\/live-interviews/, message: "Tell me the company, role, or discipline you want to practice." },
   { pattern: /^\/progress/, message: "Want to understand what your numbers actually mean?" },
   { pattern: /^\/dashboard/, message: "Ready to pick your first challenge today?" },
 ]
@@ -454,9 +455,10 @@ export function FloatingHatch() {
     : getPagePrompt(pathname)
 
   const cueMessage = activeCue?.message ?? contextMessage
+  const suppressPageBubble = pathname.startsWith('/live-interviews')
   const showBubble = !open && (
     Boolean(activeCue) ||
-    (bubble && !bubbleDismissed && messages.length === 0)
+    (!suppressPageBubble && bubble && !bubbleDismissed && messages.length === 0)
   )
   const isWorkspace = pathname.startsWith('/workspace')
   const wrapperPositionClass = `right-4 md:right-5 ${isWorkspace ? 'bottom-24 md:bottom-20' : 'bottom-24 md:bottom-5'}`

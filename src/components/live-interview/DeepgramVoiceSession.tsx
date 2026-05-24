@@ -204,7 +204,8 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
         try {
           const settingsResponse = await fetch(`/api/live-interview/${sessionId}/voice-settings`)
           if (!settingsResponse.ok) {
-            onError('Voice mode is unavailable. Use chat mode.')
+            const body = await settingsResponse.json().catch(() => null) as { error?: unknown } | null
+            onError(typeof body?.error === 'string' ? body.error : 'Voice mode is unavailable. Use chat mode.')
             return
           }
 

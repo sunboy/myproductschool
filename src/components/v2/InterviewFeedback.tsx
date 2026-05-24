@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 import type { InterviewGrade, ChallengeType } from '@/lib/types'
 
 interface InterviewFeedbackProps {
@@ -146,9 +147,9 @@ function DimensionTile({
           </span>
         </div>
       </div>
-      <p className={`font-body text-sm text-on-surface mt-1.5 leading-relaxed ${expanded ? 'font-medium' : 'line-clamp-1 text-on-surface-variant'}`}>
+      <FeedbackText className={`mt-1.5 ${expanded ? 'font-medium text-on-surface' : 'line-clamp-1 text-on-surface-variant'}`}>
         {dim.verdict}
-      </p>
+      </FeedbackText>
 
       {/* Expanded content */}
       <div
@@ -158,9 +159,9 @@ function DimensionTile({
         <div className="pt-4 space-y-3 border-t border-outline-variant/40 mt-3">
           {dim.evidence && (
             <blockquote className="border-l-2 border-outline-variant pl-3 py-0.5">
-              <p className="text-xs text-on-surface-variant italic font-body leading-relaxed">
+              <FeedbackText className="text-xs italic text-on-surface-variant">
                 {dim.evidence}
-              </p>
+              </FeedbackText>
             </blockquote>
           )}
           {dim.hole_to_poke && (
@@ -169,7 +170,7 @@ function DimensionTile({
                 <span className="material-symbols-outlined text-tertiary text-[14px]">warning</span>
                 <p className="font-label text-[10px] font-bold uppercase tracking-wider text-tertiary">Watch out</p>
               </div>
-              <p className="text-sm text-on-surface font-body leading-relaxed pl-[22px]">{dim.hole_to_poke}</p>
+              <FeedbackText className="pl-[22px] text-on-surface">{dim.hole_to_poke}</FeedbackText>
             </div>
           )}
           {dim.how_to_improve && (
@@ -178,7 +179,7 @@ function DimensionTile({
                 <span className="material-symbols-outlined text-primary text-[14px]">lightbulb</span>
                 <p className="font-label text-[10px] font-bold uppercase tracking-wider text-primary">How to improve</p>
               </div>
-              <p className="text-sm text-on-surface font-body leading-relaxed pl-[22px]">{dim.how_to_improve}</p>
+              <FeedbackText className="pl-[22px] text-on-surface">{dim.how_to_improve}</FeedbackText>
             </div>
           )}
         </div>
@@ -240,7 +241,7 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
                 <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5">check_circle</span>
                 <div>
                   <p className="font-label text-xs font-semibold uppercase tracking-wide mb-1">What you got right</p>
-                  <p className="font-body text-sm leading-relaxed">{grade.top_strength}</p>
+                  <FeedbackText>{grade.top_strength}</FeedbackText>
                 </div>
               </div>
             )}
@@ -249,7 +250,7 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
                 <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5">arrow_forward</span>
                 <div>
                   <p className="font-label text-xs font-semibold uppercase tracking-wide mb-1">Focus next time</p>
-                  <p className="font-body text-sm leading-relaxed">{grade.top_improvement}</p>
+                  <FeedbackText>{grade.top_improvement}</FeedbackText>
                 </div>
               </div>
             )}

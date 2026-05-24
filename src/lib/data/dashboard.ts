@@ -290,25 +290,17 @@ export async function getLatestInterview(userId: string): Promise<LatestIntervie
   const debrief = session.debrief_json as Debrief | null
   if (!debrief || typeof debrief.overallScore !== 'number') return null
 
-  let companyName: string | null = null
-  if (session.company_id) {
-    const { data: company } = await supabase
-      .from('company_profiles')
-      .select('name')
-      .eq('slug', session.company_id)
-      .maybeSingle()
-    companyName = company?.name ?? null
-  }
+  const [companyResult, scenarioResult] = await Promise.all([
+    session.company_id
+      ? supabase.from('company_profiles').select('name').eq('slug', session.company_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    session.challenge_id
+      ? supabase.from('challenges').select('title').eq('id', session.challenge_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ])
 
-  let scenarioTitle: string | null = null
-  if (session.challenge_id) {
-    const { data: challenge } = await supabase
-      .from('challenges')
-      .select('title')
-      .eq('id', session.challenge_id)
-      .maybeSingle()
-    scenarioTitle = challenge?.title ?? null
-  }
+  const companyName: string | null = companyResult.data?.name ?? null
+  const scenarioTitle: string | null = scenarioResult.data?.title ?? null
 
   return {
     sessionId: session.id,

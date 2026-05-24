@@ -165,10 +165,10 @@ Keep responses to 2-3 sentences by default. Go longer only when you need to refr
 // Compose the full personality block for injection into any system prompt.
 // ---------------------------------------------------------------------------
 
-export function getHatchPersonality(): string {
+export function getHatchPersonality(options?: { identityAndScope?: string }): string {
   return [
     CORE_IDENTITY,
-    IDENTITY_AND_SCOPE,
+    options?.identityAndScope ?? IDENTITY_AND_SCOPE,
     VOICE_EXAMPLES,
     EMOTIONAL_RANGE,
     CONVERSATIONAL_TICS,

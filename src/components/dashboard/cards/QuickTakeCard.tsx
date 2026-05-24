@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 
 interface QuickTakeCardProps {
   prompt: string
@@ -50,7 +51,12 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
         body: JSON.stringify({ challenge_id: challengeId, response_text: response }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Submission failed')
+      if (!res.ok) {
+        const nextAction = Array.isArray(data.next_actions) ? data.next_actions[0] : undefined
+        throw new Error(data.status === 'not_ready'
+          ? [data.summary, nextAction].filter(Boolean).join(' ')
+          : data.error ?? 'Submission failed')
+      }
       setResult(data)
       setState('done')
       window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'quick-take' } }))
@@ -104,11 +110,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
             </span>
             <span className="text-on-primary/60 text-xs">{Math.round(result.score * 100)}%</span>
           </div>
-          <div className="flex flex-col gap-2">
-            {result.feedback_summary.split('\n\n').map((para, i) => (
-              <p key={i} className="text-on-primary/90 text-sm leading-relaxed">{para}</p>
-            ))}
-          </div>
+          <FeedbackText className="text-on-primary/90">{result.feedback_summary}</FeedbackText>
         </div>
         <button
           onClick={handleTryAnother}
