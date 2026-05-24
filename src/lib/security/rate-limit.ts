@@ -55,8 +55,11 @@ export function createRateLimiter(options: CreateRateLimiterOptions = {}) {
   const buckets = new Map<string, MemoryBucket>()
   const now = options.now ?? Date.now
   const warn = options.warn ?? console.warn
+  const hasUpstashEnv = Boolean(
+    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  )
   const memoryFallback = options.memoryFallback ?? (
-    process.env.NODE_ENV !== 'production' || allowsMemoryFallbackEnv()
+    process.env.NODE_ENV !== 'production' || allowsMemoryFallbackEnv() || !hasUpstashEnv
   )
   // useUpstash only has effect when getUpstashLimiter is also injected (for tests)
   const shouldUseExternal = (options.useUpstash ?? false) && Boolean(options.getUpstashLimiter)
