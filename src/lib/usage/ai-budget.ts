@@ -121,6 +121,18 @@ export async function assertAiBudget(
   }
 }
 
+/**
+ * Returns a structured 402 payload when the AI spend cap is hit.
+ * Use this in API routes that call checkUsageLimit directly for hatch_ai_cents.
+ */
+export function aiCapHitPayload(message?: string) {
+  return {
+    error: message ?? 'You have reached your AI usage limit for this period.',
+    reason: 'ai_cap_hit',
+    upgrade_url: '/pricing',
+  }
+}
+
 export async function recordAnthropicUsage({
   userId,
   model,

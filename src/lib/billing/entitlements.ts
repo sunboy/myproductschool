@@ -12,6 +12,7 @@ export interface SubscriptionEntitlementRow {
   status?: string | null
   current_period_end?: string | null
   cancel_at_period_end?: boolean | null
+  past_due_since?: string | null
 }
 
 export interface EffectiveUserPlan {
@@ -27,19 +28,31 @@ function isPastIso(value: string | null | undefined, now: Date) {
   return Number.isFinite(time) && time <= now.getTime()
 }
 
+export function isWithinGracePeriod(pastDueSince: string | null | undefined, graceDays = 7): boolean {
+  if (!pastDueSince) return false
+  const since = new Date(pastDueSince)
+  const graceEnd = new Date(since.getTime() + graceDays * 24 * 60 * 60 * 1000)
+  return new Date() < graceEnd
+}
+
 export function subscriptionEntitlesPro(
   subscription: SubscriptionEntitlementRow | null | undefined,
   now = new Date()
 ) {
   if (!subscription || subscription.plan !== 'pro') return false
-  if (
-    subscription.status !== 'active' &&
-    subscription.status !== 'trialing' &&
-    subscription.status !== 'past_due'
-  ) return false
-  if (subscription.status === 'trialing' && isPastIso(subscription.current_period_end, now)) return false
-  if (subscription.cancel_at_period_end && isPastIso(subscription.current_period_end, now)) return false
-  return true
+
+  if (subscription.status === 'active' || subscription.status === 'trialing') {
+    if (subscription.status === 'trialing' && isPastIso(subscription.current_period_end, now)) return false
+    if (subscription.cancel_at_period_end && isPastIso(subscription.current_period_end, now)) return false
+    return true
+  }
+
+  if (subscription.status === 'past_due') {
+    return isWithinGracePeriod(subscription.past_due_since)
+  }
+
+  // cancelled, unpaid, paused, incomplete_expired → not entitled
+  return false
 }
 
 export function effectivePlanFromRows(
@@ -65,7 +78,7 @@ export async function getEffectiveUserPlan(
       .maybeSingle(),
     admin
       .from('subscriptions')
-      .select('plan, status, current_period_end, cancel_at_period_end')
+      .select('plan, status, current_period_end, cancel_at_period_end, past_due_since')
       .eq('user_id', userId)
       .maybeSingle(),
   ])

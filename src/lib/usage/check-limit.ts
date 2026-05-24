@@ -19,7 +19,7 @@ export interface UsageData {
 
 export type UsageLimitResult =
   | { allowed: true; used: number; limit: number; feature: UsageFeature; windowDays: number; unit: UsageUnit }
-  | { allowed: false; used: number; limit: number; feature: UsageFeature; windowDays: number; unit: UsageUnit }
+  | { allowed: false; used: number; limit: number; feature: UsageFeature; windowDays: number; unit: UsageUnit; reason?: string; upgrade_url?: string; message?: string }
 
 type LimitRecord = {
   limitValue: number
@@ -184,6 +184,20 @@ export async function checkUsageLimit(
 ): Promise<UsageLimitResult> {
   const usage = await getFeatureUsage(userId, userPlan, feature)
   const allowed = usage.used + nextQuantity <= usage.limit
+
+  if (!allowed && feature === 'hatch_ai_cents') {
+    return {
+      allowed: false,
+      used: usage.used,
+      limit: usage.limit,
+      feature,
+      windowDays: usage.windowDays,
+      unit: usage.unit,
+      reason: 'ai_cap_hit',
+      upgrade_url: '/pricing',
+      message: 'You have reached your AI usage limit for this period.',
+    }
+  }
 
   return {
     allowed,

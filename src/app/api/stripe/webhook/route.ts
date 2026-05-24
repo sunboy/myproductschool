@@ -354,6 +354,31 @@ export async function POST(req: NextRequest) {
         : { data: null }
 
       if (userId) {
+        // Track failure count and grace period on profiles
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, payment_failures, subscription_status')
+          .eq('id', userId)
+          .single()
+
+        if (profile) {
+          const failures = (profile.payment_failures || 0) + 1
+          const updates: Record<string, unknown> = {
+            payment_failures: failures,
+            subscription_status: 'past_due',
+          }
+          // First failure: record grace period start
+          if (failures === 1) {
+            updates.past_due_since = new Date().toISOString()
+          }
+          // After 3 failures: suspend access
+          if (failures >= 3) {
+            updates.subscription_status = 'unpaid'
+            updates.pro_access = false
+          }
+          await supabase.from('profiles').update(updates).eq('id', userId)
+        }
+
         await supabase.from('subscriptions').upsert({
           user_id: userId,
           stripe_customer_id: customerId,
@@ -377,6 +402,70 @@ export async function POST(req: NextRequest) {
         periodEnd: invoicePeriodEnd(invoice),
         url: invoice.hosted_invoice_url ?? appReturnUrl(req),
       })
+      break
+    }
+
+    case 'charge.refunded': {
+      const charge = event.data.object as Stripe.Charge
+      const customerId = typeof charge.customer === 'string' ? charge.customer : charge.customer?.id
+      if (!customerId) break
+
+      // If full refund, revoke Pro access immediately
+      if (charge.amount_refunded === charge.amount && charge.refunded) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('stripe_customer_id', customerId)
+          .single()
+        if (profile) {
+          await supabase
+            .from('profiles')
+            .update({ subscription_status: 'cancelled', pro_access: false })
+            .eq('id', profile.id)
+        }
+      }
+      break
+    }
+
+    case 'charge.dispute.created': {
+      const dispute = event.data.object as Stripe.Dispute
+      const chargeId = typeof dispute.charge === 'string' ? dispute.charge : dispute.charge?.id
+      console.warn('[Stripe] Dispute created:', dispute.id, 'Charge:', chargeId, 'Reason:', dispute.reason)
+      break
+    }
+
+    case 'charge.dispute.closed': {
+      const dispute = event.data.object as Stripe.Dispute
+      console.log('[Stripe] Dispute closed:', dispute.id, 'Status:', dispute.status)
+      break
+    }
+
+    case 'customer.subscription.paused': {
+      const sub = event.data.object as Stripe.Subscription
+      const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id
+      if (customerId) {
+        await supabase
+          .from('profiles')
+          .update({ subscription_status: 'paused', pro_access: false })
+          .eq('stripe_customer_id', customerId)
+      }
+      break
+    }
+
+    case 'customer.subscription.resumed': {
+      const sub = event.data.object as Stripe.Subscription
+      const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id
+      if (customerId) {
+        await supabase
+          .from('profiles')
+          .update({
+            subscription_status: 'active',
+            pro_access: true,
+            payment_failures: 0,
+            past_due_since: null,
+          })
+          .eq('stripe_customer_id', customerId)
+      }
       break
     }
 
