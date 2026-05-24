@@ -267,8 +267,8 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
       try {
         const data = await postAuthAction<{ onboardingCompleted: boolean }>('/api/auth/login', validation.data)
         play('success')
-        router.push(data.onboardingCompleted ? resolvedRedirectTo('/dashboard') : '/onboarding/welcome')
-        router.refresh()
+        const dest = data.onboardingCompleted ? resolvedRedirectTo('/dashboard') : '/onboarding/welcome'
+        window.location.href = dest
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
         play('error')
