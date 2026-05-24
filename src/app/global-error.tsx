@@ -2,6 +2,7 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 const sentryEnabled = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN)
 
@@ -37,16 +38,16 @@ export default function GlobalError({
           background: '#ffffff',
           boxShadow: '0 18px 60px rgba(27, 29, 25, 0.12)',
         }}>
-          <p style={{
-            margin: '0 0 8px',
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: '#4a7c59',
-          }}>
-            HackProduct
-          </p>
+          <HackProductWordmark
+            priority
+            style={{
+              width: 190,
+              height: 42,
+              objectFit: 'cover',
+              display: 'block',
+              marginBottom: 8,
+            }}
+          />
           <h1 style={{
             margin: '0 0 10px',
             fontSize: 24,

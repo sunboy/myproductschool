@@ -60,7 +60,7 @@ const jsonLd = {
       '@type': 'Organization',
       name: 'HackProduct',
       url: 'https://hackproduct.dev',
-      logo: 'https://hackproduct.dev/images/hackylogo.png',
+      logo: 'https://hackproduct.dev/images/logo.png',
       sameAs: [],
     },
     {
@@ -144,7 +144,7 @@ export default async function WaitlistBPage() {
           <span className="flex items-center gap-2 text-xl font-headline font-bold text-on-background tracking-tight">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/hackylogo.png"
+              src="/images/logo.png"
               alt="HackProduct logo"
               className="w-8 h-8 object-contain"
               width={32}

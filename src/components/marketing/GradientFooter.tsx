@@ -92,7 +92,7 @@ export function GradientFooter() {
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="/privacy">
+                <Link className="hover:text-white transition-colors" href="/security">
                   Security
                 </Link>
               </li>

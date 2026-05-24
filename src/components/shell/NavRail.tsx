@@ -2,7 +2,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { HatchGlyph } from './HatchGlyph'
+import { HackProductLogoMark } from '@/components/brand/HackProductBrand'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const navItems = [
   { href: '/dashboard',       icon: 'home',           label: 'Home'       },
@@ -37,7 +38,9 @@ export function NavRail({ onAskHatch, onUpgrade, compact, isPro }: NavRailProps)
 
       {/* ── Brand ── */}
       <div className={`flex items-center pt-5 pb-4 ${compact ? 'justify-center px-0' : 'gap-2.5 px-4'}`}>
-        <HatchGlyph size={24} state="idle" className="text-white shrink-0" />
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/92">
+          <HackProductLogoMark className="h-6 w-6 object-contain" />
+        </span>
         {!compact && (
           <span className="font-headline text-base font-bold text-white tracking-tight">HackProduct</span>
         )}

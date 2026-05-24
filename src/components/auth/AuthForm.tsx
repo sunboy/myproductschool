@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 import { TurnstileWidget, isTurnstileClientEnabled } from '@/components/auth/TurnstileWidget'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { loginSchema, passwordResetRequestSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
+  redirectTo?: string
 }
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'magic'
@@ -122,7 +123,7 @@ function DisciplineSignalBoard() {
   )
 }
 
-export function AuthForm({ mode: initialMode }: AuthFormProps) {
+export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
   const [activeMode, setActiveMode] = useState<AuthMode>(initialMode)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -141,6 +142,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
   function siteOrigin() {
     return process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
+  }
+
+  function resolvedRedirectTo(fallback: string) {
+    if (!redirectTo) return fallback
+    if (redirectTo.startsWith('/') && !redirectTo.startsWith('//')) return redirectTo
+    return fallback
   }
 
   async function postAuthAction<T>(path: string, payload: Record<string, unknown>): Promise<T> {
@@ -260,7 +267,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       try {
         const data = await postAuthAction<{ onboardingCompleted: boolean }>('/api/auth/login', validation.data)
         play('success')
-        router.push(data.onboardingCompleted ? '/dashboard' : '/onboarding/welcome')
+        router.push(data.onboardingCompleted ? resolvedRedirectTo('/dashboard') : '/onboarding/welcome')
         router.refresh()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
@@ -305,7 +312,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     play('open')
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${siteOrigin()}/dashboard` }
+      options: { redirectTo: `${siteOrigin()}${resolvedRedirectTo('/dashboard')}` }
     })
   }
 
@@ -363,14 +370,11 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         {/* ── Left: brand + headline ───────────────────── */}
         <div className="flex flex-col justify-center px-5 pb-5 pt-6 sm:px-8 sm:pt-8 md:flex-1 md:px-12 md:py-0 lg:px-16">
           {/* Brand mark */}
-          <div className="mb-6 flex items-center gap-2 md:mb-10 lg:mb-12">
-            <HatchGlyph size={30} state="idle" className="text-primary" />
-            <span
-              className="font-headline font-bold text-white"
-              style={{ fontSize: 19, letterSpacing: 0 }}
-            >
-              HackProduct
-            </span>
+          <div className="mb-6 flex items-center md:mb-10 lg:mb-12">
+            <HackProductWordmark
+              className="h-10 w-[190px] rounded-md bg-[#fffdf7]/95 object-cover shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
+              priority
+            />
           </div>
 
           {/* Headline */}

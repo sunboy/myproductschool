@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 import { newPasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 type Status = 'loading' | 'ready' | 'invalid' | 'success'
@@ -95,11 +95,11 @@ export default function ResetPasswordPage() {
 
       <div className="relative z-10 w-full max-w-sm px-6 py-10">
         {/* Brand mark */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <HatchGlyph size={28} state="idle" className="text-primary" />
-          <span className="font-headline font-bold text-white" style={{ fontSize: 17, letterSpacing: '-0.01em' }}>
-            HackProduct
-          </span>
+        <div className="mb-8 flex items-center justify-center">
+          <HackProductWordmark
+            className="h-10 w-[190px] rounded-md bg-[#fffdf7]/95 object-cover shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
+            priority
+          />
         </div>
 
         <div
