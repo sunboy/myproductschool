@@ -79,7 +79,8 @@ export function V3AuthGate() {
       }
 
       event.preventDefault()
-      setModalTarget(path)
+      const AUTH_PATHS = ['/login', '/signup', '/register']
+      setModalTarget(AUTH_PATHS.includes(path) ? '/dashboard' : path)
     }
 
     document.addEventListener('click', onClick, { capture: true })
