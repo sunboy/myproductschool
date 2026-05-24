@@ -233,6 +233,8 @@ function CompanyButton({
       <button
         type="button"
         onClick={onClick}
+        aria-label={`Select ${company.companyName}`}
+        data-testid={`live-interview-company-${company.companyId}`}
         data-hatch-sound={active ? undefined : 'nudge'}
         style={{
           width: '100%',
@@ -326,9 +328,10 @@ function DisciplinePanel({
                     return (
                       <button
                         key={`${role.slug}-${role.role}`}
-                        type="button"
-                        onClick={() => onSelectRole(index)}
-                        data-hatch-sound={active ? undefined : 'nudge'}
+                      type="button"
+                      onClick={() => onSelectRole(index)}
+                      aria-label={`Use ${role.role} role`}
+                      data-hatch-sound={active ? undefined : 'nudge'}
                         style={{
                           padding: '6px 12px',
                           borderRadius: 999,
@@ -358,6 +361,8 @@ function DisciplinePanel({
                     <button
                       type="button"
                       onClick={() => onSelectDiscipline(discipline)}
+                      aria-label={`Select ${meta.label}`}
+                      data-testid={`live-interview-discipline-${discipline}`}
                       data-hatch-sound={active ? undefined : 'nudge'}
                       style={{
                         width: '100%',
@@ -554,6 +559,7 @@ function ScenarioRow({
   return (
     <MotionListItem>
       <div
+        data-testid={`live-interview-scenario-${scenario.id}`}
         style={{
           padding: '13px 14px',
           borderRadius: 16,

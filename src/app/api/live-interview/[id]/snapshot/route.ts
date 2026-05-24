@@ -1,28 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
+import { LiveInterviewArtifactSnapshotSchema } from '@/lib/live-interview/snapshot-schema'
+import { normalizeDiscipline } from '@/lib/live-interview/disciplines'
+import { buildLiveWorkspaceSignal } from '@/lib/live-interview/workspace-adapters'
 import { z, ZodError } from 'zod'
 
-const ArtifactSnapshotSchema = z.object({
-  type: z.enum(['canvas', 'editor']),
-  discipline: z.string().max(100).optional(),
-  capturedAt: z.number().finite().nonnegative().optional(),
-  elementCount: z.number().int().min(0).max(10000).optional(),
-  elementTypes: z.record(z.string(), z.number().int().min(0)).optional(),
-  textLabels: z.array(z.string().max(1000)).max(1000).optional(),
-  code: z.string().max(40000).optional(),
-  language: z.string().max(80).optional(),
-  cursorLine: z.number().int().min(0).optional(),
-  pasteEvents: z.array(z.object({
-    length: z.number().int().min(0),
-    percentOfBuffer: z.number().finite().min(0).max(1),
-    timestamp: z.number().finite().nonnegative(),
-  })).max(100).optional(),
-  runResult: z.unknown().optional(),
-})
-
 const RequestSchema = z.object({
-  artifactSnapshot: ArtifactSnapshotSchema,
+  artifactSnapshot: LiveInterviewArtifactSnapshotSchema,
 })
 
 function validationIssues(error: ZodError) {
@@ -59,7 +44,7 @@ export async function PATCH(
 
   const { data: session } = await adminClient
     .from('live_interview_sessions')
-    .select('calibration_snapshot')
+    .select('calibration_snapshot, status')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
@@ -67,9 +52,30 @@ export async function PATCH(
   if (!session) {
     return new Response('Session not found', { status: 404 })
   }
+  if (session.status !== 'active') {
+    return Response.json({ ok: false, error: 'Session is not active' }, { status: 409 })
+  }
 
   const existing = (session.calibration_snapshot ?? {}) as Record<string, unknown>
-  const updated = { ...existing, _artifactSnapshot: body.artifactSnapshot }
+  const discipline = normalizeDiscipline(
+    body.artifactSnapshot.discipline ??
+    (existing.effectiveDiscipline as string | undefined) ??
+    null
+  )
+  const workspaceSignal = buildLiveWorkspaceSignal(body.artifactSnapshot, discipline)
+  const updated = {
+    ...existing,
+    _artifactSnapshot: body.artifactSnapshot,
+    _workspaceDigest: workspaceSignal.digest,
+    _workspaceSummaryVersion: 1,
+    _latestWorkspaceEvent: {
+      state: workspaceSignal.state,
+      type: workspaceSignal.type,
+      discipline: workspaceSignal.discipline,
+      summary: workspaceSignal.summary,
+      capturedAt: Date.now(),
+    },
+  }
 
   await adminClient
     .from('live_interview_sessions')

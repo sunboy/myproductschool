@@ -1,4 +1,6 @@
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { buildLiveWorkspaceSignal } from '@/lib/live-interview/workspace-adapters'
+import { liveInterviewModel } from '@/lib/live-interview/model-policy'
 
 export interface ArtifactGradingInput {
   type: 'canvas' | 'editor'
@@ -110,11 +112,25 @@ export async function gradeArtifact(
   input: ArtifactGradingInput,
   budget?: { userId: string; userPlan: string; route: string }
 ): Promise<ArtifactGrading> {
+  const workspaceSignal = buildLiveWorkspaceSignal(input)
+  if (workspaceSignal.state === 'empty' || workspaceSignal.state === 'thin') {
+    return {
+      artifact_score: workspaceSignal.state === 'empty' ? 0 : 20,
+      artifact_verdict: workspaceSignal.nextProbe,
+      artifact_dimensions: {
+        completeness: { score: workspaceSignal.state === 'empty' ? 0 : 1, evidence: workspaceSignal.summary },
+        correctness: { score: 0, evidence: 'Not enough artifact evidence to judge correctness.' },
+        clarity: { score: workspaceSignal.state === 'empty' ? 0 : 1, evidence: workspaceSignal.gaps.join('; ') || 'The artifact needs clearer structure.' },
+      },
+      flow_signal_boosts: { frame: 0, list: 0, optimize: 0, win: 0 },
+    }
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY not set')
   }
 
-  const model = 'claude-sonnet-4-6'
+  const model = liveInterviewModel('artifact_grade')
   const maxTokens = 512
   const userContent = buildUserContent(input)
 

@@ -1,7 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
+import { IS_MOCK } from '@/lib/mock'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
+import { liveInterviewModel } from '@/lib/live-interview/model-policy'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
@@ -35,7 +37,7 @@ export async function POST(
 ) {
   const { id } = await params
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return Response.json({
       choices: [{
         message: {
@@ -94,7 +96,7 @@ export async function POST(
   ].join('\n\n')
 
   // Call Claude with multi-turn messages format
-  const model = 'claude-sonnet-4-6'
+  const model = liveInterviewModel('chat')
   const maxTokens = 300
   const sessionUserId = user.id
   const userPlan = await getUserPlanForBudget(sessionUserId)

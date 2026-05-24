@@ -150,6 +150,63 @@ function LoopStatPill({ label, count, dotColor }: { label: string; count: number
   )
 }
 
+function LoopSummaryStrip({ summary }: { summary: LoopSummary }) {
+  const total = summary.inProgress + summary.configured + summary.completed
+
+  if (summary.loading) {
+    return (
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        gap: 8,
+        marginTop: 6,
+        paddingTop: 12,
+        borderTop: '1px solid rgba(255,255,255,0.10)',
+      }}>
+        {[0, 1, 2].map((item) => (
+          <span
+            key={item}
+            style={{
+              width: item === 0 ? 96 : 82,
+              height: 13,
+              borderRadius: 999,
+              background: 'rgba(255,255,255,0.12)',
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  if (total === 0) {
+    return (
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        gap: 8,
+        marginTop: 6,
+        paddingTop: 12,
+        borderTop: '1px solid rgba(255,255,255,0.10)',
+        fontSize: 12,
+        color: 'rgba(243,237,224,0.78)',
+      }}>
+        No loops yet. Build one when you want a full panel.
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      position: 'relative', display: 'flex', gap: 14, marginTop: 6,
+      paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.10)',
+    }}>
+      <LoopStatPill label="In progress" count={summary.inProgress} dotColor="#c9e86e" />
+      <LoopStatPill label="Configured" count={summary.configured} dotColor="#7ee099" />
+      <LoopStatPill label="Completed" count={summary.completed} dotColor="rgba(255,255,255,0.4)" />
+    </div>
+  )
+}
+
 // ── Loop status badge ──────────────────────────────────────────────────────────
 function LoopStatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; bg: string; fg: string; dot: string; pulse?: boolean }> = {
@@ -274,6 +331,13 @@ interface Loop {
   roundOrder?: LoopDiscipline[]
 }
 
+interface LoopSummary {
+  loading: boolean
+  inProgress: number
+  configured: number
+  completed: number
+}
+
 // ── API → UI mapping helpers ──────────────────────────────────────────────────
 const ROUND_MINS: Record<LoopDiscipline, number> = {
   product_sense: 35, system_design: 40, data_modeling: 30, coding: 35,
@@ -385,6 +449,21 @@ function mapApiLoop(l: ApiLoop): Loop {
       }
     }),
   }
+}
+
+function countLoopSummary(loops: Loop[]): Omit<LoopSummary, 'loading'> {
+  return {
+    inProgress: loops.filter((loop) => loop.status === 'in_progress').length,
+    configured: loops.filter((loop) => loop.status === 'configured').length,
+    completed: loops.filter((loop) => loop.status === 'completed').length,
+  }
+}
+
+async function fetchInterviewLoops(): Promise<Loop[]> {
+  const res = await fetch('/api/interview-loops')
+  if (!res.ok) throw new Error('Failed to load interview loops')
+  const { loops: raw } = await res.json()
+  return Array.isArray(raw) ? raw.map(mapApiLoop) : []
 }
 
 // ── Loop roster row ────────────────────────────────────────────────────────────
@@ -827,65 +906,30 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
   )
 }
 
-// ── Mock loop data ─────────────────────────────────────────────────────────────
-const MOCK_LOOPS: Loop[] = [
-  {
-    id: 'lp1', loopDbId: 'lp1', name: 'Stripe - Senior PM loop', company: 'Stripe', icon: 'credit_card',
-    status: 'in_progress', progressPct: 33,
-    lastActive: 'Resumed 2h ago', totalMins: 120,
-    rounds: [
-      { name: 'Product sense',  mins: 35, status: 'passed',      grade: 'B+' },
-      { name: 'System design',  mins: 40, status: 'in_progress', elapsed: 14 },
-      { name: 'Data modeling',  mins: 30, status: 'locked' },
-      { name: 'Coding',         mins: 35, status: 'locked' },
-    ],
-  },
-  {
-    id: 'lp2', loopDbId: 'lp2', name: 'Netflix - Staff PM loop', company: 'Netflix', icon: 'movie',
-    status: 'configured',
-    lastActive: 'Configured Apr 22', totalMins: 140,
-    rounds: [
-      { name: 'Product sense', mins: 35, status: 'ready' },
-      { name: 'System design', mins: 40, status: 'ready' },
-      { name: 'Data modeling', mins: 30, status: 'ready' },
-      { name: 'Coding',        mins: 35, status: 'ready' },
-    ],
-  },
-  {
-    id: 'lp3', loopDbId: 'lp3', name: 'Meta - IC6 PM loop', company: 'Meta', icon: 'groups',
-    status: 'completed', grade: 'B+', overallScore: 84,
-    lastActive: 'Completed Apr 16', totalMins: 110,
-    rounds: [
-      { name: 'Product sense', mins: 35, status: 'passed', grade: 'B+' },
-      { name: 'System design', mins: 40, status: 'passed', grade: 'A-' },
-      { name: 'Data modeling', mins: 30, status: 'passed', grade: 'B' },
-      { name: 'Coding',        mins: 35, status: 'passed', grade: 'B+' },
-    ],
-  },
-]
-
 // ── Full loop panel ───────────────────────────────────────────────────────────
 function FullLoopPanel() {
-  const [loops, setLoops] = useState<Loop[]>(MOCK_LOOPS)
-  const [selectedLoop, setSelectedLoop] = useState<string>(MOCK_LOOPS[0]?.id ?? '')
+  const [loops, setLoops] = useState<Loop[]>([])
+  const [selectedLoop, setSelectedLoop] = useState<string>('')
   const [building, setBuilding] = useState(false)
   const [editingLoopId, setEditingLoopId] = useState<string | undefined>(undefined)
   const [loadingLoops, setLoadingLoops] = useState(true)
+  const [loopLoadError, setLoopLoadError] = useState<string | null>(null)
 
   const fetchLoops = useCallback(async () => {
     try {
-      const res = await fetch('/api/interview-loops')
-      if (!res.ok) return
-      const { loops: raw } = await res.json()
-      if (Array.isArray(raw)) {
-        const mapped = raw.map(mapApiLoop)
-        setLoops(mapped.length > 0 ? mapped : MOCK_LOOPS)
-        if (mapped.length > 0 && !mapped.find((l) => l.id === selectedLoop)) {
-          setSelectedLoop(mapped[0].id)
-        }
+      setLoopLoadError(null)
+      const mapped = await fetchInterviewLoops()
+      setLoops(mapped)
+      if (mapped.length > 0 && !mapped.find((l) => l.id === selectedLoop)) {
+        setSelectedLoop(mapped[0].id)
+      }
+      if (mapped.length === 0) {
+        setSelectedLoop('')
       }
     } catch {
-      // keep mock data on error
+      setLoops([])
+      setSelectedLoop('')
+      setLoopLoadError('Loops could not load. You can still build a new loop.')
     } finally {
       setLoadingLoops(false)
     }
@@ -934,6 +978,30 @@ function FullLoopPanel() {
             [0, 1, 2].map((i) => (
               <div key={i} style={{ height: 72, background: T.surfaceContainer, borderRadius: 12, marginBottom: 6, opacity: 0.6 }} />
             ))
+          ) : loopLoadError ? (
+            <div style={{
+              borderRadius: 14,
+              padding: 14,
+              background: T.surface,
+              border: `1px solid ${T.outlineFaint}`,
+              color: T.onSurfaceVariant,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}>
+              {loopLoadError}
+            </div>
+          ) : loops.length === 0 ? (
+            <div style={{
+              borderRadius: 14,
+              padding: 14,
+              background: T.surface,
+              border: `1px dashed ${T.outlineVariant}`,
+              color: T.onSurfaceVariant,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}>
+              No loops yet. Build one when you want a multi-round interview with shared memory.
+            </div>
           ) : (
             <>
               {inProgress.length > 0 && (
@@ -990,8 +1058,69 @@ function FullLoopPanel() {
               onEdit={() => { setEditingLoopId(activeLoop.loopDbId); setBuilding(true) }}
               onDelete={() => handleDeleteLoop(activeLoop.loopDbId)}
             />
-          : null
+          : <EmptyLoopDetail onBuild={() => setBuilding(true)} />
       }
+    </div>
+  )
+}
+
+function EmptyLoopDetail({ onBuild }: { onBuild: () => void }) {
+  return (
+    <div style={{
+      minHeight: 540,
+      padding: 28,
+      background: T.surface,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <div style={{ maxWidth: 420, textAlign: 'center' }}>
+        <span
+          className="material-symbols-outlined"
+          style={{
+            width: 56,
+            height: 56,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 18,
+            background: T.primaryContainer,
+            color: T.primary,
+            fontSize: 28,
+            fontVariationSettings: "'FILL' 1",
+          }}
+        >
+          laps
+        </span>
+        <h3 style={{ margin: '16px 0 8px', color: T.onSurface, fontSize: 24, fontWeight: 850, lineHeight: 1.1 }}>
+          Build your first loop.
+        </h3>
+        <p style={{ margin: 0, color: T.onSurfaceVariant, fontSize: 14, lineHeight: 1.6 }}>
+          Choose the rounds you want, then Hatch will carry memory from one interview into the next.
+        </p>
+        <button
+          type="button"
+          onClick={onBuild}
+          data-hatch-sound="open"
+          style={{
+            marginTop: 18,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 18px',
+            borderRadius: 999,
+            border: 'none',
+            background: T.primary,
+            color: T.onPrimary,
+            fontSize: 13,
+            fontWeight: 800,
+            cursor: 'pointer',
+          }}
+        >
+          Build loop
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
+        </button>
+      </div>
     </div>
   )
 }
@@ -1167,8 +1296,32 @@ export function LiveInterviewsShell({
   scenarios: ScenarioBrief[]
 }) {
   const [mode, setMode] = useState<'single' | 'loop'>('single')
+  const [loopSummary, setLoopSummary] = useState<LoopSummary>({
+    loading: true,
+    inProgress: 0,
+    configured: 0,
+    completed: 0,
+  })
   const activePanelRef = useRef<HTMLDivElement | null>(null)
   const { prefersReducedMotion } = useMotionPreference()
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetchInterviewLoops()
+      .then((loops) => {
+        if (cancelled) return
+        setLoopSummary({ loading: false, ...countLoopSummary(loops) })
+      })
+      .catch(() => {
+        if (cancelled) return
+        setLoopSummary({ loading: false, inProgress: 0, configured: 0, completed: 0 })
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const selectMode = useCallback((nextMode: 'single' | 'loop') => {
     setMode(nextMode)
@@ -1285,14 +1438,7 @@ export function LiveInterviewsShell({
           <div style={{ position: 'relative', fontSize: 13.5, color: 'rgba(243,237,224,0.78)', lineHeight: 1.5 }}>
             Sequential rounds with shared memory. Pause, resume, and let Hatch synthesize the loop-level signal.
           </div>
-          <div style={{
-            position: 'relative', display: 'flex', gap: 14, marginTop: 6,
-            paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.10)',
-          }}>
-            <LoopStatPill label="In progress" count={1} dotColor="#c9e86e" />
-            <LoopStatPill label="Configured"  count={1} dotColor="#7ee099" />
-            <LoopStatPill label="Completed"   count={1} dotColor="rgba(255,255,255,0.4)" />
-          </div>
+          <LoopSummaryStrip summary={loopSummary} />
         </ModeCard>
       </div>
 

@@ -45,6 +45,7 @@ import { useUpgrade } from '@/hooks/useUpgrade'
 import { useEntitlements } from '@/hooks/useEntitlements'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
+import { summarizeScene } from '@/lib/hatch/canvas-scene'
 import {
   DISCIPLINE_META,
   normalizeDiscipline,
@@ -52,7 +53,7 @@ import {
 } from '@/lib/live-interview/disciplines'
 import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
-const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+import { IS_MOCK } from '@/lib/mock'
 
 class AvatarErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
@@ -303,6 +304,8 @@ function CtrlBtn({
   large,
   onClick,
   disabled,
+  testId,
+  ariaLabel,
 }: {
   icon: string
   label: string
@@ -311,6 +314,8 @@ function CtrlBtn({
   large?: boolean
   onClick: () => void
   disabled?: boolean
+  testId?: string
+  ariaLabel?: string
 }) {
   const size = large ? 64 : 52
   const iconSize = large ? 28 : 22
@@ -320,6 +325,8 @@ function CtrlBtn({
       <button
         onClick={onClick}
         disabled={disabled}
+        data-testid={testId}
+        aria-label={ariaLabel ?? label}
         className="flex items-center justify-center rounded-full transition-all duration-150"
         style={{
           width: size,
@@ -352,7 +359,6 @@ function CtrlBtn({
             ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
           }
         }}
-        aria-label={label}
         aria-pressed={typeof active === 'boolean' ? active : undefined}
       >
         <span
@@ -383,10 +389,28 @@ export default function SessionPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ company?: string; role?: string; autostart?: string; loop_id?: string; round_index?: string; discipline?: string }>
+  searchParams: Promise<{
+    company?: string
+    role?: string
+    autostart?: string
+    loop_id?: string
+    round_index?: string
+    discipline?: string
+    challenge_id?: string
+    scenario_title?: string
+  }>
 }) {
   const { id } = use(params)
-  const { company, role: roleParam, autostart, loop_id: loopIdParam, round_index: roundIndexParam, discipline: disciplineParam } = use(searchParams)
+  const {
+    company,
+    role: roleParam,
+    autostart,
+    loop_id: loopIdParam,
+    round_index: roundIndexParam,
+    discipline: disciplineParam,
+    challenge_id: challengeIdParam,
+    scenario_title: scenarioTitleParam,
+  } = use(searchParams)
   const router = useRouter()
   const { startUpgrade } = useUpgrade()
   const { isPro, isAdmin } = useEntitlements()
@@ -477,23 +501,20 @@ export default function SessionPage({
     if (centerMode === 'canvas') {
       const elements = (canvasScene?.elements ?? []) as unknown[]
       const summary = summarizeCanvasElements(elements)
-      if (elements.length === 0) return null
+      const sceneSummary = summarizeScene(elements)
 
       return {
         type: 'canvas',
         discipline: discipline ?? undefined,
         capturedAt: Date.now(),
-        elementCount: elements.length,
+        elementCount: sceneSummary.elementCount,
         elementTypes: summary.elementTypes,
         textLabels: summary.textLabels,
+        sceneSummary,
       }
     }
 
     if (centerMode === 'editor') {
-      const hasCode = currentCode.trim().length > 0
-      const hasRunResult = lastRunResult != null
-      if (!hasCode && !hasRunResult && editorPasteEvents.length === 0) return null
-
       return {
         type: 'editor',
         discipline: discipline ?? undefined,
@@ -552,6 +573,7 @@ export default function SessionPage({
       // Session already exists; company/role passed via query params
       setCompanyName(company ?? '')
       setRoleName(roleParam ?? '')
+      setScenarioTitle(scenarioTitleParam ?? null)
       setInterviewPhase('active')
       setInterviewStartedAt(Date.now())
       return
@@ -586,7 +608,12 @@ export default function SessionPage({
         const res = await fetch('/api/live-interview/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ companyId: company, roleId: roleParam }),
+          body: JSON.stringify({
+            companyId: company,
+            roleId: roleParam,
+            challengeId: challengeIdParam,
+            discipline: disciplineParam,
+          }),
         })
         if (!res.ok) {
           const d = await res.json().catch(() => ({}))
@@ -1232,7 +1259,11 @@ export default function SessionPage({
       kind: 'challenge',
       title: scenarioTitle ?? (IS_MOCK ? 'Mock interview challenge' : 'Interview challenge'),
       body: discipline
-        ? `Keep the center of gravity on ${DISCIPLINE_META[discipline].label}. Hatch will watch for Frame, List, Optimize, and Win signals as the conversation develops.`
+        ? DISCIPLINE_META[discipline].artifact === 'canvas'
+          ? `Keep the center of gravity on ${DISCIPLINE_META[discipline].label}. Hatch will read the canvas as part of the interview, so make the core artifact visible.`
+          : DISCIPLINE_META[discipline].artifact === 'editor'
+            ? `Keep the center of gravity on ${DISCIPLINE_META[discipline].label}. Hatch will read the editor and run signal as part of the interview.`
+            : `Keep the center of gravity on ${DISCIPLINE_META[discipline].label}. Hatch will watch how clearly you frame, explore options, compare tradeoffs, and make the call.`
         : IS_MOCK
         ? 'Keep the prompt visible while you practice. As grading signals arrive, the most useful challenge context will stay centered here.'
         : 'Keep the challenge prompt visible while you work through the conversation.',
@@ -1338,6 +1369,12 @@ export default function SessionPage({
 
   // ─── Ready - modal overlay ───
   if (interviewPhase === 'ready') {
+    const readyCopy = discipline && DISCIPLINE_META[discipline].artifact === 'canvas'
+      ? 'Hatch will interview you while watching the canvas. Start with the first useful artifact, then talk through the tradeoffs.'
+      : discipline && DISCIPLINE_META[discipline].artifact === 'editor'
+        ? 'Hatch will interview you while watching the editor. Use the code or SQL pane as your working surface, then explain the choices you make.'
+        : 'Hatch will play the role of your interviewer. Speak naturally, make your reasoning visible, and commit to a clear answer.'
+
     return (
       <div
         className="fixed inset-0 flex items-center justify-center"
@@ -1396,9 +1433,13 @@ export default function SessionPage({
             <h2 className="font-headline text-xl font-bold" style={{ color: 'rgba(243,237,224,0.95)' }}>
               Ready to begin?
             </h2>
-            <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Hatch will play the role of your interviewer. Speak naturally - your microphone
-              activates when you start. Cover all four FLOW moves: Frame, List, Optimize, Win.
+            {scenarioTitle && (
+              <p className="font-label text-sm font-semibold" style={{ color: 'rgba(126,224,153,0.85)' }}>
+                {scenarioTitle}
+              </p>
+            )}
+            <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.52)' }}>
+              {readyCopy}
             </p>
           </div>
 
@@ -1417,8 +1458,8 @@ export default function SessionPage({
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
           >
             <span className="material-symbols-outlined text-[16px]" style={{ color: 'rgba(255,255,255,0.3)' }}>mic</span>
-            <span className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Your browser will request microphone access when you start.
+            <span className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Voice starts when available. Chat stays ready as the fallback.
             </span>
           </div>
 
@@ -1733,6 +1774,7 @@ export default function SessionPage({
         {/* CENTER: Hatch orb / canvas / editor */}
         <div
           className="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
+          data-testid="live-interview-workspace"
           style={{ minWidth: 0 }}
         >
           {/* Ambient radial glow - always visible */}
@@ -1815,7 +1857,7 @@ export default function SessionPage({
           )}
 
           {centerMode === 'canvas' && (
-            <div className="absolute inset-0">
+            <div className="absolute inset-0" data-testid="live-interview-canvas">
               <ExcalidrawCanvas
                 sessionId={sessionId}
                 onSnapshot={handleCanvasSnapshot}
@@ -1825,7 +1867,7 @@ export default function SessionPage({
           )}
 
           {centerMode === 'editor' && (
-            <div className="absolute inset-0 flex flex-col">
+            <div className="absolute inset-0 flex flex-col" data-testid="live-interview-editor">
               <MonacoCodeEditor
                 value={currentCode}
                 onChange={(val) => setCurrentCode(val ?? '')}
@@ -2060,6 +2102,7 @@ export default function SessionPage({
           <CtrlBtn
             icon="analytics"
             label="FLOW"
+            testId="live-interview-mode-flow"
             active={showFlowPanel}
             onClick={() => {
               setIsFocusMode(false)
@@ -2070,6 +2113,7 @@ export default function SessionPage({
           <CtrlBtn
             icon="chat"
             label="Chat"
+            testId="live-interview-mode-chat"
             active={isChatOpen}
             onClick={() => setIsChatOpen((o) => !o)}
           />
@@ -2077,6 +2121,7 @@ export default function SessionPage({
           <CtrlBtn
             icon="center_focus_strong"
             label="Focus"
+            testId="live-interview-mode-focus"
             active={isFocusMode}
             onClick={() => {
               setIsFocusMode((focused) => !focused)
@@ -2089,6 +2134,7 @@ export default function SessionPage({
             <CtrlBtn
               icon="draw"
               label={centerMode === 'canvas' ? 'Hide Canvas' : 'Canvas'}
+              testId="live-interview-mode-canvas"
               active={centerMode === 'canvas'}
               onClick={() => setCenterMode(m => m === 'canvas' ? 'orb' : 'canvas')}
             />
@@ -2099,6 +2145,7 @@ export default function SessionPage({
             <CtrlBtn
               icon={discipline === 'sql' ? 'terminal' : 'code'}
               label={centerMode === 'editor' ? 'Hide Editor' : 'Editor'}
+              testId="live-interview-mode-editor"
               active={centerMode === 'editor'}
               onClick={() => setCenterMode(m => m === 'editor' ? 'orb' : 'editor')}
             />
@@ -2113,6 +2160,8 @@ export default function SessionPage({
           <CtrlBtn
             icon="call_end"
             label="End"
+            ariaLabel="End interview"
+            testId="live-interview-end"
             danger
             large
             onClick={handleEndInterview}
@@ -2123,6 +2172,7 @@ export default function SessionPage({
       {/* ── Chat Slide-in Panel (340px) ── */}
       <PresencePanel
         isOpen={isChatOpen}
+        data-testid="live-interview-chat-panel"
         className="fixed top-0 right-0 h-full flex flex-col z-40"
         initial={{ opacity: 0, x: 36 }}
         animate={{ opacity: 1, x: 0 }}
@@ -2270,6 +2320,7 @@ export default function SessionPage({
         >
           <input
             ref={chatInputRef}
+            data-testid="live-interview-chat-input"
             type="text"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
@@ -2284,6 +2335,7 @@ export default function SessionPage({
           />
           <button
             type="submit"
+            data-testid="live-interview-chat-send"
             disabled={isChatSending || !chatInput.trim()}
             className="flex items-center justify-center rounded-full disabled:opacity-40"
             style={{ width: 38, height: 38, background: '#4a7c59' }}

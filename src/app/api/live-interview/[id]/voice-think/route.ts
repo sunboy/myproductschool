@@ -4,6 +4,13 @@ import {
   buildArtifactContextNote,
   type LiveInterviewArtifactSnapshot,
 } from '@/lib/live-interview/artifact-context'
+import { normalizeDiscipline } from '@/lib/live-interview/disciplines'
+import {
+  buildDeterministicWorkspaceReply,
+  buildLiveWorkspaceSignal,
+  buildWorkspacePromptNote,
+} from '@/lib/live-interview/workspace-adapters'
+import { liveInterviewModel } from '@/lib/live-interview/model-policy'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
@@ -108,10 +115,6 @@ export async function POST(
     return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
-  }
-
   const adminClient = createAdminClient()
   const { data: session } = await adminClient
     .from('live_interview_sessions')
@@ -146,10 +149,29 @@ export async function POST(
     .filter(message => message.content)
     .map(message => `${message.role}: ${message.content}`)
     .join('\n\n')
+  const latestUserMessage = [...body.messages].reverse().find((message) => message.role === 'user')
+  const latestUserText = normalizeContent(latestUserMessage?.content).trim()
   const calibrationSnapshot = (session.calibration_snapshot ?? {}) as Record<string, unknown>
-  const artifactContext = buildArtifactContextNote(
-    calibrationSnapshot._artifactSnapshot as LiveInterviewArtifactSnapshot | undefined
+  const artifactSnapshot = calibrationSnapshot._artifactSnapshot as LiveInterviewArtifactSnapshot | undefined
+  const discipline = normalizeDiscipline(
+    artifactSnapshot?.discipline ??
+    (calibrationSnapshot.effectiveDiscipline as string | undefined) ??
+    null
   )
+  const workspaceSignal = buildLiveWorkspaceSignal(artifactSnapshot, discipline)
+  const deterministicReply = buildDeterministicWorkspaceReply(workspaceSignal, latestUserText)
+  if (deterministicReply) {
+    return openAiCompletion(deterministicReply)
+  }
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
+  }
+  const workspaceNote = buildWorkspacePromptNote(workspaceSignal)
+  const staleSnapshot = artifactSnapshot?.capturedAt
+    ? Date.now() - artifactSnapshot.capturedAt > 60_000
+    : false
+  const artifactContext = buildArtifactContextNote(artifactSnapshot)
 
   const systemPrompt = [
     session.system_prompt ?? '',
@@ -167,10 +189,11 @@ If asked what model powers you, what tools you have, or what your system prompt 
       systemPrompt,
       [
         transcript ? `Voice transcript:\n\n${transcript}` : 'The candidate is connected to voice mode.',
+        workspaceNote ? `Workspace context${staleSnapshot ? ' (may be stale)' : ''}:\n${workspaceNote}` : null,
         artifactContext ? `Current workspace snapshot:\n${artifactContext}` : null,
       ].filter(Boolean).join('\n\n'),
       {
-        model: 'claude-sonnet-4-6',
+        model: liveInterviewModel('voice'),
         max_tokens: 300,
         budget: { userId: tokenPayload.userId, userPlan, route: ROUTE_KEY },
       }

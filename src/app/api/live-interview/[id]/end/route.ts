@@ -1,8 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { generateDebrief } from '@/lib/live-interview/debrief-generator'
+import {
+  buildLowSignalDebrief,
+  generateDebrief,
+  type DebriefNextAction,
+} from '@/lib/live-interview/debrief-generator'
+import { IS_MOCK } from '@/lib/mock'
 import { gradeArtifact } from '@/lib/live-interview/artifact-grader'
 import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
+import { normalizeDiscipline, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
+import {
+  buildLiveWorkspaceSignal,
+  isSubstantiveWorkspaceSignal,
+} from '@/lib/live-interview/workspace-adapters'
+import { buildSkillContextPack } from '@/lib/hatch/skill-context'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
@@ -55,13 +66,29 @@ function aiBudgetResponse(error: unknown) {
   })
 }
 
+function disciplineToChallengeType(discipline: LiveInterviewDiscipline | null) {
+  if (discipline === 'system_design') return 'system_design'
+  if (discipline === 'data_modeling') return 'data_modeling'
+  if (discipline === 'coding') return 'algorithm'
+  if (discipline === 'sql') return 'sql'
+  return 'flow'
+}
+
+function substantiveUserTurns(turns: Array<{ role: 'hatch' | 'user'; content: string }>) {
+  return turns.filter((turn) => {
+    if (turn.role !== 'user') return false
+    const words = turn.content.trim().split(/\s+/).filter(Boolean)
+    return words.length >= 6 && turn.content.trim().length >= 32
+  }).length
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const { MOCK_LIVE_DEBRIEF } = await import('@/lib/mock-live-interviews')
     return Response.json({ debriefJson: MOCK_LIVE_DEBRIEF, sessionId: id })
   }
@@ -129,42 +156,71 @@ export async function POST(
     content: t.content,
     turnIndex: t.turn_index,
   }))
-  const userPlan = await getUserPlanForBudget(user.id)
-  const throttle = await rateLimit({
-    key: `ai:${user.id}:${ROUTE_KEY}`,
-    limit: userPlan === 'pro' ? 15 : 5,
-    windowSec: 60,
-  })
-
-  if (!throttle.allowed) {
-    const retryAfter = retryAfterSeconds(throttle.resetAt)
-    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
-    response.headers.set('Retry-After', String(retryAfter))
-    return response
-  }
-
-  const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
-
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
-  }
-
-  try {
-    await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
-  } catch (err) {
-    const response = aiBudgetResponse(err)
-    if (response) return response
-    throw err
-  }
-
   // Grade artifact if one was captured during the session
   const calibrationSnap = (session.calibration_snapshot ?? {}) as Record<string, unknown>
   const artifactSnapshot = calibrationSnap._artifactSnapshot as LiveInterviewArtifactSnapshot | undefined
+  const discipline = normalizeDiscipline(
+    artifactSnapshot?.discipline ??
+    (calibrationSnap.effectiveDiscipline as string | undefined) ??
+    null
+  )
+  const workspaceSignal = buildLiveWorkspaceSignal(artifactSnapshot, discipline)
+  let practiceLink: DebriefNextAction | null = null
+
+  try {
+    const contextPack = await buildSkillContextPack({
+      userId: user.id,
+      surface: 'interview_debrief',
+      challengeType: disciplineToChallengeType(discipline),
+      submissionText: turns.filter((turn) => turn.role === 'user').map((turn) => turn.content).join('\n'),
+      includePracticeLink: true,
+      includeRetrieval: false,
+    })
+    if (contextPack.practiceLink) {
+      practiceLink = {
+        title: contextPack.practiceLink.title,
+        description: contextPack.practiceLink.reason,
+        href: contextPack.practiceLink.href,
+        type: contextPack.practiceLink.type,
+      }
+    }
+  } catch {
+    practiceLink = null
+  }
+
+  const noSubstance = substantiveUserTurns(turns) === 0 && !isSubstantiveWorkspaceSignal(workspaceSignal)
+
+  let budget: { userId: string; userPlan: string; route: string } | undefined
+  if (!noSubstance) {
+    const userPlan = await getUserPlanForBudget(user.id)
+    const throttle = await rateLimit({
+      key: `ai:${user.id}:${ROUTE_KEY}`,
+      limit: userPlan === 'pro' ? 15 : 5,
+      windowSec: 60,
+    })
+
+    if (!throttle.allowed) {
+      const retryAfter = retryAfterSeconds(throttle.resetAt)
+      const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+      response.headers.set('Retry-After', String(retryAfter))
+      return response
+    }
+
+    try {
+      await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+    } catch (err) {
+      const response = aiBudgetResponse(err)
+      if (response) return response
+      throw err
+    }
+
+    budget = { userId: user.id, userPlan, route: ROUTE_KEY }
+  }
 
   let artifactGrading: Awaited<ReturnType<typeof gradeArtifact>> | null = null
-  if (artifactSnapshot && process.env.ANTHROPIC_API_KEY) {
+  if (artifactSnapshot && !noSubstance) {
     try {
-      artifactGrading = await gradeArtifact(artifactSnapshot, { ...budget, route: 'live_interview_artifact_grade' })
+      artifactGrading = await gradeArtifact(artifactSnapshot, { ...budget!, route: 'live_interview_artifact_grade' })
     } catch (err) {
       const response = aiBudgetResponse(err)
       if (response) return response
@@ -191,19 +247,30 @@ export async function POST(
   }
 
   let debriefResult
-  try {
-    debriefResult = await generateDebrief({
-      sessionId: id,
-      turns,
-      calibrationSnapshot: session.calibration_snapshot ?? { archetype: 'Analyst', moveLevels: {} },
-      scenarioRubric: session.scenario_rubric ?? null,
-      challengeId: session.challenge_id ?? null,
-      budget,
-    })
-  } catch (err) {
-    const response = aiBudgetResponse(err)
-    if (response) return response
-    throw err
+  if (noSubstance) {
+    debriefResult = buildLowSignalDebrief({ discipline, workspaceSignal, practiceLink })
+  } else {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
+    }
+
+    try {
+      debriefResult = await generateDebrief({
+        sessionId: id,
+        turns,
+        calibrationSnapshot: session.calibration_snapshot ?? { archetype: 'Analyst', moveLevels: {} },
+        scenarioRubric: session.scenario_rubric ?? null,
+        challengeId: session.challenge_id ?? null,
+        discipline,
+        workspaceSignal,
+        practiceLink,
+        budget,
+      })
+    } catch (err) {
+      const response = aiBudgetResponse(err)
+      if (response) return response
+      throw err
+    }
   }
 
   const duration = Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000)
@@ -252,7 +319,7 @@ export async function POST(
   const sessionLoopId = (session as unknown as { loop_id?: string | null }).loop_id
   const sessionRoundIndex = (session as unknown as { round_index?: number | null }).round_index
 
-  if (sessionLoopId && sessionRoundIndex !== null && sessionRoundIndex !== undefined && !abandoned) {
+  if (sessionLoopId && sessionRoundIndex !== null && sessionRoundIndex !== undefined && !abandoned && budget) {
     try {
       const { distillRoundContext } = await import('@/lib/interview-loops/loop-context-distiller')
       const { generateLoopDebrief } = await import('@/lib/interview-loops/loop-debrief-generator')

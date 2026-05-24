@@ -1,20 +1,7 @@
-export interface LiveInterviewArtifactSnapshot {
-  type: 'canvas' | 'editor'
-  discipline?: string
-  capturedAt?: number
-  elementCount?: number
-  elementTypes?: Record<string, number>
-  textLabels?: string[]
-  code?: string
-  language?: string
-  cursorLine?: number
-  pasteEvents?: Array<{
-    length: number
-    percentOfBuffer: number
-    timestamp: number
-  }>
-  runResult?: unknown
-}
+import { sceneToPrompt } from '@/lib/hatch/canvas-scene'
+import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/snapshot-schema'
+
+export type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/snapshot-schema'
 
 function summarizeRunResult(runResult: unknown): string {
   if (!runResult) return 'not run yet'
@@ -59,11 +46,14 @@ export function buildArtifactContextNote(snapshot?: LiveInterviewArtifactSnapsho
       ? snapshot.textLabels.filter((label): label is string => typeof label === 'string' && Boolean(label)).slice(0, 10)
       : []
     const elementCount = typeof snapshot.elementCount === 'number' ? snapshot.elementCount : 0
+    const sceneNote = snapshot.sceneSummary
+      ? `\nStructured canvas summary:\n${sceneToPrompt(snapshot.sceneSummary).slice(0, 1400)}`
+      : ''
 
     return `[WORKSPACE SNAPSHOT - WHITEBOARD]
 The candidate is using the canvas for a ${discipline} interview.
 Canvas elements: ${elementCount}${typeSummary ? ` (${typeSummary})` : ''}.
-Visible labels / notes: ${labels.length ? labels.join(' | ') : 'none captured yet'}.`
+Visible labels / notes: ${labels.length ? labels.join(' | ') : 'none captured yet'}.${sceneNote}`
   }
 
   const code = summarizeCode(typeof snapshot.code === 'string' ? snapshot.code : undefined)

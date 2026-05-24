@@ -1,5 +1,9 @@
 import { getHatchPersonality } from '@/lib/hatch/personality'
 import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
+import {
+  buildDisciplinePromptBlock,
+  buildLiveInterviewScopeBlock,
+} from '@/lib/live-interview/discipline-contracts'
 
 export interface ScenarioParams {
   question: string
@@ -200,7 +204,9 @@ export function buildLiveInterviewSystemPrompt(
   const sections: string[] = []
 
   // ── Personality (identity + voice examples + emotional range + tics + anti-patterns)
-  sections.push(getHatchPersonality())
+  sections.push(getHatchPersonality({
+    identityAndScope: buildLiveInterviewScopeBlock(params.discipline),
+  }))
 
   // ── Opening & Conversation Phases
   const name = learnerName ?? 'there'
@@ -266,6 +272,10 @@ ${personaPrompt ? personaPrompt : ''}`)
   }
 
   // ── Discipline / workspace context
+  if (params.discipline) {
+    sections.push(buildDisciplinePromptBlock(params.discipline))
+  }
+
   if (params.discipline && DISCIPLINE_META[params.discipline].artifact !== 'none') {
     const meta = DISCIPLINE_META[params.discipline]
     const workspaceType = meta.artifact === 'editor' ? 'code editor' : 'whiteboard canvas'

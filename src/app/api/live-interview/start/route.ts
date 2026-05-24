@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
+import { IS_MOCK } from '@/lib/mock'
 import { buildPromptFromSession } from '@/lib/live-interview/build-prompt-from-session'
 import { apiError } from '@/lib/api/error'
 import { getEffectiveUserPlan } from '@/lib/billing/entitlements'
@@ -21,7 +22,7 @@ function validationIssues(error: ZodError) {
 }
 
 export async function POST(request: Request) {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return Response.json({ sessionId: 'mock-session-id', companyName: 'Uber', role: 'PM' })
   }
 

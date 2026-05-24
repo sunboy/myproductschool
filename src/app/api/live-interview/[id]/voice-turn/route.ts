@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
+import { IS_MOCK } from '@/lib/mock'
 
 const RequestSchema = z.object({
   content: z.string().trim().min(1).max(20000),
@@ -30,7 +31,7 @@ export async function POST(
 ) {
   const { id } = await params
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return Response.json({ ok: true, skipped: true })
   }
 

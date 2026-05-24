@@ -8,12 +8,55 @@ export const runtime = 'nodejs'
 const SAMPLE_RATE = 16000
 const DEEPGRAM_TOKEN_TTL_SECONDS = 3600
 
-function publicOrigin(request: Request) {
-  const configured = process.env.DEEPGRAM_VOICE_THINK_BASE_URL
-    ?? process.env.NEXT_PUBLIC_APP_URL
-    ?? null
-  if (configured) return configured.replace(/\/$/, '')
-  return new URL(request.url).origin
+function isLocalOrigin(origin: string) {
+  try {
+    const { hostname } = new URL(origin)
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
+  } catch {
+    return false
+  }
+}
+
+function voiceThinkOrigin(request: Request) {
+  const explicit = process.env.DEEPGRAM_VOICE_THINK_BASE_URL?.trim()
+  if (explicit) {
+    const origin = explicit.replace(/\/$/, '')
+    if (isLocalOrigin(origin)) {
+      return {
+        origin: null,
+        needsPublicCallback: true,
+      }
+    }
+
+    return {
+      origin,
+      needsPublicCallback: false,
+    }
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()
+  if (appUrl) {
+    const origin = appUrl.replace(/\/$/, '')
+    if (!isLocalOrigin(origin)) {
+      return {
+        origin,
+        needsPublicCallback: false,
+      }
+    }
+  }
+
+  const requestOrigin = new URL(request.url).origin
+  if (isLocalOrigin(requestOrigin)) {
+    return {
+      origin: null,
+      needsPublicCallback: true,
+    }
+  }
+
+  return {
+    origin: requestOrigin,
+    needsPublicCallback: false,
+  }
 }
 
 async function createDeepgramAccessToken() {
@@ -56,6 +99,16 @@ export async function GET(
     return apiError(404, 'session_not_found', 'Session not found or not active')
   }
 
+  const callback = voiceThinkOrigin(request)
+  if (callback.needsPublicCallback || !callback.origin) {
+    return apiError(
+      503,
+      'voice_callback_unconfigured',
+      'Voice needs a public callback URL for local dev. Set DEEPGRAM_VOICE_THINK_BASE_URL, or use chat here.',
+      { feature: 'voice', requiresPublicCallback: true }
+    )
+  }
+
   const token = createLiveInterviewVoiceToken({
     sessionId: id,
     userId: user.id,
@@ -95,7 +148,7 @@ export async function GET(
             temperature: 0.7,
           },
           endpoint: {
-            url: `${publicOrigin(request)}/api/live-interview/${id}/voice-think`,
+            url: `${callback.origin}/api/live-interview/${id}/voice-think`,
             headers: {
               authorization: `Bearer ${token}`,
             },
