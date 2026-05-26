@@ -10,16 +10,22 @@ interface ApiErrorBody {
   [key: string]: unknown
 }
 
-const GENERIC_SERVER_ERROR = 'Something went wrong. Try again.'
+const GENERIC_USER_ERROR = 'Something went wrong. Please try again.'
+
+// When MASK_API_ERRORS=true, all error messages and details are hidden from
+// the response body and replaced with a generic string. The real message is
+// still logged server-side so it can be investigated. Set this in production
+// so internal codes, routes, and model names never reach the client.
+const MASK_ERRORS = process.env.MASK_API_ERRORS === 'true'
 
 function shouldExposeDetails(status: number) {
+  if (MASK_ERRORS) return false
   return process.env.NODE_ENV !== 'production' || status < 500
 }
 
 function safeMessage(status: number, message: string) {
-  if (process.env.NODE_ENV === 'production' && status >= 500) {
-    return GENERIC_SERVER_ERROR
-  }
+  if (MASK_ERRORS) return GENERIC_USER_ERROR
+  if (process.env.NODE_ENV === 'production' && status >= 500) return GENERIC_USER_ERROR
   return message
 }
 
@@ -33,6 +39,10 @@ export function apiError(
   message: string,
   details?: ApiErrorDetails
 ) {
+  if (MASK_ERRORS) {
+    console.error(`[apiError] ${status} ${code}: ${message}`, details ?? '')
+  }
+
   const exposedDetails = details !== undefined && shouldExposeDetails(status) ? details : undefined
   const body: ApiErrorBody = {
     ok: false,
