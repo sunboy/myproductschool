@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { GRACE_DAYS } from './dunning'
 
 export type EffectiveBillingPlan = 'free' | 'pro'
 
@@ -8,6 +9,9 @@ export interface ProfileEntitlementRow {
   pro_access?: boolean | null
   subscription_status?: string | null
   payment_failures?: number | null
+  // past_due_since lives on `profiles` (migration 20260523140000), NOT on
+  // `subscriptions`. It is the authoritative grace-window anchor.
+  past_due_since?: string | null
 }
 
 export interface SubscriptionEntitlementRow {
@@ -31,16 +35,24 @@ function isPastIso(value: string | null | undefined, now: Date) {
   return Number.isFinite(time) && time <= now.getTime()
 }
 
-export function isWithinGracePeriod(pastDueSince: string | null | undefined, graceDays = 7): boolean {
+export function isWithinGracePeriod(
+  pastDueSince: string | null | undefined,
+  graceDays = GRACE_DAYS,
+  now = new Date()
+): boolean {
   if (!pastDueSince) return false
   const since = new Date(pastDueSince)
   const graceEnd = new Date(since.getTime() + graceDays * 24 * 60 * 60 * 1000)
-  return new Date() < graceEnd
+  return now < graceEnd
 }
 
 export function subscriptionEntitlesPro(
   subscription: SubscriptionEntitlementRow | null | undefined,
-  now = new Date()
+  now = new Date(),
+  // past_due_since lives on the `profiles` row, not `subscriptions`. Callers that
+  // have the profile (effectivePlanFromRows) pass it here. When a test/caller sets
+  // it directly on the subscription row that value is used as a fallback.
+  pastDueSinceOverride?: string | null
 ) {
   if (!subscription || subscription.plan !== 'pro') return false
 
@@ -51,7 +63,8 @@ export function subscriptionEntitlesPro(
   }
 
   if (subscription.status === 'past_due') {
-    return isWithinGracePeriod(subscription.past_due_since)
+    const pastDueSince = pastDueSinceOverride ?? subscription.past_due_since
+    return isWithinGracePeriod(pastDueSince, GRACE_DAYS, now)
   }
 
   // cancelled, unpaid, paused, incomplete_expired → not entitled
@@ -65,20 +78,32 @@ export function effectivePlanFromRows(
 ): EffectiveBillingPlan {
   if (profile?.role === 'admin') return 'pro'
 
-  // Dunning hard override: if profiles.pro_access === false AND status is a
-  // failure state AND we've hit the 3-failure threshold, revoke regardless of
-  // what the subscriptions row reports. This makes the dunning revoke path in
-  // invoice.payment_failed (webhook) authoritative.
+  // Hard revoke override for genuine suspension states only. This catches paths
+  // where access must be cut immediately and the subscriptions row may lag:
+  //   - 'disputed'  → charge.dispute.funds_withdrawn (fraud signal, revoke now)
+  //   - 'unpaid'    → grace window expired without payment
+  //   - 'cancelled' → subscription fully terminated
+  //
+  // NOTE: 'past_due' is intentionally NOT in this list. A past_due user is in the
+  // 7-day billing grace window and KEEPS Pro access regardless of how many payment
+  // retries have failed. Suspension is driven by grace expiry (the webhook leaves
+  // status at 'past_due' through the window; subscriptionEntitlesPro returns false
+  // once isWithinGracePeriod(past_due_since) lapses), NOT by failure count. This
+  // keeps entitlements, computeDunningStatus (the UI banner), and the webhook in
+  // agreement. See docs/notes/stripe-paywall-audit.md.
   if (
     profile?.pro_access === false &&
     profile?.subscription_status &&
-    ['past_due', 'unpaid', 'cancelled', 'canceled'].includes(profile.subscription_status) &&
-    (profile?.payment_failures ?? 0) >= 3
+    ['unpaid', 'cancelled', 'canceled', 'disputed'].includes(profile.subscription_status)
   ) {
     return 'free'
   }
 
-  if (subscription) return subscriptionEntitlesPro(subscription, now) ? 'pro' : 'free'
+  // past_due_since is sourced from the profile row (authoritative location) and
+  // injected into the subscription grace check.
+  if (subscription) {
+    return subscriptionEntitlesPro(subscription, now, profile?.past_due_since) ? 'pro' : 'free'
+  }
   return profile?.plan === 'pro' ? 'pro' : 'free'
 }
 
@@ -90,12 +115,12 @@ export async function getEffectiveUserPlan(
   const [profileResult, subscriptionResult] = await Promise.all([
     admin
       .from('profiles')
-      .select('plan, role, pro_access, subscription_status, payment_failures')
+      .select('plan, role, pro_access, subscription_status, payment_failures, past_due_since')
       .eq('id', userId)
       .maybeSingle(),
     admin
       .from('subscriptions')
-      .select('plan, status, current_period_end, cancel_at_period_end, past_due_since')
+      .select('plan, status, current_period_end, cancel_at_period_end')
       .eq('user_id', userId)
       .maybeSingle(),
   ])

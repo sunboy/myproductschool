@@ -34,6 +34,12 @@ interface ProfileData {
     billing_interval?: string | null
     cancel_at_period_end?: boolean | null
   } | null
+  dunning?: {
+    state: string
+    shouldShowBanner: boolean
+    bannerMessage: string | null
+    gracePeriodEndsAt: string | null
+  } | null
 }
 
 function getInitials(name: string | null | undefined): string {
@@ -67,6 +73,7 @@ export function TopNav() {
           plan: data.plan ?? null,
           daily_attempts_today: data.daily_attempts_today ?? 0,
           subscription: data.subscription ?? null,
+          dunning: data.dunning ?? null,
         })
       })
       .catch(() => {})
@@ -121,15 +128,23 @@ export function TopNav() {
   const trialDaysLeft = isTrialing
     ? Math.ceil((new Date(sub!.current_period_end!).getTime() - Date.now()) / 86400000)
     : null
-  const isDunning = sub?.status === 'past_due'
+  // Dunning banner is driven by the server-computed dunning status, which keys off
+  // the profile dunning columns (past_due_since / payment_failures) and matches the
+  // entitlements grace policy. Falls back to the raw status if dunning isn't present.
+  const dunning = profile?.dunning
+  const showDunning = dunning?.shouldShowBanner ?? (sub?.status === 'past_due')
+  const dunningMessage = dunning?.bannerMessage ?? 'Your payment failed. Update your payment method to keep Pro access.'
+  const dunningDaysLeft = dunning?.gracePeriodEndsAt
+    ? Math.max(0, Math.ceil((new Date(dunning.gracePeriodEndsAt).getTime() - Date.now()) / 86400000))
+    : undefined
 
   return (
     <>
     {trialDaysLeft !== null && trialDaysLeft <= 7 && (
       <TrialBanner daysLeft={trialDaysLeft} trialEndsAt={sub!.current_period_end!} />
     )}
-    {isDunning && (
-      <DunningBanner message="Your payment failed. Pro access will be suspended soon." />
+    {showDunning && (
+      <DunningBanner message={dunningMessage} daysUntilSuspension={dunningDaysLeft} />
     )}
     <header
       data-topnav

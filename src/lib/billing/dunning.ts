@@ -9,7 +9,7 @@ export interface DunningStatus {
   bannerMessage: string | null
 }
 
-const GRACE_DAYS = 7
+export const GRACE_DAYS = 7
 
 export function computeDunningStatus(profile: {
   subscription_status: string | null

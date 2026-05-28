@@ -270,9 +270,11 @@ export async function POST(req: NextRequest) {
         profileUpdates.pro_access = false
         profileUpdates.subscription_status = subscription.status
       } else {
-        // plan === 'pro' but status is past_due — leave pro_access alone here.
-        // The invoice.payment_failed handler is the authoritative writer for
-        // past_due_since / payment_failures / pro_access during dunning.
+        // plan === 'pro' but status is past_due → user is in the billing grace
+        // window. Leave pro_access alone (they keep access for GRACE_DAYS). The
+        // invoice.payment_failed handler owns past_due_since / payment_failures.
+        // Final suspension happens when Stripe later transitions the subscription
+        // to unpaid/canceled (handled by the plan === 'free' branch above).
         profileUpdates.subscription_status = subscription.status
       }
       await supabase.from('profiles').update(profileUpdates).eq('id', userId)
@@ -411,14 +413,14 @@ export async function POST(req: NextRequest) {
             payment_failures: failures,
             subscription_status: 'past_due',
           }
-          // First failure: record grace period start
+          // First failure: record grace period start. Suspension is NOT driven by
+          // failure count — the user keeps Pro access for the full GRACE_DAYS window
+          // (entitlements.subscriptionEntitlesPro returns false once that lapses, and
+          // computeDunningStatus flips the banner to 'suspended' at the same point).
+          // Leaving status at 'past_due' through the window keeps the dunning banner
+          // visible with a live countdown. See docs/notes/stripe-paywall-audit.md.
           if (failures === 1) {
             updates.past_due_since = new Date().toISOString()
-          }
-          // After 3 failures: suspend access
-          if (failures >= 3) {
-            updates.subscription_status = 'unpaid'
-            updates.pro_access = false
           }
           await supabase.from('profiles').update(updates).eq('id', userId)
         }

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getUsageForUser } from '@/lib/usage/check-limit'
 import { effectivePlanFromRows } from '@/lib/billing/entitlements'
+import { computeDunningStatus } from '@/lib/billing/dunning'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = z.object({
@@ -63,7 +64,7 @@ export async function GET() {
   const adminClient = createAdminClient()
 
   const [profileResult, subscriptionResult, attemptsResult] = await Promise.all([
-    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, preferred_role, streak_days, streak_shield_count, xp_total, onboarding_completed_at, archetype, archetype_description, created_at, updated_at').eq('id', user.id).single(),
+    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, preferred_role, streak_days, streak_shield_count, xp_total, onboarding_completed_at, archetype, archetype_description, created_at, updated_at, pro_access, subscription_status, payment_failures, past_due_since').eq('id', user.id).single(),
     adminClient
       .from('subscriptions')
       .select('plan, status, current_period_end, billing_interval, stripe_price_id, cancel_at_period_end, cancel_at, canceled_at')
@@ -83,11 +84,20 @@ export async function GET() {
   const dailyAttemptsToday = attemptsResult.count ?? 0
   const usage = await getUsageForUser(user.id, plan)
 
+  // Dunning state for the in-grace banner + countdown. Driven by the profile
+  // dunning columns (past_due_since / payment_failures / subscription_status).
+  const dunning = computeDunningStatus({
+    subscription_status: profileResult.data.subscription_status ?? subscriptionResult.data?.status ?? null,
+    past_due_since: profileResult.data.past_due_since ?? null,
+    payment_failures: profileResult.data.payment_failures ?? null,
+  })
+
   return NextResponse.json({
     ...profileResult.data,
     plan,
     email: user.email,
     subscription: subscriptionResult.data,
+    dunning,
     usage,
     daily_attempts_today: dailyAttemptsToday,
     daily_limit: dailyLimit,
