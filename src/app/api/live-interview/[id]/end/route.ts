@@ -20,13 +20,17 @@ import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limi
 import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
+import { checkAndGrantAchievements } from '@/lib/achievements/check'
+import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 const ROUTE_KEY = 'live_interview_debrief'
 
-const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
-  beginner: 60,
-  intermediate: 90,
-  advanced: 120,
+// Base XP by canonical bucket. Legacy DB values are coerced before lookup so
+// medium/hard rows score correctly both pre- and post-R2.
+const INTERVIEW_DIFFICULTY_BASE_XP: Record<PracticeDifficulty, number> = {
+  easy: 60,
+  medium: 90,
+  hard: 120,
 }
 
 const DEFAULT_INTERVIEW_BASE_XP = 80
@@ -301,7 +305,8 @@ export async function POST(
   ])
 
   if (profileRow) {
-    const difficultyBase = INTERVIEW_DIFFICULTY_BASE_XP[challengeRow?.difficulty ?? ''] ?? DEFAULT_INTERVIEW_BASE_XP
+    const bucket = coerceDifficulty(challengeRow?.difficulty)
+    const difficultyBase = bucket ? INTERVIEW_DIFFICULTY_BASE_XP[bucket] : DEFAULT_INTERVIEW_BASE_XP
     const scoreFactor = Math.max(0, Math.min(1, debriefResult.overallScore / FLOW_MAX_SCORE))
     const baseXp = Math.round(difficultyBase * scoreFactor)
     const streakMultiplier = Math.min(1 + (profileRow.streak_days ?? 0) * 0.05, 1.5)
@@ -313,6 +318,10 @@ export async function POST(
       .eq('id', user.id)
 
     await adminClient.rpc('update_user_streak', { p_user_id: user.id })
+
+    checkAndGrantAchievements(user.id, adminClient).catch(err =>
+      console.error('[live-interview] achievements check failed:', err)
+    )
   }
 
   // If this session is part of a loop, run post-processing

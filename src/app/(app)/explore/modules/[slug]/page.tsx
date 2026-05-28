@@ -9,22 +9,12 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import { ChapterBody } from '@/components/learning/ChapterBody'
 import { motion, useScrollCollapse } from '@/components/motion'
-import type { LearnModule, LearnChapterWithProgress, LearnDifficulty } from '@/lib/types'
+import type { LearnModule, LearnChapterWithProgress } from '@/lib/types'
+import { DIFFICULTY_LABELS as PRACTICE_DIFFICULTY_LABELS, coerceDifficulty } from '@/lib/practice/difficulty'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type ModuleData = { module: LearnModule; chapters: LearnChapterWithProgress[] }
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const DIFFICULTY_LABELS: Record<LearnDifficulty, string> = {
-  foundation: 'Foundation',
-  beginner: 'Beginner',
-  intermediate: 'Intermediate',
-  advanced: 'Advanced',
-  'new-era': 'New Era',
-  'entry-point': 'Entry Point',
-}
 
 // Chapter body rendering moved to `src/components/learning/ChapterBody.tsx`.
 // Figures are typed React components (src/components/learning/figures/*).
@@ -38,7 +28,7 @@ function ModuleMiniHeader({ module }: { module: LearnModule }) {
       <div className="font-headline text-sm font-bold text-on-surface leading-tight mb-1.5">{module.name}</div>
       <div className="flex items-center gap-2 flex-wrap">
         <span className="bg-primary-fixed text-primary font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-          {DIFFICULTY_LABELS[module.difficulty]}
+          {PRACTICE_DIFFICULTY_LABELS[coerceDifficulty(module.difficulty) ?? 'easy']}
         </span>
         <span className="text-[10px] text-on-surface-variant">{module.chapter_count} chapters · ~{module.est_minutes} min</span>
       </div>

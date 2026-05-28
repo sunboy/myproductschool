@@ -1,6 +1,7 @@
 // src/lib/content/validator.ts
 import type { ChallengeJson, DraftFlowStep, DraftQuestion } from '@/lib/types'
 import { isValidTopicAny, isValidTechniqueAny } from '@/lib/data/taxonomy'
+import { validateChallengeTags } from '@/lib/practice/policy'
 import {
   EM_DASH_PATTERNS,
   ROLE_FRAMING_PATTERNS,
@@ -288,8 +289,21 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
     }
   }
 
-  if (topicTags.length === 0) {
-    warnings.push({ path: 'metadata.topic_tags', message: 'No topic_tags set. At least 1 topic tag recommended for discovery.' })
+  // Enforce the per-type tag policy. This pipeline emits FLOW challenges, so
+  // type='flow': topic required + exactly one of technique/move. The publisher
+  // folds free-text `frameworks` into technique_tags, so a challenge with
+  // frameworks but no explicit technique_tags still satisfies the policy — mirror
+  // that here so the validator doesn't reject something the publisher accepts.
+  const effectiveTechnique = techniqueTags.length > 0
+    ? techniqueTags
+    : (json.metadata?.frameworks ?? [])
+  const policyResult = validateChallengeTags('flow', {
+    topic_tags: topicTags,
+    technique_tags: effectiveTechnique,
+    move_tags: [],
+  })
+  for (const msg of policyResult.errors) {
+    errors.push({ path: 'metadata.topic_tags/technique_tags', message: msg })
   }
 
   if (json.metadata?.is_real_interview === true && !json.metadata?.source_url) {

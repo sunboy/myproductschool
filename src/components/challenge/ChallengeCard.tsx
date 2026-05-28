@@ -43,7 +43,10 @@ export function ChallengeCard({
         ? { icon: 'incomplete_circle', colorClass: 'text-tertiary' }
         : { icon: 'circle', colorClass: 'text-on-surface-variant/40' }
 
-  const tags: string[] = Array.isArray(challenge.tags) ? (challenge.tags as string[]) : []
+  const tags: string[] = Array.from(new Set([
+    ...(challenge.topic_tags ?? []),
+    ...(challenge.technique_tags ?? []),
+  ]))
 
   const content = (
     <>

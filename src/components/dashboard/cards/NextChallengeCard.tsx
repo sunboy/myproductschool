@@ -8,9 +8,13 @@ interface NextChallengeCardProps {
   difficulty: string
   challengeId: string
   hatchInsight?: string | null
+  activePlanSlug?: string | null
 }
 
-export function NextChallengeCard({ title, domain, difficulty, challengeId, hatchInsight }: NextChallengeCardProps) {
+export function NextChallengeCard({ title, domain, difficulty, challengeId, hatchInsight, activePlanSlug }: NextChallengeCardProps) {
+  const href = activePlanSlug
+    ? `/workspace/challenges/${challengeId}?from_plan=${encodeURIComponent(activePlanSlug)}`
+    : `/workspace/challenges/${challengeId}`
   return (
     <div className="bg-surface-container-low rounded-2xl p-5 flex flex-col gap-3 border border-outline-variant/30" data-hatch-target="dashboard-next-challenge">
       <div className="flex items-center gap-2">
@@ -38,7 +42,7 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, hatc
       )}
 
       <Link
-        href={`/workspace/challenges/${challengeId}`}
+        href={href}
         data-hatch-target="dashboard-next-challenge-start"
         className="bg-on-surface text-inverse-on-surface rounded-full px-5 py-2 text-sm font-label font-semibold text-center hover:bg-on-surface/85 active:scale-95 transition-all duration-150"
       >

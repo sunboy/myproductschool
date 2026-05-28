@@ -132,6 +132,7 @@ export function TopNav() {
       <DunningBanner message="Your payment failed. Pro access will be suspended soon." />
     )}
     <header
+      data-topnav
       className="sticky top-0 z-40 w-full max-w-full border-b"
       style={{
         background: 'rgba(250,246,240,0.82)',

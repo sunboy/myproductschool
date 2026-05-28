@@ -7,6 +7,7 @@ import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 interface ProfileBadge {
   streak_days: number
+  streak_shield_count: number
   xp_total: number
   display_name: string | null
   avatar_url: string | null
@@ -33,7 +34,7 @@ export function TopBar() {
         if (r.status === 401) { window.location.href = '/login'; return null }
         return r.ok ? r.json() : null
       })
-      .then(data => { if (data) setProfile({ streak_days: data.streak_days ?? 0, xp_total: data.xp_total ?? 0, display_name: data.display_name ?? null, avatar_url: data.avatar_url ?? null, plan: data.plan ?? null }) })
+      .then(data => { if (data) setProfile({ streak_days: data.streak_days ?? 0, streak_shield_count: data.streak_shield_count ?? 0, xp_total: data.xp_total ?? 0, display_name: data.display_name ?? null, avatar_url: data.avatar_url ?? null, plan: data.plan ?? null }) })
       .catch(() => {})
   }, [])
 
@@ -81,6 +82,25 @@ export function TopBar() {
             </span>
             <span className="text-xs font-bold text-tertiary font-label" suppressHydrationWarning>{streakDays}</span>
           </div>
+
+          {/* Streak shield count - only when > 0 */}
+          {(profile?.streak_shield_count ?? 0) > 0 && (
+            <div
+              data-testid="shield-badge"
+              className="flex items-center gap-1 px-2.5 py-1 bg-primary-fixed/70 rounded-full"
+              suppressHydrationWarning
+            >
+              <span
+                className="material-symbols-outlined text-primary text-sm"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                shield
+              </span>
+              <span className="text-xs font-bold text-primary font-label" suppressHydrationWarning>
+                {profile?.streak_shield_count}
+              </span>
+            </div>
+          )}
 
           {/* XP */}
           <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-primary-fixed/70 rounded-full" suppressHydrationWarning>

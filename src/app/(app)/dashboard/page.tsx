@@ -12,6 +12,7 @@ import {
 } from '@/lib/data/dashboard'
 import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
+import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
 import { HeroGreeterCard } from '@/components/dashboard/cards/HeroGreeterCard'
@@ -49,10 +50,14 @@ function moveHatchInsight(move: string, level: number): string {
   return `Strong overall. This sharpens your ${move} edge.`
 }
 
+// Returns DB values used by `.in('difficulty', ...)` queries. Expands to the
+// union of legacy and canonical strings so the query works pre- and post-R2.
 function targetDifficulties(avgXp: number): string[] {
-  if (avgXp < 100) return ['warmup', 'standard']
-  if (avgXp < 300) return ['standard', 'advanced']
-  return ['advanced', 'staff_plus']
+  let buckets: PracticeDifficulty[]
+  if (avgXp < 100) buckets = ['easy', 'medium']
+  else if (avgXp < 300) buckets = ['medium', 'hard']
+  else buckets = ['hard']
+  return expandDifficultiesForQuery(buckets)
 }
 
 type RawChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domain?: { title: string }[] | { title: string } | null }
@@ -237,14 +242,24 @@ export default async function DashboardPage() {
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, featuredAutopsy] = await Promise.all([
+  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, featuredAutopsy, activePlanResult] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
     userId ? getCommunityActivityFeed(6) : [],
     getFeaturedAutopsyForDashboard(),
+    userId
+      ? adminClient
+          .from('user_study_plans')
+          .select('study_plans(slug)')
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
+
+  const activePlanSlug = (activePlanResult?.data?.study_plans as unknown as { slug: string } | null)?.slug ?? null
 
   // Fetch paused loops for PausedLoopCard
   let pausedLoopData: { loop: Record<string, unknown>; rounds: Record<string, unknown>[] } | null = null
@@ -277,7 +292,10 @@ export default async function DashboardPage() {
 
   if (userId && isCalibrated) {
     const now = new Date()
-    const todayStr = now.toISOString().split('T')[0]
+    // Use local date parts to avoid UTC offset shifting dates
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const localDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    const todayStr = localDate(now)
     const dayOfWeek = now.getDay()
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
     const weekStart = new Date(now)
@@ -288,7 +306,7 @@ export default async function DashboardPage() {
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart)
       d.setDate(weekStart.getDate() + i)
-      weekDateStrings.push(d.toISOString().split('T')[0])
+      weekDateStrings.push(localDate(d))
     }
 
     const [achievementsResult, streakResult, todayAttemptsResult, userAchievements] = await Promise.all([
@@ -439,7 +457,10 @@ export default async function DashboardPage() {
         icon: 'bolt',
         done: doneQuickTake,
         active: !doneQuickTake,
-        href: quickTakePrompt ? `/workspace/challenges/${quickTakePrompt.slug ?? quickTakePrompt.id}` : undefined,
+        // Quick-takes are answered inline on the dashboard card below, not in
+        // the workspace (that route redirects quick_take → /challenges). Anchor
+        // to the card so the step lands on something usable.
+        href: '/dashboard#quick-take',
       },
       {
         label: 'Core challenge',
@@ -512,11 +533,14 @@ export default async function DashboardPage() {
 
             {/* Resume / Quick Take row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <QuickTakeCard
-                prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
-                challengeId={quickTakePrompt?.id ?? 'orientation'}
-                hatchContext={null}
-              />
+              {/* scroll-mt offsets the fixed top bar when linked via #quick-take */}
+              <div id="quick-take" className="scroll-mt-24">
+                <QuickTakeCard
+                  prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
+                  challengeId={quickTakePrompt?.id ?? 'orientation'}
+                  hatchContext={null}
+                />
+              </div>
               {nextChallenge?.domainName ? (
                 <NextChallengeCard
                   title={nextChallenge.title}
@@ -524,6 +548,7 @@ export default async function DashboardPage() {
                   difficulty={nextChallenge.difficulty ?? 'standard'}
                   challengeId={nextChallenge.slug ?? nextChallenge.id}
                   hatchInsight={nextChallenge.hatch_insight ?? null}
+                  activePlanSlug={activePlanSlug}
                 />
               ) : (
                 <NextChallengeCard
@@ -532,6 +557,7 @@ export default async function DashboardPage() {
                   difficulty="standard"
                   challengeId="orientation"
                   hatchInsight={null}
+                  activePlanSlug={activePlanSlug}
                 />
               )}
             </div>

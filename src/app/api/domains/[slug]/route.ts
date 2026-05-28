@@ -35,7 +35,7 @@ export async function GET(
   const [challengesResult, attemptsResult] = await Promise.all([
     adminClient
       .from('challenges')
-      .select('id, title, prompt_text, difficulty, tags, estimated_minutes, is_published, move_tags, paradigm, relevant_roles')
+      .select('id, title, prompt_text, difficulty, topic_tags, technique_tags, industry_tags, estimated_minutes, is_published, move_tags, paradigm, relevant_roles')
       .eq('domain_id', domain.id)
       .eq('is_published', true)
       .neq('challenge_type', 'freeform')

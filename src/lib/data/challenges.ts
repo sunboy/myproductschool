@@ -1,6 +1,7 @@
 import { Challenge, ChallengeWithDomain, ChallengeAttemptV2 } from '@/lib/types'
 import { MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
 import { IS_MOCK } from '@/lib/mock'
+import { coerceDifficulty, expandDifficultyForQuery } from '@/lib/practice/difficulty'
 
 type AttemptRow = Pick<ChallengeAttemptV2, 'challenge_id' | 'total_score' | 'status'>
 
@@ -51,7 +52,13 @@ export async function getChallenges(filters?: {
   if (IS_MOCK) {
     let challenges = MOCK_CHALLENGES
     if (filters?.domainId) challenges = challenges.filter(c => c.domain_id === filters.domainId)
-    if (filters?.difficulty) challenges = challenges.filter(c => c.difficulty === filters.difficulty)
+    if (filters?.difficulty) {
+      const bucket = coerceDifficulty(filters.difficulty)
+      if (bucket) {
+        const accepted = new Set(expandDifficultyForQuery(bucket))
+        challenges = challenges.filter(c => accepted.has(c.difficulty))
+      }
+    }
 
     return challenges.map(challenge => {
       const domain = MOCK_DOMAINS.find(d => d.id === challenge.domain_id)
@@ -77,7 +84,10 @@ export async function getChallenges(filters?: {
     .neq('challenge_type', 'quick_take')
 
   if (filters?.domainId) query = query.eq('domain_id', filters.domainId)
-  if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty)
+  if (filters?.difficulty) {
+    const bucket = coerceDifficulty(filters.difficulty)
+    if (bucket) query = query.in('difficulty', expandDifficultyForQuery(bucket))
+  }
   if (filters?.paradigm && filters.paradigm !== 'all') query = query.eq('paradigm', filters.paradigm)
   if (filters?.role && filters.role !== 'all') query = query.contains('relevant_roles', [filters.role])
   if (filters?.company) query = query.contains('company_tags', [filters.company])

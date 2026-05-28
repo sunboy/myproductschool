@@ -613,7 +613,7 @@ export async function getWeeklyRoom(userId: string): Promise<{
         cohort_challenge_id: 'cohort-1',
         title: 'Diagnose the Drop',
         prompt_text: 'Daily active users for a social app dropped 15% last Tuesday. Walk through the diagnosis.',
-        difficulty: 'standard',
+        difficulty: 'medium',
         move_tag: 'frame',
         week_start: new Date().toISOString(),
         week_end: new Date(Date.now() + 4 * 86400000).toISOString(),

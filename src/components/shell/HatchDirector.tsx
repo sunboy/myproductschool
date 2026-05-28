@@ -2,14 +2,15 @@
 
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { HATCH_TOUR_STEPS, useHatchContext } from '@/context/HatchContext'
+import { HATCH_TOUR_STEPS, HATCH_TOUR_STORAGE, useHatchContext } from '@/context/HatchContext'
 import type { HatchCueInput } from '@/context/HatchContext'
 
-const TOUR_COMPLETED_KEY = 'hatch-tour:v1:completed'
-const TOUR_SKIPPED_KEY = 'hatch-tour:v1:skipped'
-const TOUR_OFFERED_KEY = 'hatch-tour:v1:offered'
+const TOUR_COMPLETED_KEY = HATCH_TOUR_STORAGE.completed
+const TOUR_SKIPPED_KEY = HATCH_TOUR_STORAGE.skipped
+const TOUR_OFFERED_KEY = HATCH_TOUR_STORAGE.offered
 const ROUTE_CUE_AUTO_HIDE_MS = 8500
 const TOUR_INVITE_AUTO_HIDE_MS = 9000
+const TARGET_GRACE_MS = 600
 
 function tourSeen() {
   if (typeof window === 'undefined') return true
@@ -23,6 +24,11 @@ function tourSeen() {
 function markTourOffered() {
   if (typeof window === 'undefined') return
   localStorage.setItem(TOUR_OFFERED_KEY, new Date().toISOString())
+}
+
+function targetExists(id: string | undefined): boolean {
+  if (!id || typeof document === 'undefined') return false
+  return Boolean(document.querySelector(`[data-hatch-target="${CSS.escape(id)}"]`))
 }
 
 function routeCue(pathname: string): HatchCueInput | null {
@@ -124,6 +130,7 @@ export function HatchDirector() {
   const pathname = usePathname()
   const hatch = useHatchContext()
   const emitCue = hatch?.emitCue
+  const nextTourStep = hatch?.nextTourStep
   const tourActive = hatch?.tourActive
   const tourStepIndex = hatch?.tourStepIndex ?? 0
 
@@ -156,12 +163,44 @@ export function HatchDirector() {
   }, [emitCue, pathname, tourActive])
 
   useEffect(() => {
-    if (!emitCue || !tourActive) return
+    if (!emitCue || !tourActive || !nextTourStep) return
+    // Suspend the tour on workspace routes; resume on next non-workspace visit.
+    if (pathname.startsWith('/workspace')) return
+
     const step = HATCH_TOUR_STEPS[tourStepIndex]
     if (!step) return
 
     const isLast = tourStepIndex === HATCH_TOUR_STEPS.length - 1
-    const timer = window.setTimeout(() => {
+
+    // Two-tier validation: try target immediately, then once more after a grace window
+    // (covers late-mounting dashboard cards). If still missing, optional → auto-advance,
+    // required → emit cue with no target + fallback copy anchored at FAB.
+    let graceTimer: number | undefined
+    const emit = () => {
+      const present = targetExists(step.target)
+      if (!present) {
+        if (step.optional) {
+          // Silently auto-advance.
+          nextTourStep()
+          return
+        }
+        emitCue({
+          id: `tour-${step.id}`,
+          surface: 'tour',
+          message: step.fallback?.copy ?? step.message,
+          state: isLast ? 'celebrating' : 'delighted',
+          animation: step.animation,
+          target: undefined,
+          source: 'tour',
+          priority: 10,
+          cta: {
+            label: isLast ? 'Finish tour' : 'Next stop',
+            action: isLast ? 'complete-tour' : 'next-tour-step',
+          },
+        }, { force: true })
+        return
+      }
+
       emitCue({
         id: `tour-${step.id}`,
         surface: 'tour',
@@ -169,6 +208,7 @@ export function HatchDirector() {
         state: isLast ? 'celebrating' : 'delighted',
         animation: step.animation,
         target: step.target,
+        highlightInset: step.highlightInset,
         source: 'tour',
         priority: 10,
         cta: {
@@ -176,10 +216,21 @@ export function HatchDirector() {
           action: isLast ? 'complete-tour' : 'next-tour-step',
         },
       }, { force: true })
+    }
+
+    const firstTry = window.setTimeout(() => {
+      if (targetExists(step.target)) {
+        emit()
+      } else {
+        graceTimer = window.setTimeout(emit, TARGET_GRACE_MS)
+      }
     }, 160)
 
-    return () => window.clearTimeout(timer)
-  }, [emitCue, tourActive, tourStepIndex])
+    return () => {
+      window.clearTimeout(firstTry)
+      if (graceTimer) window.clearTimeout(graceTimer)
+    }
+  }, [emitCue, nextTourStep, tourActive, tourStepIndex, pathname])
 
   return null
 }

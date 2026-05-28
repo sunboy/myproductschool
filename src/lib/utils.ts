@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { IS_MOCK } from '@/lib/mock'
+import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -22,5 +23,6 @@ export function isMockMode(): boolean {
 }
 
 export function difficultyLabel(d: string): string {
-  return ({ warmup: 'Warm-up', standard: 'Intermediate', advanced: 'Advanced', staff_plus: 'Staff+' } as Record<string, string>)[d] ?? d
+  const canonical = coerceDifficulty(d)
+  return canonical ? DIFFICULTY_LABELS[canonical] : d
 }

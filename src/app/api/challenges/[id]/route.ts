@@ -44,7 +44,7 @@ export async function GET(
       paradigm: 'traditional',
       industry: 'consumer-tech',
       sub_vertical: 'audio',
-      difficulty: 'standard',
+      difficulty: 'medium' as Challenge['difficulty'],
       estimated_minutes: 15,
       primary_competencies: ['diagnostic_accuracy', 'framing_precision'],
       secondary_competencies: ['metric_fluency'],

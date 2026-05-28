@@ -10,6 +10,8 @@ import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budg
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
+import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
+import { urlForChallenge, urlForStudyPlan } from '@/lib/hatch/urls'
 
 const ROUTE_KEY = 'hatch_chat'
 const MessageSchema = z.object({
@@ -177,12 +179,42 @@ async function buildRecommendedChallengesBlock(userId: string): Promise<string> 
 
     const lines = ['## Recommended Challenges', `Based on the learner's progress, suggest these specific challenges (use exact titles and URLs - do not make up other challenges):`]
     for (const c of picks) {
-      const url = `/workspace/challenges/${c.slug ?? c.id}`
+      const url = urlForChallenge(c)
       const tags = (c.move_tags as string[] | null)?.join(', ') ?? 'general'
-      lines.push(`- **${c.title}** (${c.difficulty ?? 'standard'}, FLOW: ${tags}) → ${url}`)
+      const bucket = coerceDifficulty(c.difficulty) ?? 'medium'
+      lines.push(`- **${c.title}** (${DIFFICULTY_LABELS[bucket]}, FLOW: ${tags}) → ${url}`)
     }
     if (weakestMove) lines.push(`\nThese are selected because the learner's weakest FLOW move is **${weakestMove}**.`)
-    lines.push(`\nWhen recommending challenges, always format the link as a markdown link: [Challenge Title](url)`)
+
+    // Links section: precomputed, verified paths the model may turn into
+    // clickable markdown links. The model must draw URLs ONLY from this list.
+    const links: string[] = []
+    for (const c of picks) {
+      links.push(`[${c.title}](${urlForChallenge(c)})`)
+    }
+    if (weakestMove) {
+      // Practice hub filtered to the weakest FLOW move (move= URL param).
+      links.push(`[More ${weakestMove} practice](/challenges?move=${encodeURIComponent(weakestMove)})`)
+    }
+
+    // Surface the learner's active study plan, if enrolled.
+    const { data: enrollment } = await admin
+      .from('user_study_plan_enrollments')
+      .select('study_plans(slug, title)')
+      .eq('user_id', userId)
+      .order('enrolled_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const activePlan = (enrollment as { study_plans?: { slug: string; title: string } | null } | null)?.study_plans
+    if (activePlan?.slug) {
+      links.push(`[${activePlan.title}](${urlForStudyPlan(activePlan.slug)})`)
+    }
+
+    if (links.length) {
+      lines.push('\n## Links you can share')
+      lines.push('When recommending a next step, include a clickable markdown link drawn ONLY from this list. Never invent a URL.')
+      for (const l of links) lines.push(`- ${l}`)
+    }
 
     return lines.join('\n')
   } catch {
@@ -239,7 +271,7 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
       const lines = [
         `User is ${pageType === 'challenge_feedback' ? 'reviewing feedback for' : 'working on'} a challenge:`,
         `**Title**: ${challenge.title}`,
-        `**Type**: ${challenge.challenge_type ?? 'flow'} | **Difficulty**: ${challenge.difficulty ?? 'standard'}`,
+        `**Type**: ${challenge.challenge_type ?? 'flow'} | **Difficulty**: ${DIFFICULTY_LABELS[coerceDifficulty(challenge.difficulty) ?? 'medium']}`,
       ]
       if (challenge.move_tags?.length) lines.push(`**FLOW moves**: ${challenge.move_tags.join(', ')}`)
       if (challenge.scenario_role) lines.push(`**Role**: ${challenge.scenario_role}`)
@@ -318,7 +350,10 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
         `**Module**: ${module.name}`,
       ]
       if (module.tagline) lines.push(`**About**: ${module.tagline}`)
-      if (module.difficulty) lines.push(`**Difficulty**: ${module.difficulty}`)
+      if (module.difficulty) {
+        const moduleLabel = DIFFICULTY_LABELS[coerceDifficulty(module.difficulty) ?? 'easy']
+        lines.push(`**Difficulty**: ${moduleLabel}`)
+      }
       if (module.chapter_count) lines.push(`**Length**: ${module.chapter_count} chapters, ~${module.est_minutes ?? '?'} minutes`)
 
       if (chapterSlug) {

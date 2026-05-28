@@ -2,6 +2,16 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ChallengeJson, FlowStep } from '@/lib/types'
 import { preGenerateCoaching } from './coaching-warmer'
+import { coerceDifficulty } from '@/lib/practice/difficulty'
+import { validateChallengeTags } from '@/lib/practice/policy'
+import { slugifyIndustry } from '@/lib/practice/slugify'
+
+// Map dirty free-text framework values to canonical technique slugs.
+function normalizeFrameworkToTechnique(raw: string): string {
+  const s = raw.trim().toLowerCase()
+  if (['jtbd', 'jobs to be done', 'jobs_to_be_done', 'jobs-to-be-done'].includes(s)) return 'jtbd'
+  return slugifyIndustry(raw)
+}
 
 const VALID_PARADIGMS = ['traditional', 'ai_assisted', 'agentic', 'ai_native'] as const
 
@@ -38,6 +48,40 @@ export async function publishDraft(draftId: string): Promise<string> {
   const json = draft.challenge_json as ChallengeJson
   const challengeId = generateChallengeId(json.metadata)
 
+  // Build canonical tag arrays. The legacy `industry` / `sub_vertical` /
+  // `frameworks` / `tags` columns were dropped in migration 20260527000002,
+  // so we fold their content into the canonical arrays instead.
+  const topicTags = json.metadata.topic_tags ?? []
+
+  // Merge any free-text frameworks into technique_tags (deduped, slugified).
+  const techniqueSet = new Set<string>(json.metadata.technique_tags ?? [])
+  for (const fw of json.metadata.frameworks ?? []) {
+    const slug = normalizeFrameworkToTechnique(fw)
+    if (slug) techniqueSet.add(slug)
+  }
+  const techniqueTags = [...techniqueSet]
+
+  // industry_tags = slugified industry + sub_vertical (deduped, blanks dropped).
+  const industryTags = [...new Set(
+    [json.metadata.industry, json.metadata.sub_vertical]
+      .filter(Boolean)
+      .map(v => slugifyIndustry(v as string))
+      .filter(Boolean)
+  )]
+
+  // Enforce the per-type tag policy before publishing. This pipeline produces
+  // FLOW challenges (scenario + flow_steps), so type='flow': topic required,
+  // and exactly one of technique/move must be set. The generator does not emit
+  // move_tags, so a valid flow challenge must carry ≥1 technique_tag.
+  const tagCheck = validateChallengeTags('flow', {
+    topic_tags: topicTags,
+    technique_tags: techniqueTags,
+    move_tags: [],
+  })
+  if (!tagCheck.ok) {
+    throw new Error(`Tag policy violation, cannot publish: ${tagCheck.errors.join('; ')}`)
+  }
+
   // Insert challenge
   // slug is NOT NULL (added in migration 031); for HP-* ids there is no c{N}- prefix to strip,
   // so slug === challengeId
@@ -51,18 +95,15 @@ export async function publishDraft(draftId: string): Promise<string> {
     scenario_question: json.scenario.question,
     engineer_standout: json.scenario.engineer_standout,
     paradigm: normalizeParadigm(json.metadata.paradigm),
-    industry: json.metadata.industry,
-    sub_vertical: json.metadata.sub_vertical,
-    difficulty: json.metadata.difficulty,
+    difficulty: coerceDifficulty(json.metadata.difficulty) ?? 'medium',
     estimated_minutes: json.metadata.estimated_minutes,
     primary_competencies: json.metadata.primary_competencies,
     secondary_competencies: json.metadata.secondary_competencies,
-    frameworks: json.metadata.frameworks,
     relevant_roles: json.metadata.relevant_roles,
     company_tags: json.metadata.company_tags,
-    tags: json.metadata.tags,
-    topic_tags: json.metadata.topic_tags ?? [],
-    technique_tags: json.metadata.technique_tags ?? [],
+    topic_tags: topicTags,
+    technique_tags: techniqueTags,
+    industry_tags: industryTags,
     is_real_interview: json.metadata.is_real_interview ?? false,
     source_url: json.metadata.source_url ?? null,
     is_published: true,

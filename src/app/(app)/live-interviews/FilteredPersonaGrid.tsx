@@ -6,6 +6,7 @@ import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import StartInterviewButton from './StartInterviewButton'
 import type { InterviewDiscipline } from '@/components/live-interviews/DisciplineFilterStrip'
+import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 const FILTER_ROLES = ['All', 'PM', 'SWE', 'Data Eng', 'ML Eng'] as const
 type FilterRole = typeof FILTER_ROLES[number]
@@ -20,17 +21,15 @@ function matchesFilter(persona: LiveInterviewPersona, filter: FilterRole): boole
   return persona.role === filter
 }
 
-const DIFFICULTY_DOT: Record<LiveInterviewPersona['difficulty'], string> = {
-  standard: '#4a7c59',
-  advanced: '#f59e0b',
-  staff_plus: '#ef4444',
+const DIFFICULTY_DOT: Record<PracticeDifficulty, string> = {
+  easy: '#10b981',
+  medium: '#f59e0b',
+  hard: '#ef4444',
 }
 
-const SCENARIO_DIFFICULTY_DOT: Record<string, string> = {
-  warmup: '#4a7c59',
-  standard: '#4a7c59',
-  advanced: '#f59e0b',
-  staff_plus: '#ef4444',
+function getDotColor(difficulty: string | null | undefined): string {
+  const canon = coerceDifficulty(difficulty)
+  return canon ? DIFFICULTY_DOT[canon] : '#10b981'
 }
 
 interface FilteredPersonaGridProps {
@@ -149,7 +148,7 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
         <div className="space-y-1.5 overflow-y-auto px-3 py-3">
           {leftPagedItems.map(persona => {
             const isActive = activePersona.companyId === persona.companyId
-            const dotColor = DIFFICULTY_DOT[persona.difficulty]
+            const dotColor = getDotColor(persona.difficulty)
             return (
               <button
                 key={persona.companyId}
@@ -271,8 +270,9 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
 
             {/* Paginated scenario rows */}
             {rightPagedScenarios.map(scenario => {
-              const dot = SCENARIO_DIFFICULTY_DOT[scenario.difficulty] ?? '#4a7c59'
-              const diffLabel = scenario.difficulty === 'staff_plus' ? 'Staff+' : scenario.difficulty.charAt(0).toUpperCase() + scenario.difficulty.slice(1)
+              const dot = getDotColor(scenario.difficulty)
+              const canon = coerceDifficulty(scenario.difficulty)
+              const diffLabel = canon ? DIFFICULTY_LABELS[canon] : scenario.difficulty
               return (
                 <div
                   key={scenario.id}

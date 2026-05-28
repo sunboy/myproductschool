@@ -76,10 +76,22 @@ function deriveFrameworkHint(tags: string[], domainTitle: string): string {
 
 export function CaseContextPane({ challenge, domainTitle, domainIcon, timerEnabled, onTimerToggle, timeLeft }: CaseContextPaneProps) {
   const subQuestions = challenge.sub_questions ?? parseSubQuestions(challenge.prompt_text)
-  const frameworkHint = deriveFrameworkHint(challenge.tags, domainTitle)
+  // Canonical tag columns (topic_tags, technique_tags) merged. Legacy `tags`
+  // column was dropped in R3.E.1; guard against undefined for backward compat
+  // with any cached/legacy challenge shape.
+  const challengeAny = challenge as unknown as { topic_tags?: string[]; technique_tags?: string[] }
+  const legacyTags = (challenge.tags ?? []) as string[]
+  const mergedTags: string[] = Array.from(new Set([
+    ...(challengeAny.topic_tags ?? []),
+    ...(challengeAny.technique_tags ?? []),
+    ...(challengeAny.topic_tags || challengeAny.technique_tags ? [] : legacyTags),
+  ]))
+  const frameworkHint = deriveFrameworkHint(mergedTags.length > 0 ? mergedTags : legacyTags, domainTitle)
 
   // Use the first tag as a "company" context if available, or fall back to nothing
-  const companyTag = challenge.tags.find(t => /^[A-Z]/.test(t))
+  const companyTag = mergedTags.length > 0
+    ? mergedTags.find(t => /^[A-Z]/.test(t))
+    : legacyTags.find(t => /^[A-Z]/.test(t))
 
   const timerTextColor = timeLeft < 60 ? 'text-error' : timeLeft < 180 ? 'text-tertiary' : 'text-primary'
 
@@ -235,9 +247,9 @@ export function CaseContextPane({ challenge, domainTitle, domainIcon, timerEnabl
       </div>
 
       {/* ── Tags Row ──────────────────────────────────────── */}
-      {challenge.tags.length > 0 && (
+      {mergedTags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-10">
-          {challenge.tags.map((tag) => (
+          {mergedTags.map((tag) => (
             <span
               key={tag}
               className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-3 py-1 font-label font-medium"

@@ -5,14 +5,13 @@ import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useLearnModules } from '@/hooks/useLearnModules'
 import type { LearnDifficulty, LearnModuleWithProgress } from '@/lib/types'
+import { DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 const DIFFICULTIES: Array<{ id: LearnDifficulty | 'all'; label: string }> = [
   { id: 'all', label: 'All' },
-  { id: 'foundation', label: 'Foundation' },
-  { id: 'beginner', label: 'Beginner' },
-  { id: 'intermediate', label: 'Intermediate' },
-  { id: 'advanced', label: 'Advanced' },
-  { id: 'new-era', label: 'New Era' },
+  { id: 'easy',   label: DIFFICULTY_LABELS.easy },
+  { id: 'medium', label: DIFFICULTY_LABELS.medium },
+  { id: 'hard',   label: DIFFICULTY_LABELS.hard },
 ]
 
 const TRACK_CONFIG: Record<string, { label: string; accent: string }> = {
@@ -25,13 +24,11 @@ const TRACK_CONFIG: Record<string, { label: string; accent: string }> = {
 
 const TRACK_ORDER = ['foundations', 'systems', 'ai-llms', 'new-era', 'product-thinking']
 
-const DIFF_CONFIG: Record<string, { bg: string; iconBg: string; artColor: string }> = {
-  foundation:   { bg: '#e8f4ed', iconBg: '#2d6a4a', artColor: '#2d6a4a' },
-  beginner:     { bg: '#cfe3d3', iconBg: '#4a7c59', artColor: '#4a7c59' },
-  intermediate: { bg: '#f3e2b9', iconBg: '#c9933a', artColor: '#c9933a' },
-  advanced:     { bg: '#ecdeff', iconBg: '#8b46d4', artColor: '#a878d6' },
-  'new-era':    { bg: '#daeeff', iconBg: '#2a7ab5', artColor: '#3a8aca' },
-  'entry-point':{ bg: '#fff3e0', iconBg: '#bf6000', artColor: '#d97000' },
+// Keyed on canonical PracticeDifficulty. Easy = green, Medium = amber, Hard = red.
+const DIFF_CONFIG: Record<PracticeDifficulty, { bg: string; iconBg: string; artColor: string }> = {
+  easy:   { bg: '#cfe3d3', iconBg: '#4a7c59', artColor: '#4a7c59' },
+  medium: { bg: '#f3e2b9', iconBg: '#c9933a', artColor: '#c9933a' },
+  hard:   { bg: '#ecdeff', iconBg: '#8b46d4', artColor: '#a878d6' },
 }
 
 // ── Background arts (same pattern as StudyPlanCard) ───────────────────────
@@ -121,20 +118,17 @@ function SpiralSVG() {
 
 // ── Module card ────────────────────────────────────────────────────────────
 
-const MODULE_ICONS: Record<string, string> = {
-  foundation: 'foundation',
-  beginner: 'auto_stories',
-  intermediate: 'layers',
-  advanced: 'bolt',
-  'new-era': 'auto_awesome',
-  'entry-point': 'play_circle',
+const MODULE_ICONS: Record<PracticeDifficulty, string> = {
+  easy:   'auto_stories',
+  medium: 'layers',
+  hard:   'bolt',
 }
 
 function ModuleCard({ module, index: _index }: { module: LearnModuleWithProgress; index: number }) {
   const [hovered, setHovered] = useState(false)
-  const diff = module.difficulty ?? 'beginner'
-  const cfg = DIFF_CONFIG[diff] ?? DIFF_CONFIG.beginner
-  const diffLabel = diff === 'new-era' ? 'New Era' : diff.charAt(0).toUpperCase() + diff.slice(1)
+  const diff: PracticeDifficulty = module.difficulty ?? 'easy'
+  const cfg = DIFF_CONFIG[diff] ?? DIFF_CONFIG.easy
+  const diffLabel = DIFFICULTY_LABELS[diff]
   const hasProgress = module.completed_chapters > 0
   const ctaLabel = hasProgress ? 'Continue' : 'Start module'
   const icon = MODULE_ICONS[diff] ?? 'auto_stories'
@@ -164,11 +158,9 @@ function ModuleCard({ module, index: _index }: { module: LearnModuleWithProgress
       }}
     >
       {/* Background art by difficulty */}
-      {diff === 'foundation' && <FoundationArt color={cfg.artColor} />}
-      {diff === 'beginner' && <BeginnerArt color={cfg.artColor} />}
-      {diff === 'intermediate' && <IntermediateArt color={cfg.artColor} />}
-      {diff === 'advanced' && <AdvancedArt color={cfg.artColor} />}
-      {diff === 'new-era' && <NewEraArt color={cfg.artColor} />}
+      {diff === 'easy'   && <BeginnerArt color={cfg.artColor} />}
+      {diff === 'medium' && <IntermediateArt color={cfg.artColor} />}
+      {diff === 'hard'   && <AdvancedArt color={cfg.artColor} />}
 
       {/* Top row */}
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

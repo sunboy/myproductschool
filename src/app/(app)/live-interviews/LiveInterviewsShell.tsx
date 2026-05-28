@@ -686,7 +686,13 @@ const COMPANIES = [
   { name: 'Stripe', icon: 'credit_card' }, { name: 'Uber', icon: 'local_taxi' },
 ]
 
-const DIFF_LABELS: Record<string, string> = { standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+' }
+import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
+
+const DIFF_LABELS: Record<string, string> = {
+  easy: DIFFICULTY_LABELS.easy,
+  medium: DIFFICULTY_LABELS.medium,
+  hard: DIFFICULTY_LABELS.hard,
+}
 
 const UI_TO_DISCIPLINE: Record<string, LoopDiscipline> = {
   'product-sense': 'product_sense',
@@ -703,10 +709,12 @@ const DISCIPLINE_TO_UI: Record<LoopDiscipline, string> = {
   coding:        'coding',
 }
 
-// Reverse-map a target_role string (e.g. "Advanced") to the difficulty key
-const DIFF_LABEL_TO_KEY: Record<string, string> = Object.fromEntries(
-  Object.entries({ standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+' }).map(([k, v]) => [v, k])
-)
+// Reverse-map a target_role label (e.g. "Hard") to the canonical difficulty key.
+// Uses coerceDifficulty so any legacy label string also resolves correctly.
+function diffLabelToKey(label: string | undefined): string {
+  if (!label) return 'hard'
+  return coerceDifficulty(label) ?? coerceDifficulty(label.toLowerCase()) ?? 'hard'
+}
 
 interface LoopBuilderProps {
   editLoopId?: string
@@ -726,8 +734,8 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
     return ['product-sense', 'system-design']
   })
   const [difficulty, setDifficulty] = useState(() => {
-    if (initialDifficulty) return DIFF_LABEL_TO_KEY[initialDifficulty] ?? initialDifficulty
-    return 'advanced'
+    if (initialDifficulty) return diffLabelToKey(initialDifficulty)
+    return 'hard'
   })
   const [voiceMode, setVoiceMode] = useState(true)
   const [name, setName] = useState('')

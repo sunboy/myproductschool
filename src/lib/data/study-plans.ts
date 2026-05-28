@@ -217,14 +217,29 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
   // study_plan_chapters stores challenge_ids as an array per chapter
   const { data: chapters } = await supabase
     .from('study_plan_chapters')
-    .select('id, title, order_index, challenge_ids')
+    .select('id, title, order_index, challenge_ids, topic_tags')
     .eq('plan_id', plan.id)
     .order('order_index')
 
   // Collect all challenge IDs across chapters
   const allChallengeIds: string[] = []
+  const allTopicSlugs: string[] = []
   for (const ch of chapters ?? []) {
     for (const cid of ch.challenge_ids ?? []) allChallengeIds.push(cid)
+    for (const slug of ch.topic_tags ?? []) allTopicSlugs.push(slug)
+  }
+
+  // Resolve topic labels for tag-aware section headers
+  const topicLabelMap = new Map<string, string>()
+  if (allTopicSlugs.length > 0) {
+    const uniqueSlugs = [...new Set(allTopicSlugs)]
+    const { data: topics } = await supabase
+      .from('topics')
+      .select('slug, title, default_chapter_label')
+      .in('slug', uniqueSlugs)
+    for (const t of topics ?? []) {
+      topicLabelMap.set(t.slug, t.default_chapter_label ?? t.title ?? t.slug)
+    }
   }
 
   // Fetch challenge details
@@ -282,7 +297,11 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
         item_type: 'challenge' as const,
         challenge_id: cid,
         concept_id: null,
-        chapter_title: ch.title,
+        // Cap at 2 topic labels per header; rest is implied. Joining 4-5
+        // slugs makes the header unreadable.
+        chapter_title: (ch.topic_tags?.length > 0
+          ? ch.topic_tags.slice(0, 2).map((slug: string) => topicLabelMap.get(slug)).filter(Boolean).join(' · ') || ch.title
+          : ch.title),
         order_index: orderIndex,
         challenge: c ? {
           ...c,

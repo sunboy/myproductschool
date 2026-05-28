@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { buildHatchContextString, getHatchContext, type HatchUserContext } from '@/lib/hatch-context'
 import { generateEmbedding } from '@/lib/embeddings'
 import type { ChallengeType, FlowStep } from '@/lib/types'
+import { coerceDifficulty } from '@/lib/practice/difficulty'
 
 export type SkillSurface =
   | 'grading'
@@ -322,7 +323,7 @@ function scoreChallengeCandidate(candidate: ChallengeCandidate, ctx: HatchUserCo
   if (move && (candidate.move_tags ?? []).includes(move)) score += 3
   const role = ctx.preferredRole ?? ctx.activeRole
   if (role && (candidate.relevant_roles ?? []).includes(role)) score += 2
-  if (candidate.difficulty === 'standard' || candidate.difficulty === 'intermediate') score += 1
+  if (coerceDifficulty(candidate.difficulty) === 'medium') score += 1
   return score
 }
 

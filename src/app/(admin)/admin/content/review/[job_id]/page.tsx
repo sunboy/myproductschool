@@ -326,11 +326,11 @@ export default function ReviewPage() {
           <div>
             <p className="font-label text-xs text-on-surface-variant mb-1">Difficulty</p>
             <select
-              value={json.metadata.difficulty ?? 'standard'}
+              value={json.metadata.difficulty ?? 'medium'}
               onChange={e => updateJson({ ...json, metadata: { ...json.metadata, difficulty: e.target.value as ChallengeJson['metadata']['difficulty'] } })}
               className="w-full bg-surface-container-low rounded-lg px-3 py-2 font-body text-sm text-on-surface border border-outline-variant outline-none focus:border-primary"
             >
-              {['warmup','standard','advanced','staff_plus'].map(d => <option key={d} value={d}>{d}</option>)}
+              {['easy','medium','hard'].map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div>

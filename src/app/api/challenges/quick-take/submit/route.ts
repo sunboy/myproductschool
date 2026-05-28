@@ -11,6 +11,7 @@ import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { buildCompletedQuickTakeResult } from '@/lib/scoring/completed-attempt-result'
 import { buildEmptyStateResponse, buildSkillContextPrompt, detectSubmissionQuality } from '@/lib/hatch/skill-context'
+import { checkAndGrantAchievements } from '@/lib/achievements/check'
 
 // XP base for quick-takes (lower than full challenges)
 const QUICK_TAKE_XP_BASE = 20
@@ -285,6 +286,10 @@ export async function POST(req: NextRequest) {
 
   const { error: streakError } = await adminClient.rpc('update_user_streak', { p_user_id: user.id })
   if (streakError) console.error('[quick-take] update_user_streak failed:', streakError.message)
+
+  checkAndGrantAchievements(user.id, adminClient).catch(err =>
+    console.error('[quick-take] achievement check failed:', err)
+  )
 
   return NextResponse.json({ score, xp_earned, feedback_summary: feedback })
 }

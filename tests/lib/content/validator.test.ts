@@ -71,7 +71,7 @@ function buildChallengeJson(overrides: ChallengeJsonOverrides = {}): ChallengeJs
       paradigm: 'traditional',
       industry: 'marketplace',
       sub_vertical: 'seller tools',
-      difficulty: 'standard',
+      difficulty: 'medium',
       estimated_minutes: 20,
       primary_competencies: ['motivation_theory'],
       secondary_competencies: ['cognitive_empathy'],
@@ -79,6 +79,10 @@ function buildChallengeJson(overrides: ChallengeJsonOverrides = {}): ChallengeJs
       relevant_roles: ['SWE'],
       company_tags: ['marketplace'],
       tags: ['checkout'],
+      // Tag policy (flow): topic required + exactly one of technique/move.
+      // Baseline fixture must satisfy it to be considered valid/publishable.
+      topic_tags: ['retention'],
+      technique_tags: ['jobs-mapping'],
     },
   }
 

@@ -122,7 +122,11 @@ export async function POST(request: Request) {
       onboarding_completed_at: new Date().toISOString(),
       starting_levels: { frame: 3, list: 2, optimize: 2, win: 3 },
       hatch_observation: "You think in narratives and outcomes first. That's rare.",
-      personalised_plan_slug: 'optimize-under-pressure',
+      // personalised_plan_slug retired in Phase 5 — the 4 move-shells were
+      // unpublished in R2.E. Routing now lands on /dashboard which uses
+      // profiles.interview_meta.preferred_move to bias the "next challenge"
+      // suggestion. Field kept as null for backward compat with the client.
+      personalised_plan_slug: null as string | null,
     })
   }
 
@@ -193,9 +197,8 @@ export async function POST(request: Request) {
     now,
   })
 
-  // Find personalised plan for weakest move + update percentile in parallel with remaining writes
+  // Update percentile + remaining writes in parallel
   const [
-    personalisedPlanResult,
     percentileUpdateResult,
     profileUpdateResult,
     onboardingResponseResult,
@@ -204,15 +207,6 @@ export async function POST(request: Request) {
     learnerCompetenciesResult,
     hatchContextResult,
   ] = await Promise.all([
-    adminClient
-      .from('study_plans')
-      .select('id, slug')
-      .eq('move_tag', weak)
-      .eq('is_published', true)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-
     // Update the attempt with real percentile
     attemptRes.data?.id
       ? adminClient.from('calibration_attempts').update({ percentile }).eq('id', attemptRes.data.id)
@@ -272,7 +266,6 @@ export async function POST(request: Request) {
   ])
 
   const writeError = firstSupabaseError([
-    personalisedPlanResult,
     percentileUpdateResult,
     profileUpdateResult,
     onboardingResponseResult,
@@ -283,15 +276,24 @@ export async function POST(request: Request) {
   ])
   if (writeError) return NextResponse.json({ error: writeError.message }, { status: 500 })
 
-  // Enroll user in their personalised plan
-  const personalisedPlan = personalisedPlanResult.data
-  if (personalisedPlan) {
-    await adminClient
-      .from('user_study_plan_enrollments')
-      .upsert(
-        { user_id: user.id, plan_id: personalisedPlan.id },
-        { onConflict: 'user_id,plan_id' }
-      )
+  // Durable write of preferred_move into profiles.interview_meta. The
+  // dashboard's "next challenge" card reads this to bias suggestions toward
+  // the user's weakest FLOW move. Failure here doesn't fail the calibration
+  // response (the user already passed onboarding), but we log it.
+  try {
+    const { data: profileRow } = await adminClient
+      .from('profiles')
+      .select('interview_meta')
+      .eq('id', user.id)
+      .single()
+    const current = (profileRow?.interview_meta as Record<string, unknown>) ?? {}
+    const { error: metaErr } = await adminClient
+      .from('profiles')
+      .update({ interview_meta: { ...current, preferred_move: weak } })
+      .eq('id', user.id)
+    if (metaErr) console.error('[calibration] preferred_move write failed:', metaErr.message)
+  } catch (e) {
+    console.error('[calibration] preferred_move write threw:', e)
   }
 
   return NextResponse.json({
@@ -309,6 +311,8 @@ export async function POST(request: Request) {
       win: scoreToLevel(scores.win),
     },
     hatch_observation: observation,
-    personalised_plan_slug: personalisedPlan?.slug ?? null,
+    // Retired in Phase 5 (move-shells unpublished). Kept as null so the client
+    // type contract holds; client now routes to /dashboard when slug is null.
+    personalised_plan_slug: null as string | null,
   })
 }

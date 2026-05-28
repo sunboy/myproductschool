@@ -1,86 +1,21 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import type { CSSProperties, Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import { motion, PresencePanel } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { HatchChoreography } from '@/components/shell/HatchChoreography'
+import { HatchTargetPointer } from '@/components/shell/hatch/HatchTargetPointer'
+import { getPagePrompt } from '@/components/shell/hatch/pagePrompts'
 import { useHatchContext } from '@/context/HatchContext'
 import type { HatchChatMessage, HatchCue } from '@/context/HatchContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { buildHatchPageContext, parseHatchPageContext } from '@/lib/hatch/page-context'
 
-// ── Page context ──────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────
 
 const EMPTY_MESSAGES: HatchChatMessage[] = []
 const noopSetMessages: Dispatch<SetStateAction<HatchChatMessage[]>> = () => undefined
-
-const PAGE_PROMPTS: { pattern: RegExp; message: string }[] = [
-  { pattern: /^\/workspace\/challenges\//, message: "Need a nudge on your approach?" },
-  { pattern: /^\/challenges\/[^/]+\/feedback/, message: "Want to dig into your feedback?" },
-  { pattern: /^\/explore\/modules\//, message: "Want me to unpack this chapter?" },
-  { pattern: /^\/learn\//, message: "Want me to unpack this chapter?" },
-  { pattern: /^\/explore\/plans\//, message: "Thinking about this plan? I can tell you if it fits your gaps." },
-  { pattern: /^\/explore\/domains\//, message: "Want to know which challenges here will help you most?" },
-  { pattern: /^\/explore/, message: "Not sure where to start? Tell me your role." },
-  { pattern: /^\/challenges/, message: "I can filter these to the FLOW move you need most." },
-  { pattern: /^\/live-interviews/, message: "Tell me the company, role, or discipline you want to practice." },
-  { pattern: /^\/progress/, message: "Want to understand what your numbers actually mean?" },
-  { pattern: /^\/dashboard/, message: "Ready to pick your first challenge today?" },
-]
-
-function getPagePrompt(pathname: string): string {
-  for (const { pattern, message } of PAGE_PROMPTS) {
-    if (pattern.test(pathname)) return message
-  }
-  return "Ask me anything about FLOW or product thinking."
-}
-
-const MARKER_SIZE = 34
-const MARKER_MARGIN = 14
-const MARKER_TOP_GUARD = 76
-const MARKER_BOTTOM_GUARD = 76
-
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value))
-}
-
-function isReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
-function resolveHatchTarget(targetId: string) {
-  return document.querySelector<HTMLElement>(`[data-hatch-target="${CSS.escape(targetId)}"]`)
-}
-
-function markerPositionForRect(rect: DOMRect, keepVisible: boolean): CSSProperties | null {
-  if (rect.width <= 0 || rect.height <= 0) return null
-  if (window.innerWidth <= MARKER_MARGIN * 2 || window.innerHeight <= MARKER_TOP_GUARD) return null
-
-  const horizontallyReachable = rect.right >= 0 && rect.left <= window.innerWidth
-  const verticallyReachable = rect.bottom >= 0 && rect.top <= window.innerHeight
-  if (!keepVisible && (!horizontallyReachable || !verticallyReachable)) return null
-
-  const maxLeft = Math.max(MARKER_MARGIN, window.innerWidth - MARKER_SIZE - MARKER_MARGIN)
-  const left = clamp(rect.left + rect.width / 2 - MARKER_SIZE / 2, MARKER_MARGIN, maxLeft)
-  const maxTop = Math.max(MARKER_TOP_GUARD, window.innerHeight - MARKER_SIZE - MARKER_BOTTOM_GUARD)
-
-  if (rect.bottom < MARKER_TOP_GUARD) {
-    return keepVisible ? { left, top: MARKER_TOP_GUARD, opacity: 0.7 } : null
-  }
-
-  if (rect.top > window.innerHeight - MARKER_BOTTOM_GUARD) {
-    return keepVisible ? { left, top: maxTop, opacity: 0.7 } : null
-  }
-
-  const placeBelow = rect.top < 120
-  const naturalTop = placeBelow ? rect.bottom + 12 : rect.top - MARKER_SIZE - 12
-  return {
-    left,
-    top: clamp(naturalTop, MARKER_TOP_GUARD, maxTop),
-    opacity: 1,
-  }
-}
 
 // ── Markdown renderer ─────────────────────────────────────────
 
@@ -169,7 +104,6 @@ export function FloatingHatch() {
   const [loading, setLoading] = useState(false)
   const [bubble, setBubble] = useState(false)
   const [bubbleDismissed, setBubbleDismissed] = useState(false)
-  const [markerPosition, setMarkerPosition] = useState<CSSProperties | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -198,106 +132,10 @@ export function FloatingHatch() {
     return () => clearTimeout(timer)
   }, [activeCue?.autoHideMs, activeCue?.id, clearCue])
 
+  // Play a soft "nudge" sound when a tour cue with a target activates.
+  // Marker/highlight rendering is owned by <HatchTargetPointer />.
   useEffect(() => {
-    const highlighted = new Set<Element>()
-    let target: HTMLElement | null = null
-    let frame = 0
-    let retryCount = 0
-    let scrolledTargetIntoView = false
-    let resizeObserver: ResizeObserver | null = null
-    let mutationObserver: MutationObserver | null = null
-
-    function clearHighlights() {
-      highlighted.forEach((el) => el.classList.remove('hatch-target-highlight'))
-      highlighted.clear()
-    }
-
-    function setObservedTarget(nextTarget: HTMLElement | null) {
-      if (target === nextTarget) return
-      resizeObserver?.disconnect()
-      resizeObserver = null
-      clearHighlights()
-      target = nextTarget
-
-      if (!target) return
-
-      target.classList.add('hatch-target-highlight')
-      highlighted.add(target)
-
-      if (typeof ResizeObserver !== 'undefined') {
-        resizeObserver = new ResizeObserver(requestSync)
-        resizeObserver.observe(target)
-      }
-    }
-
-    function syncMarker(options: { allowScrollIntoView?: boolean } = {}) {
-      if (!activeCue?.target) return
-
-      const nextTarget = resolveHatchTarget(activeCue.target)
-      setObservedTarget(nextTarget)
-
-      if (!target) {
-        setMarkerPosition(null)
-        if (retryCount < 40) {
-          retryCount += 1
-          requestSync()
-        }
-        return
-      }
-
-      retryCount = 0
-      const rect = target.getBoundingClientRect()
-      const outsideComfortZone = rect.bottom < MARKER_TOP_GUARD || rect.top > window.innerHeight - MARKER_BOTTOM_GUARD
-
-      if (options.allowScrollIntoView && activeCue.source === 'tour' && outsideComfortZone && !scrolledTargetIntoView) {
-        scrolledTargetIntoView = true
-        target.scrollIntoView({
-          block: 'center',
-          inline: 'nearest',
-          behavior: isReducedMotion() ? 'auto' : 'smooth',
-        })
-      }
-
-      setMarkerPosition(markerPositionForRect(rect, activeCue.source === 'tour'))
-    }
-
-    function requestSync() {
-      if (frame) return
-      frame = window.requestAnimationFrame(() => {
-        frame = 0
-        syncMarker()
-      })
-    }
-
-    if (!activeCue?.target || typeof window === 'undefined') {
-      setMarkerPosition(null)
-      return clearHighlights
-    }
-
-    syncMarker({ allowScrollIntoView: true })
-    if (activeCue.source === 'tour') play('nudge')
-
-    window.addEventListener('resize', requestSync)
-    window.addEventListener('scroll', requestSync, true)
-    window.visualViewport?.addEventListener('resize', requestSync)
-    window.visualViewport?.addEventListener('scroll', requestSync)
-
-    if (typeof MutationObserver !== 'undefined') {
-      mutationObserver = new MutationObserver(requestSync)
-      mutationObserver.observe(document.body, { childList: true, subtree: true })
-    }
-
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame)
-      window.removeEventListener('resize', requestSync)
-      window.removeEventListener('scroll', requestSync, true)
-      window.visualViewport?.removeEventListener('resize', requestSync)
-      window.visualViewport?.removeEventListener('scroll', requestSync)
-      resizeObserver?.disconnect()
-      mutationObserver?.disconnect()
-      clearHighlights()
-      setMarkerPosition(null)
-    }
+    if (activeCue?.source === 'tour' && activeCue?.target) play('nudge')
   }, [activeCue?.id, activeCue?.source, activeCue?.target, play])
 
   // Focus input when opened
@@ -469,23 +307,19 @@ export function FloatingHatch() {
   if (isInWorkspace && !activeCue) return null
 
   return (
-    <div
-      data-hatch-ignore
-      data-hatch-chat
-      data-testid="floating-hatch"
-      className={`fixed z-[60] flex flex-col items-end gap-2 pointer-events-none ${wrapperPositionClass}`}
-    >
-      {markerPosition && (
-        <div
-          data-testid="hatch-target-marker"
-          className="fixed z-50 pointer-events-none flex h-8 w-8 items-center justify-center rounded-full hatch-target-marker"
-          style={markerPosition}
-          aria-hidden="true"
-        >
-          <span className="material-symbols-outlined text-[18px] leading-none">ads_click</span>
-        </div>
-      )}
-
+    <>
+      {/* Target marker + highlight overlay portal — owns its own RAF tracking loop. */}
+      <HatchTargetPointer
+        targetId={activeCue?.target}
+        highlightInset={activeCue?.highlightInset}
+        keepVisible={activeCue?.source === 'tour'}
+      />
+      <div
+        data-hatch-ignore
+        data-hatch-chat
+        data-testid="floating-hatch"
+        className={`fixed z-[60] flex flex-col items-end gap-2 pointer-events-none ${wrapperPositionClass}`}
+      >
       {/* ── Floating chat panel ── */}
       <PresencePanel
         isOpen={open}
@@ -726,6 +560,7 @@ export function FloatingHatch() {
           />
         )}
       </motion.button>
-    </div>
+      </div>
+    </>
   )
 }

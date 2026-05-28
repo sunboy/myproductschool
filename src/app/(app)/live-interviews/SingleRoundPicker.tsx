@@ -10,6 +10,7 @@ import {
 } from '@/lib/live-interview/disciplines'
 import StartInterviewButton from './StartInterviewButton'
 import { MotionList, MotionListItem, PresencePanel, motion } from '@/components/motion'
+import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 const T = {
   surface: '#fdfbf6',
@@ -32,16 +33,16 @@ const T = {
   danger: '#b23a2a',
 }
 
-const DIFF_LABEL: Record<string, string> = {
-  standard: 'Standard',
-  advanced: 'Advanced',
-  staff_plus: 'Staff+',
+const DIFF_LABEL: Record<PracticeDifficulty, string> = {
+  easy: DIFFICULTY_LABELS.easy,
+  medium: DIFFICULTY_LABELS.medium,
+  hard: DIFFICULTY_LABELS.hard,
 }
 
-const DIFF_DOT: Record<string, string> = {
-  standard: T.primary,
-  advanced: T.amber,
-  staff_plus: T.danger,
+const DIFF_DOT: Record<PracticeDifficulty, string> = {
+  easy: T.primary,
+  medium: T.amber,
+  hard: T.danger,
 }
 
 interface CompanyEntry {
@@ -577,8 +578,15 @@ function ScenarioRow({
             {scenario.title}
           </div>
           <div style={{ color: T.onSurfaceMuted, fontSize: 12, marginTop: 5, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: DIFF_DOT[scenario.difficulty] ?? T.primary, display: 'inline-block' }} />
-            {DIFF_LABEL[scenario.difficulty] ?? scenario.difficulty}
+            {(() => {
+              const canon = coerceDifficulty(scenario.difficulty)
+              return (
+                <>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: canon ? DIFF_DOT[canon] : T.primary, display: 'inline-block' }} />
+                  {canon ? DIFF_LABEL[canon] : scenario.difficulty}
+                </>
+              )
+            })()}
             <span>~{scenario.estimatedMinutes} min</span>
           </div>
         </div>

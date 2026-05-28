@@ -48,7 +48,7 @@ async function getPersonas() {
       slug: `${company.slug}-${role.toLowerCase().replace(/\s+/g, '-')}`,
       icon: company.icon ?? 'corporate_fare',
       interviewStyle: company.interview_style ?? '',
-      difficulty: 'standard' as const,
+      difficulty: 'medium' as const,
       estimatedMins: 35,
       personaPrompt: company.interview_persona_prompt,
     }))

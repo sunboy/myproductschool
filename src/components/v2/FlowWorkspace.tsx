@@ -8,6 +8,7 @@ import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
 import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
+import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
 import { StepReveal } from './StepReveal'
@@ -118,21 +119,18 @@ const CHALLENGE_TYPE_FILTER_COPY: Record<string, { label: string; discipline: st
   algorithm: { label: 'Coding', discipline: 'algorithm', icon: 'data_object' },
 }
 
+/** Keyed on canonical PracticeDifficulty. Legacy values are normalized via coerceDifficulty at the render site. */
 const DIFFICULTY_LABEL: Record<string, string> = {
-  warmup: 'Warm-up',
-  standard: 'Standard',
-  advanced: 'Advanced',
-  staff_plus: 'Staff+',
-  beginner: 'Easy',
-  intermediate: 'Intermediate',
-  hard: 'Hard',
+  easy: DIFFICULTY_LABELS.easy,
+  medium: DIFFICULTY_LABELS.medium,
+  hard: DIFFICULTY_LABELS.hard,
 }
 
+/** URL param value for the difficulty filter — canonical value maps to display label (identity). */
 const DIFFICULTY_FILTER_VALUE: Record<string, string> = {
-  warmup: 'Warmup',
-  standard: 'Standard',
-  advanced: 'Advanced',
-  staff_plus: 'Staff+',
+  easy: DIFFICULTY_LABELS.easy,
+  medium: DIFFICULTY_LABELS.medium,
+  hard: DIFFICULTY_LABELS.hard,
 }
 
 function practiceFilterHref(key: 'company' | 'difficulty' | 'discipline' | 'tag', value: string) {
@@ -1961,17 +1959,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 {disciplineCopy.label}
               </Link>
             )}
-            {diff && (
-              <Link href={practiceFilterHref('difficulty', DIFFICULTY_FILTER_VALUE[diff] ?? diff)} title={`Browse ${DIFFICULTY_LABEL[diff] ?? diff} practice`} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: 'var(--color-surface-inverse)', color: 'var(--color-inverse-on-surface)',
-                fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-                padding: '3px 9px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', textDecoration: 'none',
-              }}>
-                {DIFFICULTY_LABEL[diff] ?? diff}
-              </Link>
-            )}
+            {diff && (() => {
+              const canonical = coerceDifficulty(diff)
+              const label = canonical ? DIFFICULTY_LABEL[canonical] : diff
+              const filterVal = canonical ? DIFFICULTY_FILTER_VALUE[canonical] : diff
+              return (
+                <Link href={practiceFilterHref('difficulty', filterVal ?? diff)} title={`Browse ${label} practice`} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  background: 'var(--color-surface-inverse)', color: 'var(--color-inverse-on-surface)',
+                  fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                  padding: '3px 9px', borderRadius: 999,
+                  fontFamily: 'var(--font-label)', textDecoration: 'none',
+                }}>
+                  {label}
+                </Link>
+              )
+            })()}
             {companyTags.map(tag => (
               <Link key={tag} href={practiceFilterHref('company', tag)} title={`Browse ${tag} practice`} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,

@@ -38,5 +38,16 @@ export async function POST(
     }, { onConflict: 'user_id,chapter_id' })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  const { error: streakError } = await adminClient.rpc('update_user_streak', { p_user_id: user.id })
+  if (streakError) console.error('[learn] update_user_streak failed:', streakError.message)
+
+  const { error: sessionEventError } = await adminClient.from('session_events').insert({
+    user_id: user.id,
+    event_type: 'chapter_complete',
+    payload: { module_slug: slug, chapter_slug: chapter, chapter_id: ch.id },
+  })
+  if (sessionEventError) console.error('[learn] session_events insert failed:', sessionEventError.message)
+
   return NextResponse.json({ ok: true })
 }

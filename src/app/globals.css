@@ -566,13 +566,11 @@ body::before {
   animation: hatch-stuck-check 2.1s ease-in-out infinite;
 }
 
-.hatch-target-highlight {
-  position: relative;
-  outline: 2px solid rgba(126, 224, 153, 0.78);
-  outline-offset: 4px;
-  box-shadow: 0 0 0 7px rgba(126, 224, 153, 0.13), 0 10px 30px rgba(38, 74, 52, 0.14);
-  transition: outline-color 180ms ease, box-shadow 180ms ease;
-  z-index: 1;
+.hatch-target-overlay {
+  border: 2px solid rgba(126, 224, 153, 0.78);
+  box-shadow: 0 0 0 6px rgba(126, 224, 153, 0.18), 0 10px 30px rgba(38, 74, 52, 0.14);
+  transition: opacity 150ms ease-out;
+  box-sizing: border-box;
 }
 
 .hatch-target-marker {

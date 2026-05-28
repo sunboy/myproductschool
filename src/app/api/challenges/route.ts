@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { Challenge, ChallengeAttemptV2 } from '@/lib/types'
+import { coerceDifficulty, expandDifficultyForQuery } from '@/lib/practice/difficulty'
+import { slugifyIndustry } from '@/lib/practice/slugify'
 
 interface ChallengeWithStats extends Challenge {
   attempt_count: number
@@ -31,8 +33,16 @@ export async function GET(req: NextRequest) {
     .range(offset, offset + limit - 1)
 
   if (paradigm) query = query.eq('paradigm', paradigm)
-  if (industry) query = query.eq('industry', industry)
-  if (difficulty) query = query.eq('difficulty', difficulty)
+  if (industry) {
+    const slug = slugifyIndustry(industry)
+    if (slug) query = query.contains('industry_tags', [slug])
+  }
+  if (difficulty) {
+    // Accept legacy and canonical difficulty values. Coerce caller input to
+    // the canonical bucket, then match every DB string that maps to it.
+    const bucket = coerceDifficulty(difficulty)
+    if (bucket) query = query.in('difficulty', expandDifficultyForQuery(bucket))
+  }
   if (role) query = query.contains('relevant_roles', [role])
 
   const { data: challenges, error, count } = await query

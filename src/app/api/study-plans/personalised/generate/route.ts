@@ -23,6 +23,7 @@ interface MoveWeek {
   focus_move: string
   challenge_ids: string[]
   theme: string
+  topic_tags?: string[]
 }
 
 interface StudyPlanShape {
@@ -34,7 +35,8 @@ interface StudyPlanShape {
 interface ChallengeLite {
   id: string
   title: string
-  tags: string[]
+  topic_tags: string[]
+  technique_tags: string[]
   challenge_type: string | null
   difficulty?: string | null
   relevant_roles?: string[] | null
@@ -137,12 +139,21 @@ function buildFallbackPlan(
   return {
     title: '4-Week Builder Sprint',
     hatch_rationale: `Hatch is prioritizing your ${weakestMove} move while still rotating through the disciplines your role needs: product, systems, data, SQL, and coding. The goal is steady improvement without unfocused practice.`,
-    move_sequence: disciplineOrder.slice(0, 4).map((discipline, i) => ({
-      week: i + 1,
-      focus_move: moveOrder[i % moveOrder.length] ?? weakestMove,
-      challenge_ids: pickForDiscipline(discipline),
-      theme: `${disciplineLabel[discipline] ?? 'Core skills'}: ${moveOrder[i % moveOrder.length] ?? weakestMove} under realistic constraints`,
-    })),
+    move_sequence: disciplineOrder.slice(0, 4).map((discipline, i) => {
+      const ids = pickForDiscipline(discipline)
+      // Derive topic_tags from picked challenges
+      const weekTopics = ids.flatMap(id => {
+        const c = challenges.find(ch => ch.id === id)
+        return c?.topic_tags ?? []
+      }).filter((v, idx, arr) => arr.indexOf(v) === idx)
+      return {
+        week: i + 1,
+        focus_move: moveOrder[i % moveOrder.length] ?? weakestMove,
+        challenge_ids: ids,
+        theme: `${disciplineLabel[discipline] ?? 'Core skills'}: ${moveOrder[i % moveOrder.length] ?? weakestMove} under realistic constraints`,
+        topic_tags: weekTopics,
+      }
+    }),
   }
 }
 
@@ -269,12 +280,43 @@ export async function POST(req: NextRequest) {
     getHatchContext(userId),
     admin
       .from('challenges')
-      .select('id, title, tags, challenge_type, difficulty, relevant_roles')
+      .select('id, title, topic_tags, technique_tags, challenge_type, difficulty, relevant_roles')
       .eq('is_published', true)
-      .limit(40),
+      .limit(80),
   ])
 
-  const availableChallenges = (challengesResult.data ?? []) as ChallengeLite[]
+  const allChallenges = (challengesResult.data ?? []) as ChallengeLite[]
+
+  // ── Filter and rank candidates by profile ────────────────
+  const preferredRole = hatchCtx.preferredRole ?? null
+  const DIFFICULTY_ORDER: Record<string, number> = { easy: 0, beginner: 0, intermediate: 1, medium: 1, advanced: 2, hard: 2 }
+
+  function roleMatches(c: ChallengeLite): boolean {
+    if (!preferredRole) return true
+    const roles = c.relevant_roles ?? []
+    return roles.length === 0 || roles.includes(preferredRole)
+  }
+
+  // Prefer role-matched; include unmatched as fallback pool
+  const roleMatched = allChallenges.filter(roleMatches)
+  const fallbackPool = allChallenges.filter(c => !roleMatches(c))
+
+  // Sort each pool Easy → Medium → Hard
+  function sortByDifficulty(arr: ChallengeLite[]): ChallengeLite[] {
+    return [...arr].sort((a, b) => {
+      const da = DIFFICULTY_ORDER[a.difficulty?.toLowerCase() ?? ''] ?? 1
+      const db = DIFFICULTY_ORDER[b.difficulty?.toLowerCase() ?? ''] ?? 1
+      return da - db
+    })
+  }
+
+  const sortedCandidates = [
+    ...sortByDifficulty(roleMatched),
+    ...sortByDifficulty(fallbackPool),
+  ]
+
+  // Cap at 40 for prompt efficiency
+  const availableChallenges = sortedCandidates.slice(0, 40)
 
   // Derive weakest FLOW move
   const weakestFlowMove =
@@ -293,22 +335,23 @@ export async function POST(req: NextRequest) {
         includePracticeLink: false,
       }).catch(() => buildHatchContextString(hatchCtx, 'coaching'))
       const challengeList = availableChallenges
-        .map((c) => `${c.id} - "${c.title}" [type: ${c.challenge_type ?? 'unknown'}; difficulty: ${c.difficulty ?? 'unknown'}; roles: ${(c.relevant_roles ?? []).join(', ') || 'any'}; tags: ${(c.tags ?? []).join(', ')}]`)
+        .map((c) => `${c.id} - "${c.title}" [type: ${c.challenge_type ?? 'unknown'}; difficulty: ${c.difficulty ?? 'unknown'}; roles: ${(c.relevant_roles ?? []).join(', ') || 'any'}; topics: ${(c.topic_tags ?? []).join(', ')}; techniques: ${(c.technique_tags ?? []).join(', ')}]`)
         .join('\n')
-      const preferredRole = hatchCtx.preferredRole ?? 'not specified'
+      const roleLabel = preferredRole ?? 'not specified'
 
       const userPrompt = [
         contextString,
         '',
-        'Available challenges:',
+        'Available challenges (sorted Easy → Medium → Hard, role-matched first):',
         challengeList,
         '',
-        `Preferred role: ${preferredRole}.`,
+        `Preferred role: ${roleLabel}.`,
         'Generate a personalised 4-week HackProduct study plan for this learner based on their role, FLOW move levels, competency scores, and recent patterns.',
         'The plan must cover multiple disciplines, not only product sense. Rotate intelligently across product sense, system design, data modeling, SQL, and coding based on role fit and weak signals.',
-        'For each week, choose 1-2 challenges. Prefer role-relevant challenges, but keep at least three distinct challenge_type families across the full plan when available.',
+        'For each week, choose 1-2 challenges. Prefer role-relevant challenges. Week 1 should use Easy/Beginner challenges; Week 2-3 Medium/Intermediate; Week 4 Advanced. Keep at least three distinct challenge_type families across the full plan when available.',
+        'Populate topic_tags for each week using the topic_tags from the selected challenges (first challenge in the week).',
         'Use Hatch\'s product philosophy: maximize learning quality and career lift while avoiding unfocused practice.',
-        'Return JSON only: { "title": string, "hatch_rationale": string, "move_sequence": [{ "week": number, "focus_move": string, "challenge_ids": string[], "theme": string }] }',
+        'Return JSON only: { "title": string, "hatch_rationale": string, "move_sequence": [{ "week": number, "focus_move": string, "challenge_ids": string[], "theme": string, "topic_tags": string[] }] }',
         'Use only challenge_ids from the list above. focus_move must be one of frame, list, optimize, win. Each week should have 1-2 challenge_ids.',
       ].join('\n')
 

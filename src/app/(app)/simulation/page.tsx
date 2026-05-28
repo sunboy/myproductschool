@@ -10,7 +10,7 @@ export default function SimulationPage() {
   const router = useRouter()
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
   const [suggestedCompany, setSuggestedCompany] = useState<string | null>(null)
-  const [difficulty, setDifficulty] = useState<'standard' | 'advanced'>('standard')
+  const [difficulty, setDifficulty] = useState<'medium' | 'hard'>('medium')
   const [isStarting, setIsStarting] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
 
@@ -82,24 +82,24 @@ export default function SimulationPage() {
         </h2>
         <div className="flex gap-3">
           <button
-            onClick={() => setDifficulty('standard')}
+            onClick={() => setDifficulty('medium')}
             className={`flex-1 py-2.5 rounded-full text-sm font-label font-semibold transition-colors ${
-              difficulty === 'standard'
+              difficulty === 'medium'
                 ? 'bg-primary text-on-primary'
                 : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
             }`}
           >
-            Standard
+            Medium
           </button>
           <button
-            onClick={() => setDifficulty('advanced')}
+            onClick={() => setDifficulty('hard')}
             className={`flex-1 py-2.5 rounded-full text-sm font-label font-semibold transition-colors ${
-              difficulty === 'advanced'
+              difficulty === 'hard'
                 ? 'bg-primary text-on-primary'
                 : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
             }`}
           >
-            Advanced
+            Hard
           </button>
         </div>
       </div>

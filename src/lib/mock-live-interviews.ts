@@ -7,7 +7,7 @@ export interface LiveInterviewPersona {
   slug: string
   icon: string
   interviewStyle: string
-  difficulty: 'standard' | 'advanced' | 'staff_plus'
+  difficulty: 'medium' | 'hard'
   estimatedMins: number
   personaPrompt?: string
 }
@@ -60,7 +60,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'google-pm',
     icon: 'corporate_fare',
     interviewStyle: 'Data-driven, user-first, and deeply tied to search/ads business model',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 45,
     personaPrompt:
       "You are a senior PM interviewer at Google. You care deeply about data-driven decision making, user empathy at scale, and how product decisions connect to Google's core business model. Push candidates to quantify impact, name specific metrics, and think about ecosystem-level effects. You value structured thinking but reward candidates who can reason from first principles. Be rigorous but not hostile.",
@@ -72,7 +72,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'google-swe',
     icon: 'corporate_fare',
     interviewStyle: 'Systems thinking meets product intuition — expect infra-scale constraints',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 40,
   },
   {
@@ -82,7 +82,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'google-data-engineer',
     icon: 'corporate_fare',
     interviewStyle: 'Pipeline design, schema tradeoffs, and how data supports product decisions',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 40,
   },
   {
@@ -92,7 +92,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'google-ml-engineer',
     icon: 'corporate_fare',
     interviewStyle: 'Model design, ranking systems, and responsible ML at massive scale',
-    difficulty: 'staff_plus',
+    difficulty: 'hard',
     estimatedMins: 50,
   },
   {
@@ -102,7 +102,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'meta-pm',
     icon: 'thumb_up',
     interviewStyle: 'Social graph dynamics, engagement loops, and cross-platform thinking',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 45,
     personaPrompt:
       "You are a staff PM interviewer at Meta. You think in terms of social graphs, network effects, and engagement loops. You want candidates to reason about two-sided dynamics (creator vs. consumer), how features affect the broader social ecosystem, and what guardrails prevent harm at scale. You push hard on tradeoffs between growth and wellbeing. Ask follow-up questions that expose whether the candidate is thinking about the user or the metric.",
@@ -114,7 +114,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'meta-swe',
     icon: 'thumb_up',
     interviewStyle: 'Distributed systems, scale, and product feature tradeoffs',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 40,
   },
   {
@@ -124,7 +124,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'meta-data-engineer',
     icon: 'thumb_up',
     interviewStyle: 'Real-time data pipelines and privacy-preserving analytics at scale',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 40,
   },
   {
@@ -134,7 +134,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'stripe-pm',
     icon: 'payments',
     interviewStyle: 'Developer experience, API design philosophy, and fintech precision',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 45,
   },
   {
@@ -144,7 +144,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'stripe-swe',
     icon: 'payments',
     interviewStyle: 'API contracts, reliability engineering, and financial system correctness',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 40,
   },
   {
@@ -154,7 +154,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'stripe-data-engineer',
     icon: 'payments',
     interviewStyle: 'Financial data modeling, compliance constraints, and fraud signal design',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 40,
   },
   {
@@ -164,7 +164,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'airbnb-pm',
     icon: 'house',
     interviewStyle: 'Two-sided marketplace dynamics, trust, and community-driven growth',
-    difficulty: 'standard',
+    difficulty: 'medium',
     estimatedMins: 35,
   },
   {
@@ -174,7 +174,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'airbnb-swe',
     icon: 'house',
     interviewStyle: 'Search ranking, availability systems, and host/guest experience tradeoffs',
-    difficulty: 'standard',
+    difficulty: 'medium',
     estimatedMins: 35,
   },
   {
@@ -184,7 +184,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'uber-pm',
     icon: 'local_taxi',
     interviewStyle: 'Real-time marketplace, driver/rider balance, and operations-heavy product thinking',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 45,
   },
   {
@@ -194,7 +194,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'netflix-pm',
     icon: 'movie',
     interviewStyle: 'Content strategy, recommendation systems, and subscriber retention',
-    difficulty: 'advanced',
+    difficulty: 'hard',
     estimatedMins: 45,
   },
   {
@@ -204,7 +204,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'figma-pm',
     icon: 'design_services',
     interviewStyle: 'Collaboration tools, design workflows, and developer handoff',
-    difficulty: 'standard',
+    difficulty: 'medium',
     estimatedMins: 35,
   },
   {
@@ -214,7 +214,7 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     slug: 'notion-pm',
     icon: 'note_alt',
     interviewStyle: 'Flexible productivity, bottom-up adoption, and power user vs. new user tension',
-    difficulty: 'standard',
+    difficulty: 'medium',
     estimatedMins: 35,
   },
 ]

@@ -9,6 +9,16 @@ import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { formatScore } from '@/lib/format/score'
 
+/* ── Event label map for activity feed ────────────────────────────── */
+
+const EVENT_LABELS: Record<string, { icon: string; label: (p: Record<string, unknown>) => string }> = {
+  chapter_complete: { icon: 'menu_book', label: (p) => `Completed chapter in ${p.module_slug ?? ''}` },
+  quick_take_submit: { icon: 'bolt', label: (p) => `Quick take · ${p.move ?? ''}` },
+  note_saved: { icon: 'edit_note', label: () => 'Saved a note' },
+  challenge_complete: { icon: 'check_circle', label: () => 'Completed a challenge' },
+  live_interview_end: { icon: 'mic', label: () => 'Finished a live interview' },
+}
+
 /* ── FLOW paradigm palette - matches /explore FLOW strip ─────────── */
 
 const FLOW_MOVES = [
@@ -168,6 +178,34 @@ const TREND_META: Record<TrajectoryTrend, { label: string; icon: string; color: 
   declining: { label: 'Needs attention', icon: 'trending_down', color: '#b05a4d' },
   steady: { label: 'Steady', icon: 'trending_flat', color: '#6b8275' },
   insufficient_data: { label: 'Low signal', icon: 'fiber_manual_record', color: '#8a8175' },
+}
+
+function StreakHeatmap({ activeDates }: { activeDates: string[] }) {
+  const activeSet = new Set(activeDates)
+  const today = new Date()
+  const cells: { date: string; active: boolean }[] = []
+  for (let i = 83; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    const iso = d.toISOString().split('T')[0]
+    cells.push({ date: iso, active: activeSet.has(iso) })
+  }
+
+  return (
+    <div className="flex gap-1">
+      {Array.from({ length: 12 }, (_, week) => (
+        <div key={week} className="flex flex-col gap-1">
+          {cells.slice(week * 7, week * 7 + 7).map(cell => (
+            <div
+              key={cell.date}
+              title={cell.date}
+              className={`w-3 h-3 rounded-sm ${cell.active ? 'bg-primary' : 'bg-surface-container-high'}`}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function ReadinessMap({
@@ -648,6 +686,15 @@ export default function ProgressPage() {
   const [reflectionLoading, setReflectionLoading] = useState(true)
   const [trajectory, setTrajectory] = useState<ReasoningTrajectory | null>(null)
   const [trajectoryLoading, setTrajectoryLoading] = useState(true)
+  const [learnModules, setLearnModules] = useState<Array<{
+    module_id: string; module_title: string; module_slug: string;
+    total_chapters: number; completed_chapters: number;
+  }>>([])
+  const [streakDates, setStreakDates] = useState<string[]>([])
+  const [activityEvents, setActivityEvents] = useState<Array<{
+    id: string; event_type: string; payload: Record<string, unknown>; created_at: string;
+  }>>([])
+  const [shieldCount, setShieldCount] = useState(0)
 
   useEffect(() => {
     fetch('/api/attempts?limit=5&include_patterns=true')
@@ -672,6 +719,20 @@ export default function ProgressPage() {
       .then(data => { if (data) setTrajectory(data) })
       .catch(() => {})
       .finally(() => setTrajectoryLoading(false))
+    Promise.all([
+      fetch('/api/progress/learn-progress').then(r => r.ok ? r.json() : { modules: [] }),
+      fetch('/api/progress/streak-history').then(r => r.ok ? r.json() : { dates: [] }),
+      fetch('/api/progress/activity-feed').then(r => r.ok ? r.json() : { events: [] }),
+      fetch('/api/profile').then(r => r.ok ? r.json() : null),
+    ]).then(([learnData, streakData, feedData, profileData]) => {
+      setLearnModules(learnData.modules ?? [])
+      setStreakDates(streakData.dates ?? [])
+      setActivityEvents((feedData.events ?? []).map((ev: { id: string; event_type: string; payload: unknown; created_at: string }) => ({
+        ...ev,
+        payload: (ev.payload ?? {}) as Record<string, unknown>,
+      })))
+      setShieldCount(profileData?.streak_shield_count ?? 0)
+    }).catch(() => {})
   }, [])
 
   const flowMoves = FLOW_MOVES.map(m => {
@@ -867,6 +928,87 @@ export default function ProgressPage() {
       />
 
       <DisciplineLensStrip />
+
+      {/* ── Shield count ─────────────────────────────────────────── */}
+      {shieldCount > 0 && (
+        <section className="mb-6 rounded-xl border border-outline-variant/65 bg-surface-container-low p-4">
+          <div className="flex items-center gap-3">
+            <span
+              className="material-symbols-outlined text-tertiary text-2xl"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              shield
+            </span>
+            <div>
+              <p className="font-label font-bold text-on-surface">
+                {shieldCount} streak shield{shieldCount !== 1 ? 's' : ''}
+              </p>
+              <p className="text-xs text-on-surface-variant">
+                Shields protect a broken streak. Earn one by reaching a 7-day streak.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Learn modules ────────────────────────────────────────── */}
+      <section className="mb-6">
+        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Learn progress</h2>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {learnModules.map(mod => (
+            <div key={mod.module_id} className="min-w-[180px] bg-surface-container rounded-xl p-3 flex-shrink-0">
+              <p className="font-label text-sm font-semibold text-on-surface mb-1 line-clamp-2">{mod.module_title}</p>
+              <p className="text-xs text-on-surface-variant mb-2">
+                {mod.completed_chapters}/{mod.total_chapters} chapters
+              </p>
+              <div className="h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full"
+                  style={{ width: mod.total_chapters > 0 ? `${Math.round((mod.completed_chapters / mod.total_chapters) * 100)}%` : '0%' }}
+                />
+              </div>
+            </div>
+          ))}
+          {learnModules.length === 0 && (
+            <p className="text-sm text-on-surface-variant">No modules yet.</p>
+          )}
+        </div>
+      </section>
+
+      {/* ── Streak heatmap ───────────────────────────────────────── */}
+      <section data-testid="streak-heatmap" className="mb-6">
+        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Activity — last 12 weeks</h2>
+        <StreakHeatmap activeDates={streakDates} />
+      </section>
+
+      {/* ── Activity feed ────────────────────────────────────────── */}
+      <section data-testid="activity-feed" className="mb-6">
+        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Recent activity</h2>
+        {activityEvents.length === 0 ? (
+          <p className="text-sm text-on-surface-variant">No activity yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {activityEvents.map(ev => {
+              const labelDef = EVENT_LABELS[ev.event_type]
+              return (
+                <div key={ev.id} className="flex items-center gap-3 bg-surface-container rounded-xl px-3 py-2.5">
+                  <span className="material-symbols-outlined text-on-surface-variant text-lg">
+                    {labelDef?.icon ?? 'bolt'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-on-surface truncate">
+                      {labelDef ? labelDef.label(ev.payload) : ev.event_type}
+                    </p>
+                  </div>
+                  <p className="text-xs text-on-surface-variant whitespace-nowrap">
+                    {new Date(ev.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
 
       <ReasoningTrajectorySection trajectory={trajectory} loading={trajectoryLoading} />
 

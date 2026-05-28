@@ -80,7 +80,11 @@ export interface ChallengePrompt {
   title: string
   prompt_text: string
   difficulty: Difficulty
-  tags: string[]
+  /**
+   * @deprecated Column dropped in R3.E.1 — always undefined at runtime.
+   * Kept optional so legacy read paths don't error on access.
+   */
+  tags?: string[]
   estimated_minutes: number
   is_published: boolean
   created_at: string
@@ -617,7 +621,7 @@ export interface SessionEvent {
 
 /* ── v2 FLOW Challenge System ───────────────────────────────── */
 
-export type DifficultyV2 = 'warmup' | 'standard' | 'advanced' | 'staff_plus'
+// DifficultyV2 removed in R3.F — consumers now use PracticeDifficulty from @/lib/practice/difficulty.
 export type FlowStep = 'frame' | 'list' | 'optimize' | 'win'
 /** Extended FlowStep that includes the coding sentinel step added in migration 072. */
 export type FlowStepAll = FlowStep | 'coding'
@@ -653,7 +657,7 @@ export interface CodingPart {
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
-export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm'
+export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm' | 'claude_code_analytics'
 
 export interface Challenge {
   id: string; slug: string | null; title: string
@@ -661,7 +665,7 @@ export interface Challenge {
   scenario_role: string | null; scenario_context: string; scenario_trigger: string; scenario_question: string
   engineer_standout: string | null
   paradigm: Paradigm | null; industry: string | null; sub_vertical: string | null
-  difficulty: DifficultyV2; estimated_minutes: number
+  difficulty: PracticeDifficulty; estimated_minutes: number
   primary_competencies: string[]; secondary_competencies: string[]
   frameworks: string[]; relevant_roles: string[]; company_tags: string[]; tags: string[]
   is_published: boolean; is_calibration: boolean; is_premium: boolean; is_featured: boolean; created_at: string
@@ -750,9 +754,7 @@ export const COMPETENCY_LABELS: Record<Competency, string> = {
   taste: 'Taste', strategic_thinking: 'Strategic Thinking',
   creative_execution: 'Creative Execution', domain_expertise: 'Domain Expertise',
 }
-export const DIFFICULTY_V2_LABELS: Record<DifficultyV2, string> = {
-  warmup: 'Warm-up', standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+',
-}
+// DIFFICULTY_V2_LABELS removed in R3.F — use DIFFICULTY_LABELS from @/lib/practice/difficulty.
 export const PARADIGM_LABELS: Record<Paradigm, string> = {
   traditional: 'Traditional', 'ai-assisted': 'AI-Assisted', agentic: 'Agentic', 'ai-native': 'AI-Native',
 }
@@ -826,7 +828,12 @@ export interface StudyPlanWithItems extends StudyPlan {
 
 // ── Learn Section ─────────────────────────────────────────────
 
-export type LearnDifficulty = 'foundation' | 'beginner' | 'intermediate' | 'advanced' | 'new-era' | 'entry-point'
+// Learn modules now share the canonical PracticeDifficulty enum (easy/medium/hard).
+// The orthogonal "what kind of module" axis (Foundation / Core / New-Era / Entry-Point)
+// lives on `learn_modules.level_track` — see LearnLevelTrack below.
+import type { PracticeDifficulty } from '@/lib/practice/difficulty'
+export type LearnDifficulty = PracticeDifficulty
+export type LearnLevelTrack = 'foundation' | 'core' | 'new-era' | 'entry-point'
 
 export interface LearnModule {
   id: string
@@ -956,7 +963,11 @@ export interface AutopsyDecision {
   sort_order: number
   title: string
   area: string
-  difficulty: 'warmup' | 'standard' | 'advanced'
+  /**
+   * R3.E.1 migrated autopsy_decisions rows to canonical easy/medium/hard values.
+   * Wide union removed in R3.F.
+   */
+  difficulty: PracticeDifficulty
   icon: string | null
   screenshot_url: string | null
   what_they_did: string
@@ -1214,7 +1225,7 @@ export interface ChallengeJsonMetadata {
   paradigm: string
   industry: string
   sub_vertical: string
-  difficulty: DifficultyV2
+  difficulty: PracticeDifficulty
   estimated_minutes: number
   primary_competencies: string[]
   secondary_competencies: string[]

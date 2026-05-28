@@ -9,12 +9,16 @@ export default async function ChallengesPage({
     company?: string
     difficulty?: string
     discipline?: string
+    move?: string
     paradigm?: string
     q?: string
+    real_interview?: string
     role?: string
     scope?: string
     tab?: string
     tag?: string
+    technique?: string
+    topic?: string
     type?: string
     view?: string
   }>

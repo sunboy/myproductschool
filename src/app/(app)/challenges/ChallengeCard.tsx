@@ -8,6 +8,7 @@ import { cleanDisplayCopy } from '@/lib/copy/display'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
+import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 const PARADIGM_STYLE: Record<string, {
   bg: string
@@ -165,14 +166,12 @@ const PARADIGM_ART: Record<string, React.FC<{ color: string }>> = {
   'AI-Native': AINativeArt,
 }
 
-const DIFFICULTY_CONFIG: Record<string, { label: string; dot: string }> = {
-  warmup:       { label: 'Warm-up',  dot: '#10b981' },
-  standard:     { label: 'Standard', dot: '#f59e0b' },
-  advanced:     { label: 'Advanced', dot: '#ef4444' },
-  staff_plus:   { label: 'Staff+',   dot: '#8b5cf6' },
-  beginner:     { label: 'Easy',     dot: '#10b981' },
-  intermediate: { label: 'Medium',   dot: '#f59e0b' },
-  hard:         { label: 'Hard',     dot: '#ef4444' },
+// Canonical labels + dot colors per PracticeDifficulty bucket. Legacy values
+// arriving from a bookmarked URL or pre-R2 cache go through coerceDifficulty.
+const DIFFICULTY_DOT: Record<PracticeDifficulty, string> = {
+  easy:   '#10b981', // green
+  medium: '#f59e0b', // amber
+  hard:   '#ef4444', // red
 }
 
 export function ChallengeCard({
@@ -191,7 +190,10 @@ export function ChallengeCard({
   layoutId?: string
 }) {
   const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
-  const diff = DIFFICULTY_CONFIG[challenge.difficulty] ?? { label: challenge.difficulty, dot: '#74796e' }
+  const bucket = coerceDifficulty(challenge.difficulty)
+  const diff = bucket
+    ? { label: DIFFICULTY_LABELS[bucket], dot: DIFFICULTY_DOT[bucket] }
+    : { label: challenge.difficulty, dot: '#74796e' }
   const attempts = challenge.attempt_count ?? 0
   const title = cleanDisplayCopy(challenge.title) || challenge.title
   const promptText = challengeTaskSummary(challenge as ChallengeWithDomain & {

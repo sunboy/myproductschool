@@ -1,7 +1,8 @@
 'use client'
 
-import type { Challenge, DifficultyV2, ParadigmV2 } from '@/lib/types'
-import { DIFFICULTY_V2_LABELS, PARADIGM_V2_LABELS } from '@/lib/types'
+import type { Challenge, ParadigmV2 } from '@/lib/types'
+import { PARADIGM_V2_LABELS } from '@/lib/types'
+import { DIFFICULTY_LABELS, coerceDifficulty } from '@/lib/practice/difficulty'
 
 interface ChallengeCardV2Props {
   challenge: Challenge & {
@@ -14,7 +15,8 @@ interface ChallengeCardV2Props {
 
 export function ChallengeCardV2({ challenge, onStart }: ChallengeCardV2Props) {
   const paradigmLabel = challenge.paradigm ? (PARADIGM_V2_LABELS[challenge.paradigm as ParadigmV2] ?? challenge.paradigm) : null
-  const difficultyLabel = DIFFICULTY_V2_LABELS[challenge.difficulty]
+  const coerced = coerceDifficulty(challenge.difficulty)
+  const difficultyLabel = coerced ? DIFFICULTY_LABELS[coerced] : challenge.difficulty
 
   return (
     <div

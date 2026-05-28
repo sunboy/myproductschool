@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { Discipline } from './DisciplineTabStrip'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { getTopicsForDiscipline, getTechniquesForDiscipline, type Discipline as TaxonomyDiscipline } from '@/lib/data/taxonomy'
+import { DIFFICULTY_OPTIONS as PRACTICE_DIFFICULTY_OPTIONS } from '@/lib/practice/difficulty'
 
 /** Maps the UI discipline keys (from DisciplineTabStrip) to the taxonomy discipline keys.
  *  'all' has no taxonomy equivalent; 'algorithm' maps to 'coding'. */
@@ -36,7 +37,7 @@ export type FilterKey = keyof FilterState
 
 const PARADIGM_OPTIONS = ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native']
 const FLOW_MOVE_OPTIONS = ['Frame', 'List', 'Optimize', 'Win']
-const DIFFICULTY_OPTIONS = ['Warmup', 'Standard', 'Advanced', 'Staff+']
+const DIFFICULTY_OPTIONS = PRACTICE_DIFFICULTY_OPTIONS.map(o => o.label)
 const ROLE_OPTIONS = ['SWE', 'Tech Lead', 'EM', 'ML Eng', 'Data Eng', 'DevOps', 'Founding Eng', 'PM', 'Designer', 'Data Scientist']
 const COMPANY_OPTIONS = ['Google', 'Meta', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Amazon', 'Apple']
 const SCOPE_OPTIONS = ['Single Service', 'Distributed', 'Multi-Region']
@@ -62,7 +63,7 @@ const DROPDOWNS: DropdownDef[] = [
 
 const DROPDOWN_HELP: Record<FilterKey, string> = {
   paradigm: 'Choose the operating mode: classic product work, AI-assisted, agentic, or AI-native.',
-  difficulty: 'Match the rep to your current energy: warmup through Staff+ pressure.',
+  difficulty: 'Match the rep to your current energy: Easy, Medium, or Hard.',
   role: 'Show scenarios calibrated to the job you are aiming for.',
   company: 'Practice with the product and systems style of specific companies.',
   tag: 'Narrow practice to a topic tag from a challenge.',
@@ -102,40 +103,42 @@ function MultiSelectDropdown({
   const hasSelection = selected.length > 0
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        title={helpText ?? label}
-        className={[
-          'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-label text-xs whitespace-nowrap transition-colors',
-          hasSelection
-            ? 'border-primary bg-primary-fixed text-primary font-semibold'
-            : 'border-outline-variant bg-surface text-on-surface-variant hover:border-outline',
-        ].join(' ')}
-      >
-        {label}
-        {hasSelection && <span className="bg-primary text-on-primary rounded-full w-4 h-4 flex items-center justify-center text-[10px]">{selected.length}</span>}
-        <span className="material-symbols-outlined text-sm leading-none">expand_more</span>
-      </button>
+    <AppTooltip label={helpText ?? label} side="bottom" disabled={open}>
+      <div ref={ref} className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          title={helpText ?? label}
+          className={[
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-label text-xs whitespace-nowrap transition-colors',
+            hasSelection
+              ? 'border-primary bg-primary-fixed text-primary font-semibold'
+              : 'border-outline-variant bg-surface text-on-surface-variant hover:border-outline',
+          ].join(' ')}
+        >
+          {label}
+          {hasSelection && <span className="bg-primary text-on-primary rounded-full w-4 h-4 flex items-center justify-center text-[10px]">{selected.length}</span>}
+          <span className="material-symbols-outlined text-sm leading-none">expand_more</span>
+        </button>
 
-      {open && (
-        <div className="absolute top-full left-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-lg z-50 min-w-40 py-1">
-          {options.map((opt) => (
-            <button
-              key={opt}
-              onClick={() => onToggle(opt)}
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-label text-on-surface hover:bg-surface-container-low text-left"
-            >
-              <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${selected.includes(opt) ? 'bg-primary border-primary' : 'border-outline-variant'}`}>
-                {selected.includes(opt) && <span className="material-symbols-outlined text-on-primary text-[10px] leading-none">check</span>}
-              </span>
-              {opt}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+        {open && (
+          <div className="absolute top-full left-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-lg z-50 min-w-40 py-1">
+            {options.map((opt) => (
+              <button
+                key={opt}
+                onClick={() => onToggle(opt)}
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-label text-on-surface hover:bg-surface-container-low text-left"
+              >
+                <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${selected.includes(opt) ? 'bg-primary border-primary' : 'border-outline-variant'}`}>
+                  {selected.includes(opt) && <span className="material-symbols-outlined text-on-primary text-[10px] leading-none">check</span>}
+                </span>
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </AppTooltip>
   )
 }
 
@@ -171,51 +174,70 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
     onChange({ ...filters, real_interview: !filters.real_interview })
   }
 
+  const activeFilterCount = [
+    ...Object.entries(filters).filter(([k, v]) => k !== 'real_interview' && Array.isArray(v) && (v as string[]).length > 0),
+    ...(filters.real_interview ? [['real_interview', true]] : []),
+  ].length
+
   return (
     <>
-      {/* Desktop filter row */}
-      <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-surface-container-low border-b border-outline-variant flex-wrap">
-        <span className="font-label text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Filter:</span>
+      {/* Desktop secondary filter bar */}
+      <div className="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-surface border-b border-outline-variant flex-wrap">
+        {/* Filter icon label */}
+        <span className="material-symbols-outlined text-[14px] leading-none text-on-surface-variant mr-0.5" style={{ fontVariationSettings: "'FILL' 0" }}>
+          tune
+        </span>
+
         {visibleDropdowns.map((d) => {
           const opts = resolveOptions(d)
-          if (opts.length === 0) return null // hide topic/technique when discipline=all
+          if (opts.length === 0) return null
+          // Skip topic/technique here — handled by TopicChipCloud
+          if (d.key === 'topic' || d.key === 'technique') return null
           return (
-            <AppTooltip key={d.key} label={DROPDOWN_HELP[d.key]} side="bottom">
-              <MultiSelectDropdown
-                key={d.key}
-                label={d.label}
-                options={opts}
-                selected={filters[d.key] as string[]}
-                onToggle={(v) => toggleArray(d.key, v)}
-                helpText={DROPDOWN_HELP[d.key]}
-              />
-            </AppTooltip>
+            <MultiSelectDropdown
+              key={d.key}
+              label={d.label}
+              options={opts}
+              selected={filters[d.key] as string[]}
+              onToggle={(v) => toggleArray(d.key, v)}
+              helpText={DROPDOWN_HELP[d.key]}
+            />
           )
         })}
 
-        {/* Real interview toggle */}
+        {/* Real interview pill toggle */}
         <AppTooltip label={DROPDOWN_HELP.real_interview} side="bottom">
           <button
             type="button"
             onClick={toggleRealInterview}
             className={[
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-label text-xs whitespace-nowrap transition-colors',
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-label text-xs whitespace-nowrap transition-colors',
               filters.real_interview
                 ? 'border-primary bg-primary-fixed text-primary font-semibold'
-                : 'border-outline-variant bg-surface text-on-surface-variant hover:border-outline',
+                : 'border-outline-variant bg-surface text-on-surface-variant hover:border-outline hover:bg-surface-container-low',
             ].join(' ')}
           >
-            <span className="material-symbols-outlined text-sm leading-none">verified</span>
+            <span className="material-symbols-outlined text-[13px] leading-none">verified</span>
             Real interview
           </button>
         </AppTooltip>
+
         <div className="min-w-0 flex-1" />
-        <span className="shrink-0 font-label text-xs text-on-surface-variant">{resultCount} results</span>
+
+        {/* Result count */}
+        <span className="shrink-0 font-label text-[11px] text-on-surface-variant tabular-nums">
+          {resultCount} result{resultCount !== 1 ? 's' : ''}
+        </span>
+
+        {/* View toggle — segmented control */}
         <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
           <button
             type="button"
             onClick={() => listView && onToggleView()}
-            className={`px-2 py-1.5 flex items-center transition-colors ${!listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+            className={[
+              'px-2 py-1.5 flex items-center transition-colors',
+              !listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+            ].join(' ')}
             title="Grid view: visual cards for browsing"
             aria-label="Grid view"
           >
@@ -224,7 +246,10 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           <button
             type="button"
             onClick={() => !listView && onToggleView()}
-            className={`px-2 py-1.5 flex items-center transition-colors ${listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+            className={[
+              'px-2 py-1.5 flex items-center transition-colors',
+              listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+            ].join(' ')}
             title="List view: dense scan mode"
             aria-label="List view"
           >
@@ -234,22 +259,35 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
       </div>
 
       {/* Mobile filter bar */}
-      <div className="flex items-center gap-2 border-b border-outline-variant bg-surface-container-low px-3 py-2 sm:hidden">
+      <div className="flex items-center gap-2 border-b border-outline-variant bg-surface px-3 py-2 sm:hidden">
         <button
           type="button"
           onClick={onOpenMobileSheet}
           title="Open filters"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant bg-surface font-label text-xs font-semibold text-on-surface"
+          className={[
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-label text-xs font-semibold transition-colors',
+            activeFilterCount > 0
+              ? 'border-primary bg-primary-fixed text-primary'
+              : 'border-outline-variant bg-surface text-on-surface',
+          ].join(' ')}
         >
           <span className="material-symbols-outlined text-sm leading-none">tune</span>
           Filter
+          {activeFilterCount > 0 && (
+            <span className="bg-primary text-on-primary rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
+              {activeFilterCount}
+            </span>
+          )}
         </button>
         <div className="min-w-0 flex-1" />
         <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
           <button
             type="button"
             onClick={() => listView && onToggleView()}
-            className={`px-2 py-1.5 flex items-center transition-colors ${!listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+            className={[
+              'px-2 py-1.5 flex items-center transition-colors',
+              !listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+            ].join(' ')}
             title="Grid view"
             aria-label="Grid view"
           >
@@ -258,14 +296,17 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           <button
             type="button"
             onClick={() => !listView && onToggleView()}
-            className={`px-2 py-1.5 flex items-center transition-colors ${listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+            className={[
+              'px-2 py-1.5 flex items-center transition-colors',
+              listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+            ].join(' ')}
             title="List view"
             aria-label="List view"
           >
             <span className="material-symbols-outlined text-sm leading-none">view_list</span>
           </button>
         </div>
-        <span className="shrink-0 font-label text-xs text-on-surface-variant">{resultCount}</span>
+        <span className="shrink-0 font-label text-xs text-on-surface-variant tabular-nums">{resultCount}</span>
       </div>
     </>
   )

@@ -310,7 +310,10 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
             {/* Tag chips */}
             <div className="flex flex-wrap gap-2 pt-2">
-              {challenge.tags.map(tag => (
+              {Array.from(new Set([
+                ...((challenge as unknown as { topic_tags?: string[] }).topic_tags ?? []),
+                ...((challenge as unknown as { technique_tags?: string[] }).technique_tags ?? challenge.tags ?? []),
+              ])).map(tag => (
                 <span
                   key={tag}
                   className="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30"

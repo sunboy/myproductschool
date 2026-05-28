@@ -72,7 +72,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       sort_order: 1,
       title: 'Block-based editor over rich text',
       area: 'Core UX',
-      difficulty: 'standard',
+      difficulty: 'medium',
       icon: 'grid_view',
       screenshot_url: null,
       what_they_did:
@@ -129,7 +129,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       sort_order: 2,
       title: 'Free personal tier with no time limit',
       area: 'Monetization',
-      difficulty: 'warmup',
+      difficulty: 'easy',
       icon: 'volunteer_activism',
       screenshot_url: null,
       what_they_did:
@@ -186,7 +186,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       sort_order: 3,
       title: 'Databases as a first-class citizen',
       area: 'Product Strategy',
-      difficulty: 'advanced',
+      difficulty: 'hard',
       icon: 'table_chart',
       screenshot_url: null,
       what_they_did:

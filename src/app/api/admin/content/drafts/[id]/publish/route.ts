@@ -24,6 +24,10 @@ export async function POST(
     })
     return NextResponse.json({ ok: true, challenge_id: challengeId })
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    const message = err instanceof Error ? err.message : String(err)
+    // Tag-policy failures are a reviewer-fixable validation error, not a server
+    // fault — surface them as 422 so the admin UI shows the specific reason.
+    const status = message.includes('Tag policy violation') ? 422 : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }

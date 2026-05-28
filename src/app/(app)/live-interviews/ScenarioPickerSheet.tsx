@@ -3,12 +3,12 @@
 import { cn } from '@/lib/utils'
 import StartInterviewButton from './StartInterviewButton'
 import type { ScenarioBrief } from './page'
+import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
-const DIFFICULTY_COLORS: Record<string, string> = {
-  warmup: 'bg-green-100 text-green-800',
-  standard: 'bg-secondary-container text-on-secondary-container',
-  advanced: 'bg-tertiary-container text-on-tertiary-container',
-  staff_plus: 'bg-error/10 text-error',
+const DIFFICULTY_COLORS: Record<PracticeDifficulty, string> = {
+  easy: 'bg-primary-container text-on-primary-container',
+  medium: 'bg-tertiary-container text-on-secondary-container',
+  hard: 'bg-error/10 text-error',
 }
 
 interface ScenarioPickerSheetProps {
@@ -99,12 +99,17 @@ export default function ScenarioPickerSheet({
                     {scenario.scenarioQuestion}
                   </p>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <span className={cn(
-                      'rounded-full text-xs px-2 py-0.5 font-label',
-                      DIFFICULTY_COLORS[scenario.difficulty] ?? DIFFICULTY_COLORS.standard
-                    )}>
-                      {scenario.difficulty === 'staff_plus' ? 'Staff+' : scenario.difficulty.charAt(0).toUpperCase() + scenario.difficulty.slice(1)}
-                    </span>
+                    {(() => {
+                      const canon = coerceDifficulty(scenario.difficulty)
+                      return (
+                        <span className={cn(
+                          'rounded-full text-xs px-2 py-0.5 font-label',
+                          canon ? DIFFICULTY_COLORS[canon] : DIFFICULTY_COLORS.easy
+                        )}>
+                          {canon ? DIFFICULTY_LABELS[canon] : scenario.difficulty}
+                        </span>
+                      )
+                    })()}
                     <span className="text-xs text-on-surface-variant">
                       ~{scenario.estimatedMinutes} min
                     </span>

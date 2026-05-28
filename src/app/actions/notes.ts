@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { embedNote, embedAndStoreContext } from '@/lib/notes/embeddings'
 
 export async function createNote(content: string, color: string = 'default') {
@@ -23,6 +24,20 @@ export async function createNote(content: string, color: string = 'default') {
     embedding,
   }).select('id').single()
   if (insertError) console.error('[createNote] DB insert error:', insertError)
+
+  if (!insertError && note) {
+    const adminClient = createAdminClient()
+
+    const { error: streakError } = await adminClient.rpc('update_user_streak', { p_user_id: user.id })
+    if (streakError) console.error('[notes] update_user_streak failed:', streakError.message)
+
+    const { error: sessionEventError } = await adminClient.from('session_events').insert({
+      user_id: user.id,
+      event_type: 'note_saved',
+      payload: { note_id: note.id },
+    })
+    if (sessionEventError) console.error('[notes] session_events insert failed:', sessionEventError.message)
+  }
 
   // Store a notes_summary context entry for Hatch
   try {

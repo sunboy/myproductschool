@@ -20,7 +20,7 @@ const MODULE_ROW = {
   slug: MODULE_SLUG,
   name: 'FLOW',
   tagline: 'The four reasoning moves that separate product thinking from technical thinking.',
-  difficulty: 'foundation' as const,
+  difficulty: 'easy' as const,
   chapter_count: 8,
   est_minutes: 80,
   cover_color: '#4a7c59',

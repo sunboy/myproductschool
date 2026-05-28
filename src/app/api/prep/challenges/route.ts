@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 export async function GET() {
   const supabase = await createClient()
@@ -39,11 +40,9 @@ export async function GET() {
     }
   }
 
-  // Group into chapters by difficulty
-  const beginner = challenges.filter(c => c.difficulty === 'beginner')
-  const intermediate = challenges.filter(c => c.difficulty === 'intermediate')
-  const advanced = challenges.filter(c => c.difficulty === 'advanced')
-
+  // Group into chapters by canonical difficulty. Coerce each row so legacy
+  // strings (warmup/standard/advanced/staff_plus/beginner/intermediate) and
+  // canonical strings (easy/medium/hard) both bucket correctly.
   const toItem = (c: { id: string; title: string; difficulty: string }) => ({
     id: c.id,
     title: c.title,
@@ -52,26 +51,20 @@ export async function GET() {
     is_completed: scoreMap[c.id] != null,
   })
 
-  const chapters = [
-    {
-      key: 'beginner',
-      title: 'Chapter 1: Product Sense & Foundations',
-      icon: 'psychology',
-      items: beginner.map(toItem),
-    },
-    {
-      key: 'intermediate',
-      title: 'Chapter 2: Execution & Metrics',
-      icon: 'monitoring',
-      items: intermediate.map(toItem),
-    },
-    {
-      key: 'advanced',
-      title: 'Chapter 3: Strategy & Leadership',
-      icon: 'diversity_3',
-      items: advanced.map(toItem),
-    },
-  ].filter(ch => ch.items.length > 0)
+  const grouped: Record<PracticeDifficulty, ReturnType<typeof toItem>[]> = { easy: [], medium: [], hard: [] }
+  for (const c of challenges) {
+    const bucket = coerceDifficulty(c.difficulty)
+    if (bucket) grouped[bucket].push(toItem(c))
+  }
+
+  const CHAPTER_META: Record<PracticeDifficulty, { title: string; icon: string }> = {
+    easy:   { title: 'Chapter 1: Product Sense & Foundations', icon: 'psychology' },
+    medium: { title: 'Chapter 2: Execution & Metrics',         icon: 'monitoring' },
+    hard:   { title: 'Chapter 3: Strategy & Leadership',       icon: 'diversity_3' },
+  }
+  const chapters = (['easy', 'medium', 'hard'] as const)
+    .map(key => ({ key, ...CHAPTER_META[key], items: grouped[key] }))
+    .filter(ch => ch.items.length > 0)
 
   return NextResponse.json({ chapters })
 }

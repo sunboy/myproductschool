@@ -11,12 +11,16 @@ export interface FreePracticeContentProps {
     company?: string
     difficulty?: string
     discipline?: string
+    move?: string
     paradigm?: string
     q?: string
+    real_interview?: string
     role?: string
     scope?: string
     tab?: string
     tag?: string
+    technique?: string
+    topic?: string
     type?: string
     view?: string
   }>
@@ -44,12 +48,51 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     resolvedSearchParams.company ||
     resolvedSearchParams.tag ||
     resolvedSearchParams.scope ||
+    resolvedSearchParams.topic ||
+    resolvedSearchParams.technique ||
+    resolvedSearchParams.real_interview ||
+    resolvedSearchParams.move ||
     (resolvedSearchParams.discipline && resolvedSearchParams.discipline !== 'all') ||
     (resolvedSearchParams.type && resolvedSearchParams.type !== 'all')
   )
 
+  // Featured row is suppressed when any non-discipline filter is active
+  const hasNonDisciplineFilter = Boolean(
+    q ||
+    resolvedSearchParams.paradigm ||
+    resolvedSearchParams.role ||
+    resolvedSearchParams.difficulty ||
+    resolvedSearchParams.company ||
+    resolvedSearchParams.tag ||
+    resolvedSearchParams.scope ||
+    resolvedSearchParams.topic ||
+    resolvedSearchParams.technique ||
+    resolvedSearchParams.real_interview ||
+    resolvedSearchParams.move ||
+    (resolvedSearchParams.type && resolvedSearchParams.type !== 'all')
+  )
+
+  // Multi-select filters arrive comma-joined from the client URL writer.
+  // For SSR we filter on the FIRST value only (the URL hash hydration on the
+  // client then narrows further client-side). This keeps server queries simple
+  // while still returning a relevant first page.
+  const firstOf = (v: string | undefined) => v?.split(',')[0]?.trim() || undefined
+
   const [challenges, featuredChallenges] = await Promise.all([
-    getChallenges({ q }),
+    getChallenges({
+      q,
+      topic: firstOf(resolvedSearchParams.topic),
+      technique: firstOf(resolvedSearchParams.technique),
+      difficulty: resolvedSearchParams.difficulty,
+      paradigm: resolvedSearchParams.paradigm,
+      role: resolvedSearchParams.role,
+      company: resolvedSearchParams.company,
+      // Client URL writer uses '1' (see writeFilterValues in FilteredChallengesView);
+      // accept both '1' and 'true' for forward compat with any external link or test.
+      real_interview: resolvedSearchParams.real_interview === '1' || resolvedSearchParams.real_interview === 'true',
+      move_tag: firstOf(resolvedSearchParams.move),
+      type: resolvedSearchParams.type,
+    }),
     getFeaturedChallenges(),
   ])
 
@@ -82,7 +125,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
       <BillingUsageFromProfile className="mb-6" />
 
       {/* Featured Challenges - only when editorially pinned challenges exist and no search query */}
-      {featuredChallenges.length > 0 && !hasActiveFilters && (
+      {featuredChallenges.length > 0 && !hasNonDisciplineFilter && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-2.5">

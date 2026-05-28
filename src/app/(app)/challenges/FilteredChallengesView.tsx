@@ -8,8 +8,10 @@ import { ActiveFilterPills } from '@/components/challenges/ActiveFilterPills'
 import { FilterBottomSheet } from '@/components/challenges/FilterBottomSheet'
 import { MotionList } from '@/components/motion'
 import { AppTooltip } from '@/components/ui/AppTooltip'
+import { TopicChipCloud } from '@/components/challenges/TopicChipCloud'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
 import type { ChallengeWithDomain } from '@/lib/types'
+import { coerceDifficulty, expandDifficultyForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 interface Props {
   challenges: ChallengeWithDomain[]
@@ -102,12 +104,13 @@ const ROLE_VALUE_MAP: Record<string, string> = {
   'Data Scientist': 'data_scientist',
 }
 
-const DIFFICULTY_VALUE_MAP: Record<string, string> = {
-  Staff: 'staff_plus',
-  'Staff+': 'staff_plus',
-  Warmup: 'warmup',
-  Standard: 'standard',
-  Advanced: 'advanced',
+// Map UI label → canonical PracticeDifficulty bucket. The actual row match
+// happens via expandDifficultyForQuery() so legacy DB strings still filter
+// correctly until R2 rewrites the column.
+const DIFFICULTY_LABEL_TO_BUCKET: Record<string, PracticeDifficulty> = {
+  Easy: 'easy',
+  Medium: 'medium',
+  Hard: 'hard',
 }
 
 const SCOPE_VALUE_MAP: Record<string, string> = {
@@ -166,10 +169,12 @@ function matchesSecondaryFilters(challenge: ChallengeWithDomain, filters: Filter
   }
 
   if (filters.difficulty.length > 0) {
-    const selectedDifficulties = filters.difficulty.map((difficulty) => (
-      DIFFICULTY_VALUE_MAP[difficulty] ?? normalizeValue(difficulty)
-    ))
-    if (!selectedDifficulties.includes(challenge.difficulty)) return false
+    const selectedBuckets = filters.difficulty
+      .map((label) => DIFFICULTY_LABEL_TO_BUCKET[label] ?? coerceDifficulty(label))
+      .filter((b): b is PracticeDifficulty => b != null)
+    const acceptedDbValues = new Set<string>()
+    for (const b of selectedBuckets) for (const v of expandDifficultyForQuery(b)) acceptedDbValues.add(v)
+    if (!acceptedDbValues.has(challenge.difficulty)) return false
   }
 
   if (filters.role.length > 0) {
@@ -186,7 +191,10 @@ function matchesSecondaryFilters(challenge: ChallengeWithDomain, filters: Filter
 
   if (filters.tag.length > 0) {
     const selectedTags = filters.tag.map(normalizeValue)
-    const challengeTags = (challenge.tags ?? []).map(normalizeValue)
+    const challengeTags = Array.from(new Set([
+      ...(challenge.topic_tags ?? []),
+      ...(challenge.technique_tags ?? []),
+    ])).map(normalizeValue)
     if (!selectedTags.some((tag) => challengeTags.includes(tag))) return false
   }
 
@@ -258,6 +266,11 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   function handleDisciplineChange(nextDiscipline: Discipline) {
     updateParams((params) => {
       params.delete('type')
+      // Topic and technique chip clouds are discipline-scoped (TopicChipCloud
+      // hides for `all` and switches its vocab per type). Clear them on type
+      // change so stale slugs from another discipline don't linger in the URL.
+      params.delete('topic')
+      params.delete('technique')
       if (nextDiscipline === 'all') params.delete('discipline')
       else params.set('discipline', nextDiscipline)
 
@@ -389,7 +402,14 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         </div>
       </section>
 
-      {/* Filter dropdown bar */}
+      {/* Topic chip cloud — discipline-scoped topic/technique quick filters */}
+      <TopicChipCloud
+        discipline={discipline}
+        filters={filters}
+        onChange={handleFilterChange}
+      />
+
+      {/* Secondary filter bar */}
       <FilterDropdownBar
         discipline={discipline}
         filters={filters}
@@ -416,6 +436,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         onChange={handleFilterChange}
         onClose={() => setMobileSheetOpen(false)}
         onClearAll={handleClearAll}
+        onDisciplineChange={handleDisciplineChange}
       />
 
       {/* Results */}

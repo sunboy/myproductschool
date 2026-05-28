@@ -8,6 +8,7 @@ import { getReadableAppCompanies, getReadableLegacyOnlyShowcaseProducts } from '
 import { getAutopsyCompanies } from '@/lib/autopsies/queries'
 import type { AutopsyCompanyWithStories } from '@/lib/autopsies/types'
 import { createClient } from '@/lib/supabase/server'
+import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { AppTooltip } from '@/components/ui/AppTooltip'
@@ -60,10 +61,10 @@ const PLANS_STATIC: PlanItem[] = [
 ]
 
 const MODULES_STATIC = [
-  { slug: 'flow-framework', name: 'The FLOW Framework', tagline: 'How product decisions get made.', cover_color: '#1e3528', accent_color: '#7ee099', chapter_count: 8, est_minutes: 90, difficulty: 'beginner' },
-  { slug: 'product-sense', name: 'Product Sense', tagline: 'Developing taste and judgment.', cover_color: '#172240', accent_color: '#7aa7ff', chapter_count: 7, est_minutes: 75, difficulty: 'intermediate' },
-  { slug: 'agentic-pm', name: 'Agentic PM', tagline: 'Managing AI systems end-to-end.', cover_color: '#25143a', accent_color: '#c89df5', chapter_count: 6, est_minutes: 80, difficulty: 'advanced' },
-  { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#301a0a', accent_color: '#f5a76c', chapter_count: 5, est_minutes: 60, difficulty: 'intermediate' },
+  { slug: 'flow-framework', name: 'The FLOW Framework', tagline: 'How product decisions get made.', cover_color: '#1e3528', accent_color: '#7ee099', chapter_count: 8, est_minutes: 90, difficulty: 'easy' },
+  { slug: 'product-sense', name: 'Product Sense', tagline: 'Developing taste and judgment.', cover_color: '#172240', accent_color: '#7aa7ff', chapter_count: 7, est_minutes: 75, difficulty: 'medium' },
+  { slug: 'agentic-pm', name: 'Agentic PM', tagline: 'Managing AI systems end-to-end.', cover_color: '#25143a', accent_color: '#c89df5', chapter_count: 6, est_minutes: 80, difficulty: 'hard' },
+  { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#301a0a', accent_color: '#f5a76c', chapter_count: 5, est_minutes: 60, difficulty: 'medium' },
 ] as const
 
 const PRIMARY_PATHS = [
@@ -466,7 +467,7 @@ function ModuleCard({ module, index }: {
           className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-label font-bold uppercase tracking-[0.08em]"
           style={{ background: 'rgba(255,255,255,0.10)', color: module.accent_color }}
         >
-          {module.difficulty}
+          {DIFFICULTY_LABELS[coerceDifficulty(module.difficulty) ?? 'easy']}
         </span>
         <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-[#f3ede0]">
           {module.name}

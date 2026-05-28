@@ -8,6 +8,7 @@ import { aggregateChallenge } from '@/lib/v2/skills/score-aggregator'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
+import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
 import { FLOW_MAX_SCORE, MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
 import { buildCompletedAttemptResult } from '@/lib/scoring/completed-attempt-result'
@@ -235,9 +236,12 @@ export async function POST(
   ])
 
   // XP = difficulty base * score (0–1)
-  // base: beginner=50, intermediate=100, advanced=150
-  const DIFFICULTY_BASE: Record<string, number> = { beginner: 50, intermediate: 100, advanced: 150 }
-  const difficultyBase = DIFFICULTY_BASE[challenge?.difficulty ?? 'beginner'] ?? 50
+  // Base by canonical bucket: easy=50, medium=100, hard=150. Coerce so legacy
+  // DB values (warmup/standard/advanced/staff_plus) score correctly until R2
+  // rewrites the column.
+  const DIFFICULTY_BASE: Record<PracticeDifficulty, number> = { easy: 50, medium: 100, hard: 150 }
+  const bucket = coerceDifficulty(challenge?.difficulty) ?? 'easy'
+  const difficultyBase = DIFFICULTY_BASE[bucket]
   const baseXp = Math.round(difficultyBase * (total_score / max_score))
 
   // Streak multiplier: +5% per streak day, capped at 1.5× (hits cap at 10 days)

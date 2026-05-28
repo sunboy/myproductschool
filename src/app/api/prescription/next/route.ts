@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
 
     const { data: nextChallenge } = await supabaseAdmin
       .from('challenges')
-      .select('id, title, tags')
+      .select('id, title, topic_tags, technique_tags')
       .eq('is_published', true)
       .not('id', 'in', completedIds.length > 0 ? `(${completedIds.join(',')})` : '(00000000-0000-0000-0000-000000000000)')
       .limit(1)
