@@ -15,6 +15,14 @@ function signingSecret() {
     ?? ''
 }
 
+/** Diagnostic only: which env var the signing secret resolved from. Never returns the secret value. */
+export function signingSecretSource(): 'dedicated' | 'supabase_service_role' | 'cron_secret' | 'none' {
+  if (process.env.LIVE_INTERVIEW_VOICE_TOKEN_SECRET) return 'dedicated'
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) return 'supabase_service_role'
+  if (process.env.CRON_SECRET) return 'cron_secret'
+  return 'none'
+}
+
 function sign(value: string) {
   const secret = signingSecret()
   if (!secret) return null

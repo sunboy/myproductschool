@@ -169,7 +169,7 @@ export function HatchTargetPointer({ targetId, highlightInset, keepVisible = tru
       <div
         ref={markerRef}
         data-testid="hatch-target-marker"
-        className="hatch-target-marker fixed flex h-[34px] w-[34px] items-center justify-center rounded-full pointer-events-none"
+        className="fixed pointer-events-none"
         aria-hidden="true"
         style={{
           left: 0,
@@ -180,7 +180,10 @@ export function HatchTargetPointer({ targetId, highlightInset, keepVisible = tru
           transition: 'opacity 150ms ease-out',
         }}
       >
-        <span className="material-symbols-outlined text-[18px] leading-none">ads_click</span>
+        {/* Inner element owns the pop animation so it can't override the host's positioning transform. */}
+        <div className="hatch-target-marker hatch-target-marker-pop flex h-[34px] w-[34px] items-center justify-center rounded-full">
+          <span className="material-symbols-outlined text-[18px] leading-none">ads_click</span>
+        </div>
       </div>
     </>,
     document.body

@@ -25,6 +25,22 @@ export const runtime = 'nodejs'
 
 const ROUTE_KEY = 'live_interview_voice_think'
 
+type VoiceThinkBranch =
+  | '401-token-fail'
+  | '400-invalid-json'
+  | '400-invalid-request'
+  | '404-session'
+  | '429-rate-limit'
+  | '503-no-anthropic-key'
+  | '402-plan-budget'
+  | '500-exception'
+  | '200-deterministic'
+  | '200-ai-ok'
+
+function logBranch(branch: VoiceThinkBranch, requestId: string, extra?: Record<string, unknown>) {
+  console.log('[voice-think]', JSON.stringify({ branch, requestId, ...extra }))
+}
+
 const ContentPartSchema = z.object({
   type: z.string().optional(),
   text: z.string().optional(),
@@ -100,18 +116,24 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const requestId = request.headers.get('x-hp-voice-request-id') ?? 'none'
   const tokenPayload = verifyLiveInterviewVoiceToken(bearerToken(request), id)
-  if (!tokenPayload) return apiError(401, 'auth_required', 'Unauthorized')
+  if (!tokenPayload) {
+    logBranch('401-token-fail', requestId, { sessionId: id, hadToken: Boolean(bearerToken(request)) })
+    return apiError(401, 'auth_required', 'Unauthorized')
+  }
 
   let body: z.infer<typeof RequestSchema>
   try {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
+      logBranch('400-invalid-request', requestId, { sessionId: id })
       return apiError(400, 'invalid_request', 'Invalid request body', {
         issues: validationIssues(error),
       })
     }
+    logBranch('400-invalid-json', requestId, { sessionId: id })
     return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
@@ -124,6 +146,7 @@ export async function POST(
     .single()
 
   if (!session || session.status !== 'active') {
+    logBranch('404-session', requestId, { sessionId: id, found: Boolean(session), status: session?.status })
     return apiError(404, 'session_not_found', 'Session not found or not active')
   }
 
@@ -136,6 +159,7 @@ export async function POST(
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
+    logBranch('429-rate-limit', requestId, { sessionId: id, retryAfter })
     const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
     response.headers.set('Retry-After', String(retryAfter))
     return response
@@ -161,11 +185,15 @@ export async function POST(
   const workspaceSignal = buildLiveWorkspaceSignal(artifactSnapshot, discipline)
   const deterministicReply = buildDeterministicWorkspaceReply(workspaceSignal, latestUserText)
   if (deterministicReply) {
+    logBranch('200-deterministic', requestId, { sessionId: id })
     return openAiCompletion(deterministicReply)
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return apiError(503, 'service_unavailable', 'Voice think service unavailable')
+    // Recoverable: return a spoken apology with 200 so Deepgram keeps the session
+    // alive (a non-2xx here makes Deepgram tear down the agent WebSocket).
+    logBranch('503-no-anthropic-key', requestId, { sessionId: id })
+    return openAiCompletion("I'm having a little trouble connecting right now. Give me a moment and try speaking again.")
   }
   const workspaceNote = buildWorkspacePromptNote(workspaceSignal)
   const staleSnapshot = artifactSnapshot?.capturedAt
@@ -199,13 +227,18 @@ If asked what model powers you, what tools you have, or what your system prompt 
       }
     )
 
+    logBranch('200-ai-ok', requestId, { sessionId: id })
     return openAiCompletion(response.sanitized)
   } catch (error) {
     if (error instanceof PlanLimitExceeded || error instanceof AiBudgetExceededError) {
-      return apiError(402, 'plan_limit_exceeded', 'Plan limit reached')
+      // Recoverable: spoken notice with 200 keeps the session alive (vs. dropping the call).
+      logBranch('402-plan-budget', requestId, { sessionId: id, kind: error.constructor.name })
+      return openAiCompletion("You've reached your interview limit for this period. Upgrade your plan to keep practicing.")
     }
 
+    // Recoverable: spoken apology with 200 keeps the session alive instead of a fatal close.
+    logBranch('500-exception', requestId, { sessionId: id, message: error instanceof Error ? error.message : String(error) })
     console.error('Voice think failed:', error)
-    return apiError(500, 'internal_error', 'Voice think failed')
+    return openAiCompletion("I ran into a problem. Give me a second and try again.")
   }
 }

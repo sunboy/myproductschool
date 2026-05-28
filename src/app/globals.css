@@ -578,6 +578,11 @@ body::before {
   color: var(--color-on-primary);
   border: 2px solid var(--color-surface);
   box-shadow: 0 10px 24px rgba(38, 74, 52, 0.26), 0 0 0 8px rgba(126, 224, 153, 0.16);
+}
+
+/* Pop animation lives on the inner element so it never overrides the
+   host's positioning transform (translate3d set imperatively by the RAF loop). */
+.hatch-target-marker-pop {
   animation: hatch-marker-pop 1.2s ease-in-out infinite;
 }
 
@@ -601,10 +606,13 @@ body::before {
   .hatch-motion-spin,
   .hatch-motion-drawing,
   .hatch-motion-stuck-check,
-  .hatch-motion-caution,
-  .hatch-target-marker {
+  .hatch-motion-caution {
     animation: none;
     transform: none;
+  }
+  /* Only the inner pop element is reset — the host keeps its positioning transform. */
+  .hatch-target-marker-pop {
+    animation: none;
   }
 }
 

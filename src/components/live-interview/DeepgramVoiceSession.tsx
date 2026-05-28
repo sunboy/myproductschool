@@ -53,6 +53,12 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
     const suppressedAgentMessagesRef = useRef<string[]>([])
     const connectedRef = useRef(false)
     const hasReceivedTranscriptRef = useRef(false)
+    const lastDeepgramEventRef = useRef<string>('none')
+    const lastDeepgramErrorRef = useRef<unknown>(null)
+    const lastDeepgramWarningRef = useRef<unknown>(null)
+    const requestIdRef = useRef<string>('none')
+    const callbackOriginRef = useRef<string>('none')
+    const wsOpenedAtRef = useRef<number>(0)
 
     const sendJson = useCallback((payload: unknown) => {
       const ws = wsRef.current
@@ -210,9 +216,11 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
             return
           }
 
-          const payload = await settingsResponse.json() as { deepgramToken?: unknown; settings?: unknown }
+          const payload = await settingsResponse.json() as { deepgramToken?: unknown; settings?: unknown; requestId?: unknown; callbackOrigin?: unknown }
           settings = payload.settings ?? null
           deepgramToken = typeof payload.deepgramToken === 'string' ? payload.deepgramToken : ''
+          requestIdRef.current = typeof payload.requestId === 'string' ? payload.requestId : 'none'
+          callbackOriginRef.current = typeof payload.callbackOrigin === 'string' ? payload.callbackOrigin : 'none'
           if (!settings || typeof settings !== 'object' || !deepgramToken) {
             onError('Voice mode is unavailable. Use chat mode.')
             return
@@ -234,6 +242,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
           onAnalyserReady?.(analyser)
 
           ws.addEventListener('open', () => {
+            wsOpenedAtRef.current = Date.now()
             void ttsCtx.resume().catch(() => {})
           })
 
@@ -251,6 +260,8 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
                 description?: string
                 message?: string
               }
+
+              if (payload.type) lastDeepgramEventRef.current = payload.type
 
               if (payload.type === 'Welcome') {
                 sendSettings()
@@ -299,6 +310,8 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
 
               if (payload.type === 'InjectionRefused') return
 
+              if (payload.type === 'Error') lastDeepgramErrorRef.current = payload
+              if (payload.type === 'Warning') lastDeepgramWarningRef.current = payload
               if (payload.type === 'Error') {
                 onError(payload.description ?? payload.message ?? 'Deepgram error')
               }
@@ -312,6 +325,22 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
           })
 
           ws.addEventListener('close', (event) => {
+            // Diagnostic: capture everything needed to disambiguate why Deepgram closed the socket.
+            // Correlate `requestId` with the prod [voice-think] branch logs and [voice-settings] line.
+            console.log('[voice-ws-close]', JSON.stringify({
+              requestId: requestIdRef.current,
+              callbackOrigin: callbackOriginRef.current,
+              code: event.code,
+              reason: event.reason,
+              wasClean: event.wasClean,
+              connected: connectedRef.current,
+              hasReceivedTranscript: hasReceivedTranscriptRef.current,
+              lastDeepgramEvent: lastDeepgramEventRef.current,
+              lastDeepgramError: lastDeepgramErrorRef.current,
+              lastDeepgramWarning: lastDeepgramWarningRef.current,
+              msSinceOpen: wsOpenedAtRef.current ? Date.now() - wsOpenedAtRef.current : null,
+              intentional: intentionallyClosed,
+            }))
             if (intentionallyClosed) return
             // Code 1000 after transcripts have flowed = natural session end (Deepgram closed its turn).
             // Surface the fallback only for abnormal closes or sessions that never produced a transcript.

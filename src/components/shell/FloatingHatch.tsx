@@ -306,6 +306,16 @@ export function FloatingHatch() {
 
   if (isInWorkspace && !activeCue) return null
 
+  // Target resolved at emit time but vanished mid-step. For a tour, advance so the
+  // director re-validates the next target (and applies its own fallback); for other
+  // cues, clear so the marker never lingers on a dead target. Memoized so it doesn't
+  // refire on unrelated parent rerenders while `missing` stays true.
+  const handleMissing = useCallback(() => {
+    if (!activeCue) return
+    if (activeCue.source === 'tour') hatchCtx?.nextTourStep()
+    else hatchCtx?.clearCue()
+  }, [activeCue, hatchCtx])
+
   return (
     <>
       {/* Target marker + highlight overlay portal — owns its own RAF tracking loop. */}
@@ -313,6 +323,7 @@ export function FloatingHatch() {
         targetId={activeCue?.target}
         highlightInset={activeCue?.highlightInset}
         keepVisible={activeCue?.source === 'tour'}
+        onMissing={handleMissing}
       />
       <div
         data-hatch-ignore

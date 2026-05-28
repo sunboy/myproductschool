@@ -1,7 +1,8 @@
+import { randomUUID } from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError } from '@/lib/api/error'
-import { createLiveInterviewVoiceToken } from '@/lib/live-interview/voice-token'
+import { createLiveInterviewVoiceToken, signingSecretSource } from '@/lib/live-interview/voice-token'
 
 export const runtime = 'nodejs'
 
@@ -11,52 +12,47 @@ const DEEPGRAM_TOKEN_TTL_SECONDS = 3600
 function isLocalOrigin(origin: string) {
   try {
     const { hostname } = new URL(origin)
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
+    // URL parsing yields '[::1]' (with brackets) for the IPv6 loopback.
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1' ||
+      hostname === '[::1]'
+    )
   } catch {
     return false
   }
 }
 
-function voiceThinkOrigin(request: Request) {
+type OriginSource = 'env-var' | 'env-var-local' | 'request-origin' | 'request-origin-local'
+
+function voiceThinkOrigin(request: Request): {
+  origin: string | null
+  needsPublicCallback: boolean
+  source: OriginSource
+} {
+  // 1. Explicit override (e.g. a tunnel URL for local dev).
   const explicit = process.env.DEEPGRAM_VOICE_THINK_BASE_URL?.trim()
   if (explicit) {
     const origin = explicit.replace(/\/$/, '')
     if (isLocalOrigin(origin)) {
-      return {
-        origin: null,
-        needsPublicCallback: true,
-      }
+      return { origin: null, needsPublicCallback: true, source: 'env-var-local' }
     }
-
-    return {
-      origin,
-      needsPublicCallback: false,
-    }
+    return { origin, needsPublicCallback: false, source: 'env-var' }
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()
-  if (appUrl) {
-    const origin = appUrl.replace(/\/$/, '')
-    if (!isLocalOrigin(origin)) {
-      return {
-        origin,
-        needsPublicCallback: false,
-      }
-    }
-  }
-
+  // 2. The request's own origin. Every deployment (prod, preview, custom domain)
+  //    then calls back to the exact host serving it — no cross-host redirect, which
+  //    is what broke prod (apex NEXT_PUBLIC_APP_URL 307-redirected to www).
   const requestOrigin = new URL(request.url).origin
-  if (isLocalOrigin(requestOrigin)) {
-    return {
-      origin: null,
-      needsPublicCallback: true,
-    }
+  if (!isLocalOrigin(requestOrigin)) {
+    return { origin: requestOrigin, needsPublicCallback: false, source: 'request-origin' }
   }
 
-  return {
-    origin: requestOrigin,
-    needsPublicCallback: false,
-  }
+  // 3. Request is localhost. Deepgram can't reach it — fail loudly rather than
+  //    silently baking NEXT_PUBLIC_APP_URL (which sends the callback to the wrong
+  //    environment). Set DEEPGRAM_VOICE_THINK_BASE_URL to a tunnel for local voice.
+  return { origin: null, needsPublicCallback: true, source: 'request-origin-local' }
 }
 
 async function createDeepgramAccessToken() {
@@ -82,6 +78,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const requestId = randomUUID()
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -100,6 +97,15 @@ export async function GET(
   }
 
   const callback = voiceThinkOrigin(request)
+  console.log('[voice-settings]', JSON.stringify({
+    requestId,
+    sessionId: id,
+    requestOrigin: new URL(request.url).origin,
+    originSource: callback.source,
+    callbackOrigin: callback.origin,
+    needsPublicCallback: callback.needsPublicCallback,
+    signingSecretSource: signingSecretSource(),
+  }))
   if (callback.needsPublicCallback || !callback.origin) {
     return apiError(
       503,
@@ -123,6 +129,8 @@ export async function GET(
 
   return Response.json({
     deepgramToken,
+    requestId,
+    callbackOrigin: callback.origin,
     settings: {
       type: 'Settings',
       tags: ['hackproduct', 'live_interview'],
@@ -151,6 +159,7 @@ export async function GET(
             url: `${callback.origin}/api/live-interview/${id}/voice-think`,
             headers: {
               authorization: `Bearer ${token}`,
+              'x-hp-voice-request-id': requestId,
             },
           },
           context_length: 'max',
