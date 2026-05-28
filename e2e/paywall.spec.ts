@@ -552,6 +552,22 @@ test.describe('Paywall scenarios', () => {
   let users: Record<PersonaKey, TestUser>
 
   test.beforeAll(async () => {
+    // Live-key guard (CODEX-4): refuse to run destructive Supabase + Stripe teardown
+    // against a live Stripe account. Reads the raw env var, not the resolved runtime key,
+    // because operators may set STRIPE_SECRET_KEY=sk_live_... + STRIPE_MODE=test and the
+    // runtime would happily use the test override while a careless test could still hit
+    // the live account via Stripe Connect / impersonation. Restricted keys (rk_test_)
+    // are rejected because Stripe Checkout creation and webhook construction both need
+    // a full secret key.
+    const rawSecret = process.env.STRIPE_SECRET_KEY ?? ''
+    if (HAS_STRIPE_ENV && !rawSecret.startsWith('sk_test_')) {
+      throw new Error(
+        `[paywall.spec] STRIPE_SECRET_KEY must be a Stripe test secret key (sk_test_...). ` +
+        `Got: "${rawSecret.slice(0, 8)}..." (length ${rawSecret.length}). ` +
+        `Refusing to run destructive paywall tests against anything other than a test account.`
+      )
+    }
+
     admin = getAdminClient()
     users = await loadUsers(admin)
   })

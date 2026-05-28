@@ -14,10 +14,12 @@ import {
 import {
   sendCancellationConfirmedEmail,
   sendCancellationScheduledEmail,
+  sendPaymentActionRequiredEmail,
   sendPaymentFailedEmail,
   sendPaymentReceiptEmail,
   sendPlanChangedEmail,
   sendSubscriptionReactivatedEmail,
+  sendTrialEndingEmail,
 } from '@/lib/email/transactional'
 
 function subscriptionPlanForStatus(status: Stripe.Subscription.Status): 'free' | 'pro' {
@@ -151,6 +153,24 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createAdminClient()
+
+  // Idempotency: insert event.id immediately. Unique violation = duplicate
+  // delivery (Stripe retry) → short-circuit so we don't double-write incremental
+  // counters (payment_failures, affiliate commission, etc).
+  const { error: dupeError } = await supabase.from('stripe_events').insert({
+    id: event.id,
+    type: event.type,
+    payload: event as unknown as Record<string, unknown>,
+  })
+  if (dupeError) {
+    if ((dupeError as { code?: string }).code === '23505') {
+      return NextResponse.json({ received: true, duplicate: true })
+    }
+    // Other errors (e.g. table missing, transient network) — log but proceed
+    // so legitimate first deliveries aren't blocked on infra hiccups.
+    console.error('[stripe.webhook] stripe_events insert failed:', dupeError)
+  }
+
   const eventType = event.type as string
 
   switch (eventType) {
@@ -162,7 +182,13 @@ export async function POST(req: NextRequest) {
       const invoiceId = checkoutInvoiceId(session)
       const invoice = invoiceId ? await stripe.invoices.retrieve(invoiceId) : null
 
-      await supabase.from('profiles').update({ plan: 'pro' }).eq('id', userId)
+      await supabase.from('profiles').update({
+        plan: 'pro',
+        pro_access: true,
+        subscription_status: 'active',
+        payment_failures: 0,
+        past_due_since: null,
+      }).eq('id', userId)
 
       await supabase.from('subscriptions').upsert({
         user_id: userId,
@@ -231,7 +257,25 @@ export async function POST(req: NextRequest) {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
 
-      await supabase.from('profiles').update({ plan }).eq('id', userId)
+      // Sync profile entitlement flags so dashboards / dunning / entitlements
+      // layer all see the same state.
+      const profileUpdates: Record<string, unknown> = { plan }
+      if (plan === 'pro' && (subscription.status === 'active' || subscription.status === 'trialing')) {
+        profileUpdates.pro_access = true
+        profileUpdates.subscription_status = 'active'
+        profileUpdates.payment_failures = 0
+        profileUpdates.past_due_since = null
+      } else if (plan === 'free') {
+        // Cancelled / incomplete_expired / etc → no Pro access.
+        profileUpdates.pro_access = false
+        profileUpdates.subscription_status = subscription.status
+      } else {
+        // plan === 'pro' but status is past_due — leave pro_access alone here.
+        // The invoice.payment_failed handler is the authoritative writer for
+        // past_due_since / payment_failures / pro_access during dunning.
+        profileUpdates.subscription_status = subscription.status
+      }
+      await supabase.from('profiles').update(profileUpdates).eq('id', userId)
 
       if (event.type === 'customer.subscription.updated') {
         const previous = event.data.previous_attributes as Partial<Stripe.Subscription> | undefined
@@ -410,19 +454,25 @@ export async function POST(req: NextRequest) {
       const customerId = typeof charge.customer === 'string' ? charge.customer : charge.customer?.id
       if (!customerId) break
 
-      // If full refund, revoke Pro access immediately
+      // Partial refunds are intentionally a no-op. Support handles those manually
+      // via the Supabase dashboard (set profiles.pro_access=false + subscriptions.status='canceled').
+      // Rationale: our $39/$199 ticket size and lack of a pro-ration refund policy mean
+      // partial refunds are rare ops-triggered goodwill gestures, not a billing primitive.
+      // See docs/notes/stripe-paywall-audit.md (CODEX-6).
       if (charge.amount_refunded === charge.amount && charge.refunded) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('stripe_customer_id', customerId)
-          .single()
-        if (profile) {
-          await supabase
-            .from('profiles')
-            .update({ subscription_status: 'cancelled', pro_access: false })
-            .eq('id', profile.id)
+        const userId = await findUserIdForStripeObject(supabase, { customerId })
+        if (!userId) {
+          console.warn('[Stripe webhook] charge.refunded: no subscription row found for customer', customerId, 'event', event.id)
+          break
         }
+        await supabase
+          .from('profiles')
+          .update({ subscription_status: 'cancelled', pro_access: false, plan: 'free' })
+          .eq('id', userId)
+        await supabase
+          .from('subscriptions')
+          .update({ plan: 'free', status: 'canceled', updated_at: new Date().toISOString() })
+          .eq('user_id', userId)
       }
       break
     }
@@ -443,29 +493,189 @@ export async function POST(req: NextRequest) {
     case 'customer.subscription.paused': {
       const sub = event.data.object as Stripe.Subscription
       const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id
-      if (customerId) {
-        await supabase
-          .from('profiles')
-          .update({ subscription_status: 'paused', pro_access: false })
-          .eq('stripe_customer_id', customerId)
+      const userId = await findUserIdForStripeObject(supabase, {
+        metadata: sub.metadata,
+        subscriptionId: sub.id,
+        customerId,
+      })
+      if (!userId) {
+        console.warn('[Stripe webhook] customer.subscription.paused: no subscription row found for customer', customerId, 'subscription', sub.id, 'event', event.id)
+        break
       }
+      await supabase
+        .from('profiles')
+        .update({ subscription_status: 'paused', pro_access: false })
+        .eq('id', userId)
+      // NOTE: subscriptions.status CHECK constraint doesn't accept 'paused' — use 'past_due'
+      // as the closest valid value. The authoritative paused-state signal lives on
+      // profiles.subscription_status / pro_access (updated above).
+      await supabase
+        .from('subscriptions')
+        .update({ status: 'past_due', updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
       break
     }
 
     case 'customer.subscription.resumed': {
       const sub = event.data.object as Stripe.Subscription
       const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id
-      if (customerId) {
-        await supabase
-          .from('profiles')
-          .update({
-            subscription_status: 'active',
-            pro_access: true,
-            payment_failures: 0,
-            past_due_since: null,
-          })
-          .eq('stripe_customer_id', customerId)
+      const userId = await findUserIdForStripeObject(supabase, {
+        metadata: sub.metadata,
+        subscriptionId: sub.id,
+        customerId,
+      })
+      if (!userId) {
+        console.warn('[Stripe webhook] customer.subscription.resumed: no subscription row found for customer', customerId, 'subscription', sub.id, 'event', event.id)
+        break
       }
+      await supabase
+        .from('profiles')
+        .update({
+          subscription_status: 'active',
+          pro_access: true,
+          payment_failures: 0,
+          past_due_since: null,
+        })
+        .eq('id', userId)
+      await supabase
+        .from('subscriptions')
+        .update({ status: sub.status, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+      break
+    }
+
+    case 'customer.subscription.trial_will_end': {
+      const sub = event.data.object as Stripe.Subscription
+      const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id
+      const userId = await findUserIdForStripeObject(supabase, {
+        metadata: sub.metadata,
+        subscriptionId: sub.id,
+        customerId,
+      })
+      if (!userId) {
+        console.warn('[Stripe webhook] customer.subscription.trial_will_end: no subscription row found for customer', customerId, 'subscription', sub.id, 'event', event.id)
+        break
+      }
+      const item = subscriptionFirstItem(sub)
+      const interval = item?.plan?.interval ?? null
+      await sendTrialEndingEmail(supabase, {
+        dedupeKey: `${event.id}:trial_ending`,
+        userId,
+        planLabel: planLabelFromInterval(interval),
+        periodEnd: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
+        url: appReturnUrl(req),
+      })
+      break
+    }
+
+    case 'invoice.payment_action_required': {
+      const invoice = event.data.object as Stripe.Invoice
+      const customerId = invoiceCustomerId(invoice)
+      const subscriptionId = invoiceSubscriptionId(invoice)
+      const contact = await getInvoiceCustomerContact(stripe, invoice, customerId)
+      const userId = await findUserIdForStripeObject(supabase, {
+        subscriptionId,
+        customerId,
+      })
+
+      const { data: subscription } = userId
+        ? await supabase
+          .from('subscriptions')
+          .select('billing_interval')
+          .eq('user_id', userId)
+          .maybeSingle()
+        : { data: null }
+
+      await sendPaymentActionRequiredEmail(supabase, {
+        dedupeKey: `${event.id}:payment_action_required`,
+        userId,
+        to: contact.email,
+        name: contact.name,
+        planLabel: planLabelFromInterval(subscription?.billing_interval),
+        amount: invoice.amount_due,
+        currency: invoice.currency,
+        periodEnd: invoicePeriodEnd(invoice),
+        url: invoice.hosted_invoice_url ?? appReturnUrl(req),
+      })
+      break
+    }
+
+    case 'charge.dispute.funds_withdrawn': {
+      const dispute = event.data.object as Stripe.Dispute
+      const charge = typeof dispute.charge === 'string'
+        ? await stripe.charges.retrieve(dispute.charge)
+        : dispute.charge
+      const chargeId = charge?.id ?? null
+      const customerId = typeof charge?.customer === 'string' ? charge.customer : charge?.customer?.id ?? null
+      const userId = await findUserIdForStripeObject(supabase, { customerId })
+      if (!userId) {
+        console.warn('[Stripe webhook] charge.dispute.funds_withdrawn: no subscription row found for customer', customerId, 'dispute', dispute.id, 'event', event.id)
+        break
+      }
+      await supabase
+        .from('profiles')
+        .update({ pro_access: false, subscription_status: 'disputed' })
+        .eq('id', userId)
+      await supabase
+        .from('subscriptions')
+        .update({ status: 'past_due', updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+      console.warn('[Stripe webhook] dispute funds withdrawn — Pro access revoked', {
+        userId,
+        chargeId,
+        disputeId: dispute.id,
+        amount: dispute.amount,
+      })
+      break
+    }
+
+    case 'charge.dispute.funds_reinstated': {
+      const dispute = event.data.object as Stripe.Dispute
+      const charge = typeof dispute.charge === 'string'
+        ? await stripe.charges.retrieve(dispute.charge)
+        : dispute.charge
+      const customerId = typeof charge?.customer === 'string' ? charge.customer : charge?.customer?.id ?? null
+      const userId = await findUserIdForStripeObject(supabase, { customerId })
+      if (!userId) {
+        console.warn('[Stripe webhook] charge.dispute.funds_reinstated: no subscription row found for customer', customerId, 'dispute', dispute.id, 'event', event.id)
+        break
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('payment_failures, subscription_status')
+        .eq('id', userId)
+        .single()
+      const failures = profile?.payment_failures ?? 0
+      if (failures >= 3) {
+        console.info('[Stripe webhook] dispute funds reinstated — skipping restore due to active payment failures', {
+          userId,
+          disputeId: dispute.id,
+          failures,
+        })
+        break
+      }
+      await supabase
+        .from('profiles')
+        .update({ pro_access: true, subscription_status: 'active' })
+        .eq('id', userId)
+      await supabase
+        .from('subscriptions')
+        .update({ status: 'active', updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+      console.info('[Stripe webhook] dispute funds reinstated — Pro access restored', {
+        userId,
+        disputeId: dispute.id,
+      })
+      break
+    }
+
+    case 'charge.dispute.updated': {
+      const dispute = event.data.object as Stripe.Dispute
+      console.info('[Stripe webhook] dispute updated', {
+        disputeId: dispute.id,
+        status: dispute.status,
+        reason: dispute.reason,
+      })
       break
     }
 

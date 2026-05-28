@@ -5,6 +5,9 @@ export type EffectiveBillingPlan = 'free' | 'pro'
 export interface ProfileEntitlementRow {
   plan?: string | null
   role?: string | null
+  pro_access?: boolean | null
+  subscription_status?: string | null
+  payment_failures?: number | null
 }
 
 export interface SubscriptionEntitlementRow {
@@ -61,6 +64,20 @@ export function effectivePlanFromRows(
   now = new Date()
 ): EffectiveBillingPlan {
   if (profile?.role === 'admin') return 'pro'
+
+  // Dunning hard override: if profiles.pro_access === false AND status is a
+  // failure state AND we've hit the 3-failure threshold, revoke regardless of
+  // what the subscriptions row reports. This makes the dunning revoke path in
+  // invoice.payment_failed (webhook) authoritative.
+  if (
+    profile?.pro_access === false &&
+    profile?.subscription_status &&
+    ['past_due', 'unpaid', 'cancelled', 'canceled'].includes(profile.subscription_status) &&
+    (profile?.payment_failures ?? 0) >= 3
+  ) {
+    return 'free'
+  }
+
   if (subscription) return subscriptionEntitlesPro(subscription, now) ? 'pro' : 'free'
   return profile?.plan === 'pro' ? 'pro' : 'free'
 }
@@ -73,7 +90,7 @@ export async function getEffectiveUserPlan(
   const [profileResult, subscriptionResult] = await Promise.all([
     admin
       .from('profiles')
-      .select('plan, role')
+      .select('plan, role, pro_access, subscription_status, payment_failures')
       .eq('id', userId)
       .maybeSingle(),
     admin

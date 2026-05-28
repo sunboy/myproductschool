@@ -13,6 +13,7 @@ type TransactionalEmailKind =
   | 'challenge_completion'
   | 'payment_receipt'
   | 'payment_failed'
+  | 'payment_action_required'
   | 'trial_ending'
   | 'affiliate_payout'
   | 'cancellation_confirmed'
@@ -238,7 +239,15 @@ async function hasSentTransactionalEmail(admin: SupabaseClient, dedupeKey: strin
 async function sendTransactionalEmail(admin: SupabaseClient, payload: TransactionalEmailPayload) {
   const to = await resolveRecipient(admin, payload)
   const resend = getResendClient()
-  if (!to || !resend) return
+  if (!to || !resend) {
+    console.warn('[email] short-circuit', {
+      kind: payload.kind,
+      dedupeKey: payload.dedupeKey,
+      missing: !to && !resend ? 'recipient+resend' : !to ? 'recipient' : 'resend',
+      userId: payload.userId ?? null,
+    })
+    return
+  }
   if (await hasSentTransactionalEmail(admin, payload.dedupeKey)) return
 
   try {
@@ -255,7 +264,7 @@ async function sendTransactionalEmail(admin: SupabaseClient, payload: Transactio
       { idempotencyKey: payload.dedupeKey.slice(0, 256) }
     )
 
-    await admin.from('email_dedupes').upsert({
+    const { error: upsertError } = await admin.from('email_dedupes').upsert({
       dedupe_key: payload.dedupeKey,
       user_id: payload.userId ?? null,
       recipient: to,
@@ -265,8 +274,16 @@ async function sendTransactionalEmail(admin: SupabaseClient, payload: Transactio
       error: error ? JSON.stringify(error) : null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'dedupe_key' })
+    if (upsertError) {
+      console.error('[email] email_dedupes upsert failed (post-send)', {
+        kind: payload.kind,
+        dedupeKey: payload.dedupeKey,
+        error: upsertError.message,
+        code: (upsertError as { code?: string }).code,
+      })
+    }
   } catch (error) {
-    await admin.from('email_dedupes').upsert({
+    const { error: upsertError } = await admin.from('email_dedupes').upsert({
       dedupe_key: payload.dedupeKey,
       user_id: payload.userId ?? null,
       recipient: to,
@@ -275,6 +292,14 @@ async function sendTransactionalEmail(admin: SupabaseClient, payload: Transactio
       error: error instanceof Error ? error.message : 'Unknown Resend error',
       updated_at: new Date().toISOString(),
     }, { onConflict: 'dedupe_key' })
+    if (upsertError) {
+      console.error('[email] email_dedupes upsert failed (catch path)', {
+        kind: payload.kind,
+        dedupeKey: payload.dedupeKey,
+        error: upsertError.message,
+        code: (upsertError as { code?: string }).code,
+      })
+    }
   }
 }
 
@@ -400,6 +425,19 @@ export function sendPaymentFailedEmail(admin: SupabaseClient, input: PaymentEmai
     body: `Stripe could not collect payment for ${input.planLabel ?? 'HackProduct Pro'}. Update billing details to keep Pro access active.`,
     detail: amount ? `Amount due: ${amount}` : null,
     ctaLabel: 'Fix payment',
+    ctaUrl: input.url ?? appUrl('/settings'),
+  })
+}
+
+export function sendPaymentActionRequiredEmail(admin: SupabaseClient, input: PaymentEmailInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'payment_action_required',
+    subject: 'Action needed: authorize your HackProduct renewal',
+    eyebrow: 'Authorize renewal',
+    heading: 'One quick step to keep your Pro access.',
+    body: 'Your bank is asking you to authorize this renewal. Click below to complete it, takes 30 seconds.',
+    ctaLabel: 'Authorize renewal',
     ctaUrl: input.url ?? appUrl('/settings'),
   })
 }

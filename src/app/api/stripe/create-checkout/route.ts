@@ -84,20 +84,31 @@ export async function POST(req: NextRequest) {
     allow_promotion_codes: true,
   }
 
+  // Round to the nearest minute so client-side retries within the same minute
+  // (network blip, double-click) collapse to the same Stripe session.
+  const minuteBucket = Math.floor(Date.now() / 60_000)
+  const idempotencyKey = `checkout-${user.id}-${plan}-${embedded ? 'e' : 'h'}-${minuteBucket}`
+
   if (embedded) {
-    const session = await stripe.checkout.sessions.create({
-      ...baseSessionParams,
-      ui_mode: 'embedded',
-      return_url: `${appUrl}/dashboard?upgraded=1`,
-    })
+    const session = await stripe.checkout.sessions.create(
+      {
+        ...baseSessionParams,
+        ui_mode: 'embedded',
+        return_url: `${appUrl}/dashboard?upgraded=1`,
+      },
+      { idempotencyKey }
+    )
     return NextResponse.json({ clientSecret: session.client_secret, mode: stripeRuntime.mode })
   }
 
-  const session = await stripe.checkout.sessions.create({
-    ...baseSessionParams,
-    success_url: `${appUrl}/dashboard?upgraded=1`,
-    cancel_url: `${appUrl}/dashboard`,
-  })
+  const session = await stripe.checkout.sessions.create(
+    {
+      ...baseSessionParams,
+      success_url: `${appUrl}/dashboard?upgraded=1`,
+      cancel_url: `${appUrl}/dashboard`,
+    },
+    { idempotencyKey }
+  )
 
   return NextResponse.json({ url: session.url, mode: stripeRuntime.mode })
 }

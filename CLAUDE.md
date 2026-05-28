@@ -24,6 +24,26 @@ npx shadcn@latest add <component>  # Add shadcn/ui components
 
 For every UI change made, use a haiku subagent to run a Playwright test for the change before asking the user to check that it works. The haiku agent should navigate to the affected page, take a screenshot, and report what renders. After Playwright finishes, always close the Chrome browser using `mcp__playwright__browser_close`.
 
+## Stripe / paywall
+
+The Stripe + paywall integration was audited and hardened on 2026-05-27. The full audit, including bug fixes shipped, known gaps, and production-readiness verdict, lives at [`docs/notes/stripe-paywall-audit.md`](./docs/notes/stripe-paywall-audit.md).
+
+To go from `STRIPE_MODE=test` to live, follow the runbook at [`docs/runbooks/stripe-live-launch.md`](./docs/runbooks/stripe-live-launch.md) (11 steps, ~30-60 min of manual Stripe Dashboard work + env-var rotation).
+
+To verify a prod Stripe configuration is correctly wired (live keys, prices, webhook endpoint, event coverage, affiliate coupon, Resend), run:
+
+```bash
+# Against current env (.env.local by default):
+npx tsx scripts/audit/verify-prod-stripe-config.ts
+
+# Against a separate env file (e.g. a downloaded prod env snapshot):
+ENV_PATH=.env.production.local npx tsx scripts/audit/verify-prod-stripe-config.ts
+```
+
+The script exits 0 on green, 1 on red. It validates 13 checks across env shape and live Stripe API state. Use after completing the runbook steps and before announcing launch.
+
+For test-mode hygiene (CI / dev), run `scripts/audit/audit-stripe-config.ts` — same idea but enforces sk_test_ shape.
+
 ## Reference Archive
 
 - **Stitch v2 project**: https://stitch.withgoogle.com/projects/12072135267645366200 — **canonical design reference** for all screens. This supersedes the old `material-*.html` files.
