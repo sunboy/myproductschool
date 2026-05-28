@@ -82,6 +82,8 @@ interface Props {
   onOpenMobileSheet: () => void
   listView: boolean
   onToggleView: () => void
+  /** Grid/list toggle only affects the cross-discipline 'all' view; hidden elsewhere (grouped list is list-only). */
+  showViewToggle?: boolean
 }
 
 function MultiSelectDropdown({
@@ -142,7 +144,7 @@ function MultiSelectDropdown({
   )
 }
 
-export function FilterDropdownBar({ discipline, filters, onChange, resultCount, onOpenMobileSheet, listView, onToggleView }: Props) {
+export function FilterDropdownBar({ discipline, filters, onChange, resultCount, onOpenMobileSheet, listView, onToggleView, showViewToggle = true }: Props) {
   const visibleDropdowns = DROPDOWNS.filter(
     (d) => d.disciplines.length === 0 || d.disciplines.includes(discipline)
   )
@@ -229,33 +231,36 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           {resultCount} result{resultCount !== 1 ? 's' : ''}
         </span>
 
-        {/* View toggle — segmented control */}
-        <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
-          <button
-            type="button"
-            onClick={() => listView && onToggleView()}
-            className={[
-              'px-2 py-1.5 flex items-center transition-colors',
-              !listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
-            ].join(' ')}
-            title="Grid view: visual cards for browsing"
-            aria-label="Grid view"
-          >
-            <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => !listView && onToggleView()}
-            className={[
-              'px-2 py-1.5 flex items-center transition-colors',
-              listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
-            ].join(' ')}
-            title="List view: dense scan mode"
-            aria-label="List view"
-          >
-            <span className="material-symbols-outlined text-sm leading-none">view_list</span>
-          </button>
-        </div>
+        {/* View toggle — segmented control. Only meaningful on the 'all' view;
+            single-discipline views render a list-only grouped layout. */}
+        {showViewToggle && (
+          <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
+            <button
+              type="button"
+              onClick={() => listView && onToggleView()}
+              className={[
+                'px-2 py-1.5 flex items-center transition-colors',
+                !listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+              ].join(' ')}
+              title="Grid view: visual cards for browsing"
+              aria-label="Grid view"
+            >
+              <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => !listView && onToggleView()}
+              className={[
+                'px-2 py-1.5 flex items-center transition-colors',
+                listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+              ].join(' ')}
+              title="List view: dense scan mode"
+              aria-label="List view"
+            >
+              <span className="material-symbols-outlined text-sm leading-none">view_list</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Mobile filter bar */}
@@ -280,32 +285,34 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           )}
         </button>
         <div className="min-w-0 flex-1" />
-        <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
-          <button
-            type="button"
-            onClick={() => listView && onToggleView()}
-            className={[
-              'px-2 py-1.5 flex items-center transition-colors',
-              !listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
-            ].join(' ')}
-            title="Grid view"
-            aria-label="Grid view"
-          >
-            <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => !listView && onToggleView()}
-            className={[
-              'px-2 py-1.5 flex items-center transition-colors',
-              listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
-            ].join(' ')}
-            title="List view"
-            aria-label="List view"
-          >
-            <span className="material-symbols-outlined text-sm leading-none">view_list</span>
-          </button>
-        </div>
+        {showViewToggle && (
+          <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
+            <button
+              type="button"
+              onClick={() => listView && onToggleView()}
+              className={[
+                'px-2 py-1.5 flex items-center transition-colors',
+                !listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+              ].join(' ')}
+              title="Grid view"
+              aria-label="Grid view"
+            >
+              <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => !listView && onToggleView()}
+              className={[
+                'px-2 py-1.5 flex items-center transition-colors',
+                listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+              ].join(' ')}
+              title="List view"
+              aria-label="List view"
+            >
+              <span className="material-symbols-outlined text-sm leading-none">view_list</span>
+            </button>
+          </div>
+        )}
         <span className="shrink-0 font-label text-xs text-on-surface-variant tabular-nums">{resultCount}</span>
       </div>
     </>

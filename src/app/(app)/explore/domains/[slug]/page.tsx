@@ -309,6 +309,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
             challenges={annotated}
             groupBy="primaryTopic"
             topicLabels={topicLabels}
+            enforceLimit={false}
           />
         </div>
 

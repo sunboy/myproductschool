@@ -3,6 +3,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useIsAtLimit } from '@/context/UsageContext'
+import { appendReturnTo } from '@/lib/navigation/return-to'
 import { coerceDifficulty, DIFFICULTY_PILL_CLASSES } from '@/lib/practice/difficulty'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 import type { ChallengeWithDomain } from '@/lib/types'
@@ -12,6 +14,10 @@ interface Props {
   groupBy: 'primaryTopic' | 'none'
   /** Record<topicSlug, topicTitle> — passed in from server; not fetched here. */
   topicLabels: Record<string, string>
+  /** When set, appended to each challenge href as ?returnTo= so the workspace back button returns here. */
+  returnHref?: string
+  /** Apply the challenges usage paywall (lock rows at limit). Default true; domain browse pages pass false. */
+  enforceLimit?: boolean
 }
 
 const DIFFICULTY_ORDER = ['easy', 'medium', 'hard'] as const
@@ -32,19 +38,17 @@ function sortChallenges(list: ChallengeWithDomain[]): ChallengeWithDomain[] {
   })
 }
 
-function ChallengeRow({ challenge }: { challenge: ChallengeWithDomain }) {
+function ChallengeRow({ challenge, locked = false, returnHref }: { challenge: ChallengeWithDomain; locked?: boolean; returnHref?: string }) {
   const difficulty = coerceDifficulty(challenge.difficulty)
   const pillClass = difficulty ? DIFFICULTY_PILL_CLASSES[difficulty] : 'bg-surface-container text-on-surface-variant'
   const topicLabel = challenge.topic_tags?.[0] ? getTopicLabelAny(challenge.topic_tags[0]) : undefined
   const techLabel = challenge.technique_tags?.[0] ? getTechniqueLabelAny(challenge.technique_tags[0]) : undefined
   const isReal = challenge.is_real_interview && (challenge.company_tags ?? []).length > 0
-  const href = `/workspace/challenges/${challenge.slug ?? challenge.id}`
+  const href = appendReturnTo(`/workspace/challenges/${challenge.slug ?? challenge.id}`, returnHref)
 
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 px-4 py-3 hover:bg-surface-container group transition-colors"
-    >
+  const rowClass = 'flex items-center gap-3 px-4 py-3 group transition-colors'
+  const inner = (
+    <>
       {/* Completion state */}
       <span
         className={`material-symbols-outlined text-[20px] shrink-0 ${
@@ -117,10 +121,28 @@ function ChallengeRow({ challenge }: { challenge: ChallengeWithDomain }) {
             {challenge.is_in_progress ? 'Resume' : 'Start'}
           </span>
         )}
-        <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">
-          arrow_forward
-        </span>
+        {locked ? (
+          <span className="material-symbols-outlined text-on-surface-variant text-sm">lock</span>
+        ) : (
+          <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">
+            arrow_forward
+          </span>
+        )}
       </div>
+    </>
+  )
+
+  if (locked) {
+    return (
+      <div className={`${rowClass} opacity-70 cursor-not-allowed select-none`} aria-disabled>
+        {inner}
+      </div>
+    )
+  }
+
+  return (
+    <Link href={href} className={`${rowClass} hover:bg-surface-container`}>
+      {inner}
     </Link>
   )
 }
@@ -129,9 +151,11 @@ interface TopicSectionProps {
   title: string
   challenges: ChallengeWithDomain[]
   defaultExpanded?: boolean
+  locked?: boolean
+  returnHref?: string
 }
 
-function TopicSection({ title, challenges, defaultExpanded = true }: TopicSectionProps) {
+function TopicSection({ title, challenges, defaultExpanded = true, locked = false, returnHref }: TopicSectionProps) {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const completedCount = challenges.filter(c => c.is_completed).length
   const sorted = sortChallenges(challenges)
@@ -172,7 +196,7 @@ function TopicSection({ title, challenges, defaultExpanded = true }: TopicSectio
       {expanded && (
         <div className="bg-surface divide-y divide-outline-variant/10">
           {sorted.map(c => (
-            <ChallengeRow key={c.id} challenge={c} />
+            <ChallengeRow key={c.id} challenge={c} locked={locked} returnHref={returnHref} />
           ))}
         </div>
       )}
@@ -180,7 +204,10 @@ function TopicSection({ title, challenges, defaultExpanded = true }: TopicSectio
   )
 }
 
-export function GroupedChallengeList({ challenges, groupBy, topicLabels }: Props) {
+export function GroupedChallengeList({ challenges, groupBy, topicLabels, returnHref, enforceLimit = true }: Props) {
+  const atLimit = useIsAtLimit('challenges')
+  const locked = enforceLimit && atLimit
+
   if (challenges.length === 0) {
     return (
       <div className="text-center py-12 text-on-surface-variant font-label text-sm">
@@ -195,7 +222,7 @@ export function GroupedChallengeList({ challenges, groupBy, topicLabels }: Props
     return (
       <div className="border border-outline-variant rounded-xl overflow-hidden bg-surface divide-y divide-outline-variant/10">
         {sorted.map(c => (
-          <ChallengeRow key={c.id} challenge={c} />
+          <ChallengeRow key={c.id} challenge={c} locked={locked} returnHref={returnHref} />
         ))}
       </div>
     )
@@ -235,6 +262,8 @@ export function GroupedChallengeList({ challenges, groupBy, topicLabels }: Props
             title={label}
             challenges={items}
             defaultExpanded={idx === 0}
+            locked={locked}
+            returnHref={returnHref}
           />
         )
       })}
@@ -244,6 +273,8 @@ export function GroupedChallengeList({ challenges, groupBy, topicLabels }: Props
           title="Other"
           challenges={ungrouped}
           defaultExpanded={topicEntries.length === 0}
+          locked={locked}
+          returnHref={returnHref}
         />
       )}
     </div>

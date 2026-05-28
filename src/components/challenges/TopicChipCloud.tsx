@@ -23,18 +23,26 @@ interface Props {
   discipline: Discipline
   filters: FilterState
   onChange: (filters: FilterState) => void
+  /** Live counts per topic slug, computed from the discipline-scoped challenge set. */
+  topicCounts: Record<string, number>
+  /** Live counts per technique slug. */
+  techniqueCounts: Record<string, number>
 }
 
 type ChipTab = 'topics' | 'techniques'
 
-export function TopicChipCloud({ discipline, filters, onChange }: Props) {
+export function TopicChipCloud({ discipline, filters, onChange, topicCounts, techniqueCounts }: Props) {
   const [activeTab, setActiveTab] = useState<ChipTab>('topics')
 
   const taxonomyDiscipline = UI_TO_TAXONOMY[discipline]
   if (!taxonomyDiscipline) return null // 'all' — nothing to show
 
-  const topics = getTopicsForDiscipline(taxonomyDiscipline)
-  const techniques = getTechniquesForDiscipline(taxonomyDiscipline)
+  // Only surface chips that actually have challenges behind them for this
+  // discipline. A static slug with 0 live challenges (e.g. SQL 'indexes') is a
+  // dead chip — hide it. Counts come from the loaded challenge set, not the
+  // `topics` table (whose counts are stale/zero for several disciplines).
+  const topics = getTopicsForDiscipline(taxonomyDiscipline).filter((t) => (topicCounts[t.slug] ?? 0) > 0)
+  const techniques = getTechniquesForDiscipline(taxonomyDiscipline).filter((t) => (techniqueCounts[t.slug] ?? 0) > 0)
 
   // Don't render if there's nothing to show
   if (topics.length === 0 && techniques.length === 0) return null
@@ -104,32 +112,41 @@ export function TopicChipCloud({ discipline, filters, onChange }: Props) {
 
       {/* Chip cloud */}
       <div className="flex flex-wrap gap-1.5">
-        {(showTabs ? (activeTab === 'topics' ? topics : techniques) : topics).map((entry) => {
-          const isSelected = activeTab === 'topics' || !showTabs
-            ? activeTopics.includes(entry.slug)
-            : activeTechniques.includes(entry.slug)
+        {(() => {
+          // If the techniques tab is active but empty, fall back to topics.
+          const onTechniques = showTabs && activeTab === 'techniques' && techniques.length > 0
+          const entries = onTechniques ? techniques : topics
+          const counts = onTechniques ? techniqueCounts : topicCounts
+          return entries.map((entry) => {
+            const isSelected = onTechniques
+              ? activeTechniques.includes(entry.slug)
+              : activeTopics.includes(entry.slug)
 
-          const handleClick = activeTab === 'topics' || !showTabs
-            ? () => toggleTopic(entry.slug)
-            : () => toggleTechnique(entry.slug)
+            const handleClick = onTechniques
+              ? () => toggleTechnique(entry.slug)
+              : () => toggleTopic(entry.slug)
 
-          return (
-            <button
-              key={entry.slug}
-              type="button"
-              onClick={handleClick}
-              title={'description' in entry ? (entry as { description?: string }).description : undefined}
-              className={[
-                'rounded-full px-2.5 py-1 font-label text-[11px] transition-colors whitespace-nowrap',
-                isSelected
-                  ? 'bg-primary text-on-primary font-semibold'
-                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface border border-outline-variant/50',
-              ].join(' ')}
-            >
-              {entry.label}
-            </button>
-          )
-        })}
+            return (
+              <button
+                key={entry.slug}
+                type="button"
+                onClick={handleClick}
+                title={'description' in entry ? (entry as { description?: string }).description : undefined}
+                className={[
+                  'rounded-full px-2.5 py-1 font-label text-[11px] transition-colors whitespace-nowrap inline-flex items-center gap-1.5',
+                  isSelected
+                    ? 'bg-primary text-on-primary font-semibold'
+                    : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface border border-outline-variant/50',
+                ].join(' ')}
+              >
+                {entry.label}
+                <span className={isSelected ? 'text-on-primary/70' : 'text-on-surface-variant/60'}>
+                  {counts[entry.slug] ?? 0}
+                </span>
+              </button>
+            )
+          })
+        })()}
       </div>
     </div>
   )

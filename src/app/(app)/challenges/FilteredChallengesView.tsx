@@ -9,6 +9,8 @@ import { FilterBottomSheet } from '@/components/challenges/FilterBottomSheet'
 import { MotionList } from '@/components/motion'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { TopicChipCloud } from '@/components/challenges/TopicChipCloud'
+import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
+import { getTopicLabelAny } from '@/lib/data/taxonomy'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { coerceDifficulty, expandDifficultyForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
@@ -313,6 +315,32 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
     return counts
   }, [challenges, filters])
 
+  // Live chip counts: tally topic/technique tags over the discipline-scoped set
+  // (NOT the secondary-filtered set, so counts stay stable as the user toggles
+  // chips). Drives which chips render and their count badges.
+  const chipCounts = useMemo(() => {
+    const topics: Record<string, number> = {}
+    const techniques: Record<string, number> = {}
+    for (const c of challenges) {
+      if (!matchesDiscipline(c, discipline)) continue
+      for (const slug of c.topic_tags ?? []) topics[slug] = (topics[slug] ?? 0) + 1
+      for (const slug of c.technique_tags ?? []) techniques[slug] = (techniques[slug] ?? 0) + 1
+    }
+    return { topics, techniques }
+  }, [challenges, discipline])
+
+  // Resolve display labels for every topic slug present in the discipline set,
+  // so GroupedChallengeList can render real section headers (e.g. "Window Functions").
+  const topicLabels = useMemo(() => {
+    const labels: Record<string, string> = {}
+    for (const c of filteredChallenges) {
+      for (const slug of c.topic_tags ?? []) {
+        if (!labels[slug]) labels[slug] = getTopicLabelAny(slug) ?? slug
+      }
+    }
+    return labels
+  }, [filteredChallenges])
+
   function handleRemoveFilter(key: keyof FilterState, value: string) {
     if (key === 'real_interview') {
       handleFilterChange({ ...filters, real_interview: false })
@@ -407,6 +435,8 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         discipline={discipline}
         filters={filters}
         onChange={handleFilterChange}
+        topicCounts={chipCounts.topics}
+        techniqueCounts={chipCounts.techniques}
       />
 
       {/* Secondary filter bar */}
@@ -418,6 +448,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         onOpenMobileSheet={() => setMobileSheetOpen(true)}
         listView={listView}
         onToggleView={handleToggleView}
+        showViewToggle={discipline === 'all'}
       />
 
       {/* Active filter pills */}
@@ -524,17 +555,12 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
             })}
           </div>
         ) : (
-          <MotionList
-            layoutKey={`practice-${discipline}`}
-            className={resultsLayoutClass}
-          >
-            <LockedChallengeGrid
-              challenges={filteredChallenges}
-              paradigms={paradigms}
-              listView={listView}
-              returnHref={returnHref}
-            />
-          </MotionList>
+          <GroupedChallengeList
+            challenges={filteredChallenges}
+            groupBy={filters.topic.length > 0 ? 'none' : 'primaryTopic'}
+            topicLabels={topicLabels}
+            returnHref={returnHref}
+          />
         )}
       </div>
     </div>
