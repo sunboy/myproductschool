@@ -79,3 +79,10 @@ supabase/.temp/
 v2 plannin.md
 .worktrees/
 .agents/
+
+# playwright test artifacts
+/test-results/
+/playwright-report/
+
+# bmad agent framework scaffolding
+/_bmad/
