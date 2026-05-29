@@ -782,14 +782,31 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const canvasExportRef = useRef<(() => Promise<Blob | null>) | null>(null)
   const libraryItemsRef = useRef<Array<{ id: string; name?: string; elements: unknown[] }>>([])
 
-  const handleCanvasActions = useCallback((response: { message: string; actions: unknown[] }) => {
+  const handleCanvasActions = useCallback(async (response: { message: string; actions: unknown[] }) => {
     if (!excalidrawApiRef.current) return
-    void executeActions(
-      response.actions as CanvasAction[],
-      excalidrawApiRef.current,
-      libraryItemsRef.current,
-      apiChallengeType ?? undefined
-    )
+    const actions = Array.isArray(response.actions) ? response.actions : []
+    if (actions.length === 0) return
+    try {
+      const result = await executeActions(
+        actions as CanvasAction[],
+        excalidrawApiRef.current,
+        libraryItemsRef.current,
+        apiChallengeType ?? undefined
+      )
+      if (!result.ok || result.failed > 0) {
+        setCanvasDrawFailure({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          text: "I couldn't finish that diagram cleanly. Want me to try again, or break it into smaller pieces?",
+        })
+      }
+    } catch {
+      // executeActions is internally hardened and shouldn't throw, but never
+      // let a canvas draw take down the workspace.
+      setCanvasDrawFailure({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        text: "I couldn't finish that diagram cleanly. Want me to try again, or break it into smaller pieces?",
+      })
+    }
   }, [apiChallengeType])
 
   const queueHatchPrompt = useCallback((text: string, autoSend = true) => {
@@ -832,6 +849,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Proactive nudge state
   const [proactiveNudge, setProactiveNudge] = useState<{ id: string; text: string } | null>(null)
   const lastNudgeAtRef = useRef<number>(0)
+
+  // Surfaces a graceful Hatch chat message when a canvas draw could not be
+  // fully applied (instead of crashing to the error boundary).
+  const [canvasDrawFailure, setCanvasDrawFailure] = useState<{ id: string; text: string } | null>(null)
   const nudgeCountRef = useRef<number>(0)
   const pendingDeltaRef = useRef<number>(0)
   const nudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -3381,6 +3402,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 onCanvasActions={handleCanvasActions}
                 proactiveNudge={proactiveNudge}
                 onDismissNudge={() => setProactiveNudge(null)}
+                canvasDrawFailure={canvasDrawFailure}
               />
             </div>
           )}

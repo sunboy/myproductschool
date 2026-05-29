@@ -42,10 +42,150 @@ export interface LayoutResult {
 export const LAYOUT = {
   START_X: 80,
   START_Y: 80,
-  COL_GAP: 120,
+  // Horizontal gutter between boxes in a row. Wide enough to fit a routed
+  // connector plus its cardinality label without crossing into a neighbour.
+  COL_GAP: 160,
+  // Minimum vertical gap between wrapped rows.
   ROW_GAP: 80,
+  // Larger vertical gap when a component has edges that cross rows, so an
+  // elbow connector has room to travel through the gutter band.
+  ROW_GAP_CONNECTED: 120,
   MAX_PER_ROW: 4,
 } as const;
+
+// ─── Connector anchoring + orthogonal routing ─────────────────────────────────
+
+export type AnchorSide = 'right' | 'left' | 'top' | 'bottom';
+
+export interface AnchorRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface AnchorPoint {
+  x: number;
+  y: number;
+  side: AnchorSide;
+}
+
+export interface ChosenAnchors {
+  start: AnchorPoint;
+  end: AnchorPoint;
+}
+
+function centerX(r: AnchorRect): number {
+  return r.x + r.width / 2;
+}
+function centerY(r: AnchorRect): number {
+  return r.y + r.height / 2;
+}
+
+/**
+ * Pick the facing sides for a connector between two rectangles based on their
+ * relative position. Horizontal dominance → right/left (facing). Vertical
+ * dominance → bottom/top (facing). This replaces the old hardcoded
+ * "always right-edge of source → left-edge of target" which drew diagonal
+ * lines straight through other boxes whenever the target was left of, above,
+ * or below the source.
+ *
+ * Deterministic: depends only on the two rects, never on time/random.
+ */
+export function chooseAnchors(from: AnchorRect, to: AnchorRect): ChosenAnchors {
+  const dx = centerX(to) - centerX(from);
+  const dy = centerY(to) - centerY(from);
+
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    // Horizontal dominant
+    if (dx >= 0) {
+      return {
+        start: { x: from.x + from.width, y: centerY(from), side: 'right' },
+        end: { x: to.x, y: centerY(to), side: 'left' },
+      };
+    }
+    return {
+      start: { x: from.x, y: centerY(from), side: 'left' },
+      end: { x: to.x + to.width, y: centerY(to), side: 'right' },
+    };
+  }
+  // Vertical dominant
+  if (dy >= 0) {
+    return {
+      start: { x: centerX(from), y: from.y + from.height, side: 'bottom' },
+      end: { x: centerX(to), y: to.y, side: 'top' },
+    };
+  }
+  return {
+    start: { x: centerX(from), y: from.y, side: 'top' },
+    end: { x: centerX(to), y: to.y + to.height, side: 'bottom' },
+  };
+}
+
+/**
+ * Build an orthogonal (elbow) point list between two anchor points, returned
+ * in Excalidraw-relative coordinates (first point is always [0, 0]; remaining
+ * points are offsets from the start anchor). The elbow turns at the midpoint of
+ * the dominant axis so the connector travels through the gutter band rather
+ * than slicing diagonally across the canvas.
+ *
+ * Deterministic: depends only on the two anchors.
+ */
+export function routeOrthogonal(start: AnchorPoint, end: AnchorPoint): Array<[number, number]> {
+  const dxAbs = end.x - start.x;
+  const dyAbs = end.y - start.y;
+
+  // Same point (degenerate) → straight zero-length segment.
+  if (dxAbs === 0 && dyAbs === 0) return [[0, 0], [0, 0]];
+
+  const horizontalExit = start.side === 'left' || start.side === 'right';
+
+  if (horizontalExit) {
+    // Exit horizontally, turn vertically at the x-midpoint, finish horizontally.
+    const midX = dxAbs / 2;
+    if (dyAbs === 0) return [[0, 0], [dxAbs, 0]];
+    return [
+      [0, 0],
+      [midX, 0],
+      [midX, dyAbs],
+      [dxAbs, dyAbs],
+    ];
+  }
+
+  // Exit vertically, turn horizontally at the y-midpoint, finish vertically.
+  const midY = dyAbs / 2;
+  if (dxAbs === 0) return [[0, 0], [0, dyAbs]];
+  return [
+    [0, 0],
+    [0, midY],
+    [dxAbs, midY],
+    [dxAbs, dyAbs],
+  ];
+}
+
+/** Bounding box of an Excalidraw-relative point list, offset by the start anchor. */
+export function pointsBounds(
+  startX: number,
+  startY: number,
+  points: Array<[number, number]>
+): { x: number; y: number; width: number; height: number } {
+  let minX = 0;
+  let minY = 0;
+  let maxX = 0;
+  let maxY = 0;
+  for (const [px, py] of points) {
+    if (px < minX) minX = px;
+    if (py < minY) minY = py;
+    if (px > maxX) maxX = px;
+    if (py > maxY) maxY = py;
+  }
+  return {
+    x: startX + minX,
+    y: startY + minY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
+}
 
 // ─── Union-Find (path-compressed) ────────────────────────────────────────────
 
@@ -105,6 +245,12 @@ function placeGroup(
   let rowY = cursorY;
   let maxHeightInRow = 0;
 
+  // A component that wraps across rows needs a taller inter-row band so an
+  // elbow connector returning to an earlier/later row has room to travel
+  // without overlapping the boxes in between.
+  const wraps = boxes.length > LAYOUT.MAX_PER_ROW;
+  const rowGap = wraps ? LAYOUT.ROW_GAP_CONNECTED : LAYOUT.ROW_GAP;
+
   for (const box of boxes) {
     positions.set(box.id, { x: rowX, y: rowY });
 
@@ -114,7 +260,7 @@ function placeGroup(
 
     if (col >= LAYOUT.MAX_PER_ROW) {
       // Wrap to next row
-      rowY += maxHeightInRow + LAYOUT.ROW_GAP;
+      rowY += maxHeightInRow + rowGap;
       rowX = cursorX;
       col = 0;
       maxHeightInRow = 0;
@@ -125,7 +271,7 @@ function placeGroup(
   const nextY =
     col === 0
       ? rowY // already advanced by the wrap above
-      : rowY + maxHeightInRow + LAYOUT.ROW_GAP;
+      : rowY + maxHeightInRow + rowGap;
 
   return { nextY };
 }

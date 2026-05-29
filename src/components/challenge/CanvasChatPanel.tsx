@@ -35,11 +35,14 @@ interface CanvasChatPanelProps {
   queuedPrompt?: { id: string; text: string; autoSend?: boolean } | null
   isOpen: boolean
   onToggle: () => void
-  onCanvasActions?: (response: { message: string; actions: unknown[] }) => void
+  onCanvasActions?: (response: { message: string; actions: unknown[] }) => void | Promise<void>
   feedbackMode?: boolean
   grade?: InterviewGrade | null
   proactiveNudge?: { id: string; text: string } | null
   onDismissNudge?: () => void
+  // Set by the workspace when a canvas draw could not be fully applied, so
+  // Hatch can offer a graceful retry instead of leaving the user confused.
+  canvasDrawFailure?: { id: string; text: string } | null
   // Coding-mode context fields (only used when challengeType === 'coding')
   currentCode?: string
   currentLanguage?: string
@@ -110,6 +113,7 @@ export function CanvasChatPanel({
   grade = null,
   proactiveNudge = null,
   onDismissNudge,
+  canvasDrawFailure = null,
   currentCode,
   currentLanguage,
   lastRunResult,
@@ -331,6 +335,19 @@ export function CanvasChatPanel({
       { role: 'hatch', content: proactiveNudge.text, kind: 'nudge' },
     ])
   }, [proactiveNudge, play])
+
+  // Canvas draw failure: surface a graceful retry message in the chat thread.
+  const lastDrawFailureIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!canvasDrawFailure) return
+    if (canvasDrawFailure.id === lastDrawFailureIdRef.current) return
+    lastDrawFailureIdRef.current = canvasDrawFailure.id
+    play('error')
+    setMessages((prev) => [
+      ...prev,
+      { role: 'hatch', content: canvasDrawFailure.text, kind: 'chat' },
+    ])
+  }, [canvasDrawFailure, play])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

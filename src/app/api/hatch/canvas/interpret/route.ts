@@ -368,7 +368,10 @@ async function callClaude(
 ): Promise<CanvasInterpretResponse> {
   const response = await guardedCachedMessage(systemPrompt, userContent, {
     model: 'claude-sonnet-4-6',
-    max_tokens: 2000,
+    // 2000 was enough to truncate multi-entity data models mid-JSON, which
+    // produced malformed actions that the client then choked on. 4096 gives a
+    // full ERD / system diagram room to serialize.
+    max_tokens: 4096,
     budget,
   })
   const raw = response.sanitized.trim()

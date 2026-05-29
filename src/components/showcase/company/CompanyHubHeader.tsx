@@ -7,7 +7,26 @@ interface CompanyHubHeaderProps {
   storyCount: number;
 }
 
+// Placeholder copy that leaked from the draft-generation pipeline. When the
+// thesis/dek match these, fall back to a clean neutral line instead of showing
+// internal boilerplate to users.
+const PLACEHOLDER_PATTERNS = [
+  /reusable decisions worth studying/i,
+  /from the HackProduct draft library/i,
+];
+
+function isPlaceholder(text: string | undefined | null): boolean {
+  if (!text) return true;
+  return PLACEHOLDER_PATTERNS.some((re) => re.test(text));
+}
+
 export function CompanyHubHeader({ company, storyCount }: CompanyHubHeaderProps) {
+  const headline = !isPlaceholder(company.thesis)
+    ? company.thesis
+    : !isPlaceholder(company.dek)
+      ? company.dek
+      : `Product decisions worth studying, taken apart one story at a time.`;
+
   return (
     <header className="sc-company-header" style={{ '--company-accent': company.accent } as CSSProperties}>
       <div className="sc-hero-ink-dotgrid" />
@@ -22,18 +41,11 @@ export function CompanyHubHeader({ company, storyCount }: CompanyHubHeaderProps)
           Showcase · Company · {storyCount} {storyCount === 1 ? 'story' : 'stories'}
         </div>
         <h1>{company.name}.</h1>
-        <p>{company.thesis || company.dek}</p>
+        <p>{headline}</p>
         <div className="sc-company-timeline">
-          {company.timeline.slice(0, 6).map((event, index) => (
-            <span key={`${event.date}-${event.label}`} className="sc-company-timeline__item">
-              {index > 0 && <i aria-hidden="true" />}
-              <span className="sc-chip sc-chip--ink">{event.date} · {event.label}</span>
-            </span>
-          ))}
           <span className="sc-company-timeline__item">
-            <i aria-hidden="true" />
             <span className="sc-chip sc-chip--ink sc-company-timeline__count">
-              {storyCount} autopsies
+              {storyCount} {storyCount === 1 ? 'autopsy' : 'autopsies'}
             </span>
           </span>
         </div>

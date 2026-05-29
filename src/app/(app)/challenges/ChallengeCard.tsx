@@ -236,11 +236,6 @@ export function ChallengeCard({
               {title}
             </p>
           </Link>
-          {promptText && (
-            <p className="text-[11px] text-on-surface-variant font-body font-semibold truncate mt-0.5">
-              {promptText}
-            </p>
-          )}
         </div>
 
         {/* Paradigm badge */}
