@@ -263,6 +263,14 @@ export default function ModulesPage() {
   const inProgress = modules.filter(m => m.completed_chapters > 0 && m.progress_percentage < 100)
   const firstInProgress = inProgress[0]
 
+  // Hero stats — derived from real module data only (no fabricated numbers).
+  const totalChapters = modules.reduce((sum, m) => sum + (m.chapter_count ?? 0), 0)
+  const levelCount = new Set(modules.map(m => m.difficulty).filter(Boolean)).size
+  const heroStats: { label: string; value: string }[] = []
+  if (modules.length > 0) heroStats.push({ label: 'Guides', value: String(modules.length) })
+  if (levelCount > 0) heroStats.push({ label: 'Levels', value: String(levelCount) })
+  if (totalChapters > 0) heroStats.push({ label: 'Chapters', value: String(totalChapters) })
+
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 24px 48px' }}>
 
@@ -349,34 +357,32 @@ export default function ModulesPage() {
             </div>
           </div>
 
-          {/* Right — stat pills */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-            {[
-              { label: 'Guides', value: String(modules.length || 12) },
-              { label: 'Levels', value: '5' },
-              { label: 'Avg. read', value: '~18 min' },
-            ].map(stat => (
-              <div key={stat.label} style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                borderRadius: 14, padding: '10px 16px', minWidth: 90, textAlign: 'center',
-              }}>
-                <div style={{
-                  fontFamily: 'var(--font-label)',
-                  fontSize: 9.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-                  color: 'rgba(243,237,224,0.45)', marginBottom: 3,
+          {/* Right — stat pills (real, derived numbers; uniform width for alignment) */}
+          {heroStats.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+              {heroStats.map(stat => (
+                <div key={stat.label} style={{
+                  background: 'rgba(255,255,255,0.07)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  borderRadius: 14, padding: '10px 16px', width: 116, textAlign: 'center',
                 }}>
-                  {stat.label}
+                  <div style={{
+                    fontFamily: 'var(--font-label)',
+                    fontSize: 9.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+                    color: 'rgba(243,237,224,0.45)', marginBottom: 3,
+                  }}>
+                    {stat.label}
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--font-headline)',
+                    fontSize: 18, fontWeight: 600, color: '#f3ede0',
+                  }}>
+                    {stat.value}
+                  </div>
                 </div>
-                <div style={{
-                  fontFamily: 'var(--font-headline)',
-                  fontSize: 18, fontWeight: 600, color: '#f3ede0',
-                }}>
-                  {stat.value}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

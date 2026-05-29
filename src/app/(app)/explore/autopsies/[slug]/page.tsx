@@ -7,6 +7,7 @@ import { getShowcaseProduct } from '@/lib/data/showcase';
 import { CompanyHubHeader } from '@/components/showcase/company/CompanyHubHeader';
 import { CompanyStoryRail } from '@/components/showcase/company/CompanyStoryRail';
 import { RelatedCompanies } from '@/components/showcase/company/RelatedCompanies';
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs';
 
 export async function generateStaticParams() {
   const companies = await getAutopsyCompanies();
@@ -49,6 +50,14 @@ export default async function ShowcaseProductPage({ params }: Props) {
         <div className="min-h-screen">
           <CompanyHubHeader company={company} storyCount={readableStories.length} />
           <div className="sc-page-narrow">
+            <AppBreadcrumbs
+              className="mb-6"
+              items={[
+                { label: 'Explore', href: '/explore' },
+                { label: 'Autopsies', href: '/explore/autopsies' },
+                { label: company.name },
+              ]}
+            />
             <CompanyStoryRail
               stories={teardownStories}
               companyName={company.name}

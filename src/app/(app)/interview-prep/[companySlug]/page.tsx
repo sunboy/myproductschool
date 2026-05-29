@@ -1,10 +1,10 @@
-import Link from 'next/link'
 import { MOCK_COMPANIES } from '@/lib/mock-data'
 import { getChallenges } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import { StartSimulationButton } from '@/components/interview/StartSimulationButton'
 import { StudyTimeline } from '@/components/interview/StudyTimeline'
 import { PrepStatusWidget } from '@/components/interview/PrepStatusWidget'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 
 export default async function CompanyProfilePage({
   params,
@@ -22,14 +22,13 @@ export default async function CompanyProfilePage({
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-on-surface-variant mb-6 flex items-center gap-1">
-        <Link href="/interview-prep" className="hover:text-primary">
-          Interview Prep
-        </Link>
-        <span className="material-symbols-outlined text-xs">chevron_right</span>
-        <span className="text-on-surface">{company.name}</span>
-      </nav>
+      <AppBreadcrumbs
+        className="mb-6"
+        items={[
+          { label: 'Interview Prep', href: '/interview-prep' },
+          { label: company.name },
+        ]}
+      />
 
       <h1 className="font-headline text-3xl text-on-surface mb-2">{company.name}</h1>
       <p className="text-on-surface-variant mb-8">

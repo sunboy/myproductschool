@@ -2,17 +2,21 @@
    Mirrors the Claude Design Showcase.html handoff while using real app data. */
 
 .showcase-wing {
+  /* Light-surface tokens reconciled to canonical globals.css values so the
+     autopsies wing reads as the same theme as the rest of the app. The dark
+     --ink-* palette below is the deliberate immersive-reader identity and is
+     intentionally left untouched. */
   --bg: #faf6f0;
-  --bg-deep: #f4eee2;
-  --surface: #fdfbf6;
-  --surface-container-low: #f4eee2;
-  --surface-container: #ede6d6;
-  --surface-container-high: #e4dcc8;
+  --bg-deep: #f5f1ea;
+  --surface: #ffffff;
+  --surface-container-low: #f5f1ea;
+  --surface-container: #f0ece4;
+  --surface-container-high: #eae6de;
   --outline-faint: #e7dfc9;
-  --outline-variant: #d5cab1;
-  --outline: #b8ad94;
-  --on-surface: #1e1b14;
-  --on-surface-variant: #4e4a3f;
+  --outline-variant: #c4c8bc;
+  --outline: #74796e;
+  --on-surface: #2e3230;
+  --on-surface-variant: #4a4e4a;
   --on-surface-muted: #78715f;
   --primary: #4a7c59;
   --primary-hover: #3e6a4b;
@@ -227,8 +231,7 @@
   border-radius: var(--radius-xl);
   position: relative;
   overflow: hidden;
-  padding: 56px 56px 48px;
-  min-height: 460px;
+  padding: 36px 44px 36px;
 }
 .sc-hero-ink-dotgrid {
   position: absolute;
@@ -256,7 +259,6 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 380px;
 }
 .sc-hero-title {
   color: var(--ink-paper);

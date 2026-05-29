@@ -144,15 +144,15 @@ test.describe('Authenticated shell', () => {
     await expect(page.locator('[class*="tertiary-fixed"]').first()).toBeVisible()
   })
 
-  test('/explore/showcase loads editorial grid', async ({ page }) => {
+  test('/explore/autopsies loads editorial grid', async ({ page }) => {
     await loginUser(page)
-    await page.goto(`${BASE_URL}/explore/showcase`)
+    await page.goto(`${BASE_URL}/explore/autopsies`)
 
     await expect(page.locator('h2:has-text("Product Autopsies")')).toBeVisible({ timeout: 10000 })
     await expect(page.locator('text=Curated Discovery')).toBeVisible()
 
     // At least one product card
-    const cards = page.locator('a[href*="/explore/showcase/"]')
+    const cards = page.locator('a[href*="/explore/autopsies/"]')
     const count = await cards.count()
     expect(count).toBeGreaterThan(0)
     console.log(`Showcase cards found: ${count}`)

@@ -8,6 +8,7 @@ import { useLearnChapter } from '@/hooks/useLearnChapter'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import { ChapterBody } from '@/components/learning/ChapterBody'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { motion, useScrollCollapse } from '@/components/motion'
 import type { LearnModule, LearnChapterWithProgress } from '@/lib/types'
 import { DIFFICULTY_LABELS as PRACTICE_DIFFICULTY_LABELS, coerceDifficulty } from '@/lib/practice/difficulty'
@@ -362,16 +363,14 @@ function ModulePageInner({ slug }: { slug: string }) {
   return (
     <div className="flex flex-col h-[calc(100vh-52px)] overflow-hidden">
       {/* Top breadcrumb bar */}
-      <div className="h-11 flex items-center gap-2 px-4 border-b border-outline-variant flex-shrink-0 bg-background">
-        <Link
-          href="/learn"
-          className="inline-flex items-center gap-1 text-xs font-bold font-label text-on-surface-variant hover:text-on-surface transition-colors"
-        >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>
-          All guides
-        </Link>
-        <span className="text-on-surface-variant text-xs opacity-40">/</span>
-        <span className="text-xs font-bold text-on-surface truncate">{module.name}</span>
+      <div className="h-11 flex items-center px-4 border-b border-outline-variant flex-shrink-0 bg-background">
+        <AppBreadcrumbs
+          items={[
+            { label: 'Explore', href: '/explore' },
+            { label: 'Guides', href: '/explore/modules' },
+            { label: module.name },
+          ]}
+        />
       </div>
 
       {/* Three-column body */}

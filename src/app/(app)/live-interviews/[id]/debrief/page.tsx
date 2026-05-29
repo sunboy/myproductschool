@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { FeedbackText } from '@/components/ui/FeedbackText'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import CompetencyRadar from '@/components/live-interview/CompetencyRadar'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -146,15 +147,14 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-6">
       {/* Back navigation */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/live-interviews"
-          className="p-2 rounded-lg hover:bg-surface-container transition-colors"
-        >
-          <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-        </Link>
-        <span className="text-sm text-on-surface-variant font-label">Back to interviews</span>
-      </div>
+      <AppBreadcrumbs
+        className="mb-6"
+        items={[
+          { label: 'Live Interviews', href: '/live-interviews' },
+          ...(companyName ? [{ label: companyName }] : []),
+          { label: 'Debrief' },
+        ]}
+      />
 
       {/* Page title */}
       <h1 className="font-headline text-2xl font-bold text-on-surface mb-1">

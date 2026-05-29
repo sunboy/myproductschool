@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from 'recharts'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import type { CareerBenchmark, Competency, FlowMove } from '@/lib/types'
 
@@ -224,17 +225,14 @@ function SkillLadderContent() {
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 animate-fade-in-up">
 
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs text-on-surface-variant font-medium mb-6">
-        <Link href="/progress" className="hover:text-primary transition-colors">Progress</Link>
-        <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-        <span>Skill Ladder</span>
-        <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-        <span className="text-primary font-bold flex items-center gap-1">
-          {meta.label} Move
-          <span className="material-symbols-outlined text-[12px]">{meta.icon}</span>
-        </span>
-      </nav>
+      <AppBreadcrumbs
+        className="mb-6"
+        items={[
+          { label: 'Progress', href: '/progress' },
+          { label: 'Skill Ladder', href: '/progress/skill-ladder' },
+          { label: `${meta.label} Move` },
+        ]}
+      />
 
       {/* Move selector tabs */}
       <div className="flex gap-2 mb-6 flex-wrap">
