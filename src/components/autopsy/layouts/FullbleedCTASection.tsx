@@ -12,7 +12,7 @@ interface Props {
 
 export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
   const { headline, subline, buttonText, targetPath } = section.content
-  const [entered, setEntered] = React.useState(false)
+  const [entered, setEntered] = React.useState(hasBeenVisible)
   const words = headline.split(' ')
 
   React.useEffect(() => {
@@ -82,7 +82,7 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
           </span>
         </div>
 
-        {/* Headline — word stagger */}
+        {/* Headline - word stagger */}
         <div style={{ marginBottom: 20 }}>
           <h2
             className="font-headline font-extrabold leading-[1.05]"

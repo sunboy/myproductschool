@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "calendly",
+  "story_slug": "calendly-scheduling-link",
+  "story_title": "Calendly's Scheduling Link",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/calendly-scheduling-link/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/calendly-scheduling-link/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A pile of scheduling emails collapsing into a single link card, with Hatch pointing at the new shape.",
+      "caption": "Eight emails, then a URL.",
+      "prompt": "Calendly's Scheduling Link | hero: Create a flat geometric HackProduct autopsy illustration for Calendly about the moment a chain of scheduling emails collapses into a single URL. Canvas role hero, aspect 2400x1350. Show a tangled stack of email envelopes on the left in mist `#dfe6dc`, an arrow in forest green `#4a7c59` pointing right, and on the right a single clean rectangular link card with a URL bar shape in amber `#705c30`. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower right, pointing toward the link card. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Warm cream background `#faf6f0`, deep forest accents `#244232`, charcoal `#1e211c` linework. Leave quiet space in the upper left for title overlay. No human faces, no fake screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/calendly-scheduling-link/hero.png",
+      "generated_image_sha256": "fd6461eec3445d80e659de485037836e36f1a1f6a7f4ac7cb97a0eb3b74fd02e",
+      "final_image_sha256": "c64d891fffb52202d3156bdc36a7cef3f4e2b35651627ebdf5569bfaaf8f100b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calendly-scheduling-link/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calendly-scheduling-link/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/calendly-scheduling-link/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "An overhead desk scene at end of day with a pile of unfinished scheduling emails, Hatch observing.",
+      "caption": "An overhead desk scene at end of day with a pile of unfinished scheduling emails, Hatch observing.",
+      "prompt": "Calendly's Scheduling Link | hatch-narrator: Create a flat geometric HackProduct autopsy illustration for Calendly about a sales rep stuck in email tag in 2013. Canvas role scene, aspect 1600x1600. Show a desk-top view from above with a charcoal `#1e211c` clock at 6pm, a stack of half-finished email envelopes in mist `#dfe6dc`, a coffee cup, and a closed laptop in deep forest `#244232`. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator in the lower left, in a thoughtful pose looking at the email pile. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Warm cream background `#faf6f0`, forest green structure `#4a7c59`, amber accents `#705c30`. No human faces, no photorealism, no fake email screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/calendly-scheduling-link/hatch-narrator.png",
+      "generated_image_sha256": "3b993763290ce2a56dc7429e9c8ba2ce6b49d5a480fd71c66993aad9d18658e3",
+      "final_image_sha256": "5a823ffa0517896e48b7e25c188aaa055361843335d468b5f5651c9bd9341cd3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calendly-scheduling-link/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calendly-scheduling-link/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/calendly-scheduling-link/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A three-stage diagram of how a Calendly link works, from private calendar to shared URL to picked slot, with Hatch pointing at the URL.",
+      "caption": "A three-stage diagram of how a Calendly link works, from private calendar to shared URL to picked slot, with Hatch pointing at the URL.",
+      "prompt": "Calendly's Scheduling Link | failure-mechanism: Create a flat geometric HackProduct autopsy illustration for Calendly showing how the scheduling link works. Canvas role mechanism, aspect 1800x1200. Three labelled stages from left to right. Stage one in forest green `#4a7c59`: a calendar grid with busy blocks blacked out and free slots glowing in soft amber `#c9ad68`, with a small lock icon over the busy blocks to indicate privacy. Stage two in cream `#faf6f0`: a single URL bar shape in deep forest `#244232`, with an arrow emerging from it. Stage three: a clean booking card showing three time-slot buttons, the middle one selected. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in thinking pose at the bottom centre, pointing at the URL bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Warm cream background, charcoal `#1e211c` linework. No fake screenshots, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/calendly-scheduling-link/failure-mechanism.png",
+      "generated_image_sha256": "1dd6e0f54b2a7c69e26a197acf9d6cc2bef4332fae5b7fc34ed66dac88cc3793",
+      "final_image_sha256": "0e1f341a80e1f91c9dafb7b158ab9fe605662a0e002b4d088c4d393517a08f2e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calendly-scheduling-link/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calendly-scheduling-link/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/calendly-scheduling-link/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A bar chart of Calendly's revenue from 2014 to 2024 with a 20 million users badge, Hatch pointing at the tallest bar.",
+      "caption": "A bar chart of Calendly's revenue from 2014 to 2024 with a 20 million users badge, Hatch pointing at the tallest bar.",
+      "prompt": "Calendly's Scheduling Link | evidence-card: Create a flat geometric HackProduct autopsy illustration for Calendly showing the revenue and user growth trajectory. Canvas role evidence, aspect 1600x1000. Show a rising bar chart with five bars in forest green `#4a7c59`, labelled 2014 100K, 2015 1M, 2020 70M, 2023 276M, 2024 349M, the bars growing left to right on a cream `#faf6f0` background. Above the chart, a small badge in deep forest `#244232` reading 20M USERS. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator on the right, pointing at the tallest bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Amber accents `#705c30` on the chart axis labels, charcoal `#1e211c` linework. Use one short label per bar only. No fake dashboards. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/calendly-scheduling-link/evidence-card.png",
+      "generated_image_sha256": "e53162836a656ec4ef5bde3dbf62dbb2347089b055a172c6b448e55e0fef0618",
+      "final_image_sha256": "c50a8f93b2d5697019c0648c23ff83751312269d76fdba4a741d6940191a5f0e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calendly-scheduling-link/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calendly-scheduling-link/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/calendly-scheduling-link/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central scheduling link fanning out into invitee circles that each create their own links, with Hatch in coaching pose.",
+      "caption": "A central scheduling link fanning out into invitee circles that each create their own links, with Hatch in coaching pose.",
+      "prompt": "Calendly's Scheduling Link | lesson-frame: Create a flat geometric HackProduct autopsy illustration for Calendly conveying the takeaway that the invitee is the unpaid sales channel. Canvas role lesson, aspect 1800x1200. Show a single link card in deep forest `#244232` at the centre, with four arrows fanning outward to four small invitee icons rendered as cream `#faf6f0` circles with simple smiley marks, each circle then sprouting a smaller link card of its own to suggest the loop. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a main narrator in coaching pose to the left of the central link, gesturing toward the outward arrows. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Warm cream background, forest green structure `#4a7c59`, soft amber accents `#c9ad68`. Use one short label only, reading EVERY SEND IS A SAMPLE. No human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/calendly-scheduling-link/lesson-frame.png",
+      "generated_image_sha256": "f9e2aef28e102f5898f64848bfb7fc5f46accd93e9beed30d4d618bffdbe712d",
+      "final_image_sha256": "afd76dc38c8fa795a1a1ef224fa84064827169068b9d9ec48cf7584248eff855",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calendly-scheduling-link/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calendly-scheduling-link/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/calendly-scheduling-link/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A single URL bar with a calendar icon and three time-slot buttons beneath, a tiny Hatch mark in the corner.",
+      "caption": "A single URL bar with a calendar icon and three time-slot buttons beneath, a tiny Hatch mark in the corner.",
+      "prompt": "Create a flat geometric HackProduct autopsy thumbnail for Calendly. Canvas role thumbnail, aspect 1200x900. Single dominant shape, a rectangular URL bar in deep forest `#244232` with a small calendar-grid icon embedded on the left side of the bar in soft amber `#c9ad68`. Three small time-slot buttons in cream `#faf6f0` floating beneath the bar. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower-right corner, no larger than 10 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Warm cream background `#faf6f0`, charcoal `#1e211c` linework. Make the URL bar readable at 320 px wide. No labels, no body text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/calendly-scheduling-link/hero.png",
+      "generated_image_sha256": "fd6461eec3445d80e659de485037836e36f1a1f6a7f4ac7cb97a0eb3b74fd02e",
+      "final_image_sha256": "151be83c70ec59bfaff54a8c732a45c23ce04080bdfb5e900073568b58fb6ae7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calendly-scheduling-link/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calendly-scheduling-link/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/calendly-scheduling-link/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Social cover showing a tangled email pile turning into a single URL card with time-slot buttons, Hatch in the corner.",
+      "caption": "Social cover showing a tangled email pile turning into a single URL card with time-slot buttons, Hatch in the corner.",
+      "prompt": "Create a flat geometric HackProduct autopsy social cover for Calendly. Canvas role social-cover, aspect 2400x1260. Centre composition. On the left third, a tangled email pile in mist `#dfe6dc`. On the right two thirds, a single clean URL card in deep forest `#244232` with a calendar-grid mark embedded, three time-slot buttons in soft amber `#c9ad68` stacked beneath. A forest green `#4a7c59` arrow between the two. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower-right corner, pointing toward the URL card. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Warm cream background `#faf6f0`, charcoal `#1e211c` linework. Keep the centre 70 percent clear of edge-critical details so it reads at 1200x630 crop. No body text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/calendly-scheduling-link/hero.png",
+      "generated_image_sha256": "fd6461eec3445d80e659de485037836e36f1a1f6a7f4ac7cb97a0eb3b74fd02e",
+      "final_image_sha256": "4c3dd29e229b2204af526c425a9b66d2b80f3d5870e5dc5f9cba2cc996247daf",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calendly-scheduling-link/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calendly-scheduling-link/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/calendly-scheduling-link/v1"
+}

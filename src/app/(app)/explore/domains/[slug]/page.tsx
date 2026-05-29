@@ -4,17 +4,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { ChallengeAccordion } from '@/components/challenges/ChallengeAccordion'
-import type { AccordionChapter } from '@/components/challenges/ChallengeAccordion'
-import { getTechniqueLabelAny } from '@/lib/data/taxonomy'
-
-const DIFFICULTY_CHAPTERS: Record<string, { title: string; icon: string }> = {
-  warmup:     { title: 'Warm-Up',  icon: 'psychology' },
-  standard:   { title: 'Standard', icon: 'monitoring' },
-  advanced:   { title: 'Advanced', icon: 'diversity_3' },
-  staff_plus: { title: 'Staff+',   icon: 'military_tech' },
-}
-const DIFFICULTY_ORDER = ['warmup', 'standard', 'advanced', 'staff_plus']
+import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
+import { getTechniqueLabelAny, getTopicLabelAny } from '@/lib/data/taxonomy'
 
 export default async function DomainDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -26,7 +17,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
 
   const challenges = await getChallenges({ domainId: domain.id })
 
-  let scoreMap: Record<string, number> = {}
+  const scoreMap: Record<string, number> = {}
   if (user && challenges.length > 0) {
     const ids = challenges.map(c => c.id)
     const { data: attempts } = await supabase
@@ -34,13 +25,28 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
       .select('challenge_id, total_score')
       .eq('user_id', user.id)
       .in('challenge_id', ids)
-      .not('submitted_at', 'is', null)
+      .eq('status', 'completed')
       .order('total_score', { ascending: false })
     for (const a of attempts ?? []) {
       if (!scoreMap[a.challenge_id] || a.total_score > scoreMap[a.challenge_id]) {
         scoreMap[a.challenge_id] = a.total_score
       }
     }
+  }
+
+  // Annotate challenges with completion state
+  const annotated = challenges.map(c => ({
+    ...c,
+    best_score: scoreMap[c.id] ?? null,
+    is_completed: c.id in scoreMap,
+  }))
+
+  // Build topicLabels from static taxonomy
+  const topicSlugs = Array.from(new Set(challenges.flatMap(c => c.topic_tags ?? [])))
+  const topicLabels: Record<string, string> = {}
+  for (const s of topicSlugs) {
+    const label = getTopicLabelAny(s)
+    if (label) topicLabels[s] = label
   }
 
   // ── Technique breakdown ────────────────────────────────────────────────────
@@ -53,7 +59,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
   const topTechniques = Array.from(techniqueCount.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8)
-    .map(([slug, count]) => ({ slug, count, label: getTechniqueLabelAny(slug) }))
+    .map(([s, count]) => ({ slug: s, count, label: getTechniqueLabelAny(s) }))
     .filter(t => t.label !== undefined) as { slug: string; count: number; label: string }[]
 
   // ── Real interview challenges ──────────────────────────────────────────────
@@ -61,44 +67,12 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
     c => c.is_real_interview && (c.company_tags ?? []).length > 0
   )
 
-  const chapterMap = new Map<string, AccordionChapter>()
-  for (const diff of DIFFICULTY_ORDER) {
-    const meta = DIFFICULTY_CHAPTERS[diff]
-    const items = challenges
-      .filter(c => c.difficulty === diff)
-      .map(c => ({
-        id: c.id, slug: c.slug, title: c.title, difficulty: c.difficulty,
-        best_score: scoreMap[c.id] ?? null,
-        is_completed: c.id in scoreMap,
-        topic_tags: c.topic_tags ?? [],
-        technique_tags: c.technique_tags ?? [],
-        is_real_interview: c.is_real_interview ?? false,
-        company_tags: c.company_tags ?? [],
-      }))
-    if (items.length > 0) chapterMap.set(diff, { key: diff, title: meta.title, icon: meta.icon, items })
-  }
-  for (const c of challenges) {
-    if (!DIFFICULTY_ORDER.includes(c.difficulty) && !chapterMap.has('other')) {
-      chapterMap.set('other', { key: 'other', title: 'Other', icon: 'category', items: [] })
-    }
-    if (!DIFFICULTY_ORDER.includes(c.difficulty)) {
-      chapterMap.get('other')!.items.push({
-        id: c.id, slug: c.slug, title: c.title, difficulty: c.difficulty,
-        best_score: scoreMap[c.id] ?? null,
-        is_completed: c.id in scoreMap,
-        topic_tags: c.topic_tags ?? [],
-        technique_tags: c.technique_tags ?? [],
-        is_real_interview: c.is_real_interview ?? false,
-        company_tags: c.company_tags ?? [],
-      })
-    }
-  }
-  const chapters = Array.from(chapterMap.values())
-
   const completedCount = Object.keys(scoreMap).length
   const progressPct = challenges.length > 0 ? Math.round((completedCount / challenges.length) * 100) : 0
   const firstIncomplete = challenges.find(c => !(c.id in scoreMap))
-  const ctaHref = firstIncomplete ? `/workspace/challenges/${firstIncomplete.id}` : `/workspace/challenges/${challenges[0]?.id ?? '#'}`
+  const ctaHref = firstIncomplete
+    ? `/workspace/challenges/${firstIncomplete.id}`
+    : `/workspace/challenges/${challenges[0]?.id ?? '#'}`
 
   const avatarColors = Array.from({ length: 5 }, (_, i) => `hsl(${i * 67 + 110}, 45%, 52%)`)
 
@@ -222,8 +196,8 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
             {[
               { label: 'Challenges', value: String(challenges.length) },
-              { label: 'Difficulty tiers', value: String(chapters.length) },
-              { label: 'Completed', value: completedCount > 0 ? `${completedCount}/${challenges.length}` : '—' },
+              { label: 'Topics', value: String(Object.keys(topicLabels).length) },
+              { label: 'Completed', value: completedCount > 0 ? `${completedCount}/${challenges.length}` : '-' },
             ].map(stat => (
               <div key={stat.label} style={{
                 background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)',
@@ -271,18 +245,16 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
                 <h2 className="font-headline text-sm font-bold text-on-surface">Techniques in this domain</h2>
               </div>
               <div className="flex flex-wrap gap-2">
-                {topTechniques.map(({ slug, label, count }) => (
+                {topTechniques.map(({ slug: s, label, count }) => (
                   <Link
-                    key={slug}
-                    href={`/challenges?technique=${slug}`}
+                    key={s}
+                    href={`/challenges?technique=${s}`}
                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high hover:bg-primary-fixed transition-colors group"
                   >
                     <span className="text-xs font-label font-semibold text-on-surface group-hover:text-primary transition-colors">
                       {label}
                     </span>
-                    <span className="text-[10px] font-label text-on-surface-variant tabular-nums">
-                      {count}
-                    </span>
+                    <span className="text-[10px] font-label text-on-surface-variant tabular-nums">{count}</span>
                   </Link>
                 ))}
               </div>
@@ -332,13 +304,13 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
             </div>
           )}
 
-          {chapters.length > 0 ? (
-            <ChallengeAccordion chapters={chapters} defaultOpenIndex={0} />
-          ) : (
-            <div style={{ textAlign: 'center', padding: '48px 0', fontFamily: 'var(--font-label)', fontSize: 14, color: '#78715f' }}>
-              No challenges in this domain yet.
-            </div>
-          )}
+          {/* ── Grouped challenge list (topic grouping replaces difficulty accordion) ── */}
+          <GroupedChallengeList
+            challenges={annotated}
+            groupBy="primaryTopic"
+            topicLabels={topicLabels}
+            enforceLimit={false}
+          />
         </div>
 
         {/* Right: Sticky sidebar */}
@@ -352,7 +324,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
                 { label: 'Total challenges', value: String(challenges.length) },
-                { label: 'Difficulty tiers', value: String(chapters.length) },
+                { label: 'Topic groups', value: String(Object.keys(topicLabels).length || '—') },
                 { label: 'Completed', value: `${completedCount}/${challenges.length}` },
                 ...(progressPct > 0 ? [{ label: 'Progress', value: `${progressPct}%`, isProgress: true }] : []),
               ].map((row, i, arr) => (
@@ -403,7 +375,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
                   Hatch&rsquo;s Coaching
                 </div>
                 <p style={{ fontFamily: 'var(--font-label)', fontSize: 13, lineHeight: 1.55, color: '#0f3d1f', margin: 0 }}>
-                  Work through each difficulty tier in order. Warm-Up challenges build intuition; Advanced ones test your judgment under real constraints. Don&rsquo;t skip ahead.
+                  Work through each topic group in order. Warm-Up challenges build intuition; Advanced ones test your judgment under real constraints.
                 </p>
               </div>
             </div>

@@ -1,0 +1,459 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL 12+ automatically inlines non-recursive, side-effect-free, singly-referenced CTEs by default, removing the optimization fence; multi-referenced CTEs or those marked MATERIALIZED remain fenced",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "date": "2024-02-01"
+    },
+    {
+      "fact": "In PostgreSQL 17, materialized CTEs with specific sort order allow the planner to reuse that information in outer queries, improving performance by avoiding redundant sorting",
+      "source": "https://pganalyze.com/blog/5mins-postgres-17-materialized-cte-scans",
+      "date": "2024-10-01"
+    },
+    {
+      "fact": "DuckDB's USING KEY recursive CTE variant treats intermediate results as keyed dictionaries instead of sets, enabling row updates rather than accumulation, reducing memory and runtime significantly for graph algorithms",
+      "source": "https://duckdb.org/2025/05/23/using-key",
+      "date": "2025-05-23"
+    },
+    {
+      "fact": "PostgreSQL 12 introduced NOT MATERIALIZED keyword allowing explicit control over CTE materialization; MATERIALIZED keyword forces materialization even when CTE is referenced once",
+      "source": "https://www.depesz.com/2019/02/19/waiting-for-postgresql-12-allow-user-control-of-cte-materialization-and-change-the-default-behavior/",
+      "date": "2019-02-19"
+    },
+    {
+      "fact": "Databricks SQL enforces two safety limits on recursive CTEs: maximum recursion depth of 100 steps and row limit of 1 million, failing with error if either threshold exceeded",
+      "source": "https://www.databricks.com/blog/introducing-recursive-common-table-expressions-databricks",
+      "date": "2023-06-01"
+    },
+    {
+      "fact": "PostgreSQL full-text search using GIN index with tsvector achieved ~877ms on 10-million-row dataset, representing 50× speedup over unoptimized baseline",
+      "source": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth",
+      "date": "2024-01-15"
+    },
+    {
+      "fact": "For 200 million row dataset, PostgreSQL full-text search queries with composite filters (time + FTS + severity) completed in under 1 second when properly indexed with GIN",
+      "source": "https://medium.com/@yogeshsherawat/using-full-text-search-fts-in-postgresql-for-over-200-million-rows-a-case-study-e0a347df14d0",
+      "date": "2024-03-20"
+    },
+    {
+      "fact": "PostgreSQL tsvector setweight function assigns weights A(1.0), B(0.4), C(0.2), D(0.1) to document regions, allowing ts_rank() to weight title matches higher than body matches during relevance ranking",
+      "source": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "date": "2024-09-01"
+    },
+    {
+      "fact": "Recursive CTE performance can be optimized using DuckDB's USING KEY which prevents redundant path accumulation; in distance-vector routing, USING KEY generates substantially fewer rows than vanilla WITH RECURSIVE",
+      "source": "https://db.cs.uni-tuebingen.de/publications/2025/using-key/how-duckdb-is-using-key-to-unlock-recursive-query-performance.pdf",
+      "date": "2025-06-01"
+    },
+    {
+      "fact": "PostgreSQL has no built-in incremental materialized view refresh; pg_ivm extension provides immediate trigger-based updates supporting inner joins and DISTINCT but not outer joins or window functions",
+      "source": "https://wiki.postgresql.org/wiki/Incremental_View_Maintenance",
+      "date": "2024-03-01"
+    },
+    {
+      "fact": "JSONB performance in PostgreSQL varies non-linearly with data size: 10K rows show 10× speedup over normalized, but at 500K rows performance can collapse due to TOAST overhead at 2kB document threshold",
+      "source": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "date": "2024-01-10"
+    },
+    {
+      "fact": "PostgreSQL functional (expression) indexes are expensive to maintain on writes but provide fast indexed lookups; execution time improvement example showed 0.086ms with functional index vs baseline",
+      "source": "https://atlasgo.io/guides/postgres/functional-indexes",
+      "date": "2024-02-01"
+    },
+    {
+      "fact": "Neo4j performs 180× faster than MySQL for 3-hop friend-of-friend-of-friend queries; performance advantage grows exponentially with relationship depth while MySQL performance degrades 5-9×",
+      "source": "https://neo4j.com/news/how-much-faster-is-a-graph-database-really/",
+      "date": "2023-04-01"
+    },
+    {
+      "fact": "CTEs can cause cardinality underestimation: column statistics from CTE scan results aren't propagated upward, causing outer query planner to miscalculate selectivity",
+      "source": "https://www.postgresql.org/message-id/CABWW-d3um0XrHEqORRSTGezV=vY3W0CBN=UJP245VHMyosrhRg@mail.gmail.com",
+      "date": "2019-07-15"
+    },
+    {
+      "fact": "Recursive CTE depth limits: PostgreSQL allows arbitrary depth; DuckDB limits to implementation; best practice is to add explicit termination condition checking if node already visited",
+      "source": "https://docs.yugabyte.com/preview/api/ysql/the-sql-language/with-clause/traversing-general-graphs/undirected-cyclic-graph/",
+      "date": "2024-08-01"
+    },
+    {
+      "fact": "Databricks SQL replacing legacy code with recursive CTEs achieved 12× speedup: hierarchical data preparation reduced from ~6 minutes to ~30 seconds",
+      "source": "https://medium.com/dbsql-sme-engineering/driving-business-insights-with-recursive-ctes-in-dbsql-00ad222fa0be",
+      "date": "2024-05-01"
+    },
+    {
+      "fact": "PostgreSQL REFRESH MATERIALIZED VIEW acquires ACCESS EXCLUSIVE lock, blocking all reads/writes until completion; concurrent refresh with CONCURRENTLY requires unique index but allows concurrent reads",
+      "source": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "date": "2024-09-01"
+    },
+    {
+      "fact": "Set-based WHILE loops avoiding Halloween protection often outperform traditional recursive CTEs when traversing hierarchies 8-13 levels deep",
+      "source": "https://learnsql.com/blog/do-it-in-sql-recursive-tree-traversal/",
+      "date": "2024-06-01"
+    },
+    {
+      "fact": "High-cardinality column statistics in PostgreSQL can be 30× smaller than actual values on very large tables (hundreds of millions rows) due to ANALYZE sample size being too small",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-speeding-up-group-by-and-joins/",
+      "date": "2023-10-01"
+    },
+    {
+      "fact": "Row explosion in joins: aggregating first before join can reduce 5 million rows down to 2 rows, dramatically improving performance; detect in EXPLAIN via loops > 1 on subquery nodes in DML",
+      "source": "https://www.tigerdata.com/blog/handling-billions-of-rows-in-postgresql",
+      "date": "2024-07-01"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Databricks",
+      "scenario": "Hierarchical data preparation for organizational charts",
+      "implementation": "Replaced procedural code with recursive CTE",
+      "result": "12× performance improvement: 6 minutes → 30 seconds",
+      "source": "https://medium.com/dbsql-sme-engineering/driving-business-insights-with-recursive-ctes-in-dbsql-00ad222fa0be"
+    },
+    {
+      "company": "Large Tech (unnamed case study)",
+      "scenario": "Full-text search over 200 million rows with time+severity+FTS composite filters",
+      "implementation": "GIN index on combined tsvector field using custom function",
+      "result": "Sub-1-second queries (previously 12+ seconds); count queries still 3-4 seconds",
+      "source": "https://medium.com/@yogeshsherawat/using-full-text-search-fts-in-postgresql-over-200-million-rows-a-case-study-e0a347df14d0"
+    },
+    {
+      "company": "Neo4j (benchmark)",
+      "scenario": "Friend-of-friend graph traversal (3 hops) across social network data",
+      "implementation": "Neo4j native graph queries vs MySQL with JPA",
+      "result": "Neo4j 180× faster than MySQL; SQL performance degrades 5-9× as depth increases",
+      "source": "https://neo4j.com/news/how-much-faster-is-a-graph-database-really/"
+    },
+    {
+      "company": "DuckDB",
+      "scenario": "Distance-vector routing shortest-path computation on LDBC SNB graph",
+      "implementation": "USING KEY recursive CTE vs vanilla WITH RECURSIVE",
+      "result": "Substantially fewer intermediate rows; runtime/memory improvements in graph algorithms",
+      "source": "https://duckdb.org/2025/05/23/using-key"
+    },
+    {
+      "company": "PostgreSQL (benchmark)",
+      "scenario": "10 million row dataset with standard full-text search",
+      "implementation": "GIN index with tsvector, optimized GIN fastupdate=off",
+      "result": "877ms query time, 50× faster than unoptimized baseline",
+      "source": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth"
+    },
+    {
+      "company": "PostgreSQL (benchmark)",
+      "scenario": "Comparison of JSONB vs normalized tables on 10K, 100K, 500K rows",
+      "implementation": "JSONB column with whole-object access vs relational schema with joins",
+      "result": "At 10K: JSONB 10× faster; at 100K: JSONB still faster; at 500K: performance collapse due to TOAST",
+      "source": "https://medium.com/@sruthiganesh/comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-e4832342d750"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "CTE optimization fence",
+      "analogy": "CTEs historically act like a sealed box: the outer query planner can't see inside to push filters down. PostgreSQL 12+ punches a hole in the box for single-use CTEs (inlining), but MATERIALIZED re-seals it."
+    },
+    {
+      "concept": "Recursive CTE with row accumulation",
+      "analogy": "Vanilla recursive CTEs are like photocopying each step of a path-finding search: every iteration adds to a growing pile of papers (union table), even papers that describe outdated paths. DuckDB USING KEY treats it like updating entries in a dictionary instead."
+    },
+    {
+      "concept": "Materialized view refresh locking",
+      "analogy": "REFRESH MATERIALIZED VIEW is like stopping traffic at a busy intersection to repave it (ACCESS EXCLUSIVE lock). REFRESH CONCURRENTLY is like keeping one lane open for traffic while you work, but requires a unique marker (index) on each lane."
+    },
+    {
+      "concept": "Cardinality underestimation in CTEs",
+      "analogy": "The planner's statistics are a loan officer; CTEs are like handing off the application to a different loan officer who doesn't have the credit history. They have to guess—and usually guess conservatively, leading to wrong decisions."
+    },
+    {
+      "concept": "JSONB vs normalized tables scale cliff",
+      "analogy": "JSONB is like keeping everything in a single drawer: fast when the drawer is small, but once it exceeds PostgreSQL's 2kB TOAST threshold, the database splits it across multiple drawers (TOAST chunks), and performance falls off a cliff."
+    },
+    {
+      "concept": "Tsvector ranking with weights",
+      "analogy": "Weighting A=1.0, B=0.4, C=0.2, D=0.1 is like a grading rubric: title matches earn A's (full points), keywords earn B's (40%), body matches earn C's (20%), and metadata earn D's (10%)."
+    },
+    {
+      "concept": "Neo4j vs SQL for deep relationship queries",
+      "analogy": "SQL is like finding directions by asking 10 people sequentially (each join is a person you ask); Neo4j is like having a map where you can see all paths at once. The gap grows exponentially with relationship depth."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "CTE materialization control",
+      "number": "PostgreSQL 12+",
+      "context": "Version when automatic inlining was introduced, controlled by MATERIALIZED / NOT MATERIALIZED keywords"
+    },
+    {
+      "metric": "Databricks recursive CTE recursion depth limit",
+      "number": "100",
+      "context": "Maximum recursion depth before query fails with error; also enforces 1 million row limit"
+    },
+    {
+      "metric": "PostgreSQL full-text search performance improvement",
+      "number": "50×",
+      "context": "Speedup from unoptimized baseline to optimized GIN index on 10 million rows (877ms final time)"
+    },
+    {
+      "metric": "Neo4j friend-of-friend-of-friend performance advantage over MySQL",
+      "number": "180×",
+      "context": "Relative speedup for 3-hop graph traversal queries; increases with relationship depth"
+    },
+    {
+      "metric": "PostgreSQL JSONB scaling breakdown",
+      "number": "2048 bytes (2kB)",
+      "context": "TOAST threshold where JSONB documents are split into chunks; performance cliff occurs here"
+    },
+    {
+      "metric": "Databricks recursive CTE optimization improvement",
+      "number": "12×",
+      "context": "Speedup for hierarchical data: 6 minutes → 30 seconds on replacement of procedural code"
+    },
+    {
+      "metric": "PostgreSQL tsvector weight ratio A:B:C:D",
+      "number": "1.0 : 0.4 : 0.2 : 0.1",
+      "context": "Default multipliers for relevance ranking when document regions are weighted; ts_rank() uses these"
+    },
+    {
+      "metric": "Row statistics underestimation in high-cardinality columns",
+      "number": "30×",
+      "context": "Factor by which ANALYZE sample can underestimate n_distinct on tables with hundreds of millions of rows"
+    },
+    {
+      "metric": "PostgreSQL functional index execution time speedup",
+      "number": "0.086ms",
+      "context": "Measured improvement for indexed query on expression; exact baseline varies by query complexity"
+    },
+    {
+      "metric": "MySQL performance degradation with relationship depth",
+      "number": "5–9×",
+      "context": "Slowdown factor as Neo4j stays constant; shows SQL join exponential cost growth"
+    },
+    {
+      "metric": "PostgreSQL 200M row FTS composite query time",
+      "number": "< 1 second",
+      "context": "Queries with time + FTS + severity filters on GIN index; count queries still 3-4 seconds"
+    },
+    {
+      "metric": "JSONB performance advantage at 10K rows vs normalized",
+      "number": "10×",
+      "context": "Relative speedup for whole-object fetch patterns; advantage shrinks above 100K rows"
+    },
+    {
+      "metric": "PostgreSQL row explosion detection in EXPLAIN",
+      "number": "> 1",
+      "context": "Loops value on subquery/CTE nodes indicates re-evaluation; loops > 1 signals row explosion"
+    },
+    {
+      "metric": "Recursive CTE memory efficiency with USING KEY",
+      "number": "substantially smaller",
+      "context": "DuckDB USING KEY generates fewer intermediate rows than vanilla recursive CTEs; exact reduction varies by algorithm"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "All CTEs are optimization fences that prevent predicate pushdown",
+      "reality": "Only true before PostgreSQL 12. Since v12, single-use CTEs are automatically inlined and optimize normally. Multi-use CTEs remain fenced unless marked NOT MATERIALIZED (which requires careful evaluation).",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences"
+    },
+    {
+      "misconception": "JSONB is always faster than normalized tables in PostgreSQL",
+      "reality": "JSONB wins at small scale (< 100K rows) and for whole-object reads. At 500K+ rows or frequent partial updates, performance collapses due to TOAST overhead (2kB threshold) and full-document rewrite cost of jsonb_set().",
+      "source": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd"
+    },
+    {
+      "misconception": "Recursive CTEs are suitable for all graph traversal use cases",
+      "reality": "Vanilla recursive CTEs accumulate obsolete rows in the union table. For shortest-path or distance-vector routing, DuckDB USING KEY or specialized graph databases are needed. SQL is inefficient for multi-hop deep traversal.",
+      "source": "https://duckdb.org/2025/05/23/using-key"
+    },
+    {
+      "misconception": "PostgreSQL materialized views can be incrementally updated like typical database views",
+      "reality": "PostgreSQL has no built-in incremental refresh; REFRESH MATERIALIZED VIEW rebuilds the entire view and acquires ACCESS EXCLUSIVE lock. pg_ivm extension provides incremental updates but lacks support for outer joins and window functions.",
+      "source": "https://wiki.postgresql.org/wiki/Incremental_View_Maintenance"
+    },
+    {
+      "misconception": "Full-text search in PostgreSQL is slow compared to Elasticsearch",
+      "reality": "Properly indexed PostgreSQL FTS (GIN index + tsvector, fastupdate=off) achieves sub-second queries on 200M rows. It's a viable alternative for small-to-medium applications and avoids operational overhead of a separate search cluster.",
+      "source": "https://medium.com/@yogeshsherawat/using-full-text-search-fts-in-postgresql-over-200-million-rows-a-case-study-e0a347df14d0"
+    },
+    {
+      "misconception": "Query planner cardinality estimates are accurate for large tables with many columns",
+      "reality": "ANALYZE sample size is fixed (~30K rows default); on tables with hundreds of millions of rows and high-cardinality columns, n_distinct estimates can be 30× too small, causing planner to choose wrong join strategy.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-speeding-up-group-by-and-joins/"
+    },
+    {
+      "misconception": "Functional (expression) indexes are always beneficial for fast queries",
+      "reality": "Functional indexes are expensive to maintain on writes (index must be recomputed for every INSERT/UPDATE). Use only when query speed is more important than write speed. Not suitable for write-heavy workloads.",
+      "source": "https://atlasgo.io/guides/postgres/functional-indexes"
+    },
+    {
+      "misconception": "MATERIALIZED keyword in PostgreSQL has the same semantics as in other databases",
+      "reality": "PostgreSQL's MATERIALIZED is an optimization hint (force inlining or force materialization) that varies by version. Before v12, all CTEs were materialized. In v12+, semantics changed to allow fine-grained control.",
+      "source": "https://www.depesz.com/2019/02/19/waiting-for-postgresql-12-allow-user-control-of-cte-materialization-and-change-the-default-behavior/"
+    },
+    {
+      "misconception": "SQL databases are suitable for deep relationship queries (e.g., social networks)",
+      "reality": "SQL requires N joins for N-hop queries. Neo4j is 180× faster for 3-hop queries and the gap widens exponentially. Use specialized graph databases for relationship-heavy workloads, not normalized SQL.",
+      "source": "https://neo4j.com/news/how-much-faster-is-a-graph-database-really/"
+    },
+    {
+      "misconception": "Slowly changing dimensions Type 2 is optimal for all historical tracking",
+      "reality": "SCD Type 2 rows balloon quickly if data changes frequently. Partitioning by effective date range and choosing the right SCD type based on change frequency and query patterns is critical for performance.",
+      "source": "https://marclinster.medium.com/slowly-changing-dimensions-in-postgres-7d0f4cac2191"
+    },
+    {
+      "misconception": "Tsvector ranking is a simple relevance score from 0–1",
+      "reality": "ts_rank() returns arbitrary numeric values based on document length and query term frequency. Weights A–D are multipliers (1.0, 0.4, 0.2, 0.1) applied per region. Normalize or calibrate empirically for 0–1 output.",
+      "source": "https://www.postgresql.org/docs/current/textsearch-controls.html"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "title": "PostgreSQL's CTEs are optimisation fences",
+      "date": "2024-02-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-17-materialized-cte-scans",
+      "title": "Waiting for Postgres 17: Better Query Plans for Materialized CTE Scans",
+      "date": "2024-10-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://duckdb.org/2025/05/23/using-key",
+      "title": "USING KEY in Recursive CTEs – DuckDB",
+      "date": "2025-05-23",
+      "recency": "current"
+    },
+    {
+      "url": "https://blog.poespas.me/posts/2025/03/09/optimizing-postgresql-query-performance-with-ctes/",
+      "title": "Optimizing PostgreSQL Query Performance with Common Table Expressions",
+      "date": "2025-03-09",
+      "recency": "current"
+    },
+    {
+      "url": "https://www.databricks.com/blog/introducing-recursive-common-table-expressions-databricks",
+      "title": "Introducing Recursive Common Table Expressions: Making Databricks SQL Turing Complete",
+      "date": "2023-06-01",
+      "recency": "2 years old but foundational"
+    },
+    {
+      "url": "https://learnsql.com/blog/do-it-in-sql-recursive-tree-traversal/",
+      "title": "Do it in SQL: Recursive SQL Tree Traversal",
+      "date": "2024-06-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.epsio.io/blog/postgres-refresh-materialized-view-a-comprehensive-guide",
+      "title": "Postgres REFRESH MATERIALIZED VIEW: A Comprehensive Guide",
+      "date": "2024-11-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://github.com/sraoss/pg_ivm",
+      "title": "pg_ivm: IVM (Incremental View Maintenance) implementation as a PostgreSQL extension",
+      "date": "2024-09-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "title": "PostgreSQL: Documentation: 18: 12.3. Controlling Text Search",
+      "date": "2024-09-01",
+      "recency": "current"
+    },
+    {
+      "url": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth",
+      "title": "PostgreSQL BM25 Full-Text Search: Speed Up Performance with These Tips",
+      "date": "2024-01-15",
+      "recency": "recent"
+    },
+    {
+      "url": "https://medium.com/@yogeshsherawat/using-full-text-search-fts-in-postgresql-for-over-200-million-rows-a-case-study-e0a347df14d0",
+      "title": "Using Full Text Search (FTS) in PostgreSQL for over 200 Million Rows: A Case Study",
+      "date": "2024-03-20",
+      "recency": "recent"
+    },
+    {
+      "url": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "title": "Part 2 — Comparing Normalised Query Performance in PostgreSQL: JSONB vs Join Queries",
+      "date": "2024-01-10",
+      "recency": "recent"
+    },
+    {
+      "url": "https://atlasgo.io/guides/postgres/functional-indexes",
+      "title": "Functional Indexes in PostgreSQL",
+      "date": "2024-02-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://neo4j.com/news/how-much-faster-is-a-graph-database-really/",
+      "title": "Fast Graph Database: Neo4j Performance Experiment",
+      "date": "2023-04-01",
+      "recency": "2 years old but authoritative"
+    },
+    {
+      "url": "https://wiki.postgresql.org/wiki/Incremental_View_Maintenance",
+      "title": "Incremental View Maintenance - PostgreSQL wiki",
+      "date": "2024-03-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/postgresql-speeding-up-group-by-and-joins/",
+      "title": "PostgreSQL: Speeding up GROUP BY and joins",
+      "date": "2023-10-01",
+      "recency": "1+ year old"
+    },
+    {
+      "url": "https://www.tigerdata.com/blog/handling-billions-of-rows-in-postgresql",
+      "title": "Handling Billions of Rows in PostgreSQL",
+      "date": "2024-07-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://medium.com/dbsql-sme-engineering/driving-business-insights-with-recursive-ctes-in-dbsql-00ad222fa0be",
+      "title": "Driving Business Insights with Recursive CTEs in DBSQL",
+      "date": "2024-05-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "title": "PostgreSQL: Documentation: 18: REFRESH MATERIALIZED VIEW",
+      "date": "2024-09-01",
+      "recency": "current"
+    },
+    {
+      "url": "https://db.cs.uni-tuebingen.de/publications/2025/using-key/how-duckdb-is-using-key-to-unlock-recursive-query-performance.pdf",
+      "title": "How DuckDB is USING KEY to Unlock Recursive Query Performance",
+      "date": "2025-06-01",
+      "recency": "current"
+    },
+    {
+      "url": "https://marclinster.medium.com/slowly-changing-dimensions-in-postgres-7d0f4cac2191",
+      "title": "Slowly Changing Dimensions in Postgres",
+      "date": "2023-08-01",
+      "recency": "1+ year old"
+    },
+    {
+      "url": "https://docs.yugabyte.com/preview/api/ysql/the-sql-language/with-clause/traversing-general-graphs/undirected-cyclic-graph/",
+      "title": "Using a recursive CTE to traverse a general undirected cyclic graph",
+      "date": "2024-08-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.depesz.com/2019/02/19/waiting-for-postgresql-12-allow-user-control-of-cte-materialization-and-change-the-default-behavior/",
+      "title": "Waiting for PostgreSQL 12 – Allow user control of CTE materialization",
+      "date": "2019-02-19",
+      "recency": "5+ years old (foundational)"
+    },
+    {
+      "url": "https://supabase.com/blog/postgres-full-text-search-vs-the-rest",
+      "title": "Postgres Full Text Search vs the rest",
+      "date": "2024-06-01",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.postgresql.org/message-id/CABWW-d3um0XrHEqORRSTGezV=vY3W0CBN=UJP245VHMyosrhRg@mail.gmail.com",
+      "title": "PostgreSQL mailing list: slow query plans caused by under-estimation of CTE cardinality",
+      "date": "2019-07-15",
+      "recency": "5+ years old (foundational)"
+    }
+  ]
+}

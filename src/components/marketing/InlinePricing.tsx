@@ -25,7 +25,7 @@ export function InlinePricing() {
           Simple, transparent pricing
         </h2>
         <p className="text-on-surface-variant mt-4">
-          Start free. Upgrade when you&apos;re ready to go all in.
+          Start free, then try Pro free for 7 days. Cancel anytime.
         </p>
       </div>
 
@@ -105,7 +105,7 @@ export function InlinePricing() {
             href="/signup"
             className="block text-center bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold hover:opacity-90 transition-opacity"
           >
-            Start Pro Trial
+            Start 7-day Pro Trial
           </Link>
         </div>
       </div>

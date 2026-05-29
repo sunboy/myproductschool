@@ -1,41 +1,133 @@
 import Link from 'next/link'
-import { HeroStageCycler } from './HeroStageCycler'
+import Image from 'next/image'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HeroShader } from './HeroShader'
+import { ProductCommandCenter } from './LivePreviews'
+
+const TRAINING_FORMATS = [
+  {
+    label: 'Career paths',
+    title: 'Guided routes to the next role',
+    body: 'Interview prep, engineer-to-product, senior/staff readiness, and proof of level.',
+    href: '/role-transitions',
+  },
+  {
+    label: 'Practice reps',
+    title: 'Scenario drills with live follow-up',
+    body: 'Product sense, systems, SQL, data modeling, coding, and AI-native workflow reps.',
+    href: '/practice',
+  },
+  {
+    label: 'FLOW feedback',
+    title: 'A scoring system for judgment',
+    body: 'Frame, List, Optimize, and Win on every answer so weak moves become visible.',
+    href: '/flow',
+  },
+] as const
+
+const TRENDING_REPS = [
+  {
+    title: 'Product sense interview sprint',
+    meta: '6 reps - Starts with a diagnostic',
+    coach: 'Hatch follow-ups',
+    href: '/interview-prep',
+  },
+  {
+    title: 'Staff engineer product strategy',
+    meta: '4 weeks - Promotion readiness',
+    coach: 'Win score receipts',
+    href: '/uplevel',
+  },
+  {
+    title: 'Engineer to product-minded builder',
+    meta: '3 weeks - Role transition',
+    coach: 'Frame practice',
+    href: '/role-transitions',
+  },
+  {
+    title: 'SQL analytics for product loops',
+    meta: '8 reps - Cohorts and funnels',
+    coach: 'Optimize feedback',
+    href: '/skills/sql',
+  },
+  {
+    title: 'Realtime notification system design',
+    meta: 'System design - Trade-off review',
+    coach: 'List pressure',
+    href: '/practice/realtime-notification-system',
+  },
+  {
+    title: 'Negotiation proof portfolio',
+    meta: 'Evidence trail - Level signal',
+    coach: 'Artifact review',
+    href: '/salary-negotiation',
+  },
+] as const
 
 export function LandingHero() {
   return (
-    <section className="land-hero">
-      <div className="land-hero-grid">
-        <div>
-          <div className="land-hero-eyebrow">
-            <span className="land-dot" /> AI-native practice gym · Engineers &amp; PMs
-          </div>
-          <h1 className="land-hero-h1">
-            Build with judgment. <br /><em>Or get replaced by a prompt.</em>
+    <section className="mkt-hero">
+      <HeroShader />
+      <div className="mkt-hero-inner">
+        <div className="mkt-hero-copy">
+          <h1>
+            Practice judgment under pressure.
           </h1>
-          <p className="land-hero-sub">
-            Practice <b>real scenarios</b> across product sense, system design, data modeling, and coding, with Hatch coaching you in real time. Engineers stay relevant. PMs stay sharp. Everyone ships better.
+          <p>
+            Run realistic reps for interviews, role transitions, promotion,
+            and salary proof. Hatch pushes your reasoning, FLOW scores the weak
+            move, and every session leaves a receipt.
           </p>
-          <div className="land-hero-cta">
-            <Link href="/login" className="land-btn land-btn--primary">Start free, no card →</Link>
-            <a href="#disciplines" className="land-btn land-btn--ghost">▸ See all disciplines</a>
-          </div>
-          <div className="land-hero-stats">
-            <div>
-              <div className="k"><em>18</em>k</div>
-              <div className="l">Engineers &amp; PMs<br />practicing weekly</div>
-            </div>
-            <div>
-              <div className="k">92<em>%</em></div>
-              <div className="l">Sharper thinking<br />after 3 weeks</div>
-            </div>
-            <div>
-              <div className="k"><em>5</em></div>
-              <div className="l">Disciplines, one<br />AI coach</div>
-            </div>
+          <div className="mkt-hero-actions">
+            <Link href="/login?returnTo=/challenges" prefetch={false} className="mkt-button mkt-button-primary">
+              Start a free rep
+            </Link>
+            <Link href="#career-goals" className="mkt-button mkt-button-secondary">
+              Choose your career goal
+            </Link>
           </div>
         </div>
-        <div className="land-hero-stage">
-          <HeroStageCycler initial="coach" />
+
+        <aside className="mkt-hero-panel" aria-label="Hatch coaching preview">
+          <ProductCommandCenter />
+          <div className="mkt-hero-hatch-card">
+            <Image
+              src="/images/hacky_thinking.png"
+              width={108}
+              height={84}
+              alt="Hatch reviewing a practice answer"
+              priority
+            />
+            <p>Hatch is not decoration. It follows the rep, asks the next question, and keeps the weak move visible.</p>
+          </div>
+        </aside>
+      </div>
+
+      <div className="mkt-format-strip" aria-label="Training formats">
+        {TRAINING_FORMATS.map((format) => (
+          <Link key={format.label} href={format.href} className="mkt-format-card">
+            <span>{format.label}</span>
+            <h2>{format.title}</h2>
+            <p>{format.body}</p>
+            <HatchGlyph state={format.label === 'Practice reps' ? 'challenging' : format.label === 'FLOW feedback' ? 'reviewing' : 'speaking'} size={36} />
+          </Link>
+        ))}
+      </div>
+
+      <div className="mkt-trending">
+        <div className="mkt-trending-head">
+          <h2>Trending practice this week</h2>
+          <Link href="/practice">See all</Link>
+        </div>
+        <div className="mkt-trending-grid">
+          {TRENDING_REPS.map((rep, index) => (
+            <Link key={rep.title} href={rep.href} className="mkt-rep-card">
+              <span className="mkt-rank">{index + 1}</span>
+              <h3>{rep.title}</h3>
+              <p>{rep.meta}</p>
+              <small>{rep.coach}</small>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

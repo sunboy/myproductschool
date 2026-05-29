@@ -18,7 +18,7 @@ export function TodaysPathCard({ steps, completedCount }: TodaysPathCardProps) {
   const total = steps.length
 
   return (
-    <div className="rounded-2xl p-5 bg-surface border border-outline-variant/40">
+    <div className="rounded-2xl p-5 bg-surface border border-outline-variant/40" data-hatch-target="dashboard-todays-path">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>today</span>
@@ -28,6 +28,12 @@ export function TodaysPathCard({ steps, completedCount }: TodaysPathCardProps) {
           {completedCount} / {total}
         </span>
       </div>
+
+      {completedCount === 0 && (
+        <p className="mb-3 text-sm text-on-surface-variant font-label">
+          Three quick reps to start the day. The first one is the warm-up.
+        </p>
+      )}
 
       <div className="flex flex-col gap-0.5 relative">
         {steps.map((step, i) => {
@@ -82,7 +88,7 @@ export function TodaysPathCard({ steps, completedCount }: TodaysPathCardProps) {
           )
 
           return step.href && !step.done ? (
-            <Link key={i} href={step.href} className="block">{inner}</Link>
+            <Link key={i} href={step.href} className="block" data-hatch-target={step.active ? 'dashboard-path-active' : undefined}>{inner}</Link>
           ) : (
             <div key={i}>{inner}</div>
           )

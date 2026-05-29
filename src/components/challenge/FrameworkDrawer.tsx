@@ -12,14 +12,14 @@ export function FrameworkDrawer({ open, onClose }: FrameworkDrawerProps) {
 
   return (
     <>
-      {/* Drawer — absolute within the right pane, slides from right edge */}
+      {/* Drawer - absolute within the right pane, slides from right edge */}
       <div
         className={`absolute top-12 right-0 bottom-12 w-[320px] bg-white border-l border-outline-variant/30 z-40 transform transition-transform duration-300 ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{ boxShadow: '-10px 0 30px -5px rgba(0,0,0,0.1)' }}
       >
-        {/* Pull tab — visible when closed, indicates slideable */}
+        {/* Pull tab - visible when closed, indicates slideable */}
         {!open && (
           <div className="absolute top-4 -left-6 bg-white border border-r-0 border-outline-variant/30 rounded-l-lg py-2 px-1 text-on-surface-variant flex flex-col items-center gap-1 shadow-sm">
             <span className="material-symbols-outlined text-sm">chevron_left</span>
@@ -76,7 +76,7 @@ export function FrameworkDrawer({ open, onClose }: FrameworkDrawerProps) {
         </div>
       </div>
 
-      {/* Backdrop — only covers the pane area when open */}
+      {/* Backdrop - only covers the pane area when open */}
       {open && (
         <div
           className="absolute inset-0 z-30"

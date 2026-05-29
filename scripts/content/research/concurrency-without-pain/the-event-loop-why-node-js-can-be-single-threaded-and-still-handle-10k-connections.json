@@ -1,0 +1,332 @@
+{
+  "facts": [
+    {
+      "text": "Node.js is single-threaded on the JavaScript execution side but uses libuv to manage a thread pool of 4 threads by default (configurable via UV_THREADPOOL_SIZE up to 1024)",
+      "source": "https://docs.libuv.org/en/v1.x/threadpool.html",
+      "date": "2024"
+    },
+    {
+      "text": "libuv implements the event loop with 6 phases: timers, pending callbacks, idle, poll, check, and close. As of libuv 1.45.0 (Node.js 20), timers run only after the poll phase",
+      "source": "https://nodejs.org/learn/asynchronous-work/event-loop-timers-and-nexttick",
+      "date": "2024"
+    },
+    {
+      "text": "Linux epoll, BSD/macOS kqueue, and Windows IOCP are kernel-level I/O multiplexing mechanisms that allow a single thread to monitor thousands of file descriptors for readiness",
+      "source": "https://medium.com/@sachinklocham/the-os-level-magic-behind-millions-of-connections-epoll-kqueue-and-iocp-explained-ce7889d31580",
+      "date": "2024"
+    },
+    {
+      "text": "epoll has two modes: Level-Triggered (continuously generates events while data remains in buffer) and Edge-Triggered (generates event only when data enters buffer)",
+      "source": "https://dev.to/min38/io-multiplexing-3lho",
+      "date": "2024"
+    },
+    {
+      "text": "A context switch costs the equivalent of 5,000 to 10,000 clock cycles on modern processors, or several microseconds",
+      "source": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads",
+      "date": "2024"
+    },
+    {
+      "text": "In C++11 and C, a data race (concurrent access to shared memory with at least one write, no synchronization) results in undefined behavior; the compiler can optimize assuming it never happens",
+      "source": "https://www.hboehm.info/c++mm/why_undef.html",
+      "date": "2024"
+    },
+    {
+      "text": "The Coffman conditions for deadlock are: mutual exclusion, hold and wait, no preemption, and circular wait. All four must be present for deadlock to occur",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Deadlock",
+      "date": "2024"
+    },
+    {
+      "text": "Compare-and-swap (CAS) is a hardware-supported atomic instruction that atomically compares a memory location to an expected value and swaps it with a new value if equal",
+      "source": "https://www.javacodegeeks.com/2024/02/exploring-javas-compare-and-swap-cas-for-atomic-operations.html",
+      "date": "2024"
+    },
+    {
+      "text": "The ABA problem in CAS: a thread observes a pointer pointing to object A, but by the time it performs CAS, the data structure is A->B->A again. The invariant is broken but CAS on the pointer succeeds",
+      "source": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "date": "2024"
+    },
+    {
+      "text": "JavaScript event loop processes microtasks (Promises, queueMicrotask) exhaustively after every macrotask (setTimeout, I/O) before rendering or the next macrotask",
+      "source": "https://javascript.info/event-loop",
+      "date": "2024"
+    },
+    {
+      "text": "Nginx uses a single-threaded event loop per worker process, with CPU affinity (pinned to specific CPUs) to eliminate context switching overhead and scale to 100k+ concurrent connections per worker",
+      "source": "https://blog.nginx.org/blog/inside-nginx-how-we-designed-for-performance-scale",
+      "date": "2024"
+    },
+    {
+      "text": "Thread-per-request servers incur large memory overhead (each thread stack is 1-8 MB) and suffer from context switching costs; a single thread can only handle one request at a time during I/O wait",
+      "source": "https://berb.github.io/diploma-thesis/original/043_threadsevents.html",
+      "date": "2024"
+    },
+    {
+      "text": "An increment operation (++) on a shared variable is not atomic: it compiles to three micro-ops (load, add, store), so two threads can both load the old value, add 1, and write back the same value, losing one increment",
+      "source": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html",
+      "date": "2024"
+    },
+    {
+      "text": "Semaphores (counting) control access to a resource pool. A binary semaphore (0 or 1) is equivalent to a mutex; counting semaphores allow N threads to access a resource simultaneously",
+      "source": "https://en.wikipedia.org/wiki/Semaphore_(programming)",
+      "date": "2024"
+    },
+    {
+      "text": "The C10k problem: handling 10,000 concurrent connections was considered hard until event-driven, non-blocking I/O servers like Nginx and Node.js made it routine on commodity hardware",
+      "source": "https://en.wikipedia.org/wiki/C10k_problem",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Netflix uses event-driven architecture internally to handle millions of concurrent streaming requests without thread-per-request overhead",
+      "metric": "Reduced memory footprint by avoiding 1 MB+ per-thread stacks for inactive connections",
+      "reference": "https://medium.com/@kaushalsinh73/event-loop-internals-how-node-js-handles-10k-connections-f02a22f8c48a"
+    },
+    {
+      "scenario": "Nginx at Cloudflare handles ~200 million requests per second across thousands of machines using single-threaded event loops with epoll",
+      "metric": "1M+ concurrent connections per machine with < 100 MB memory per 10k connections",
+      "reference": "https://blog.cloudflare.com/how-we-scaled-nginx-and-saved-the-world-54-years-every-day/"
+    },
+    {
+      "scenario": "Race condition in a shared counter: two threads increment x (initially 0) to x+1 concurrently. Both load 0, add 1, write 1 back. Final value: 1 instead of 2",
+      "metric": "Lost 50% of increments due to unsynchronized writes",
+      "reference": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html"
+    },
+    {
+      "scenario": "Java's java.util.concurrent.atomic.AtomicInteger uses CAS in a loop: if CAS fails (another thread changed the value), retry. Lock-free, no mutex needed",
+      "metric": "Avoids mutex contention; outperforms synchronized blocks under high concurrency",
+      "reference": "https://www.baeldung.com/lock-free-programming"
+    },
+    {
+      "scenario": "Two threads: Thread A holds Lock 1 and waits for Lock 2. Thread B holds Lock 2 and waits for Lock 1. Neither can proceed—deadlock",
+      "metric": "System hangs indefinitely; circular wait is present",
+      "reference": "https://cs341.cs.illinois.edu/coursebook/Deadlock"
+    },
+    {
+      "scenario": "Node.js file I/O (fs.readFile) is offloaded to the thread pool; the event loop continues accepting connections. Result: I/O parallelism without multithreading the event loop",
+      "metric": "Single event loop + 4 thread pool threads can handle 10k+ concurrent file ops",
+      "reference": "https://medium.com/@thiru_73177/event-loops-in-node-js-a-deep-dive-into-libuv-thread-pool-and-event-instances-4054d9c6fde8"
+    },
+    {
+      "scenario": "Linux kernel receives TCP data on a socket. epoll notifies the event loop 'socket 42 has data'. Event loop reads it without polling thousands of sockets",
+      "metric": "O(1) wakeup per event, not O(n) polling; scales to 100k+ sockets per process",
+      "reference": "https://docs.libuv.org/en/v1.x/design.html"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Event loop vs. thread pool",
+      "analogy": "Event loop: one cashier at a bank who takes a customer, starts their transaction, then moves to the next customer while the first one's request is processed at the back office (thread pool). Thread pool: one cashier per customer—more cashiers needed, more desks, more memory, more context switching.",
+      "source": "https://berb.github.io/diploma-thesis/original/043_threadsevents.html"
+    },
+    {
+      "concept": "Race condition",
+      "analogy": "Two people updating a shared bank account. Person A reads balance (100), adds 50. Person B reads balance (100), adds 50. Both write back 150. Money lost because both read before either wrote.",
+      "source": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html"
+    },
+    {
+      "concept": "Mutex",
+      "analogy": "A bathroom with one key. Only one person can enter at a time. Others wait outside. Once inside, the person locks the door (acquires mutex), does their business, unlocks (releases mutex), and the next person enters.",
+      "source": "https://medium.com/@codecraftclub/mutex-race-conditions-in-java-multi-threading-made-so-simple-with-real-life-analogies-705fb1697c10"
+    },
+    {
+      "concept": "Semaphore (counting)",
+      "analogy": "A parking lot with 10 spaces. Each car that enters decrements the counter; each car that leaves increments it. When counter = 0, new cars wait. Allows controlled resource sharing.",
+      "source": "https://en.wikipedia.org/wiki/Semaphore_(programming)"
+    },
+    {
+      "concept": "Deadlock (circular wait)",
+      "analogy": "Two trains on a single track, heading toward each other. Train A stopped at signal waiting for Train B to move. Train B stopped waiting for Train A to move. Neither can proceed.",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Deadlock"
+    },
+    {
+      "concept": "epoll / kqueue (event notification)",
+      "analogy": "Instead of checking 10,000 mailboxes every second, subscribe to a notification service that alerts you only when mail arrives. epoll is the notification service.",
+      "source": "https://medium.com/@sachinklocham/the-os-level-magic-behind-millions-of-connections-epoll-kqueue-and-iocp-explained-ce7889d31580"
+    },
+    {
+      "concept": "CAS (Compare-and-Swap)",
+      "analogy": "A vending machine: you insert money and see a price tag (read old value). If the price hasn't changed (compare), your money is deducted and you get the item (swap). If someone changed the price, your transaction fails and you retry.",
+      "source": "https://www.baeldung.com/lock-free-programming"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Default libuv thread pool size",
+      "value": 4,
+      "context": "Can be increased via UV_THREADPOOL_SIZE; maximum is 1024",
+      "source": "https://docs.libuv.org/en/v1.x/threadpool.html"
+    },
+    {
+      "metric": "Context switch cost",
+      "value": "5,000–10,000 clock cycles",
+      "context": "On modern CPUs; several microseconds in wall time",
+      "source": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads"
+    },
+    {
+      "metric": "Concurrent connections per Nginx worker",
+      "value": 100000,
+      "context": "Single-threaded event loop using epoll/kqueue",
+      "source": "https://blog.nginx.org/blog/inside-nginx-how-we-designed-for-performance-scale"
+    },
+    {
+      "metric": "Memory per thread (typical Linux)",
+      "value": "1–8 MB",
+      "context": "Stack size; limits thread count in thread-per-request servers",
+      "source": "https://berb.github.io/diploma-thesis/original/043_threadsevents.html"
+    },
+    {
+      "metric": "Memory per Nginx connection",
+      "value": "100 KB–1 MB",
+      "context": "For 1M connections, 100 GB–1 TB RAM needed in thread-per-request; much less with event loop",
+      "source": "https://engineeringatscale.substack.com/p/nginx-millions-connections-event-driven-architecture"
+    },
+    {
+      "metric": "Maximum UV_THREADPOOL_SIZE",
+      "value": 1024,
+      "context": "Increased from 128 in libuv 1.30.0",
+      "source": "https://nodejs.org/docs/v12.7.0/api/cli.html"
+    },
+    {
+      "metric": "Event loop phases (libuv)",
+      "value": 6,
+      "context": "timers, pending callbacks, idle, poll, check, close",
+      "source": "https://nodejs.org/learn/asynchronous-work/event-loop-timers-and-nexttick"
+    },
+    {
+      "metric": "C10k problem year introduced",
+      "value": 1999,
+      "context": "Dan Kegel coined the term for handling 10,000 concurrent connections",
+      "source": "https://en.wikipedia.org/wiki/C10k_problem"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Node.js is truly single-threaded.",
+      "reality": "Node.js is single-threaded for JavaScript execution, but libuv manages a thread pool (4 by default) for file I/O, DNS, and other blocking operations. The main event loop runs on one thread.",
+      "source": "https://medium.com/@thiru_73177/event-loops-in-node-js-a-deep-dive-into-libuv-thread-pool-and-event-instances-4054d9c6fde8"
+    },
+    {
+      "misconception": "Increasing UV_THREADPOOL_SIZE always improves performance.",
+      "reality": "The thread pool is for blocking operations (fs, getaddrinfo). Network I/O uses epoll/kqueue and doesn't consume thread pool slots. Oversizing wastes memory and increases context switching.",
+      "source": "https://www.sebastienvercammen.be/your-libuv-thread-pool-size-is-too-small/"
+    },
+    {
+      "misconception": "Data races only cause crashes or obvious bugs.",
+      "reality": "Data races cause undefined behavior in C/C++. The compiler is free to optimize assuming races never happen, producing code that works in testing but fails in production under different timing.",
+      "source": "https://www.hboehm.info/c++mm/why_undef.html"
+    },
+    {
+      "misconception": "If I use a mutex, all race conditions are solved.",
+      "reality": "Mutexes prevent data races on the protected resource, but can introduce deadlocks if not used carefully. Using a mutex doesn't mean the program is thread-safe—logic errors still exist.",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Deadlock"
+    },
+    {
+      "misconception": "Semaphores and mutexes are interchangeable.",
+      "reality": "A binary semaphore resembles a mutex but isn't identical. Semaphores are for resource counting (e.g., N of M resources available). Mutexes are for mutual exclusion and often support priority inheritance.",
+      "source": "https://en.wikipedia.org/wiki/Semaphore_(programming)"
+    },
+    {
+      "misconception": "More threads = faster performance.",
+      "reality": "For I/O-bound workloads, one thread per CPU with non-blocking I/O outperforms N threads. Context switching, lock contention, and memory overhead hurt thread-per-request models.",
+      "source": "https://berb.github.io/diploma-thesis/original/043_threadsevents.html"
+    },
+    {
+      "misconception": "CAS is faster than mutex-based locking.",
+      "reality": "CAS is faster under low contention. Under high contention, CAS spins (retries), wasting CPU, while a mutex blocks. The best choice depends on contention patterns.",
+      "source": "https://www.baeldung.com/lock-free-programming"
+    },
+    {
+      "misconception": "setTimeout(..., 0) runs immediately.",
+      "reality": "setTimeout is a macrotask. Microtasks (Promises, queueMicrotask) run before any macrotask. A Promise.then() always runs before setTimeout(..., 0).",
+      "source": "https://javascript.info/event-loop"
+    },
+    {
+      "misconception": "Java is immune to data races because of memory safety.",
+      "reality": "Java allows data races. A race won't cause a crash or memory corruption (Java is memory-safe), but you will observe stale or inconsistent values. Java has a well-defined memory model to limit the damage.",
+      "source": "https://ralfj.de/blog/2025/07/24/memory-safety.html"
+    },
+    {
+      "misconception": "All deadlocks can be prevented by avoiding circular waits.",
+      "reality": "Avoiding circular waits prevents deadlock, but it's often impractical. Deadlock avoidance strategies (like lock ordering) are common but must be applied everywhere in the codebase.",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Deadlock"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://nodejs.org/learn/asynchronous-work/event-loop-timers-and-nexttick",
+      "title": "The Node.js Event Loop",
+      "recency_note": "Official Node.js documentation, updated 2024"
+    },
+    {
+      "url": "https://docs.libuv.org/en/v1.x/design.html",
+      "title": "libuv Design Overview",
+      "recency_note": "Official libuv docs, authoritative on event loop architecture"
+    },
+    {
+      "url": "https://blog.nginx.org/blog/inside-nginx-how-we-designed-for-performance-scale",
+      "title": "Inside NGINX: How We Designed for Performance & Scale",
+      "recency_note": "Nginx official blog, 2024, real-world production architecture"
+    },
+    {
+      "url": "https://cs341.cs.illinois.edu/coursebook/Deadlock",
+      "title": "CS 341: Operating Systems — Deadlock",
+      "recency_note": "University of Illinois course material, 2024"
+    },
+    {
+      "url": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html",
+      "title": "Brown University CS 300: Race Conditions, Synchronization, Mutexes",
+      "recency_note": "Brown University CS course, 2024"
+    },
+    {
+      "url": "https://www.baeldung.com/lock-free-programming",
+      "title": "Introduction to Lock-Free Data Structures with Java Examples",
+      "recency_note": "2024, includes CAS and atomic operations patterns"
+    },
+    {
+      "url": "https://javascript.info/event-loop",
+      "title": "Event loop: microtasks and macrotasks",
+      "recency_note": "JavaScript.info, authoritative on Promise execution order"
+    },
+    {
+      "url": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads",
+      "title": "Measuring context switching and memory overheads for Linux threads",
+      "recency_note": "2018; seminal work on context switch cost measurement"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/C10k_problem",
+      "title": "C10k Problem — Wikipedia",
+      "recency_note": "Historical reference and current challenges"
+    },
+    {
+      "url": "https://medium.com/@sachinklocham/the-os-level-magic-behind-millions-of-connections-epoll-kqueue-and-iocp-explained-ce7889d31580",
+      "title": "The OS-Level Magic Behind Millions of Connections: epoll, kqueue, and IOCP Explained",
+      "recency_note": "2024, comprehensive comparison of multiplexing mechanisms"
+    },
+    {
+      "url": "https://berb.github.io/diploma-thesis/original/043_threadsevents.html",
+      "title": "The Case of Threads vs. Events",
+      "recency_note": "Diploma thesis with real benchmarks comparing architectures"
+    },
+    {
+      "url": "https://www.hboehm.info/c++mm/why_undef.html",
+      "title": "Why Undefined Semantics for C++ Data Races?",
+      "recency_note": "Hans Boehm's authoritative explanation of C++ memory model"
+    },
+    {
+      "url": "https://ralfj.de/blog/2025/07/24/memory-safety.html",
+      "title": "There is no memory safety without thread safety",
+      "recency_note": "2025, Ralf Jung (Rust core team) on language-level guarantees"
+    },
+    {
+      "url": "https://www.sebastienvercammen.be/your-libuv-thread-pool-size-is-too-small/",
+      "title": "Your libuv Thread Pool Size Is Too Small",
+      "recency_note": "2024, practical tuning advice with benchmarks"
+    },
+    {
+      "url": "https://docs.libuv.org/en/v1.x/threadpool.html",
+      "title": "libuv Thread Pool Documentation",
+      "recency_note": "Official libuv docs on UV_THREADPOOL_SIZE"
+    }
+  ]
+}

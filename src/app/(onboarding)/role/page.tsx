@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { getOnboardingState, saveOnboardingState } from '@/lib/onboarding/state-client'
 
 const ROLES = [
   {
@@ -28,7 +29,7 @@ const ROLES = [
     badge: 'ML Eng',
     title: 'ML Engineer',
     description: 'Improve model accuracy but struggle to translate it to business impact',
-    painPoint: 'Your model improved recall by 12% — and nobody in leadership noticed.',
+    painPoint: 'Your model improved recall by 12%, and nobody in leadership noticed.',
   },
   {
     id: 'devops',
@@ -44,14 +45,14 @@ const ROLES = [
     badge: 'EM',
     title: 'Eng Manager',
     description: 'Manage delivery but want to shape direction, not just execute',
-    painPoint: 'You run standups, clear blockers, hit deadlines — but never set the roadmap.',
+    painPoint: 'You run standups, clear blockers, hit deadlines, but never set the roadmap.',
   },
   {
     id: 'founding_eng',
     icon: 'rocket_launch',
     badge: 'Founding Eng',
     title: 'Founding Engineer',
-    description: 'You ARE the product team — need to think like a CPO',
+    description: 'You ARE the product team. You need to think like a CPO',
     painPoint: 'There is no PM. Every product call is on you.',
   },
   {
@@ -99,6 +100,33 @@ export default function RoleSelectionPage() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    let cancelled = false
+
+    getOnboardingState<{ selectedRole?: string | null }>()
+      .then(state => {
+        if (cancelled || state?.step !== '/onboarding/role') return
+        const role = state.data?.selectedRole
+        if (typeof role === 'string' && ROLES.some(item => item.id === role)) {
+          setSelectedRole(role)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!selectedRole || isLoading) return
+    const timeout = window.setTimeout(() => {
+      saveOnboardingState('/onboarding/role', { selectedRole }).catch(() => {})
+    }, 400)
+
+    return () => window.clearTimeout(timeout)
+  }, [isLoading, selectedRole])
+
   const handleNext = async () => {
     if (!selectedRole) return
     setIsLoading(true)
@@ -109,9 +137,13 @@ export default function RoleSelectionPage() {
         body: JSON.stringify({ role: selectedRole }),
       })
     } catch {
-      // Non-fatal — proceed regardless
+      // Non-fatal; proceed regardless.
     } finally {
-      setIsLoading(false)
+      await saveOnboardingState('/calibration', {
+        selectedRole,
+        screen: 'intro',
+        answers: {},
+      }).catch(() => null)
       router.push('/calibration')
     }
   }
@@ -247,7 +279,7 @@ export default function RoleSelectionPage() {
           <Link
             href="/dashboard"
             className="flex items-center gap-2 text-secondary font-label text-sm font-semibold hover:text-primary transition-colors"
-            title="Go straight to challenges — you can calibrate later"
+            title="Go straight to challenges. You can calibrate later."
           >
             Skip to challenges
             <span className="material-symbols-outlined text-sm">skip_next</span>

@@ -33,7 +33,7 @@ export function UpgradeButton({ variant = 'default' }: UpgradeButtonProps) {
       disabled={loading}
       className={className}
     >
-      {loading ? 'Loading...' : 'Upgrade to Pro'}
+      {loading ? 'Loading...' : 'Start 7-day trial'}
     </button>
   )
 }

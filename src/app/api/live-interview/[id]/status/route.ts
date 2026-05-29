@@ -25,6 +25,7 @@ export async function GET(
                 flowCoverage: session.flow_coverage,
                 totalTurns: session.total_turns,
                 latestSignal: null,
+                focusEvent: null,
                 done: true,
               })
               controller.enqueue(encoder.encode(`data: ${payload}\n\n`))
@@ -55,7 +56,11 @@ export async function GET(
 
           // Extract latest grading data (emotional beat, session phase) from calibration_snapshot
           const snapshot = session.calibration_snapshot as Record<string, unknown> | null
-          const latestGrading = snapshot?._latestGrading as { emotionalBeat?: string; sessionPhase?: string } | undefined
+          const latestGrading = snapshot?._latestGrading as {
+            emotionalBeat?: string
+            sessionPhase?: string
+            focusEvent?: unknown
+          } | undefined
 
           const payload = JSON.stringify({
             flowCoverage: session.flow_coverage,
@@ -63,6 +68,7 @@ export async function GET(
             latestSignal,
             emotionalBeat: latestGrading?.emotionalBeat ?? null,
             sessionPhase: latestGrading?.sessionPhase ?? null,
+            focusEvent: latestGrading?.focusEvent ?? null,
           })
           controller.enqueue(encoder.encode(`data: ${payload}\n\n`))
         } catch {

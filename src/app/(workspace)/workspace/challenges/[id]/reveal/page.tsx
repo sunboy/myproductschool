@@ -41,7 +41,7 @@ export default async function RevealPage({
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Title section */}
         <h1 className="font-headline text-2xl font-bold text-on-surface">
-          The Feature That Backfired — List Step
+          The Feature That Backfired - List Step
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
           Step 2 of 4 complete
@@ -142,7 +142,7 @@ export default async function RevealPage({
           </span>
         </div>
 
-        {/* Coaching Feedback — Aggregate Fallacy */}
+        {/* Coaching Feedback - Aggregate Fallacy */}
         <div className="mt-8 bg-surface-container rounded-xl p-5">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-tertiary" style={{ fontSize: 20 }}>warning_amber</span>

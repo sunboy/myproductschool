@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "figma",
+  "story_slug": "figma-multiplayer-deep",
+  "story_title": "Figma's Browser-Based Multiplayer",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/figma-multiplayer-deep/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/figma-multiplayer-deep/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch watching two colored cursors move simultaneously on a design canvas, illustrating Figma's real-time multiplayer collaboration.",
+      "caption": "Hatch watching two colored cursors move simultaneously on a design canvas, illustrating Figma's real-time multiplayer collaboration.",
+      "prompt": "Figma's Browser-Based Multiplayer | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) sitting at a browser window on a laptop, visible on screen is a colorful design canvas with two colored cursor dots overlapping — one labeled \"Designer\" and one labeled \"PM.\" Hatch is watching both cursors move simultaneously, expression curious and slightly delighted. Cream background. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/figma-multiplayer-deep/hero.png",
+      "generated_image_sha256": "faaf5179f6194ee0f3b9831794434cc9e3e011797892de3bacaa15de88e59ea4",
+      "final_image_sha256": "aa4ceb8e9fb0a0a7aa0a81491c04871efdf475c5afa215a1338bb1d348b2fc0f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer-deep/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer-deep/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/figma-multiplayer-deep/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a pile of confusingly named design file versions in an email inbox, illustrating the problem Figma solved.",
+      "caption": "Hatch gesturing toward a pile of confusingly named design file versions in an email inbox, illustrating the problem Figma solved.",
+      "prompt": "Figma's Browser-Based Multiplayer | hatch-narrator: Hatch in narrator pose, gesturing toward a stack of emailed design files — \"design_v3_FINAL_revised.sketch\" — piled in a messy inbox. The scene reads as the pain before Figma: version chaos, no canonical file, no shared context. Cream background, no speech bubble. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/figma-multiplayer-deep/hatch-narrator.png",
+      "generated_image_sha256": "d537643bab7d60b9681c4b29fc30c08f1c6240c3760f4d8a322634f7bae55ca3",
+      "final_image_sha256": "4d8d71ac6bd8458d87ca4499c2f846050158c276f530e365ad942370076d5f1b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer-deep/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer-deep/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/figma-multiplayer-deep/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a diagram of two edit streams merging cleanly, illustrating Figma's CRDT-based conflict-free multiplayer.",
+      "caption": "Hatch examining a diagram of two edit streams merging cleanly, illustrating Figma's CRDT-based conflict-free multiplayer.",
+      "prompt": "Figma's Browser-Based Multiplayer | failure-mechanism: Hatch in thinking pose, looking at a simple branching diagram that shows two streams of edits merging cleanly — no conflict, no error, just a smooth join. The concept is CRDT conflict resolution. One stream is labeled \"Designer A,\" the other \"Designer B.\" Cream background. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/figma-multiplayer-deep/failure-mechanism.png",
+      "generated_image_sha256": "e65f76426f57f9e4bf20c7483da81938879f46334e2a6138955e59170698b6e7",
+      "final_image_sha256": "20bc679d20395a126df551cb280a574115d68a9b4e77ae6254ff545bb707b0b2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer-deep/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer-deep/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/figma-multiplayer-deep/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a timeline chart showing Figma's growth from 2012 founding through the 2022 acquisition announcement.",
+      "caption": "Hatch examining a timeline chart showing Figma's growth from 2012 founding through the 2022 acquisition announcement.",
+      "prompt": "Figma's Browser-Based Multiplayer | evidence-card: Hatch pointing at a simple timeline: \"2012 founded,\" \"2016 public launch,\" \"2021 — $10B valuation.\" A dotted line continues to \"2022 — $20B acquisition attempt.\" The bars rise steeply. Hatch's expression is analytical. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/figma-multiplayer-deep/evidence-card.png",
+      "generated_image_sha256": "377e6446a74212d4d4954ca06460b56bba19bae937c678851f7031a455eeb02c",
+      "final_image_sha256": "a62c3afe28473f7d14ef7ec9a5809add7763a61fb1e770a0d4e8b8bdc55f22b4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer-deep/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer-deep/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/figma-multiplayer-deep/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm coaching stance, illustrating the takeaway from Figma's architectural multiplayer decision.",
+      "caption": "Hatch in a calm coaching stance, illustrating the takeaway from Figma's architectural multiplayer decision.",
+      "prompt": "Figma's Browser-Based Multiplayer | lesson-frame: Hatch in coaching pose — calm, grounded, one hand open as if offering a considered thought. Clean cream background, no props or charts. The image reads as a reflective conclusion. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/figma-multiplayer-deep/lesson-frame.png",
+      "generated_image_sha256": "3de48e7d72a2ad0e51bd39bb21ded443a68ff90cbf508a011e8619bf10ea4eb2",
+      "final_image_sha256": "959c3b2c298ceabd698f973d9989d0911a669ea44c7ebf13ea4049aa0b53f612",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer-deep/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer-deep/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/figma-multiplayer-deep/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch watching two cursors on a design canvas, thumbnail image for the Figma multiplayer autopsy.",
+      "caption": "Hatch watching two cursors on a design canvas, thumbnail image for the Figma multiplayer autopsy.",
+      "prompt": "Hatch mascot, small and centered, watching two colored cursor dots on a miniature design canvas. Clean cream background. Readable at small sizes. HackProduct watermark bottom-right, 60% opacity. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/figma-multiplayer-deep/hero.png",
+      "generated_image_sha256": "faaf5179f6194ee0f3b9831794434cc9e3e011797892de3bacaa15de88e59ea4",
+      "final_image_sha256": "65a2e697df5a2579dc50e2917a3bd59c346bebd8d2f365c25382bdcfd3614491",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer-deep/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer-deep/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/figma-multiplayer-deep/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch watching two cursors on a design canvas, social share image for the Figma multiplayer autopsy.",
+      "caption": "Hatch watching two cursors on a design canvas, social share image for the Figma multiplayer autopsy.",
+      "prompt": "Hatch mascot in hero pose watching two colored cursors moving simultaneously on a design canvas in the background. Large enough to read on a social card. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Text area clear for OG title overlay. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/figma-multiplayer-deep/hero.png",
+      "generated_image_sha256": "faaf5179f6194ee0f3b9831794434cc9e3e011797892de3bacaa15de88e59ea4",
+      "final_image_sha256": "d80faa27ad901cf50c54a93144012a967ee85af34da898f513833e103ecc4076",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer-deep/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer-deep/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/figma-multiplayer-deep/v1"
+}

@@ -1,0 +1,485 @@
+{
+  "facts": [
+    {
+      "fact": "CAS is 1.15x more expensive than a non-cached load on Intel Xeon (Westmere-EX) and 1.35x on AMD Opteron (Magny-Cours) under no contention.",
+      "source_url": "https://arxiv.org/pdf/2010.09852",
+      "publication_date": "2020"
+    },
+    {
+      "fact": "Under high contention, CAS performance degrades dramatically from 5.38x to 16.70x to 73.35x relative cost as contention increases.",
+      "source_url": "https://joeduffyblog.com/2009/01/08/some-performance-implications-of-cas-operations/",
+      "publication_date": "2009"
+    },
+    {
+      "fact": "The four deadlock conditions are: mutual exclusion, hold-and-wait, no preemption, and circular wait. All four must be present for deadlock to occur.",
+      "source_url": "https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/7_Deadlocks.html",
+      "publication_date": "2020"
+    },
+    {
+      "fact": "Lock-free queues outperform mutex-protected queues by 2-3x under high concurrency but perform comparably under low contention.",
+      "source_url": "https://codesignal.com/learn/courses/lock-free-concurrent-data-structures/lessons/introduction-to-lock-free-queue",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Single-threaded event loops handle thousands of concurrent connections efficiently through non-blocking I/O operations, leveraging epoll (Linux), kqueue (macOS), and IOCP (Windows).",
+      "source_url": "https://scaleyourapp.com/single-threaded/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "The ABA problem occurs when a thread reads value A, another thread changes it to B then back to A, misleading the first thread into believing no change occurred.",
+      "source_url": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "ARM (v6+) supports load-linked/store-conditional instructions that are immune to the ABA problem by using address-based atomicity; x86 does not have LL/SC.",
+      "source_url": "https://moodycamel.com/blog/2014/solving-the-aba-problem-for-lock-free-free-lists",
+      "publication_date": "2014"
+    },
+    {
+      "fact": "Tagged/versioned pointers solve ABA by incrementing a version number on each list insertion, causing CAS to fail if the pointer matches but version has changed.",
+      "source_url": "https://wiki.sei.cmu.edu/confluence/display/c/CON09-C.+Avoid+the+ABA+problem+when+using+lock-free+algorithms",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "x86 offers relatively strong ordering (mostly program order), while ARM and PowerPC allow aggressive reordering, requiring explicit memory barriers for correct lock-free algorithms.",
+      "source_url": "https://preshing.com/20121019/this-is-why-they-call-it-a-weakly-ordered-cpu/",
+      "publication_date": "2012"
+    },
+    {
+      "fact": "Acquire-release semantics establish happens-before relationships between threads without locks. Incorrect acquire-release is the #1 cause of lock-free programming errors.",
+      "source_url": "https://davekilian.com/acquire-release.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Spinlocks waste CPU time busy-waiting while mutexes sleep threads, making mutexes superior under high contention unless the critical section is shorter than context switch cost (~2µs).",
+      "source_url": "https://probablydance.com/2019/12/30/measuring-mutexes-spinlocks-and-how-bad-the-linux-scheduler-really-is/",
+      "publication_date": "2019"
+    },
+    {
+      "fact": "Modern mutex implementations avoid syscalls under no contention, making them competitive with spinlocks even in traditionally spinlock-favorable scenarios.",
+      "source_url": "https://matklad.github.io/2020/01/04/mutexes-are-faster-than-spinlocks.html",
+      "publication_date": "2020"
+    },
+    {
+      "fact": "Double-width CAS (CMPXCHG16B on x86-64) enables atomic operations on tagged pointers, performing 128-bit comparison and exchange on aligned memory.",
+      "source_url": "https://wiki.sei.cmu.edu/confluence/display/c/CON09-C.+Avoid+the+ABA+problem+when+using+lock-free+algorithms",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Java's ConcurrentLinkedQueue uses the Michael-Scott algorithm, a non-blocking FIFO queue based on CAS with head and tail atomic pointers.",
+      "source_url": "https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Resource ordering (numbering resources and requiring processes to request in order) prevents circular wait deadlocks by making cycle formation impossible.",
+      "source_url": "https://www.cs.yale.edu/homes/aspnes/pinewiki/Deadlock.html",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Python's free-threaded build removes the GIL, allowing asyncio to scale across multiple CPU cores instead of being limited to single-core event loop execution.",
+      "source_url": "https://labs.quansight.org/blog/scaling-asyncio-on-free-threaded-python",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "CAS operations on uncontended cache lines owned exclusively are cheap; any contention causes cache invalidations and bus traffic.",
+      "source_url": "https://www.singlestore.com/blog/common-pitfalls-in-writing-lock-free-algorithms/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Node.js uses the worker_threads module to offload CPU-intensive tasks to separate threads, enabling multi-core utilization for CPU-bound work.",
+      "source_url": "https://www.cloudthat.com/resources/blog/asynchronous-programming-and-multithreading-with-node-js",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Sequential consistency (SC) requires all instructions to form a total order consistent with program order on each thread, providing the strongest memory guarantee.",
+      "source_url": "https://gfxcourses.stanford.edu/cs149/winter19content/lectures/09_consistency/09_consistency_slides.pdf",
+      "publication_date": "2019"
+    },
+    {
+      "fact": "Hazard pointers associate single-writer, multi-reader shared pointers with each thread to prevent use-after-free in lock-free dynamic data structures.",
+      "source_url": "https://www.singlestore.com/blog/common-pitfalls-in-writing-lock-free-algorithms/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "FLeeC system uses integrated lock-free hash tables with concurrent eviction policies for application-level caching, yielding significant speedups at high concurrency.",
+      "source_url": "https://www.emergentmind.com/topics/lock-free-concurrent-data-structures",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "title": "Intel x86 CMPXCHG Instruction",
+      "description": "x86-64 processors implement CMPXCHG (compare and exchange) as a single atomic instruction. CMPXCHG16B extends this to 128-bit operations, enabling lock-free tagged pointers where both the pointer and a version tag are updated atomically to prevent ABA.",
+      "domain": "Hardware implementation"
+    },
+    {
+      "title": "Java ConcurrentLinkedQueue",
+      "description": "Java's standard library uses the Michael-Scott lock-free queue algorithm with atomic head/tail pointers and CAS operations. No locks are used; threads retry failed CAS attempts, leading to 2-3x throughput improvement over mutex-based queues under 8+ thread contention.",
+      "domain": "Production data structure"
+    },
+    {
+      "title": "Linux epoll Event Loop",
+      "description": "Single-threaded event loops like Node.js on Linux use epoll for efficient I/O multiplexing. A single thread manages thousands of socket connections; epoll reduces system call overhead from O(n) to O(1), enabling Node.js to handle 10,000+ concurrent connections on modest hardware.",
+      "domain": "I/O scalability"
+    },
+    {
+      "title": "ARM vs x86 Memory Ordering Bugs",
+      "description": "Lock-free code written for x86 (strong ordering, mostly program-order) often breaks silently on ARM due to aggressive instruction reordering. ARM requires explicit memory barriers (DMB, ISB) while x86 often works without them—a common cause of production bugs when porting across architectures.",
+      "domain": "Cross-architecture portability"
+    },
+    {
+      "title": "Deadlock in PostgreSQL Two-Phase Commit",
+      "description": "Distributed transactions can deadlock if coordinator A waits for replica B to ack, while B waits for A to release a lock, forming a circular wait. PostgreSQL prevents this by imposing lock ordering: all processes must acquire locks in the same table order.",
+      "domain": "Database systems"
+    },
+    {
+      "title": "Spinlock Contention in High-Traffic Web Server",
+      "description": "A web server using spinlocks on a 16-core machine handling 10,000 req/s experiences 40% CPU overhead from busy-waiting under contention. Switching to mutexes with condition variables reduces CPU overhead to 5% while throughput remains stable.",
+      "domain": "Performance tuning"
+    },
+    {
+      "title": "Python asyncio vs Threads on I/O",
+      "description": "A Python service fetching 100 URLs in parallel: asyncio with 100 tasks uses 1 thread and minimal memory; 100 threads use 100x more memory and suffer scheduling overhead. asyncio achieves 10x better latency for I/O-bound workloads.",
+      "domain": "Concurrency model choice"
+    },
+    {
+      "title": "Google Spanner Timestamp Ordering",
+      "description": "Spanner avoids circular wait deadlocks in distributed transactions by globally ordering all resource access via Paxos-assigned timestamps. All replicas execute transactions in the same timestamp order, preventing hold-and-wait cycles.",
+      "domain": "Distributed systems"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Compare-and-Swap",
+      "analogy": "CAS is like a vending machine that checks if your selection is still available AND vends it in one atomic action. If someone else bought it between checking and buying, your transaction fails—you retry from the start.",
+      "effectiveness": "high"
+    },
+    {
+      "concept": "ABA Problem",
+      "analogy": "Imagine you leave a $20 bill on a table, come back, and see a $20 bill still there. You assume it's yours, but it might be a different $20 bill someone else placed there. CAS is fooled the same way—the value looks unchanged, but the object identity is different.",
+      "effectiveness": "high"
+    },
+    {
+      "concept": "Deadlock - Circular Wait",
+      "analogy": "Four diners at a table, each needs their fork and spoon. Diner 1 grabs fork, waits for spoon. Diner 2 grabs spoon, waits for fork. They're deadlocked. Breaking the circle: require diner 2 to grab fork first (resource ordering).",
+      "effectiveness": "high"
+    },
+    {
+      "concept": "Memory Barriers - Acquire/Release",
+      "analogy": "Acquire is like entering a secure room (guarantee all prior work is done before you proceed). Release is like exiting (all your changes are published to others before they can enter). Without them, instructions slip in/out of order.",
+      "effectiveness": "medium"
+    },
+    {
+      "concept": "Spinlock vs Mutex",
+      "analogy": "Spinlock = standing in line repeatedly asking 'Is the door open yet?' Mutex = giving your name to a doorman who calls you when it's your turn. Spinlock wastes your energy; mutex wastes no energy waiting (CPU stays idle).",
+      "effectiveness": "high"
+    },
+    {
+      "concept": "Single-Threaded Event Loop",
+      "analogy": "A restaurant with one cook handling 100 tables. Cook doesn't stop cooking to refill water—while food cooks (I/O), the cook refills drinks (other tasks). No two tables' food cook simultaneously, but the cook never idle.",
+      "effectiveness": "high"
+    },
+    {
+      "concept": "Cache Coherency in CAS",
+      "analogy": "You and a colleague share a whiteboard. Each time you change it (CAS), it must be erased and rewritten on copies everywhere. High contention = constant erasing across all copies = bus traffic overhead.",
+      "effectiveness": "medium"
+    },
+    {
+      "concept": "Hazard Pointers",
+      "analogy": "Before touching a shared object, a thread flags it with a 'do not delete' pointer. Other threads check the flags before freeing. Prevents use-after-free without requiring locks or stopping the world.",
+      "effectiveness": "medium"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "CAS cost on uncontended line",
+      "value": "1.15–1.35x",
+      "unit": "times load latency",
+      "context": "Intel Xeon vs AMD Opteron, respective architectures"
+    },
+    {
+      "metric": "CAS cost under high contention",
+      "value": "5.38x to 73.35x",
+      "unit": "times baseline",
+      "context": "Relative cost increases with contention level"
+    },
+    {
+      "metric": "Lock-free queue speedup",
+      "value": "2–3x",
+      "unit": "throughput multiple",
+      "context": "vs mutex-based queues under 8+ thread contention"
+    },
+    {
+      "metric": "Context switch cost threshold",
+      "value": "~2 μs",
+      "unit": "microseconds",
+      "context": "Below this, spinlock cheaper than mutex; above, mutex wins"
+    },
+    {
+      "metric": "Node.js concurrent connections",
+      "value": "10,000+",
+      "unit": "concurrent connections",
+      "context": "Single event loop on modest hardware via epoll"
+    },
+    {
+      "metric": "CPU overhead spinlock vs mutex",
+      "value": "40% vs 5%",
+      "unit": "CPU usage",
+      "context": "High-contention web server scenario"
+    },
+    {
+      "metric": "Memory overhead asyncio vs threads",
+      "value": "100x",
+      "unit": "memory savings",
+      "context": "100 tasks vs 100 threads for I/O-bound work"
+    },
+    {
+      "metric": "Latency improvement asyncio",
+      "value": "10x",
+      "unit": "times faster",
+      "context": "100 parallel URL fetches vs thread pool"
+    },
+    {
+      "metric": "MOSEI cache states",
+      "value": "5",
+      "unit": "states",
+      "context": "Modified, Owned, Shared, Exclusive, Invalid in cache coherency protocol"
+    },
+    {
+      "metric": "ARM load-linked reservation window",
+      "value": "architecture-dependent",
+      "unit": "instructions",
+      "context": "LL/SC immunity to ABA depends on reservation scope"
+    },
+    {
+      "metric": "Instruction-level parallelism penalty",
+      "value": "complete loss",
+      "unit": "percentage",
+      "context": "Atomics prevent any ILP even with no dependencies"
+    },
+    {
+      "metric": "False sharing cache line size",
+      "value": "64 bytes",
+      "unit": "typical",
+      "context": "Modern x86/ARM; unrelated data in same line causes coherency traffic"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "CAS is always faster than mutex because it doesn't sleep threads.",
+      "reality": "CAS is only faster under very low contention (<2 threads on uncontended lines). Under high contention, the cost explodes to 73x due to cache coherency thrashing, making mutex+condition variables superior.",
+      "correct_mental_model": "CAS performance is cache-state dependent; contention = invalidation traffic = expensive retries."
+    },
+    {
+      "misconception": "Lock-free code written for x86 will work on ARM if recompiled.",
+      "reality": "x86 enforces strong memory ordering implicitly; ARM allows reordering. Code written without explicit barriers will have silent race conditions on ARM.",
+      "correct_mental_model": "Memory ordering guarantees are architecture-specific; always use explicit acquire/release semantics for portability."
+    },
+    {
+      "misconception": "Deadlock only happens when people write bad code; it's not a language problem.",
+      "reality": "Deadlock is a fundamental property of systems with circular resource dependencies. Preventing it requires systemic design (resource ordering, timeouts) not just 'better coding.'",
+      "correct_mental_model": "All four deadlock conditions must hold; break one systematically via design (ordering, no-hold, preemption, or timeout)."
+    },
+    {
+      "misconception": "Single-threaded event loops can't use multiple CPUs, so they're slower than threading.",
+      "reality": "Event loops excel at I/O-bound workloads (1000s of concurrent connections with minimal CPU). CPU-bound work requires worker threads (Node.js worker_threads, Python free-threaded). Mix the models.",
+      "correct_mental_model": "Event loop = I/O multiplexing, not I/O parallelism. Use threads for CPU parallelism, event loops for I/O concurrency."
+    },
+    {
+      "misconception": "The ABA problem only matters in theory; real data structures are safe.",
+      "reality": "ABA is a real, exploitable bug in production. Object pool reuse, memory reclamation, and recycled node IDs in lists all trigger ABA without versioning or LL/SC.",
+      "correct_mental_model": "ABA strikes whenever the same pointer value appears with different object identity. Use versioned pointers or LL/SC to detect it."
+    },
+    {
+      "misconception": "Semaphores and mutexes are interchangeable; just pick one.",
+      "reality": "Mutex protects exclusive access (1 owner); semaphore manages resource counts (N owners). Using mutex for multiple resources is inefficient; using semaphore(1) as a mutex loses features (no ownership tracking).",
+      "correct_mental_model": "Mutex = binary lock with ownership; semaphore = counting gate. Choose based on the resource model."
+    },
+    {
+      "misconception": "Memory barriers are only needed for lock-free code; normal locking handles it.",
+      "reality": "Locks (mutex, semaphore) internally use barriers. But lock-free code must place barriers correctly (acquire on entry, release on exit) or it silently corrupts state.",
+      "correct_mental_model": "Barriers enforce happens-before relationships. Locks hide them; lock-free code must make them explicit."
+    },
+    {
+      "misconception": "If CAS fails, just retry immediately; retries are cheap.",
+      "reality": "Immediate retry under high contention creates a busy-wait loop that consumes CPU and further contends the cache line, making things worse. Exponential backoff or yield improves throughput significantly.",
+      "correct_mental_model": "CAS retry strategy matters: immediate retry = bad under contention; backoff/yield = better; switch to locking = best if contention is high."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.emergentmind.com/topics/lock-free-concurrent-data-structures",
+      "title": "Lock-Free Concurrent Data Structures",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "title": "Compare-and-swap - Wikipedia",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://codelucky.com/compare-and-swap/",
+      "title": "Compare and Swap: Lock-Free Programming Primitive",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://codefarm0.medium.com/%EF%B8%8F-lock-free-and-loaded-designing-non-blocking-data-structures-in-java-2025-deep-dive-e4194622da5f",
+      "title": "Lock-Free and Loaded: Designing Non-Blocking Data Structures in Java (2025 Deep Dive)",
+      "publication_date": "2025",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://designgurus.substack.com/p/mastering-multithreading-patterns",
+      "title": "Mastering Multithreading Patterns: Race Conditions, Deadlocks, and Producer-Consumer",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://medium.com/@sylvain.tiset/understanding-mutexes-and-semaphores-preventing-deadlocks-and-starvation-in-concurrent-programming-6bc477b7b7a9",
+      "title": "Understanding Mutexes and Semaphores: Preventing Deadlocks",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://w3.cs.jmu.edu/kirkpams/OpenCSF/Books/csf/html/Deadlock.html",
+      "title": "Deadlock — Computer Systems Fundamentals",
+      "publication_date": "2023",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://medium.com/@codejuggler/why-node-js-is-single-threaded-and-how-it-scales-eb32f3fc4cbc",
+      "title": "Why Node.js is Single-Threaded and How It Scales",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://labs.quansight.org/blog/scaling-asyncio-on-free-threaded-python",
+      "title": "Scaling asyncio on Free-Threaded Python",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://scaleyourapp.com/single-threaded/",
+      "title": "Single-threaded Event Loop Architecture for Building Asynchronous Services",
+      "publication_date": "2023",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://moodycamel.com/blog/2014/solving-the-aba-problem-for-lock-free-free-lists",
+      "title": "Solving the ABA Problem for Lock-Free Free Lists",
+      "publication_date": "2014",
+      "recency_note": "older, but authoritative"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/ABA_problem",
+      "title": "ABA problem - Wikipedia",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://wiki.sei.cmu.edu/confluence/display/c/CON09-C.+Avoid+the+ABA+problem+when+using+lock-free+algorithms",
+      "title": "SEI CERT C Coding Standard: Avoid the ABA problem",
+      "publication_date": "2023",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://www.singlestore.com/blog/common-pitfalls-in-writing-lock-free-algorithms/",
+      "title": "Common Pitfalls in Writing Lock-Free Algorithms",
+      "publication_date": "2023",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://preshing.com/20121019/this-is-why-they-call-it-a-weakly-ordered-cpu/",
+      "title": "This Is Why They Call It a Weakly-Ordered CPU",
+      "publication_date": "2012",
+      "recency_note": "foundational, still accurate"
+    },
+    {
+      "url": "https://dev.to/kprotty/understanding-atomics-and-memory-ordering-2mom",
+      "title": "Understanding Atomics and Memory Ordering",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://joeduffyblog.com/2009/01/08/some-performance-implications-of-cas-operations/",
+      "title": "Some performance implications of CAS operations - Joe Duffy",
+      "publication_date": "2009",
+      "recency_note": "foundational; metrics still relevant on modern x86"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2010.09852",
+      "title": "Evaluating the Cost of Atomic Operations on Modern Architectures",
+      "publication_date": "2020",
+      "recency_note": "recent empirical study"
+    },
+    {
+      "url": "https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html",
+      "title": "ConcurrentLinkedQueue (Java Platform SE 8)",
+      "publication_date": "2024",
+      "recency_note": "current official docs"
+    },
+    {
+      "url": "https://codesignal.com/learn/courses/lock-free-concurrent-data-structures/lessons/introduction-to-lock-free-queue",
+      "title": "Introduction to Lock-free Queue - CodeSignal",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://apoorvsachan.com/blog/lockfree_atomic_queues_with_cas/",
+      "title": "Lockfree Atomic Queues with CAS",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://probablydance.com/2019/12/30/measuring-mutexes-spinlocks-and-how-bad-the-linux-scheduler-really-is/",
+      "title": "Measuring Mutexes, Spinlocks and how Bad the Linux Scheduler Really is",
+      "publication_date": "2019",
+      "recency_note": "recent empirical study"
+    },
+    {
+      "url": "https://matklad.github.io/2020/01/04/mutexes-are-faster-than-spinlocks.html",
+      "title": "Mutexes Are Faster Than Spinlocks - Aleksey Kladov",
+      "publication_date": "2020",
+      "recency_note": "recent"
+    },
+    {
+      "url": "https://davekilian.com/acquire-release.html",
+      "title": "Making Sense of Acquire-Release Semantics",
+      "publication_date": "2024",
+      "recency_note": "current"
+    },
+    {
+      "url": "https://preshing.com/20120913/acquire-and-release-semantics/",
+      "title": "Acquire and Release Semantics - Preshing",
+      "publication_date": "2012",
+      "recency_note": "foundational, still accurate"
+    },
+    {
+      "url": "https://gfxcourses.stanford.edu/cs149/winter19content/lectures/09_consistency/09_consistency_slides.pdf",
+      "title": "Parallel Computing - Memory Consistency (Stanford CS149)",
+      "publication_date": "2019",
+      "recency_note": "academic reference material"
+    },
+    {
+      "url": "https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/7_Deadlocks.html",
+      "title": "Operating Systems: Deadlocks",
+      "publication_date": "2020",
+      "recency_note": "academic reference"
+    },
+    {
+      "url": "https://www.cs.yale.edu/homes/aspnes/pinewiki/Deadlock.html",
+      "title": "Deadlock - Yale Computer Science",
+      "publication_date": "2023",
+      "recency_note": "academic reference"
+    },
+    {
+      "url": "https://www.cloudthat.com/resources/blog/asynchronous-programming-and-multithreading-with-node-js",
+      "title": "Asynchronous Programming and Multithreading with Node.js",
+      "publication_date": "2023",
+      "recency_note": "current"
+    }
+  ]
+}

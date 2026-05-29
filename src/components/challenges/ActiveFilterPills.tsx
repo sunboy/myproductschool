@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function ActiveFilterPills({ filters, onRemove, onClearAll }: Props) {
-  // Collect active filter entries — handle boolean real_interview separately
+  // Collect active filter entries - handle boolean real_interview separately
   const active: { key: FilterKey; value: string }[] = []
   for (const [k, val] of Object.entries(filters) as [FilterKey, string[] | boolean][]) {
     if (k === 'real_interview') {

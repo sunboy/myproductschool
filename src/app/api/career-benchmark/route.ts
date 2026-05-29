@@ -22,12 +22,12 @@ function buildHatchMessage(
   }
   const topPct = 100 - userPercentile
   if (topPct <= 20 && strongestCompetency) {
-    return `You're in the top ${topPct}% of product thinkers — your ${strongestCompetency} is your standout strength.`
+    return `You're in the top ${topPct}% of product thinkers - your ${strongestCompetency} is your standout strength.`
   }
   if (weakestCompetency) {
-    return `Solid foundation — you're ahead of ${userPercentile}% of learners. Push your ${weakestCompetency} to break into the top tier.`
+    return `Solid foundation - you're ahead of ${userPercentile}% of learners. Push your ${weakestCompetency} to break into the top tier.`
   }
-  return `You're ahead of ${userPercentile}% of learners — keep going to climb further.`
+  return `You're ahead of ${userPercentile}% of learners - keep going to climb further.`
 }
 
 export async function GET() {
@@ -35,7 +35,7 @@ export async function GET() {
     return NextResponse.json({
       levels: BENCHMARK_LEVELS,
       user_level: 'Senior Engineer',
-      hatch_message: "You're in the top 20% of product thinkers — strong work so far.",
+      hatch_message: "You're in the top 20% of product thinkers - strong work so far.",
     })
   }
 
@@ -48,13 +48,22 @@ export async function GET() {
   // Get user's aggregate score across completed attempts
   const { data: attempts } = await adminClient
     .from('challenge_attempts')
-    .select('score')
+    .select('total_score, max_score')
     .eq('user_id', user.id)
-    .not('score', 'is', null)
-    .order('submitted_at', { ascending: false })
+    .eq('status', 'completed')
+    .not('total_score', 'is', null)
+    .order('completed_at', { ascending: false })
     .limit(20)
 
-  const scores = (attempts ?? []).map(a => a.score as number)
+  const scores = (attempts ?? [])
+    .map(a => {
+      const total = Number(a.total_score)
+      const max = Number(a.max_score)
+      return Number.isFinite(total) && Number.isFinite(max) && max > 0
+        ? Math.round((total / max) * 100)
+        : null
+    })
+    .filter((score): score is number => score != null)
   const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
 
   // Map avg score (0-100) to percentile range
@@ -67,7 +76,7 @@ export async function GET() {
   try {
     hatchCtx = await getHatchContext(user.id)
   } catch {
-    // non-fatal — fall back to no-competency message
+    // non-fatal - fall back to no-competency message
   }
   const competencies = hatchCtx?.competencies ?? []
   const strongestCompetency = competencies.length > 0

@@ -1,0 +1,369 @@
+{
+  "facts": [
+    {
+      "fact": "A cold TLS 1.2 connection requires 3 total RTTs: 1 for TCP three-way handshake + 2 for TLS negotiation. For intercontinental connections with 200-250ms RTT, this translates to 600-750ms just for connection setup before any content loads.",
+      "source": "https://www.systemoverflow.com/learn/networking-protocols/tls-ssl/tls-handshake-performance-rtt-impact-and-termination-strategies",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "TLS 1.3 reduces the TLS handshake portion to 1 RTT (2 RTTs total), saving 200-250ms on intercontinental connections compared to TLS 1.2.",
+      "source": "https://gcore.com/learning/what-is-tls-1-3",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Layer 7 load balancers add 0.5-3ms latency per request for parsing HTTP, evaluating routing rules, and proxying. In production systems with SSL termination, expect 5-20ms overhead.",
+      "source": "https://www.systemoverflow.com/learn/load-balancing/l4-vs-l7/what-is-layer-7-l7-load-balancing",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Full TLS handshakes consume 5-10x more CPU than resumed sessions due to expensive asymmetric cryptography operations (ECDHE key generation and signature verification).",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Approximately 40% of TLS sessions across Cloudflare's network are existing session resumptions. With 0-RTT, a round trip can be eliminated for most of that 40%.",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "HAProxy achieves 50,000+ requests per second with sub-millisecond latency on a 4-core VPS. In Kubernetes ingress benchmarks, HAProxy handled approximately 42,000 RPS, Traefik 19,000, Envoy 18,500, Nginx Inc 15,200, and Nginx 11,700.",
+      "source": "https://www.haproxy.com/company/news/haproxy-kubernetes-ingress-controller-twice-as-fast-vs-four-competitors",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "HTTP/3 with QUIC achieves 1 Round Trip Time (1-RTT) connection establishment compared to 3 RTT for HTTP/2, and supports 0-RTT resumption for repeat connections.",
+      "source": "https://prehost.com/http3/",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "HTTP Keep-Alive (persistent connections) reduces overhead by allowing multiple HTTP requests/responses over a single TCP connection instead of opening a new connection per request.",
+      "source": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Layer 4 load balancers cannot differentiate individual requests within a connection. For gRPC which multiplexes requests over HTTP/2, all requests from a client to that server are pinned to one backend.",
+      "source": "https://www.gravitee.io/blog/layer-4-vs-layer-7-load-balancing",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "Cache-Control header max-age directive specifies browser cache lifetime. s-maxage directive (shared cache max-age) overrides max-age for CDNs and shared caches, specified in RFC 7234.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "During TCP Slow Start, the congestion window (cwnd) doubles each RTT. Starting from 1 MSS, it becomes 2 MSS after 1 RTT, 4 MSS after 2 RTTs, 8 MSS after 3 RTTs.",
+      "source": "https://www.keycdn.com/support/tcp-slow-start",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Sticky sessions (connection affinity) via Layer 4 use source IP hashing, while Layer 7 uses HTTP cookies. The trade-off is load imbalance—one heavy client can overload its pinned server while others sit idle.",
+      "source": "https://www.haproxy.com/blog/load-balancing-affinity-persistence-sticky-sessions-what-you-need-to-know",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "DNS-based load balancing has no native failure detection and propagation delays. ISPs only refresh DNS cache once per TTL, making it unsuitable for large microservices architectures.",
+      "source": "https://singh-sanjay.com/2026/02/24/when-dns-load-balancing-is-not-enough.html",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "Layer 4 load balancers maintain pseudo-connections for UDP based on 30-60 second timeout. Stateless DNAT treats each packet independently without maintaining session state.",
+      "source": "https://www.relianoid.com/resources/knowledge-base/misc/practical-case-i-understanding-layer-4-nat-and-dnat-load-balancing/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Time to First Byte (TTFB) consists of: socket connection time + time to send request + time to receive first response byte. Cache-Control headers control whether responses are served from cache, affecting TTFB.",
+      "source": "https://web.dev/articles/ttfb",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "For TLS session resumption in distributed systems, a memcached cluster can cache negotiated sessions from all hosts within the same Point of Presence (PoP).",
+      "source": "https://blog.cloudflare.com/tls-session-resumption-full-speed-and-secure/",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Netflix Eureka Service Discovery",
+      "detail": "Netflix built Eureka, a client-side service registry for dynamic discovery and load balancing in AWS. Clients cache available servers; load balancing happens at the instance level with weighted load balancing based on traffic, resource usage, and error conditions. This provides resilience to load balancer outages.",
+      "source": "https://github.com/Netflix/EUREKA"
+    },
+    {
+      "scenario": "Cloudflare TLS Session Resumption",
+      "detail": "Cloudflare discovered that 40% of TLS sessions across their global network are session resumptions. By optimizing session ticket reuse and 0-RTT support, they reduced connection latency for returning clients to nearly zero RTT.",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/"
+    },
+    {
+      "scenario": "Google HTTP/3 Adoption in High-Loss Networks",
+      "detail": "Google's measurements showed that HTTP/3 with QUIC reduced connection failures and sped up page loads significantly in high-latency regions. The same page took 3 seconds with HTTP/1.1, 1.5 seconds with HTTP/2, and 0.8 seconds with HTTP/3.",
+      "source": "https://prehost.com/http3/"
+    },
+    {
+      "scenario": "Databricks Intelligent Kubernetes Load Balancing",
+      "detail": "Databricks implemented intelligent load balancing for Kubernetes that makes per-request routing decisions based on application context. Traditional Layer 4 load balancers (like kube-proxy) cannot make intelligent per-request decisions for gRPC's long-lived multiplexed connections.",
+      "source": "https://www.databricks.com/blog/intelligent-kubernetes-load-balancing-databricks"
+    },
+    {
+      "scenario": "QUIC Connection Migration in Mobile Networks",
+      "detail": "A 2024 academic study measured QUIC connection migration in production: QUIC's Connection IDs allow hosts to switch from one IP address to another mid-flight without performing a new handshake. This is critical for mobile clients switching between WiFi and cellular.",
+      "source": "https://arxiv.org/html/2410.06066v1"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Layer 4 vs Layer 7 like postal routing vs reading mail content",
+      "detail": "Layer 4 is like sorting mail by destination zip code and street address (IP:port). Layer 7 is like opening the envelope, reading the letter's content, and routing based on what's written inside (HTTP headers, URL path, body). Layer 7takes more time but is far more intelligent."
+    },
+    {
+      "analogy": "TCP Slow Start like turning up a microphone gradually",
+      "detail": "A microphone starts with low volume (1 MSS) and volume doubles each second (doubling cwnd per RTT) until feedback indicates the right level (reaching ssthresh). If there's feedback noise (packet loss), it resets to low volume and starts over."
+    },
+    {
+      "analogy": "TLS Session Resumption like a VIP skip-the-line pass",
+      "detail": "A fresh TLS connection is like going through full airport security (3 RTT handshake). Session resumption is like a VIP who skips most steps (1-2 RTT). 0-RTT is like entering directly without waiting (0 RTT for resumption)."
+    },
+    {
+      "analogy": "Sticky Sessions like always ordering from the same restaurant",
+      "detail": "Connection affinity pins a client to one server, like always ordering from Restaurant A. If Restaurant A gets busy with one customer's large order while Restaurant B is empty, it's inefficient. Fairness requires dynamic balancing, not persistent relationships."
+    },
+    {
+      "analogy": "Cache-Control headers like food shelf labels",
+      "detail": "max-age is like expiration date on individual items. s-maxage is like special instructions for wholesale suppliers (CDNs). public means shareable food; private means personal snacks only."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Cold connection setup latency",
+      "value": "600-750ms",
+      "context": "TLS 1.2 from Asia to US (200-250ms RTT × 3 RTT)",
+      "source": "https://www.systemoverflow.com/learn/networking-protocols/tls-ssl/tls-handshake-performance-rtt-impact-and-termination-strategies"
+    },
+    {
+      "metric": "Connection setup savings with TLS 1.3",
+      "value": "200-250ms",
+      "context": "Intercontinental connection, saves 1 RTT vs TLS 1.2",
+      "source": "https://gcore.com/learning/what-is-tls-1-3"
+    },
+    {
+      "metric": "Layer 7 latency overhead",
+      "value": "0.5-3ms typical, 5-20ms in production with SSL termination",
+      "context": "Per request for header parsing and routing",
+      "source": "https://www.systemoverflow.com/learn/load-balancing/l4-vs-l7/what-is-layer-7-l7-load-balancing"
+    },
+    {
+      "metric": "Full TLS handshake CPU cost",
+      "value": "5-10x",
+      "context": "Relative to session resumption",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/"
+    },
+    {
+      "metric": "TLS session resumption rate",
+      "value": "40%",
+      "context": "Percentage of TLS sessions across Cloudflare networks",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/"
+    },
+    {
+      "metric": "HAProxy throughput",
+      "value": "50,000+ RPS",
+      "context": "Sub-millisecond latency on 4-core VPS",
+      "source": "https://www.haproxy.com/company/news/haproxy-kubernetes-ingress-controller-twice-as-fast-vs-four-competitors"
+    },
+    {
+      "metric": "HAProxy Kubernetes Ingress RPS",
+      "value": "42,000 RPS",
+      "context": "vs Traefik 19,000, Envoy 18,500, Nginx Inc 15,200, Nginx 11,700",
+      "source": "https://www.haproxy.com/company/news/haproxy-kubernetes-ingress-controller-twice-as-fast-vs-four-competitors"
+    },
+    {
+      "metric": "HTTP/3 connection establishment",
+      "value": "1 RTT",
+      "context": "vs 3 RTT for HTTP/2",
+      "source": "https://prehost.com/http3/"
+    },
+    {
+      "metric": "HTTP/3 resumption",
+      "value": "0 RTT",
+      "context": "With 0-RTT support for returning clients",
+      "source": "https://prehost.com/http3/"
+    },
+    {
+      "metric": "TCP initial congestion window",
+      "value": "1-2 MSS",
+      "context": "RFC 5681 specification",
+      "source": "https://www.keycdn.com/support/tcp-slow-start"
+    },
+    {
+      "metric": "TCP cwnd doubling rate during slow start",
+      "value": "2x per RTT",
+      "context": "Exponential growth until reaching ssthresh",
+      "source": "https://www.keycdn.com/support/tcp-slow-start"
+    },
+    {
+      "metric": "HAProxy memory consumption",
+      "value": "~50MB",
+      "context": "vs Nginx ~80MB, Envoy ~150MB",
+      "source": "https://last9.io/blog/haproxy-vs-nginx-performance/"
+    },
+    {
+      "metric": "HAProxy CPU advantage",
+      "value": "10-20% lower",
+      "context": "Relative to Envoy for equivalent HTTP workloads",
+      "source": "https://last9.io/blog/haproxy-vs-nginx-performance/"
+    },
+    {
+      "metric": "DNS TTL refresh frequency",
+      "value": "Once per TTL cycle",
+      "context": "Propagation delay makes DNS unsuitable for dynamic discovery",
+      "source": "https://singh-sanjay.com/2026/02/24/when-dns-load-balancing-is-not-enough.html"
+    },
+    {
+      "metric": "UDP pseudo-connection timeout",
+      "value": "30-60 seconds",
+      "context": "Typical stateless DNAT timeout for UDP flows",
+      "source": "https://www.relianoid.com/resources/knowledge-base/misc/practical-case-i-understanding-layer-4-nat-and-dnat-load-balancing/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Layer 4 load balancers work fine for all HTTP-based services",
+      "truth": "Layer 4 cannot differentiate requests within a connection. For gRPC and HTTP/2 services using multiplexed connections, all requests from one client to one server stay pinned, causing poor load distribution. Layer 7 is required for per-request balancing.",
+      "why_it_matters": "Engineers deploying microservices with gRPC often assume Layer 4 is sufficient until they observe uneven load across backends. This leads to capacity surprises in production."
+    },
+    {
+      "misconception": "0-RTT resumption is always safe to enable",
+      "truth": "0-RTT cannot protect against replay attacks. Early data sent in 0-RTT can be replayed under certain threat models, so it should only be enabled for idempotent operations that don't change server state.",
+      "why_it_matters": "Enabling 0-RTT blindly on state-changing endpoints (POST, PUT, DELETE) can allow attackers to replay requests. This is a silent security risk."
+    },
+    {
+      "misconception": "Sticky sessions (connection affinity) solve all session management problems",
+      "truth": "Sticky sessions cause load imbalance. If one user generates 10x more traffic, their pinned server bears the full load while others sit idle. They also fail gracefully only if session replication is in place.",
+      "why_it_matters": "Over-reliance on sticky sessions can mask fundamental application design issues. Shared session stores (Redis) are more scalable than pinning clients."
+    },
+    {
+      "misconception": "DNS load balancing is suitable for microservice discovery",
+      "truth": "DNS has no native failure detection and propagation delays equal the TTL. In a large microservices system, the aggregate misdirection from stale DNS records is substantial even with short TTLs. Service registries with push-based updates (Consul, Eureka) are required.",
+      "why_it_matters": "DNS-based service discovery silently misdirects traffic during failures, leading to cascading outages that are hard to diagnose."
+    },
+    {
+      "misconception": "TTFB is dominated by network latency",
+      "truth": "TTFB measures the time until the first response byte arrives. Long TTFB often indicates backend processing time or connection overhead, not network latency. Caching masks slow backends, making root cause diagnosis difficult.",
+      "why_it_matters": "Optimizing network when the real bottleneck is backend processing wastes effort. Server-Timing headers are needed to measure backend phases."
+    },
+    {
+      "misconception": "Higher Layer 7 latency overhead always means Layer 4 is better",
+      "truth": "Layer 7 adds 0.5-3ms overhead but enables content-aware routing, retry logic, and security. This overhead is often negligible compared to network latency or backend processing. The choice depends on use case, not just latency.",
+      "why_it_matters": "Engineers trading correctness for a few milliseconds of latency often create harder operational problems (uneven load, inability to route requests correctly)."
+    },
+    {
+      "misconception": "Resumption rates above 50% guarantee low CPU costs",
+      "truth": "If resumption rates fall below 50%, CPU costs spike dramatically because full handshakes consume 5-10x more CPU than resumed sessions. Monitoring resumption rates is critical.",
+      "why_it_matters": "Without tracking resumption rates, a system can silently drift into high-CPU state when resumption tickets expire or ticket rotation is tuned poorly."
+    },
+    {
+      "misconception": "max-age=0 is bad for caching",
+      "truth": "max-age=0 with s-maxage=86400 is a best practice for server-rendered pages. It forces browsers to revalidate with the origin while allowing CDNs to cache and serve stale content. This avoids stale browser caches during deployments.",
+      "why_it_matters": "Misunderstanding this pattern leads to either over-caching (stale pages) or under-caching (unnecessary origin requests)."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.systemoverflow.com/learn/load-balancing/l4-vs-l7/what-is-layer-7-l7-load-balancing",
+      "recency": "2025",
+      "reliability": "Authoritative technical reference"
+    },
+    {
+      "url": "https://www.systemoverflow.com/learn/networking-protocols/tls-ssl/tls-handshake-performance-rtt-impact-and-termination-strategies",
+      "recency": "2024",
+      "reliability": "Authoritative technical reference"
+    },
+    {
+      "url": "https://gcore.com/learning/what-is-tls-1-3",
+      "recency": "2024",
+      "reliability": "CDN provider technical guide"
+    },
+    {
+      "url": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "recency": "2024",
+      "reliability": "Official Cloudflare blog, production data"
+    },
+    {
+      "url": "https://blog.cloudflare.com/even-faster-connection-establishment-with-quic-0-rtt-resumption/",
+      "recency": "2024",
+      "reliability": "Official Cloudflare blog"
+    },
+    {
+      "url": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling",
+      "recency": "2025",
+      "reliability": "HAProxy official blog"
+    },
+    {
+      "url": "https://www.haproxy.com/company/news/haproxy-kubernetes-ingress-controller-twice-as-fast-vs-four-competitors",
+      "recency": "2025",
+      "reliability": "HAProxy official benchmarks"
+    },
+    {
+      "url": "https://www.gravitee.io/blog/layer-4-vs-layer-7-load-balancing",
+      "recency": "2026",
+      "reliability": "API Gateway/load balancing specialist"
+    },
+    {
+      "url": "https://prehost.com/http3/",
+      "recency": "2026",
+      "reliability": "Web hosting technical guide"
+    },
+    {
+      "url": "https://web.dev/articles/ttfb",
+      "recency": "2024",
+      "reliability": "Official Google web.dev resource"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control",
+      "recency": "2025",
+      "reliability": "Official Mozilla MDN documentation"
+    },
+    {
+      "url": "https://www.keycdn.com/support/tcp-slow-start",
+      "recency": "2024",
+      "reliability": "CDN provider technical guide"
+    },
+    {
+      "url": "https://github.com/Netflix/EUREKA",
+      "recency": "2025",
+      "reliability": "Official Netflix open-source project"
+    },
+    {
+      "url": "https://www.databricks.com/blog/intelligent-kubernetes-load-balancing-databricks",
+      "recency": "2024",
+      "reliability": "Official Databricks engineering blog"
+    },
+    {
+      "url": "https://arxiv.org/html/2410.06066v1",
+      "recency": "2024",
+      "reliability": "Academic research on QUIC in production"
+    },
+    {
+      "url": "https://singh-sanjay.com/2026/02/24/when-dns-load-balancing-is-not-enough.html",
+      "recency": "2026",
+      "reliability": "Engineering blog on service discovery patterns"
+    },
+    {
+      "url": "https://www.relianoid.com/resources/knowledge-base/misc/practical-case-i-understanding-layer-4-nat-and-dnat-load-balancing/",
+      "recency": "2025",
+      "reliability": "Load balancer vendor technical guide"
+    },
+    {
+      "url": "https://www.haproxy.com/blog/load-balancing-affinity-persistence-sticky-sessions-what-you-need-to-know",
+      "recency": "2025",
+      "reliability": "HAProxy official blog"
+    },
+    {
+      "url": "https://last9.io/blog/haproxy-vs-nginx-performance/",
+      "recency": "2024",
+      "reliability": "Observability company benchmark analysis"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-08-tcpdump-wireshark-network-latency/view",
+      "recency": "2026",
+      "reliability": "Incident management platform technical guide"
+    }
+  ]
+}

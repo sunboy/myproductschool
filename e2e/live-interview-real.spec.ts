@@ -233,7 +233,7 @@ test.describe('Real-mode 20-turn Luma interview', () => {
     const endRes = await request.post(`${BASE_URL}/api/live-interview/${sessionId}/end`, {
       data: {},
       headers: authHeaders,
-      timeout: 60000, // Debrief uses claude-opus-4-6 — may take up to 60s
+      timeout: 60000, // Debrief uses Sonnet and may take up to 60s
     })
 
     expect(endRes.status()).toBe(200)

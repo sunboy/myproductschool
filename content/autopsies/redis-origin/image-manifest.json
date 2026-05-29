@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "redis",
+  "story_slug": "redis-origin",
+  "story_title": "Redis",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/redis-origin/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/redis-origin/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing in front of a RAM chip with data structure icons floating out of it, representing Redis's in-memory design.",
+      "caption": "Hatch standing in front of a RAM chip with data structure icons floating out of it, representing Redis's in-memory design.",
+      "prompt": "Redis | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing in front of a glowing RAM chip that has lists, sorted sets, and hash icons floating out of it like holographic data structures. The background is warm cream. Hatch looks delighted, cap slightly tilted. No speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/redis-origin/hero.png",
+      "generated_image_sha256": "cbb19703c946bddeb85a2fb6b9a4aeeb846bd280ffa7539213757b182c884ef4",
+      "final_image_sha256": "1dae6d2f12c33fa660fa15ca2b671a0f76d0cf32914dfed6cc267ce472605a1c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/redis-origin/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/redis-origin/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/redis-origin/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at a backed-up queue of data packets waiting on a slow disk, illustrating the bottleneck Redis was built to solve.",
+      "caption": "Hatch gesturing at a backed-up queue of data packets waiting on a slow disk, illustrating the bottleneck Redis was built to solve.",
+      "prompt": "Redis | hatch-narrator: Hatch in narrator pose: standing beside a large server with a spinning hard drive icon flashing red while a queue of incoming data packets backs up — the moment the disk I/O bottleneck becomes visible. Cream background. Hatch looks thoughtful, gesturing at the backlog. No copy. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/redis-origin/hatch-narrator.png",
+      "generated_image_sha256": "27fc849ea39bbf5626add87c2e4d59f9a7ce0e03aab274e5511feabca37f3d2b",
+      "final_image_sha256": "45ac97692e9b7ca8bd2fb4b08d363e41fb876facf79e0f44fcf35205de97c24d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/redis-origin/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/redis-origin/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/redis-origin/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch explaining a Redis sorted set with atomic commands, illustrating the data structure server model.",
+      "caption": "Hatch explaining a Redis sorted set with atomic commands, illustrating the data structure server model.",
+      "prompt": "Redis | failure-mechanism: Hatch in thinking pose, gesturing at a diagram showing a sorted set: items arranged in rank order with atomic ZADD and ZRANGE commands highlighted. The items are simple labels like \"tweet:123:1592ms\" showing the real-time ranking use case. Clean, minimal, cream background. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/redis-origin/failure-mechanism.png",
+      "generated_image_sha256": "00947890efc4b0d2a737c934cf8326b5c628a1a70111c2ad27ea47d2d4a1ac2f",
+      "final_image_sha256": "bf08bfd3e2bfa5cf1b1050ec8a7c7d9efc6d5bbfdfae8916c3fe17b330687181",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/redis-origin/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/redis-origin/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/redis-origin/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at adoption logos showing major engineering teams migrating from Memcached to Redis.",
+      "caption": "Hatch pointing at adoption logos showing major engineering teams migrating from Memcached to Redis.",
+      "prompt": "Redis | evidence-card: Hatch pointing at a chart showing the logos of Twitter, Stack Overflow, and GitHub with arrows indicating their migration from Memcached to Redis. Each migration has a microsecond latency callout. Cream background, infographic style. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/redis-origin/evidence-card.png",
+      "generated_image_sha256": "bb1401967b137f3b5b13c263f94c04b6ab76c94399fec3ba47a72dc9b6fd15b6",
+      "final_image_sha256": "d923084b3f9aa3dd53193ef8a7a8d5890e0459be71299c0a570d4ce85bd4fb8d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/redis-origin/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/redis-origin/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/redis-origin/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch showing the contrast between a single Redis command and the equivalent application logic it replaces.",
+      "caption": "Hatch showing the contrast between a single Redis command and the equivalent application logic it replaces.",
+      "prompt": "Redis | lesson-frame: Hatch in coaching pose, standing calmly in front of a simple diagram: one side shows a sorted set command \"ZADD leaderboard 1592 user:123\"; the other side shows the equivalent application code (20+ lines). The contrast is the lesson. Cream background, no copy. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/redis-origin/lesson-frame.png",
+      "generated_image_sha256": "bfb0750072ad75bd9a9c7ec19e5d19e293f315a72c70bc5d499018d92fb442ec",
+      "final_image_sha256": "dd1a4846d36d0f5e12e06d5e28c6570dd091c640c4f0b9d1edcab9c1c1ea062e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/redis-origin/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/redis-origin/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/redis-origin/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch thumbnail holding a RAM chip with a data structure icon.",
+      "caption": "Hatch thumbnail holding a RAM chip with a data structure icon.",
+      "prompt": "Small, bold composition: Hatch's face and torso only, holding a glowing RAM chip with a tiny sorted set icon on it. Cream background. Bold and recognizable at small size. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/redis-origin/hero.png",
+      "generated_image_sha256": "cbb19703c946bddeb85a2fb6b9a4aeeb846bd280ffa7539213757b182c884ef4",
+      "final_image_sha256": "b923a3f321af8426fc14fce0eae3007f7e769f61406250755a05dc3bcfa3b38c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/redis-origin/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/redis-origin/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/redis-origin/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Redis social cover with Hatch standing beside a glowing RAM chip.",
+      "caption": "Redis social cover with Hatch standing beside a glowing RAM chip.",
+      "prompt": "Hero pose adapted for OG share card: Hatch standing beside a large glowing RAM chip on a cream background. Bold composition with \"Redis\" in large Literata type above. HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/redis-origin/hero.png",
+      "generated_image_sha256": "cbb19703c946bddeb85a2fb6b9a4aeeb846bd280ffa7539213757b182c884ef4",
+      "final_image_sha256": "cf7c48aaefb6e502b3bf677c506651b5731a2677147b9f6b6b4b07535ff8fc7c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/redis-origin/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/redis-origin/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/redis-origin/v1"
+}

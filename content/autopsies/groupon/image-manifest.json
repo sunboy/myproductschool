@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "groupon",
+  "story_slug": "groupon",
+  "story_title": "Groupon's Daily Deal",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/groupon/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/groupon/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding an oversized coupon with a percentage-off figure but no price on cream background.",
+      "caption": "Hatch holding an oversized coupon with a percentage-off figure but no price on cream background.",
+      "prompt": "Groupon's Daily Deal | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) holding an oversized coupon, cap slightly tilted, looking at it with mild skepticism. The coupon has a large percentage off number but no price shown. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/groupon/hero.png",
+      "generated_image_sha256": "acb139dc9a80fdfadff122b3174f4e4248d832d9715877489c60cc6c30dd43db",
+      "final_image_sha256": "e9d417dd15988f003bf70d12387aa0d9b8dbf3d61099a1fd05a45178620728c0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/groupon/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/groupon/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/groupon/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at a small restaurant with a tipping-point progress bar showing 23 of 50 buyers needed.",
+      "caption": "Hatch gesturing at a small restaurant with a tipping-point progress bar showing 23 of 50 buyers needed.",
+      "prompt": "Groupon's Daily Deal | hatch-narrator: Hatch in narrator pose — standing slightly turned, gesturing toward a small restaurant storefront with a progress bar above it showing \"23 of 50 buyers\" with a timer counting down. A few people in the foreground are looking at their phones as if deciding whether to buy. Cream background, no text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/groupon/hatch-narrator.png",
+      "generated_image_sha256": "047bf90ab98fe90369788f5ece7ba3e03273b4168b3b39fb81bc5abecc6d0796",
+      "final_image_sha256": "a68c75881d4e48f899e65258a6383884381dba1a79c756157e8556e22c07816a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/groupon/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/groupon/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/groupon/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch looking at a diagram showing one deal fanning out through sharing to fill a tipping-point progress bar.",
+      "caption": "Hatch looking at a diagram showing one deal fanning out through sharing to fill a tipping-point progress bar.",
+      "prompt": "Groupon's Daily Deal | failure-mechanism: Hatch in thinking pose, looking at a simple diagram: one deal box in the center, with arrows fanning out from it to 5 people, who each have arrows fanning out to 2 more people. Below the fan, the progress bar ticks to 100% and the deal activates. The visual shows the sharing mechanic creating distribution. Cream background. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/groupon/failure-mechanism.png",
+      "generated_image_sha256": "22cf7accbbe68622bab81b7d65edf28bfb34b4da233d916914a7a9c08830b6fe",
+      "final_image_sha256": "f62f65f8efe2656f8ee588fc762af4709d0607baf60c6b7dc97c1941f84884de",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/groupon/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/groupon/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/groupon/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a chart showing Groupon revenue peaking while stock price declined sharply post-IPO.",
+      "caption": "Hatch pointing at a chart showing Groupon revenue peaking while stock price declined sharply post-IPO.",
+      "prompt": "Groupon's Daily Deal | evidence-card: Hatch pointing at a chart with two lines: one showing Groupon's revenue growing sharply to $760M then plateauing, and one showing stock price declining from IPO high. The two lines cross dramatically in 2012. Cream background. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/groupon/evidence-card.png",
+      "generated_image_sha256": "8d643107acc184d1a4abd34c62c2545316ce0da57d90cf9a2de68fc5b111ee32",
+      "final_image_sha256": "e119932734c58e529fc725a9f56171b731169611817637d5bb2236327cf42f94",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/groupon/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/groupon/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/groupon/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance in front of a funnel filling with buyers but leaking merchants from the bottom.",
+      "caption": "Hatch in coaching stance in front of a funnel filling with buyers but leaking merchants from the bottom.",
+      "prompt": "Groupon's Daily Deal | lesson-frame: Hatch in coaching pose — calm, standing with arms slightly open. Behind Hatch, a large funnel that fills quickly from the top (buyers pouring in) but has a crack at the bottom where merchants are leaking out. The visual metaphor is acquisition without retention at the supply side. Cream background. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/groupon/lesson-frame.png",
+      "generated_image_sha256": "88d821f9240fcc27caa28a7318113ae5206b05eed84ab47a23266c51f9eab9ce",
+      "final_image_sha256": "d8c1fea4fbe07bd8b470aa611d4dc1d4aa5ae99d435575560aedee81dc2436a3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/groupon/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/groupon/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/groupon/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch thumbnail holding a small coupon on cream background.",
+      "caption": "Hatch thumbnail holding a small coupon on cream background.",
+      "prompt": "Hatch mascot small and recognizable, holding a small coupon, cream background. Compact framing. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/groupon/hero.png",
+      "generated_image_sha256": "acb139dc9a80fdfadff122b3174f4e4248d832d9715877489c60cc6c30dd43db",
+      "final_image_sha256": "ffe72825d000e5a82a41b2dae3b79e44f74315ab2cb20a4956028d0fea17e1b8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/groupon/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/groupon/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/groupon/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in hero pose holding an oversized coupon for social sharing.",
+      "caption": "Hatch in hero pose holding an oversized coupon for social sharing.",
+      "prompt": "Hatch in hero pose adapted for OG sharing — holding an oversized coupon, cap straight, cream background. Large HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/groupon/hero.png",
+      "generated_image_sha256": "acb139dc9a80fdfadff122b3174f4e4248d832d9715877489c60cc6c30dd43db",
+      "final_image_sha256": "8693030a198a85970dc36747e43ed75ec8b034dcddb399a7619b8feaeccd4cc4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/groupon/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/groupon/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/groupon/v1"
+}

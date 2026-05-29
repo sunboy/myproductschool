@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "substack",
+  "story_slug": "substack-newsletter-import",
+  "story_title": "Substack's One-Click Migration",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/substack-newsletter-import/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/substack-newsletter-import/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot standing beside a large email envelope with a checkmark, symbolising a clean subscriber list migration.",
+      "caption": "Hatch mascot standing beside a large email envelope with a checkmark, symbolising a clean subscriber list migration.",
+      "prompt": "Substack's One-Click Migration | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing beside an oversized email envelope with a green checkmark, on a cream background. The envelope has a subtle arrow indicating it is moving from one platform to another. Hatch's expression is calm and confident, cap on straight. No speech bubble, no copy. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/substack-newsletter-import/hero.png",
+      "generated_image_sha256": "fa88479a035da76d6f711f762840c13af0ea2716ecfb11954cefea44ab890cf8",
+      "final_image_sha256": "c8fa4789486efa2dcf31883822dde46e2e9847f241a3ba698cc2e26857839232",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/substack-newsletter-import/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/substack-newsletter-import/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/substack-newsletter-import/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a before-after comparison of a messy CSV export and a clean Substack subscriber dashboard.",
+      "caption": "Hatch gesturing toward a before-after comparison of a messy CSV export and a clean Substack subscriber dashboard.",
+      "prompt": "Substack's One-Click Migration | hatch-narrator: Hatch in narrator pose, gesturing toward a split screen: on the left, a chaotic spreadsheet of email addresses representing a CSV export; on the right, a clean Substack dashboard showing the same list imported and ready. Cream background, no speech bubble. The contrast between the two sides is the point. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/substack-newsletter-import/hatch-narrator.png",
+      "generated_image_sha256": "6e14df250bfe516ab96daaf8fbe746b996777a5f61b786a8ba96b6a3ad7aa0f5",
+      "final_image_sha256": "65239cf396f35b4a6da6f9836c85d5bc70f515c753b4f6670c0ffc6e14b043cb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/substack-newsletter-import/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/substack-newsletter-import/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/substack-newsletter-import/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to a three-step diagram showing the subscriber import flow from an email platform to Substack.",
+      "caption": "Hatch pointing to a three-step diagram showing the subscriber import flow from an email platform to Substack.",
+      "prompt": "Substack's One-Click Migration | failure-mechanism: Hatch in a thinking pose, looking at a simple three-step flow: platform icon (Mailchimp logo placeholder) → upload arrow → Substack inbox. The steps are connected by clean lines with no friction indicators. Hatch's hand points to the arrow as if explaining the mechanism. Cream background. Watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/substack-newsletter-import/failure-mechanism.png",
+      "generated_image_sha256": "8d75044dcc70b9a1bd14d2897327ea4dc48c0a8c72c63a0c9cc0d4d5aecd7b74",
+      "final_image_sha256": "cf65b6adf590aad3fbabddf5778f24e04e2e17e596099461dea1ef69e5758dff",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/substack-newsletter-import/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/substack-newsletter-import/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/substack-newsletter-import/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a bar chart showing accelerating writer migration volume to Substack from 2019 to 2021.",
+      "caption": "Hatch pointing at a bar chart showing accelerating writer migration volume to Substack from 2019 to 2021.",
+      "prompt": "Substack's One-Click Migration | evidence-card: Hatch pointing at a simple bar chart showing writer migration volume over time (2019–2021), with the bars growing each quarter. The chart is clean and minimal, no numerical values visible, just the shape of accelerating growth. Cream background. Watermark bottom-right. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/substack-newsletter-import/evidence-card.png",
+      "generated_image_sha256": "b06c64041f612a505296212261dcd1596af1408999ebac267449d92293887e4f",
+      "final_image_sha256": "b3c62e338ca7401e57bd5caf35666aac572a4656345ac68dd14f802a38e45cba",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/substack-newsletter-import/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/substack-newsletter-import/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/substack-newsletter-import/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm coaching pose against a cream background with a subtle envelope icon.",
+      "caption": "Hatch in a calm coaching pose against a cream background with a subtle envelope icon.",
+      "prompt": "Substack's One-Click Migration | lesson-frame: Hatch in coaching pose, calm and settled, standing slightly turned with one hand open as if offering a thought. Background is cream with a subtle envelope icon at low opacity behind Hatch. No copy, no speech bubble. The feeling is considered and complete. Watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/substack-newsletter-import/lesson-frame.png",
+      "generated_image_sha256": "17f84d28a9596c430e4b339c292d845b694de17b21a0c1f9400e30caed8171aa",
+      "final_image_sha256": "9d43be5740ae3522c453c83722d005d0dc81b4795456a150c1a223111cf64962",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/substack-newsletter-import/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/substack-newsletter-import/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/substack-newsletter-import/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small email envelope with a green checkmark.",
+      "caption": "Hatch holding a small email envelope with a green checkmark.",
+      "prompt": "Hatch mascot small and recognisable, holding a miniature envelope with a green checkmark. Cream background, no text. Watermark bottom-right at small scale. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/substack-newsletter-import/hero.png",
+      "generated_image_sha256": "fa88479a035da76d6f711f762840c13af0ea2716ecfb11954cefea44ab890cf8",
+      "final_image_sha256": "07df3a610c097951f0f059cbaee6df47387b47a41038bb41b7c7b6bfaf735092",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/substack-newsletter-import/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/substack-newsletter-import/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/substack-newsletter-import/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot beside a large email envelope with a checkmark, HackProduct wordmark visible.",
+      "caption": "Hatch mascot beside a large email envelope with a checkmark, HackProduct wordmark visible.",
+      "prompt": "Hero composition adapted for OG share card: Hatch beside the oversized email envelope with a green checkmark, cream background, \"HackProduct\" wordmark visible at bottom-right. Composition tightened for 2400x1260 format. No additional copy.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/substack-newsletter-import/hero.png",
+      "generated_image_sha256": "fa88479a035da76d6f711f762840c13af0ea2716ecfb11954cefea44ab890cf8",
+      "final_image_sha256": "6d6b86f7a7037348c0819fa193f0a23bb9094ecc0eb03147697be872bffb8f6c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/substack-newsletter-import/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/substack-newsletter-import/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/substack-newsletter-import/v1"
+}

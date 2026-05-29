@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "producthunt",
+  "story_slug": "product-hunt",
+  "story_title": "Product Hunt",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/product-hunt/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/product-hunt/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A deep forest envelope on the left with a soft amber ribbon of upvote arrows flowing into a mist-coloured product listing column on the right, with Hatch pointing at the envelope from the upper right.",
+      "caption": "The email came first. The platform followed the proof.",
+      "prompt": "Product Hunt | hero: Create a flat geometric HackProduct autopsy hero illustration for Product Hunt's origin story, showing an email envelope transforming into a product launch platform. Canvas role: hero, aspect 2400x1350. Background is warm cream #faf6f0. On the left, draw a single deep forest #244232 envelope shape with a forest-green #4a7c59 seal, representing the Linkydink email digest. From the right edge of the envelope, a soft amber #c9ad68 ribbon of upward arrows flows rightward into a tall mist #dfe6dc column of product listing rows, each with a tiny charcoal #1e211c upvote triangle and a name-tag block. The ribbon curves upward to suggest growth. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing at the envelope with one mitten hand. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet upper-left space for title text overlay. No human faces, no photorealism, no recreated app screenshots, no dense text labels beyond one short label on the envelope reading EMAIL and one on the column reading PLATFORM. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/product-hunt/hero.png",
+      "generated_image_sha256": "dee8bb3786fb0bedaa1ae3c599f449e0e37b4be6d5d2b50f4a2986ed5b5a2482",
+      "final_image_sha256": "f07e11472f4313eec66ce68623cc3e58c8c8a4cc47c8ae553d0b71f3d7fb9b83",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/product-hunt/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a small coffee-shop table with a laptop, a steaming cup, and a notepad with a list of names, gesturing toward the screen.",
+      "caption": "Hatch standing beside a small coffee-shop table with a laptop, a steaming cup, and a notepad with a list of names, gesturing toward the screen.",
+      "prompt": "Product Hunt | hatch-narrator: Flat geometric scene illustration for the moment Ryan Hoover opened Linkydink at Philz Coffee in November 2013, aspect 1600x1600. Show a warm cream #faf6f0 coffee-shop setting with a single low forest-green #4a7c59 table, a small laptop with a browser window showing a plain text form outline labelled GROUP NAME, a steaming cup in soft amber #c9ad68, and a large window casting mist #dfe6dc light. On a cream notepad beside the laptop, draw a short list of names in charcoal #1e211c as simple horizontal bars suggesting handwritten contacts. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a narrator pose beside the table, gesturing with one mitten hand toward the laptop. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no photorealism, no real app screenshots, no logos. Use amber #705c30 for the table lamp glow. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/product-hunt/hatch-narrator.png",
+      "generated_image_sha256": "fb6ad6018a42a0959eed438f3e7a2d249f69f367d4a1d7ec09f703ed8e9c1152",
+      "final_image_sha256": "7844cbd63da2cd031f8e2938aea1734df39e35b800a75edbc2e5430096b45877",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/product-hunt/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage pipeline from founder invite through daily email to 170-subscriber proof to five-day site build, with Hatch pointing at the validation stage.",
+      "caption": "A four-stage pipeline from founder invite through daily email to 170-subscriber proof to five-day site build, with Hatch pointing at the validation stage.",
+      "prompt": "Product Hunt | failure-mechanism: Flat geometric mechanism diagram for Product Hunt's email-to-site pipeline, aspect 1800x1200. Lay out four horizontal stages from left to right on warm cream #faf6f0. Stage one: a deep forest #244232 envelope labelled INVITE 30 FOUNDERS with a forest-green #4a7c59 paper inside. Stage two: a mist #dfe6dc grid of small name-tag blocks labelled DAILY EMAIL DIGEST. Stage three: a soft amber #c9ad68 counter tile with an upward bar chart labelled 170 SUBSCRIBERS / 2 WEEKS. Stage four: a tall forest-green column of listing rows labelled SITE BUILD: 5 DAYS. Connect stages with thin charcoal #1e211c arrows. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, pointing one mitten hand at stage three to mark the validation moment. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI recreations, minimal text labels. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/product-hunt/failure-mechanism.png",
+      "generated_image_sha256": "ade988b97bcc79999ba2f13048816da2c71621815af908bedbfd315ac4518dea",
+      "final_image_sha256": "0d19d618679bf91a7c3205fdfc0be74f06d9504484d0311ceba00560774aaaed",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/product-hunt/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three ascending bar columns representing Product Hunt's subscriber and discovery growth from November 2013 to December 2016, with Hatch pointing at the smallest bar on the left.",
+      "caption": "Three ascending bar columns representing Product Hunt's subscriber and discovery growth from November 2013 to December 2016, with Hatch pointing at the smallest bar on the left.",
+      "prompt": "Product Hunt | evidence-card: Flat geometric evidence illustration showing Product Hunt's growth from 170 email subscribers in November 2013 to 43,000 by October 2014, aspect 1600x1000. Draw three ascending bar columns on warm cream #faf6f0: a small deep forest #244232 bar on the left labelled NOV 2013 — 170, a medium forest-green #4a7c59 bar in the centre labelled OCT 2014 — 43K, and a tall soft amber #c9ad68 bar on the right labelled DEC 2016 — 100M DISCOVERIES. Use charcoal #1e211c for axis lines and thin label bars. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing to the left of the chart in a pointing pose, one mitten hand indicating the first small bar to mark the starting point. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Background mist #dfe6dc gridlines only, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/product-hunt/evidence-card.png",
+      "generated_image_sha256": "fa83d23e062967b9b5847c81b81aadc7c61ea7860810ef45e8f31e9f7f794dd4",
+      "final_image_sha256": "76765f73b90c45339efc8085c8bc7b78450ee028cde2fb9a3d42427146552700",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/product-hunt/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central envelope shape labelled CONTAINER with arrows pointing down to an audience cluster and right to a product stack, with Hatch coaching from the left.",
+      "caption": "A central envelope shape labelled CONTAINER with arrows pointing down to an audience cluster and right to a product stack, with Hatch coaching from the left.",
+      "prompt": "Product Hunt | lesson-frame: Flat geometric lesson illustration for the principle that the lightest container proves market demand before a product is built, aspect 1800x1200. Background is warm cream #faf6f0. In the centre, draw a single forest-green #4a7c59 envelope shape labelled CONTAINER. Beneath it, draw a soft amber #c9ad68 arrow pointing downward into a cluster of charcoal #1e211c people-silhouette shapes arranged in a loose circle labelled AUDIENCE. From the right side of the envelope, draw a deep forest #244232 arrow pointing toward a tall mist #dfe6dc stack of listing blocks labelled PRODUCT. The envelope is the focal point. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left of the envelope, one mitten hand resting on it, facing outward. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no recreated screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/product-hunt/lesson-frame.png",
+      "generated_image_sha256": "76fe2ebcbec42f266ae2cc5a833a2970ffbf701eaea9d1d0b39712dca75079aa",
+      "final_image_sha256": "a80b4e320ce06abe9640c2a4d26d7f4eab6d2291db1fffb3ad16a96cb560cb12",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/product-hunt/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A dark envelope on the left with an amber upvote arrow pointing toward a green stack of listing rows, with a tiny Hatch mark in the corner.",
+      "caption": "A dark envelope on the left with an amber upvote arrow pointing toward a green stack of listing rows, with a tiny Hatch mark in the corner.",
+      "prompt": "Flat geometric thumbnail for Product Hunt's origin story, aspect 1200x900. On warm cream #faf6f0, render one bold focal composition: a single deep forest #244232 envelope on the left with a soft amber #c9ad68 upvote triangle emerging from it, pointing rightward toward a small forest-green #4a7c59 stack of three listing rows. Keep the composition bold and readable at small size, with three dominant shapes only. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the bottom-left corner, no larger than 10 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/product-hunt/hero.png",
+      "generated_image_sha256": "dee8bb3786fb0bedaa1ae3c599f449e0e37b4be6d5d2b50f4a2986ed5b5a2482",
+      "final_image_sha256": "fe978315b3a7922fe9aca41c969060e9d4c7096ef6f590741a77adaa47ef14f6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/product-hunt/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide social cover showing a dark envelope labelled EMAIL FIRST on the left with an amber ribbon of upvote arrows flowing to a mist product column, with small Hatch narrator upper right.",
+      "caption": "A wide social cover showing a dark envelope labelled EMAIL FIRST on the left with an amber ribbon of upvote arrows flowing to a mist product column, with small Hatch narrator upper right.",
+      "prompt": "Flat geometric social cover image for Product Hunt's origin story, aspect 2400x1260. On warm cream #faf6f0, place the central composition across the middle 70 percent of the canvas: a deep forest #244232 envelope on the left labelled EMAIL FIRST with a forest-green #4a7c59 seal, a long soft amber #c9ad68 ribbon of small upvote arrows flowing right, and a mist #dfe6dc product listing column on the right. Keep the left and right margins free of critical composition elements. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand toward the envelope. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use one short charcoal #1e211c label reading 20 MINUTES on the envelope. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/product-hunt/hero.png",
+      "generated_image_sha256": "dee8bb3786fb0bedaa1ae3c599f449e0e37b4be6d5d2b50f4a2986ed5b5a2482",
+      "final_image_sha256": "477316a7a56284f5b1a9878c247b67591d23b18c86be489b6eaa0e8f2c985fcb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/product-hunt/v1"
+}

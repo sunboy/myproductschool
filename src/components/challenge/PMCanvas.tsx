@@ -115,7 +115,7 @@ export function PMCanvas({
           />
         </button>
         <span className="text-xs text-on-surface-variant">
-          Quick draft — collapse answered sections
+          Quick draft - collapse answered sections
         </span>
       </div>
 

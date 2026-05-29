@@ -27,7 +27,7 @@ export async function GET() {
 
   // Get completed challenge IDs and move levels in parallel
   const [attemptsResult, levelsResult] = await Promise.all([
-    adminClient.from('challenge_attempts').select('challenge_id, score').eq('user_id', user.id).not('submitted_at', 'is', null),
+    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).eq('status', 'completed'),
     adminClient.from('move_levels').select('move, xp').eq('user_id', user.id).order('xp', { ascending: true }),
   ])
 

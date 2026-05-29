@@ -1,33 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
+import { buildCompletedQuickTakeResult } from '@/lib/scoring/completed-attempt-result'
+import { buildEmptyStateResponse, buildSkillContextPrompt, detectSubmissionQuality } from '@/lib/hatch/skill-context'
+import { checkAndGrantAchievements } from '@/lib/achievements/check'
 
 // XP base for quick-takes (lower than full challenges)
 const QUICK_TAKE_XP_BASE = 20
+const ROUTE_KEY = 'quick_take_submit'
+
+const RequestSchema = z.object({
+  challenge_id: z.string().uuid(),
+  response_text: z.string().trim().max(6000),
+})
 
 const MOCK_RESPONSE = {
   score: 0.75,
   xp_earned: 15,
-  feedback_summary: 'Good framing — you identified the key diagnostic signals. Consider prioritizing metric breakdowns earlier.',
+  feedback_summary: 'Good framing, you identified the key diagnostic signals. Consider prioritizing metric breakdowns earlier.',
+}
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
+function notReadyResponse(reason: 'empty' | 'too_thin') {
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: 'product',
+    challengeType: 'quick_take',
+  })
+
+  return NextResponse.json({
+    status: 'not_ready',
+    ready_to_grade: false,
+    reason,
+    empty_state: emptyState,
+    summary: emptyState.summary,
+    next_actions: emptyState.next_actions,
+  }, { status: 422 })
 }
 
 /**
  * Grade a quick-take response with Haiku.
  * Returns a quality score 0.0–1.0 and structured coaching feedback.
  */
-async function gradeWithHaiku(responseText: string, promptText: string): Promise<{ score: number; feedback: string }> {
+async function gradeWithHaiku(
+  responseText: string,
+  promptText: string,
+  contextBlock: string,
+  budget: { userId: string; userPlan: string; route: string }
+): Promise<{ score: number; feedback: string }> {
   const systemPrompt = `You are Hatch, a product thinking coach. Grade a quick-take response and give direct, specific coaching.
 
-Never use em dashes. Short sentences. No filler like "Great job" or "Certainly". Be honest — don't soften weak answers.
+Never use em dashes. Short sentences. No filler like "Great job" or "Certainly". Be honest, don't soften weak answers.
 
 Scoring:
-- 0.8–1.0 (Sharp): Frames the problem clearly, names a specific diagnosis or insight, shows reasoning not just description
-- 0.5–0.79 (Solid): On track but generic — missing a specific metric, user segment, or concrete next step
-- 0.2–0.49 (Surface): Restates the question or lists obvious things without real analysis
-- 0.0–0.19 (Weak): Too short, off-topic, or shows no product reasoning
+- 0.8-1.0 (Sharp): Frames the problem clearly, names a specific diagnosis or insight, shows reasoning not just description
+- 0.5-0.79 (Solid): On track but generic, missing a specific metric, user segment, or concrete next step
+- 0.2-0.49 (Surface): Restates the question or lists obvious things without real analysis
+- 0.0-0.19 (Weak): Too short, off-topic, or shows no product reasoning
 
 Return valid JSON only:
 {
@@ -37,14 +84,19 @@ Return valid JSON only:
   "example_move": "<a short example of the sharper thinking move they should make>"
 }`
 
-  const userContent = `Challenge prompt: "${promptText}"\n\nUser's response: "${responseText}"`
+  const userContent = [
+    contextBlock,
+    `Challenge prompt: "${promptText}"`,
+    `User's response: "${responseText}"`,
+  ].filter(Boolean).join('\n\n')
 
   try {
-    const msg = await createCachedMessage(systemPrompt, userContent, {
+    const msg = await guardedCachedMessage(systemPrompt, userContent, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 300,
+      budget,
     })
-    const raw = msg.content[0].type === 'text' ? msg.content[0].text : ''
+    const raw = msg.sanitized
     // Strip markdown code fences if model wraps output
     const text = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
     const parsed = JSON.parse(text)
@@ -61,6 +113,8 @@ Return valid JSON only:
       feedback: parts.join('\n\n') || 'Keep practising.',
     }
   } catch (err) {
+    if (err instanceof AiBudgetExceededError) throw err
+
     console.error('[quick-take] grading error:', err)
     const wordCount = responseText.trim().split(/\s+/).length
     return {
@@ -75,15 +129,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(MOCK_RESPONSE)
   }
 
-  const { challenge_id, response_text } = await req.json()
-
-  if (!challenge_id || !response_text?.trim()) {
-    return NextResponse.json({ error: 'Missing challenge_id or response_text' }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
+    }
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
+  const { challenge_id, response_text } = body
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
+  const userPlan = await getUserPlanForBudget(user.id)
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
+  }
 
   const adminClient = createAdminClient()
 
@@ -95,10 +169,70 @@ export async function POST(req: NextRequest) {
     .eq('challenge_type', 'quick_take')
     .single()
 
-  if (!challenge) return NextResponse.json({ error: 'Prompt not found' }, { status: 404 })
+  if (!challenge) return apiError(404, 'prompt_not_found', 'Prompt not found')
 
-  // Grade with Haiku — quality score 0.0–1.0
-  const { score, feedback } = await gradeWithHaiku(response_text, challenge.prompt_text ?? challenge.title ?? challenge_id)
+  const { data: completedAttempt } = await adminClient
+    .from('challenge_attempts')
+    .select('total_score, feedback_json')
+    .eq('user_id', user.id)
+    .eq('challenge_id', challenge_id)
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (completedAttempt) {
+    return NextResponse.json(buildCompletedQuickTakeResult(completedAttempt))
+  }
+
+  const submissionQuality = detectSubmissionQuality(response_text)
+  if (submissionQuality !== 'substantive') {
+    return notReadyResponse(submissionQuality)
+  }
+
+  // Grade with Haiku - quality score 0.0–1.0
+  let score: number
+  let feedback: string
+  try {
+    await assertPlanLimit(user.id, userPlan, 'quick_takes')
+
+    const contextBlock = await buildSkillContextPrompt(user.id, {
+      surface: 'grading',
+      challengeType: 'quick_take',
+      challengeTitle: challenge.title,
+      challengePrompt: challenge.prompt_text,
+      submissionText: response_text,
+      includePracticeLink: true,
+    }).catch(() => '')
+    const result = await gradeWithHaiku(
+      response_text,
+      challenge.prompt_text ?? challenge.title ?? challenge_id,
+      contextBlock,
+      { userId: user.id, userPlan, route: ROUTE_KEY }
+    )
+    score = result.score
+    feedback = result.feedback
+  } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: error.feature,
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
+    }
+
+    if (error instanceof AiBudgetExceededError) {
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
+    }
+
+    throw error
+  }
 
   // XP = base * quality score
   const xp_earned = Math.round(QUICK_TAKE_XP_BASE * score)
@@ -109,8 +243,9 @@ export async function POST(req: NextRequest) {
   const { error: attemptInsertError } = await adminClient.from('challenge_attempts').insert({
     user_id: user.id,
     challenge_id,
-    mode: 'quick-take',
     status: 'completed',
+    current_step: 'done',
+    current_question_sequence: 1,
     completed_at: new Date().toISOString(),
     total_score: score,
     max_score: 1,
@@ -118,13 +253,14 @@ export async function POST(req: NextRequest) {
     feedback_json: { feedback, xp_earned, move: primaryMove },
   })
   if (attemptInsertError) {
-    return NextResponse.json({ error: 'Failed to save quick-take attempt' }, { status: 500 })
+    console.error('[quick-take] challenge_attempts insert failed:', attemptInsertError.message)
+    return apiError(500, 'quick_take_attempt_save_failed', 'Failed to save quick-take attempt')
   }
 
   const { error: sessionEventError } = await adminClient.from('session_events').insert({
     user_id: user.id,
     event_type: 'quick_take_submit',
-    event_data: { challenge_id, move: primaryMove, score, xp_earned },
+    payload: { challenge_id, move: primaryMove, score, xp_earned },
   })
   if (sessionEventError) console.error('[quick-take] session_events insert failed:', sessionEventError.message)
 
@@ -137,7 +273,7 @@ export async function POST(req: NextRequest) {
     .eq('id', user.id)
     .single()
   if (profileReadError || !profileRow) {
-    return NextResponse.json({ error: 'Failed to load profile for XP update' }, { status: 500 })
+    return apiError(500, 'profile_xp_load_failed', 'Failed to load profile for XP update')
   }
 
   const { error: xpUpdateError } = await adminClient
@@ -145,11 +281,15 @@ export async function POST(req: NextRequest) {
     .update({ xp_total: (profileRow.xp_total ?? 0) + xp_earned })
     .eq('id', user.id)
   if (xpUpdateError) {
-    return NextResponse.json({ error: 'Failed to award quick-take XP' }, { status: 500 })
+    return apiError(500, 'quick_take_xp_award_failed', 'Failed to award quick-take XP')
   }
 
   const { error: streakError } = await adminClient.rpc('update_user_streak', { p_user_id: user.id })
   if (streakError) console.error('[quick-take] update_user_streak failed:', streakError.message)
+
+  checkAndGrantAchievements(user.id, adminClient).catch(err =>
+    console.error('[quick-take] achievement check failed:', err)
+  )
 
   return NextResponse.json({ score, xp_earned, feedback_summary: feedback })
 }

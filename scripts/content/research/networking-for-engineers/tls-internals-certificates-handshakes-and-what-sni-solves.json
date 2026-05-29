@@ -1,0 +1,502 @@
+{
+  "facts": [
+    {
+      "fact": "TLS 1.2 fresh connection requires 3 total RTTs: 1 for TCP three-way handshake + 2 for TLS negotiation, translating to 240ms of pure handshake overhead on an 80ms RTT mobile network",
+      "source": "https://www.catchpoint.com/http2-vs-http3/tls1-2-vs-1-3",
+      "date": "2024"
+    },
+    {
+      "fact": "TLS 1.3 reduces handshake from 2 RTTs to 1 RTT by having client send key share in first message, saving ~80-100ms on typical connections",
+      "source": "https://www.catchpoint.com/http2-vs-http3/tls1-2-vs-1-3",
+      "date": "2024"
+    },
+    {
+      "fact": "Production deployment found TLS 1.2 required ~40M full handshakes while TLS 1.3 required ~6M, resulting in $25,200 annual AWS ALB cost savings",
+      "source": "https://istlsfastyet.com/",
+      "date": "2024"
+    },
+    {
+      "fact": "Session resumption costs less than 50% of a full TLS handshake because it requires only 1 RTT while full handshake requires 2 RTTs",
+      "source": "https://blog.cloudflare.com/tls-session-resumption-full-speed-and-secure/",
+      "date": "2024"
+    },
+    {
+      "fact": "Session tickets eliminate server-side session storage burden, allowing stateless session resumption - client stores ticket and keying material",
+      "source": "https://blog.cloudflare.com/tls-session-resumption-full-speed-and-secure/",
+      "date": "2024"
+    },
+    {
+      "fact": "Full TLS handshakes consume 5-10x more CPU than resumed sessions due to expensive asymmetric cryptography operations",
+      "source": "https://www.catchpoint.com/http2-vs-http3/tls1-2-vs-1-3",
+      "date": "2024"
+    },
+    {
+      "fact": "Production sites target >80% TLS session resumption rates; if resumption drops below 50%, CPU costs spike dramatically",
+      "source": "https://www.catchpoint.com/http2-vs-http3/tls1-2-vs-1-3",
+      "date": "2024"
+    },
+    {
+      "fact": "TLS 1.3 0-RTT mode allows client to include encrypted application data in first packet for repeat connections, eliminating handshake latency",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "date": "2024"
+    },
+    {
+      "fact": "SNI (Server Name Indication) is sent unencrypted in ClientHello, making hostname visible to passive eavesdroppers; Encrypted Client Hello (ECH) in RFC 9849 (March 2026) encrypts full ClientHello",
+      "source": "https://www.cloudflare.com/learning/ssl/what-is-sni/",
+      "date": "2025"
+    },
+    {
+      "fact": "AWS ALB automatically selects optimal TLS certificate for each client when multiple certificates bound to same listener via SNI",
+      "source": "https://aws.amazon.com/blogs/aws/new-application-load-balancer-sni/",
+      "date": "2024"
+    },
+    {
+      "fact": "Layer 4 load balancers route on IP/port without decryption, enabling fast secure routing; Layer 7 requires TLS termination and re-encryption to backends",
+      "source": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "date": "2024"
+    },
+    {
+      "fact": "Layer 4 + SNI routing allows TCP load balancers to inspect SNI/ALPN in TLS handshake and forward connection to correct backend without decryption",
+      "source": "https://goteleport.com/docs/reference/architecture/tls-routing/",
+      "date": "2024"
+    },
+    {
+      "fact": "OCSP stapling eliminates 100-300ms latency from client querying CA separately for revocation status by attaching signed OCSP response to handshake",
+      "source": "https://blog.cloudflare.com/high-reliability-ocsp-stapling/",
+      "date": "2024"
+    },
+    {
+      "fact": "OCSP stapling can accelerate TLS handshakes by up to 30% in high-volume networks",
+      "source": "https://blog.easecloud.io/cloud-infrastructure/optimization-and-performance-impact-of-ssl-tls/",
+      "date": "2024"
+    },
+    {
+      "fact": "Static content should use Cache-Control with max-age >6 months, public directive, and immutable flag for cache-busted versioned resources",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control",
+      "date": "2024"
+    },
+    {
+      "fact": "Dynamic content requires no-cache directive for HTML to force revalidation; low TTL + private cache for personalized data",
+      "source": "https://alokai.com/blog/cache-control-http-header",
+      "date": "2024"
+    },
+    {
+      "fact": "ETag provides unique validation token for cache revalidation; Last-Modified provides timestamp; both prevent unnecessary content re-fetch",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control",
+      "date": "2024"
+    },
+    {
+      "fact": "TTFB benchmarks: <100ms fantastic, 200-500ms standard, 500ms-1s less than ideal, >1s requires investigation",
+      "source": "https://www.debugbear.com/docs/metrics/time-to-first-byte",
+      "date": "2024"
+    },
+    {
+      "fact": "Good TTFB values are ≤0.8 seconds; poor values >1.8 seconds; most sites should target <0.8s",
+      "source": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "date": "2024"
+    },
+    {
+      "fact": "Primary cause of high TTFB is dynamic content generation (PHP, database queries) not latency; slow queries delay responses even with CDN",
+      "source": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "date": "2024"
+    },
+    {
+      "fact": "Chrome DevTools Network tab shows TTFB breakdown in waterfall: queuing + stalled + DNS lookup + TCP connection + TLS handshake + request time + server processing",
+      "source": "https://www.debugbear.com/docs/metrics/time-to-first-byte",
+      "date": "2024"
+    },
+    {
+      "fact": "Certificate chain length adds latency; longer chains require more certificate verification and intermediary CA lookups",
+      "source": "https://www.keycdn.com/blog/https-performance-overhead",
+      "date": "2024"
+    },
+    {
+      "fact": "Certificate pinning requires clients to maintain trusted certificate/key list, but continuous updates for renewals and rotations create operational burden",
+      "source": "https://blog.cloudflare.com/why-certificate-pinning-is-outdated/",
+      "date": "2024"
+    },
+    {
+      "fact": "Industry consensus: certificate pinning creates more risk than reward; Certificate Transparency logs provide better detection without pinning burden",
+      "source": "https://www.digicert.com/blog/certificate-pinning-what-is-certificate-pinning",
+      "date": "2024"
+    },
+    {
+      "fact": "QUIC + HTTP/3 establishes fresh connection in 1-RTT and 0-RTT for repeat connections with application data included",
+      "source": "https://www.fastly.com/blog/measuring-quic-vs-tcp-computational-efficiency",
+      "date": "2024"
+    },
+    {
+      "fact": "HTTP/3 saves 50% connection time vs HTTP/2 with TLS 1.2 by combining TLS handshake with HTTP request",
+      "source": "https://www.catchpoint.com/http2-vs-http3/quic-vs-tcp",
+      "date": "2024"
+    },
+    {
+      "fact": "Google measured QUIC reducing Search latency by 3.6% and YouTube video buffering by 15.3%",
+      "source": "https://www.catchpoint.com/http2-vs-http3/quic-vs-tcp",
+      "date": "2024"
+    },
+    {
+      "fact": "QUIC streams are independent; packet loss on one stream doesn't affect others, unlike TCP head-of-line blocking",
+      "source": "https://medium.com/codavel-blog/quic-vs-tcp-tls-and-why-quic-is-not-the-next-big-thing-d4ef59143efd",
+      "date": "2024"
+    },
+    {
+      "fact": "TCP three-way handshake introduces 1 RTT latency before data transmission; for short flows with high network latency (100s of ms), multiple RTTs cause visible user impact",
+      "source": "https://jumpcloud.com/it-index/what-is-the-three-way-handshake",
+      "date": "2024"
+    },
+    {
+      "fact": "Fresh HTTPS connection over TLS 1.2: DNS (1 RTT) + TCP (1 RTT) + TLS (2 RTT) = 4 RTT minimum before first byte on intercontinental links",
+      "source": "https://www.systemoverflow.com/learn/networking-protocols/tls-ssl/tls-handshake-performance-rtt-impact-and-termination-strategies",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Netflix observes that 250ms additional latency results in measurable revenue impact across streaming signup flows",
+      "source": "https://www.systemoverflow.com/learn/networking-protocols/http-protocols/tls-handshake-latency-the-critical-path-tax-across-protocol-versions",
+      "context": "Demonstrates real business impact of HTTPS handshake latency"
+    },
+    {
+      "example": "AWS ALB deployed at scale with multiple domains (e.g., api.example.com, cdn.example.com) uses SNI to serve different certificates from single IP:port without Layer 7 termination overhead",
+      "source": "https://aws.amazon.com/blogs/aws/new-application-load-balancer-sni/",
+      "context": "Real-world multi-domain TLS routing pattern"
+    },
+    {
+      "example": "Cloudflare enables OCSP stapling by default across all proxied domains, reducing client-CA round-trips for millions of daily HTTPS connections",
+      "source": "https://blog.cloudflare.com/high-reliability-ocsp-stapling/",
+      "context": "Large-scale deployment of revocation checking optimization"
+    },
+    {
+      "example": "WordPress sites using caching plugins (e.g., WP Super Cache) can reduce TTFB by 200-400ms by converting dynamic pages to static HTML",
+      "source": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "context": "Common TTFB optimization for CMS platforms"
+    },
+    {
+      "example": "Google Search and YouTube measured 3.6% latency reduction and 15.3% faster video buffering after enabling QUIC/HTTP3",
+      "source": "https://www.catchpoint.com/http2-vs-http3/quic-vs-tcp",
+      "context": "Largest-scale real-world QUIC deployment metrics"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "TLS 1.2 handshake is like a letter-writing negotiation: client sends proposal (1 RTT), server responds with terms (1 RTT), client confirms agreement. TLS 1.3 is like client arriving with proposal already signed, skipping the counter-proposal round.",
+      "context": "Explains why TLS 1.3 saves 1 RTT"
+    },
+    {
+      "analogy": "Session resumption is like showing a membership card instead of filling out a full application. Session tickets are like laminated membership cards clients carry (no server storage); session IDs are like server keeping a giant rolodex of every member.",
+      "context": "Explains session resumption mechanisms and scalability tradeoffs"
+    },
+    {
+      "analogy": "SNI is like addressing an envelope with the recipient's name so the mail carrier (load balancer) can route it to the right household (backend service) before opening it.",
+      "context": "Explains how SNI enables Layer 4 TLS routing"
+    },
+    {
+      "analogy": "OCSP stapling is like including a recent government ID photo in a letter instead of the recipient having to call the government to verify your identity.",
+      "context": "Explains how OCSP stapling eliminates CA round-trips"
+    },
+    {
+      "analogy": "Certificate pinning is like supergluing a specific key to your door frame to prevent master keys from opening it. Works perfectly until you need to change locks (certificate renewal).",
+      "context": "Explains the rigidity and operational burden of pinning"
+    },
+    {
+      "analogy": "QUIC combining TLS + connection setup is like synchronized swimming: TCP and TLS do separate choreography (multiple steps), while QUIC combines them into one coordinated routine.",
+      "context": "Explains why HTTP/3 reduces connection latency"
+    },
+    {
+      "analogy": "TTFB waterfall is like tracking a package: queuing at post office → shipping → delivery truck arrival → door knock → recipient opening door (server processing) → first item visible. Slow server processing is the final step, but often blamed on earlier steps.",
+      "context": "Explains why TTFB diagnosis requires waterfall analysis, not just total time"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "TLS 1.2 fresh handshake latency",
+      "value": "200-400ms",
+      "context": "On typical mobile networks; represents 2 RTT overhead"
+    },
+    {
+      "metric": "TLS 1.3 handshake latency savings vs TLS 1.2",
+      "value": "30-50%",
+      "context": "Reduction in handshake time"
+    },
+    {
+      "metric": "TLS 1.3 handshake RTT cost",
+      "value": "1 RTT",
+      "context": "Compared to TLS 1.2's 2 RTT"
+    },
+    {
+      "metric": "Typical TCP three-way handshake latency",
+      "value": "1 RTT",
+      "context": "Before TLS negotiation begins"
+    },
+    {
+      "metric": "Session resumption cost vs full handshake",
+      "value": "<50%",
+      "context": "Asymmetric cryptography avoided; 1 RTT vs 2 RTT"
+    },
+    {
+      "metric": "CPU cost multiplier: full handshake vs resumed session",
+      "value": "5-10x",
+      "context": "Due to expensive asymmetric key operations"
+    },
+    {
+      "metric": "Production session resumption rate target",
+      "value": ">80%",
+      "context": "Only 20% connections pay full handshake cost at scale"
+    },
+    {
+      "metric": "OCSP stapling latency savings",
+      "value": "100-300ms",
+      "context": "Eliminates separate CA round-trip"
+    },
+    {
+      "metric": "OCSP stapling handshake acceleration",
+      "value": "~30%",
+      "context": "In high-volume production networks"
+    },
+    {
+      "metric": "Cache-Control max-age for static assets",
+      "value": ">6 months (or 1 year)",
+      "context": "Google recommended value; use with cache busting"
+    },
+    {
+      "metric": "TTFB excellent threshold",
+      "value": "<100ms",
+      "context": "Fantastic performance"
+    },
+    {
+      "metric": "TTFB good threshold",
+      "value": "200-500ms",
+      "context": "Standard/acceptable performance"
+    },
+    {
+      "metric": "TTFB poor threshold",
+      "value": ">1.8 seconds",
+      "context": "Requires investigation"
+    },
+    {
+      "metric": "Revenue impact of latency",
+      "value": "1.5% decrease per 250ms",
+      "context": "Microsoft Bing study result"
+    },
+    {
+      "metric": "HTTP/3 vs HTTP/2 TLS 1.2 connection time savings",
+      "value": "50%",
+      "context": "From combining TLS + connection setup"
+    },
+    {
+      "metric": "QUIC Google Search latency improvement",
+      "value": "3.6%",
+      "context": "Real-world large-scale deployment"
+    },
+    {
+      "metric": "QUIC YouTube video buffering improvement",
+      "value": "15.3%",
+      "context": "Real-world large-scale deployment"
+    },
+    {
+      "metric": "TLS 1.2 full handshakes reduced by TLS 1.3",
+      "value": "40M → 6M",
+      "context": "Production case study; proportional cost savings of ~85%"
+    },
+    {
+      "metric": "AWS ALB cost savings from TLS 1.3",
+      "value": "$25,200 annually",
+      "context": "From reduced full handshake volume"
+    },
+    {
+      "metric": "TLS 1.3 handshake packets vs TLS 1.2",
+      "value": "1-3 vs 5-7",
+      "context": "Number of packets in handshake"
+    },
+    {
+      "metric": "Intercontinental RTT typical range",
+      "value": "200-250ms",
+      "context": "Asia to US connection; 600-750ms for full TLS 1.2 setup"
+    },
+    {
+      "metric": "TLS 1.3 latency savings on intercontinental links",
+      "value": "200-250ms",
+      "context": "Saves 1 RTT of TLS negotiation"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "TTFB is primarily a network latency problem",
+      "reality": "TTFB = network latency + server processing time. Majority of high TTFB is server-side (slow database queries, rendering), not network RTT. CDNs don't help if server is slow.",
+      "source": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/"
+    },
+    {
+      "misconception": "TLS handshake adds only 100-200ms to every HTTPS request",
+      "reality": "Handshake adds ~300ms per fresh connection. Session resumption reduces this ~50%. Most browsers resume sessions, so repeat connections have minimal overhead. But fresh connections to new domains pay full cost.",
+      "source": "https://www.catchpoint.com/http2-vs-http3/tls1-2-vs-1-3"
+    },
+    {
+      "misconception": "SNI makes TLS SNI hostname visible to encryption, breaking privacy",
+      "reality": "SNI hostname is unencrypted (privacy loss is real), but application data is encrypted. Encrypted Client Hello (ECH) in TLS 1.3 RFC 9849 fixes this.",
+      "source": "https://www.cloudflare.com/learning/ssl/what-is-sni/"
+    },
+    {
+      "misconception": "Layer 4 load balancers cannot route TLS traffic intelligently",
+      "reality": "Layer 4 + SNI/ALPN inspection allows intelligent TLS routing without decryption. Layer 7 is only needed if routing depends on HTTP headers or body content.",
+      "source": "https://goteleport.com/docs/reference/architecture/tls-routing/"
+    },
+    {
+      "misconception": "Certificate pinning is a best practice for security",
+      "reality": "Certificate pinning is outdated and creates more operational risk than security benefit. Industry consensus (OWASP, DigiCert) recommends Certificate Transparency monitoring instead.",
+      "source": "https://www.digicert.com/blog/certificate-pinning-what-is-certificate-pinning"
+    },
+    {
+      "misconception": "Session IDs are better than session tickets because server has direct control",
+      "reality": "Session tickets are superior because they eliminate server-side storage scaling issues. Stateless tickets work better at large scale; session IDs cause cache invalidation headaches.",
+      "source": "https://blog.cloudflare.com/tls-session-resumption-full-speed-and-secure/"
+    },
+    {
+      "misconception": "OCSP checking is the modern way to verify certificate revocation",
+      "reality": "OCSP checking adds 100-300ms latency if not stapled. OCSP stapling (server attaches response) is the modern practice. TLS 1.3 doesn't eliminate need for revocation checking.",
+      "source": "https://blog.cloudflare.com/high-reliability-ocsp-stapling/"
+    },
+    {
+      "misconception": "Static content with long cache-control max-age breaks updates",
+      "reality": "Cache-busting via URL versioning (hash in filename) + long max-age works perfectly. Client only requests new version when URL changes, avoiding unnecessary revalidation.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control"
+    },
+    {
+      "misconception": "Longer certificate chains are more secure",
+      "reality": "Longer chains add latency and validation overhead. Intermediate CAs are necessary for issuer separation, but shorter chains (2-3 intermediaries) are preferable.",
+      "source": "https://www.keycdn.com/blog/https-performance-overhead"
+    },
+    {
+      "misconception": "0-RTT in TLS 1.3 is always safe and recommended",
+      "reality": "0-RTT mode is vulnerable to replay attacks. Recommended for idempotent requests only (GET), not state-changing requests (POST).",
+      "source": "https://www.catchpoint.com/http2-vs-http3/tls1-2-vs-1-3"
+    },
+    {
+      "misconception": "HTTPS is inherently slower than HTTP",
+      "reality": "Modern HTTPS (TLS 1.3 + session resumption) is nearly as fast as HTTP for repeat connections. Fresh connections pay ~1 RTT overhead. HTTP/2 and HTTP/3 compress headers, offsetting small TLS cost.",
+      "source": "https://istlsfastyet.com/"
+    },
+    {
+      "misconception": "TCP slow start is independent of TLS handshake",
+      "reality": "TCP slow start begins after handshake completes, so handshake latency directly reduces time before data transfer can be maximized. Fresh connection = slow start + application delay.",
+      "source": "https://www.geeksforgeeks.org/impact-of-three-way-handshake-and-slow-start-algorithm/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://istlsfastyet.com/",
+      "title": "Is TLS Fast Yet?",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://www.catchpoint.com/http2-vs-http3/tls1-2-vs-1-3",
+      "title": "TLS 1.2 vs 1.3—Handshake, Performance, and Other Improvements",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/tls-session-resumption-full-speed-and-secure/",
+      "title": "TLS Session Resumption: Full-speed and Secure",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "title": "Introducing Zero Round Trip Time Resumption (0-RTT)",
+      "recency": "2024 - maintained"
+    },
+    {
+      "url": "https://www.cloudflare.com/learning/ssl/what-is-sni/",
+      "title": "What is SNI? How TLS server name indication works",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://aws.amazon.com/blogs/aws/new-application-load-balancer-sni/",
+      "title": "Application Load Balancers Now Support Multiple TLS Certificates With Smart Selection Using SNI",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://goteleport.com/docs/reference/architecture/tls-routing/",
+      "title": "TLS Routing",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "title": "Layer 4 vs Layer 7 Load Balancing",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/high-reliability-ocsp-stapling/",
+      "title": "High-reliability OCSP stapling and why it matters",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control",
+      "title": "Cache-Control header - HTTP - MDN Web Docs",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://www.debugbear.com/docs/metrics/time-to-first-byte",
+      "title": "Measure And Optimize Time To First Byte (TTFB)",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "title": "Troubleshoot High Time to First Byte (TTFB)",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://www.keycdn.com/blog/https-performance-overhead",
+      "title": "Analyzing HTTPS Performance Overhead",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/why-certificate-pinning-is-outdated/",
+      "title": "Avoiding downtime: modern alternatives to outdated certificate pinning practices",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://www.digicert.com/blog/certificate-pinning-what-is-certificate-pinning",
+      "title": "Certificate Pinning",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://www.fastly.com/blog/measuring-quic-vs-tcp-computational-efficiency",
+      "title": "QUIC vs TCP—Development and Monitoring Guide",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://medium.com/codavel-blog/quic-vs-tcp-tls-and-why-quic-is-not-the-next-big-thing-d4ef59143efd",
+      "title": "QUIC vs TCP+TLS — and why QUIC is not the next big thing",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://jumpcloud.com/it-index/what-is-the-three-way-handshake",
+      "title": "What Is the Three-Way Handshake? TCP Connection Guide",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://blog.easecloud.io/cloud-infrastructure/optimization-and-performance-impact-of-ssl-tls/",
+      "title": "How SSL/TLS Impacts Performance and How to Optimize It",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://www.systemoverflow.com/learn/networking-protocols/tls-ssl/tls-handshake-performance-rtt-impact-and-termination-strategies",
+      "title": "TLS Handshake Performance: RTT Impact and Termination Strategies",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://alokai.com/blog/cache-control-http-header",
+      "title": "Cache-Control HTTP Header 2024 Guide",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/impact-of-three-way-handshake-and-slow-start-algorithm/",
+      "title": "Impact of Three-way Handshake and Slow Start Algorithm",
+      "recency": "2024 - current"
+    },
+    {
+      "url": "https://dev.to/sreekanth_kuruba_91721e5d/tls-12-vs-tls-13-in-production-2025-5c0e",
+      "title": "TLS 1.2 vs TLS 1.3 in Production (2025)",
+      "recency": "2025 - current"
+    }
+  ]
+}

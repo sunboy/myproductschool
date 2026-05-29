@@ -99,7 +99,7 @@ export default function ChatPanel({ isOpen, onClose, turns, isThinking, onSendMe
                       : 'bg-surface-container-high text-on-surface rounded-xl rounded-tr-sm p-3 max-w-[85%] ml-auto font-body text-sm'
                   }
                 >
-                  {turn.role === 'hatch' ? <Md>{turn.content}</Md> : turn.content}
+                  {turn.role === 'hatch' ? <Md variant="chat">{turn.content}</Md> : turn.content}
                 </div>
               </div>
             ))

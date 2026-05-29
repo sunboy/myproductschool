@@ -1,22 +1,78 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { IS_MOCK } from '@/lib/mock'
 import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
-import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
+import { routeResponse, gradePureMCQ, gradeMultiSelectMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
 import { STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { buildEmptyStateResponse, detectSubmissionQuality } from '@/lib/hatch/skill-context'
 
 // ── Request body ─────────────────────────────────────────────
 
-interface SubmitRequestBody {
-  attempt_id: string
-  question_id: string
-  response_type: ResponseType
-  selected_option_id?: string
-  user_text?: string
-  time_spent_seconds?: number
+const RequestSchema = z.object({
+  attempt_id: z.string().uuid(),
+  question_id: z.string().uuid(),
+  response_type: z.enum(['pure_mcq', 'mcq_plus_elaboration', 'modified_option', 'freeform', 'coding_subtask', 'multi_select_mcq']),
+  selected_option_id: z.string().uuid().nullable().optional(),
+  selected_option_ids: z.array(z.string().uuid()).optional(),
+  user_text: z.string().max(50000).nullable().optional(),
+  time_spent_seconds: z.number().int().min(0).max(24 * 60 * 60).optional().default(0),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
+function aiLimitResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  if (error instanceof AiBudgetExceededError) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  return null
+}
+
+function notReadyFreeformResponse(reason: 'empty' | 'too_thin', options: FlowOption[]) {
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: 'product',
+    challengeType: 'flow',
+  })
+
+  return NextResponse.json({
+    status: 'not_ready',
+    ready_to_grade: false,
+    reason,
+    empty_state: emptyState,
+    summary: emptyState.summary,
+    next_actions: emptyState.next_actions,
+    step_complete: false,
+    revealed_options: revealedOptionsPayload(options),
+  }, { status: 422 })
 }
 
 // ── FLOW steps in order ──────────────────────────────────────
@@ -29,6 +85,80 @@ function nextStep(current: FlowStep): FlowStep | 'done' {
   return FLOW_STEP_ORDER[idx + 1]
 }
 
+function revealedOptionsPayload(options: FlowOption[]) {
+  return options.map(o => ({
+    id: o.id,
+    option_label: o.option_label,
+    option_text: o.option_text,
+    quality: o.quality,
+    points: o.points,
+    explanation: o.explanation,
+    framework_hint: o.framework_hint ?? '',
+  }))
+}
+
+async function stepProgress(
+  adminClient: ReturnType<typeof createAdminClient>,
+  challenge_id: string,
+  attempt_id: string,
+  step: FlowStep
+) {
+  const { data: flowStepRow } = await adminClient
+    .from('flow_steps')
+    .select('id')
+    .eq('challenge_id', challenge_id)
+    .eq('step', step)
+    .single()
+
+  const { count: totalQuestionsCount } = await adminClient
+    .from('step_questions')
+    .select('id', { count: 'exact', head: true })
+    .eq('flow_step_id', flowStepRow?.id ?? '')
+
+  const { count: answeredCount } = await adminClient
+    .from('step_attempts')
+    .select('id', { count: 'exact', head: true })
+    .eq('attempt_id', attempt_id)
+    .eq('step', step)
+
+  const totalQuestions = totalQuestionsCount ?? 0
+  const answered = answeredCount ?? 0
+
+  return {
+    totalQuestions,
+    answered,
+    stepComplete: answered >= totalQuestions && totalQuestions > 0,
+  }
+}
+
+async function existingStepAttemptResponse(
+  adminClient: ReturnType<typeof createAdminClient>,
+  challenge_id: string,
+  attempt_id: string,
+  step: FlowStep,
+  options: FlowOption[],
+  existing: {
+    score: number | null
+    quality_label: string | null
+    competencies_demonstrated: string[] | null
+    grading_explanation: string | null
+    competency_signal?: unknown
+  }
+) {
+  const progress = await stepProgress(adminClient, challenge_id, attempt_id, step)
+
+  return NextResponse.json({
+    score: existing.score,
+    quality_label: existing.quality_label,
+    grade_label: existing.quality_label,
+    explanation: existing.grading_explanation,
+    competencies_demonstrated: existing.competencies_demonstrated,
+    competency_signal: existing.competency_signal ?? null,
+    step_complete: progress.stepComplete,
+    revealed_options: revealedOptionsPayload(options),
+  })
+}
+
 // ── POST handler ─────────────────────────────────────────────
 
 export async function POST(
@@ -38,19 +168,27 @@ export async function POST(
   const { id: challenge_id, step: stepParam } = await params
   const step = stepParam as FlowStep
 
-  const body: SubmitRequestBody = await req.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
   const {
     attempt_id,
     question_id,
     response_type,
     selected_option_id,
+    selected_option_ids,
     user_text,
     time_spent_seconds = 0,
   } = body
-
-  if (!attempt_id || !question_id || !response_type) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-  }
 
   // Auth
   const supabase = await createClient()
@@ -87,6 +225,29 @@ export async function POST(
 
   const options = optionsRaw as FlowOption[]
 
+  const { data: existingAnswer, error: existingAnswerError } = await adminClient
+    .from('step_attempts')
+    .select('score, quality_label, competencies_demonstrated, grading_explanation, competency_signal')
+    .eq('attempt_id', attempt_id)
+    .eq('question_id', question_id)
+    .maybeSingle()
+
+  if (existingAnswerError) {
+    console.error('[submit] Failed to check existing step_attempt:', existingAnswerError.message)
+    return NextResponse.json({ error: 'Failed to load existing attempt' }, { status: 500 })
+  }
+
+  if (existingAnswer) {
+    return existingStepAttemptResponse(
+      adminClient,
+      challenge_id,
+      attempt_id,
+      step,
+      options,
+      existingAnswer
+    )
+  }
+
   // Load scenario for AI grading paths
   const { data: challengeRow } = await adminClient
     .from('challenges')
@@ -111,6 +272,10 @@ export async function POST(
   // ── Grade based on response_type ─────────────────────────
 
   const path = routeResponse(response_type)
+  const userPlan = path === 'deterministic' ? null : await getUserPlanForBudget(user.id)
+  const aiBudget = userPlan
+    ? { userId: user.id, userPlan, route: `challenge_step_${step}` }
+    : undefined
 
   let score: number
   let quality_label: string
@@ -120,7 +285,7 @@ export async function POST(
   let competency_signal: { competency: string; signal: string; framework_hint?: string } | null = null
 
   if (path === 'deterministic') {
-    // pure_mcq — NO freeform-grader import or call
+    // pure_mcq - NO freeform-grader import or call
     if (!selected_option_id) {
       return NextResponse.json({ error: 'selected_option_id required for pure_mcq' }, { status: 400 })
     }
@@ -140,8 +305,20 @@ export async function POST(
       framework_hint: hint,
     } : null
 
+  } else if (path === 'multi_deterministic') {
+    // multi_select_mcq — array of selected option ids
+    if (!selected_option_ids || selected_option_ids.length === 0) {
+      return NextResponse.json({ error: 'selected_option_ids required for multi_select_mcq' }, { status: 400 })
+    }
+    const result = gradeMultiSelectMCQ(selected_option_ids, options)
+    score = result.score
+    quality_label = result.quality_label
+    competencies_demonstrated = result.competencies_demonstrated
+    grading_explanation = result.grading_explanation
+    grading_confidence = result.confidence
+
   } else if (path === 'hybrid') {
-    // mcq_plus_elaboration — base score + AI elaboration adjustment
+    // mcq_plus_elaboration - base score + AI elaboration adjustment
     if (!selected_option_id) {
       return NextResponse.json({ error: 'selected_option_id required for mcq_plus_elaboration' }, { status: 400 })
     }
@@ -151,7 +328,15 @@ export async function POST(
     if (user_text?.trim()) {
       // Lazy import to keep pure_mcq path free of freeform-grader
       const { gradeElaboration } = await import('@/lib/v2/skills/ai/freeform-grader')
-      const elaborationResult = await gradeElaboration(baseOption, user_text, options, scenario, step)
+      let elaborationResult
+      try {
+        await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+        elaborationResult = await gradeElaboration(baseOption, user_text, options, scenario, step, aiBudget)
+      } catch (error) {
+        const response = aiLimitResponse(error)
+        if (response) return response
+        throw error
+      }
       score = elaborationResult.finalScore
       quality_label = baseResult.quality_label
       competencies_demonstrated = [
@@ -161,7 +346,7 @@ export async function POST(
       grading_explanation = elaborationResult.adjustment_reason
       grading_confidence = 0.85
     } else {
-      // No elaboration text — use deterministic base score
+      // No elaboration text - use deterministic base score
       score = baseResult.score
       quality_label = baseResult.quality_label
       competencies_demonstrated = baseResult.competencies_demonstrated
@@ -178,13 +363,22 @@ export async function POST(
     } : null
 
   } else {
-    // modified_option or freeform — full AI evaluation
+    // modified_option or freeform - full AI evaluation
     const textToGrade = response_type === 'modified_option' ? (user_text ?? '') : (user_text ?? '')
-    if (!textToGrade.trim()) {
-      return NextResponse.json({ error: 'user_text required for freeform/modified_option' }, { status: 400 })
+    const submissionQuality = detectSubmissionQuality(textToGrade)
+    if (submissionQuality !== 'substantive') {
+      return notReadyFreeformResponse(submissionQuality, options)
     }
     const { gradeFreeform } = await import('@/lib/v2/skills/ai/freeform-grader')
-    const aiResult = await gradeFreeform(textToGrade, options, scenario, step, targetCompetencies, user.id)
+    let aiResult
+    try {
+      await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+      aiResult = await gradeFreeform(textToGrade, options, scenario, step, targetCompetencies, user.id, aiBudget)
+    } catch (error) {
+      const response = aiLimitResponse(error)
+      if (response) return response
+      throw error
+    }
     score = aiResult.score
     quality_label = aiResult.quality_label
     competencies_demonstrated = aiResult.competencies_demonstrated
@@ -202,7 +396,8 @@ export async function POST(
       question_id,
       step,
       response_type,
-      selected_option_id: selected_option_id ?? null,
+      selected_option_id: path !== 'multi_deterministic' ? (selected_option_id ?? null) : null,
+      selected_option_ids: path === 'multi_deterministic' ? (selected_option_ids ?? null) : null,
       user_text: user_text ?? null,
       score,
       quality_label,
@@ -214,56 +409,18 @@ export async function POST(
     })
 
   if (insertError) {
-    // UNIQUE(attempt_id, question_id) violation — user already answered this question
+    // UNIQUE(attempt_id, question_id) violation - user already answered this question
     if (insertError.code === '23505') {
       // Fetch the existing answer and return it as if it were a fresh submission
       const { data: existing } = await adminClient
         .from('step_attempts')
-        .select('score, quality_label, competencies_demonstrated, grading_explanation')
+        .select('score, quality_label, competencies_demonstrated, grading_explanation, competency_signal')
         .eq('attempt_id', attempt_id)
         .eq('question_id', question_id)
         .single()
 
       if (existing) {
-        // Check step completion (same logic as below)
-        const { data: flowStepRow } = await adminClient
-          .from('flow_steps')
-          .select('id')
-          .eq('challenge_id', challenge_id)
-          .eq('step', step)
-          .single()
-
-        const { count: totalQuestionsCount } = await adminClient
-          .from('step_questions')
-          .select('id', { count: 'exact', head: true })
-          .eq('flow_step_id', flowStepRow?.id ?? '')
-
-        const { count: answeredCount } = await adminClient
-          .from('step_attempts')
-          .select('id', { count: 'exact', head: true })
-          .eq('attempt_id', attempt_id)
-          .eq('step', step)
-
-        const revealedOptions = options.map(o => ({
-          id: o.id,
-          option_label: o.option_label,
-          option_text: o.option_text,
-          quality: o.quality,
-          points: o.points,
-          explanation: o.explanation,
-          framework_hint: o.framework_hint ?? '',
-        }))
-
-        return NextResponse.json({
-          score: existing.score,
-          quality_label: existing.quality_label,
-          grade_label: existing.quality_label,
-          explanation: existing.grading_explanation,
-          competencies_demonstrated: existing.competencies_demonstrated,
-          competency_signal,
-          step_complete: (answeredCount ?? 0) >= (totalQuestionsCount ?? 0) && (totalQuestionsCount ?? 0) > 0,
-          revealed_options: revealedOptions,
-        })
+        return existingStepAttemptResponse(adminClient, challenge_id, attempt_id, step, options, existing)
       }
     }
 
@@ -281,29 +438,8 @@ export async function POST(
   // ── Check step completion ─────────────────────────────────
 
   // Count total questions in this step
-  const { data: flowStepRow } = await adminClient
-    .from('flow_steps')
-    .select('id')
-    .eq('challenge_id', challenge_id)
-    .eq('step', step)
-    .single()
-
-  const { count: totalQuestionsCount } = await adminClient
-    .from('step_questions')
-    .select('id', { count: 'exact', head: true })
-    .eq('flow_step_id', flowStepRow?.id ?? '')
-
-  const totalQuestions = totalQuestionsCount ?? 0
-
-  // Count answered questions in this step
-  const { count: answeredCount } = await adminClient
-    .from('step_attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('attempt_id', attempt_id)
-    .eq('step', step)
-
-  const answered = answeredCount ?? 0
-  const stepComplete = answered >= totalQuestions && totalQuestions > 0
+  const progress = await stepProgress(adminClient, challenge_id, attempt_id, step)
+  const stepComplete = progress.stepComplete
 
   let stepScore: number | undefined
 
@@ -383,15 +519,7 @@ export async function POST(
 
   // ── Build revealed options ────────────────────────────────
 
-  const revealedOptions = options.map(o => ({
-    id: o.id,
-    option_label: o.option_label,
-    option_text: o.option_text,
-    quality: o.quality,
-    points: o.points,
-    explanation: o.explanation,
-    framework_hint: o.framework_hint ?? '',
-  }))
+  const revealedOptions = revealedOptionsPayload(options)
 
   // ── Return response ───────────────────────────────────────
 

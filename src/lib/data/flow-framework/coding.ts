@@ -5,6 +5,17 @@ export const coding: Discipline = {
   name: 'Coding',
   tagline: 'How algorithms compose',
   tabLabel: 'Coding',
+  learnerExplanation: {
+    plainPurpose: 'Use FLOW to turn coding prompts into clarified constraints, candidate approaches, complexity trade-offs, and verified code.',
+    examplePrompt: 'Given a stream of events, return the longest window that satisfies a changing constraint.',
+    stepMeanings: {
+      F: 'Restate the problem, inputs, outputs, constraints, and assumptions.',
+      L: 'List brute force, stronger approaches, data structures, and edge cases.',
+      O: 'Pick the approach, state the time and space bounds, and name the trade-off.',
+      W: 'Implement cleanly, walk test cases, handle edges, and defend the final complexity.',
+    },
+    practiceOutcome: 'Practice builds coding judgment that shows your reasoning before, during, and after implementation.',
+  },
   traditions: [
     {
       id: 't1',

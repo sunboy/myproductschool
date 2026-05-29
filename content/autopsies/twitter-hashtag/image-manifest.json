@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "twitter",
+  "story_slug": "twitter-hashtag",
+  "story_title": "The Twitter Hashtag",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/twitter-hashtag/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/twitter-hashtag/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A forest-green pound sign with three tweet cards labelled with early hashtags, narrated by a small Hatch mascot.",
+      "caption": "One character, one convention, one decade of social media chrome.",
+      "prompt": "The Twitter Hashtag | hero: A flat geometric HackProduct autopsy hero illustration about the Twitter hashtag. Foreground centre shows a giant forest-green pound sign in deep forest `#244232` outline on a warm cream `#faf6f0` background, with three short cream tweet bars to its right tagged with small amber `#705c30` `#barcamp` and `#sandiegofire` labels stacked like sticky notes. Small Hatch narrator in the lower left, around 14 percent canvas height, in narrator pose, gesturing toward the pound sign, with the canonical rounded forest-green head frame, cream face and body, graduation cap, growth arrow above the cap, green H mark on the chest, simple mitten hands, friendly coach expression. Soft amber `#c9ad68` highlight ring behind the hashtag. Mist `#dfe6dc` band along the bottom for a clean horizon. Leave quiet negative space upper-left for a title overlay. Aspect 2400x1350. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/twitter-hashtag/hero.png",
+      "generated_image_sha256": "58c2b3acc334d76e83b76506d7c14314b35679285cb449243b2ed4243139cf46",
+      "final_image_sha256": "180c28639ac7e7cd0f57f8c5dbbf9999c322d4419312f3325af1b4517e3377a9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-hashtag/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-hashtag/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/twitter-hashtag/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A pitch document for hashtag channels lies on the floor of an early Twitter office while Hatch points at it from the corner.",
+      "caption": "A pitch document for hashtag channels lies on the floor of an early Twitter office while Hatch points at it from the corner.",
+      "prompt": "The Twitter Hashtag | hatch-narrator: A flat geometric HackProduct autopsy scene illustration set inside a small 2007 office. Two cream desk silhouettes with charcoal `#1e211c` linework, an early Twitter dashboard rendered as three abstract message bars in forest green, and a paper printout labelled \"tag channels proposal\" lying on the floor like it was tossed aside. A wall calendar shows AUG 2007. Hatch in narrator pose at right, around 18 percent canvas height, with cap and growth arrow intact, cream face, green H on the chest, mitten hand pointing at the printout, friendly coach expression. Background is warm cream `#faf6f0` with a soft amber `#c9ad68` light bar from a window. No human faces, no real product screenshots. Aspect 1600x1600. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/twitter-hashtag/hatch-narrator.png",
+      "generated_image_sha256": "59797117414bb504233cd6d9a3c0a88146395a1055a432c0360f1d7b408249e2",
+      "final_image_sha256": "78d1742e7d6a9ca071a66e0cff9f6d214b1d090d650810e5bbd41a754dc4bd71",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-hashtag/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-hashtag/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/twitter-hashtag/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A tweet containing a hashtag fans out to other tweets and a search query, with Hatch pointing at the routing arrow.",
+      "caption": "A tweet containing a hashtag fans out to other tweets and a search query, with Hatch pointing at the routing arrow.",
+      "prompt": "The Twitter Hashtag | failure-mechanism: A flat geometric diagram of how the hashtag works as a user-supplied convention. Centre shows a single tweet card in cream with deep forest `#244232` outline, the typed body reading \"watching the smoke from #sandiegofire\" with the hashtag highlighted in soft amber `#c9ad68`. A forest-green arrow leaves the hashtag and fans out to three smaller tweet cards on the right, each carrying the same `#sandiegofire` token. A second arrow loops back to a small search box with the hashtag as the query. To the left, a vertical \"no database needed\" label in amber `#705c30` next to a struck-through grey rectangle representing a rejected groups table. Hatch at lower-right at 16 percent canvas height in thinking-pointing pose, cap and growth arrow visible, mitten hand pointing at the fan-out arrow. Aspect 1800x1200. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/twitter-hashtag/failure-mechanism.png",
+      "generated_image_sha256": "f329c7d35d8a4090a5a93ec078631544b7bfbdd028bc10648ce55028f23c55f4",
+      "final_image_sha256": "8edd2fdeecb775fc2a313d15fe2f7f1eea22ed167403c5f2550333577516bb0b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-hashtag/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-hashtag/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/twitter-hashtag/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A timeline band shows four hashtag adoption milestones with the San Diego wildfire emphasised as the inflection point.",
+      "caption": "A timeline band shows four hashtag adoption milestones with the San Diego wildfire emphasised as the inflection point.",
+      "prompt": "The Twitter Hashtag | evidence-card: A flat geometric HackProduct evidence card showing the hashtag adoption timeline as a single horizontal forest-green `#4a7c59` band on warm cream `#faf6f0`. Four ticks across the band, labelled in charcoal `#1e211c`: \"Aug 23 2007 proposal\", \"Oct 2007 #sandiegofire\", \"Jul 2 2009 hyperlinked\", \"2010 Trending Topics\". One soft amber `#c9ad68` dot sits at the wildfire tick, slightly larger, signalling the inflection. Hatch absent, only a tiny corner watermark mark. Single short caption strip at the top reading \"Adoption did the work\" in amber `#705c30`. Aspect 1600x1000. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Hatch must not appear in this image. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/twitter-hashtag/evidence-card.png",
+      "generated_image_sha256": "eeb0b3ca4ec5b27f8fe9ac61437b4bf4ecdaf4a37b63ad638dc71653e8722762",
+      "final_image_sha256": "0de28505ef978697305bd671be4c9a1c15019db742b40117f83cfaf347c69c1f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-hashtag/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-hashtag/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/twitter-hashtag/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A single keyboard key etched with a hashtag radiates outward while Hatch gestures toward it in a coaching pose.",
+      "caption": "A single keyboard key etched with a hashtag radiates outward while Hatch gestures toward it in a coaching pose.",
+      "prompt": "The Twitter Hashtag | lesson-frame: A flat geometric HackProduct lesson illustration. Centre shows a single key on a cream `#faf6f0` keyboard tile, the key embossed with a forest-green `#4a7c59` pound sign and a small upward arrow next to it. Around the tile, three concentric mist `#dfe6dc` rings expand outward to suggest ripple adoption. Below the key, a thin soft-amber `#c9ad68` plinth labelled \"user-supplied\" in amber `#705c30`. Hatch on the right in coaching stance at around 18 percent canvas height, calm and friendly, cap and growth arrow visible, cream face, green H on chest, mitten hand gesturing toward the keyboard tile. No dense text. Aspect 1800x1200. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/twitter-hashtag/lesson-frame.png",
+      "generated_image_sha256": "b17fb237f3b9993dc0db0b6cd55b4d35ed9dc9e62de249d8a102f02bd7e46fca",
+      "final_image_sha256": "4887908e86da9d47445c617b385afe81dba7e9571d18ad4c62da91506d54ec85",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-hashtag/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-hashtag/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/twitter-hashtag/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A bold forest-green hashtag on a cream square with a tiny Hatch icon in the corner.",
+      "caption": "A bold forest-green hashtag on a cream square with a tiny Hatch icon in the corner.",
+      "prompt": "A flat geometric HackProduct thumbnail composition. One large forest-green `#4a7c59` pound sign centred on a warm cream `#faf6f0` square background, with a soft amber `#c9ad68` halo behind it. A tiny Hatch watermark-adjacent mark in the lower-right corner at about 8 percent canvas height showing only the head silhouette with cap and growth arrow, no body needed. No labels. One single strong focal shape readable at 320 pixels wide. Aspect 1200x900. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/twitter-hashtag/hero.png",
+      "generated_image_sha256": "58c2b3acc334d76e83b76506d7c14314b35679285cb449243b2ed4243139cf46",
+      "final_image_sha256": "6e95935a9c974187cd2e50918aa98172191dc2d11d3af7f14226dfd14bce563c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-hashtag/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-hashtag/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/twitter-hashtag/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A pound sign attracts small tweet cards across a cream canvas with Hatch narrating from the left edge.",
+      "caption": "A pound sign attracts small tweet cards across a cream canvas with Hatch narrating from the left edge.",
+      "prompt": "A flat geometric HackProduct social cover for the Twitter hashtag story. Central forest-green `#4a7c59` pound sign on warm cream `#faf6f0`, slightly offset right with three small soft-amber `#c9ad68` tweet cards drifting toward it from the left like iron filings to a magnet. Title-safe centre 70 percent kept clear of edge-critical content. Hatch as a small narrator at the far left edge, around 14 percent canvas height, in narrator pose, with cap, growth arrow, cream face, green H chest mark, mitten hand pointing inward. Deep forest `#244232` thin border line along the bottom for ballast. Aspect 2400x1260. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/twitter-hashtag/hero.png",
+      "generated_image_sha256": "58c2b3acc334d76e83b76506d7c14314b35679285cb449243b2ed4243139cf46",
+      "final_image_sha256": "a7e61b8c882e202a671aad99bf62a4db0362d5de2df4b9b50cb451f59def3e47",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-hashtag/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-hashtag/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/twitter-hashtag/v1"
+}

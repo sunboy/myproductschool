@@ -1,0 +1,547 @@
+{
+  "facts": [
+    {
+      "fact": "Lamport timestamps enable partial ordering of events in distributed systems without synchronized clocks; each process maintains a counter that increments with every local event, and receives the maximum of its counter and any received timestamp",
+      "source": "https://dl.acm.org/doi/10.1145/359545.359563",
+      "publication_date": "1978",
+      "note": "Seminal paper; still foundational"
+    },
+    {
+      "fact": "Raft leader election: followers have an election timeout (typically 150-300ms) for receiving heartbeats; if no heartbeat arrives, the follower becomes a candidate and initiates an election",
+      "source": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "publication_date": "2024",
+      "note": "Current implementation details"
+    },
+    {
+      "fact": "Raft log replication: leader receives AppendEntries RPCs from followers; entry is committed once replicated to majority of servers; followers append entries and acknowledge success",
+      "source": "https://fizzbee.io/design/examples/raft-consensus-algorithm/",
+      "publication_date": "2024",
+      "note": "Step-by-step replication mechanics"
+    },
+    {
+      "fact": "etcd default heartbeat interval is 100ms; default election timeout is 1000ms (10× the heartbeat); missing up to 9 consecutive heartbeats allows leader to maintain role",
+      "source": "https://etcd.io/docs/v3.4/tuning/",
+      "publication_date": "2024",
+      "note": "Operational tuning parameters"
+    },
+    {
+      "fact": "For etcd across multiple data centers, heartbeat interval should be ~0.5-1.5× round-trip time (RTT); election timeout upper limit is 50s for globally-distributed clusters",
+      "source": "https://etcd.io/docs/v3.4/tuning/",
+      "publication_date": "2024",
+      "note": "High-latency deployment guidance"
+    },
+    {
+      "fact": "Idempotent consumer pattern: consumer records processed message IDs in database; detects duplicates by querying database before processing; works with at-least-once message delivery",
+      "source": "https://www.conduktor.io/blog/building-idempotent-consumers",
+      "publication_date": "2024",
+      "note": "Production-ready deduplication approach"
+    },
+    {
+      "fact": "Kafka exactly-once semantics requires two guarantees: idempotent production (broker deduplicates via producer ID + sequence number) and transactional processing (atomic produce-consume-process)",
+      "source": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "publication_date": "2024",
+      "note": "Kafka's implementation of exactly-once"
+    },
+    {
+      "fact": "Exactly-once semantics incurs significant performance overhead; two-phase commit for transactional messages results in lower throughput and increased latency compared to at-least-once",
+      "source": "https://nejckorasa.github.io/posts/idempotent-kafka-procesing/",
+      "publication_date": "2024",
+      "note": "Performance tradeoff quantified"
+    },
+    {
+      "fact": "CockroachDB uses Raft consensus protocol for range replication; each Raft command is persisted to log, replicated to majority via AppendEntries RPC, then committed to storage engine",
+      "source": "https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer",
+      "publication_date": "2024",
+      "note": "Production system implementation"
+    },
+    {
+      "fact": "CockroachDB uses Hybrid Logical Clocks (HLC) to assign transaction timestamps; enables multi-version concurrency control (MVCC) and serializability without synchronized physical clocks",
+      "source": "https://www.cockroachlabs.com/blog/how-cockroachdb-distributes-atomic-transactions/",
+      "publication_date": "2024",
+      "note": "Beyond Lamport timestamps for MVCC"
+    },
+    {
+      "fact": "Clock skew on the internet commonly reaches tens of minutes; even in controlled distributed computing environments with NTP, significant clock skew at millisecond resolution is common",
+      "source": "https://oneuptime.com/blog/post/2026-02-06-resolve-clock-skew-opentelemetry-distributed-traces/view",
+      "publication_date": "2026",
+      "note": "Practical observation: don't trust clock synchronization"
+    },
+    {
+      "fact": "Clock skew of few milliseconds is often acceptable; skew reaching tens of milliseconds visibly distorts distributed trace timelines",
+      "source": "https://oneuptime.com/blog/post/2026-02-06-resolve-clock-skew-opentelemetry-distributed-traces/view",
+      "publication_date": "2026",
+      "note": "Threshold for observability impact"
+    },
+    {
+      "fact": "Network partitions split a cluster into majority and minority partitions; only majority partition can hold quorum and accept writes; minority partition must stop accepting writes to prevent split-brain",
+      "source": "https://martinfowler.com/articles/patterns-of-distributed-systems/majority-quorum.html",
+      "publication_date": "2024",
+      "note": "Quorum ensures safety during partition"
+    },
+    {
+      "fact": "For n-node cluster, quorum size is n/2 + 1; in 5-node cluster partitioned 3-2, only the 3-node partition can achieve quorum",
+      "source": "https://singhajit.com/distributed-systems/majority-quorum/",
+      "publication_date": "2024",
+      "note": "Mathematical foundation of consensus"
+    },
+    {
+      "fact": "The eight fallacies of distributed computing (Deutsch, 1994; Gosling added 8th in 1997): network reliability, zero latency, infinite bandwidth, security, topology stability, single admin, zero transport cost, homogeneity",
+      "source": "https://www.chriswirz.com/distributed-systems/fallacies-of-distributed-computing",
+      "publication_date": "2024",
+      "note": "Canonical list still applicable in 2024/2025"
+    },
+    {
+      "fact": "Fallacy: 'Bandwidth is infinite' is approximately true for application-layer traffic within a cloud region in 2024, but false for inter-region and internet traffic",
+      "source": "https://newsletter.enginuity.software/p/overcoming-the-8-fallacies-of-distributed",
+      "publication_date": "2024",
+      "note": "Modern context update to fallacies"
+    },
+    {
+      "fact": "Practical Byzantine Fault Tolerance (PBFT) has quadratic messaging complexity O(n²), limiting scalability; used in permissioned blockchains (Hyperledger Fabric) but not at internet scale",
+      "source": "https://space-raccoon.medium.com/navigating-consensus-the-practical-byzantine-fault-tolerance-pbft-algorithm-e44ec01babba",
+      "publication_date": "2024",
+      "note": "Scalability limitation of PBFT"
+    },
+    {
+      "fact": "PBFT requires f < n/3 (fewer than one-third faulty nodes); used in aerospace (Boeing 777/787 flight control) and blockchain consensus (Bitcoin proof-of-work analogue)",
+      "source": "https://www.halborn.com/blog/post/what-is-practical-byzantine-fault-tolerance-in-blockchain",
+      "publication_date": "2024",
+      "note": "Real-world critical systems"
+    },
+    {
+      "fact": "Two-phase commit (2PC) protocol: Phase 1 (prepare) — coordinator polls all participants if they can commit; Phase 2 (commit) — if all agree, coordinator broadcasts commit; if any refuse, broadcasts rollback",
+      "source": "https://www.techtarget.com/searchapparchitecture/definition/two-phase-commit-2PC",
+      "publication_date": "2024",
+      "note": "Atomic commitment protocol"
+    },
+    {
+      "fact": "2PC is synchronous and blocking; if coordinator crashes after Phase 1 but before Phase 2, participants hold locks indefinitely, blocking progress (part of CAP theorem tradeoff)",
+      "source": "https://www.cs.princeton.edu/courses/archive/fall16/cos418/docs/L6-2pc.pdf",
+      "publication_date": "2024",
+      "note": "Known limitation of 2PC"
+    },
+    {
+      "fact": "Vector clocks allow partial causal ordering of events; A→B if and only if VC(A) < VC(B) component-wise; distinguish causality vs concurrency (Lamport timestamps cannot)",
+      "source": "https://sookocheff.com/post/time/vector-clocks/",
+      "publication_date": "2024",
+      "note": "Enhancement over Lamport timestamps"
+    },
+    {
+      "fact": "Vector clock overhead: each process maintains array of size n (number of processes); grows linearly with cluster size; limited to systems with <100 nodes in practice",
+      "source": "https://www.cs.uic.edu/~ajayk/ext/JPDC2020-EVC.pdf",
+      "publication_date": "2020",
+      "note": "Scalability constraint of vector clocks"
+    },
+    {
+      "fact": "Cloudflare June 20, 2024 incident: latent bug in Traffic Manager caused 0.5%-2.1% error rate; triggered exception recovery loop at 18:17 UTC, repeated 18:35-18:57 UTC blocking traffic routing actions",
+      "source": "https://blog.cloudflare.com/cloudflare-incident-on-june-20-2024/",
+      "publication_date": "2024",
+      "note": "Recent partition-related outage"
+    },
+    {
+      "fact": "Cloudflare November 2, 2023 control plane outage (3.6 hours): lasted 11/2 11:43 UTC to 11/4 04:25 UTC; failover to European disaster recovery sites recovered service",
+      "source": "https://blog.cloudflare.com/post-mortem-on-cloudflare-control-plane-and-analytics-outage/",
+      "publication_date": "2023",
+      "note": "Multi-day partition recovery"
+    },
+    {
+      "fact": "AWS us-east-1 August 21, 2025 incident: traffic surge caused congestion on Cloudflare-AWS links; high latency, packet loss, failures to origin resolved via close Cloudflare-AWS collaboration",
+      "source": "https://blog.cloudflare.com/cloudflare-incident-on-august-21-2025/",
+      "publication_date": "2025",
+      "note": "Recent inter-cloud partition"
+    },
+    {
+      "fact": "Kubernetes split-brain DNS: on-premises DNS serving stale IPs while cloud DNS has updated service IPs; DNS TTL caching propagates inconsistency for hours despite quick fix",
+      "source": "https://alaa-rahimi.medium.com/the-silent-killer-how-split-brain-dns-sinks-your-multi-cloud-sanity-99d3541ed0d2",
+      "publication_date": "2024",
+      "note": "Service discovery partition scenario"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Boeing 777 aircraft flight control system uses Byzantine fault tolerance to tolerate sensor failures; multiple redundant computers vote on control surface commands to mask single node failures",
+      "company": "Boeing",
+      "product": "777/787 Flight Control System",
+      "metric": "f < n/3 Byzantine nodes tolerated; critical safety system",
+      "source": "https://www.halborn.com/blog/post/what-is-practical-byzantine-fault-tolerance-in-blockchain"
+    },
+    {
+      "scenario": "Kafka financial services consumer processes payment messages with idempotent consumer pattern; duplicate message ID detected via database constraint prevents double-charging customer",
+      "company": "Financial services (typical pattern)",
+      "product": "Payment processing pipeline",
+      "metric": "At-least-once delivery with deduplication achieves exactly-once semantics",
+      "source": "https://www.conduktor.io/blog/building-idempotent-consumers"
+    },
+    {
+      "scenario": "CockroachDB geo-distributed transaction: New York node initiates write, coordinator assigns HLC timestamp, replicates via Raft to Toronto and London replicas; majority commit succeeds, returns to client",
+      "company": "Cockroach Labs (product)",
+      "product": "CockroachDB distributed SQL",
+      "metric": "Quorum size: 3-node cluster needs 2-node majority",
+      "source": "https://www.cockroachlabs.com/blog/how-cockroachdb-distributes-atomic-transactions/"
+    },
+    {
+      "scenario": "Kubernetes etcd cluster experiences network partition: 5 nodes split 3-2; 3-node partition elects new leader via Raft (election timeout 1s, heartbeat 100ms); 2-node partition cannot achieve quorum, blocks writes",
+      "company": "Kubernetes infrastructure (typical)",
+      "product": "etcd cluster management",
+      "metric": "Quorum: 3 out of 5 nodes; partition recovery time ~1s per failed heartbeat",
+      "source": "https://etcd.io/docs/v3.4/tuning/"
+    },
+    {
+      "scenario": "Cloudflare June 2024 outage: Traffic Manager exception triggered recovery loop every 30-40 seconds; cascading failure blocked new traffic routing decisions for 40 minutes until human intervention reset service",
+      "company": "Cloudflare",
+      "product": "Traffic Manager",
+      "metric": "0.5%-2.1% error rate during incident window",
+      "source": "https://blog.cloudflare.com/cloudflare-incident-on-june-20-2024/"
+    },
+    {
+      "scenario": "Multi-cloud Kubernetes on GCP + on-premises: on-premises DNS authority still serving old IP (10.0.1.50) for service; GCP Cloud DNS serving new IP (35.201.0.15) for same domain; requests randomly routed to both",
+      "company": "Enterprise (typical multi-cloud scenario)",
+      "product": "Hybrid Kubernetes cluster",
+      "metric": "Split-brain DNS causes ~50% failure rate due to random routing",
+      "source": "https://alaa-rahimi.medium.com/the-silent-killer-how-split-brain-dns-sinks-your-multi-cloud-sanity-99d3541ed0d2"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Lamport timestamps",
+      "analogy": "Like a library checkout system where each desk maintains a running count. When a person checks out a book, they write down their desk's current count. If Person A (desk 1, count=5) tells Person B (desk 2, count=3) about a checkout, desk 2 updates to at least count=6. Later checkouts have higher counts, proving ordering.",
+      "why_it_works": "No synchronized clocks needed; relative ordering emerges from increments and message passing"
+    },
+    {
+      "concept": "Raft leader election",
+      "analogy": "A classroom where the teacher (leader) sends periodic attendance checks (heartbeats). If students don't hear from the teacher for 1 second (election timeout), they assume the teacher left, hold an election, and the student with the most votes becomes the new teacher. The new teacher starts sending attendance checks.",
+      "why_it_works": "Timeout-based detection is simple; majority voting prevents fractured leadership"
+    },
+    {
+      "concept": "Quorum consensus during partition",
+      "analogy": "A 5-person board split by communication failure into 3 people and 2 people. Only the group of 3 can make binding decisions (majority). The group of 2 sits idle until reconnection because they know they're outnumbered and any decision they make would be wrong.",
+      "why_it_works": "Guarantees at most one partition can have quorum; prevents split-brain decisions"
+    },
+    {
+      "concept": "Two-phase commit",
+      "analogy": "A wedding ceremony with a coordinator (judge). Phase 1: Judge asks all parties 'Do you take this person?' Each person mentally prepares their answer and signals readiness. Phase 2: Judge finalizes — everyone says 'I do' simultaneously, or the judge cancels the ceremony if anyone says no. No halfway marriages.",
+      "why_it_works": "Forces all participants to agree before any commits; prevents inconsistent state"
+    },
+    {
+      "concept": "Idempotent consumers",
+      "analogy": "A restaurant kitchen that writes every completed order to a 'finished orders' board before sending it to the customer. If the waiter crashes carrying the plate, the kitchen checks the board, sees the order already finished, and doesn't remake it.",
+      "why_it_works": "Duplicate detection via external state prevents re-processing; safe with at-least-once delivery"
+    },
+    {
+      "concept": "Vector clocks vs Lamport timestamps",
+      "analogy": "Lamport = a single global sequence number (A sent message 5, B received it and bumped to 6). Vector = each person has a memory of all their conversations (A=[5,0,0] bumps to [6,0,0] when sending to B; B=[0,3,0] receives and becomes [6,4,0]). Vector lets you detect causality; Lamport only orders everything globally.",
+      "why_it_works": "Vector captures per-process knowledge; Lamport throws away causality info by collapsing to a single integer"
+    },
+    {
+      "concept": "Clock skew as a fallacy",
+      "analogy": "Three friends trying to meet at a cafe: Alice's watch is 2 minutes fast, Bob's is 3 minutes slow, Charlie's is correct. They text each other 'See you at 3:00 PM.' Alice arrives at 2:58, Bob at 3:03, Charlie at 3:00. They miss each other. Add NTP (trusted clock server in the building), and only 10ms drift remains—everyone arrives within 1 minute.",
+      "why_it_works": "Illustrates drift and why NTP helps but doesn't guarantee zero skew; logical clocks avoid the problem entirely"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Raft election timeout default range",
+      "value": "150–300 milliseconds",
+      "source": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "context": "Timeout for followers to detect leader failure and start election"
+    },
+    {
+      "metric": "Raft heartbeat interval default",
+      "value": "100 milliseconds",
+      "source": "https://etcd.io/docs/v3.4/tuning/",
+      "context": "Interval at which leader broadcasts keepalive to followers"
+    },
+    {
+      "metric": "etcd leader election timeout to heartbeat ratio",
+      "value": "10:1 (1000ms : 100ms)",
+      "source": "https://etcd.io/docs/v3.4/tuning/",
+      "context": "Tolerance: can lose up to 9 heartbeats before election triggers"
+    },
+    {
+      "metric": "etcd election timeout upper limit for geo-distributed clusters",
+      "value": "50 seconds",
+      "source": "https://etcd.io/docs/v3.4/tuning/",
+      "context": "For globally-distributed deployments with high latency"
+    },
+    {
+      "metric": "etcd recommended heartbeat interval for high-latency networks",
+      "value": "0.5–1.5× round-trip time (RTT)",
+      "source": "https://etcd.io/docs/v3.4/tuning/",
+      "context": "Should track network latency to avoid unnecessary elections"
+    },
+    {
+      "metric": "Clock skew visibility threshold in distributed traces",
+      "value": "Tens of milliseconds",
+      "source": "https://oneuptime.com/blog/post/2026-02-06-resolve-clock-skew-opentelemetry-distributed-traces/view",
+      "context": "Above this, clock skew noticeably distorts trace timelines"
+    },
+    {
+      "metric": "Internet clock skew (untrusted NTP)",
+      "value": "Tens of minutes",
+      "source": "https://oneuptime.com/blog/post/2026-02-06-resolve-clock-skew-opentelemetry-distributed-traces/view",
+      "context": "Without careful synchronization, significant drift is common"
+    },
+    {
+      "metric": "Quorum size formula",
+      "value": "n/2 + 1 (for n-node cluster)",
+      "source": "https://singhajit.com/distributed-systems/majority-quorum/",
+      "context": "Minimum nodes needed for consensus; prevents split-brain in any partition"
+    },
+    {
+      "metric": "Byzantine fault tolerance threshold",
+      "value": "f < n/3 (fewer than 1/3 faulty nodes)",
+      "source": "https://www.halborn.com/blog/post/what-is-practical-byzantine-fault-tolerance-in-blockchain",
+      "context": "PBFT can tolerate arbitrary failures in fewer than 1/3 of nodes"
+    },
+    {
+      "metric": "PBFT messaging complexity",
+      "value": "O(n²) — quadratic in cluster size",
+      "source": "https://space-raccoon.medium.com/navigating-consensus-the-practical-byzantine-fault-tolerance-pbft-algorithm-e44ec01babba",
+      "context": "Limits PBFT to small clusters; scales poorly"
+    },
+    {
+      "metric": "Cloudflare June 2024 error rate during partition",
+      "value": "0.5–2.1%",
+      "source": "https://blog.cloudflare.com/cloudflare-incident-on-june-20-2024/",
+      "context": "Cascading exception loop causing traffic manager failures"
+    },
+    {
+      "metric": "Cloudflare November 2023 control plane outage duration",
+      "value": "2 hours 42 minutes (11:43 UTC to 14:25 UTC on day 1; lasted into day 3)",
+      "source": "https://blog.cloudflare.com/post-mortem-on-cloudflare-control-plane-and-analytics-outage/",
+      "context": "Multi-day partition requiring failover to DR sites"
+    },
+    {
+      "metric": "Vector clock overhead per node",
+      "value": "O(n) — array of size n",
+      "source": "https://www.cs.uic.edu/~ajayk/ext/JPDC2020-EVC.pdf",
+      "context": "Scales linearly; practical limit ~100 nodes"
+    },
+    {
+      "metric": "Kafka exactly-once vs at-least-once performance cost",
+      "value": "Lower throughput and increased latency (exact % varies by workload)",
+      "source": "https://nejckorasa.github.io/posts/idempotent-kafka-procesing/",
+      "context": "2PC overhead; many systems trade off exactly-once for performance"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Synchronized clocks solve distributed systems problems",
+      "reality": "Perfect clock synchronization is impossible (Deutsch fallacy: 'latency is zero'). Even NTP-synchronized clocks drift tens of milliseconds. Use logical clocks (Lamport, vector) instead.",
+      "source": "https://oneuptime.com/blog/post/2026-02-06-resolve-clock-skew-opentelemetry-distributed-traces/view",
+      "consequence": "Relying on physical clocks for ordering causes subtle causality bugs; logical timestamps are provably correct"
+    },
+    {
+      "misconception": "At-least-once message delivery is good enough — idempotent consumers don't matter",
+      "reality": "At-least-once guarantees duplicates will occur (retries, crashes, rebalancing). Consumer must be idempotent or financial/data loss will happen. Don't skip deduplication.",
+      "source": "https://www.conduktor.io/blog/building-idempotent-consumers",
+      "consequence": "Duplicate payments, inventory corruption, or data inconsistency"
+    },
+    {
+      "misconception": "Exactly-once semantics is free",
+      "reality": "Exactly-once (via 2PC or transactional messages) incurs significant overhead: lower throughput, higher latency. Usually only worth it for critical operations (payments, unique ID generation).",
+      "source": "https://nejckorasa.github.io/posts/idempotent-kafka-procesing/",
+      "consequence": "Unnecessarily slow systems; most real systems use at-least-once + idempotency for speed"
+    },
+    {
+      "misconception": "Network partitions are rare — assume the network is reliable",
+      "reality": "Network partitions happen regularly in production (ISP failures, misconfigured firewalls, DNS glitches). Fallacy #1 of distributed computing. Plan for partition recovery.",
+      "source": "https://www.chriswirz.com/distributed-systems/fallacies-of-distributed-computing",
+      "consequence": "Unplanned downtime, data inconsistency, split-brain scenarios"
+    },
+    {
+      "misconception": "Two-phase commit guarantees atomicity across all systems",
+      "reality": "2PC guarantees atomic commit of the transaction, but not atomicity of side effects. If a participant crashes after Phase 1 but before Phase 2, locks are held indefinitely (blocking problem).",
+      "source": "https://www.cs.princeton.edu/courses/archive/fall16/cos418/docs/L6-2pc.pdf",
+      "consequence": "Cascading failures, system hangs, resource exhaustion"
+    },
+    {
+      "misconception": "Quorum consensus solves split-brain",
+      "reality": "Quorum consensus prevents one partition from accepting writes; it sacrifices availability (minority partition goes offline) to preserve consistency. Doesn't make the network reliable.",
+      "source": "https://martinfowler.com/articles/patterns-of-distributed-systems/majority-quorum.html",
+      "consequence": "Minority partition becomes unavailable; applications must handle graceful degradation"
+    },
+    {
+      "misconception": "Leader election is instantaneous",
+      "reality": "Leader election takes time: followers must timeout (150-300ms default in Raft), become candidates, collect votes, etc. During election, no leader exists; system is unavailable.",
+      "source": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "consequence": "Write latency spikes or failures during leader failure recovery"
+    },
+    {
+      "misconception": "Clock skew doesn't matter for application-level logic",
+      "reality": "Clock skew corrupts: transaction timestamps, event ordering, timeout calculations, lease expiration (nodes think their lease expired when it hasn't). Logical clocks fix this.",
+      "source": "https://oneuptime.com/blog/post/2026-02-06-resolve-clock-skew-opentelemetry-distributed-traces/view",
+      "consequence": "Subtle bugs where causality is inverted; hard to debug in production"
+    },
+    {
+      "misconception": "DNS is always consistent",
+      "reality": "Split-brain DNS happens: on-premises DNS and cloud DNS both claim authority; caching propagates inconsistency for hours. Service discovery can route to stale IPs.",
+      "source": "https://alaa-rahimi.medium.com/the-silent-killer-how-split-brain-dns-sinks-your-multi-cloud-sanity-99d3541ed0d2",
+      "consequence": "Requests routed to wrong service instance, mysterious timeouts, multi-cloud failures"
+    },
+    {
+      "misconception": "Lamport timestamps uniquely order all events",
+      "reality": "Lamport timestamps create total ordering by adding process ID as tiebreaker, but lose causality information. Vector clocks preserve causality; concurrent events have incomparable timestamps.",
+      "source": "https://sookocheff.com/post/time/vector-clocks/",
+      "consequence": "Application assumes false ordering; concurrent writes appear ordered when they're actually independent"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://dl.acm.org/doi/10.1145/359545.359563",
+      "title": "Time, clocks, and the ordering of events in a distributed system",
+      "recency": "1978 (seminal; foundations still valid)",
+      "type": "Academic paper (ACM)"
+    },
+    {
+      "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/lamport-clock.html",
+      "title": "Lamport Clock",
+      "recency": "2024",
+      "type": "Engineering blog"
+    },
+    {
+      "url": "https://sookocheff.com/post/time/lamport-clock/",
+      "title": "Lamport Clocks: Determining the Order of Events in Distributed Systems",
+      "recency": "2024",
+      "type": "Engineering blog"
+    },
+    {
+      "url": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "title": "A closer look at Raft internals – leader election and log replication",
+      "recency": "2024",
+      "type": "Engineering blog"
+    },
+    {
+      "url": "https://fizzbee.io/design/examples/raft-consensus-algorithm/",
+      "title": "Raft Consensus Protocol",
+      "recency": "2024",
+      "type": "Interactive tutorial"
+    },
+    {
+      "url": "https://etcd.io/docs/v3.4/tuning/",
+      "title": "Tuning | etcd",
+      "recency": "2024",
+      "type": "Official documentation"
+    },
+    {
+      "url": "https://www.conduktor.io/blog/building-idempotent-consumers",
+      "title": "Build Idempotent Kafka Consumers: Patterns That Actually Work",
+      "recency": "2024",
+      "type": "Engineering blog"
+    },
+    {
+      "url": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "title": "Exactly-once Semantics is Possible: Here's How Apache Kafka Does it",
+      "recency": "2024",
+      "type": "Official Kafka/Confluent blog"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer",
+      "title": "Transaction Layer | CockroachDB",
+      "recency": "2024",
+      "type": "Official documentation"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/blog/how-cockroachdb-distributes-atomic-transactions/",
+      "title": "How CockroachDB does distributed, atomic transactions",
+      "recency": "2024",
+      "type": "Official blog"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-02-06-resolve-clock-skew-opentelemetry-distributed-traces/view",
+      "title": "How to Resolve Clock Skew Issues in OpenTelemetry Distributed Traces",
+      "recency": "2026",
+      "type": "Engineering blog"
+    },
+    {
+      "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/majority-quorum.html",
+      "title": "Majority Quorum",
+      "recency": "2024",
+      "type": "Engineering patterns"
+    },
+    {
+      "url": "https://singhajit.com/distributed-systems/majority-quorum/",
+      "title": "Majority Quorum in Distributed Systems Explained",
+      "recency": "2024",
+      "type": "Engineering blog"
+    },
+    {
+      "url": "https://www.chriswirz.com/distributed-systems/fallacies-of-distributed-computing",
+      "title": "Understanding the Fallacies of Distributed Computing",
+      "recency": "2024",
+      "type": "Engineering blog"
+    },
+    {
+      "url": "https://www.halborn.com/blog/post/what-is-practical-byzantine-fault-tolerance-in-blockchain",
+      "title": "What Is Practical Byzantine Fault Tolerance in Blockchain?",
+      "recency": "2024",
+      "type": "Security blog"
+    },
+    {
+      "url": "https://space-raccoon.medium.com/navigating-consensus-the-practical-byzantine-fault-tolerance-pbft-algorithm-e44ec01babba",
+      "title": "Navigating Consensus: The Practical Byzantine Fault Tolerance (PBFT) Algorithm",
+      "recency": "2024",
+      "type": "Engineering blog (Medium)"
+    },
+    {
+      "url": "https://www.techtarget.com/searchapparchitecture/definition/two-phase-commit-2PC",
+      "title": "What is Two-Phase Commit (2PC)?",
+      "recency": "2024",
+      "type": "Technical reference"
+    },
+    {
+      "url": "https://www.cs.princeton.edu/courses/archive/fall16/cos418/docs/L6-2pc.pdf",
+      "title": "Two-Phase Commit COS 418: Distributed Systems Lecture 6",
+      "recency": "2016 (course material)",
+      "type": "Academic (Princeton)"
+    },
+    {
+      "url": "https://sookocheff.com/post/time/vector-clocks/",
+      "title": "Vector Clocks",
+      "recency": "2024",
+      "type": "Engineering blog"
+    },
+    {
+      "url": "https://www.cs.uic.edu/~ajayk/ext/JPDC2020-EVC.pdf",
+      "title": "Extended Vector Clocks",
+      "recency": "2020",
+      "type": "Academic paper"
+    },
+    {
+      "url": "https://blog.cloudflare.com/cloudflare-incident-on-june-20-2024/",
+      "title": "Cloudflare incident on June 20, 2024",
+      "recency": "2024",
+      "type": "Official incident postmortem"
+    },
+    {
+      "url": "https://blog.cloudflare.com/post-mortem-on-cloudflare-control-plane-and-analytics-outage/",
+      "title": "Post mortem on the Cloudflare Control Plane and Analytics Outage",
+      "recency": "2023",
+      "type": "Official incident postmortem"
+    },
+    {
+      "url": "https://blog.cloudflare.com/cloudflare-incident-on-august-21-2025/",
+      "title": "Cloudflare incident on August 21, 2025",
+      "recency": "2025",
+      "type": "Official incident postmortem"
+    },
+    {
+      "url": "https://alaa-rahimi.medium.com/the-silent-killer-how-split-brain-dns-sinks-your-multi-cloud-sanity-99d3541ed0d2",
+      "title": "The Silent Killer: How Split-Brain DNS Sinks Your Multi-Cloud Sanity",
+      "recency": "2024",
+      "type": "Engineering blog (Medium)"
+    },
+    {
+      "url": "https://newsletter.enginuity.software/p/overcoming-the-8-fallacies-of-distributed",
+      "title": "Overcoming the 8 Fallacies of Distributed Computing",
+      "recency": "2024",
+      "type": "Newsletter / engineering blog"
+    },
+    {
+      "url": "https://nejckorasa.github.io/posts/idempotent-kafka-procesing/",
+      "title": "Idempotent Processing with Kafka",
+      "recency": "2024",
+      "type": "Engineering blog"
+    }
+  ]
+}

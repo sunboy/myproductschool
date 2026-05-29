@@ -4,13 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
-interface CohortData {
-  total_participants: number
-  user_rank: number | null
-  user_percentile: number | null
-  rankings: Array<{ rank: number; user_id: string; display_name: string; score: number }>
-}
-
 interface Company {
   id: string
   name: string
@@ -57,7 +50,6 @@ export function GuidedTab() {
   const [coachingDismissed, setCoachingDismissed] = useState(false)
   const [expandedChapter, setExpandedChapter] = useState<number | null>(1)
   const [chapters, setChapters] = useState<Chapter[]>([])
-  const [cohort, setCohort] = useState<CohortData | null>(null)
 
   useEffect(() => {
     fetch('/api/prep/companies')
@@ -73,11 +65,6 @@ export function GuidedTab() {
     fetch('/api/prep/challenges')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.chapters?.length) setChapters(data.chapters) })
-      .catch(() => {})
-
-    fetch('/api/cohort/leaderboard')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setCohort(data) })
       .catch(() => {})
   }, [])
 
@@ -188,73 +175,19 @@ export function GuidedTab() {
           </div>
         </div>
 
-        {/* Right Column: Weekly drill board */}
+        {/* Right Column: Practice board */}
         <div className="col-span-12 lg:col-span-4">
           <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
             <div className="flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>leaderboard</span>
-              <h3 className="font-bold text-sm">Weekly Drill Board</h3>
+              <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>target</span>
+              <h3 className="font-bold text-sm">Practice Board</h3>
             </div>
 
-            {cohort === null ? (
-              /* Loading */
-              <div className="space-y-2 animate-pulse">
-                <div className="h-4 bg-surface-container-highest rounded w-3/4" />
-                <div className="h-4 bg-surface-container-highest rounded w-1/2" />
-                <div className="h-4 bg-surface-container-highest rounded w-2/3" />
-              </div>
-            ) : cohort.total_participants === 0 ? (
-              /* No active drill */
-              <div className="flex flex-col items-center py-4 gap-2 text-center">
-                <HatchGlyph size={36} state="idle" className="text-primary" />
-                <p className="text-xs text-on-surface-variant">No weekly drill results yet.</p>
-                <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Browse drills →</Link>
-              </div>
-            ) : (
-              <>
-                {/* Participant count */}
-                <p className="text-xs text-on-surface-variant mb-4">
-                  <span className="font-bold text-on-surface">{cohort.total_participants}</span> engineers practicing this week
-                </p>
-
-                {/* Top 3 */}
-                <div className="space-y-2 mb-4">
-                  {cohort.rankings.slice(0, 3).map((r) => {
-                    const isYou = r.user_id !== 'u1' && r.user_id !== 'u2' && r.user_id !== 'u4' && cohort.user_rank === r.rank
-                    return (
-                      <div key={r.user_id} className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs ${isYou ? 'bg-primary/10 border border-primary/20' : 'bg-surface-container-low'}`}>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-on-surface-variant">#{r.rank}</span>
-                          <span className={`font-medium ${isYou ? 'text-primary font-bold' : 'text-on-surface'}`}>
-                            {isYou ? 'You' : r.display_name}
-                          </span>
-                        </div>
-                        <span className="font-bold text-on-surface-variant">{r.score}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* User's own rank if outside top 3 */}
-                {cohort.user_rank !== null && cohort.user_rank > 3 && (
-                  <div className="flex items-center justify-between px-3 py-2 rounded-lg text-xs bg-primary/10 border border-primary/20 mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-on-surface-variant">#{cohort.user_rank}</span>
-                      <span className="font-bold text-primary">You</span>
-                    </div>
-                    <span className="text-[10px] text-on-surface-variant">Top {100 - (cohort.user_percentile ?? 0)}%</span>
-                  </div>
-                )}
-
-                <Link
-                  href="/challenges"
-                  className="flex items-center justify-center gap-1 w-full py-2 rounded-full border border-primary/30 text-xs font-bold text-primary hover:bg-primary/5 transition-colors"
-                >
-                  View practice board
-                  <span className="material-symbols-outlined text-sm">chevron_right</span>
-                </Link>
-              </>
-            )}
+            <div className="flex flex-col items-center py-4 gap-2 text-center">
+              <HatchGlyph size={36} state="idle" className="text-primary" />
+              <p className="text-xs text-on-surface-variant">Pick a focused drill by company, skill, or FLOW move.</p>
+              <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Browse drills →</Link>
+            </div>
           </div>
         </div>
       </div>

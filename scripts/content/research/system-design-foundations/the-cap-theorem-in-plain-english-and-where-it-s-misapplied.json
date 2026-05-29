@@ -1,0 +1,410 @@
+{
+  "facts": [
+    {
+      "fact": "CAP theorem states any distributed system can guarantee only 2 of 3: Consistency (all reads get latest write), Availability (all requests get responses), Partition Tolerance (system continues despite network failures)",
+      "source_url": "https://sites.cs.ucsb.edu/~rich/class/cs293b-cloud/papers/brewer-cap.pdf",
+      "publication_date": "2012",
+      "recency_note": "Brewer's 2012 clarification, still authoritative"
+    },
+    {
+      "fact": "Partition tolerance is mandatory in distributed systems—not optional. The real trade-off during network partitions is between Consistency and Availability, not which properties to have",
+      "source_url": "https://sites.cs.ucsb.edu/~rich/class/cs293b-cloud/papers/brewer-cap.pdf",
+      "publication_date": "2012",
+      "recency_note": "Brewer's explicit clarification of the CAP theorem"
+    },
+    {
+      "fact": "PACELC theorem (Abadi, 2010) extends CAP by stating: during Partition, choose between Availability and Consistency; Else (normal operation), choose between Latency and Consistency",
+      "source_url": "https://www.scylladb.com/glossary/pacelc-theorem/",
+      "publication_date": "2010",
+      "recency_note": "Foundational work; still the most complete framework"
+    },
+    {
+      "fact": "Average QPS formula: (DAU × actions per user per day) / 86,400 seconds. Peak QPS typically 2-5x average; Pareto rule: 80% of traffic in 20% of the day",
+      "source_url": "https://blog.bytebytego.com/p/capacity-planning",
+      "publication_date": "2024",
+      "recency_note": "Current best practice"
+    },
+    {
+      "fact": "DynamoDB eventually consistent reads cost 50% less than strongly consistent reads; multi-region strong consistency (mRSC) launched in 2024 with cross-region durability and ordering",
+      "source_url": "https://aws.amazon.com/blogs/aws/build-the-highest-resilience-apps-with-multi-region-strong-consistency-in-amazon-dynamodb-global-tables/",
+      "publication_date": "2024",
+      "recency_note": "Latest DynamoDB feature"
+    },
+    {
+      "fact": "Netflix uses polyglot persistence: MySQL (RDBMS) for transactional data requiring ACID (billing, users, transactions); Apache Cassandra (NoSQL) for large-scale metadata and high write/read throughput",
+      "source_url": "https://www.clustox.com/blog/netflix-case-study/",
+      "publication_date": "2024",
+      "recency_note": "Current Netflix architecture"
+    },
+    {
+      "fact": "OLTP systems optimize for many small reads/writes on current state with row-oriented schemas and ACID guarantees; typical read-to-write ratio is 1000:1 in web applications",
+      "source_url": "https://questdb.com/glossary/oltp-vs-olap-vs-time-series-databases/",
+      "publication_date": "2024",
+      "recency_note": "Current understanding of OLTP workloads"
+    },
+    {
+      "fact": "Time-series databases treat time as the primary dimension, use append-only ingestion at very high rates, and reorder data by timestamp and series key—fundamentally different from OLTP",
+      "source_url": "https://clickhouse.com/resources/engineering/what-is-time-series-database",
+      "publication_date": "2024",
+      "recency_note": "Modern time-series design principles"
+    },
+    {
+      "fact": "Stateless services scale horizontally by offloading shared state (sessions, temp data) to external systems (Redis, databases, message queues); session affinity (sticky sessions) breaks horizontally scaling",
+      "source_url": "https://blog.dreamfactory.com/scaling-stateless-vs-stateful-services/",
+      "publication_date": "2024",
+      "recency_note": "Current scaling best practices"
+    },
+    {
+      "fact": "Cache-aside pattern does not guarantee consistency between cache and database; TTL and cache invalidation are required to manage staleness",
+      "source_url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside",
+      "publication_date": "2024",
+      "recency_note": "Current Azure architecture guidance"
+    },
+    {
+      "fact": "Hash-based sharding reduces hotspots by distributing load evenly; range-based sharding is simpler but prone to hotspots when new data clusters at one range end",
+      "source_url": "https://planetscale.com/learn/courses/database-scaling/sharding/sharding-strategies",
+      "publication_date": "2024",
+      "recency_note": "Current sharding best practices"
+    },
+    {
+      "fact": "Cassandra Quorum consistency: W + R > RF ensures strong consistency (W = write consistency level, R = read consistency level, RF = replication factor)",
+      "source_url": "https://www.pythian.com/blog/cassandra-consistency-level-guide",
+      "publication_date": "2024",
+      "recency_note": "Current Cassandra tuning guidance"
+    },
+    {
+      "fact": "Google Cloud Spanner handles 4 billion queries per second peak and 15+ exabytes of data with 5 nines availability and global strong consistency via atomic clocks and true time",
+      "source_url": "https://cloud.google.com/blog/products/databases/spanner-innovations-in-2024",
+      "publication_date": "2024",
+      "recency_note": "Latest Spanner capabilities"
+    },
+    {
+      "fact": "Stripe processes $1 trillion+ USD annually with 99.999% uptime using geo-partitioned storage, CRDTs or careful sync, authoritative mastery for money movement, and cross-region reconciliation",
+      "source_url": "https://stripe.com/sessions/2024/building-a-culture-of-system-reliability",
+      "publication_date": "2024",
+      "recency_note": "Current Stripe operational scale"
+    },
+    {
+      "fact": "MongoDB sharded clusters consist of multiple replica sets as shards; when transactions span multiple shards, consistency is eventual across shard boundaries even within a single transaction",
+      "source_url": "https://www.mongodb.com/docs/manual/sharding/",
+      "publication_date": "2024",
+      "recency_note": "Current MongoDB architecture"
+    },
+    {
+      "fact": "Effective shard keys must have high cardinality, distribute load evenly, be immutable, and align with dominant query patterns; avoid monotonically increasing values and low-cardinality attributes",
+      "source_url": "https://docs.singlestore.com/cloud/create-a-database/understanding-shard-key-selection/",
+      "publication_date": "2024",
+      "recency_note": "Current best practices for shard key selection"
+    },
+    {
+      "fact": "ACID databases choose Consistency over Availability and are harder to scale horizontally; BASE databases choose Availability over Consistency and scale more easily",
+      "source_url": "https://aws.amazon.com/compare/the-difference-between-acid-and-base-database/",
+      "publication_date": "2024",
+      "recency_note": "Current consistency model understanding"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Twitter-like system: 50M DAU, 10 timeline views + 1 tweet per user per day = ~6,000 read QPS, 600 write QPS average",
+      "source_url": "https://blog.bytebytego.com/p/capacity-planning",
+      "company": "Twitter (hypothetical interview scenario)"
+    },
+    {
+      "example": "Netflix uses MySQL for billing/user data requiring ACID, Cassandra for video catalog and user preferences requiring high availability",
+      "source_url": "https://www.clustox.com/blog/netflix-case-study/",
+      "company": "Netflix",
+      "year": 2024
+    },
+    {
+      "example": "DynamoDB mRSC (multi-region strong consistency) launched 2024: enables applications to write once, read everywhere with strict consistency",
+      "source_url": "https://aws.amazon.com/blogs/aws/build-the-highest-resilience-apps-with-multi-region-strong-consistency-in-amazon-dynamodb-global-tables/",
+      "company": "Amazon",
+      "year": 2024
+    },
+    {
+      "example": "Google Cloud Spanner: processes 4 billion queries/second peak, stores 15+ exabytes, 99.999% uptime with global strong consistency",
+      "source_url": "https://cloud.google.com/blog/products/databases/spanner-innovations-in-2024",
+      "company": "Google",
+      "year": 2024
+    },
+    {
+      "example": "Stripe: $1 trillion+ annual payment volume, 99.999% uptime using geo-partitioned state with authoritative masters for money movement",
+      "source_url": "https://stripe.com/sessions/2024/building-a-culture-of-system-reliability",
+      "company": "Stripe",
+      "year": 2024
+    },
+    {
+      "example": "Cassandra Quorum consistency: replication factor 3 requires 2 nodes to respond (quorum = 3/2 + 1), can tolerate 1 node failure",
+      "source_url": "https://www.pythian.com/blog/cassandra-consistency-level-guide",
+      "company": "Apache Cassandra community",
+      "year": 2024
+    },
+    {
+      "example": "Session affinity (sticky sessions) in Kubernetes: breaks when traffic routed through proxies/load balancers; fixed by storing sessions in Redis instead",
+      "source_url": "https://support.tools/session-affinity-kubernetes/",
+      "company": "Kubernetes community",
+      "year": 2024
+    },
+    {
+      "example": "Range-based sharding hotspot: new data clusters at end of range (e.g., current date), causing all writes to route to one shard and starving others",
+      "source_url": "https://planetscale.com/learn/courses/database-scaling/sharding/sharding-strategies",
+      "company": "PlanetScale",
+      "year": 2024
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "CAP theorem is like a 2-of-3 voting system: Partition tolerance is mandatory (networks fail), so you're really choosing between having a unanimous vote (consistency) or accepting majority rule (availability)",
+      "related_concept": "Partition tolerance is non-negotiable"
+    },
+    {
+      "analogy": "PACELC extends CAP like asking: 'What if there's no partition? You still must choose between waiting for everyone to agree (strong consistency = latency) or letting people vote immediately (availability with potential staleness)'",
+      "related_concept": "Latency-consistency tradeoff is always present"
+    },
+    {
+      "analogy": "Cassandra's quorum consistency (W + R > RF) is like a jury trial: you need enough votes from multiple replicas to be confident in a decision, and the more you require, the longer the trial takes",
+      "related_concept": "Tunable consistency"
+    },
+    {
+      "analogy": "Shard key selection is like designing a postal system: bad keys (low cardinality) are like routing all mail to one zip code; monotonic keys (timestamps) are like a post office that's always busy at the same time each day",
+      "related_concept": "Even data distribution"
+    },
+    {
+      "analogy": "Cache-aside pattern is like asking a friend (cache) for today's weather instead of checking the forecast directly (database): if you check daily, it's usually right; if a storm came 5 minutes ago, your friend won't know until they check again",
+      "related_concept": "Staleness and TTL management"
+    },
+    {
+      "analogy": "Stateless services are like a restaurant with no assigned tables: any server can handle any customer, and tables are freed immediately for the next customer; stateful services are like reserved seating tied to a specific server",
+      "related_concept": "Horizontal scaling and session management"
+    },
+    {
+      "analogy": "ACID vs BASE is like a bank (ACID: all transactions succeed or all roll back) vs a rumor mill (BASE: information spreads eventually but may be stale for a bit)",
+      "related_concept": "Consistency models"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "DynamoDB eventually consistent reads are 50% cheaper than strongly consistent reads",
+      "source_url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html",
+      "context": "Cost tradeoff for consistency"
+    },
+    {
+      "metric": "Cassandra quorum consistency: replication factor 3 requires 2 replica responses (majority); can tolerate 1 node failure",
+      "source_url": "https://www.pythian.com/blog/cassandra-consistency-level-guide",
+      "context": "Availability vs consistency tuning"
+    },
+    {
+      "metric": "Google Spanner: 4 billion queries per second peak, 15+ exabytes stored, 99.999% availability (5 nines)",
+      "source_url": "https://cloud.google.com/blog/products/databases/spanner-innovations-in-2024",
+      "context": "Scale of strongly consistent global database"
+    },
+    {
+      "metric": "Stripe: $1 trillion+ USD payment volume annually, 99.999% uptime",
+      "source_url": "https://stripe.com/sessions/2024/building-a-culture-of-system-reliability",
+      "context": "Financial system consistency requirements"
+    },
+    {
+      "metric": "Web application read-to-write ratio: typically 1000:1 (1000 reads for every write)",
+      "source_url": "https://questdb.com/glossary/oltp-vs-olap-vs-time-series-databases/",
+      "context": "OLTP workload characteristics"
+    },
+    {
+      "metric": "Peak QPS is typically 2-5x average QPS; Pareto rule suggests 80% of traffic arrives in 20% of the day",
+      "source_url": "https://blog.bytebytego.com/p/capacity-planning",
+      "context": "Capacity estimation methodology"
+    },
+    {
+      "metric": "DynamoDB eventual consistency: data reaches all replicas within 1 second or less",
+      "source_url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html",
+      "context": "Typical eventual consistency latency"
+    },
+    {
+      "metric": "MongoDB LOCAL_QUORUM: quorum calculated only within local datacenter, not globally",
+      "source_url": "https://www.mongodb.com/docs/manual/sharding/",
+      "context": "Multi-region consistency tuning"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "CAP is about picking 2 of 3 properties; partition tolerance is optional if you don't have network failures",
+      "reality": "Partition tolerance is mandatory in any distributed system. Network partitions are inevitable. The real choice is between Consistency and Availability during partitions.",
+      "source_url": "https://sites.cs.ucsb.edu/~rich/class/cs293b-cloud/papers/brewer-cap.pdf",
+      "why_its_wrong": "Ignoring network failures leads to catastrophic failures. Brewer explicitly clarified this in 2012."
+    },
+    {
+      "misconception": "Eventual consistency means 'immediately consistent'",
+      "reality": "Eventual consistency means data will be consistent at some undefined point in the future. Applications must handle temporary staleness between replicas.",
+      "source_url": "https://www.alexdebrie.com/posts/dynamodb-eventual-consistency/",
+      "why_its_wrong": "Applications built without staleness awareness may display conflicting data to users or make decisions on stale state."
+    },
+    {
+      "misconception": "Strong consistency has no latency cost",
+      "reality": "Strong consistency requires coordination between replicas (PACELC theorem). Coordination adds latency. Latency-consistency tradeoff exists at all times, not just during partitions.",
+      "source_url": "https://www.scylladb.com/glossary/pacelc-theorem/",
+      "why_its_wrong": "Expecting strong consistency with low latency leads to under-provisioned systems that don't meet SLAs."
+    },
+    {
+      "misconception": "Sharding evenly distributes load if you just hash the shard key",
+      "reality": "Hash-based sharding reduces but doesn't eliminate hotspots if the key has low cardinality or skewed distribution (e.g., country field with 80% in one country)",
+      "source_url": "https://planetscale.com/learn/courses/database-scaling/sharding/sharding-strategies",
+      "why_its_wrong": "Operators discover hotspots in production under peak load, causing cascading failures."
+    },
+    {
+      "misconception": "Session affinity (sticky sessions) allows stateful services to scale horizontally",
+      "reality": "Session affinity binds clients to a single server instance, preventing true horizontal scaling. If that instance fails, sessions are lost.",
+      "source_url": "https://support.tools/session-affinity-kubernetes/",
+      "why_its_wrong": "Scaling adds instances, but session affinity wastes capacity on underutilized sticky sessions and breaks under load balancer proxies."
+    },
+    {
+      "misconception": "CAP theorem means you cannot have any consistency and any availability at the same time",
+      "reality": "Modern systems maximize combinations of consistency and availability that make sense for the application. Many systems are neither pure CA, CP, nor AP—they're tuned per operation type.",
+      "source_url": "https://sites.cs.ucsb.edu/~rich/class/cs293b-cloud/papers/brewer-cap.pdf",
+      "why_its_wrong": "Interpreting CAP as 'pick one, lose the others forever' oversimplifies modern database design."
+    },
+    {
+      "misconception": "Cache-aside pattern keeps data in cache and database in sync",
+      "reality": "Cache-aside does not guarantee sync. If the database is updated externally, the cache remains stale until TTL expires or the cache is explicitly invalidated.",
+      "source_url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside",
+      "why_its_wrong": "Applications often assume cached data is always current, leading to stale reads and inconsistent user experience."
+    },
+    {
+      "misconception": "ACID databases automatically provide better data integrity than BASE databases",
+      "reality": "ACID guarantees per-transaction consistency; BASE systems provide eventual consistency. Integrity depends on application-level validation, not just the database model.",
+      "source_url": "https://aws.amazon.com/compare/the-difference-between-acid-and-base-database/",
+      "why_its_wrong": "Applications using BASE correctly (with proper reconciliation) can be more reliable than poorly-designed ACID apps."
+    },
+    {
+      "misconception": "Once you choose a shard key, you can't change it",
+      "reality": "Changing shard keys requires data resharding. Modern systems (like PlanetScale) support zero-downtime shard key changes, but they require careful planning.",
+      "source_url": "https://planetscale.com/learn/courses/database-scaling/sharding/sharding-strategies",
+      "why_its_wrong": "Freezing shard keys leads to architectural dead-ends when growth patterns change."
+    },
+    {
+      "misconception": "Range-based sharding is always slower than hash-based sharding",
+      "reality": "Range-based sharding is simpler and faster for range queries (e.g., 'all users in zip code 90210'); hash-based is better for even distribution. The best choice depends on query patterns.",
+      "source_url": "https://planetscale.com/learn/courses/database-scaling/sharding/sharding-strategies",
+      "why_its_wrong": "Choosing hash-based sharding for range-heavy workloads forces full-shard scans."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://sites.cs.ucsb.edu/~rich/class/cs293b-cloud/papers/brewer-cap.pdf",
+      "title": "CAP Twelve Years Later: How the Rules Have Changed",
+      "publication_date": "2012",
+      "authority": "Eric Brewer, original CAP theorem author",
+      "recency_note": "Authoritative clarification; still current"
+    },
+    {
+      "url": "https://www.scylladb.com/glossary/pacelc-theorem/",
+      "title": "PACELC Theorem Definition",
+      "publication_date": "2024",
+      "authority": "ScyllaDB (distributed database company)",
+      "recency_note": "Current reference on extended CAP framework"
+    },
+    {
+      "url": "https://blog.bytebytego.com/p/capacity-planning",
+      "title": "Capacity Planning",
+      "publication_date": "2024",
+      "authority": "ByteByteGo (system design education)",
+      "recency_note": "Current best practices"
+    },
+    {
+      "url": "https://aws.amazon.com/blogs/aws/build-the-highest-resilience-apps-with-multi-region-strong-consistency-in-amazon-dynamodb-global-tables/",
+      "title": "DynamoDB Multi-Region Strong Consistency",
+      "publication_date": "2024",
+      "authority": "AWS Official Blog",
+      "recency_note": "Latest feature announcement"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/databases/spanner-innovations-in-2024",
+      "title": "Spanner Innovations in 2024",
+      "publication_date": "2024",
+      "authority": "Google Cloud Official Blog",
+      "recency_note": "Latest product updates"
+    },
+    {
+      "url": "https://stripe.com/sessions/2024/building-a-culture-of-system-reliability",
+      "title": "Building a Culture of System Reliability",
+      "publication_date": "2024",
+      "authority": "Stripe Engineering",
+      "recency_note": "Current operational practices at scale"
+    },
+    {
+      "url": "https://www.clustox.com/blog/netflix-case-study/",
+      "title": "Netflix Architecture Case Study",
+      "publication_date": "2024",
+      "authority": "Clustox (distributed systems education)",
+      "recency_note": "Current Netflix architecture overview"
+    },
+    {
+      "url": "https://questdb.com/glossary/oltp-vs-olap-vs-time-series-databases/",
+      "title": "OLTP vs OLAP vs Time-Series Databases",
+      "publication_date": "2024",
+      "authority": "QuestDB (time-series database company)",
+      "recency_note": "Current database classification"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside",
+      "title": "Cache-Aside Pattern",
+      "publication_date": "2024",
+      "authority": "Microsoft Azure Architecture Center",
+      "recency_note": "Official Microsoft guidance"
+    },
+    {
+      "url": "https://planetscale.com/learn/courses/database-scaling/sharding/sharding-strategies",
+      "title": "Sharding Strategies",
+      "publication_date": "2024",
+      "authority": "PlanetScale (MySQL/sharding platform)",
+      "recency_note": "Current sharding best practices"
+    },
+    {
+      "url": "https://www.pythian.com/blog/cassandra-consistency-level-guide",
+      "title": "Cassandra Consistency Level Guide",
+      "publication_date": "2024",
+      "authority": "Pythian (Cassandra expertise)",
+      "recency_note": "Current Cassandra tuning"
+    },
+    {
+      "url": "https://www.alexdebrie.com/posts/dynamodb-eventual-consistency/",
+      "title": "Understanding Eventual Consistency in DynamoDB",
+      "publication_date": "2024",
+      "authority": "Alex DeBrie (DynamoDB educator)",
+      "recency_note": "Current DynamoDB patterns"
+    },
+    {
+      "url": "https://blog.dreamfactory.com/scaling-stateless-vs-stateful-services/",
+      "title": "Scaling Stateless vs Stateful Services",
+      "publication_date": "2024",
+      "authority": "DreamFactory (API/scaling platform)",
+      "recency_note": "Current scaling architecture"
+    },
+    {
+      "url": "https://support.tools/session-affinity-kubernetes/",
+      "title": "Session Affinity and Kubernetes",
+      "publication_date": "2024",
+      "authority": "Support Tools (Kubernetes community)",
+      "recency_note": "Current Kubernetes session patterns"
+    },
+    {
+      "url": "https://clickhouse.com/resources/engineering/what-is-time-series-database",
+      "title": "What Is a Time-Series Database?",
+      "publication_date": "2024",
+      "authority": "ClickHouse (time-series database company)",
+      "recency_note": "Current time-series design"
+    },
+    {
+      "url": "https://aws.amazon.com/compare/the-difference-between-acid-and-base-database/",
+      "title": "ACID vs BASE Databases",
+      "publication_date": "2024",
+      "authority": "AWS Official Comparison",
+      "recency_note": "Current consistency model guidance"
+    },
+    {
+      "url": "https://docs.singlestore.com/cloud/create-a-database/understanding-shard-key-selection/",
+      "title": "Understanding Shard Key Selection",
+      "publication_date": "2024",
+      "authority": "SingleStore (distributed database company)",
+      "recency_note": "Current shard key best practices"
+    }
+  ]
+}

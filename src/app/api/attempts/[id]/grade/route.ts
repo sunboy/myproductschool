@@ -104,6 +104,10 @@ function normalizeTestResults(raw: unknown, attemptId: string, metadata?: Challe
 }
 
 function extractFiveBar(raw: unknown): string {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const value = (raw as { what_a_5_would_look_like?: unknown }).what_a_5_would_look_like
+    return typeof value === 'string' ? value : ''
+  }
   if (!Array.isArray(raw)) return ''
   const annotation = raw.find((item) => (
     item &&
@@ -111,6 +115,22 @@ function extractFiveBar(raw: unknown): string {
     (item as { target_label?: unknown }).target_label === '5.0 bar'
   )) as { text?: unknown } | undefined
   return typeof annotation?.text === 'string' ? annotation.text : ''
+}
+
+function extractScoreBreakdown(raw: unknown): GradingFeedback['score_breakdown'] | undefined {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const value = (raw as { score_breakdown?: unknown }).score_breakdown
+    if (value && typeof value === 'object') return value as GradingFeedback['score_breakdown']
+  }
+  if (!Array.isArray(raw)) return undefined
+  const annotation = raw.find((item) => (
+    item &&
+    typeof item === 'object' &&
+    (item as { score_breakdown?: unknown }).score_breakdown
+  )) as { score_breakdown?: unknown } | undefined
+  return annotation?.score_breakdown && typeof annotation.score_breakdown === 'object'
+    ? annotation.score_breakdown as GradingFeedback['score_breakdown']
+    : undefined
 }
 
 function toGradePayload(
@@ -139,6 +159,7 @@ function toGradePayload(
       ...base,
       dimensions: base.dimensions as GradingFeedback['dimensions'],
       what_a_5_would_look_like: extractFiveBar(grade.canvas_annotations),
+      score_breakdown: extractScoreBreakdown(grade.canvas_annotations),
     }
   }
 

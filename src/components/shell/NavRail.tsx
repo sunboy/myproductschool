@@ -2,12 +2,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { HatchGlyph } from './HatchGlyph'
+import { HackProductLogoMark } from '@/components/brand/HackProductBrand'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const navItems = [
   { href: '/dashboard',       icon: 'home',           label: 'Home'       },
   { href: '/explore',         icon: 'explore',        label: 'Explore'    },
-  { href: '/challenges',      icon: 'fitness_center', label: 'Practice'   },
+  { href: '/challenges',      icon: 'track_changes', label: 'Practice'   },
   { href: '/live-interviews', icon: 'mic',            label: 'Interviews' },
   { href: '/progress',        icon: 'bar_chart',      label: 'Progress'   },
 ]
@@ -37,7 +38,9 @@ export function NavRail({ onAskHatch, onUpgrade, compact, isPro }: NavRailProps)
 
       {/* ── Brand ── */}
       <div className={`flex items-center pt-5 pb-4 ${compact ? 'justify-center px-0' : 'gap-2.5 px-4'}`}>
-        <HatchGlyph size={24} state="idle" className="text-white shrink-0" />
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/92">
+          <HackProductLogoMark className="h-6 w-6 object-contain" />
+        </span>
         {!compact && (
           <span className="font-headline text-base font-bold text-white tracking-tight">HackProduct</span>
         )}
@@ -117,7 +120,7 @@ export function NavRail({ onAskHatch, onUpgrade, compact, isPro }: NavRailProps)
             <span className="ml-auto material-symbols-outlined text-sm text-white/50 group-hover:text-white/70 transition-colors">chevron_right</span>
           </button>
 
-          {/* Pro upgrade — hidden for pro users */}
+          {/* Pro upgrade - hidden for pro users */}
           {isPro ? (
             <div className="flex items-center gap-2 px-3 py-2">
               <span

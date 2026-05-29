@@ -26,7 +26,7 @@ export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
         {/* Sticky header */}
         <div className="flex-shrink-0 p-4 border-b border-outline-variant/30">
           <Link
-            href="/explore/showcase"
+            href="/explore/autopsies"
             className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-primary transition-colors"
           >
             <span
@@ -61,7 +61,7 @@ export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
 
           {/* Challenge count label */}
           <p className="mt-3 text-[10px] uppercase tracking-widest text-on-surface-variant font-label">
-            {product.decisions.length} challenges — pick one to start
+            {product.decisions.length} challenges - pick one to start
           </p>
         </div>
 

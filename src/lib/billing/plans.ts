@@ -15,7 +15,7 @@ export const BILLING_PLANS: Record<BillingPlanId, BillingPlanConfig> = {
     id: 'monthly',
     label: 'HackProduct Pro - Monthly',
     shortLabel: 'Monthly',
-    unitAmount: 2900,
+    unitAmount: 3900,
     interval: 'month',
   },
   annual: {

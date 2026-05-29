@@ -22,7 +22,7 @@ const LAYOUT = {
   stepRadius: 38,
   compRectW: 220,
   compRectH: 38,
-  viewBox: '0 0 1200 600',
+  viewBox: '120 20 1060 560',
 }
 
 function yPositions(count: number): number[] {
@@ -41,7 +41,6 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
   const { mode } = useAnimationMode()
   const svgRef = useRef<SVGSVGElement>(null)
   const gsapRef = useRef<typeof import('gsap').gsap | null>(null)
-  const ambientRef = useRef<unknown>(null)
 
   const traditionYs = yPositions(discipline.traditions.length)
   const compYs = yPositions(discipline.competencies.length)
@@ -149,8 +148,8 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
       ref={svgRef}
       viewBox={LAYOUT.viewBox}
       preserveAspectRatio="xMidYMid meet"
-      className="w-full overflow-visible block"
-      style={{ height: 600 }}
+      className="h-full w-full overflow-visible block"
+      style={{ minHeight: 0 }}
     >
       <defs>
         <filter id="circuitGlow" x="-100%" y="-100%" width="300%" height="300%">
@@ -172,8 +171,8 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
             d={path}
             fill="none"
             stroke={active ? '#ffc580' : '#d4a574'}
-            strokeWidth={active ? 1.4 : 0.8}
-            opacity={activeNodeId ? (active ? 0.95 : 0.05) : 0.18}
+            strokeWidth={active ? 1.7 : 1}
+            opacity={activeNodeId ? (active ? 0.95 : 0.07) : 0.25}
             strokeDasharray={active ? '4 6' : undefined}
             style={active ? { animation: 'fiberFlow 1.2s linear infinite' } : undefined}
           />
@@ -198,7 +197,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               r={LAYOUT.traditionRadius}
               fill="#1f362d"
               stroke={active ? '#ffc580' : '#d4a574'}
-              strokeWidth={active ? 2 : 1.2}
+              strokeWidth={active ? 2.4 : 1.45}
               filter={active ? 'url(#circuitGlow)' : undefined}
             />
             {/* Glyph centered inside tradition circle: offset by -(size/2) */}
@@ -216,7 +215,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               fontFamily="JetBrains Mono, monospace"
               fontSize="12.5"
               fill="#d4a574"
-              opacity="0.55"
+              opacity="0.72"
               letterSpacing="1.5"
             >
               {String(i + 1).padStart(2, '0')}
@@ -245,7 +244,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               rx="6"
               fill="#1f362d"
               stroke={active ? '#ffc580' : '#d4a574'}
-              strokeWidth={active ? 2 : 1.2}
+              strokeWidth={active ? 2.4 : 1.45}
               filter={active ? 'url(#circuitGlow)' : undefined}
             />
             <text
@@ -257,6 +256,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               fontWeight="700"
               fill={active ? '#ffc580' : '#d4a574'}
               letterSpacing="0.3"
+              opacity={dimmed ? 0.6 : 1}
             >
               {c.label.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
             </text>
@@ -282,7 +282,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               r={LAYOUT.stepRadius}
               fill="#1f362d"
               stroke={active ? '#ffc580' : '#d4a574'}
-              strokeWidth={active ? 2 : 1.4}
+              strokeWidth={active ? 2.5 : 1.65}
               filter={active ? 'url(#circuitGlow)' : undefined}
             />
             <text
@@ -294,6 +294,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               fontWeight="700"
               fill={active ? '#ffc580' : '#d4a574'}
               letterSpacing="0.5"
+              opacity={dimmed ? 0.6 : 1}
             >
               {s.label}
             </text>
@@ -305,7 +306,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               fontFamily="JetBrains Mono, monospace"
               fontSize="12.5"
               fill="#d4a574"
-              opacity="0.65"
+              opacity={dimmed ? 0.42 : 0.78}
               letterSpacing="2"
             >
               {s.name}

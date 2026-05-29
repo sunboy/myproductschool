@@ -1,21 +1,42 @@
 import Link from 'next/link'
+import { Search } from 'lucide-react'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
+
+const DISCIPLINES = ['Product', 'Systems', 'Data', 'SQL', 'Coding', 'AI-native']
 
 export function LandingNav() {
   return (
-    <nav className="land-nav">
-      <Link href="/home" style={{ fontFamily: 'var(--font-headline)', fontWeight: 700, fontSize: 18, textDecoration: 'none', color: 'inherit' }}>
-        HackProduct
-      </Link>
-      <div className="land-nav-links">
-        <a href="#disciplines">Disciplines</a>
-        <a href="#features">How it works</a>
-        <a href="#proof">Stories</a>
-        <a href="#faq">FAQ</a>
+    <header className="mkt-nav">
+      <div className="mkt-nav-top">
+        <Link href="/" className="mkt-wordmark">
+          <HackProductWordmark className="mkt-wordmark-image" priority />
+        </Link>
+        <Link href="/practice" className="mkt-search">
+          <Search aria-hidden size={17} />
+          <span>Search product sense, SQL, systems...</span>
+        </Link>
+        <nav className="mkt-nav-actions" aria-label="Account navigation">
+          <Link href="/pricing">Pricing</Link>
+          <Link href="/login" prefetch={false}>Log in</Link>
+          <Link href="/login?returnTo=/challenges" prefetch={false} className="mkt-nav-primary">
+            Start a free rep
+          </Link>
+        </nav>
       </div>
-      <div className="land-nav-cta">
-        <Link href="/login" className="land-btn land-btn--ghost">Log in</Link>
-        <Link href="/login" className="land-btn land-btn--primary">Start free →</Link>
-      </div>
-    </nav>
+      <nav className="mkt-nav-cats" aria-label="Marketing navigation">
+        <Link href="/interview-prep">Interview prep</Link>
+        <Link href="/role-transitions">Role transitions</Link>
+        <Link href="/uplevel">Promotion readiness</Link>
+        <Link href="/salary-negotiation">Salary proof</Link>
+        <Link href="/flow">FLOW</Link>
+        <Link href="/skills">Skills</Link>
+        <Link href="/practice">Practice catalog</Link>
+        <div className="mkt-discipline-menu" aria-label="Disciplines">
+          {DISCIPLINES.map((discipline) => (
+            <span key={discipline}>{discipline}</span>
+          ))}
+        </div>
+      </nav>
+    </header>
   )
 }

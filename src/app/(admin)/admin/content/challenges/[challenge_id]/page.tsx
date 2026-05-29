@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { slugifyIndustry } from '@/lib/practice/slugify'
 import {
   DISCIPLINES, TOPICS, TECHNIQUES, COMPANIES,
   type Discipline, type TopicEntry, type TechniqueEntry,
@@ -10,7 +12,7 @@ import {
 const ADMIN_SECRET = process.env.NEXT_PUBLIC_ADMIN_SECRET ?? 'hackproduct-admin-dev'
 
 const PARADIGMS = ['traditional', 'ai_assisted', 'agentic', 'ai_native'] as const
-const DIFFICULTIES = ['warmup', 'standard', 'advanced', 'staff_plus'] as const
+const DIFFICULTIES = ['easy', 'medium', 'hard'] as const
 const COMPETENCIES = ['motivation_theory', 'cognitive_empathy', 'taste', 'strategic_thinking', 'creative_execution', 'domain_expertise'] as const
 const ROLES = ['swe', 'data_eng', 'ml_eng', 'devops', 'founding_eng', 'em', 'tech_lead', 'pm', 'designer', 'data_scientist'] as const
 
@@ -29,20 +31,17 @@ interface ChallengeTagData {
   id: string
   title: string
   paradigm: string
-  industry: string
-  sub_vertical: string
   difficulty: string
   estimated_minutes: number
   primary_competencies: string[]
   secondary_competencies: string[]
-  frameworks: string[]
   relevant_roles: string[]
   company_tags: string[]
-  tags: string[]
   is_premium: boolean
   is_published: boolean
   challenge_type?: string
-  // New taxonomy fields
+  // Canonical taxonomy fields
+  industry_tags: string[]
   topic_tags: string[]
   technique_tags: string[]
   topic_tags_suggested: string[]
@@ -86,6 +85,84 @@ function TagInput({ label, values, onChange }: {
           className="flex-1 bg-surface-container-low rounded-lg px-3 py-1.5 font-body text-sm text-on-surface border border-outline-variant outline-none focus:border-primary"
         />
         <button onClick={add} className="bg-surface-container-high text-on-surface rounded-lg px-3 py-1.5 font-label text-xs">Add</button>
+      </div>
+    </div>
+  )
+}
+
+/** Chip multi-select with optional type-ahead from a vocab list.
+ *  - freeForm=true: typed text is slugified and pushed on Enter/Add (for industry_tags)
+ *  - freeForm=false: only vocab items are selectable (for topic/technique pickers if needed)
+ */
+function ChipMultiSelect({ label, values, vocab, onChange, freeForm = false }: {
+  label: string
+  values: string[]
+  vocab: string[]   // suggestions: display = slug for now
+  onChange: (v: string[]) => void
+  freeForm?: boolean
+}) {
+  const [input, setInput] = useState('')
+
+  const normalizedInput = freeForm ? slugifyIndustry(input) : ''
+  const filtered = input.length > 0
+    ? vocab.filter(s =>
+        !values.includes(s) &&
+        (freeForm
+          ? (normalizedInput && s.includes(normalizedInput)) || s.toLowerCase().includes(input.toLowerCase())
+          : s.includes(input.toLowerCase()))
+      ).slice(0, 8)
+    : []
+
+  function addRaw(raw: string) {
+    const slug = freeForm ? slugifyIndustry(raw) : raw
+    if (!slug) return
+    onChange(values.includes(slug) ? values : [...values, slug])
+    setInput('')
+  }
+
+  function remove(slug: string) {
+    onChange(values.filter(x => x !== slug))
+  }
+
+  return (
+    <div>
+      <p className="font-label text-xs text-on-surface-variant mb-1">{label}</p>
+      <div className="flex flex-wrap gap-1.5 mb-2">
+        {values.map(v => (
+          <span key={v} className="inline-flex items-center gap-1 bg-primary-fixed text-on-surface rounded-full px-2.5 py-0.5 font-label text-xs">
+            {v}
+            <button onClick={() => remove(v)} className="opacity-60 hover:opacity-100 ml-0.5">×</button>
+          </span>
+        ))}
+      </div>
+      <div className="relative">
+        <div className="flex gap-2">
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { e.preventDefault(); if (freeForm && input.trim()) addRaw(input.trim()) }
+            }}
+            placeholder={freeForm ? 'Type and press Enter to add' : 'Type to filter…'}
+            className="flex-1 bg-surface-container-low rounded-lg px-3 py-1.5 font-body text-sm text-on-surface border border-outline-variant outline-none focus:border-primary"
+          />
+          {freeForm && (
+            <button onClick={() => { if (input.trim()) addRaw(input.trim()) }} className="bg-surface-container-high text-on-surface rounded-lg px-3 py-1.5 font-label text-xs">Add</button>
+          )}
+        </div>
+        {filtered.length > 0 && (
+          <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-surface-container-highest rounded-lg border border-outline-variant shadow-sm overflow-hidden">
+            {filtered.map(s => (
+              <button
+                key={s}
+                onMouseDown={e => { e.preventDefault(); addRaw(s) }}
+                className="block w-full text-left px-3 py-1.5 font-body text-sm text-on-surface hover:bg-surface-container-high"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -161,7 +238,7 @@ function TaxonomyPicker({ label, entries, selected, onChange }: {
   )
 }
 
-/** Suggested tags panel — amber-tinted with Accept / Edit / Reject actions. */
+/** Suggested tags panel - amber-tinted with Accept / Edit / Reject actions. */
 function SuggestedTagsPanel({
   label,
   suggestions,
@@ -183,7 +260,7 @@ function SuggestedTagsPanel({
     <div className="rounded-xl border border-dashed border-tertiary-container bg-tertiary-container/20 p-4 space-y-2">
       <div className="flex items-center gap-2 mb-1">
         <span className="material-symbols-outlined text-base text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-        <p className="font-label text-xs font-semibold text-tertiary uppercase tracking-wide">{label} — Suggested</p>
+        <p className="font-label text-xs font-semibold text-tertiary uppercase tracking-wide">{label} - Suggested</p>
       </div>
       <div className="space-y-1.5">
         {suggestions.map(slug => {
@@ -232,6 +309,20 @@ export default function ChallengeTagsPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [industryTagVocab, setIndustryTagVocab] = useState<string[]>([])
+
+  // Fetch distinct industry_tags values from existing challenges for autocomplete
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('challenges')
+      .select('industry_tags')
+      .then(({ data: rows }) => {
+        if (!rows) return
+        const all = rows.flatMap((r: { industry_tags: string[] | null }) => r.industry_tags ?? [])
+        setIndustryTagVocab([...new Set(all)].sort())
+      })
+  }, [])
 
   const fetchChallenge = useCallback(async () => {
     const res = await fetch(`/api/admin/content/challenges/${challenge_id}`, {
@@ -241,6 +332,7 @@ export default function ChallengeTagsPage() {
       const d = await res.json()
       setData({
         ...d.challenge,
+        industry_tags: d.challenge.industry_tags ?? [],
         topic_tags: d.challenge.topic_tags ?? [],
         technique_tags: d.challenge.technique_tags ?? [],
         topic_tags_suggested: d.challenge.topic_tags_suggested ?? [],
@@ -281,7 +373,7 @@ export default function ChallengeTagsPage() {
 
   function handleEditTopic(slug: string) {
     if (!data) return
-    // Pull into live picker for manual editing — also remove from suggested
+    // Pull into live picker for manual editing - also remove from suggested
     const newLive = data.topic_tags.includes(slug) ? data.topic_tags : [...data.topic_tags, slug]
     const newSuggested = data.topic_tags_suggested.filter(s => s !== slug)
     setData({ ...data, topic_tags: newLive, topic_tags_suggested: newSuggested })
@@ -330,19 +422,16 @@ export default function ChallengeTagsPage() {
       headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
       body: JSON.stringify({
         paradigm: data.paradigm,
-        industry: data.industry,
-        sub_vertical: data.sub_vertical,
         difficulty: data.difficulty,
         estimated_minutes: data.estimated_minutes,
         primary_competencies: data.primary_competencies,
         secondary_competencies: data.secondary_competencies,
-        frameworks: data.frameworks,
         relevant_roles: data.relevant_roles,
         company_tags: data.company_tags,
-        tags: data.tags,
         is_premium: data.is_premium,
         is_published: data.is_published,
-        // New taxonomy fields
+        // Canonical taxonomy fields
+        industry_tags: data.industry_tags,
         topic_tags: data.topic_tags,
         technique_tags: data.technique_tags,
         topic_tags_suggested: data.topic_tags_suggested,
@@ -401,20 +490,17 @@ export default function ChallengeTagsPage() {
                 {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
-            <div>
-              <p className="font-label text-xs text-on-surface-variant mb-1">Industry</p>
-              <input
-                value={data.industry ?? ''}
-                onChange={e => setData({ ...data, industry: e.target.value })}
-                className="w-full bg-surface-container-low rounded-lg px-3 py-2 font-body text-sm text-on-surface border border-outline-variant outline-none focus:border-primary"
-              />
-            </div>
-            <div>
-              <p className="font-label text-xs text-on-surface-variant mb-1">Sub-vertical</p>
-              <input
-                value={data.sub_vertical ?? ''}
-                onChange={e => setData({ ...data, sub_vertical: e.target.value })}
-                className="w-full bg-surface-container-low rounded-lg px-3 py-2 font-body text-sm text-on-surface border border-outline-variant outline-none focus:border-primary"
+            <div className="col-span-2">
+              <ChipMultiSelect
+                label="Industry tags"
+                values={data.industry_tags ?? []}
+                vocab={industryTagVocab}
+                freeForm={true}
+                onChange={v => {
+                  setData({ ...data, industry_tags: v })
+                  // add any new slugs to local vocab for future type-ahead
+                  setIndustryTagVocab(prev => [...new Set([...prev, ...v])].sort())
+                }}
               />
             </div>
             <div>
@@ -555,10 +641,9 @@ export default function ChallengeTagsPage() {
           />
         </div>
 
-        {/* Legacy free-form tags */}
+        {/* Company tags */}
         <div className="bg-surface-container rounded-2xl p-6 space-y-4">
-          <h2 className="font-label font-semibold text-on-surface-variant text-xs uppercase tracking-wide">Legacy Tags</h2>
-          <TagInput label="Frameworks (e.g. Jobs-to-be-Done, RICE)" values={data.frameworks ?? []} onChange={v => setData({ ...data, frameworks: v })} />
+          <h2 className="font-label font-semibold text-on-surface-variant text-xs uppercase tracking-wide">Company Tags</h2>
           <TagInput
             label="Company tags"
             values={data.company_tags ?? []}
@@ -567,7 +652,6 @@ export default function ChallengeTagsPage() {
           <p className="font-label text-xs text-on-surface-variant -mt-2">
             Canonical companies: {COMPANIES.slice(0, 8).map(c => c.slug).join(', ')}, …
           </p>
-          <TagInput label="Freeform tags" values={data.tags ?? []} onChange={v => setData({ ...data, tags: v })} />
         </div>
       </div>
 

@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react'
 import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
+import { HatchDirector } from '@/components/shell/HatchDirector'
 import { UpgradeModal } from '@/components/shell/UpgradeModal'
+import { IdleTimer } from '@/components/auth/IdleTimer'
+import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { HatchProvider } from '@/context/HatchContext'
 import { UsageProvider } from '@/context/UsageContext'
 import { createClient } from '@/lib/supabase/client'
@@ -30,13 +33,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <HatchProvider>
       <UsageProvider>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen min-w-0 bg-background">
           <TopNav />
-          <main className="pb-20 md:pb-8">
+          <main className="min-w-0 pb-20 md:pb-8">
             {children}
           </main>
           <BottomTabs />
+          <HatchDirector />
           <FloatingHatch />
+          <FeedbackWidget />
+          <IdleTimer />
           <UpgradeModal
             open={upgradeOpen}
             onClose={() => setUpgradeOpen(false)}

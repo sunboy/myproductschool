@@ -72,4 +72,19 @@ export interface GradingFeedback {
   top_strength: string
   top_improvement: string
   what_a_5_would_look_like: string
+  score_breakdown?: {
+    correctness: {
+      score: number
+      tests_passed: number
+      tests_total: number
+      summary: string
+    }
+    process: {
+      score: number
+      summary: string
+    }
+  }
+  summary?: string
+  next_actions?: string[]
+  practice_link?: { title: string; href: string; reason: string }
 }

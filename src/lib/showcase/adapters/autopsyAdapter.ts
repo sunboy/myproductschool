@@ -15,6 +15,7 @@ export interface StepQuestionData {
   sequence: number
   grading_weight_within_step: number
   response_type: ResponseType
+  allow_multiple: boolean
   options: StepOption[]
 }
 
@@ -136,6 +137,7 @@ export function createAutopsyAdapter(
           sequence: 1,
           grading_weight_within_step: 1,
           response_type: 'mcq_plus_elaboration',
+          allow_multiple: false,
           options: sharedOptions,
         },
       ],

@@ -30,7 +30,7 @@ export function SkillRadar({ dimensions }: SkillRadarProps) {
 
   const polygonPath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]},${p[1]}`).join(' ') + ' Z'
 
-  // Label positions — pushed further out for readability
+  // Label positions - pushed further out for readability
   const labelPositions: Record<string, { x: number; y: number; anchor: 'start' | 'middle' | 'end' }> = {
     diagnostic_accuracy: { x: CENTER, y: 6, anchor: 'middle' },
     metric_fluency: { x: 194, y: CENTER + 4, anchor: 'start' },

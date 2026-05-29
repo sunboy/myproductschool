@@ -1,0 +1,414 @@
+{
+  "facts": [
+    {
+      "fact": "Context switching overhead on modern x86_64/Linux systems is approximately 1.2-1.5 microseconds per direct context switch under light load, with kernel context switches taking 1-10 microseconds",
+      "source": "https://blog.codingconfessions.com/p/context-switching-and-performance",
+      "published": "2024"
+    },
+    {
+      "fact": "CPU scheduling overhead in densely packed Linux clusters rises to approximately 20% of total CPU time, with average context switches of 48 microseconds under high load conditions",
+      "source": "https://arxiv.org/html/2508.15703v1",
+      "published": "2024"
+    },
+    {
+      "fact": "A TLB miss can cost 1000-2000 CPU cycles or more, while L1/L2 cache misses cost 10-40 cycles; TLB misses are more expensive due to page walk requiring multiple memory accesses",
+      "source": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf",
+      "published": "2023 (canonical reference)"
+    },
+    {
+      "fact": "When CPU switches between processes, TLB (Translation Lookaside Buffer) must be flushed, forcing 1000-2000 CPU cycles of overhead; thread switches within same process avoid this because threads share same address space",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "published": "2024"
+    },
+    {
+      "fact": "With 99% TLB hit rate, effective memory access time is 1.49 ns; with 95% hit rate it becomes 3.45 ns (2.3x slower); with 90% hit rate it becomes 5.9 ns (4x slower)",
+      "source": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Default Linux file descriptor limit is 1,024 per process, but Kafka brokers should be set to at least 100,000 to track log segments and connections across many partitions",
+      "source": "https://docs.cloudera.com/runtime/7.3.1/kafka-performance-tuning/topics/kafka-tune-broker-syslevel-file-descriptors.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Kubernetes sends SIGTERM to containers and waits 30 seconds (default grace period) before sending SIGKILL; if containers don't handle SIGTERM, they get forcibly terminated",
+      "source": "https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace",
+      "published": "2024"
+    },
+    {
+      "fact": "SIGKILL cannot be caught, blocked, or ignored by a process; SIGTERM allows the process to perform cleanup (commit WALs, close connections, free resources) before terminating",
+      "source": "https://www.suse.com/c/observability-sigkill-vs-sigterm-a-developers-guide-to-process-termination/",
+      "published": "2024"
+    },
+    {
+      "fact": "Async I/O with 100 concurrent requests completes in under 0.6 seconds with CPU usage never exceeding 15% and flat memory; thread-per-request model causes memory to spike as threads block on I/O",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-is-huge-4hc5",
+      "published": "2025"
+    },
+    {
+      "fact": "Go's goroutine scheduler uses M:N model (many goroutines onto N OS threads); goroutines start with 2KB stack and grow dynamically; applications can run 100,000+ goroutines efficiently",
+      "source": "https://leapcell.io/blog/gos-concurrency-decoded-goroutine-scheduling",
+      "published": "2024"
+    },
+    {
+      "fact": "Go's scheduler implements work-stealing algorithm: when a processor's run queue is empty, it can steal goroutines from other processors' queues to keep CPU cores busy",
+      "source": "https://medium.com/@felipe.ascari_49171/understanding-gos-scheduler-how-goroutine-management-works-65131986ee2c",
+      "published": "2024"
+    },
+    {
+      "fact": "Go 1.14+ grants each goroutine 10ms time slice; if exceeded without yielding, runtime issues forceful preemption via SIGURG signal to OS thread",
+      "source": "https://dev.to/jones_charles_ad50858dbc0/goroutine-scheduling-from-zero-to-hero-in-go-concurrency-3bl5",
+      "published": "2024"
+    },
+    {
+      "fact": "Java 21 virtual threads achieved 117,448 requests per second with 844 microsecond average latency; platform threads showed 448ms latency vs virtual threads 319ms for I/O-intensive workloads (28.8% improvement)",
+      "source": "https://www.kloia.com/blog/benchmarking-java-virtual-threads-a-comprehensive-analysis",
+      "published": "2024"
+    },
+    {
+      "fact": "Netflix's concurrency limit formula: concurrency = average service time × average service rate (Little's Law); Netflix eliminates manual limit tuning via adaptive concurrency limits",
+      "source": "https://netflixtechblog.medium.com/performance-under-load-3e6fa9a60581",
+      "published": "2018 (foundational); updated 2024"
+    },
+    {
+      "fact": "Modern processors (ARMv7+, ARM64, X86-64) support ASID (Address Space Identifier) or PCID (Process Context ID) to reduce TLB flush overhead on context switches",
+      "source": "https://blog.codingconfessions.com/p/context-switching-and-performance",
+      "published": "2024"
+    },
+    {
+      "fact": "A poorly designed application can see 10x performance degradation from TLB misses alone; huge pages (2MB or 1GB) reduce TLB entries needed by 512x or more",
+      "source": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer.html",
+      "published": "2024"
+    },
+    {
+      "fact": "CPU affinity (pinning processes to specific cores) effectively minimizes context switch overhead and enhances cache utilization",
+      "source": "https://eureka.patsnap.com/article/reducing-context-switch-overhead-in-high-performance-systems",
+      "published": "2024"
+    },
+    {
+      "fact": "Thread context switches are 2-5x faster than process switches because TLB remains valid, CPU cache stays hot, and OS only saves/restores register values and stack pointers",
+      "source": "https://toolshelf.tech/blog/process-vs-thread-os-internals-guide/",
+      "published": "2024"
+    },
+    {
+      "fact": "Each OS thread needs ~8MB of stack memory; goroutines need only kilobytes; this enables 100,000+ concurrent goroutines on modest hardware",
+      "source": "https://medium.com/@mail2rajeevshukla/unlocking-the-power-of-goroutines-understanding-gos-lightweight-concurrency-model-3775f8e696b0",
+      "published": "2024"
+    },
+    {
+      "fact": "Kubernetes preStop hook runs before SIGTERM signal, allowing applications to stop accepting traffic before shutdown signal arrives",
+      "source": "https://devopscube.com/kubernetes-pod-graceful-shutdown/",
+      "published": "2024"
+    },
+    {
+      "fact": "Kubernetes sends SIGTERM only to process with PID 1; if application is not running as PID 1, it will not receive graceful shutdown signal",
+      "source": "https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace",
+      "published": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Netflix reduced cascading failures by implementing adaptive concurrency limits; system calculates optimal concurrency using Little's Law rather than static configuration",
+      "company": "Netflix",
+      "metric": "Eliminated manual concurrency tuning across microservices",
+      "source": "https://netflixtechblog.medium.com/performance-under-load-3e6fa9a60581"
+    },
+    {
+      "example": "Netflix encountered timeout and hung instances when adopting Java 21 virtual threads due to blocking operations and OS thread starvation",
+      "company": "Netflix",
+      "incident": "Virtual thread adoption issues July 2024",
+      "source": "https://netflixtechblog.com/java-21-virtual-threads-dude-wheres-my-lock-3052540e231d"
+    },
+    {
+      "example": "Kafka broker performance degrades when file descriptor limit is 1,024 (Linux default); setting to 100,000+ required for production deployments with many partitions",
+      "system": "Apache Kafka",
+      "impact": "Inability to open log segments or accept connections",
+      "source": "https://docs.cloudera.com/runtime/7.3.1/kafka-performance-tuning/topics/kafka-tune-broker-syslevel-file-descriptors.html"
+    },
+    {
+      "example": "Go application with 10,000 concurrent connections uses work-stealing scheduler to multiplex goroutines onto 4 CPU cores; idle goroutines yield immediately via preemption signal",
+      "language": "Go",
+      "benchmark": "10,000 goroutines on 4 cores vs equivalent thread-per-connection requiring 10,000 OS threads (~80GB memory)",
+      "source": "https://leapcell.io/blog/gos-concurrency-decoded-goroutine-scheduling"
+    },
+    {
+      "example": "Async refactor of I/O-bound application became 6x slower when 800 tasks competed for 32 cores; 60% of CPU time spent on context switching overhead",
+      "system": "Python asyncio application",
+      "lesson": "Async has overhead; only beneficial when I/O latency >> context switch cost",
+      "source": "https://medium.com/@codewar_with_me/i-switched-from-synchronous-to-async-7354bde280ba"
+    },
+    {
+      "example": "Java application using virtual threads on high-concurrency I/O workload: 8898.3 req/sec vs platform threads 5410.1 req/sec; latency improved from 448ms to 319ms (28.8%)",
+      "framework": "Java 21 Virtual Threads",
+      "workload": "I/O-intensive HTTP server",
+      "source": "https://www.kloia.com/blog/benchmarking-java-virtual-threads-a-comprehensive-analysis"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "TLB flush on process switch is like a chef losing all tools from memory when reassigned to a new kitchen; thread switch within same process is like keeping the same kitchen and just handing tools to a new chef",
+      "teaches": "Why process switches are more expensive than thread switches"
+    },
+    {
+      "analogy": "Virtual memory address translation is like a postal address system: virtual address is the house address you write on the envelope, page table is the postal service's internal routing, physical address is the actual house number. Multiple people (processes) can write the same house address but it routes to different physical houses",
+      "teaches": "Process isolation via page tables"
+    },
+    {
+      "analogy": "Goroutines are like book markers in a single book (OS thread): you can have thousands of markers without creating new books; OS threads are like owning separate physical books (8MB each)",
+      "teaches": "Memory efficiency of lightweight concurrency"
+    },
+    {
+      "analogy": "Async I/O is like a restaurant using a single waiter who notes orders and checks on tables only when needed; thread-per-request is like hiring a separate waiter for each customer and having them stand idle while food cooks",
+      "teaches": "Why async outperforms threads under high concurrency"
+    },
+    {
+      "analogy": "SIGTERM is like politely asking someone to leave a room; SIGKILL is like forcibly carrying them out; graceful shutdown gives them time to put on shoes and grab keys",
+      "teaches": "Signal handling and clean resource release"
+    },
+    {
+      "analogy": "CPU cache after context switch is like a cashier who suddenly has to use a different register: all memorized prices and frequent customer names are lost, requiring slow lookups from the manual",
+      "teaches": "Hidden cost of context switching beyond cycle count"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Context switch latency (direct)",
+      "value": "1.2-1.5 microseconds",
+      "context": "Modern x86_64/Linux under light load with CPU pinning"
+    },
+    {
+      "metric": "Context switch latency (typical)",
+      "value": "2.7-6.1 microseconds",
+      "context": "Real-world scenarios without CPU pinning"
+    },
+    {
+      "metric": "Context switch latency (heavy)",
+      "value": "10-100+ microseconds",
+      "context": "With TLB shootdown, large working set, or cache pressure"
+    },
+    {
+      "metric": "TLB miss cost (CPU cycles)",
+      "value": "1000-2000 cycles",
+      "context": "Page walk requiring multiple memory accesses"
+    },
+    {
+      "metric": "TLB miss cost (nanoseconds)",
+      "value": "~1.49 ns at 99% hit rate, 5.9 ns at 90% hit rate",
+      "context": "Effective memory access time degradation"
+    },
+    {
+      "metric": "Process switch TLB flush overhead",
+      "value": "1000-2000 CPU cycles",
+      "context": "Mandatory TLB invalidation on virtual address space change"
+    },
+    {
+      "metric": "Thread switch overhead reduction",
+      "value": "2-5x faster than process switches",
+      "context": "Same address space keeps TLB and cache warm"
+    },
+    {
+      "metric": "CPU scheduling overhead (high density)",
+      "value": "~20% of total CPU time",
+      "context": "Densely packed Linux clusters under load"
+    },
+    {
+      "metric": "Linux default file descriptor limit",
+      "value": "1,024 per process",
+      "context": "Too low for production databases, web servers, Kafka"
+    },
+    {
+      "metric": "Recommended file descriptor limit",
+      "value": "100,000+",
+      "context": "Kafka brokers, high-concurrency applications"
+    },
+    {
+      "metric": "Kubernetes graceful shutdown grace period",
+      "value": "30 seconds (default)",
+      "context": "Time to handle SIGTERM before SIGKILL sent"
+    },
+    {
+      "metric": "Goroutine initial stack size",
+      "value": "2 KB",
+      "context": "Grows dynamically; OS thread requires ~8 MB fixed"
+    },
+    {
+      "metric": "Maximum concurrent goroutines",
+      "value": "100,000+",
+      "context": "On modest hardware (4 cores, <4GB RAM)"
+    },
+    {
+      "metric": "Go goroutine time slice",
+      "value": "10 milliseconds",
+      "context": "Go 1.14+; preemption via SIGURG if exceeded"
+    },
+    {
+      "metric": "Java virtual thread throughput gain",
+      "value": "64% improvement (8898.3 vs 5410.1 req/sec)",
+      "context": "I/O-intensive workload vs platform threads"
+    },
+    {
+      "metric": "Java virtual thread latency improvement",
+      "value": "28.8% (319ms vs 448ms)",
+      "context": "I/O-intensive workload vs platform threads"
+    },
+    {
+      "metric": "Async I/O 100 concurrent requests latency",
+      "value": "<0.6 seconds with <15% CPU, flat memory",
+      "context": "vs thread-per-request causing memory spike"
+    },
+    {
+      "metric": "TLB hit rate impact (95%)",
+      "value": "2.3x slower than 99%",
+      "context": "Memory access time degradation"
+    },
+    {
+      "metric": "TLB hit rate impact (90%)",
+      "value": "4x slower than 99%",
+      "context": "Severe performance degradation"
+    },
+    {
+      "metric": "Huge page TLB reduction",
+      "value": "512x fewer entries needed",
+      "context": "2MB pages vs 4KB pages"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Context switching is just a few microseconds, so it doesn't matter",
+      "truth": "Direct cost is 1-2 microseconds, but indirect costs (cache eviction, TLB flush, pipeline flush) add 100-1000x overhead; at high context switch rates (48 μs average under load), context switching becomes 20% of CPU time"
+    },
+    {
+      "misconception": "Thread and async are interchangeable concurrency models",
+      "truth": "Threading context switches can occur anywhere; async switches happen only at explicit await points. Different scheduling models with different latency/throughput tradeoffs"
+    },
+    {
+      "misconception": "Async always improves performance",
+      "truth": "Async adds overhead (event loop management, coroutine bookkeeping); only beneficial when I/O latency >> context switch overhead. Async refactor can be 6x slower when tasks compete for limited cores"
+    },
+    {
+      "misconception": "Process isolation costs nothing because it's just page tables",
+      "truth": "Process switches require TLB flush (1000-2000 CPU cycles), invalidate caches, and may require expensive shootdown synchronization; thread switches are 2-5x faster"
+    },
+    {
+      "misconception": "File descriptor limits don't matter for modern applications",
+      "truth": "Default 1,024 limit causes 'Too many open files' errors in Kafka, databases, and web servers at moderate concurrency; must be set to 100,000+ in production"
+    },
+    {
+      "misconception": "SIGKILL is always preferred for shutdown because it's faster",
+      "truth": "SIGKILL cannot be caught; application can't commit data, close connections, or release resources. SIGTERM allows graceful cleanup; forced termination causes data loss"
+    },
+    {
+      "misconception": "Virtual threads eliminate the need for understanding real concurrency",
+      "truth": "Virtual threads can get pinned (blocked) on non-unmountable operations (file I/O, JNI calls, synchronized blocks); thread scheduling principles still apply"
+    },
+    {
+      "misconception": "More threads always equals more throughput",
+      "truth": "Excessive threading causes context switching overhead to exceed work time; optimal thread count depends on blocking I/O characteristics, not arbitrary scaling"
+    },
+    {
+      "misconception": "TLB misses are rare and don't significantly impact performance",
+      "truth": "A 5% drop in TLB hit rate (99% → 95%) causes 2.3x slower memory access; 10% drop causes 4x slower access; poorly designed apps see 10x degradation"
+    },
+    {
+      "misconception": "Goroutines are 'magic' concurrency that scales without limits",
+      "truth": "Goroutines still depend on OS scheduler; at very high concurrency with CPU contention, scheduling overhead increases. Work-stealing prevents starvation but doesn't eliminate scheduling cost"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://blog.codingconfessions.com/p/context-switching-and-performance",
+      "title": "Context Switching and Performance: What Every Developer Should Know",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://arxiv.org/html/2508.15703v1",
+      "title": "Mitigating context switching in densely packed Linux clusters with Latency-Aware Group Scheduling",
+      "recency": "2024 — current research"
+    },
+    {
+      "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf",
+      "title": "Paging: Faster Translations (TLBs)",
+      "recency": "2023 (canonical reference for virtual memory)"
+    },
+    {
+      "url": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "title": "Process vs Thread: Core Architecture and Isolation",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer.html",
+      "title": "A Guide to Operating Systems - Translation Lookaside Buffer",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://docs.cloudera.com/runtime/7.3.1/kafka-performance-tuning/topics/kafka-tune-broker-syslevel-file-descriptors.html",
+      "title": "Kafka Performance Tuning: File descriptor limits",
+      "recency": "2024 — maintained documentation"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace",
+      "title": "Kubernetes best practices: terminating with grace",
+      "recency": "2024 — Google Cloud official"
+    },
+    {
+      "url": "https://www.suse.com/c/observability-sigkill-vs-sigterm-a-developers-guide-to-process-termination/",
+      "title": "SIGKILL vs SIGTERM: Master Process Termination in Linux and Kubernetes",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-is-huge-4hc5",
+      "title": "Is asyncio Really Better Than Multithreading? I Tested 100 Concurrent Requests",
+      "recency": "2025 — recent benchmark"
+    },
+    {
+      "url": "https://leapcell.io/blog/gos-concurrency-decoded-goroutine-scheduling",
+      "title": "Go's Concurrency Decoded: Goroutine Scheduling",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://medium.com/@felipe.ascari_49171/understanding-gos-scheduler-how-goroutine-management-works-65131986ee2c",
+      "title": "Understanding Go's Scheduler: How Goroutine Management Works",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://dev.to/jones_charles_ad50858dbc0/goroutine-scheduling-from-zero-to-hero-in-go-concurrency-3bl5",
+      "title": "Goroutine Scheduling: From Zero to Hero in Go Concurrency",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://www.kloia.com/blog/benchmarking-java-virtual-threads-a-comprehensive-analysis",
+      "title": "Java Virtual Threads Benchmark & Performance Analysis",
+      "recency": "2024 — current Java 21 benchmarks"
+    },
+    {
+      "url": "https://netflixtechblog.medium.com/performance-under-load-3e6fa9a60581",
+      "title": "Performance Under Load: Adaptive Concurrency Limits @ Netflix",
+      "recency": "2018 (foundational); ongoing updates 2024"
+    },
+    {
+      "url": "https://netflixtechblog.com/java-21-virtual-threads-dude-wheres-my-lock-3052540e231d",
+      "title": "Java 21 Virtual Threads - Dude, Where's My Lock?",
+      "recency": "July 2024 — recent production experience"
+    },
+    {
+      "url": "https://devopscube.com/kubernetes-pod-graceful-shutdown/",
+      "title": "Kubernetes Pod Graceful Shutdown with SIGTERM & preStop Hooks",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://medium.com/@codewar_with_me/i-switched-from-synchronous-to-async-7354bde280ba",
+      "title": "I Switched from Synchronous to Async. Performance Got WORSE.",
+      "recency": "April 2026 — recent case study"
+    },
+    {
+      "url": "https://toolshelf.tech/blog/process-vs-thread-os-internals-guide/",
+      "title": "Process vs Thread: A Developer's Deep Dive into OS Internals",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://medium.com/@mail2rajeevshukla/unlocking-the-power-of-goroutines-understanding-gos-lightweight-concurrency-model-3775f8e696b0",
+      "title": "Unlocking the Power of Goroutines: Understanding Go's Lightweight Concurrency Model",
+      "recency": "2024 — current"
+    }
+  ]
+}

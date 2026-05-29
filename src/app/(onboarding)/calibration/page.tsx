@@ -4,10 +4,17 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph, type HatchState } from '@/components/shell/HatchGlyph'
 import { QUESTIONS } from '@/lib/calibration/questions'
+import { clearOnboardingState, getOnboardingState, saveOnboardingState } from '@/lib/onboarding/state-client'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type CalScreen = 'intro' | 'role' | 'q0' | 'q1' | 'q2' | 'q3' | 'reading' | 'results'
+
+interface CalibrationStateData {
+  screen?: CalScreen
+  selectedRole?: string | null
+  answers?: Record<string, string>
+}
 
 interface Results {
   archetype: string
@@ -21,6 +28,7 @@ interface Results {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
+const CAL_SCREENS: CalScreen[] = ['intro', 'role', 'q0', 'q1', 'q2', 'q3', 'reading', 'results']
 const QUESTION_SCREENS: CalScreen[] = ['q0', 'q1', 'q2', 'q3']
 
 const ROLES = [
@@ -45,6 +53,17 @@ const FLOW_MOVES = [
 
 const READING_PHRASES = ['Reading your answers\u2026', 'Mapping your instincts\u2026', 'Almost done\u2026']
 
+function isCalScreen(value: unknown): value is CalScreen {
+  return typeof value === 'string' && CAL_SCREENS.includes(value as CalScreen)
+}
+
+function coerceAnswerMap(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+
+  const entries = Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+  return Object.fromEntries(entries)
+}
+
 // ── Workshop SVG background ───────────────────────────────────────────────────
 
 function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
@@ -60,7 +79,7 @@ function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {/* Desk 1 — left */}
+      {/* Desk 1: left */}
       <rect x="40" y="320" width="180" height="8" rx="2" />
       <line x1="50" y1="328" x2="50" y2="400" />
       <line x1="210" y1="328" x2="210" y2="400" />
@@ -76,7 +95,7 @@ function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
       <circle cx="128" cy="210" r="18" />
       <path d="M110 235 Q128 250 146 235" />
       <line x1="128" y1="228" x2="128" y2="240" />
-      {/* Desk 2 — center */}
+      {/* Desk 2: center */}
       <rect x="300" y="280" width="200" height="8" rx="2" />
       <line x1="310" y1="288" x2="310" y2="360" />
       <line x1="490" y1="288" x2="490" y2="360" />
@@ -91,7 +110,7 @@ function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
       <path d="M382 215 Q400 230 418 215" />
       <line x1="400" y1="208" x2="400" y2="220" />
       <path d="M388 218 Q370 235 360 245" />
-      {/* Desk 3 — right */}
+      {/* Desk 3: right */}
       <rect x="580" y="340" width="160" height="8" rx="2" />
       <line x1="590" y1="348" x2="590" y2="420" />
       <line x1="730" y1="348" x2="730" y2="420" />
@@ -100,7 +119,7 @@ function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
       <rect x="636" y="318" width="14" height="22" rx="1" />
       <line x1="668" y1="300" x2="695" y2="340" />
       <path d="M668 300 L674 294 L680 300" />
-      {/* Human 3 — standing */}
+      {/* Human 3: standing */}
       <circle cx="700" cy="270" r="18" />
       <line x1="700" y1="288" x2="700" y2="340" />
       <path d="M682 305 Q700 298 718 305" />
@@ -252,12 +271,49 @@ export default function CalibrationPage() {
   const [readingPhraseIdx, setReadingPhraseIdx] = useState(0)
   const [results, setResults] = useState<Results | null>(null)
   const [resultsReveal, setResultsReveal] = useState(false)
+  const [stateLoaded, setStateLoaded] = useState(false)
+  const [shouldPersistState, setShouldPersistState] = useState(true)
   const hasSubmitted = useRef(false)
 
   const questionIdx = QUESTION_SCREENS.indexOf(screen)
   const currentQuestion = questionIdx >= 0 ? QUESTIONS[questionIdx] : null
   const currentMove = questionIdx >= 0 ? FLOW_MOVES[questionIdx] : null
   const completedSet = new Set(QUESTION_SCREENS.slice(0, questionIdx).map((_, i) => i))
+
+  useEffect(() => {
+    let cancelled = false
+
+    getOnboardingState<CalibrationStateData>()
+      .then(state => {
+        if (cancelled || state?.step !== '/calibration') return
+        const data = state.data ?? {}
+        if (isCalScreen(data.screen) && data.screen !== 'results') setScreen(data.screen)
+        if (typeof data.selectedRole === 'string') setSelectedRole(data.selectedRole)
+        const restoredAnswers = coerceAnswerMap(data.answers)
+        if (restoredAnswers) setAnswers(restoredAnswers)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setStateLoaded(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!stateLoaded || !shouldPersistState) return
+    const timeout = window.setTimeout(() => {
+      saveOnboardingState('/calibration', {
+        screen,
+        selectedRole,
+        answers,
+      }).catch(() => {})
+    }, 400)
+
+    return () => window.clearTimeout(timeout)
+  }, [answers, screen, selectedRole, shouldPersistState, stateLoaded])
 
   // Intro: Hatch celebrates → speaking
   useEffect(() => {
@@ -281,9 +337,11 @@ export default function CalibrationPage() {
     const doSubmit = fetch('/api/onboarding/calibration/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ answers, role: selectedRole ?? undefined }),
     }).then(r => r.ok ? r.json() : null).then(data => {
       if (data) {
+        setShouldPersistState(false)
+        clearOnboardingState().catch(() => {})
         setResults({
           archetype: data.archetype,
           archetype_description: data.archetype_description,
@@ -347,7 +405,10 @@ export default function CalibrationPage() {
   }
 
   async function handleComplete(path: 'challenge' | 'plan') {
-    try { await fetch('/api/onboarding/complete', { method: 'POST' }) } catch {}
+    try {
+      await fetch('/api/onboarding/complete', { method: 'POST' })
+      await clearOnboardingState()
+    } catch {}
     if (path === 'plan') {
       const slug = results?.personalised_plan_slug
       router.push(slug ? `/explore/plans/${slug}` : '/explore/plans')
@@ -392,7 +453,7 @@ export default function CalibrationPage() {
                 className="text-[15px] text-inverse-on-surface/65 font-body leading-relaxed"
                 style={{ animation: 'calFadeUp 0.5s ease 0.8s both' }}
               >
-                4 choices. Product, systems, data, SQL, code.<br />No wrong answers — just honest ones.
+                4 choices. Product, systems, data, SQL, code.<br />No wrong answers, just honest ones.
               </p>
             </div>
             <button
@@ -546,7 +607,7 @@ export default function CalibrationPage() {
                   Your thinking archetype
                 </p>
                 <h2 className="font-headline font-bold text-[24px] text-inverse-on-surface">
-                  {results?.archetype ?? '—'}
+                  {results?.archetype ?? 'Not set'}
                 </h2>
               </div>
 

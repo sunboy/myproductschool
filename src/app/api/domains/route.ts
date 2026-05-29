@@ -49,7 +49,7 @@ export async function GET() {
   const [domainsResult, challengesResult, attemptsResult] = await Promise.all([
     adminClient.from('domains').select('*').eq('is_published', true).order('order_index'),
     adminClient.from('challenges').select('id, domain_id').eq('is_published', true),
-    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).not('submitted_at', 'is', null),
+    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).eq('status', 'completed'),
   ])
 
   if (domainsResult.error) return NextResponse.json({ error: domainsResult.error.message }, { status: 500 })

@@ -6,7 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { cn } from '@/lib/utils'
-import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
+import { FreemiumUsageSummary, SpendIndicator } from '@/components/billing/FreemiumUsageSummary'
+import { TrialBanner } from '@/components/billing/TrialBanner'
+import { DunningBanner } from '@/components/billing/DunningBanner'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 const NAV_ITEMS = [
   { id: 'home',       href: '/',               icon: 'home',          label: 'Home'       },
@@ -16,6 +19,7 @@ const NAV_ITEMS = [
   { id: 'progress',   href: '/progress',        icon: 'bar_chart',     label: 'Progress'   },
 ]
 
+const AFFILIATES_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
 
 interface ProfileData {
   streak_days: number
@@ -29,6 +33,12 @@ interface ProfileData {
     current_period_end?: string | null
     billing_interval?: string | null
     cancel_at_period_end?: boolean | null
+  } | null
+  dunning?: {
+    state: string
+    shouldShowBanner: boolean
+    bannerMessage: string | null
+    gracePeriodEndsAt: string | null
   } | null
 }
 
@@ -63,6 +73,7 @@ export function TopNav() {
           plan: data.plan ?? null,
           daily_attempts_today: data.daily_attempts_today ?? 0,
           subscription: data.subscription ?? null,
+          dunning: data.dunning ?? null,
         })
       })
       .catch(() => {})
@@ -111,9 +122,33 @@ export function TopNav() {
     return pathname.startsWith(item.href)
   }
 
+  // Derive trial/dunning banners from already-fetched profile data
+  const sub = profile?.subscription
+  const isTrialing = sub?.status === 'trialing' && sub?.current_period_end
+  const trialDaysLeft = isTrialing
+    ? Math.ceil((new Date(sub!.current_period_end!).getTime() - Date.now()) / 86400000)
+    : null
+  // Dunning banner is driven by the server-computed dunning status, which keys off
+  // the profile dunning columns (past_due_since / payment_failures) and matches the
+  // entitlements grace policy. Falls back to the raw status if dunning isn't present.
+  const dunning = profile?.dunning
+  const showDunning = dunning?.shouldShowBanner ?? (sub?.status === 'past_due')
+  const dunningMessage = dunning?.bannerMessage ?? 'Your payment failed. Update your payment method to keep Pro access.'
+  const dunningDaysLeft = dunning?.gracePeriodEndsAt
+    ? Math.max(0, Math.ceil((new Date(dunning.gracePeriodEndsAt).getTime() - Date.now()) / 86400000))
+    : undefined
+
   return (
+    <>
+    {trialDaysLeft !== null && trialDaysLeft <= 7 && (
+      <TrialBanner daysLeft={trialDaysLeft} trialEndsAt={sub!.current_period_end!} />
+    )}
+    {showDunning && (
+      <DunningBanner message={dunningMessage} daysUntilSuspension={dunningDaysLeft} />
+    )}
     <header
-      className="sticky top-0 z-40 border-b"
+      data-topnav
+      className="sticky top-0 z-40 w-full max-w-full border-b"
       style={{
         background: 'rgba(250,246,240,0.82)',
         backdropFilter: 'saturate(140%) blur(12px)',
@@ -121,19 +156,18 @@ export function TopNav() {
         borderColor: 'var(--color-outline-faint)',
       }}
     >
-      <div className="mx-auto max-w-[1440px] px-8 py-2 flex items-center gap-8">
+      <div className="mx-auto flex w-full max-w-[1440px] min-w-0 items-center gap-3 px-3 py-2 sm:gap-5 sm:px-5 lg:gap-8 lg:px-8">
 
         {/* Column 1: Brand. Wordmark file has padding around the glyphs, so it
             needs more pixels than the visible text suggests. */}
-        <Link href="/dashboard" className="flex items-center no-underline shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/wordmark.png" alt="HackProduct" className="h-12" />
+        <Link href="/dashboard" className="flex min-w-0 shrink items-center no-underline sm:shrink-0">
+          <HackProductWordmark className="h-8 w-[168px] object-cover sm:h-12 sm:w-[242px]" />
         </Link>
 
         {/* Column 2: Nav pills (centered) */}
-        <div className="hidden md:flex flex-1 justify-center">
+        <div className="hidden min-w-0 flex-1 justify-center md:flex">
         <nav
-          className="flex gap-1 p-1 rounded-full border"
+          className="flex min-w-0 gap-1 rounded-full border p-1"
           style={{
             background: 'var(--color-surface-container-low)',
             borderColor: 'var(--color-outline-faint)',
@@ -157,6 +191,7 @@ export function TopNav() {
                 <Link href={href} className="no-underline">
                   <button
                     data-hatch-sound={active ? undefined : 'open'}
+                    data-hatch-target={item.id === 'home' ? 'nav-dashboard' : `nav-${item.id}`}
                     className={cn(
                       'inline-flex items-center gap-[7px] px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
                       'text-[13px] font-bold transition-[background,color] duration-200',
@@ -186,7 +221,7 @@ export function TopNav() {
         </div>
 
         {/* Column 3: Right cluster */}
-        <div className="flex items-center gap-4">
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
 
           {/* Streak */}
           <AppTooltip label="Your current practice streak." side="bottom" className="hidden sm:inline-flex">
@@ -233,6 +268,13 @@ export function TopNav() {
             </button>
           </AppTooltip>
 
+          {/* Live AI spend indicator — only visible when not pro */}
+          {!isPro && (
+            <div className="hidden sm:flex">
+              <SpendIndicator />
+            </div>
+          )}
+
           {/* Avatar button + dropdown */}
           <div className="relative" ref={menuRef}>
             <button
@@ -251,7 +293,7 @@ export function TopNav() {
 
             {menuOpen && (
               <div
-                className="absolute right-0 top-12 w-[310px] rounded-xl shadow-lg py-1 z-50 border"
+                className="absolute right-0 top-12 z-50 w-[min(310px,calc(100vw-1.5rem))] rounded-xl border py-1 shadow-lg"
                 style={{
                   background: 'var(--color-background)',
                   borderColor: 'var(--color-outline-variant)',
@@ -273,6 +315,16 @@ export function TopNav() {
                   <FreemiumUsageSummary plan={profile?.plan} compact />
                 </div>
                 <Link
+                  href="/affiliates"
+                  data-hatch-sound="open"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container"
+                  style={{ color: 'var(--color-on-surface)' }}
+                >
+                  <span className="material-symbols-outlined text-base" style={{ color: 'var(--color-on-surface-variant)' }}>handshake</span>
+                  Affiliates
+                </Link>
+                <Link
                   href="/settings"
                   data-hatch-sound="open"
                   onClick={() => setMenuOpen(false)}
@@ -282,6 +334,18 @@ export function TopNav() {
                   <span className="material-symbols-outlined text-base" style={{ color: 'var(--color-on-surface-variant)' }}>settings</span>
                   Settings
                 </Link>
+                {AFFILIATES_ENABLED && (
+                  <Link
+                    href="/affiliate"
+                    data-hatch-sound="open"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container"
+                    style={{ color: 'var(--color-on-surface)' }}
+                  >
+                    <span className="material-symbols-outlined text-base" style={{ color: 'var(--color-on-surface-variant)' }}>handshake</span>
+                    Affiliate
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   data-hatch-sound="close"
@@ -297,5 +361,6 @@ export function TopNav() {
       </div>
 
     </header>
+    </>
   )
 }

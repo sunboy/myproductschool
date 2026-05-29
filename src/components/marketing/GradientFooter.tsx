@@ -50,7 +50,7 @@ export function GradientFooter() {
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="/explore/showcase">
+                <Link className="hover:text-white transition-colors" href="/explore/autopsies">
                   Case Studies
                 </Link>
               </li>
@@ -62,6 +62,16 @@ export function GradientFooter() {
               <li>
                 <Link className="hover:text-white transition-colors" href="/explore/modules">
                   Guides
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-white transition-colors" href="/help">
+                  Help
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-white transition-colors" href="/changelog">
+                  Changelog
                 </Link>
               </li>
             </ul>
@@ -82,9 +92,19 @@ export function GradientFooter() {
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="/privacy">
+                <Link className="hover:text-white transition-colors" href="/security">
                   Security
                 </Link>
+              </li>
+              <li>
+                <a
+                  className="hover:text-white transition-colors"
+                  href="https://status.hackproduct.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Status
+                </a>
               </li>
             </ul>
           </div>

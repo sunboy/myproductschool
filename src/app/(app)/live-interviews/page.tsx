@@ -1,11 +1,12 @@
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
+import { IS_MOCK } from '@/lib/mock'
 import { UsageProvider } from '@/context/UsageContext'
 import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
-import { LiveInterviewsShell } from './LiveInterviewsShell'
 import {
   challengeTypeToDiscipline,
   type LiveInterviewDiscipline,
 } from '@/lib/live-interview/disciplines'
+import { LiveInterviewsShellClient } from './LiveInterviewsShellClient'
 
 export interface ScenarioBrief {
   id: string
@@ -19,7 +20,7 @@ export interface ScenarioBrief {
 }
 
 async function getPersonas() {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_LIVE_INTERVIEW_PERSONAS
   }
 
@@ -47,7 +48,7 @@ async function getPersonas() {
       slug: `${company.slug}-${role.toLowerCase().replace(/\s+/g, '-')}`,
       icon: company.icon ?? 'corporate_fare',
       interviewStyle: company.interview_style ?? '',
-      difficulty: 'standard' as const,
+      difficulty: 'medium' as const,
       estimatedMins: 35,
       personaPrompt: company.interview_persona_prompt,
     }))
@@ -55,7 +56,7 @@ async function getPersonas() {
 }
 
 async function getScenarios(): Promise<ScenarioBrief[]> {
-  if (process.env.USE_MOCK_DATA === 'true') return []
+  if (IS_MOCK) return []
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -142,7 +143,7 @@ export default async function LiveInterviewsPage() {
 
         <BillingUsageFromProfile />
 
-        <LiveInterviewsShell personas={personas} scenarios={scenarios} />
+        <LiveInterviewsShellClient personas={personas} scenarios={scenarios} />
       </div>
     </UsageProvider>
   )

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "pinterest",
+  "story_slug": "pinterest-save-button",
+  "story_title": "Pinterest Save Button",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/pinterest-save-button/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/pinterest-save-button/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot beside the Pinterest Save button, with connecting lines showing the button embedded across multiple websites.",
+      "caption": "Hatch mascot beside the Pinterest Save button, with connecting lines showing the button embedded across multiple websites.",
+      "prompt": "Pinterest Save Button | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing beside a large embeddable button widget on a cream background. The button reads \"Save\" and has a small pin icon. Behind Hatch, faint lines connect the button to multiple website thumbnails, suggesting distributed reach. Hatch's expression is pleased, cap settled. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest-save-button/hero.png",
+      "generated_image_sha256": "710ae9e4b160831fa698e4d84d19ff2dc9baba84c38bec4afa8d6b623c5733cc",
+      "final_image_sha256": "540b35bbf25016a3f2762f7604015195e7c521dc91250674b5e733b4a12b36f2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest-save-button/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest-save-button/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/pinterest-save-button/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to a Pin It button embedded on a recipe website, illustrating the distributed acquisition mechanism.",
+      "caption": "Hatch pointing to a Pin It button embedded on a recipe website, illustrating the distributed acquisition mechanism.",
+      "prompt": "Pinterest Save Button | hatch-narrator: Hatch in narrator stance, gesturing toward a recipe webpage with a large \"Pin It\" button visible on a food photo. The gesture suggests \"notice this small thing.\" Cream background, no speech bubble. Hatch is slightly turned, pointing at the button with one arm. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest-save-button/hatch-narrator.png",
+      "generated_image_sha256": "5e3fb0cfc45badda1ad8134411799e450a388ab29217fd6d5eb3c6529ecbc8fb",
+      "final_image_sha256": "d87f123eb61a6b7867c2605aed829b5f1d31bac9c5f15918565172f61adc3064",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest-save-button/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest-save-button/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/pinterest-save-button/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining the Pin It loop — from embedded button click through board save to follower discovery and publisher traffic return.",
+      "caption": "Hatch examining the Pin It loop — from embedded button click through board save to follower discovery and publisher traffic return.",
+      "prompt": "Pinterest Save Button | failure-mechanism: Hatch in thinking pose, looking at a simple flow diagram: Website image → Pin It click → Pinterest board → follower sees → publisher traffic. Each step is a simple icon connected by arrows. Hatch points to the loop's completion — traffic returning to the publisher. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest-save-button/failure-mechanism.png",
+      "generated_image_sha256": "c1d2d97ff7ef45534207db487d4071b8d96f5009d0118f2bb922d9b0bfc2ed0d",
+      "final_image_sha256": "5a16a0e43b26bcc9b80a56eb754a77ff99906ff3fb2e43c4068fbb23632cf310",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest-save-button/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest-save-button/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/pinterest-save-button/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to a chart showing Pinterest surpassing Twitter in referral traffic to publishers in January 2012.",
+      "caption": "Hatch pointing to a chart showing Pinterest surpassing Twitter in referral traffic to publishers in January 2012.",
+      "prompt": "Pinterest Save Button | evidence-card: Hatch pointing at a bar chart showing referral traffic comparison: Pinterest vs. Twitter in January 2012, with Pinterest bar slightly taller despite a smaller user base label. Expression is analytical, calm. Cream background. Watermark same as hero. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest-save-button/evidence-card.png",
+      "generated_image_sha256": "d7b72cb916b97cff3307832ae8bb4a1709125f818dec95663c7363b4aca7707a",
+      "final_image_sha256": "184ec4acc54dd14614220990eac37ec237618b0a654a65881547b0ba6213aba6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest-save-button/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest-save-button/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/pinterest-save-button/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance, surrounded by Save buttons embedded across diverse web content, representing Pinterest's distributed acquisition strategy.",
+      "caption": "Hatch in coaching stance, surrounded by Save buttons embedded across diverse web content, representing Pinterest's distributed acquisition strategy.",
+      "prompt": "Pinterest Save Button | lesson-frame: Hatch in coaching pose — upright, calm, graduation cap settled — next to a large quotation mark. Behind Hatch, faint Save buttons are embedded across a mosaic of different website types: recipes, fashion, home decor, travel. The visual suggests the web itself as distribution. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest-save-button/lesson-frame.png",
+      "generated_image_sha256": "6d0d119cd21a1423b166b7dfa0b31ca3422a00a5c3c8e44c60d535ee38a9c765",
+      "final_image_sha256": "419672716bd44c836a41e48ad9de31cedfb0a9841bc2fb3d7446c10cec8f7bab",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest-save-button/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest-save-button/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/pinterest-save-button/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside the Pinterest Save button — thumbnail for the Pinterest Save button autopsy.",
+      "caption": "Hatch beside the Pinterest Save button — thumbnail for the Pinterest Save button autopsy.",
+      "prompt": "Small, recognizable Hatch mascot bust next to a large \"Save\" button icon with a pin. Clean cream background. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest-save-button/hero.png",
+      "generated_image_sha256": "710ae9e4b160831fa698e4d84d19ff2dc9baba84c38bec4afa8d6b623c5733cc",
+      "final_image_sha256": "64436cb728fc694d43ed367301072d6935224bc464e147ea1cd596d4cddb5538",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest-save-button/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest-save-button/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/pinterest-save-button/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot with distributed Save buttons for the Pinterest Save button social share card.",
+      "caption": "Hatch mascot with distributed Save buttons for the Pinterest Save button social share card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG share card. Large Pin It button in background with connecting lines to multiple website thumbnails. \"HackProduct\" wordmark prominent bottom-right. Cream background. The scene reads as: distribution embedded in use. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest-save-button/hero.png",
+      "generated_image_sha256": "710ae9e4b160831fa698e4d84d19ff2dc9baba84c38bec4afa8d6b623c5733cc",
+      "final_image_sha256": "86d9c921ac8384864c26232bffa4ee76e51edcc1eb87449b39526c8dccfc5da0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest-save-button/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest-save-button/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/pinterest-save-button/v1"
+}

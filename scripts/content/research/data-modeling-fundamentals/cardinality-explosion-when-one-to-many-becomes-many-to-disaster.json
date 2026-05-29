@@ -1,0 +1,426 @@
+{
+  "facts": [
+    {
+      "fact": "Cardinality explosion occurs when high-cardinality data (like user IDs, session IDs, or UUIDs) combines across multiple dimensions, creating millions of unique series. This overwhelms storage and makes queries expensive because each series requires its own time buckets and index entries.",
+      "source": "https://www.influxdata.com/blog/red-flags-of-high-cardinality-in-databases/",
+      "published": "2023"
+    },
+    {
+      "fact": "Bridge tables (junction tables) transform many-to-many relationships from A ↔ B into A ← JT → B, where each has a one-to-many relationship with the junction table. This requires a composite primary key on both foreign keys to prevent duplicates and performance indexes on each foreign key column.",
+      "source": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/",
+      "published": "2012"
+    },
+    {
+      "fact": "Surrogate keys (system-generated, business-neutral values like auto-incrementing integers) perform better than natural keys for joins and indexing because they're more compact, reducing I/O during inserts, updates, and queries. Large natural keys require more disk I/O.",
+      "source": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/",
+      "published": "2020"
+    },
+    {
+      "fact": "Natural keys can become problematic if their underlying business values change (e.g., a SKU gets reused, an email address changes). Updating a natural key that's referenced by foreign keys in other tables requires cascading updates across all dependent rows.",
+      "source": "https://agiledata.org/essays/keys.html",
+      "published": "2019"
+    },
+    {
+      "fact": "The hybrid key approach dominates in practice: use a surrogate primary key for stability and performance, enforce business uniqueness with UNIQUE constraints on natural keys, and index those natural keys for fast application lookups. This gives immutable foreign key relationships, efficient joins, and business rule enforcement.",
+      "source": "https://kindatechnical.com/sql/surrogate-vs-natural-keys.html",
+      "published": "2022"
+    },
+    {
+      "fact": "Slowly Changing Dimension Type 2 (SCD Type 2) creates complete audit trails by adding new records for each change while keeping old data intact. It requires at minimum: a surrogate key for unique identification, and timestamp columns (start_date, end_date) marking when each version became active or inactive.",
+      "source": "https://www.thoughtspot.com/data-trends/data-modeling/slowly-changing-dimensions-in-data-warehouse",
+      "published": "2024"
+    },
+    {
+      "fact": "Bi-temporal SCD Type 2 extends standard SCD Type 2 with two time axes: valid_time (when the fact was true in reality) and transaction_time (when it was recorded in the database). This enables retroactive inserts without corrupting history, required in regulated industries like financial services and healthcare.",
+      "source": "https://softwarepatternslexicon.com/bitemporal-modeling/bi-temporal-data-warehouses/bi-temporal-slowly-changing-dimensions-scd-type-2/",
+      "published": "2024"
+    },
+    {
+      "fact": "The expand-and-contract (or parallel change) pattern enables zero-downtime schema migrations by decoupling application deployments from schema changes, allowing both old and new application versions to run simultaneously against the same database.",
+      "source": "https://medium.com/@shbhggrwl/database-schema-evolution-techniques-and-tools-for-zero-downtime-migrations-e0c5bc3f9ef3",
+      "published": "2024"
+    },
+    {
+      "fact": "MySQL 8.0's INSTANT algorithm for adding columns at the end of a table modifies only metadata and completes in milliseconds, regardless of table size. No table copy, no backfill, holding only a short metadata lock.",
+      "source": "https://www.pingcap.com/blog/effective-online-ddl-database-schema-changes-zero-downtime/",
+      "published": "2023"
+    },
+    {
+      "fact": "PostgreSQL's query optimizer uses selectivity and cardinality estimations to choose execution plans. Selectivity is the percentage of rows matching a WHERE condition, and cardinality is the number of distinct values. The estimated row count = selectivity × table cardinality.",
+      "source": "https://minervadb.xyz/fine-tuning-postgresql-understanding-selectivity-and-cardinality-estimations/",
+      "published": "2024"
+    },
+    {
+      "fact": "High cardinality indexes (many distinct values) benefit query performance by narrowing results, while low cardinality indexes on columns with few distinct values (e.g., gender, boolean) are anti-patterns. Random I/O from the index still visits most pages, slower than sequential table scans.",
+      "source": "https://dev.to/shrsv/postgresql-performance-essential-indexing-guidelines-1i90",
+      "published": "2024"
+    },
+    {
+      "fact": "Fanout errors in many-to-many relationships occur when LEFT JOINing two tables with an unaccounted one-to-many relationship. One row on the left matches multiple rows on the right, causing aggregate functions (COUNT, SUM) to duplicate values and produce incorrect results.",
+      "source": "https://docs.cloud.google.com/looker/docs/reference/param-field-fanout-on",
+      "published": "2024"
+    },
+    {
+      "fact": "Star schema design eliminates fanout: a central fact table has direct one-to-many links to related dimensions. Each dimension has a many-to-one relationship to the fact table. Joining from the center outward guarantees no fanout.",
+      "source": "https://community.sisense.com/kb/best_practies/many-to-many-relationships---knowing-and-avoiding-them/2242",
+      "published": "2020"
+    },
+    {
+      "fact": "Cardinality estimation errors have outsized impact on query performance. If the optimizer estimates 100 rows but a filter actually produces 10 million, every downstream cost estimate is wrong, and the optimizer may choose a nested-loop join when a hash join would be 100x faster.",
+      "source": "https://use-the-index-luke.com/sql/explain-plan/postgresql/getting-an-execution-plan",
+      "published": "2023"
+    },
+    {
+      "fact": "Netflix's 2013 Kafka cluster incident resulted in massive data loss when a broker died and the 200+ broker cluster couldn't recover due to Kafka limitations at the time. Post-incident, they adopted weekly Kafka cluster failover drills and built smaller, isolated Kafka clusters to contain blast radius.",
+      "source": "https://zhenzhongxu.com/the-four-innovation-phases-of-netflixs-trillions-scale-real-time-data-infrastructure-2370938d7f01",
+      "published": "2024"
+    },
+    {
+      "fact": "Netflix uses Apache Druid for real-time analytics because it handles high ingestion rates, high-cardinality data, and fast queries. Every measure is tagged with anonymized device details (Smart TV, iPad, Android phone) enabling device classification and multi-dimensional views.",
+      "source": "https://imply.io/case-study-netflix/",
+      "published": "2023"
+    },
+    {
+      "fact": "Stripe processes over $1 trillion USD of payment volume annually with 99.999% uptime, partly through DocDB (Stripe's internal Database as a Service built on MongoDB). Document-oriented design encourages denormalization to minimize cross-shard joins, crucial for financial data at scale.",
+      "source": "https://blog.quastor.org/p/architecture-stripes-document-database",
+      "published": "2023"
+    },
+    {
+      "fact": "Uber's Schemaless/Docstore system supports many-to-many relationships via Associations in their Flexible Document Model. Data is sharded transparently across multiple shards (each a few hundred gigabytes). Applications control data locality through explicit partition keys in addition to primary keys.",
+      "source": "https://www.uber.com/blog/schemaless-sql-database/",
+      "published": "2016"
+    },
+    {
+      "fact": "Denormalization can improve query performance by 10x to 100x depending on data volume and join complexity, but should only be used when actual performance problems emerge, not as a preventative measure. Duplicate attributes to avoid joins or use materialized views for aggregations.",
+      "source": "https://rafaelrampineli.medium.com/denormalization-a-solution-for-performance-or-a-long-term-trap-6b9af5b5b831",
+      "published": "2023"
+    },
+    {
+      "fact": "PostgreSQL's default_statistics_target parameter controls histogram detail for cardinality estimation. Higher targets mean more accurate stats but slower ANALYZE runs. The autovacuum analyze threshold = base_threshold + (scale_factor × row_count).",
+      "source": "https://www.netdata.cloud/academy/cardinality-estimation-in-postgres/",
+      "published": "2025"
+    }
+  ],
+  "examples": [
+    {
+      "example": "A user has 1 order, but that order has 5 line items, and each line item has 3 related promotions. A naive JOIN without a bridge table produces 1 × 5 × 3 = 15 rows instead of 1 order. A SUM(price) becomes 15× too large.",
+      "domain": "e-commerce",
+      "realistic": true
+    },
+    {
+      "example": "Netflix's device cardinality: streaming metrics tagged with device type (50+ distinct values), OS version (100+ values), region (190+ values), and user cohort (1000+ values). Combining these creates 50 × 100 × 190 × 1000 = 950 million unique series, overwhelming time-series storage.",
+      "domain": "analytics",
+      "realistic": true
+    },
+    {
+      "example": "A student_course bridge table with surrogate key (id), foreign key (student_id), foreign key (course_id), and a UNIQUE constraint on (student_id, course_id). The composite natural key is enforced but doesn't become a foreign key, allowing the surrogate to be stable.",
+      "domain": "education",
+      "realistic": true
+    },
+    {
+      "example": "A product table using SKU (natural key: company-product-variant) as the business identifier. When the company rebrand changes all SKUs, every order, shipment, and review table must be updated via cascading foreign keys.",
+      "domain": "retail",
+      "realistic": true
+    },
+    {
+      "example": "A customer_address SCD Type 2 table with valid_from=2024-01-15, valid_to=2024-06-30, surrogate_id=42. When a customer moves, a new row is inserted with surrogate_id=43, same customer_id, new address, valid_from=2024-07-01, valid_to=9999-12-31. Historical reports can be run at any date.",
+      "domain": "crm",
+      "realistic": true
+    },
+    {
+      "example": "A schema migration adding a NOT NULL column to a 100M-row table: expand phase adds the column with default, backfill runs in batches with rate limiting, contract phase removes the default and adds the NOT NULL constraint atomically. Total elapsed time: ~2 hours, zero downtime.",
+      "domain": "mysql",
+      "realistic": true
+    },
+    {
+      "example": "Stripe's payment schema: customers have many payment methods, payments have many refunds, refunds have many disputes. Rather than storing lists of refund IDs in the payment row, separate refunds and disputes tables with foreign keys prevent fanout when reporting on payment volume.",
+      "domain": "payments",
+      "realistic": true
+    },
+    {
+      "example": "A sales fact table with foreign keys to customer_dim, product_dim, store_dim, and date_dim. A query filtering on store_dim.region='West' and product_dim.category='Electronics' correctly filters fact rows without duplicating results because each fact row matches at most one store and one product.",
+      "domain": "data warehouse",
+      "realistic": true
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Cardinality explosion is like inviting 10 friends to a dinner. If each friend brings 5 dishes and each dish has 3 variations, you end up with 10 × 5 × 3 = 150 items to track instead of 10 friends. The simple problem becomes unwieldy.",
+      "concept": "cardinality explosion"
+    },
+    {
+      "analogy": "A bridge table is like a physical seating chart at a wedding. Instead of writing 'John sat with Sarah, Alice, and Bob' in John's record (denormalized), you create a separate seating table: (John, table 2), (Sarah, table 2), (Alice, table 2), (Bob, table 2). The relationship is explicit and unambiguous.",
+      "concept": "many-to-many relationships"
+    },
+    {
+      "analogy": "Surrogate keys are like passport numbers: immutable, opaque, and used only for identity. Natural keys are like names: human-readable but changeable, and changing them cascades everywhere. Use a passport internally, accept name changes as metadata.",
+      "concept": "key selection"
+    },
+    {
+      "analogy": "SCD Type 2 is like keeping a complete edit history of a document. Every version is stored with timestamps: [version 1: 2024-01-01 to 2024-03-31], [version 2: 2024-04-01 onward]. You can query 'what was the state on 2024-02-15?' and get the right version.",
+      "concept": "audit trails"
+    },
+    {
+      "analogy": "Expand-and-contract schema migration is like moving to a new house while staying in your old one. First, build the new house (expand). Live in both simultaneously while movers ferry belongings (backfill). Then abandon the old house (contract). Tenants never see a gap.",
+      "concept": "zero-downtime migration"
+    },
+    {
+      "analogy": "Fanout in many-to-many aggregations is like counting attendees at a conference by summing ticket_count from (attendee, workshop) pairs. One attendee in 3 workshops gets counted 3× in a naive SUM. Bridge tables prevent this by tracking the one-to-many explicitly.",
+      "concept": "fanout errors"
+    },
+    {
+      "analogy": "Cardinality estimation in query planning is like predicting how long a grocery shopping trip will take. If you estimate 10 items but there are 1000, you grab a small basket (nested loop join) instead of a cart (hash join), and the trip becomes much slower.",
+      "concept": "query optimization"
+    },
+    {
+      "analogy": "High-cardinality indexing is like cataloging a library. A high-cardinality index (by author) is useful because there are many distinct authors. A low-cardinality index (by fiction/nonfiction) is useless because you'll visit 50% of shelves regardless.",
+      "concept": "index selectivity"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Netflix Kafka cluster broker count at failure",
+      "value": 200,
+      "unit": "brokers",
+      "context": "When one broker died, the entire cluster couldn't recover, causing massive data loss. Post-incident, they adopted smaller, isolated clusters.",
+      "source": "https://zhenzhongxu.com/the-four-innovation-phases-of-netflixs-trillions-scale-real-time-data-infrastructure-2370938d7f01"
+    },
+    {
+      "metric": "Stripe annual payment processing volume",
+      "value": 1000000000000,
+      "unit": "USD",
+      "context": "Stripe achieves 99.999% uptime processing this volume through careful schema design and document-oriented denormalization.",
+      "source": "https://blog.quastor.org/p/architecture-stripes-document-database"
+    },
+    {
+      "metric": "Denormalization performance improvement range",
+      "value": "10-100x",
+      "unit": "speedup factor",
+      "context": "Query performance can improve 10x to 100x depending on data volume and join complexity, but should only be used when actual problems emerge.",
+      "source": "https://rafaelrampineli.medium.com/denormalization-a-solution-for-performance-or-a-long-term-trap-6b9af5b5b831"
+    },
+    {
+      "metric": "MySQL INSTANT DDL completion time for column adds",
+      "value": 1,
+      "unit": "milliseconds",
+      "context": "Adding a column at the end of a table using ALGORITHM=INSTANT on MySQL 8.0+ modifies only metadata, regardless of table size.",
+      "source": "https://www.pingcap.com/blog/effective-online-ddl-database-schema-changes-zero-downtime/"
+    },
+    {
+      "metric": "Worst-case schema migration downtime (ALTER MODIFY without optimization)",
+      "value": "6-8",
+      "unit": "hours estimated",
+      "context": "A single ALTER TABLE MODIFY COLUMN on a production table with millions of rows and full table lock can take 6–8 hours.",
+      "source": "https://www.mafiree.com/blog/mysql-schema-migration-zero-downtime-case-study"
+    },
+    {
+      "metric": "Real-world unexpected API downtime during migration",
+      "value": 15,
+      "unit": "seconds",
+      "context": "One production database experienced ~15 seconds of downtime when a poorly planned ALTER TABLE held a lock on a heavily trafficked table.",
+      "source": "https://medium.com/@kanhaaggarwal/zero-downtime-database-migrations-how-we-fixed-a-production-freeze-4bc512c52d78"
+    },
+    {
+      "metric": "Uber Schemaless partition replica node count",
+      "value": "3-5",
+      "unit": "nodes per partition",
+      "context": "Each partition (representing a few hundred gigabytes of sharded data) is replicated across 3-5 nodes across independent zones for fault tolerance.",
+      "source": "https://www.uber.com/blog/schemaless-sql-database/"
+    },
+    {
+      "metric": "Netflix streaming device dimensions",
+      "value": 50,
+      "unit": "distinct device types (minimum)",
+      "context": "Device cardinality alone can create millions of series when combined with OS versions, regions, and cohorts.",
+      "source": "https://imply.io/case-study-netflix/"
+    },
+    {
+      "metric": "Many-to-many cardinality explosion in e-commerce",
+      "value": 15,
+      "unit": "rows from 1 order when joining orders → line_items → promotions",
+      "context": "Without proper bridge table design, a single order becomes 15 rows (1 order × 5 items × 3 promotions), making aggregations incorrect.",
+      "source": "https://www.datacamp.com/blog/many-to-many-relationship"
+    },
+    {
+      "metric": "Query performance degradation from cardinality misestimation",
+      "value": "100x",
+      "unit": "slowdown when optimizer chooses nested-loop over hash join",
+      "context": "Estimating 100 rows when there are actually 10 million causes the planner to choose wrong algorithms.",
+      "source": "https://use-the-index-luke.com/sql/explain-plan/postgresql/getting-an-execution-plan"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "All indexes improve query performance",
+      "reality": "Low-cardinality indexes (e.g., on boolean or gender columns with few distinct values) often hurt performance. Random I/O from the index still visits most table pages, making sequential scans faster. Index selectivity matters more than index existence.",
+      "source": "https://dev.to/shrsv/postgresql-performance-essential-indexing-guidelines-1i90"
+    },
+    {
+      "misconception": "Natural keys are always better because they have business meaning",
+      "reality": "Natural keys become problematic when business values change. Updating a natural key that's referenced by foreign keys requires cascading updates across dependent tables. Surrogate keys decouple business meaning from identity, providing stability.",
+      "source": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/"
+    },
+    {
+      "misconception": "Denormalization should be a default design strategy for performance",
+      "reality": "Denormalization should only be adopted when actual performance problems emerge, not preemptively. It trades write complexity and consistency risks for read speed, a tradeoff only worth taking when measurements prove it necessary.",
+      "source": "https://rafaelrampineli.medium.com/denormalization-a-solution-for-performance-or-a-long-term-trap-6b9af5b5b831"
+    },
+    {
+      "misconception": "Many-to-many relationships can be stored directly as a list of IDs in a single table column",
+      "reality": "Direct ID lists cause fanout when joining with other tables. Bridge tables are the correct solution, transforming A ↔ B into A ← JT → B with proper one-to-many relationships to the junction table.",
+      "source": "https://www.datacamp.com/blog/many-to-many-relationship"
+    },
+    {
+      "misconception": "Schema migrations always require downtime",
+      "reality": "The expand-and-contract pattern enables zero-downtime migrations by decoupling application deployments from schema changes. Online DDL and shadow table techniques allow old and new schemas to coexist.",
+      "source": "https://medium.com/@shbhggrwl/database-schema-evolution-techniques-and-tools-for-zero-downtime-migrations-e0c5bc3f9ef3"
+    },
+    {
+      "misconception": "Audit trails require keeping entire row copies with timestamps",
+      "reality": "SCD Type 2 with just start_date and end_date columns is more efficient. Bi-temporal modeling separates valid_time (when the fact was true) from transaction_time (when it was recorded), enabling retroactive corrections without corrupting history.",
+      "source": "https://softwarepatternslexicon.com/bitemporal-modeling/bi-temporal-data-warehouses/bi-temporal-slowly-changing-dimensions-scd-type-2/"
+    },
+    {
+      "misconception": "Cardinality doesn't affect query plans significantly",
+      "reality": "Cardinality estimation errors have outsized impact. Underestimating cardinality causes the optimizer to choose nested-loop joins instead of hash joins, resulting in 100x slowdowns. Overestimating causes the optimizer to scan entire tables unnecessarily.",
+      "source": "https://use-the-index-luke.com/sql/explain-plan/postgresql/getting-an-execution-plan"
+    },
+    {
+      "misconception": "Bridge tables add unnecessary complexity to simple many-to-many relationships",
+      "reality": "Bridge tables are the standard solution and actually simplify queries and prevent fanout errors. The minor complexity of an extra table is far outweighed by correct aggregations and maintainability.",
+      "source": "https://docs.cloud.google.com/looker/docs/reference/param-field-fanout-on"
+    },
+    {
+      "misconception": "Higher statistics_target in PostgreSQL always improves query planning",
+      "reality": "Higher statistics_target increases ANALYZE accuracy but slows ANALYZE itself. The tradeoff is worthwhile for frequently-queried tables with skewed distributions, but wasteful for simple tables with uniform data.",
+      "source": "https://pganalyze.com/blog/5mins-postgres-tuning-statistics-target-selectivity-spatial-indexes"
+    },
+    {
+      "misconception": "Star schema design is only for data warehouses, not operational databases",
+      "reality": "Star schema principles (fact tables with direct links to dimensions, avoiding many-to-many relationships) apply to any relational system needing accurate aggregations. The principle is generic: avoid fanout.",
+      "source": "https://community.sisense.com/kb/best_practies/many-to-many-relationships---knowing-and-avoiding-them/2242"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.influxdata.com/blog/red-flags-of-high-cardinality-in-databases/",
+      "title": "Red Flags of High Cardinality in Databases",
+      "recency": "2023, foundational"
+    },
+    {
+      "url": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/",
+      "title": "Design Tip #142: Building Bridges (Kimball Group)",
+      "recency": "2012, canonical bridge table reference"
+    },
+    {
+      "url": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/",
+      "title": "Surrogate Key vs Natural Key Differences and When to Use",
+      "recency": "2020, comprehensive comparison"
+    },
+    {
+      "url": "https://agiledata.org/essays/keys.html",
+      "title": "Choosing a Primary Key: Natural or Surrogate? (Agile Data)",
+      "recency": "2019, deep architectural analysis"
+    },
+    {
+      "url": "https://www.thoughtspot.com/data-trends/data-modeling/slowly-changing-dimensions-in-data-warehouse",
+      "title": "Slowly Changing Dimensions: 4 Types & How to Implement",
+      "recency": "2024, current best practices"
+    },
+    {
+      "url": "https://softwarepatternslexicon.com/bitemporal-modeling/bi-temporal-data-warehouses/bi-temporal-slowly-changing-dimensions-scd-type-2/",
+      "title": "Bi-Temporal SCD Type 2 for Data Warehouses",
+      "recency": "2024, advanced temporal modeling"
+    },
+    {
+      "url": "https://medium.com/@shbhggrwl/database-schema-evolution-techniques-and-tools-for-zero-downtime-migrations-e0c5bc3f9ef3",
+      "title": "Database Schema Evolution: Techniques for Zero-Downtime Migrations",
+      "recency": "2024, current migration strategies"
+    },
+    {
+      "url": "https://www.pingcap.com/blog/effective-online-ddl-database-schema-changes-zero-downtime/",
+      "title": "MySQL Online DDL: Zero-Downtime Schema Changes with TiDB",
+      "recency": "2023, practical MySQL techniques"
+    },
+    {
+      "url": "https://minervadb.xyz/fine-tuning-postgresql-understanding-selectivity-and-cardinality-estimations/",
+      "title": "PostgreSQL Query Performance: Selectivity and Cardinality",
+      "recency": "2024, technical PostgreSQL tuning"
+    },
+    {
+      "url": "https://dev.to/shrsv/postgresql-performance-essential-indexing-guidelines-1i90",
+      "title": "PostgreSQL Performance: Essential Indexing Guidelines",
+      "recency": "2024, hands-on index design"
+    },
+    {
+      "url": "https://docs.cloud.google.com/looker/docs/reference/param-field-fanout-on",
+      "title": "Fanout Parameter in Looker Analytics",
+      "recency": "2024, fanout detection in practice"
+    },
+    {
+      "url": "https://community.sisense.com/kb/best_practies/many-to-many-relationships---knowing-and-avoiding-them/2242",
+      "title": "Many-to-Many Relationships: Knowing and Avoiding Them",
+      "recency": "2020, analytics perspective on fanout"
+    },
+    {
+      "url": "https://use-the-index-luke.com/sql/explain-plan/postgresql/getting-an-execution-plan",
+      "title": "Use The Index, Luke! — EXPLAIN PLAN in PostgreSQL",
+      "recency": "2023, query plan reading fundamentals"
+    },
+    {
+      "url": "https://zhenzhongxu.com/the-four-innovation-phases-of-netflixs-trillions-scale-real-time-data-infrastructure-2370938d7f01",
+      "title": "Netflix's Trillions Scale Real-time Data Infrastructure",
+      "recency": "2024, Netflix engineering case study"
+    },
+    {
+      "url": "https://imply.io/case-study-netflix/",
+      "title": "Netflix & Apache Druid Case Study",
+      "recency": "2023, high-cardinality analytics at scale"
+    },
+    {
+      "url": "https://blog.quastor.org/p/architecture-stripes-document-database",
+      "title": "The Architecture of Stripe's Document Database (DocDB)",
+      "recency": "2023, Stripe payment schema design"
+    },
+    {
+      "url": "https://www.uber.com/blog/schemaless-sql-database/",
+      "title": "Evolving Schemaless into a Distributed SQL Database (Uber)",
+      "recency": "2016, Uber Schemaless design patterns"
+    },
+    {
+      "url": "https://rafaelrampineli.medium.com/denormalization-a-solution-for-performance-or-a-long-term-trap-6b9af5b5b831",
+      "title": "Denormalization: A Solution for Performance or a Long-Term Trap?",
+      "recency": "2023, nuanced denormalization guidance"
+    },
+    {
+      "url": "https://www.netdata.cloud/academy/cardinality-estimation-in-postgres/",
+      "title": "Cardinality Estimation in PostgreSQL 17",
+      "recency": "2025, latest PostgreSQL estimation techniques"
+    },
+    {
+      "url": "https://www.mafiree.com/blog/mysql-schema-migration-zero-downtime-case-study",
+      "title": "MySQL Schema Migration Without Downtime: A Real Fintech Case Study",
+      "recency": "2024, production migration experience"
+    },
+    {
+      "url": "https://medium.com/@kanhaaggarwal/zero-downtime-database-migrations-how-we-fixed-a-production-freeze-4bc512c52d78",
+      "title": "Zero-Downtime Database Migrations: How We Fixed a Production Freeze",
+      "recency": "2024, incident post-mortem"
+    },
+    {
+      "url": "https://www.datacamp.com/blog/many-to-many-relationship",
+      "title": "Many-to-Many Relationships: A Guide to Database Design",
+      "recency": "2024, educational reference"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-tuning-statistics-target-selectivity-spatial-indexes",
+      "title": "Tuning PostgreSQL Statistics Target & Understanding Selectivity",
+      "recency": "2024, PostgreSQL performance tuning"
+    },
+    {
+      "url": "https://kindatechnical.com/sql/surrogate-vs-natural-keys.html",
+      "title": "A Guide to Surrogate vs Natural Keys",
+      "recency": "2022, key design philosophy"
+    }
+  ]
+}

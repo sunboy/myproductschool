@@ -5,14 +5,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET() {
   if (IS_MOCK) {
-    return NextResponse.json({
-      plan: {
-        slug: 'optimize-under-pressure',
-        title: 'Optimize Under Pressure',
-        move_tag: 'optimize',
-        description: 'Real trade-offs under real constraints.',
-      },
-    })
+    // The 4 move-shell plans (frame-like-a-pm / the-list-move /
+    // optimize-under-pressure / win-the-room) were retired in Phase 5.
+    // Mock mode now returns null, consistent with the live "no enrollment"
+    // case. The dashboard's "next challenge" card uses preferred_move from
+    // profiles.interview_meta instead.
+    return NextResponse.json({ plan: null })
   }
 
   const supabase = await createClient()

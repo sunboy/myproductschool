@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "buffer",
+  "story_slug": "buffer",
+  "story_title": "Buffer",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/buffer/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/buffer/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three sequential page rectangles showing a product description, a pricing tier selector, and an email capture, with Hatch narrating from the upper right.",
+      "caption": "Three pages. No code. One question answered.",
+      "prompt": "Buffer | hero: Create a flat geometric HackProduct autopsy hero illustration for Buffer's 2010 landing page validation story. Canvas role: hero, aspect 2400x1350. On a warm cream #faf6f0 background, compose three sequential page-shaped rectangles arranged left to right with a thin forest-green #4a7c59 connector arrow between each. The left rectangle is a simple product description page with two small charcoal #1e211c text-block shapes and a forest-green button labelled PLANS AND PRICING. The middle rectangle shows three pricing rows: $0, $5, and $20, rendered as soft amber #c9ad68 chips. The right rectangle is an email-capture field with a deep forest #244232 submit button. Above the three pages draw a thin mist #dfe6dc banner labelled NO CODE YET in charcoal. Place Hatch from public/images/hatch/hatch-official-mascot.png in the upper right as a small narrator pointing at the pricing page. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for a title overlay. No photorealism, no real screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/buffer/hero.png",
+      "generated_image_sha256": "a5ff123ddffda31ec49b785fab9e7e6aee1656da6459e779550fe40e3cd63694",
+      "final_image_sha256": "8727d9e88ad55e7d6e18f2013b262a1464401c301599a236d48c4ff604bf0ff1",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/buffer/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a small home desk lit by a warm lamp, with a laptop showing a code editor beside a clean page wireframe and a notepad with three rows of notes.",
+      "caption": "Hatch standing beside a small home desk lit by a warm lamp, with a laptop showing a code editor beside a clean page wireframe and a notepad with three rows of notes.",
+      "prompt": "Buffer | hatch-narrator: Flat geometric scene illustration for Joel Gascoigne working on a laptop in Birmingham, UK, late 2010, aspect 1600x1600. On warm cream #faf6f0, show a small home desk with a forest-green #4a7c59 lamp casting soft amber #c9ad68 light on an open laptop. The laptop screen shows two small window outlines side by side: one a half-finished code editor (deep forest #244232 lines) and one a clean white page wireframe. Beside the laptop, a small open notepad shows three rows: TWEET QUEUE, EMAILS, USERS written in charcoal #1e211c. Use Hatch from public/images/hatch/hatch-official-mascot.png as the main narrator, standing beside the desk in a quiet observational pose, one mitten hand resting on the desk edge. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures, no photorealism, no real logos, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/buffer/hatch-narrator.png",
+      "generated_image_sha256": "1c6b64152154e6623248096edb0f8de72280ced42e04b7c6a3a49e291cf1e7b3",
+      "final_image_sha256": "c149da56ab42b72dff7873c84c7b03471aa69dd66787373660bba51e785ee5d8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/buffer/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage pipeline from tweet to pricing selector to email capture, with Hatch pointing at the pricing stage and a personal-conversation loop below it.",
+      "caption": "A four-stage pipeline from tweet to pricing selector to email capture, with Hatch pointing at the pricing stage and a personal-conversation loop below it.",
+      "prompt": "Buffer | failure-mechanism: Flat geometric mechanism diagram for Buffer's three-stage landing page test, aspect 1800x1200. On cream #faf6f0, draw four horizontal stages connected by thin charcoal #1e211c arrows. Stage one: a deep forest #244232 rectangle labelled TWEET (a small bird-shape outline above it). Stage two: a forest-green #4a7c59 page rectangle labelled PAGE 1: DESCRIBE with a green button at the bottom. Stage three: a soft amber #c9ad68 pricing card with three rows labelled FREE, $5, $20. Stage four: a mist #dfe6dc email-field rectangle with a submit button. Below stage three, draw a small branching arrow with a forest-green dot labelled EMAIL JOEL and a loop back to the stage, showing the personal conversation step. Place Hatch from public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, one mitten hand pointing at the pricing stage to mark the constraint swap. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/buffer/failure-mechanism.png",
+      "generated_image_sha256": "dee099be5d156fa54581682adb881218940f1a3aba804c94f236ee54ae6a01fd",
+      "final_image_sha256": "ce4cb370f80e8157242e382f696217bb285c079dbcb46a72a07a6f797fe10cfc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/buffer/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three stacked bars labelled 120 signups, 50 active at launch, and first $5 payment, with Hatch pointing at the payment bar and a timeline below.",
+      "caption": "Three stacked bars labelled 120 signups, 50 active at launch, and first $5 payment, with Hatch pointing at the payment bar and a timeline below.",
+      "prompt": "Buffer | evidence-card: Flat geometric evidence illustration for Buffer's validation metrics, aspect 1600x1000. On warm cream #faf6f0, draw three stacked bars from left to right. The first bar is mist #dfe6dc and tall, labelled 120 SIGNUPS in charcoal #1e211c. The second bar is forest-green #4a7c59, roughly half the height, labelled 50 ACTIVE AT LAUNCH. The third bar is deep forest #244232 and short but distinct, labelled FIRST $5 PAYMENT with a small soft amber #c9ad68 star above it and the annotation 4 DAYS. Below the bars, draw a thin horizontal timeline in charcoal from OCT 2010 to DEC 2010 with three dots marking the validation period, launch, and first payment. Place Hatch from public/images/hatch/hatch-official-mascot.png between the second and third bars in a pointing pose, one mitten hand indicating the third bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/buffer/evidence-card.png",
+      "generated_image_sha256": "7d7d499f3bcac9c224dec2ec65098c658f76cdd6707ae2301fdfec87c2fa5263",
+      "final_image_sha256": "dfc5a7d374f669a1ea68f1e5bf57f77389293e24e3f49ff0a8ff504b4abdb07e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/buffer/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A split illustration with a code editor and a red X on the left, and a landing page with a checkmark on the right, with Hatch coaching from the lower left.",
+      "caption": "A split illustration with a code editor and a red X on the left, and a landing page with a checkmark on the right, with Hatch coaching from the lower left.",
+      "prompt": "Buffer | lesson-frame: Flat geometric lesson illustration for the takeaway that a landing page is a product and a conversation replaces a codebase, aspect 1800x1200. On cream #faf6f0, draw a large central split: the left half shows a deep forest #244232 code-editor shape with rows of abstract lines, a red X above it in amber #705c30. The right half shows a simple forest-green #4a7c59 page rectangle with a pricing chip and email field, a soft amber #c9ad68 checkmark above it. Between the two halves, draw a thin mist #dfe6dc vertical divider with the word BEFORE on the left in charcoal and INSTEAD on the right. Place Hatch from public/images/hatch/hatch-official-mascot.png in a calm coaching pose at the lower left, facing the centre split, one mitten hand raised. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/buffer/lesson-frame.png",
+      "generated_image_sha256": "f3feafea26c5204eab8d7872e52c6996d95de979ecf40cf76589c5c34bba0605",
+      "final_image_sha256": "ccd695f793a5b91232250afd6c469c0494637b0941eb7637b62afd9b68a90b6c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/buffer/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A simple page rectangle with a pricing chip and submit button, labelled NO CODE, with a tiny Hatch mark in the bottom-left corner.",
+      "caption": "A simple page rectangle with a pricing chip and submit button, labelled NO CODE, with a tiny Hatch mark in the bottom-left corner.",
+      "prompt": "Flat geometric thumbnail for Buffer's landing page validation story, aspect 1200x900. On warm cream #faf6f0, place one bold focal object in the centre: a simple forest-green #4a7c59 page rectangle with three visible rows inside: a short text block, a soft amber #c9ad68 pricing chip row, and a deep forest #244232 submit button. Above the page, a thin charcoal #1e211c label reads NO CODE. Place Hatch from public/images/hatch/hatch-official-mascot.png as a tiny mark in the bottom-left corner, no larger than 10 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the design readable at small size. No dense text, no screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/buffer/hero.png",
+      "generated_image_sha256": "a5ff123ddffda31ec49b785fab9e7e6aee1656da6459e779550fe40e3cd63694",
+      "final_image_sha256": "5395cba7b6f09e546191466306c683d7e0ed19065990a980fe29b7cf22f61fdb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/buffer/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three sequential page shapes connected by arrows, labelled VALIDATION WITHOUT CODE, with small Hatch narrator in the upper right pointing at the centre pricing card.",
+      "caption": "Three sequential page shapes connected by arrows, labelled VALIDATION WITHOUT CODE, with small Hatch narrator in the upper right pointing at the centre pricing card.",
+      "prompt": "Flat geometric social cover image for Buffer's landing page validation story, aspect 2400x1260. On warm cream #faf6f0, place a central composition occupying the middle 70 percent of the canvas: three sequential page shapes connected by forest-green #4a7c59 arrows, progressing from a product description page on the left, to a soft amber #c9ad68 pricing card in the centre, to a mist #dfe6dc email-capture field on the right. Above the sequence, a single thin charcoal #1e211c label reads VALIDATION WITHOUT CODE. Place Hatch from public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand at the pricing card. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no dense text, no recreated screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/buffer/hero.png",
+      "generated_image_sha256": "a5ff123ddffda31ec49b785fab9e7e6aee1656da6459e779550fe40e3cd63694",
+      "final_image_sha256": "ff8e7cf7c69778b2bde5569506305d3df6fd795494bd2bf3c8bfd2507b836b85",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/buffer/v1"
+}

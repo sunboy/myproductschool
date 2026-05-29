@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "linkedin",
+  "story_slug": "linkedin-pymk",
+  "story_title": "LinkedIn PYMK",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/linkedin-pymk/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/linkedin-pymk/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream editorial illustration showing email envelope shapes on the left connected by an amber arrow to a closed triangle network graph on the right, with Hatch pointing at the triangle.",
+      "caption": "The social graph was already there. It lived in everyone's inbox.",
+      "prompt": "LinkedIn PYMK | hero: Create a flat geometric HackProduct autopsy hero illustration for LinkedIn's 2006 People You May Know feature. Canvas role: hero, aspect 2400x1350. Compose a wide cream #faf6f0 surface. On the left, draw a schematic inbox column in mist #dfe6dc with three simple horizontal envelope shapes in charcoal #1e211c, representing email contacts. On the right, draw a forest-green #4a7c59 network graph with four circular node shapes connected by thin deep forest #244232 lines, forming one closed triangle. Between the inbox and the graph, draw a single soft amber #c9ad68 arrow bridging the two, labelled with small charcoal text reading PYMK. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right, pointing one mitten hand at the triangle in the network graph. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no recreated LinkedIn UI screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/linkedin-pymk/hero.png",
+      "generated_image_sha256": "5383030e080a4777243ad097c7e9b5584457be8fecf02aab4bd212e7fe844250",
+      "final_image_sha256": "2fe390d37361aeddbc529e774ca0fbf74f091c73bd4d422c4ea31826c953b49a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linkedin-pymk/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linkedin-pymk/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/linkedin-pymk/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch stands beside a warm-lit desk holding a laptop showing an inbox panel and a network graph panel, with node sketches scattered across the desk surface.",
+      "caption": "Hatch stands beside a warm-lit desk holding a laptop showing an inbox panel and a network graph panel, with node sketches scattered across the desk surface.",
+      "prompt": "LinkedIn PYMK | hatch-narrator: Flat geometric scene illustration for LinkedIn's 2006 office, aspect 1600x1600. Show a warm cream #faf6f0 open-plan workspace with a forest-green #4a7c59 desk holding a laptop. The laptop screen shows two abstract panel shapes: one in mist #dfe6dc (the inbox) and one in deep forest #244232 (the graph), connected by a soft amber #c9ad68 line. Scatter three small charcoal #1e211c node-and-edge shapes across the desktop as sketches. Add a low amber #705c30 bookshelf in the background holding two thin volumes. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator standing beside the desk, one mitten hand raised toward the laptop screen in a pointing gesture. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no photorealism, no real LinkedIn screenshots, no logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/linkedin-pymk/hatch-narrator.png",
+      "generated_image_sha256": "fa3b9b04ab0a555c2e32ba990e6c913aa2f1d657f620aa652a35da8fd63a2c30",
+      "final_image_sha256": "88e7d0ab225f1e70712d38f0e9e6550a191ea42b293dc5e161e80f3c90f0b25b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linkedin-pymk/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linkedin-pymk/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/linkedin-pymk/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three-stage diagram showing nodes A and C unconnected on the left, a pulsing amber arc closing the triangle in the middle, and a single-click connect button on the right, with Hatch pointing at the triangle stage.",
+      "caption": "Three-stage diagram showing nodes A and C unconnected on the left, a pulsing amber arc closing the triangle in the middle, and a single-click connect button on the right, with Hatch pointing at the triangle stage.",
+      "prompt": "LinkedIn PYMK | failure-mechanism: Flat geometric mechanism diagram illustrating LinkedIn's PYMK triangle-closing algorithm, aspect 1800x1200. On cream #faf6f0, lay out three stages from left to right. Stage one: two separate forest-green #4a7c59 circle nodes labelled A and C, with no edge between them, connected each by separate edges to a third node B in deep forest #244232. Stage two: a soft amber #c9ad68 pulsing arc appearing between A and C, labelled TRIANGLE CLOSE. Stage three: a single-click UI stub in mist #dfe6dc with a small charcoal connect button, labelled ONE CLICK. Connect the three stages with thin charcoal #1e211c arrow lines. Add a small charcoal label beneath stage one reading SHARED EMPLOYER SIGNALS and a small label beneath stage two reading LINK PREDICTION. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, pointing at stage two's pulsing arc. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI recreations, no dense text beyond the short labels. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/linkedin-pymk/failure-mechanism.png",
+      "generated_image_sha256": "fb26f68c07b122033036018ebd002fa15cc2ecfecb18415847ec7e3882761f4a",
+      "final_image_sha256": "41ad2a51657e203e82a0469557891f4a7704ea71ebad3b48708c1c5303330ff1",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linkedin-pymk/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linkedin-pymk/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/linkedin-pymk/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two bar shapes of unequal height labelled Other Prompts and PYMK, with Hatch pointing at the taller bar and a wide band below labelled 50% of LinkedIn's Professional Graph.",
+      "caption": "Two bar shapes of unequal height labelled Other Prompts and PYMK, with Hatch pointing at the taller bar and a wide band below labelled 50% of LinkedIn's Professional Graph.",
+      "prompt": "LinkedIn PYMK | evidence-card: Flat geometric evidence card illustrating PYMK's click-through rate advantage and graph-building scale, aspect 1600x1000. On cream #faf6f0, draw two adjacent bar shapes. Left bar: a shorter mist #dfe6dc column labelled OTHER PROMPTS. Right bar: a taller forest-green #4a7c59 column labelled PYMK, with a small soft amber #c9ad68 tag at the top reading 30% HIGHER. Below the bars, draw a wide deep forest #244232 band labelled 50% OF LINKEDIN'S PROFESSIONAL GRAPH, with charcoal #1e211c tick marks showing accumulation over time. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing between the two bar shapes in a pointing pose, one mitten hand raised toward the taller PYMK bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no dense text beyond short labels. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/linkedin-pymk/evidence-card.png",
+      "generated_image_sha256": "4ecc522c61db6456bcbe965af1c0dc040de535a1642601506f0f67d06f512205",
+      "final_image_sha256": "be341e3b43c3f0ac060e407b9ed923569f0aec54cbfcaecf593da7ce4b1719ff",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linkedin-pymk/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linkedin-pymk/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/linkedin-pymk/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A large envelope on the left with an amber ribbon flowing into a closed triangle node graph on the right, with Hatch coaching calmly from beside the envelope.",
+      "caption": "A large envelope on the left with an amber ribbon flowing into a closed triangle node graph on the right, with Hatch coaching calmly from beside the envelope.",
+      "prompt": "LinkedIn PYMK | lesson-frame: Flat geometric lesson illustration for the takeaway that implicit social graphs in email metadata are a platform's most valuable unseized asset, aspect 1800x1200. Background is warm cream #faf6f0. Draw a large envelope shape in mist #dfe6dc on the left, with three small charcoal #1e211c horizontal lines inside representing contacts. Draw a soft amber #c9ad68 ribbon flowing rightward from the envelope into a forest-green #4a7c59 triangle formed by three connected node circles. Above the triangle, draw a thin deep forest #244232 label reading THE GRAPH WAS ALWAYS THERE. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left of the envelope, one mitten hand resting on its edge, facing the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no recreated screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/linkedin-pymk/lesson-frame.png",
+      "generated_image_sha256": "6b3c468c3a48378e800deace0738ef3a2aa41acdf2f65bb16f524a06d368b7e9",
+      "final_image_sha256": "29d5735c8eb40cd085a4ec3121a40fd84b97806988631aebe8f2e9d15a82104b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linkedin-pymk/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linkedin-pymk/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/linkedin-pymk/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A bold closed triangle of three green nodes with an amber-glowing newly-closed edge, readable at small sizes, with a tiny Hatch mark in the corner.",
+      "caption": "A bold closed triangle of three green nodes with an amber-glowing newly-closed edge, readable at small sizes, with a tiny Hatch mark in the corner.",
+      "prompt": "Flat geometric thumbnail composition for LinkedIn's PYMK feature, aspect 1200x900. On warm cream #faf6f0, render one bold focal shape: a closed triangle formed by three forest-green #4a7c59 circle nodes connected by deep forest #244232 edges, with a soft amber #c9ad68 glow along one newly-closed edge to mark the moment of connection. Keep the triangle centred and large enough to be legible at small sizes. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the bottom-left corner, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/linkedin-pymk/hero.png",
+      "generated_image_sha256": "5383030e080a4777243ad097c7e9b5584457be8fecf02aab4bd212e7fe844250",
+      "final_image_sha256": "f15fa370c89b057f95f4eb6758ac9b1943c8b122e581f992b71069cb19d4d91b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linkedin-pymk/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linkedin-pymk/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/linkedin-pymk/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover showing an inbox column on the left connected by an amber bridge arrow to a closed triangle network on the right, with Hatch pointing at the triangle and a short label reading THE IMPLICIT GRAPH.",
+      "caption": "A wide cover showing an inbox column on the left connected by an amber bridge arrow to a closed triangle network on the right, with Hatch pointing at the triangle and a short label reading THE IMPLICIT GRAPH.",
+      "prompt": "Flat geometric social cover image for LinkedIn's PYMK feature, aspect 2400x1260. On warm cream #faf6f0, centre a composition occupying the middle 70 percent of the canvas. On the left, a mist #dfe6dc inbox column with three envelope shapes. In the centre, a soft amber #c9ad68 bridge arrow. On the right, a closed triangle of three forest-green #4a7c59 nodes connected by deep forest #244232 edges. Above the bridge arrow, place a small charcoal #1e211c label reading THE IMPLICIT GRAPH. Keep edge-critical details away from canvas borders. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, one mitten hand pointing at the triangle. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no human faces, no dense text beyond the short label. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/linkedin-pymk/hero.png",
+      "generated_image_sha256": "5383030e080a4777243ad097c7e9b5584457be8fecf02aab4bd212e7fe844250",
+      "final_image_sha256": "4c61110e314eb8e0911d3db648b88d1b0db57cffaf2390e136c0e8006aac37af",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linkedin-pymk/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linkedin-pymk/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/linkedin-pymk/v1"
+}

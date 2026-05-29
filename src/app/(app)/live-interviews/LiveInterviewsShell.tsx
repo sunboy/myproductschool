@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import type { LoopDiscipline } from '@/lib/interview-loops/types'
-import StartInterviewButton from './StartInterviewButton'
 import SingleRoundPicker from './SingleRoundPicker'
+import { MotionList, MotionListItem, useMotionPreference } from '@/components/motion'
 
 // ── Design tokens (exact from styles.css) ─────────────────────────────────────
 const T = {
@@ -34,18 +34,6 @@ const T = {
   success:               '#2f7a4a',
   btnDarkBg:             '#1f2421',
   btnDarkText:           '#f0ede4',
-}
-
-const DIFF_LABEL: Record<string, string> = {
-  standard: 'Standard',
-  advanced: 'Advanced',
-  staff_plus: 'Staff+',
-}
-
-const DIFF_DOT: Record<string, string> = {
-  standard: T.primary,
-  advanced: T.amber,
-  staff_plus: T.danger,
 }
 
 // ── Chip (matches .chip from styles.css) ──────────────────────────────────────
@@ -162,6 +150,63 @@ function LoopStatPill({ label, count, dotColor }: { label: string; count: number
   )
 }
 
+function LoopSummaryStrip({ summary }: { summary: LoopSummary }) {
+  const total = summary.inProgress + summary.configured + summary.completed
+
+  if (summary.loading) {
+    return (
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        gap: 8,
+        marginTop: 6,
+        paddingTop: 12,
+        borderTop: '1px solid rgba(255,255,255,0.10)',
+      }}>
+        {[0, 1, 2].map((item) => (
+          <span
+            key={item}
+            style={{
+              width: item === 0 ? 96 : 82,
+              height: 13,
+              borderRadius: 999,
+              background: 'rgba(255,255,255,0.12)',
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  if (total === 0) {
+    return (
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        gap: 8,
+        marginTop: 6,
+        paddingTop: 12,
+        borderTop: '1px solid rgba(255,255,255,0.10)',
+        fontSize: 12,
+        color: 'rgba(243,237,224,0.78)',
+      }}>
+        No loops yet. Build one when you want a full panel.
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      position: 'relative', display: 'flex', gap: 14, marginTop: 6,
+      paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.10)',
+    }}>
+      <LoopStatPill label="In progress" count={summary.inProgress} dotColor="#c9e86e" />
+      <LoopStatPill label="Configured" count={summary.configured} dotColor="#7ee099" />
+      <LoopStatPill label="Completed" count={summary.completed} dotColor="rgba(255,255,255,0.4)" />
+    </div>
+  )
+}
+
 // ── Loop status badge ──────────────────────────────────────────────────────────
 function LoopStatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; bg: string; fg: string; dot: string; pulse?: boolean }> = {
@@ -262,7 +307,7 @@ function RoundRow({ round, index, isCurrent }: { round: Round; index: number; is
             Review →
           </button>
         )}
-        {round.status === 'locked' && <span style={{ fontSize: 12, color: T.onSurfaceMuted }}>—</span>}
+        {round.status === 'locked' && <span style={{ fontSize: 12, color: T.onSurfaceMuted }}>-</span>}
       </div>
     </div>
   )
@@ -286,6 +331,13 @@ interface Loop {
   roundOrder?: LoopDiscipline[]
 }
 
+interface LoopSummary {
+  loading: boolean
+  inProgress: number
+  configured: number
+  completed: number
+}
+
 // ── API → UI mapping helpers ──────────────────────────────────────────────────
 const ROUND_MINS: Record<LoopDiscipline, number> = {
   product_sense: 35, system_design: 40, data_modeling: 30, coding: 35,
@@ -299,7 +351,7 @@ const DISCIPLINE_LABELS: Record<LoopDiscipline, string> = {
 }
 
 const COMPANY_ICONS: Record<string, string> = {
-  Airbnb: 'home', Anthropic: 'psychology', Figma: 'design_services',
+  Airbnb: 'home', Netflix: 'movie', Figma: 'design_services',
   Google: 'search', Meta: 'groups', Notion: 'description',
   Stripe: 'credit_card', Uber: 'local_taxi',
 }
@@ -397,6 +449,21 @@ function mapApiLoop(l: ApiLoop): Loop {
       }
     }),
   }
+}
+
+function countLoopSummary(loops: Loop[]): Omit<LoopSummary, 'loading'> {
+  return {
+    inProgress: loops.filter((loop) => loop.status === 'in_progress').length,
+    configured: loops.filter((loop) => loop.status === 'configured').length,
+    completed: loops.filter((loop) => loop.status === 'completed').length,
+  }
+}
+
+async function fetchInterviewLoops(): Promise<Loop[]> {
+  const res = await fetch('/api/interview-loops')
+  if (!res.ok) throw new Error('Failed to load interview loops')
+  const { loops: raw } = await res.json()
+  return Array.isArray(raw) ? raw.map(mapApiLoop) : []
 }
 
 // ── Loop roster row ────────────────────────────────────────────────────────────
@@ -577,7 +644,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
       }}>
         <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.onSurfaceMuted }}>tune</span>
         <span style={{ fontSize: 12, color: T.onSurfaceVariant }}>
-          Persona: <b>{loop.company}</b> · Difficulty <b>Staff+</b> · Voice mode on · Auto-save every round
+          Persona: <b>{loop.company}</b> · Difficulty <b>Staff+</b> · Chat mode · Auto-save every round
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
           {loop.status === 'configured' && (
@@ -613,13 +680,19 @@ const ROUND_OPTIONS = [
 ]
 
 const COMPANIES = [
-  { name: 'Airbnb', icon: 'home' }, { name: 'Anthropic', icon: 'psychology' },
+  { name: 'Airbnb', icon: 'home' }, { name: 'Netflix', icon: 'movie' },
   { name: 'Figma', icon: 'design_services' }, { name: 'Google', icon: 'search' },
   { name: 'Meta', icon: 'groups' }, { name: 'Notion', icon: 'description' },
   { name: 'Stripe', icon: 'credit_card' }, { name: 'Uber', icon: 'local_taxi' },
 ]
 
-const DIFF_LABELS: Record<string, string> = { standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+' }
+import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
+
+const DIFF_LABELS: Record<string, string> = {
+  easy: DIFFICULTY_LABELS.easy,
+  medium: DIFFICULTY_LABELS.medium,
+  hard: DIFFICULTY_LABELS.hard,
+}
 
 const UI_TO_DISCIPLINE: Record<string, LoopDiscipline> = {
   'product-sense': 'product_sense',
@@ -636,10 +709,12 @@ const DISCIPLINE_TO_UI: Record<LoopDiscipline, string> = {
   coding:        'coding',
 }
 
-// Reverse-map a target_role string (e.g. "Advanced") to the difficulty key
-const DIFF_LABEL_TO_KEY: Record<string, string> = Object.fromEntries(
-  Object.entries({ standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+' }).map(([k, v]) => [v, k])
-)
+// Reverse-map a target_role label (e.g. "Hard") to the canonical difficulty key.
+// Uses coerceDifficulty so any legacy label string also resolves correctly.
+function diffLabelToKey(label: string | undefined): string {
+  if (!label) return 'hard'
+  return coerceDifficulty(label) ?? coerceDifficulty(label.toLowerCase()) ?? 'hard'
+}
 
 interface LoopBuilderProps {
   editLoopId?: string
@@ -659,8 +734,8 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
     return ['product-sense', 'system-design']
   })
   const [difficulty, setDifficulty] = useState(() => {
-    if (initialDifficulty) return DIFF_LABEL_TO_KEY[initialDifficulty] ?? initialDifficulty
-    return 'advanced'
+    if (initialDifficulty) return diffLabelToKey(initialDifficulty)
+    return 'hard'
   })
   const [voiceMode, setVoiceMode] = useState(true)
   const [name, setName] = useState('')
@@ -714,7 +789,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
         <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 6 }}>Loop name</label>
         <input
           value={name} onChange={(e) => setName(e.target.value)}
-          placeholder={`${selectedCo} — ${DIFF_LABELS[difficulty]} loop`}
+          placeholder={`${selectedCo} - ${DIFF_LABELS[difficulty]} loop`}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 10,
             border: `1px solid ${T.outlineVariant}`, background: T.surfaceContainerLow,
@@ -746,7 +821,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
       {/* Rounds */}
       <div>
         <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>
-          Rounds <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>— pick 2–5</span>
+          Rounds <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>- pick 2–5</span>
         </label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {ROUND_OPTIONS.map((r) => {
@@ -839,65 +914,30 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
   )
 }
 
-// ── Mock loop data ─────────────────────────────────────────────────────────────
-const MOCK_LOOPS: Loop[] = [
-  {
-    id: 'lp1', loopDbId: 'lp1', name: 'Stripe — Senior PM loop', company: 'Stripe', icon: 'credit_card',
-    status: 'in_progress', progressPct: 33,
-    lastActive: 'Resumed 2h ago', totalMins: 120,
-    rounds: [
-      { name: 'Product sense',  mins: 35, status: 'passed',      grade: 'B+' },
-      { name: 'System design',  mins: 40, status: 'in_progress', elapsed: 14 },
-      { name: 'Data modeling',  mins: 30, status: 'locked' },
-      { name: 'Coding',         mins: 35, status: 'locked' },
-    ],
-  },
-  {
-    id: 'lp2', loopDbId: 'lp2', name: 'Anthropic — Staff PM loop', company: 'Anthropic', icon: 'psychology',
-    status: 'configured',
-    lastActive: 'Configured Apr 22', totalMins: 140,
-    rounds: [
-      { name: 'Product sense', mins: 35, status: 'ready' },
-      { name: 'System design', mins: 40, status: 'ready' },
-      { name: 'Data modeling', mins: 30, status: 'ready' },
-      { name: 'Coding',        mins: 35, status: 'ready' },
-    ],
-  },
-  {
-    id: 'lp3', loopDbId: 'lp3', name: 'Meta — IC6 PM loop', company: 'Meta', icon: 'groups',
-    status: 'completed', grade: 'B+', overallScore: 84,
-    lastActive: 'Completed Apr 16', totalMins: 110,
-    rounds: [
-      { name: 'Product sense', mins: 35, status: 'passed', grade: 'B+' },
-      { name: 'System design', mins: 40, status: 'passed', grade: 'A-' },
-      { name: 'Data modeling', mins: 30, status: 'passed', grade: 'B' },
-      { name: 'Coding',        mins: 35, status: 'passed', grade: 'B+' },
-    ],
-  },
-]
-
 // ── Full loop panel ───────────────────────────────────────────────────────────
 function FullLoopPanel() {
-  const [loops, setLoops] = useState<Loop[]>(MOCK_LOOPS)
-  const [selectedLoop, setSelectedLoop] = useState<string>(MOCK_LOOPS[0]?.id ?? '')
+  const [loops, setLoops] = useState<Loop[]>([])
+  const [selectedLoop, setSelectedLoop] = useState<string>('')
   const [building, setBuilding] = useState(false)
   const [editingLoopId, setEditingLoopId] = useState<string | undefined>(undefined)
   const [loadingLoops, setLoadingLoops] = useState(true)
+  const [loopLoadError, setLoopLoadError] = useState<string | null>(null)
 
   const fetchLoops = useCallback(async () => {
     try {
-      const res = await fetch('/api/interview-loops')
-      if (!res.ok) return
-      const { loops: raw } = await res.json()
-      if (Array.isArray(raw)) {
-        const mapped = raw.map(mapApiLoop)
-        setLoops(mapped.length > 0 ? mapped : MOCK_LOOPS)
-        if (mapped.length > 0 && !mapped.find((l) => l.id === selectedLoop)) {
-          setSelectedLoop(mapped[0].id)
-        }
+      setLoopLoadError(null)
+      const mapped = await fetchInterviewLoops()
+      setLoops(mapped)
+      if (mapped.length > 0 && !mapped.find((l) => l.id === selectedLoop)) {
+        setSelectedLoop(mapped[0].id)
+      }
+      if (mapped.length === 0) {
+        setSelectedLoop('')
       }
     } catch {
-      // keep mock data on error
+      setLoops([])
+      setSelectedLoop('')
+      setLoopLoadError('Loops could not load. You can still build a new loop.')
     } finally {
       setLoadingLoops(false)
     }
@@ -946,6 +986,30 @@ function FullLoopPanel() {
             [0, 1, 2].map((i) => (
               <div key={i} style={{ height: 72, background: T.surfaceContainer, borderRadius: 12, marginBottom: 6, opacity: 0.6 }} />
             ))
+          ) : loopLoadError ? (
+            <div style={{
+              borderRadius: 14,
+              padding: 14,
+              background: T.surface,
+              border: `1px solid ${T.outlineFaint}`,
+              color: T.onSurfaceVariant,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}>
+              {loopLoadError}
+            </div>
+          ) : loops.length === 0 ? (
+            <div style={{
+              borderRadius: 14,
+              padding: 14,
+              background: T.surface,
+              border: `1px dashed ${T.outlineVariant}`,
+              color: T.onSurfaceVariant,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}>
+              No loops yet. Build one when you want a multi-round interview with shared memory.
+            </div>
           ) : (
             <>
               {inProgress.length > 0 && (
@@ -1002,8 +1066,69 @@ function FullLoopPanel() {
               onEdit={() => { setEditingLoopId(activeLoop.loopDbId); setBuilding(true) }}
               onDelete={() => handleDeleteLoop(activeLoop.loopDbId)}
             />
-          : null
+          : <EmptyLoopDetail onBuild={() => setBuilding(true)} />
       }
+    </div>
+  )
+}
+
+function EmptyLoopDetail({ onBuild }: { onBuild: () => void }) {
+  return (
+    <div style={{
+      minHeight: 540,
+      padding: 28,
+      background: T.surface,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <div style={{ maxWidth: 420, textAlign: 'center' }}>
+        <span
+          className="material-symbols-outlined"
+          style={{
+            width: 56,
+            height: 56,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 18,
+            background: T.primaryContainer,
+            color: T.primary,
+            fontSize: 28,
+            fontVariationSettings: "'FILL' 1",
+          }}
+        >
+          laps
+        </span>
+        <h3 style={{ margin: '16px 0 8px', color: T.onSurface, fontSize: 24, fontWeight: 850, lineHeight: 1.1 }}>
+          Build your first loop.
+        </h3>
+        <p style={{ margin: 0, color: T.onSurfaceVariant, fontSize: 14, lineHeight: 1.6 }}>
+          Choose the rounds you want, then Hatch will carry memory from one interview into the next.
+        </p>
+        <button
+          type="button"
+          onClick={onBuild}
+          data-hatch-sound="open"
+          style={{
+            marginTop: 18,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 18px',
+            borderRadius: 999,
+            border: 'none',
+            background: T.primary,
+            color: T.onPrimary,
+            fontSize: 13,
+            fontWeight: 800,
+            cursor: 'pointer',
+          }}
+        >
+          Build loop
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
+        </button>
+      </div>
     </div>
   )
 }
@@ -1013,11 +1138,15 @@ interface PastSession {
   id: string; company: string; role: string
   score: number | null; grade: string | null
   duration: string; date: string
+  status: 'completed' | 'abandoned' | string
+  scenarioTitle: string | null
+  disciplineLabel: string | null
 }
 
 function PastSessionsTable() {
   const [sessions, setSessions] = useState<PastSession[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/live-interview/history')
@@ -1028,27 +1157,27 @@ function PastSessionsTable() {
             id: string; companyName: string; roleId: string
             overallScore: number | null; grade?: string | null
             durationSeconds: number | null; endedAt: string | null
+            status?: string
+            scenarioTitle?: string | null
+            disciplineLabel?: string | null
           }) => {
             const mins = s.durationSeconds ? Math.floor(s.durationSeconds / 60) : 0
             const secs = s.durationSeconds ? s.durationSeconds % 60 : 0
             return {
               id: s.id, company: s.companyName, role: s.roleId,
               score: s.overallScore, grade: s.grade ?? null,
-              duration: s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '—',
+              duration: s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-',
               date: s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '',
+              status: s.status ?? 'completed',
+              scenarioTitle: s.scenarioTitle ?? null,
+              disciplineLabel: s.disciplineLabel ?? null,
             }
           }))
         }
       })
-      .catch(() => {})
+      .catch(() => setError('Could not load past sessions.'))
       .finally(() => setLoading(false))
   }, [])
-
-  const displaySessions: PastSession[] = sessions.length > 0 ? sessions : [
-    { id: 's1', company: 'Meta',   role: 'PM',       score: 82, grade: 'B+', duration: '28:14', date: 'Apr 18' },
-    { id: 's2', company: 'Google', role: 'PM',       score: 71, grade: 'B-', duration: '22:50', date: 'Apr 14' },
-    { id: 's3', company: 'Stripe', role: 'SWE',      score: null, grade: null, duration: '—',  date: 'Apr 10' },
-  ]
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1056,50 +1185,113 @@ function PastSessionsTable() {
     </div>
   )
 
-  return (
-    <div style={{ background: T.surface, border: `1px solid ${T.outlineFaint}`, borderRadius: 24, overflow: 'hidden' }}>
-      {displaySessions.map((s, i) => (
-        <div key={s.id} style={{
-          display: 'grid', gridTemplateColumns: '28px 1fr auto auto',
-          alignItems: 'center', gap: 16, padding: '14px 20px',
-          borderBottom: i < displaySessions.length - 1 ? `1px solid ${T.outlineFaint}` : 'none',
-        }}>
-          <span className="material-symbols-outlined" style={{
-            fontSize: 20, fontVariationSettings: "'FILL' 1",
-            color: s.score != null ? T.success : T.onSurfaceMuted,
-          }}>
-            {s.score != null ? 'check_circle' : 'cancel'}
-          </span>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 14, color: T.onSurface }}>
-              {s.company} <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>· {s.role}</span>
-            </div>
-            <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{s.duration} · {s.date}</div>
-          </div>
-          {s.score != null ? (
-            <span style={{ fontSize: 13, fontWeight: 800, color: T.primary, background: T.primaryFixed, padding: '4px 10px', borderRadius: 999 }}>
-              {s.score} · {s.grade}
-            </span>
-          ) : (
-            <span style={{ fontSize: 12, color: T.onSurfaceMuted, fontStyle: 'italic' }}>incomplete</span>
-          )}
-          {s.score != null ? (
-            <Link
-              href={`/live-interviews/${s.id}/debrief`}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '6px 12px', borderRadius: 999, textDecoration: 'none',
-                background: 'transparent', color: T.onSurface,
-                border: `1px solid ${T.outlineVariant}`,
-                fontSize: 12, fontWeight: 700,
-              }}
-            >
-              Debrief <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
-            </Link>
-          ) : <span />}
-        </div>
-      ))}
+  if (error) return (
+    <div style={{ borderRadius: 20, padding: 18, background: T.surface, border: `1px solid ${T.outlineFaint}`, color: T.onSurfaceVariant, fontSize: 13 }}>
+      {error}
     </div>
+  )
+
+  if (sessions.length === 0) return (
+    <div style={{
+      borderRadius: 24,
+      padding: 22,
+      background: T.surface,
+      border: `1px dashed ${T.outlineVariant}`,
+      display: 'grid',
+      gridTemplateColumns: '44px 1fr',
+      gap: 14,
+      alignItems: 'start',
+    }}>
+      <span className="material-symbols-outlined" style={{
+        width: 44, height: 44, borderRadius: 16,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        background: T.primaryContainer, color: T.primary, fontSize: 22, fontVariationSettings: "'FILL' 1",
+      }}>
+        history
+      </span>
+      <span>
+        <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: T.onSurface }}>No past sessions yet.</span>
+        <span style={{ display: 'block', marginTop: 4, fontSize: 13, lineHeight: 1.55, color: T.onSurfaceMuted }}>
+          Completed interviews will appear here with company, role, prompt, discipline, score, and debrief access.
+        </span>
+      </span>
+    </div>
+  )
+
+  return (
+    <MotionList layoutKey="past-live-interview-sessions" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {sessions.map((s) => {
+        const isScored = s.score != null
+        const statusLabel = s.status === 'abandoned' ? 'Incomplete' : isScored ? 'Debrief ready' : 'Completed'
+        return (
+          <MotionListItem key={s.id}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '36px minmax(0, 1fr)',
+              alignItems: 'start',
+              gap: 16,
+              padding: '14px 20px',
+              background: T.surface,
+              border: `1px solid ${T.outlineFaint}`,
+              borderRadius: 20,
+            }}>
+              <span className="material-symbols-outlined" style={{
+                width: 36,
+                height: 36,
+                borderRadius: 14,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: isScored ? T.primaryContainer : T.surfaceContainerLow,
+                fontSize: 20,
+                fontVariationSettings: "'FILL' 1",
+                color: isScored ? T.success : T.onSurfaceMuted,
+              }}>
+                {isScored ? 'check_circle' : s.status === 'abandoned' ? 'pause_circle' : 'task_alt'}
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+                  <div style={{ minWidth: 0, flex: '1 1 260px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: T.onSurface }}>
+                      {s.company} <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>· {s.role}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: T.onSurfaceMuted, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {s.scenarioTitle ?? 'Persona-led interview'}{s.disciplineLabel ? ` · ${s.disciplineLabel}` : ''}
+                    </div>
+                  </div>
+                  {isScored ? (
+                    <span style={{ fontSize: 13, fontWeight: 800, color: T.primary, background: T.primaryFixed, padding: '4px 10px', borderRadius: 999 }}>
+                      {s.score} · {s.grade}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: 12, color: T.onSurfaceMuted, fontStyle: 'italic' }}>{s.status === 'abandoned' ? 'stopped' : 'unscored'}</span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 10 }}>
+                  <div style={{ fontSize: 11.5, color: T.onSurfaceMuted }}>
+                    {s.duration} · {s.date || 'Date unavailable'} · {statusLabel}
+                  </div>
+                  {isScored ? (
+                    <Link
+                      href={`/live-interviews/${s.id}/debrief`}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        padding: '6px 12px', borderRadius: 999, textDecoration: 'none',
+                        background: 'transparent', color: T.onSurface,
+                        border: `1px solid ${T.outlineVariant}`,
+                        fontSize: 12, fontWeight: 700,
+                      }}
+                    >
+                      Debrief <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </MotionListItem>
+        )
+      })}
+    </MotionList>
   )
 }
 
@@ -1112,6 +1304,47 @@ export function LiveInterviewsShell({
   scenarios: ScenarioBrief[]
 }) {
   const [mode, setMode] = useState<'single' | 'loop'>('single')
+  const [loopSummary, setLoopSummary] = useState<LoopSummary>({
+    loading: true,
+    inProgress: 0,
+    configured: 0,
+    completed: 0,
+  })
+  const activePanelRef = useRef<HTMLDivElement | null>(null)
+  const { prefersReducedMotion } = useMotionPreference()
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetchInterviewLoops()
+      .then((loops) => {
+        if (cancelled) return
+        setLoopSummary({ loading: false, ...countLoopSummary(loops) })
+      })
+      .catch(() => {
+        if (cancelled) return
+        setLoopSummary({ loading: false, inProgress: 0, configured: 0, completed: 0 })
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const selectMode = useCallback((nextMode: 'single' | 'loop') => {
+    setMode(nextMode)
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const panel = activePanelRef.current
+        if (!panel) return
+        panel.scrollIntoView({
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+          block: 'start',
+        })
+        panel.focus({ preventScroll: true })
+      })
+    })
+  }, [prefersReducedMotion])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -1122,7 +1355,7 @@ export function LiveInterviewsShell({
         {/* Single Round */}
         <ModeCard
           active={mode === 'single'}
-          onClick={() => setMode('single')}
+          onClick={() => selectMode('single')}
           activeStyle={{
             background: T.surface,
             border: `2px solid ${T.primary}`,
@@ -1166,7 +1399,7 @@ export function LiveInterviewsShell({
         {/* Full Loop */}
         <ModeCard
           active={mode === 'loop'}
-          onClick={() => setMode('loop')}
+          onClick={() => selectMode('loop')}
           activeStyle={{
             background: 'linear-gradient(135deg, #1e3528 0%, #14241c 100%)',
             color: '#f3ede0',
@@ -1213,14 +1446,7 @@ export function LiveInterviewsShell({
           <div style={{ position: 'relative', fontSize: 13.5, color: 'rgba(243,237,224,0.78)', lineHeight: 1.5 }}>
             Sequential rounds with shared memory. Pause, resume, and let Hatch synthesize the loop-level signal.
           </div>
-          <div style={{
-            position: 'relative', display: 'flex', gap: 14, marginTop: 6,
-            paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.10)',
-          }}>
-            <LoopStatPill label="In progress" count={1} dotColor="#c9e86e" />
-            <LoopStatPill label="Configured"  count={1} dotColor="#7ee099" />
-            <LoopStatPill label="Completed"   count={1} dotColor="rgba(255,255,255,0.4)" />
-          </div>
+          <LoopSummaryStrip summary={loopSummary} />
         </ModeCard>
       </div>
 
@@ -1230,7 +1456,7 @@ export function LiveInterviewsShell({
         gap: 10,
       }}>
         {[
-          { icon: 'graphic_eq', label: 'Voice pressure', sub: 'Natural probing, no scheduling' },
+          { icon: 'forum', label: 'Live pressure', sub: 'Fast probing, no scheduling' },
           { icon: 'draw', label: 'Artifacts watched', sub: 'Canvas, schema, code, SQL' },
           { icon: 'memory', label: 'Round memory', sub: 'Signals carry into the loop' },
           { icon: 'summarize', label: 'Debrief engine', sub: 'Scores, transcript, next drills' },
@@ -1267,7 +1493,14 @@ export function LiveInterviewsShell({
       </div>
 
       {/* ── Body ── */}
-      {mode === 'loop' ? <FullLoopPanel /> : <SingleRoundPicker personas={personas} scenarios={scenarios} />}
+      <div
+        ref={activePanelRef}
+        tabIndex={-1}
+        aria-label={mode === 'loop' ? 'Full loop setup panel' : 'Single round setup panel'}
+        style={{ scrollMarginTop: 96, outline: 'none' }}
+      >
+        {mode === 'loop' ? <FullLoopPanel /> : <SingleRoundPicker personas={personas} scenarios={scenarios} />}
+      </div>
 
       {/* ── Past sessions ── */}
       <div>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { WaitlistForm } from '@/components/marketing/WaitlistForm'
+import { buildMetadata } from '@/lib/seo/site'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 async function getWaitlistCount(): Promise<number> {
@@ -13,9 +14,10 @@ async function getWaitlistCount(): Promise<number> {
   }
 }
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Join the Waitlist | Product Sense Practice for Engineers, PMs & Students',
   description: 'HackProduct is the product sense training platform for engineers, PMs, and students. Practice real product decisions from Google, Uber, Stripe. Get AI-coached feedback. Ace PM interviews and ship better products on the job. Join 1,000+ tech professionals on the waitlist.',
+  path: '/waitlist',
   keywords: [
     'product sense practice', 'PM interview prep', 'product manager interview questions',
     'product thinking for engineers', 'product sense training', 'product management course',
@@ -29,20 +31,7 @@ export const metadata: Metadata = {
     'product sense exercises', 'product intuition training',
     'AI product coach', 'product management AI tutor',
   ],
-  openGraph: {
-    title: 'HackProduct | Master Product Sense for Tech Careers',
-    description: 'Practice real product decisions. Get AI-coached feedback. Ace PM interviews at Google, Meta, Amazon. Join 1,000+ engineers and PMs on the waitlist.',
-    url: 'https://hackproduct.dev/waitlist',
-    type: 'website',
-  },
-  twitter: {
-    title: 'HackProduct | Product Sense Practice for Engineers & PMs',
-    description: 'The LeetCode for product thinking. Practice real product decisions, get AI feedback, and ace PM interviews. Join the waitlist.',
-  },
-  alternates: {
-    canonical: 'https://hackproduct.dev/waitlist',
-  },
-}
+})
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -71,7 +60,7 @@ const jsonLd = {
       '@type': 'Organization',
       name: 'HackProduct',
       url: 'https://hackproduct.dev',
-      logo: 'https://hackproduct.dev/images/hackylogo.png',
+      logo: 'https://hackproduct.dev/images/logo.png',
       sameAs: [],
     },
     {
@@ -155,7 +144,7 @@ export default async function WaitlistBPage() {
           <span className="flex items-center gap-2 text-xl font-headline font-bold text-on-background tracking-tight">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/hackylogo.png"
+              src="/images/logo.png"
               alt="HackProduct logo"
               className="w-8 h-8 object-contain"
               width={32}

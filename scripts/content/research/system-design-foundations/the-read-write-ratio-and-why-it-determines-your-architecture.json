@@ -1,0 +1,407 @@
+{
+  "facts": [
+    {
+      "fact": "Netflix's EVCache system powers 400M operations per second with 14.3 PB of data",
+      "source": "https://netflixtechblog.com/netflix-live-origin-41f1b0ad5371",
+      "published": "2025-12"
+    },
+    {
+      "fact": "Netflix achieves approximately 98% cache hit-rate, with origin egress only about 2% of edge traffic",
+      "source": "https://netflixtechblog.com/netflix-live-origin-41f1b0ad5371",
+      "published": "2025-12"
+    },
+    {
+      "fact": "Prompt caching on Anthropic Claude reduces latency by up to 80% and costs by up to 90%",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "published": "2024-12"
+    },
+    {
+      "fact": "Prompt caching write tokens are 1.25x base input token price; read tokens are 0.1x base input token price",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "published": "2024-12"
+    },
+    {
+      "fact": "Stripe processes approximately 13,000 API requests per second globally",
+      "source": "https://blog.quastor.org/p/stripe-rate-limiting",
+      "published": "2024-01"
+    },
+    {
+      "fact": "Stripe default API rate limit is 25 requests per second, with files API at 20 read/write per second",
+      "source": "https://docs.stripe.com/rate-limits",
+      "published": "2025-01"
+    },
+    {
+      "fact": "MongoDB throughput increases with read share, with 90% read workload showing over 50% higher throughput than 90% write workload",
+      "source": "https://benchant.com/blog/workload-read-write-ratio",
+      "published": "2024-01"
+    },
+    {
+      "fact": "CQRS systems often implement eventual consistency, where reads may not be immediately available after writes",
+      "source": "https://microservices.io/patterns/data/cqrs.html",
+      "published": "2024-01"
+    },
+    {
+      "fact": "HNSW (Hierarchical Navigable Small World) vector indexing achieves 95%+ recall for semantic search",
+      "source": "https://www.kdnuggets.com/semantic-search-with-vector-databases",
+      "published": "2024-01"
+    },
+    {
+      "fact": "Time-series databases typically use append-only write paths to avoid random I/O, often paired with write-ahead logs (WAL)",
+      "source": "https://www.devx.com/technology/the-essential-guide-to-time-series-database-design/",
+      "published": "2024-03"
+    },
+    {
+      "fact": "In typical systems, a 10:1 read-to-write ratio is considered standard for database workloads",
+      "source": "https://devrant.com/rants/2829018/databases-are-designed-to-support-read-heavy-applications-a-typical-read-write-r",
+      "published": "2023-01"
+    },
+    {
+      "fact": "CAP theorem states you can only guarantee two of three: Consistency, Availability, or Partition tolerance",
+      "source": "https://www.bmc.com/blogs/cap-theorem/",
+      "published": "2024-01"
+    },
+    {
+      "fact": "Network partitions are inevitable in distributed systems, making partition tolerance mandatory",
+      "source": "https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem",
+      "published": "2024-01"
+    },
+    {
+      "fact": "Stateless services can be scaled horizontally by simply adding more instances without session affinity concerns",
+      "source": "https://blog.dreamfactory.com/scaling-stateless-vs-stateful-services",
+      "published": "2024-01"
+    },
+    {
+      "fact": "Redis and Memcached are commonly used for external session management in distributed systems to decouple state from service instances",
+      "source": "https://dev.to/deepak_mishra_35863517037/scaling-horizontally-kubernetes-sticky-sessions-and-redis-578o",
+      "published": "2024-01"
+    },
+    {
+      "fact": "Oracle Autonomous Database uses ML to automatically fix query plans and build missing indexes based on historical workload metrics",
+      "source": "https://www.developernation.net/blog/8-indexing-strategies-to-optimize-database-performance",
+      "published": "2024-01"
+    },
+    {
+      "fact": "Covering indexes reduce disk I/O by allowing queries to retrieve data directly from the index without accessing the main table",
+      "source": "https://digma.ai/how-indexing-enhances-query-performance/",
+      "published": "2024-01"
+    },
+    {
+      "fact": "ClickHouse supports standard SQL with sub-second query performance over billions of rows for time-series data",
+      "source": "https://clickhouse.com/resources/engineering/what-is-time-series-database",
+      "published": "2024-06"
+    },
+    {
+      "fact": "Time-series data is typically partitioned by time (hourly or daily chunks) making retention cheap as deletion becomes metadata operation",
+      "source": "https://www.devx.com/technology/the-essential-guide-to-time-series-database-design/",
+      "published": "2024-03"
+    },
+    {
+      "fact": "Agentic RAG (Retrieval-Augmented Generation) integrates autonomous agents for dynamic retrieval and iterative context refinement",
+      "source": "https://arxiv.org/html/2501.09136v4",
+      "published": "2025-01"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Netflix",
+      "scenario": "Streaming video metadata and recommendations to 200+ million subscribers globally",
+      "detail": "Netflix uses a multi-tier caching architecture with EVCache (based on Memcached) handling 400M operations/second. High read ratio (users watching >> content uploads) justifies 98% cache hit rate. For the 2024 Tyson vs. Paul fight, the system handled unprecedented concurrent viewers by relying on cached metadata.",
+      "metric": "98% cache hit rate, 14.3 PB cached data, 400M ops/sec"
+    },
+    {
+      "company": "Stripe",
+      "scenario": "Payment processing API serving merchants worldwide with fraud detection, reconciliation, and reporting",
+      "detail": "Stripe handles 13,000 requests per second globally with rate limits of 25 RPS per account by default. During peak periods (Black Friday, holiday shopping), rate-limited clients implement exponential backoff. For high-volume integrations, Stripe allows per-request elevation to 100,000 RPS with sales approval.",
+      "metric": "13,000 RPS sustained, 25 RPS default limit, token bucket algorithm"
+    },
+    {
+      "company": "Twitter-like system (estimation example)",
+      "scenario": "Social media platform with 50M daily active users reading timelines and posting tweets",
+      "detail": "Average QPS calculation: 50M DAU × 10 timeline reads/day = 5,787 read QPS (~6k). Write QPS: 50M DAU × 1 tweet/day = 579 write QPS (~600). Peak traffic (2-5x average) means provisioning for 12-30k read QPS. This 10:1 read-write ratio drives architecture decisions: read replicas, caching layer, denormalized read model via CQRS.",
+      "metric": "6k read QPS / 600 write QPS average, 10:1 ratio, 2-5x peak multiplier"
+    },
+    {
+      "company": "Observability platform (e.g., Honeycomb, DataDog)",
+      "scenario": "Storing metrics, logs, and traces from millions of servers and applications",
+      "detail": "Write-heavy time-series workload where metric writes outnumber queries by 100:1 or more. Partitioning by time (hourly chunks) enables cheap retention via metadata deletion. LSM-tree databases (RocksDB, LevelDB) optimize sequential writes. Most queries are aggregations over time windows (e.g., 'avg latency last hour grouped by endpoint'). Downsampling reduces storage: raw metrics at 1s granularity, rolled up to 1m and 1h over time.",
+      "metric": "100:1+ write-to-read ratio, hourly time partitions, sub-second query latency"
+    },
+    {
+      "company": "E-commerce inventory system",
+      "scenario": "Concert/airline ticket booking preventing overselling across distributed servers",
+      "detail": "This is a CP system (Consistency over Availability): reads may block during network partitions, but you cannot sell a ticket twice. Implement via distributed locking (Redis with WATCH/MULTI, or Postgres advisory locks) or quorum-based consensus. Sacrifices availability for correctness.",
+      "metric": "Must guarantee C > A during partition, zero double-sells tolerance"
+    },
+    {
+      "company": "Video recommendation system with vector search",
+      "scenario": "Recommending videos to users based on semantic similarity of watch history",
+      "detail": "Read-heavy pattern with frequent vector lookups (user vector queried 100s of times/day against 1B video vectors). HNSW indexing achieves 95%+ recall with sublinear search time. Writes (new videos added, embeddings updated) happen 1000s times/day but are background processes. Trade-off: use eventual consistency for index updates (users may not see newest videos immediately).",
+      "metric": "95%+ recall, 100s reads per user per day, 1000s writes per day, 1B vectors"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Read-write split architecture",
+      "analogy": "Like a bookstore with one main register (primary write database) and multiple checkout counters (read replicas). Customers line up at one counter to pay, but books can be processed from any shelf. The main register updates inventory, and shelf scanners get fresher data from periodic syncs. If a scanner shows stale data (book sold but shelf says in stock), customers learn at checkout.",
+      "applies_to": "Database replicas, eventual consistency"
+    },
+    {
+      "concept": "CAP theorem during network partition",
+      "analogy": "A bank with two branches loses network connection. Branch A (AP) gives customers their money even if account data is outdated—they don't know if they have $100 or $1000. Branch B (CP) refuses all withdrawals until connection restores—customers are angry but account is never corrupted. You choose your branch based on whether wrong data or unavailability hurts more.",
+      "applies_to": "Distributed system design, consistency vs. availability"
+    },
+    {
+      "concept": "CQRS (separate read and write models)",
+      "analogy": "A restaurant has a kitchen (write model) focused on making dishes correctly and fast, and a dining room (read model) optimized for presenting the menu, checking reservations, and taking orders. They don't share the same interface. Orders flow from dining room → kitchen → kitchen updates a read-only board → dining room displays it. Eventually consistent: food might not appear on the board for 30 seconds after cooking.",
+      "applies_to": "Command-query separation, eventual consistency"
+    },
+    {
+      "concept": "Time-series partitioning by time",
+      "analogy": "A filing cabinet where each drawer is labeled with a month. Adding files (metrics) goes into today's drawer in O(1) time. Queries ask 'what's in drawers March–May?' and those drawers are checked. Deleting old data (e.g., 1-year retention) means removing the 'January last year' drawer entirely—no scanning, no deletes. Keeping 2-year retention just means keeping more drawers.",
+      "applies_to": "Time-series storage, retention policies, write optimization"
+    },
+    {
+      "concept": "Prompt caching reducing cost",
+      "analogy": "You have a 100-page legal document (system prompt) that must be read by Claude for every question. Caching lets you pay to read the document once, then for every follow-up question, Claude remembers it (cache hit, 0.1x cost). Without caching, Claude re-reads all 100 pages each time (1.0x cost each). Long conversations save 90% on the first part of the context.",
+      "applies_to": "LLM API costs, context efficiency"
+    },
+    {
+      "concept": "Stateless vs. stateful services",
+      "analogy": "Stateless: A taxi company where any taxi can pick you up—no memory needed. Stateful: Your personal driver who remembers your preferences. Scaling stateless is easy (add more taxis). Scaling stateful is hard (driver quits, preferences lost). To scale stateful, extract the memory (preferences stored in a central database) so any taxi can look them up.",
+      "applies_to": "Horizontal scaling, session management, external state stores"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Typical read-to-write ratio",
+      "value": "10:1",
+      "context": "Most database systems are read-heavy, with 10 reads for every write. Social media feeds, e-commerce product pages, and search indices follow this pattern."
+    },
+    {
+      "metric": "Stripe sustained API load",
+      "value": "13,000 requests per second",
+      "context": "Global baseline. Individual accounts are rate-limited at 25 RPS by default."
+    },
+    {
+      "metric": "Netflix cache hit rate",
+      "value": "98%",
+      "context": "With EVCache, nearly all reads of metadata and recommendations are served from cache; only 2% hit origin."
+    },
+    {
+      "metric": "Netflix cache capacity",
+      "value": "14.3 PB",
+      "context": "Total data cached in EVCache system powering 400M ops/sec."
+    },
+    {
+      "metric": "HNSW vector indexing recall",
+      "value": "95%+",
+      "context": "Hierarchical Navigable Small World achieves high recall while maintaining sublinear query time for billion-scale vector datasets."
+    },
+    {
+      "metric": "Peak traffic multiplier vs. average",
+      "value": "2-5x",
+      "context": "Most systems see peak traffic 2–5 times the daily average, often concentrated in 20% of the day (Pareto principle)."
+    },
+    {
+      "metric": "Prompt caching latency reduction",
+      "value": "Up to 80%",
+      "context": "Cache hits on system prompts and repeated context reduce end-to-end latency for multi-turn conversations."
+    },
+    {
+      "metric": "Prompt caching cost reduction",
+      "value": "Up to 90%",
+      "context": "Cache read tokens cost 0.1x input tokens; repeated long context becomes dramatically cheaper after first cache write."
+    },
+    {
+      "metric": "Cache write token multiplier",
+      "value": "1.25x",
+      "context": "Anthropic charges 1.25x normal input token price for tokens written to cache on first call."
+    },
+    {
+      "metric": "Cache read token multiplier",
+      "value": "0.1x",
+      "context": "Subsequent calls hitting cache pay only 0.1x input token price for cached content."
+    },
+    {
+      "metric": "Stripe rate limit (Files API)",
+      "value": "20 read ops/sec, 20 write ops/sec",
+      "context": "More restrictive than general API. Read and write limits are separate."
+    },
+    {
+      "metric": "Stripe Create Payout limit",
+      "value": "15 requests/sec, 30 concurrent",
+      "context": "High-impact operation limited for fraud/compliance reasons."
+    },
+    {
+      "metric": "Time-series write-to-read ratio",
+      "value": "100:1+",
+      "context": "Metrics/logs systems are write-heavy; reads are mostly aggregations. Writes vastly outnumber point queries."
+    },
+    {
+      "metric": "Example social media QPS (50M DAU)",
+      "value": "~6,000 read QPS / ~600 write QPS",
+      "context": "Calculation: 50M DAU × 10 reads/day ÷ 86,400 sec = ~5,787 read QPS. Write: 50M × 1 tweet/day ÷ 86,400 = ~579 write QPS."
+    },
+    {
+      "metric": "Example storage estimate (social media, 5 years)",
+      "value": "~368 PB",
+      "context": "500M posts/day × 300 bytes text + 200 KB images × 5 years. Assumes 3x replication."
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "CAP theorem means you must choose one. Really, you always have to pick consistency or availability when a network partition happens.",
+      "truth": "Partition tolerance is non-negotiable in distributed systems (partitions happen). CAP forces a choice between C and A during partition. Before/after partition, you can have all three.",
+      "source": "https://www.bmc.com/blogs/cap-theorem/"
+    },
+    {
+      "misconception": "Read replicas are free to add and automatically scale all read load.",
+      "truth": "Read replicas introduce eventual consistency (replication lag). Writes go to primary, replicas lag behind. Queries may see stale data. Replication itself consumes network and disk bandwidth, becoming a bottleneck at scale.",
+      "source": "https://blog.dreamfactory.com/scaling-stateless-vs-stateful-services"
+    },
+    {
+      "misconception": "Caching is a silver bullet that solves all performance problems.",
+      "truth": "Caching trades latency for consistency. High cache miss rates degrade performance below non-cached systems. Write-heavy workloads (inventory, financial transactions) don't benefit much from caching.",
+      "source": "https://netflixtechblog.com/netflix-live-origin-41f1b0ad5371"
+    },
+    {
+      "misconception": "You should always index every column for faster queries.",
+      "truth": "Indexes speed up reads but slow down writes (every insert/update must update all indexes). Over-indexing increases storage and write latency. Index only columns used in WHERE, JOIN, or ORDER BY clauses.",
+      "source": "https://www.developernation.net/blog/8-indexing-strategies-to-optimize-database-performance"
+    },
+    {
+      "misconception": "Stateless services don't need any session storage.",
+      "truth": "Stateless services still need access to shared state (user preferences, permissions) via external stores like Redis or a database. The service itself holds no state, but state exists elsewhere.",
+      "source": "https://dev.to/deepak_mishra_35863517037/scaling-horizontally-kubernetes-sticky-sessions-and-redis-578o"
+    },
+    {
+      "misconception": "All NoSQL databases are better for write-heavy workloads.",
+      "truth": "Only NoSQL databases with LSM-tree or similar append-only architectures excel at writes. Traditional NoSQL with B-tree indexing has similar write limitations as SQL databases.",
+      "source": "https://www.devx.com/technology/the-essential-design-of-time-series-database-design/"
+    },
+    {
+      "misconception": "CQRS means having two separate databases.",
+      "truth": "CQRS means separate read and write models (data structures), not necessarily separate databases. Both models can be in the same database; they're just optimized differently (e.g., normalized write model, denormalized read model).",
+      "source": "https://microservices.io/patterns/data/cqrs.html"
+    },
+    {
+      "misconception": "Vector databases make semantic search perfectly accurate.",
+      "truth": "Vector similarity is probabilistic, not exact matching. HNSW achieves ~95% recall, meaning 5% of truly similar items are missed. Relevance depends on embedding quality and distance metric choice.",
+      "source": "https://www.kdnuggets.com/semantic-search-with-vector-databases"
+    },
+    {
+      "misconception": "Prompt caching saves money on every token.",
+      "truth": "Cache writes cost 1.25x normal input tokens. Break-even depends on reuse. A single prompt with 2 cache misses costs more than 2 non-cached calls. Caching wins when reusing 5+ times.",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "misconception": "Higher QPS always requires a bigger database.",
+      "truth": "QPS depends on query complexity, not just volume. A simple index lookup scales to 10k QPS on one server. A complex aggregation query might max out at 100 QPS even on a cluster. Know your query cost.",
+      "source": "https://systemdesign.one/back-of-the-envelope/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://netflixtechblog.com/netflix-live-origin-41f1b0ad5371",
+      "title": "Netflix Live Origin",
+      "published": "2025-12",
+      "recency_note": "Recent (Dec 2025), describes current infrastructure"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "title": "Prompt Caching - Claude API Docs",
+      "published": "2024-12",
+      "recency_note": "Current (Dec 2024), official Anthropic documentation"
+    },
+    {
+      "url": "https://docs.stripe.com/rate-limits",
+      "title": "Rate Limits | Stripe Documentation",
+      "published": "2025-01",
+      "recency_note": "Current, official Stripe documentation"
+    },
+    {
+      "url": "https://www.bmc.com/blogs/cap-theorem/",
+      "title": "CAP Theorem Explained",
+      "published": "2024-01",
+      "recency_note": "Current (2024)"
+    },
+    {
+      "url": "https://blog.dreamfactory.com/scaling-stateless-vs-stateful-services",
+      "title": "Scaling Stateless vs Stateful Services",
+      "published": "2024-01",
+      "recency_note": "Recent (2024)"
+    },
+    {
+      "url": "https://microservices.io/patterns/data/cqrs.html",
+      "title": "CQRS Pattern - Microservices.io",
+      "published": "2024-01",
+      "recency_note": "Current reference (pattern is stable but 2024 review)"
+    },
+    {
+      "url": "https://www.kdnuggets.com/semantic-search-with-vector-databases",
+      "title": "Semantic Search with Vector Databases",
+      "published": "2024-01",
+      "recency_note": "Recent (2024)"
+    },
+    {
+      "url": "https://www.devx.com/technology/the-essential-guide-to-time-series-database-design/",
+      "title": "The Essential Guide to Time-Series Database Design",
+      "published": "2024-03",
+      "recency_note": "Recent (Mar 2024)"
+    },
+    {
+      "url": "https://systemdesign.one/back-of-the-envelope/",
+      "title": "Back of the Envelope - System Design",
+      "published": "2024-01",
+      "recency_note": "Current reference (2024)"
+    },
+    {
+      "url": "https://blog.quastor.org/p/stripe-rate-limiting",
+      "title": "How Stripe Does Rate Limiting",
+      "published": "2024-01",
+      "recency_note": "Recent (Jan 2024)"
+    },
+    {
+      "url": "https://benchant.com/blog/workload-read-write-ratio",
+      "title": "Database Workload - Read-Write Ratio",
+      "published": "2024-01",
+      "recency_note": "Recent (2024)"
+    },
+    {
+      "url": "https://www.developernation.net/blog/8-indexing-strategies-to-optimize-database-performance",
+      "title": "8 Indexing Strategies to Optimize Database Performance",
+      "published": "2024-01",
+      "recency_note": "Recent (2024)"
+    },
+    {
+      "url": "https://dev.to/deepak_mishra_35863517037/scaling-horizontally-kubernetes-sticky-sessions-and-redis-578o",
+      "title": "Scaling Horizontally: Kubernetes, Sticky Sessions, and Redis",
+      "published": "2024-01",
+      "recency_note": "Recent (2024)"
+    },
+    {
+      "url": "https://clickhouse.com/resources/engineering/what-is-time-series-database",
+      "title": "What Is a Time-Series Database? Examples, Use Cases & ClickHouse Guide",
+      "published": "2024-06",
+      "recency_note": "Recent (Jun 2024)"
+    },
+    {
+      "url": "https://arxiv.org/html/2501.09136v4",
+      "title": "Agentic Retrieval-Augmented Generation: A Survey on Agentic RAG",
+      "published": "2025-01",
+      "recency_note": "Very recent (Jan 2025), cutting-edge research"
+    },
+    {
+      "url": "https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem",
+      "title": "CAP Theorem for System Design Interviews",
+      "published": "2024-01",
+      "recency_note": "Current (2024)"
+    },
+    {
+      "url": "https://digma.ai/how-indexing-enhances-query-performance/",
+      "title": "How Indexing Enhances Query Performance",
+      "published": "2024-01",
+      "recency_note": "Recent (2024)"
+    }
+  ]
+}

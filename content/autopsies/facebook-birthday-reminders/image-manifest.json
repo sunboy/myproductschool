@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "meta",
+  "story_slug": "facebook-birthday-reminders",
+  "story_title": "Facebook Birthday Reminders",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/facebook-birthday-reminders/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/facebook-birthday-reminders/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream editorial illustration showing a calendar square on the left and a Facebook-style sidebar with birthday rows on the right, with Hatch pointing at the sidebar.",
+      "caption": "The data was already there. The move was showing it at the right moment.",
+      "prompt": "Facebook Birthday Reminders | hero: Create a flat geometric HackProduct autopsy hero illustration for Facebook's birthday reminder feature, aspect 2400x1350. Canvas background is warm cream #faf6f0. On the right side, render a simplified social feed column with a small forest-green #4a7c59 right-panel sidebar block. Inside the sidebar block, show three short rows: each row has a tiny circle avatar in mist #dfe6dc and a soft amber #c9ad68 cake icon to the right. On the left, show a charcoal #1e211c calendar square with one date circled in forest green. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right, pointing at the sidebar block with one mitten hand. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no Facebook screenshots or UI recreations. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/facebook-birthday-reminders/hero.png",
+      "generated_image_sha256": "f15d9b114bc345a32606841981f9b454dd4f531a4bbd976a493fda20a0f39774",
+      "final_image_sha256": "0a3aaf8ad6c5f823b67b9e17cee85bb79a68660bb5e886f26de401e2edc19b6f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-birthday-reminders/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-birthday-reminders/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/facebook-birthday-reminders/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a college desk with a laptop showing a simplified feed and sidebar, gesturing toward the birthday panel in the right column.",
+      "caption": "Hatch standing beside a college desk with a laptop showing a simplified feed and sidebar, gesturing toward the birthday panel in the right column.",
+      "prompt": "Facebook Birthday Reminders | hatch-narrator: Flat geometric scene illustration for a 2006-2007 college dorm room moment, aspect 1600x1600. Background is warm cream #faf6f0. Show a low forest-green #4a7c59 desk with a laptop, its screen rendering two simplified columns: a wide feed area on the left and a narrow sidebar panel on the right. The sidebar panel has a tiny soft amber #c9ad68 cake icon and a mist #dfe6dc name label. A small stack of textbooks sits at the edge of the desk in amber #705c30. A window with mist light in the background. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator, standing beside the desk in a storytelling pose, one mitten hand gesturing toward the laptop sidebar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no photorealism, no real UI screenshots or logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/facebook-birthday-reminders/hatch-narrator.png",
+      "generated_image_sha256": "429d3e4a83afe5305f97af295e55150cdbd22e9c1e71d8b03cd890728b1296f1",
+      "final_image_sha256": "26c313777f2af8e8a61070f793e90af9157eb4f6efcecf7b593b3e5e5c1bd8aa",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-birthday-reminders/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-birthday-reminders/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/facebook-birthday-reminders/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage pipeline from profile database to sidebar to wall post, with Hatch pointing at the this-week filter stage.",
+      "caption": "A four-stage pipeline from profile database to sidebar to wall post, with Hatch pointing at the this-week filter stage.",
+      "prompt": "Facebook Birthday Reminders | failure-mechanism: Flat geometric mechanism diagram for Facebook's birthday surfacing logic, aspect 1800x1200. Background is warm cream #faf6f0. Lay out four horizontal stages from left to right. Stage one: a charcoal #1e211c cylinder labelled PROFILE DATABASE, with a soft amber #c9ad68 birthday-date row highlighted. Stage two: a deep forest #244232 filter cube labelled THIS WEEK, with a single calendar icon. Stage three: a forest-green #4a7c59 sidebar block labelled RIGHT PANEL, with three short name rows and cake icons. Stage four: a mist #dfe6dc wall-post panel labelled ONE CLICK TO WALL, with a forest-green cursor dot. Connect stages with thin charcoal lines. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower left, pointing one mitten hand at stage two to mark the filter logic. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI recreations, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/facebook-birthday-reminders/failure-mechanism.png",
+      "generated_image_sha256": "b6f0f07a8af1e434f54d591079f8ccb8ed3ef683c2379fc697519715cd8205e4",
+      "final_image_sha256": "5396c468264c69653fa8ff2e42ece1b626c9f8090492341cf416a9cbf1472665",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-birthday-reminders/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-birthday-reminders/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/facebook-birthday-reminders/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two bars showing 100 million birthday interactions per day and 39 percent of first-ever friend exchanges, with Hatch pointing at the taller bar.",
+      "caption": "Two bars showing 100 million birthday interactions per day and 39 percent of first-ever friend exchanges, with Hatch pointing at the taller bar.",
+      "prompt": "Facebook Birthday Reminders | evidence-card: Flat geometric evidence card showing the birthday engagement scale, aspect 1600x1000. Background is warm cream #faf6f0. On the left, draw a tall forest-green #4a7c59 bar labelled 100M BIRTHDAY INTERACTIONS / DAY. Beside it, draw a smaller mist #dfe6dc bar labelled 39% OF FIRST-EVER FRIEND EXCHANGES. Connect both bars with a thin deep forest #244232 bracket line at the top. Below, add a single charcoal #1e211c annotation line reading NO TUTORIAL REQUIRED. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing beside the bars in a pointing pose, one mitten hand indicating the taller bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no dense text, no real UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/facebook-birthday-reminders/evidence-card.png",
+      "generated_image_sha256": "2fa553e83f0f366a174ff9943305d2d56501f7ba3336d9660aac1f449d71fec9",
+      "final_image_sha256": "562e0223effc8e619ac88c5bda593c94eccd545061a3c184980b5bb609f35264",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-birthday-reminders/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-birthday-reminders/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/facebook-birthday-reminders/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A filing cabinet with an open drawer on the left, a deep forest arrow flowing to a sidebar panel on the right, with Hatch coaching beside the panel.",
+      "caption": "A filing cabinet with an open drawer on the left, a deep forest arrow flowing to a sidebar panel on the right, with Hatch coaching beside the panel.",
+      "prompt": "Facebook Birthday Reminders | lesson-frame: Flat geometric lesson illustration for the principle that passive data becomes a feature when surfaced at the moment of social relevance, aspect 1800x1200. Background is warm cream #faf6f0. Draw a large charcoal #1e211c filing cabinet on the left with a soft amber #c9ad68 drawer open, inside which sits a single calendar date icon in forest green #4a7c59. A wide deep forest #244232 arrow flows from the open drawer across to the right side, where a simple sidebar panel shows a name row with a cake icon and a mist #dfe6dc cursor. Above the arrow, add a thin charcoal label reading MOMENT OF RELEVANCE. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a coaching pose to the right of the sidebar panel, facing the reader, one mitten hand resting lightly on the panel edge. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No real UI recreations, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/facebook-birthday-reminders/lesson-frame.png",
+      "generated_image_sha256": "cb788efb4a398c03dc6f5dee61613e2897b1e6be3b3b7f3c24cf296a8ba547cf",
+      "final_image_sha256": "63de185481d36638c0c626f33e5f0024bbbd82ae916f493035a7cc0bda8b028e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-birthday-reminders/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-birthday-reminders/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/facebook-birthday-reminders/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cake icon above a green sidebar row with an arrow pointing from a calendar square, with a tiny Hatch mark in the lower corner.",
+      "caption": "A cake icon above a green sidebar row with an arrow pointing from a calendar square, with a tiny Hatch mark in the lower corner.",
+      "prompt": "Flat geometric thumbnail composition for Facebook's birthday reminder feature, aspect 1200x900. On warm cream #faf6f0, render one bold focal shape: a small soft amber #c9ad68 cake icon above a forest-green #4a7c59 sidebar panel row, with a deep forest #244232 arrow pointing from a charcoal calendar square on the left toward the panel row. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower left corner, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the composition readable at small size with one strong focal shape. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/facebook-birthday-reminders/hero.png",
+      "generated_image_sha256": "f15d9b114bc345a32606841981f9b454dd4f531a4bbd976a493fda20a0f39774",
+      "final_image_sha256": "40ce2563d80fc4c47b513dc05441041582f33eff776726e730a7e629c5c9a821",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-birthday-reminders/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-birthday-reminders/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/facebook-birthday-reminders/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image showing a filing cabinet with an open amber drawer connected by a forest arrow to a green sidebar panel, with small Hatch narrator and a label reading DATA AS RITUAL.",
+      "caption": "A wide cover image showing a filing cabinet with an open amber drawer connected by a forest arrow to a green sidebar panel, with small Hatch narrator and a label reading DATA AS RITUAL.",
+      "prompt": "Flat geometric social cover image for Facebook's birthday reminder feature, aspect 2400x1260. On warm cream #faf6f0, place a central composition occupying the middle 70 percent of the canvas: a charcoal #1e211c filing cabinet on the left with an open drawer glowing soft amber #c9ad68, a deep forest #244232 arrow flowing to the right toward a forest-green #4a7c59 sidebar panel with a cake icon and a name row. Keep the centre 70 percent clear of edge-critical details. Add one short charcoal label on the arrow reading DATA AS RITUAL. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand at the arrow. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/facebook-birthday-reminders/hero.png",
+      "generated_image_sha256": "f15d9b114bc345a32606841981f9b454dd4f531a4bbd976a493fda20a0f39774",
+      "final_image_sha256": "85c941c0766347cb29618dbf752403bba639f95da39556d84086ac4a3cfe549c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-birthday-reminders/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-birthday-reminders/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/facebook-birthday-reminders/v1"
+}

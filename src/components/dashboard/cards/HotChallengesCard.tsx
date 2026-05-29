@@ -33,7 +33,7 @@ export function HotChallengesCard({ challenges }: HotChallengesCardProps) {
             <span className="text-xs font-bold text-tertiary w-4 text-center tabular-nums shrink-0 font-label">{i + 1}</span>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] text-on-surface truncate font-semibold leading-snug">{ch.title}</p>
-              <p className="text-[11px] text-on-surface-variant font-label mt-0.5">{ch.domain}</p>
+              <p className="text-[11px] text-on-surface-variant font-label mt-0.5">{ch.domain === 'General' ? 'Practice' : ch.domain}</p>
             </div>
             <div className="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <span className="material-symbols-outlined text-[14px] text-on-surface-variant">chevron_right</span>

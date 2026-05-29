@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "meta",
+  "story_slug": "instagram-stories",
+  "story_title": "Instagram Stories",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/instagram-stories/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/instagram-stories/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream editorial illustration showing a curated feed on the left and a tall Stories panel on the right, with Hatch pointing toward the Stories surface.",
+      "caption": "Two surfaces. One social contract each.",
+      "prompt": "Instagram Stories | hero: Create a flat geometric HackProduct autopsy hero illustration for Instagram Stories, aspect 2400x1350. Canvas background is warm cream #faf6f0. On the left, show a simplified feed column with polished square post tiles in mist #dfe6dc, representing Instagram's curated-highlights surface. On the right, show a taller full-height panel in forest-green #4a7c59 with rounded top corners, representing the Stories surface, with a soft amber #c9ad68 timer bar at the top and a progress ring. Between the two panels, draw a thin deep forest #244232 dividing line. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator above the dividing line, pointing with one mitten hand toward the Stories panel. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no Instagram screenshots or UI recreations. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/instagram-stories/hero.png",
+      "generated_image_sha256": "a9810a631280b4564fe404c3337b2b343f500069257eef0e3ec54676e01e403e",
+      "final_image_sha256": "744b343fd6509aa9fe85ae069b2077c6537e2c230ac817dd4d079850f7bdd9f8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-stories/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-stories/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/instagram-stories/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a phone showing a simplified Instagram post with an arrow pointing offscreen, in a simplified Academy Awards hall setting.",
+      "caption": "Hatch standing beside a phone showing a simplified Instagram post with an arrow pointing offscreen, in a simplified Academy Awards hall setting.",
+      "prompt": "Instagram Stories | hatch-narrator: Flat geometric scene illustration for the 2016 Academy Awards moment where Kevin Systrom notices celebrities directing Instagram followers to Snapchat, aspect 1600x1600. Background is warm cream #faf6f0. Show a simplified event-hall setting: rows of mist #dfe6dc seat shapes, a deep forest #244232 stage block at the back. In the foreground, a single forest-green #4a7c59 phone shape displays a simplified feed post with a small arrow pointing offscreen and a charcoal #1e211c label reading WATCH ON SNAPCHAT. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator standing beside the phone, in a thinking pose, one mitten hand on chin, facing the phone. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no photorealism, no real app screenshots or logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/instagram-stories/hatch-narrator.png",
+      "generated_image_sha256": "14030653bceb03d8acb4473606cc442637cdec6718ccc4ffe853940510d3e835",
+      "final_image_sha256": "d6a223eeb4e7842280d77be7942b957354a39129687d6fea0c4073ee6f425c78",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-stories/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-stories/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/instagram-stories/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage diagram from the main feed to Stories surface to direct-reply to 24-hour timer, with Hatch pointing at the direct-reply stage.",
+      "caption": "A four-stage diagram from the main feed to Stories surface to direct-reply to 24-hour timer, with Hatch pointing at the direct-reply stage.",
+      "prompt": "Instagram Stories | failure-mechanism: Flat geometric mechanism diagram for Instagram Stories' key design decisions, aspect 1800x1200. Background is warm cream #faf6f0. Lay out four horizontal stages from left to right. Stage one: a mist #dfe6dc square tile labelled MAIN FEED, with a small like-heart icon crossed out in soft amber #c9ad68. Stage two: a forest-green #4a7c59 tall panel labelled STORIES SURFACE, positioned above the feed stage. Stage three: a charcoal #1e211c speech bubble labelled DIRECT REPLY ONLY, with no public comment icon. Stage four: a deep forest #244232 progress ring labelled 24 HOURS, with a thin timer bar. Connect stages with thin charcoal arrows. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a pointing pose at the lower right, indicating stage three to mark the social-pressure removal. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI recreations, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/instagram-stories/failure-mechanism.png",
+      "generated_image_sha256": "0276a76889231a210c66dd04db06cb558a0f01965fc06c6cc64037d60c5c1f66",
+      "final_image_sha256": "c194f3954f061e0029b59e55708afea2966ee451730a3b5f518016f92f66923f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-stories/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-stories/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/instagram-stories/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two charts showing Snapchat's growth rate collapse alongside Instagram Stories' rising DAU from August 2016, with Hatch pointing at the launch line.",
+      "caption": "Two charts showing Snapchat's growth rate collapse alongside Instagram Stories' rising DAU from August 2016, with Hatch pointing at the launch line.",
+      "prompt": "Instagram Stories | evidence-card: Flat geometric evidence card showing Snapchat's growth collapse and Instagram Stories' rise in 2016, aspect 1600x1000. Background is warm cream #faf6f0. On the left, draw a bar chart with four bars for Q1-Q4 2016: a tall forest-green #4a7c59 bar for Q2 at 17.2%, then a descending mist #dfe6dc bar for Q3 at 7%, a shorter charcoal #1e211c bar for Q4 at 3.2%. Label the vertical axis SNAPCHAT GROWTH RATE. On the right, draw a rising soft amber #c9ad68 arrow line labelled INSTAGRAM STORIES DAU with two point markers: 100M in October and 150M in December. Mark August 2016 with a deep forest #244232 vertical dotted line crossing both charts, labelled STORIES LAUNCH. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing between the two charts in a pointing pose, one mitten hand on the dotted launch line. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/instagram-stories/evidence-card.png",
+      "generated_image_sha256": "146e83adb1f7172466003c29df43f0fd258a57de807df13989cf532343071bc9",
+      "final_image_sha256": "f770b2f22ea93855f20b289497000a4ebdcf1df00705638e776deb4dde47eb09",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-stories/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-stories/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/instagram-stories/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A hourglass with sand flowing from a small competitor panel on the left to a taller network panel on the right, with Hatch coaching beside the outcome panel.",
+      "caption": "A hourglass with sand flowing from a small competitor panel on the left to a taller network panel on the right, with Hatch coaching beside the outcome panel.",
+      "prompt": "Instagram Stories | lesson-frame: Flat geometric lesson illustration for the principle that a proven format should be shipped on a bigger network before the window closes, aspect 1800x1200. Background is warm cream #faf6f0. Draw a large deep forest #244232 hourglass shape in the centre with soft amber #c9ad68 sand flowing. On the left side of the hourglass, a small mist #dfe6dc panel labelled COMPETITOR PROVES FORMAT. On the right side, a taller forest-green #4a7c59 panel labelled BIGGER NETWORK. A charcoal #1e211c arrow flows from the small panel through the hourglass to the tall panel, with a soft amber pulse at the neck. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a coaching pose to the right of the tall panel, facing the reader, one mitten hand resting on the panel. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No real UI recreations, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/instagram-stories/lesson-frame.png",
+      "generated_image_sha256": "05da6eff6216ffb2c022a32141ab88ffadeece8008c847f1d4f2719df671b02d",
+      "final_image_sha256": "f6b6ef5e29644617e54b9ac9311abd640f91b34bea366a47cf863e92dd5db1fe",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-stories/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-stories/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/instagram-stories/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A tall Stories panel with a progress ring connected by an arrow from a small feed tile, with a tiny Hatch mark in the lower corner.",
+      "caption": "A tall Stories panel with a progress ring connected by an arrow from a small feed tile, with a tiny Hatch mark in the lower corner.",
+      "prompt": "Flat geometric thumbnail composition for Instagram Stories, aspect 1200x900. On warm cream #faf6f0, render one bold focal shape: a tall forest-green #4a7c59 Stories panel with a soft amber #c9ad68 progress ring at the top and a deep forest #244232 arrow pointing from a small mist #dfe6dc feed tile on the left into the panel. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower left corner, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the composition readable at small size with one strong focal shape. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/instagram-stories/hero.png",
+      "generated_image_sha256": "a9810a631280b4564fe404c3337b2b343f500069257eef0e3ec54676e01e403e",
+      "final_image_sha256": "e9554ea5fd3298339106b9e51842e0058c26b558bbfb79f0081ff2df44aa440e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-stories/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-stories/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/instagram-stories/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image showing a curated feed on the left and a Stories panel on the right divided by a line labelled TWO SURFACES, with Hatch pointing toward Stories.",
+      "caption": "A wide cover image showing a curated feed on the left and a Stories panel on the right divided by a line labelled TWO SURFACES, with Hatch pointing toward Stories.",
+      "prompt": "Flat geometric social cover image for Instagram Stories, aspect 2400x1260. On warm cream #faf6f0, place a central composition occupying the middle 70 percent of the canvas: a mist #dfe6dc curated-feed column on the left, a deep forest #244232 vertical dividing line, and a tall forest-green #4a7c59 Stories panel on the right with a soft amber #c9ad68 progress ring. Add one short charcoal #1e211c label on the dividing line reading TWO SURFACES. Keep the centre 70 percent clear of edge-critical details. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand toward the Stories panel. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/instagram-stories/hero.png",
+      "generated_image_sha256": "a9810a631280b4564fe404c3337b2b343f500069257eef0e3ec54676e01e403e",
+      "final_image_sha256": "82b6f17b5ad17a5b9ba83573766cbe9b11930b679e3a33b274d73cc351b5f251",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/instagram-stories/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/instagram-stories/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/instagram-stories/v1"
+}

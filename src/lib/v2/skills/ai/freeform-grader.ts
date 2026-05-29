@@ -1,11 +1,19 @@
 import { z } from 'zod'
 import type { FlowOption, FlowStep } from '@/lib/types'
 import { getHatchContext } from '@/lib/v2/hatch-context'
-import { loadRubric, getReasoningMove } from '@/lib/v2/skills/rubric-loader'
+import { buildEmptyStateResponse, detectSubmissionQuality } from '@/lib/hatch/skill-context'
+import { loadRubric } from '@/lib/v2/skills/rubric-loader'
 import { MENTAL_MODELS_CONTEXT, STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError } from '@/lib/usage/ai-budget'
 import { FLOW_MAX_SCORE, TIER_CAPS_FIVE } from '@/lib/scoring/flow-scale'
 import type { CompetencySignal } from '@/lib/scoring/competency-signal'
+
+type AiBudget = { userId: string; userPlan: string; route: string }
+
+function rethrowBudgetError(error: unknown) {
+  if (error instanceof AiBudgetExceededError) throw error
+}
 
 // ── Zod schemas ──────────────────────────────────────────────
 
@@ -57,6 +65,50 @@ function applyConfidenceGate(result: GradingResponse): GradingResponse {
   return { ...result, score: Math.round(result.score) }
 }
 
+function parseJsonObject(rawText: string) {
+  const cleaned = rawText
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```\s*$/i, '')
+    .trim()
+  const start = cleaned.indexOf('{')
+  const end = cleaned.lastIndexOf('}')
+  const jsonText = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned
+  return JSON.parse(jsonText)
+}
+
+function trimText(value: unknown, maxLength: number) {
+  if (typeof value !== 'string') return value
+  const normalized = value
+    .replace(/\s*(?:—|--)\s*/g, ', ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (normalized.length <= maxLength) return normalized
+  const firstSentence = normalized.match(/^.*?[.!?](?:\s|$)/)?.[0]?.trim()
+  if (firstSentence && firstSentence.length >= 24 && firstSentence.length <= maxLength) return firstSentence
+  const clipped = normalized.slice(0, maxLength).trimEnd()
+  const breakIndex = Math.max(clipped.lastIndexOf('.'), clipped.lastIndexOf(';'), clipped.lastIndexOf(','))
+  if (breakIndex >= 40) return clipped.slice(0, breakIndex).trimEnd().replace(/[,:;]$/, '') + '.'
+  return clipped.replace(/[,:;]$/, '') + '.'
+}
+
+function normalizeGradingJson(json: Record<string, unknown>) {
+  const competencySignal = json.competency_signal && typeof json.competency_signal === 'object'
+    ? {
+        ...(json.competency_signal as Record<string, unknown>),
+        signal: trimText((json.competency_signal as Record<string, unknown>).signal, 220),
+        framework_hint: trimText((json.competency_signal as Record<string, unknown>).framework_hint, 260),
+      }
+    : json.competency_signal
+
+  return {
+    ...json,
+    score: Math.min(FLOW_MAX_SCORE, Math.max(0, Number(json.score) || TIER_CAPS_FIVE[1])),
+    grading_explanation: trimText(json.grading_explanation, 320),
+    competency_signal: competencySignal,
+  }
+}
+
 // ── Freeform grader ──────────────────────────────────────────
 
 interface ScenarioContext {
@@ -80,8 +132,30 @@ export async function gradeFreeform(
   scenario: ScenarioContext,
   step: FlowStep,
   targetCompetencies: string[],
-  userId?: string
+  userId?: string,
+  budget?: AiBudget
 ): Promise<GradingResult> {
+  const submissionQuality = detectSubmissionQuality(userText)
+  if (submissionQuality !== 'substantive') {
+    const emptyState = buildEmptyStateResponse({
+      surface: 'grading',
+      discipline: 'product',
+      challengeType: 'flow',
+    })
+    return {
+      score: 0,
+      quality_label: 'plausible_wrong',
+      explanation: `${emptyState.summary} ${emptyState.next_actions[0]}`,
+      competencies_demonstrated: [],
+      confidence: 1,
+      competency_signal: {
+        competency: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
+        signal: emptyState.summary,
+        framework_hint: emptyState.next_actions[0],
+      },
+    }
+  }
+
   const best = options.find(o => o.quality === 'best')
   const good = options.find(o => o.quality === 'good_but_incomplete')
   const surface = options.find(o => o.quality === 'surface')
@@ -150,7 +224,8 @@ GRADING INSTRUCTIONS:
 4. Rate confidence 0.0–1.0
 5. Can exceed 4.5 if response covers BEST AND adds genuine insight. Rare.
 6. Score each rubric criterion (${criterionIds.join(', ') || 'if available'}) as "strong", "partial", or "needs_work".
-7. Generate a competency_signal: identify the primary competency being tested (from: ${(STEP_PRIMARY_COMPETENCIES[step] ?? []).join(', ')}), write a 1-sentence coaching signal, and a framework_hint connecting to the reasoning move.
+7. Keep grading_explanation to one short sentence under 240 characters.
+8. Generate a competency_signal: identify the primary competency being tested (from: ${(STEP_PRIMARY_COMPETENCIES[step] ?? []).join(', ')}), write a 1-sentence coaching signal, and a short framework_hint connecting to the reasoning move.
 
 Return ONLY valid JSON:
 {"score":<float>,"quality_label":"<best|good_but_incomplete|surface|plausible_wrong|between_levels>","competencies_demonstrated":[<strings>],"grading_explanation":"<2 sentences>","confidence":<float>,"criteria_scores":{${criterionIds.map(id => `"${id}":"<strong|partial|needs_work>"`).join(',')}},"competency_signal":{"competency":"<competency_key>","signal":"<1 sentence coaching>","framework_hint":"<reasoning move connection>"}}`
@@ -165,10 +240,10 @@ Return ONLY valid JSON:
   }
 
   try {
-    const response = await createCachedMessage(systemPrompt, prompt, {
-      model: 'claude-opus-4-6',
+    const response = await guardedCachedMessage(systemPrompt, prompt, {
+      model: 'claude-sonnet-4-6',
       max_tokens: 800,
-      thinking: { type: 'adaptive' },
+      budget,
     })
 
     const textBlock = response.content.find(b => b.type === 'text')
@@ -178,13 +253,13 @@ Return ONLY valid JSON:
 
     // Attempt 1: parse directly
     try {
-      const json = JSON.parse(rawText)
-      const validated = GradingResponseSchema.safeParse(json)
+      const json = parseJsonObject(rawText)
+      const clamped = normalizeGradingJson(json)
+      const validated = GradingResponseSchema.safeParse(clamped)
       if (validated.success) {
         parsed = validated.data
       } else {
         // Zod failed — clamp score but use data anyway
-        const clamped = { ...json, score: Math.min(FLOW_MAX_SCORE, Math.max(0, Number(json.score) || TIER_CAPS_FIVE[1])) }
         const recheck = GradingResponseSchema.safeParse(clamped)
         if (recheck.success) parsed = recheck.data
       }
@@ -195,25 +270,24 @@ Return ONLY valid JSON:
     // Retry on parse failure
     if (!parsed) {
       try {
-        const retryResponse = await createCachedMessage(
+        const retryResponse = await guardedCachedMessage(
           systemPrompt,
           `${prompt}\n\nPREVIOUS ATTEMPT (invalid JSON):\n${rawText}\n\nInvalid JSON. Return ONLY the raw JSON object. No markdown backticks.`,
-          { model: 'claude-opus-4-6', max_tokens: 800, thinking: { type: 'adaptive' } }
+          { model: 'claude-sonnet-4-6', max_tokens: 800, budget }
         )
         const retryText = retryResponse.content.find(b => b.type === 'text')
         const retryRaw = retryText?.type === 'text' ? retryText.text : ''
-        const retryJson = JSON.parse(retryRaw)
-        const retryValidated = GradingResponseSchema.safeParse(retryJson)
+        const retryJson = parseJsonObject(retryRaw)
+        const retryClamped = normalizeGradingJson(retryJson)
+        const retryValidated = GradingResponseSchema.safeParse(retryClamped)
         if (retryValidated.success) {
           parsed = retryValidated.data
         } else {
           // Clamp and proceed
-          parsed = {
-            ...retryJson,
-            score: Math.min(FLOW_MAX_SCORE, Math.max(0, Number(retryJson.score) || TIER_CAPS_FIVE[1])),
-          } as GradingResponse
+          parsed = retryClamped as GradingResponse
         }
-      } catch {
+      } catch (error) {
+        rethrowBudgetError(error)
         return fallback
       }
     }
@@ -238,7 +312,8 @@ Return ONLY valid JSON:
       criteria_scores: gated.criteria_scores,
       competency_signal: gated.competency_signal,
     }
-  } catch {
+  } catch (error) {
+    rethrowBudgetError(error)
     return fallback
   }
 }
@@ -257,7 +332,8 @@ export async function gradeElaboration(
   elaborationText: string,
   allOptions: FlowOption[],
   scenario: ScenarioContext,
-  step: FlowStep
+  step: FlowStep,
+  budget?: AiBudget
 ): Promise<ElaborationResult> {
   const bestOption = allOptions.find(o => o.quality === 'best')
 
@@ -289,10 +365,10 @@ Return ONLY JSON:
   }
 
   try {
-    const response = await createCachedMessage(
+    const response = await guardedCachedMessage(
       'You are a product sense elaboration grading agent. Evaluate whether a learner\'s elaboration adds depth to their selected MCQ option.',
       prompt,
-      { model: 'claude-sonnet-4-6', max_tokens: 300, thinking: { type: 'adaptive' } }
+      { model: 'claude-sonnet-4-6', max_tokens: 300, budget }
     )
 
     const textBlock = response.content.find(b => b.type === 'text')
@@ -301,7 +377,7 @@ Return ONLY JSON:
     let parsed: ElaborationResponse | null = null
 
     try {
-      const json = JSON.parse(rawText)
+      const json = parseJsonObject(rawText)
       const validated = ElaborationSchema.safeParse(json)
       if (validated.success) {
         parsed = validated.data
@@ -320,7 +396,8 @@ Return ONLY JSON:
       adjustment_reason: parsed.adjustment_reason,
       additional_competencies: parsed.additional_competencies,
     }
-  } catch {
+  } catch (error) {
+    rethrowBudgetError(error)
     return fallback
   }
 }

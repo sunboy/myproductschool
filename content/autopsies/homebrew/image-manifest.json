@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "homebrew",
+  "story_slug": "homebrew",
+  "story_title": "Homebrew",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/homebrew/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/homebrew/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot beside a terminal showing a clean brew install command completing, representing Homebrew's minimal-friction design.",
+      "caption": "Hatch mascot beside a terminal showing a clean brew install command completing, representing Homebrew's minimal-friction design.",
+      "prompt": "Homebrew | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing next to a macOS terminal showing a single-line brew install command completing successfully. The terminal output is clean and minimal. Hatch's expression is satisfied and calm. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/homebrew/hero.png",
+      "generated_image_sha256": "7852ce2b94800d20b6047534caff50d3c31156a384bf7962440980d36d398464",
+      "final_image_sha256": "51b7c8cadb46643e081de952db8ad4b7959ffbb76f4b7ec98ca3fb37be18bc75",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/homebrew/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/homebrew/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/homebrew/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between complex multi-step installation and a single brew install command, illustrating the ergonomics gap that Homebrew closed.",
+      "caption": "Hatch gesturing between complex multi-step installation and a single brew install command, illustrating the ergonomics gap that Homebrew closed.",
+      "prompt": "Homebrew | hatch-narrator: Hatch in narrator stance, gesturing toward a side-by-side comparison: on the left, a complex multi-step terminal process with root access prompt; on the right, a single brew install command completing cleanly. The contrast is the design lesson. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/homebrew/hatch-narrator.png",
+      "generated_image_sha256": "c337a1e6c35f1d7bcce604d85e8fe3efca898aecf3b89173e6eda258a0540f92",
+      "final_image_sha256": "8b76eb0b53e0c9988045ed0965b48469bad311980252dc42ccb6c052ba32d2a5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/homebrew/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/homebrew/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/homebrew/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a Homebrew formula in readable Ruby and a binary bottle package, illustrating the two mechanisms that reduce installation friction.",
+      "caption": "Hatch examining a Homebrew formula in readable Ruby and a binary bottle package, illustrating the two mechanisms that reduce installation friction.",
+      "prompt": "Homebrew | failure-mechanism: Hatch in thinking pose, looking at a readable Ruby formula snippet next to a compiled binary package icon. Hatch points to both, suggesting they work together to eliminate friction. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/homebrew/failure-mechanism.png",
+      "generated_image_sha256": "a6de7fb814e9063380ca14e44d9c7dca9313b56ac23206309b6d88b4cd345769",
+      "final_image_sha256": "4273d6b6f34e114335576c0493991c349f6bf4685f50e345ac7b0515bdf926a1",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/homebrew/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/homebrew/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/homebrew/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to Homebrew adoption metrics — 40,000+ stars, 6,000+ formulae, and 1,500+ contributors.",
+      "caption": "Hatch pointing to Homebrew adoption metrics — 40,000+ stars, 6,000+ formulae, and 1,500+ contributors.",
+      "prompt": "Homebrew | evidence-card: Hatch pointing at a simple dashboard showing: 40K+ stars, 6,000+ formulae, 1,500+ contributors. Three clean number cards. Expression is analytical. Cream background. Watermark same as hero. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/homebrew/evidence-card.png",
+      "generated_image_sha256": "2b8916250dd6f91586779886279d47cea528f0942cbde87a56905a0b07922512",
+      "final_image_sha256": "83d33b26679a7c2f8f3f81933a62b0003ba78e2ab328264249683e6b08049f7d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/homebrew/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/homebrew/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/homebrew/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance with cascading brew install commands in the background, representing Homebrew's frictionless adoption at scale.",
+      "caption": "Hatch in coaching stance with cascading brew install commands in the background, representing Homebrew's frictionless adoption at scale.",
+      "prompt": "Homebrew | lesson-frame: Hatch in coaching pose — upright, calm, graduation cap settled — next to a large quotation mark. Behind Hatch, a faint cascade of brew install commands in different terminal windows suggests millions of frictionless installations. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/homebrew/lesson-frame.png",
+      "generated_image_sha256": "77b915dd7beb0a0b24608e002b8ff1a66b1e5468997e50f112e5ddf179b2aa74",
+      "final_image_sha256": "bbb352cf778c08b18ef6c993a20c2b05cd33cf3c086e7cddbcb91df424874832",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/homebrew/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/homebrew/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/homebrew/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a brew install terminal command — thumbnail for the Homebrew autopsy.",
+      "caption": "Hatch beside a brew install terminal command — thumbnail for the Homebrew autopsy.",
+      "prompt": "Small, recognizable Hatch mascot bust next to a terminal with \"brew install\" visible. Clean cream background. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/homebrew/hero.png",
+      "generated_image_sha256": "7852ce2b94800d20b6047534caff50d3c31156a384bf7962440980d36d398464",
+      "final_image_sha256": "213240dc09975162775711f974ea6106857a04efc90103b4f51ba1925ff703f6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/homebrew/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/homebrew/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/homebrew/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot with a clean brew install terminal for the Homebrew social share card.",
+      "caption": "Hatch mascot with a clean brew install terminal for the Homebrew social share card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG share card. Clean terminal with brew install command behind Hatch. \"HackProduct\" wordmark prominent bottom-right. Cream background. The scene reads as: the friction cost was the product decision. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/homebrew/hero.png",
+      "generated_image_sha256": "7852ce2b94800d20b6047534caff50d3c31156a384bf7962440980d36d398464",
+      "final_image_sha256": "635714935f6653c2d152f2d87aac609d5966726f7c2878ad7d32e0fad40ea5c1",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/homebrew/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/homebrew/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/homebrew/v1"
+}

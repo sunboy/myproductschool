@@ -7,30 +7,74 @@ import { IS_MOCK } from '@/lib/mock'
 // Flip to false (or remove the block) when ready to launch.
 const PRE_LAUNCH = false
 
-const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-quick', '/waitlist-flow', '/api/waitlist', '/hatch-preview']
+const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-quick', '/waitlist-flow', '/api/waitlist', '/hatch-preview', '/hatch-motion']
 
 // ── Post-launch route config ─────────────────────────────────
 // Marketing / auth pages — accessible without any session.
 // These short-circuit BEFORE we talk to Supabase so they can
 // never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/hatch-preview', '/home']
-const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
+const MARKETING_ROUTES = [
+  '/',
+  '/v3',
+  '/about',
+  '/contact',
+  '/security',
+  '/waitlist',
+  '/waitlist-quick',
+  '/waitlist-flow',
+  '/pricing',
+  '/privacy',
+  '/terms',
+  '/help',
+  '/changelog',
+  '/r',
+  '/flow',
+  '/hatch-preview',
+  '/hatch-motion',
+  '/home',
+  '/role-transitions',
+  '/uplevel',
+  '/salary-negotiation',
+  '/skills',
+  '/companies',
+  '/study-plans',
+  '/practice',
+  '/autopsies',
+  '/autopsy',
+  '/glossary',
+  '/interviews',
+  '/alternatives',
+  '/lp',
+  '/landing',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/manifest.json',
+  '/llms.txt',
+  '/llms-full.txt',
+  '/clone',
+]
+const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/magic-link-sent']
+const AUTH_CALLBACK_ROUTES = ['/auth/callback']
+const EXACT_MARKETING_ROUTES = ['/interview-prep']
+const PUBLIC_SCORECARD_ROUTE =
+  /^\/workspace\/challenges\/[^/]+\/share(?:\/[^/]+(?:\/(?:opengraph-image|twitter-image)[^/]*)?)?$/
 
-// Routes that require a user but NOT a completed profile/onboarding
-const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration']
+// Routes that can be reached before signing in.
+const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration', '/results', '/baseline']
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  if (pathname === '/marketing' || pathname.startsWith('/marketing/')) {
+    const destination = request.nextUrl.clone()
+    destination.pathname = pathname === '/marketing' ? '/' : pathname.replace(/^\/marketing/, '') || '/'
+    return NextResponse.redirect(destination, 308)
+  }
 
   // ── Post-launch: normal auth flow ──────────────────────
   // Bypass auth in mock/testing mode
   if (IS_MOCK) {
     return NextResponse.next()
-  }
-
-  // Hide unimplemented routes
-  if (pathname.startsWith('/cohort')) {
-    return NextResponse.redirect(new URL('/challenges', request.url))
   }
 
   // ── Pre-launch: only waitlist + its API are accessible ──
@@ -47,13 +91,21 @@ export async function proxy(request: NextRequest) {
   const WAITLIST_ROUTES = ['/waitlist', '/waitlist-quick', '/waitlist-flow']
   const isRoot      = pathname === '/'
   const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isExactMarketing = EXACT_MARKETING_ROUTES.includes(pathname)
   const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isAuthCallback = AUTH_CALLBACK_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isPublicScorecard = PUBLIC_SCORECARD_ROUTE.test(pathname)
   const isApi       = pathname.startsWith('/api/')
+  const isAdminApi  = pathname.startsWith('/api/admin')
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
-  const isPureMarketing = isMarketing && !isRoot && !isWaitlist
-  if (isPureMarketing || isApi) {
+  const isPureMarketing = (isMarketing && !isRoot && !isWaitlist) || isExactMarketing
+  if (isRoot || isWaitlist || isAuthRoute) {
+    return NextResponse.next()
+  }
+
+  if (isPureMarketing || isAuthCallback || isPublicScorecard || (isApi && !isAdminApi)) {
     return NextResponse.next()
   }
 
@@ -61,7 +113,7 @@ export async function proxy(request: NextRequest) {
   // This MUST use the full supabaseResponse + setAll pattern so that token
   // refresh works correctly. A lightweight client with setAll(){} no-op causes
   // getUser() / getSession() to return null when the access token needs refreshing.
-  let supabaseResponse = NextResponse.next({ request })
+  const supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -83,6 +135,21 @@ export async function proxy(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+
+  if (isAdminApi) {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    return supabaseResponse
+  }
 
   // Authenticated users visiting / go straight to dashboard.
   // Unauthenticated visitors see the landing page.
@@ -109,7 +176,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     // Authenticated users can access all app routes freely.
-    // Onboarding is optional — dashboard shows CalibrationHero for uncalibrated users.
+    // The dashboard owns the calibrated/uncalibrated experience.
     return supabaseResponse
   }
 

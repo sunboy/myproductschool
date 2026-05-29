@@ -51,7 +51,7 @@ export function NotesModal({ notes, onClose }: NotesModalProps) {
     const text = content.trim()
     if (!text) return
     const color = selectedColor
-    // Optimistic update — prepend immediately
+    // Optimistic update - prepend immediately
     const tempId = `temp-${Date.now()}`
     const optimisticNote: Note = { id: tempId, content: text, color, pinned: false, created_at: new Date().toISOString() }
     setLocalNotes(prev => [optimisticNote, ...prev])

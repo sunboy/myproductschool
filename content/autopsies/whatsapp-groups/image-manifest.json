@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "meta",
+  "story_slug": "whatsapp-groups",
+  "story_title": "WhatsApp Groups",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/whatsapp-groups/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/whatsapp-groups/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A large green speech bubble holds six circles representing a group while a faded two-circle bubble sits in the corner.",
+      "caption": "One new thread shape that held more than two phone numbers.",
+      "prompt": "WhatsApp Groups | hero: A flat geometric HackProduct autopsy hero illustration for WhatsApp Groups. Canvas role hero at aspect 2400x1350. Show a single large forest green speech bubble at the center of the canvas containing six small circular shapes inside it, each circle a different shade between cream, mist, and soft amber to represent the members of a group thread. A single soft amber circle slightly larger than the others sits at the top of the cluster to suggest the admin. Connected to the large bubble by a thin forest green line is a small grey speech bubble in the lower left, mostly faded, labelled with two faint circles to represent the old one-to-one chat. The contrast between the one-to-one bubble and the group bubble is the focus. Hatch as a small narrator at the lower right, about 14 percent of canvas height, in narrator pose, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream background. Leave quiet space in the upper left for title overlay. No human faces, no fake WhatsApp UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/whatsapp-groups/hero.png",
+      "generated_image_sha256": "021c5f84e1975e8c556e8edf2e303cc720b2a9b908c689a680f4803e8e46936b",
+      "final_image_sha256": "e9d494847a06ecc5e8fc26cc6ecaa032d385ca5618c9dfeee314d633bfde3b5d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-groups/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-groups/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/whatsapp-groups/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A stack of six identical chat tiles shows the same message being copied to many contacts while Hatch points at the duplicate column.",
+      "caption": "A stack of six identical chat tiles shows the same message being copied to many contacts while Hatch points at the duplicate column.",
+      "prompt": "WhatsApp Groups | hatch-narrator: A flat geometric HackProduct illustration of a 2011 chat list cluttered with parallel one-to-one threads. Canvas role hatch-narrator at aspect 1600x1600. Show a vertical strip of six identical small message tiles stacked on top of each other in mist with charcoal outlines, each tile containing the same tiny green dot in the same position to convey the same message being copy-pasted to many contacts. The stack is on a cream background, with a soft amber pressure ring around the stack. Hatch at center right, about 30 percent of canvas height, in narrator pose pointing at the duplicated stack, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no real WhatsApp UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/whatsapp-groups/hatch-narrator.png",
+      "generated_image_sha256": "998089795f7e3e12b61e0d166a8049dee63c1e77b9169cbeb098632ba725f130",
+      "final_image_sha256": "92704b0d6c836fad0c722892733ba46ad153c73fa9484159bb94c59dcad7c98f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-groups/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-groups/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/whatsapp-groups/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A small one-to-one bubble on the left connects via an arrow to a large group bubble holding eight circles with a small admin crown above one.",
+      "caption": "A small one-to-one bubble on the left connects via an arrow to a large group bubble holding eight circles with a small admin crown above one.",
+      "prompt": "WhatsApp Groups | failure-mechanism: A flat geometric HackProduct mechanism illustration of how a group thread is built on top of an existing chat. Canvas role failure-mechanism at aspect 1800x1200. Show a horizontal split. On the left a small mist speech bubble containing two tiny circles, labelled in small charcoal type as One to one. On the right a much larger forest green speech bubble of the same outer shape containing eight small circles inside it, labelled Group. A thick forest green arrow runs from the left bubble to the right bubble. Between them in the middle a single soft amber crown shape sits above one circle on the right to represent the admin. Cream background, deep forest linework. Hatch in thinking pose at the lower left, about 18 percent of canvas height, pointing at the arrow, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no fake WhatsApp UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/whatsapp-groups/failure-mechanism.png",
+      "generated_image_sha256": "6d31b7f11ba9957a8ae1636b00d0fd70eb63e334959107858493cc7e524d3a96",
+      "final_image_sha256": "fc2fdf91c7bda0d53df54a8da2e15ec1c4242e6fdd42cb9ca871423edaf0a236",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-groups/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-groups/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/whatsapp-groups/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A large 1B figure sits next to a small ascending bar chart with the label messages per day, October 2011.",
+      "caption": "A large 1B figure sits next to a small ascending bar chart with the label messages per day, October 2011.",
+      "prompt": "WhatsApp Groups | evidence-card: A flat geometric HackProduct evidence card visualising the October 2011 one billion messages per day milestone. Canvas role evidence-card at aspect 1600x1000. Show a single large forest green numeral 1 with a small mist coloured B beside it, on a cream background, with a soft amber underline. Below the number, a thin charcoal label reading messages per day, October 2011. To the right of the figure, a small mist coloured bar chart of three ascending bars labelled 2010, early 2011, late 2011 to suggest the growth path. Hatch absent. Use one short label and one visible artifact shape only. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Hatch must not appear in this image. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/whatsapp-groups/evidence-card.png",
+      "generated_image_sha256": "7dffd6dd8fea800fb94e6d1a62bf591cbaa362385ad9f01bc0388df6c1a4fffd",
+      "final_image_sha256": "98a0329c9c897bf6f4aac7b22f0c2406ed18d0e33afbd020feeca425f0764462",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-groups/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-groups/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/whatsapp-groups/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A small green new object tile sends three arrows out to existing surfaces labelled chat list, message bubble, and notifications while Hatch watches from the corner.",
+      "caption": "A small green new object tile sends three arrows out to existing surfaces labelled chat list, message bubble, and notifications while Hatch watches from the corner.",
+      "prompt": "WhatsApp Groups | lesson-frame: A flat geometric HackProduct lesson illustration. Canvas role lesson-frame at aspect 1800x1200. Show a single forest green tile at the lower left containing the words new object in small charcoal type, with three forest green arrows fanning out to three larger mist coloured rectangles labelled chat list, message bubble, notifications, each rectangle outlined in deep forest. A small soft amber pulse sits over each arrow tip to suggest reuse. Cream background. Hatch in coaching pose at the upper right, about 22 percent of canvas height, calm and explanatory, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no fake WhatsApp UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/whatsapp-groups/lesson-frame.png",
+      "generated_image_sha256": "5bdb4671412969597b4fb1a923f02ed64221130077f1933ddb9bafad02a582df",
+      "final_image_sha256": "32f2f45e36eb8501e96530618e4b3ec5510177bcb19cda13028963e2efc99ad4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-groups/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-groups/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/whatsapp-groups/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A large green speech bubble holds five small circles with a soft amber admin dot and a tiny Hatch silhouette in the corner.",
+      "caption": "A large green speech bubble holds five small circles with a soft amber admin dot and a tiny Hatch silhouette in the corner.",
+      "prompt": "A flat geometric HackProduct thumbnail composition for WhatsApp Groups. Canvas role thumbnail at aspect 1200x900. Show a single large forest green speech bubble centred on the canvas holding five small cream circles inside it. A soft amber dot sits over the topmost circle to suggest the admin. A tiny Hatch mark, just the rounded green head silhouette with cap and growth arrow, sits in the bottom left at about 8 percent of canvas height. Make the decision readable at small size with one strong focal shape. Cream background. No human faces, no fake WhatsApp UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/whatsapp-groups/hero.png",
+      "generated_image_sha256": "021c5f84e1975e8c556e8edf2e303cc720b2a9b908c689a680f4803e8e46936b",
+      "final_image_sha256": "13db7aa052151b559ddd79a9ea12fcbfbb8fde89ec03c7f66cc3021ab044a9d3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-groups/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-groups/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/whatsapp-groups/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three speech bubbles in a row grow from two circles to six circles to twelve circles with a small Hatch in the corner.",
+      "caption": "Three speech bubbles in a row grow from two circles to six circles to twelve circles with a small Hatch in the corner.",
+      "prompt": "A flat geometric HackProduct social cover for WhatsApp Groups. Canvas role social-cover at aspect 2400x1260. Show a horizontal arrangement, on the left a single small mist speech bubble holding two circles, in the centre a forest green speech bubble holding six circles, on the right an even larger forest green bubble holding twelve circles, the three bubbles connected by a thin forest green arrow that grows wider as it moves right to suggest the surface multiplying. Cream background with a faint soft amber diagonal band. A small Hatch in narrator pose at the lower right at about 12 percent of canvas height, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the center 70 percent clear of edge-critical details. No human faces, no fake WhatsApp UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/whatsapp-groups/hero.png",
+      "generated_image_sha256": "021c5f84e1975e8c556e8edf2e303cc720b2a9b908c689a680f4803e8e46936b",
+      "final_image_sha256": "b341157627edcb0204bcb083a0ae8a8ec51b2982c059548fa31faf237af3d63e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-groups/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-groups/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/whatsapp-groups/v1"
+}

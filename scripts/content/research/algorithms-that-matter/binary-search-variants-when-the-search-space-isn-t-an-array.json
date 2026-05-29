@@ -1,0 +1,289 @@
+{
+  "facts": [
+    {
+      "fact": "Binary search on answer space works when the feasibility condition is monotonic: if x works, then all greater values also work (or vice versa)",
+      "source": "https://algo.monster/problems/binary-search-monotonic",
+      "date": "2024"
+    },
+    {
+      "fact": "Default load factor for HashMap is 0.75, representing a balance between memory density and collision frequency",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2023"
+    },
+    {
+      "fact": "Java 8+ HashMap uses red-black trees (not linked lists) for collision chains when bucket contains 8+ entries, improving worst-case search from O(n) to O(log n)",
+      "source": "https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html",
+      "date": "2014"
+    },
+    {
+      "fact": "AVL trees have worst-case height bounded by approximately 1.44 log n, while red-black trees bound height at 2 log n",
+      "source": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree",
+      "date": "2024"
+    },
+    {
+      "fact": "Red-black trees require at most 2 rotations after insertion and 3 rotations after deletion; AVL trees require many more rotations",
+      "source": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree",
+      "date": "2024"
+    },
+    {
+      "fact": "Tries search time is O(M) where M is key length, independent of number of keys; BST requires O(M log N)",
+      "source": "https://www.baeldung.com/cs/heap-vs-binary-search-tree",
+      "date": "2024"
+    },
+    {
+      "fact": "Doubling array capacity ensures appending n elements takes O(n) total time, making each append O(1) amortized",
+      "source": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis",
+      "date": "2024"
+    },
+    {
+      "fact": "When resizing HashMap, if current capacity is 16, rehashing occurs when 12 buckets are full (0.75 × 16)",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2023"
+    },
+    {
+      "fact": "Separate chaining can operate at load factor up to 100%, while open addressing typically maintains 50% load factor for performance",
+      "source": "https://www.geeksforgeeks.org/dsa/open-addressing-collision-handling-technique-in-hashing/",
+      "date": "2024"
+    },
+    {
+      "fact": "Cache performance favors open addressing over chaining because contiguous memory access in open addressing enables CPU cache hits",
+      "source": "https://www.geeksforgeeks.org/dsa/open-addressing-collision-handling-technique-in-hashing/",
+      "date": "2024"
+    },
+    {
+      "fact": "Fibonacci DP can be reduced to O(1) space by maintaining only two variables: prev and cur, updating them via simultaneous assignment",
+      "source": "https://www.enjoyalgorithms.com/blog/zero-one-knapsack-problem/",
+      "date": "2024"
+    },
+    {
+      "fact": "0/1 Knapsack space can be optimized from O(n×W) to O(W) using a single 1D array with reverse traversal to prevent overwriting needed values",
+      "source": "https://www.geeksforgeeks.org/dsa/space-optimized-dp-solution-0-1-knapsack-problem/",
+      "date": "2024"
+    },
+    {
+      "fact": "Linear probing in open addressing suffers from clustering, degrading performance; double hashing provides more even key distribution",
+      "source": "https://www.geeksforgeeks.org/dsa/open-addressing-collision-handling-technique-in-hashing/",
+      "date": "2024"
+    },
+    {
+      "fact": "Exponential search extends binary search to unbounded lists by finding range [2^i, 2^(i+1)) containing target, then running binary search",
+      "source": "https://medium.com/@samradnus2001/binary-search-variations-a-complete-guide-f776780703f9",
+      "date": "2024"
+    },
+    {
+      "fact": "Trie insertion and search operate in O(M) time where M is key length; no hash collisions and natural prefix decomposition",
+      "source": "https://medium.com/@hanxuyang0826/tries-demystified-how-this-simple-data-structure-powers-autocomplete-and-more-95e608bcab7d",
+      "date": "2024"
+    },
+    {
+      "fact": "In bottom-up DP, if current state depends on fixed number of previous states, space can be optimized using sliding window technique",
+      "source": "https://algomap.io/lessons/dynamic-programming",
+      "date": "2024"
+    },
+    {
+      "fact": "Amortized analysis for dynamic array doubling: total cost of n appends = n (appends) + 2n (doubling copies) = 3n, giving O(1) amortized per append",
+      "source": "https://courses.cs.duke.edu/spring19/compsci330/lecture21scribe.pdf",
+      "date": "2019"
+    }
+  ],
+  "examples": [
+    {
+      "problem": "Koko Eating Bananas (LeetCode 875)",
+      "description": "Binary search on answer space. Given bananas and hours limit, find minimum eating speed. Feasibility is monotonic: if speed k works, all k+1 also work.",
+      "url": "https://algo.monster/problems/binary-search-monotonic"
+    },
+    {
+      "problem": "Capacity to Ship Packages Within D Days (LeetCode 1011)",
+      "description": "Binary search on answer (ship capacity). If capacity C works, all larger capacities work. Search space is not an array.",
+      "url": "https://algo.monster/problems/binary-search-monotonic"
+    },
+    {
+      "problem": "Implement Trie / Prefix Tree (LeetCode 208)",
+      "description": "Trie insertion inserts each character as node; search is O(word length). Autocomplete via DFS from prefix node.",
+      "url": "https://leetcode.com/problems/implement-trie-prefix-tree/"
+    },
+    {
+      "problem": "0/1 Knapsack Problem",
+      "description": "Classic DP problem. Full table is O(n×W); space-optimized with rolling array is O(W). Reverse traversal prevents value overwriting.",
+      "url": "https://www.geeksforgeeks.org/dsa/space-optimized-dp-solution-0-1-knapsack-problem/"
+    },
+    {
+      "problem": "Fibonacci Number (LeetCode 509)",
+      "description": "Can compute F(n) in O(1) space by tracking only previous two values; demonstrates space optimization via variable reuse.",
+      "url": "https://algomap.io/problems/fibonacci-number"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Binary search on answer space is like finding the highest temperature an engine can tolerate: if 80°C works, 81°C also works. Test the boundary monotonically.",
+      "source": "https://algo.monster/problems/binary-search-monotonic"
+    },
+    {
+      "analogy": "Load factor 0.75 is like a parking garage: too sparse (0.3) wastes space; too dense (0.95) creates chaos. 0.75 balances congestion and utilization.",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor"
+    },
+    {
+      "analogy": "AVL trees vs red-black trees: AVL is a neat filing cabinet (tightly organized, more lookups faster), red-black is flexible shelving (fewer rearrangements, faster adds/deletes).",
+      "source": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree"
+    },
+    {
+      "analogy": "Trie is a phone directory organized by first letter branches: you don't search all names, just narrow down by prefix first.",
+      "source": "https://medium.com/@hanxuyang0826/tries-demystified-how-this-simple-data-structure-powers-autocomplete-and-more-95e608bcab7d"
+    },
+    {
+      "analogy": "Space-optimized DP using two variables is like a running total: you don't need all past months' budgets, just the previous month to compute this month.",
+      "source": "https://algomap.io/lessons/dynamic-programming"
+    }
+  ],
+  "key_numbers": [
+    {
+      "number": "0.75",
+      "context": "Default load factor threshold in HashMap; triggers resize when 75% capacity filled",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor"
+    },
+    {
+      "number": "2",
+      "context": "Maximum rotations required in red-black tree after insertion; AVL trees often require many more",
+      "source": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree"
+    },
+    {
+      "number": "3",
+      "context": "Maximum rotations required in red-black tree after deletion",
+      "source": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree"
+    },
+    {
+      "number": "1.44",
+      "context": "Coefficient in height bound for AVL trees: height ≈ 1.44 × log(n); red-black is 2 × log(n)",
+      "source": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree"
+    },
+    {
+      "number": "8",
+      "context": "In Java 8+ HashMap, collision chain converts to red-black tree when chain length ≥ 8, improving worst-case from O(n) to O(log n)",
+      "source": "https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html"
+    },
+    {
+      "number": "50%",
+      "context": "Typical load factor limit for open addressing hash tables; separate chaining can go to 100%",
+      "source": "https://www.geeksforgeeks.org/dsa/open-addressing-collision-handling-technique-in-hashing/"
+    },
+    {
+      "number": "O(1)",
+      "context": "Space complexity for Fibonacci DP using two variables (prev, cur); time remains O(n)",
+      "source": "https://algomap.io/problems/fibonacci-number"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Binary search only works on sorted arrays",
+      "reality": "Binary search applies to any monotonic search space where feasibility condition is monotonic. Answer-space search, rotated arrays, and custom predicates all work.",
+      "source": "https://algo.monster/problems/binary-search-monotonic"
+    },
+    {
+      "misconception": "Higher load factor = always better (more memory density)",
+      "reality": "Higher load factor increases collisions and average lookup cost. 0.75 is empirical sweet spot; >0.75 degrades performance substantially.",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor"
+    },
+    {
+      "misconception": "AVL trees are always faster than red-black trees",
+      "reality": "AVL is faster for lookup-heavy workloads (tighter balance); red-black is faster for insert/delete-heavy workloads (fewer rotations).",
+      "source": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree"
+    },
+    {
+      "misconception": "Tries are slower than hash maps for string lookup",
+      "reality": "Tries have O(key length) lookup, independent of total keys; hash maps need hash + collision resolution. Tries also naturally support prefix queries.",
+      "source": "https://medium.com/@hanxuyang0826/tries-demystified-how-this-simple-data-structure-powers-autocomplete-and-more-95e608bcab7d"
+    },
+    {
+      "misconception": "Space-optimized DP always uses less memory than full DP tables",
+      "reality": "Space optimization requires careful traversal order (e.g., reverse for knapsack) to prevent overwriting values you still need. Order matters.",
+      "source": "https://www.geeksforgeeks.org/dsa/space-optimized-dp-solution-0-1-knapsack-problem/"
+    },
+    {
+      "misconception": "Doubling array capacity every resize causes O(n) per append",
+      "reality": "Geometric series (1+2+4+8+...) sums to 2n, making total cost O(n) for n appends. Each append is O(1) amortized despite occasional resize.",
+      "source": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis"
+    },
+    {
+      "misconception": "Open addressing always uses less memory than chaining",
+      "reality": "Open addressing uses contiguous memory (better cache), but must maintain low load factor (~50%) for performance; chaining can sustain 100%.",
+      "source": "https://www.geeksforgeeks.org/dsa/open-addressing-collision-handling-technique-in-hashing/"
+    },
+    {
+      "misconception": "Amortized O(1) means every operation is O(1)",
+      "reality": "Amortized O(1) means average cost across many operations is O(1); individual operations vary (most are O(1), occasional resizes are O(n)).",
+      "source": "https://yourbasic.org/algorithms/amortized-time-complexity-analysis/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://algo.monster/problems/binary-search-monotonic",
+      "title": "Binary Search and Monotonic Function",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.baeldung.com/java-hashmap-load-factor",
+      "title": "Java HashMap Load Factor",
+      "recency_note": "2023"
+    },
+    {
+      "url": "https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html",
+      "title": "Java 8 HashMap Documentation",
+      "recency_note": "2014 (official docs, stable)"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree",
+      "title": "Red-Black Tree vs AVL Tree",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis",
+      "title": "Dynamic Array Amortized Analysis",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://medium.com/@hanxuyang0826/tries-demystified-how-this-simple-data-structure-powers-autocomplete-and-more-95e608bcab7d",
+      "title": "Tries Demystified: How This Simple Data Structure Powers Autocomplete",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://algomap.io/lessons/dynamic-programming",
+      "title": "Dynamic Programming: Memoization & Tabulation",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/open-addressing-collision-handling-technique-in-hashing/",
+      "title": "Open Addressing Collision Handling Technique",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://yourbasic.org/algorithms/amortized-time-complexity-analysis/",
+      "title": "Amortized Time Complexity Analysis",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/space-optimized-dp-solution-0-1-knapsack-problem/",
+      "title": "Space Optimized DP Solution for 0/1 Knapsack",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://algomap.io/problems/fibonacci-number",
+      "title": "Fibonacci Number - LeetCode Solution",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://courses.cs.duke.edu/spring19/compsci330/lecture21scribe.pdf",
+      "title": "Duke CS330 Lecture 21: Amortized Analysis",
+      "recency_note": "2019 (academic, stable)"
+    },
+    {
+      "url": "https://leetcode.com/problems/implement-trie-prefix-tree/",
+      "title": "Implement Trie / Prefix Tree - LeetCode",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://medium.com/@samradnus2001/binary-search-variations-a-complete-guide-f776780703f9",
+      "title": "Binary Search Variations: A Complete Guide",
+      "recency_note": "2024"
+    }
+  ]
+}

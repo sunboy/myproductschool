@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "raycast",
+  "story_slug": "raycast",
+  "story_title": "Raycast's Developer-First Launcher",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/raycast/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/raycast/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing at a launcher with extension icons radiating outward, representing Raycast's ecosystem.",
+      "caption": "Hatch standing at a launcher with extension icons radiating outward, representing Raycast's ecosystem.",
+      "prompt": "Raycast's Developer-First Launcher | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing at a macOS launcher interface with dozens of colorful extension icons radiating outward from it — representing the extension ecosystem. Hatch looks proud, like it built the platform. Cream background, no speech bubbles. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400×1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/raycast/hero.png",
+      "generated_image_sha256": "001b534a030a93f7f3e354c85117ef54b6d99c250ccca32594c0cbd2d211ebd7",
+      "final_image_sha256": "050f7a5c435e1428faa7e177f9ae83adae2311c875d953954a77fef1757d1514",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/raycast/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/raycast/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/raycast/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch observing the limitations of plain search boxes and Applescript-based extensions.",
+      "caption": "Hatch observing the limitations of plain search boxes and Applescript-based extensions.",
+      "prompt": "Raycast's Developer-First Launcher | hatch-narrator: Hatch in narrator pose looking at two old-style launcher interfaces: one is a plain search box (Spotlight), the other has a script editor showing Applescript code (Alfred extensions). Hatch's expression suggests \"there is a better way.\" Cream background. Aspect 1600×1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/raycast/hatch-narrator.png",
+      "generated_image_sha256": "de7c39ef6a27c141f540570a2b8bb4c1e975c275f647b42dceab258361e9a146",
+      "final_image_sha256": "d6d1bf9553b5e0c492a04781696e7abf2a774957fc2ac4e25b751fb6fa0bfd0f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/raycast/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/raycast/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/raycast/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a React-based Raycast extension with the rendered output next to the code.",
+      "caption": "Hatch examining a React-based Raycast extension with the rendered output next to the code.",
+      "prompt": "Raycast's Developer-First Launcher | failure-mechanism: Hatch in thinking pose looking at a code editor showing a React component — a simple Raycast extension implementation with familiar JSX syntax. Next to the code, a rendered Raycast List view shows the extension output. The connection between \"familiar code\" and \"powerful tool\" is the visual. Cream background. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/raycast/failure-mechanism.png",
+      "generated_image_sha256": "f3e4e09b7207bfe403d24fb59a9d8147e5df703ed6b06bd76e753ac14e92d780",
+      "final_image_sha256": "5ba75a35d2386843eaa928703a5b6d544d385227fd07b7d93aa47fd4776fb862",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/raycast/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/raycast/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/raycast/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch presenting the Raycast extension store with over 1,000 community-built tools.",
+      "caption": "Hatch presenting the Raycast extension store with over 1,000 community-built tools.",
+      "prompt": "Raycast's Developer-First Launcher | evidence-card: Hatch pointing at a grid of extension icons — 12-16 small colored squares representing different tools (GitHub, Linear, Notion, etc.). A counter in the corner shows \"1,000+\". Clean, organized display. Cream background. Aspect 1600×1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/raycast/evidence-card.png",
+      "generated_image_sha256": "ad54e10da017be5ef3d54ece96654f316c78c742f3140442f550d4b5ada13ea4",
+      "final_image_sha256": "a07d7048b0a90d24363e65153f6b2b79dc67d9b1f2d32d013a47e3cb27095d59",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/raycast/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/raycast/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/raycast/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch coaching on the relationship between a small core platform and a large extension ecosystem.",
+      "caption": "Hatch coaching on the relationship between a small core platform and a large extension ecosystem.",
+      "prompt": "Raycast's Developer-First Launcher | lesson-frame: Hatch in coaching pose with a visual showing a small core platform (the launcher) and a large ecosystem (hundreds of extensions) built around it. The proportion illustrates that the ecosystem dwarfs the core. Cream background. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/raycast/lesson-frame.png",
+      "generated_image_sha256": "6f88bfbe7e1321697a7b5bce33f35e4889642b40ca7d8c5aa8bd31238761577f",
+      "final_image_sha256": "852b74f38581b91bb7bed0dfb8a19d154ae6a10e2645a80c2d33b273dcc9e7b3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/raycast/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/raycast/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/raycast/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a compact launcher with extension icons extending beyond its frame.",
+      "caption": "Hatch holding a compact launcher with extension icons extending beyond its frame.",
+      "prompt": "Hatch holding a small launcher window with a few extension icons peeking out the sides — compact, recognizable as a \"platform\" not just a \"tool.\" Cream background. Aspect 1200×900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/raycast/hero.png",
+      "generated_image_sha256": "001b534a030a93f7f3e354c85117ef54b6d99c250ccca32594c0cbd2d211ebd7",
+      "final_image_sha256": "db6fc09a818f7a6c412ce0c05a7a8d89d63a632ca31051dd57c634e02b275608",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/raycast/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/raycast/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/raycast/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch between a simple search box and a full extension platform, representing Raycast's strategic choice.",
+      "caption": "Hatch between a simple search box and a full extension platform, representing Raycast's strategic choice.",
+      "prompt": "Hatch in hero pose adapted for wide share card: on the left, a bare search box; on the right, a launcher with an extension ecosystem radiating outward. Title text area at left third. Cream background, HackProduct wordmark bottom-right. Aspect 2400×1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/raycast/hero.png",
+      "generated_image_sha256": "001b534a030a93f7f3e354c85117ef54b6d99c250ccca32594c0cbd2d211ebd7",
+      "final_image_sha256": "bbd91c02b0dbbf2974b4d49b62f984d5657729cd8107cf76a92373cc429b53ed",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/raycast/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/raycast/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/raycast/v1"
+}

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getHatchContext } from '@/lib/hatch-context'
+import { buildSkillContextPack, type SkillDiscipline } from '@/lib/hatch/skill-context'
 import type { FlowMove } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
@@ -18,11 +18,11 @@ const MOCK_NEXT = {
   reason: 'Targets your weakest move: Frame',
   targets_move: 'frame' as FlowMove,
   recommendation_type: 'weakest_move',
-  hatch_insight: 'Your list move is at Level 1 — this challenge drills exactly that.',
+  hatch_insight: 'Your list move is at Level 1 - this challenge drills exactly that.',
 }
 
 // Generate a topic-based tip from challenge data (used when user is uncalibrated)
-function topicTip(challenge: { title?: string; move_tags?: string[]; prompt_text?: string }): string {
+function topicTip(challenge: { title?: string; move_tags?: string[]; prompt_text?: string }, discipline: SkillDiscipline): string {
   const title = challenge.title ?? 'this challenge'
   const move = challenge.move_tags?.[0]
   const movePhrases: Record<string, string> = {
@@ -32,16 +32,20 @@ function topicTip(challenge: { title?: string; move_tags?: string[]; prompt_text
     sell: 'how to communicate decisions to stakeholders',
   }
   const movePhrase = move ? movePhrases[move] ?? 'product thinking' : 'product thinking'
-  return `This challenge teaches you ${movePhrase}. Give it a try — no prior scores needed.`
+  return `Start with ${title}. It gives you a clean ${discipline} rep on ${movePhrase}.`
 }
 
 // Generate a move-targeted tip (used when user is calibrated)
-function moveTip(move: string, challengeTitle: string): string {
+function moveTip(move: string, challengeTitle: string, weakestCompetency: string | null): string {
   const tips: Record<string, string> = {
     frame: `Practice defining the right problem before jumping to solutions.`,
-    list: `Work on breaking "${challengeTitle}" into its core components — this sharpens your List move.`,
-    weigh: `This is a great exercise in trade-off thinking — your Weigh move needs the most practice.`,
-    sell: `Focus on how you'd explain your reasoning to a stakeholder — that's your growth area.`,
+    list: `Work on breaking "${challengeTitle}" into its core components - this sharpens your List move.`,
+    weigh: `This is a great exercise in trade-off thinking - your Weigh move needs the most practice.`,
+    sell: `Focus on how you'd explain your reasoning to a stakeholder - that's your growth area.`,
+    win: `Use this to land a clear recommendation, success metric, and tradeoff.`,
+  }
+  if (weakestCompetency) {
+    return `Use this next to work on ${weakestCompetency}. ${tips[move] ?? 'Keep the answer specific and action-oriented.'}`
   }
   return tips[move] ?? `This challenge targets your weakest move. Give it a shot.`
 }
@@ -63,7 +67,7 @@ function deriveHatchInsight(
     sell: 'sell',
   }
   const label = moveLabels[weakestFlowMove] ?? weakestFlowMove
-  return `Your ${label} move is at Level ${level} — this challenge drills exactly that.`
+  return `Your ${label} move is at Level ${level}. This is the next useful rep.`
 }
 
 export async function GET() {
@@ -77,12 +81,16 @@ export async function GET() {
 
   const adminClient = createAdminClient()
 
-  // Fetch Hatch context alongside profile/levels/completions
-  const [{ data: profile }, { data: levels }, { data: completedAttempts }, hatchCtx] = await Promise.all([
+  // Fetch learner context alongside profile/levels/completions.
+  const [{ data: profile }, { data: levels }, { data: completedAttempts }, skillPack] = await Promise.all([
     adminClient.from('profiles').select('preferred_role').eq('id', user.id).single(),
     adminClient.from('move_levels').select('move, xp').eq('user_id', user.id).order('xp', { ascending: true }).limit(1),
-    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).not('submitted_at', 'is', null),
-    getHatchContext(user.id),
+    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).eq('status', 'completed'),
+    buildSkillContextPack({
+      userId: user.id,
+      surface: 'recommendation',
+      includePracticeLink: false,
+    }),
   ])
 
   const isCalibrated = (levels ?? []).length > 0 && (completedAttempts ?? []).length > 0
@@ -90,7 +98,7 @@ export async function GET() {
   const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
 
   // Derive weakest FLOW move from Hatch context move levels
-  const hatchMoveLevels = hatchCtx.moveLevels
+  const hatchMoveLevels = skillPack.raw.moveLevels
   const weakestFlowMove = hatchMoveLevels.length > 0
     ? [...hatchMoveLevels].sort((a, b) => a.level - b.level)[0].move
     : null
@@ -104,48 +112,7 @@ export async function GET() {
     is_active: true,
   }).then(() => {}, () => {})
 
-  // Try semantic novelty path: get user's last 5 response embeddings and compute centroid
-  const { data: recentEmbeddings } = await adminClient
-    .from('challenge_attempts')
-    .select('response_embedding')
-    .eq('user_id', user.id)
-    .not('response_embedding', 'is', null)
-    .order('submitted_at', { ascending: false })
-    .limit(5)
-
-  if (recentEmbeddings && recentEmbeddings.length >= 3) {
-    // Compute centroid of recent response embeddings
-    const vecs = recentEmbeddings.map((r: { response_embedding: number[] }) => r.response_embedding)
-    const dims = vecs[0].length
-    const centroid = Array.from({ length: dims }, (_, i) =>
-      vecs.reduce((sum, v) => sum + v[i], 0) / vecs.length
-    )
-
-    // Find semantically novel challenges (outside comfort zone)
-    const { data: novelChallenges } = await adminClient.rpc('match_novel_challenges', {
-      user_centroid: JSON.stringify(centroid),
-      exclude_ids: completedIds.length > 0 ? completedIds : [],
-      match_count: 5,
-    })
-
-    if (novelChallenges && novelChallenges.length > 0) {
-      const weakestFirst = novelChallenges.find(
-        (c: { move_tags: string[] }) => c.move_tags?.includes(weakestMove)
-      ) ?? novelChallenges[0]
-
-      return NextResponse.json({
-        challenge: weakestFirst,
-        reason: `Hatch picked this to push you outside your thinking comfort zone`,
-        tip: topicTip(weakestFirst),
-        targets_move: weakestMove,
-        recommendation_type: 'semantic_novelty',
-        is_calibrated: isCalibrated,
-        hatch_insight,
-      })
-    }
-  }
-
-  // Fallback: weakest-move SQL filter (no embeddings yet)
+  // Weakest-move SQL filter. Response embeddings are not part of the live launch schema.
   let query = adminClient
     .from('challenges')
     .select('id, slug, title, prompt_text, difficulty, domain_id, move_tags, relevant_roles, paradigm')
@@ -179,7 +146,7 @@ export async function GET() {
     return NextResponse.json({
       challenge: fallback,
       reason: 'A good place to start',
-      tip: topicTip(fallback),
+      tip: topicTip(fallback, skillPack.discipline),
       targets_move: weakestMove,
       recommendation_type: 'fallback',
       is_calibrated: isCalibrated,
@@ -190,11 +157,11 @@ export async function GET() {
   return NextResponse.json({
     challenge,
     reason: isCalibrated
-      ? `Targets your weakest move: ${weakestMove.charAt(0).toUpperCase() + weakestMove.slice(1)}`
-      : 'A good place to start',
+      ? `Targets ${skillPack.weakestCompetency ?? `${weakestMove.charAt(0).toUpperCase() + weakestMove.slice(1)} practice`}.`
+      : `A good ${skillPack.discipline} place to start.`,
     tip: isCalibrated
-      ? moveTip(weakestMove, challenge.title)
-      : topicTip(challenge),
+      ? moveTip(weakestMove, challenge.title, skillPack.weakestCompetency)
+      : topicTip(challenge, skillPack.discipline),
     targets_move: weakestMove,
     recommendation_type: 'weakest_move',
     is_calibrated: isCalibrated,

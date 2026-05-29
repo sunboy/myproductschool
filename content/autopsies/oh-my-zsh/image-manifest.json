@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "ohmyzsh",
+  "story_slug": "oh-my-zsh",
+  "story_title": "Oh My Zsh",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/oh-my-zsh/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/oh-my-zsh/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot in front of a colorful Oh My Zsh terminal prompt surrounded by contributor icons, illustrating community-maintained development.",
+      "caption": "Hatch mascot in front of a colorful Oh My Zsh terminal prompt surrounded by contributor icons, illustrating community-maintained development.",
+      "prompt": "Oh My Zsh | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing in front of a terminal window showing a colorful Zsh prompt with Oh My Zsh theming. Multiple contributor avatars are visible around the terminal like a constellation. Hatch's expression is warm and curious. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/oh-my-zsh/hero.png",
+      "generated_image_sha256": "3202e0a81d85fa17fa63d71a32121e48ff568f9ad757d098cfbbd6238e0c2745",
+      "final_image_sha256": "9ed66dfb76a9a034e77386ae252ecc69bd417e9fe7b867b7b30cd452f230fe11",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/oh-my-zsh/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/oh-my-zsh/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/oh-my-zsh/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between a plain terminal and a vibrant Oh My Zsh terminal, illustrating the configuration value proposition.",
+      "caption": "Hatch gesturing between a plain terminal and a vibrant Oh My Zsh terminal, illustrating the configuration value proposition.",
+      "prompt": "Oh My Zsh | hatch-narrator: Hatch in narrator stance, gesturing toward a plain terminal with a blinking cursor next to a vibrant Oh My Zsh terminal with colorful prompt, git status, and autocomplete suggestions. The contrast is the point — before and after. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/oh-my-zsh/hatch-narrator.png",
+      "generated_image_sha256": "b1031bb5a0f8748b039cae674b28a4db7aff69362c4b058e3ff482a772a3b6cd",
+      "final_image_sha256": "42dee4bbc282d247031fd73018203f23c1fff850903141763c86d5f0e5e4b09c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/oh-my-zsh/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/oh-my-zsh/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/oh-my-zsh/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining the Oh My Zsh contribution loop — from individual configuration through plugin contribution to automatic distribution for future users.",
+      "caption": "Hatch examining the Oh My Zsh contribution loop — from individual configuration through plugin contribution to automatic distribution for future users.",
+      "prompt": "Oh My Zsh | failure-mechanism: Hatch in thinking pose, looking at a simple loop diagram: Developer configures tool → Contributes plugin → Plugin joins distribution → Next developer installs with plugin pre-loaded → Repeat. Each step is a simple icon connected by arrows. Hatch points to the loop's self-sustaining quality. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/oh-my-zsh/failure-mechanism.png",
+      "generated_image_sha256": "f473c4ee3bc0a2c0bbbdfca1e1522526810f470eb8d496b64783976dc9e8f8b0",
+      "final_image_sha256": "b39b03624894bd2c52c8fdb67ee21b9aea51552a61bdfc6e4e176471de727a40",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/oh-my-zsh/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/oh-my-zsh/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/oh-my-zsh/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to Oh My Zsh star growth chart reaching 170,000 stars and 2,200+ contributors.",
+      "caption": "Hatch pointing to Oh My Zsh star growth chart reaching 170,000 stars and 2,200+ contributors.",
+      "prompt": "Oh My Zsh | evidence-card: Hatch pointing at a bar chart showing Oh My Zsh GitHub star growth from 2009 to 2026, with annotations at 100K and 170K milestones. A separate small counter shows \"2,200+ contributors.\" Expression is analytical, calm. Cream background. Watermark same as hero. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/oh-my-zsh/evidence-card.png",
+      "generated_image_sha256": "4177b6e075a30e8c653d901ded376dac2e556cc5296dd59af63e5f3f06bde6e6",
+      "final_image_sha256": "cb712bba37d288bc88b9725849ab2383a70bda543bf79900e0fa497f501c43de",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/oh-my-zsh/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/oh-my-zsh/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/oh-my-zsh/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance with a distributed ecosystem of plugin icons behind, representing community-maintained development.",
+      "caption": "Hatch in coaching stance with a distributed ecosystem of plugin icons behind, representing community-maintained development.",
+      "prompt": "Oh My Zsh | lesson-frame: Hatch in coaching pose — upright, calm, graduation cap settled — next to a large quotation mark. Behind Hatch, faint plugin icons suggest a distributed ecosystem of contributions from many individuals. The mood is conclusive and wise. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/oh-my-zsh/lesson-frame.png",
+      "generated_image_sha256": "70d2631c821991759c31f1b4c62caf6fb4643119a081a1be9b8b73f4c3da4b7d",
+      "final_image_sha256": "76c7e057b23940d957c8d323312e22eb09d2de255adf3343da41655585538eef",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/oh-my-zsh/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/oh-my-zsh/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/oh-my-zsh/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a colorful Oh My Zsh terminal prompt — thumbnail for the Oh My Zsh autopsy.",
+      "caption": "Hatch beside a colorful Oh My Zsh terminal prompt — thumbnail for the Oh My Zsh autopsy.",
+      "prompt": "Small, recognizable Hatch mascot bust next to a terminal window with a colorful Zsh prompt. Clean cream background. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/oh-my-zsh/hero.png",
+      "generated_image_sha256": "3202e0a81d85fa17fa63d71a32121e48ff568f9ad757d098cfbbd6238e0c2745",
+      "final_image_sha256": "e6e08395b3a4ac46709f4558f0bc7ed1ab6074b2cdaeb598257b72909dde8b15",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/oh-my-zsh/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/oh-my-zsh/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/oh-my-zsh/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot with Oh My Zsh terminal and contributor icons for the Oh My Zsh social share card.",
+      "caption": "Hatch mascot with Oh My Zsh terminal and contributor icons for the Oh My Zsh social share card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG share card. Colorful Zsh terminal prompt background with contributor avatar constellation. \"HackProduct\" wordmark prominent bottom-right. Cream background. The scene reads as: community is the product team. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/oh-my-zsh/hero.png",
+      "generated_image_sha256": "3202e0a81d85fa17fa63d71a32121e48ff568f9ad757d098cfbbd6238e0c2745",
+      "final_image_sha256": "9d1922bf8e44118448a83945c0c6131210d3435ffb57d2a2e5beda6244581a19",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/oh-my-zsh/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/oh-my-zsh/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/oh-my-zsh/v1"
+}

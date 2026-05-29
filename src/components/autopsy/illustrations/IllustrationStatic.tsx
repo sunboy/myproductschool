@@ -21,6 +21,7 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
   switch (config.type) {
     case 'comparison_bars': {
       const data = config.data as unknown as ComparisonBarsData
+      const bars = data?.bars ?? []
       const colorMap: Record<string, string> = {
         primary: 'bg-primary',
         secondary: 'bg-secondary',
@@ -29,7 +30,7 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
       return (
         <div className={base}>
           <div className="w-full space-y-3 px-2">
-            {data.bars.map((bar, i) => (
+            {bars.map((bar, i) => (
               <div key={i} className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-label text-xs text-on-surface-variant">{bar.label}</span>
@@ -64,7 +65,8 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
 
     case 'flywheel': {
       const data = config.data as unknown as FlywheelData
-      const count = data.steps.length
+      const steps = data?.steps ?? []
+      const count = steps.length || 1
       const radius = 72
       const center = 96
       const isLoop = config.animationTrigger === 'loop'
@@ -88,7 +90,7 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
             )}
 
             {/* Nodes */}
-            {data.steps.map((step, i) => {
+            {steps.map((step, i) => {
               const angleDeg = (i / count) * 360 - 90
               const angleRad = (angleDeg * Math.PI) / 180
               const x = center + radius * Math.cos(angleRad)
@@ -129,11 +131,12 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
 
     case 'tool_stack': {
       const data = config.data as unknown as ToolStackData
+      const replaced = data?.replaced ?? []
       return (
         <div className={base}>
           <div className="w-full space-y-2 px-2">
             {/* Replaced tools */}
-            {data.replaced.map((tool, i) => (
+            {replaced.map((tool, i) => (
               <div
                 key={i}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-highest"
@@ -159,7 +162,7 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
               style={{
                 opacity: isVisible ? 1 : 0,
                 transition: 'opacity 0.4s ease-out',
-                transitionDelay: `${data.replaced.length * 0.1}s`,
+                transitionDelay: `${replaced.length * 0.1}s`,
               }}
             >
               <span
@@ -168,7 +171,7 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
               >
                 check_circle
               </span>
-              <span className="text-sm font-body font-bold text-on-primary-container">{data.replacement}</span>
+              <span className="text-sm font-body font-bold text-on-primary-container">{data?.replacement ?? 'Replacement'}</span>
             </div>
           </div>
         </div>
@@ -177,6 +180,7 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
 
     case 'block_anatomy': {
       const data = config.data as unknown as BlockAnatomyData
+      const blocks = data?.blocks ?? []
       const badgeColorMap: Record<string, string> = {
         primary: 'bg-primary text-on-primary',
         secondary: 'bg-secondary text-on-primary',
@@ -197,7 +201,7 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
 
             {/* Block rows */}
             <div className="bg-surface p-3 space-y-1.5">
-              {data.blocks.map((block, i) => (
+              {blocks.map((block, i) => (
                 <div
                   key={i}
                   className="flex items-center gap-2"
@@ -225,10 +229,11 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
 
     case 'pricing_tiers': {
       const data = config.data as unknown as PricingTiersData
+      const tiers = data?.tiers ?? []
       return (
         <div className={base}>
           <div className="flex flex-row gap-2 p-4 w-full">
-            {data.tiers.map((tier, i) => (
+            {tiers.map((tier, i) => (
               <div
                 key={i}
                 className={`flex-1 rounded-xl p-3 border ${
@@ -245,7 +250,7 @@ export function IllustrationStatic({ config, isVisible, className = '' }: Props)
                 <p className="text-xs font-label font-bold text-on-surface">{tier.name}</p>
                 <p className="text-lg font-label font-bold text-primary mt-0.5">{tier.price}</p>
                 <ul className="mt-2 space-y-0.5">
-                  {tier.features.slice(0, 3).map((feature, j) => (
+                  {(tier.features ?? []).slice(0, 3).map((feature, j) => (
                     <li key={j} className="flex items-center gap-1">
                       <span
                         className="material-symbols-outlined text-primary"

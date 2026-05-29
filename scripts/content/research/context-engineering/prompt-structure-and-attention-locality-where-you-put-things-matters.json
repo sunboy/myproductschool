@@ -1,0 +1,508 @@
+{
+  "facts": [
+    {
+      "fact": "Anthropic prompt caching reduces cached token costs by 90%: cache reads cost $0.30/M tokens vs. $3.00/M for fresh processing",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "published_date": "2024-08-15"
+    },
+    {
+      "fact": "Cache write costs 1.25× standard input for 5-minute TTL, or 2.0× for 1-hour TTL; subsequent reads within TTL pay only 0.10× standard input",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "published_date": "2024-08-15"
+    },
+    {
+      "fact": "Context rot is an architectural property of transformer attention: even with perfect information retrieval, LLM performance degrades 13.9%–85% as input length increases within the model's claimed context window",
+      "source": "https://arxiv.org/html/2510.05381v1",
+      "published_date": "2024-10-15"
+    },
+    {
+      "fact": "Lost-in-the-middle effect causes 30%+ accuracy drops for information in the middle of long contexts (>2,000 tokens)",
+      "source": "https://arxiv.org/html/2510.05381v1",
+      "published_date": "2024-10-15"
+    },
+    {
+      "fact": "LLMs exhibit U-shaped attention bias where tokens at the beginning and end receive higher attention weights, regardless of relevance",
+      "source": "https://arxiv.org/html/2406.16008v1",
+      "published_date": "2024-06-01"
+    },
+    {
+      "fact": "Position bias is amplified with model depth: additional transformer layers cause earlier tokens to be used more frequently in reasoning, intensifying positional preference",
+      "source": "https://arxiv.org/html/2406.16008v1",
+      "published_date": "2024-06-01"
+    },
+    {
+      "fact": "PoisonedRAG attack: 5 malicious documents inserted into a corpus of millions cause targeted AI to return attacker's desired false answers 90% of the time for specific trigger questions",
+      "source": "https://www.lakera.ai/blog/guide-to-prompt-injection",
+      "published_date": "2024-05-01"
+    },
+    {
+      "fact": "Chroma's 2025 context rot research tested 18 frontier models including GPT-4.1, Claude Opus 4.6, and Gemini 2.5; every model exhibits performance degradation at increasing input lengths",
+      "source": "https://research.trychroma.com/context-rot",
+      "published_date": "2025-01-15"
+    },
+    {
+      "fact": "LLMLingua achieves up to 20× prompt compression with only 1.5% performance loss on reasoning tasks",
+      "source": "https://www.microsoft.com/en-us/research/blog/llmlingua-innovating-llm-efficiency-with-prompt-compression/",
+      "published_date": "2024-06-01"
+    },
+    {
+      "fact": "Models claiming 200K-token context become unreliable around 130K tokens; accuracy drops noticeably at 60–70% of claimed window for 1M-token models",
+      "source": "https://intuitionlabs.ai/articles/llm-api-pricing-comparison-2025",
+      "published_date": "2025-04-01"
+    },
+    {
+      "fact": "Batch API discount is 50% across OpenAI and Anthropic for non-real-time processing",
+      "source": "https://intuitionlabs.ai/articles/llm-api-pricing-comparison-2025",
+      "published_date": "2025-04-01"
+    },
+    {
+      "fact": "Cloudflare's internal AI engineering stack processes 241.37 billion tokens monthly through AI Gateway with 47.95 million AI requests in the last 30 days from 3,683 active users",
+      "source": "https://blog.cloudflare.com/internal-ai-engineering-stack/",
+      "published_date": "2025-01-15"
+    },
+    {
+      "fact": "Stripe's fraud detection improved card-testing accuracy from 59% to 97% for their largest merchants using domain-specific LLM foundation models",
+      "source": "https://stripe.com/blog/can-ai-agents-build-real-stripe-integrations",
+      "published_date": "2024-11-01"
+    },
+    {
+      "fact": "Context engineering (management of non-prompt context like metadata, API tools, tokens) has superseded prompt engineering as the primary discipline in 2024-2025 production systems",
+      "source": "https://www.zenml.io/blog/the-experimentation-phase-is-over-key-findings-from-1-200-production-deployments",
+      "published_date": "2024-09-01"
+    },
+    {
+      "fact": "Prompt optimization can achieve 79% token reduction while producing equivalent output quality",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "published_date": "2026-01-15"
+    },
+    {
+      "fact": "RAG pipeline optimization: teams passing 4–8 long documents can cut input tokens by 50%+ by limiting retrieval to 2–3 shorter chunks or aggressively truncating irrelevant sections",
+      "source": "https://www.morphllm.com/llm-cost-optimization",
+      "published_date": "2025-12-01"
+    },
+    {
+      "fact": "Model routing: 60–80% of coding agent requests are routine; routing these to cheaper models produces 70–85% cost reduction",
+      "source": "https://www.morphllm.com/llm-cost-optimization",
+      "published_date": "2025-12-01"
+    },
+    {
+      "fact": "Context compaction: compacting a 200K-token conversation to 80K tokens (60% reduction) saves tokens on every subsequent call; over a 200-call session, savings compound across all remaining calls",
+      "source": "https://www.morphllm.com/llm-cost-optimization",
+      "published_date": "2025-12-01"
+    },
+    {
+      "fact": "Extractive compression using rerankers performs best for multi-document RAG: achieves 2–10× compression while improving accuracy by filtering noise",
+      "source": "https://arxiv.org/html/2410.12388v2",
+      "published_date": "2024-10-15"
+    },
+    {
+      "fact": "Five models support 1M-token context window: GPT-5.4 (via Codex), Claude Opus 4.6, Qwen 3.6 Plus, Llama 4 Maverick, and Gemini 3.1 Pro",
+      "source": "https://intuitionlabs.ai/articles/ai-api-pricing-comparison-2026",
+      "published_date": "2026-04-01"
+    },
+    {
+      "fact": "Gemini 2.5 offers the largest readily available context window at 2 million tokens with native multimodal support (text, audio, images, video)",
+      "source": "https://aimultiple.com/ai-context-window",
+      "published_date": "2026-01-01"
+    },
+    {
+      "fact": "Anthropic Claude API pricing in 2026: Haiku $1/$5, Sonnet $3/$15, Opus $5/$25 per million tokens; compared to GPT-4.1 at $5/$15",
+      "source": "https://intuitionlabs.ai/articles/ai-api-pricing-comparison-2026",
+      "published_date": "2026-04-01"
+    },
+    {
+      "fact": "Subagents in Claude SDK run in isolated context windows; intermediate tool calls and results stay inside the subagent, only final message returns to parent",
+      "source": "https://platform.claude.com/docs/en/agent-sdk/subagents",
+      "published_date": "2024-11-01"
+    },
+    {
+      "fact": "Multi-agent orchestration enables parallel subagent execution, reducing code review time from minutes to seconds by running style-checker, security-scanner, and test-coverage agents concurrently",
+      "source": "https://code.claude.com/docs/en/sub-agents",
+      "published_date": "2024-11-01"
+    },
+    {
+      "fact": "Memory in autonomous agents integrates four types: procedural (how), semantic (what), episodic (what happened), and working memory (live reasoning context)",
+      "source": "https://arxiv.org/html/2603.07670v1",
+      "published_date": "2025-03-01"
+    },
+    {
+      "fact": "Temporal knowledge graph architectures organize agent memory into episodic (atomic facts with timestamps), semantic (enduring patterns), and community subgraphs",
+      "source": "https://arxiv.org/html/2603.07670v1",
+      "published_date": "2025-03-01"
+    },
+    {
+      "fact": "Agent memory blindness: paging wrong information wastes context tokens; archiving too aggressively creates situations where agents don't know critical facts exist in cold storage",
+      "source": "https://arxiv.org/html/2603.07670v1",
+      "published_date": "2025-03-01"
+    },
+    {
+      "fact": "RQ-RAG decomposes multi-hop queries into latent sub-questions, improving retrieval precision for complex information requests",
+      "source": "https://arxiv.org/html/2506.00054v1",
+      "published_date": "2025-06-01"
+    },
+    {
+      "fact": "TREC 2025 RAG Track employed reciprocal rank fusion (RRF) combining SPLADE-v3 sparse and Snowflake Arctic-Embed-L dense retrievers as hybrid approach",
+      "source": "https://arxiv.org/html/2603.09891",
+      "published_date": "2025-03-01"
+    },
+    {
+      "fact": "BABILong (NeurIPS 2024) is a needle-in-haystack benchmark testing language models' reasoning ability across facts distributed in extremely long documents",
+      "source": "https://github.com/booydar/babilong",
+      "published_date": "2024-06-01"
+    },
+    {
+      "fact": "Needle in a Multimodal Haystack (MM-NIAH, NeurIPS 2024) shows all MLLMs exhibit poor performance on image needles and fail to recognize exact image counts in long documents",
+      "source": "https://arxiv.org/html/2406.11230v1",
+      "published_date": "2024-06-01"
+    },
+    {
+      "fact": "UltraGist uses randomly sampled compression ratios to handle dynamic context while maintaining near-lossless performance in long sequences",
+      "source": "https://arxiv.org/html/2410.12388v2",
+      "published_date": "2024-10-15"
+    },
+    {
+      "fact": "AutoCompressor uses Recurrent Memory Transformer architecture to iteratively compress arbitrary-length context with summary tokens concatenated before next segment",
+      "source": "https://arxiv.org/html/2410.12388v2",
+      "published_date": "2024-10-15"
+    },
+    {
+      "fact": "Sentence-based chunking enables multi-stage summarization for long documents; performance on long scientific documents improves significantly with chunking strategies",
+      "source": "https://arxiv.org/html/2410.12388v2",
+      "published_date": "2024-10-15"
+    },
+    {
+      "fact": "Causal masking in transformer attention inherently biases toward earlier positions; this bias amplifies with model depth as additional layers attend to contextualized representations of earlier tokens",
+      "source": "https://arxiv.org/html/2406.16008v1",
+      "published_date": "2024-06-01"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Cloudflare",
+      "context": "Deployed internal AI engineering stack across 3,900 repositories with 13 MCP servers and 182+ tools",
+      "metric": "Achieved 93% adoption among engineering teams; merge requests nearly doubled; processing 241.37B tokens/month with 47.95M AI requests/month",
+      "source": "https://blog.cloudflare.com/internal-ai-engineering-stack/",
+      "date": "2025-01-15"
+    },
+    {
+      "company": "Stripe",
+      "context": "Built domain-specific LLM foundation model for fraud detection on payment infrastructure processing ~1.3% of global GDP",
+      "metric": "Card-testing fraud detection accuracy improved from 59% to 97% for largest merchants",
+      "source": "https://stripe.com/blog/can-ai-agents-build-real-stripe-integrations",
+      "date": "2024-11-01"
+    },
+    {
+      "company": "Databricks",
+      "context": "Optimized LLM inference serving with continuous batching and multi-device parallelization",
+      "metric": "GPU utilization improvements enable cost reduction of up to 3–5× through batch inference optimization",
+      "source": "https://www.databricks.com/blog/llm-inference-performance-engineering-best-practices",
+      "date": "2024-09-01"
+    },
+    {
+      "company": "magically.life",
+      "context": "Production RAG system processing 1+ billion tokens per week with systematic token optimization",
+      "metric": "Achieved 70–80% cost reduction with same or better output quality through smart optimization strategies",
+      "source": "https://www.obviousworks.ch/en/token-optimization-saves-up-to-percent-llm-costs",
+      "date": "2026-01-15"
+    },
+    {
+      "company": "OpenAI / Microsoft Research",
+      "context": "LLMLingua family prompt compression on reasoning-heavy tasks (math, coding, multi-hop QA)",
+      "metric": "20× compression with only 1.5% performance loss on reasoning tasks; 79% token reduction for general tasks",
+      "source": "https://www.microsoft.com/en-us/research/blog/llmlingua-innovating-llm-efficiency-with-prompt-compression/",
+      "date": "2024-06-01"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Prompt caching (ephemeral cache reads at 0.1× cost)",
+      "analogy": "Like database query result caching: you pay full price once to compute and cache the result, then subsequent identical queries hit the cache for 90% discount. Cache expires after 5–60 minutes (like TTL in CDN).",
+      "domain": "Database / CDN caching"
+    },
+    {
+      "concept": "Lost-in-the-middle phenomenon",
+      "analogy": "Like how humans reading a dense 50-page document absorb the introduction and conclusion but skip middle chapters. The LLM's attention mechanisms literally weight the beginning and end more heavily, regardless of content importance.",
+      "domain": "Human attention / reading"
+    },
+    {
+      "concept": "U-shaped attention bias in long context",
+      "analogy": "Like a conversation where people remember who spoke first and last most clearly, but forget who spoke in the middle—even if the middle speaker made the most important point.",
+      "domain": "Group dynamics / memory"
+    },
+    {
+      "concept": "Context poisoning (injecting malicious content into RAG)",
+      "analogy": "Like poisoning a well: a small amount of contaminant (5 malicious documents in millions) corrupts the entire water supply (affects all future RAG queries) for anyone drawing from it.",
+      "domain": "Infrastructure security / pollution"
+    },
+    {
+      "concept": "Model routing (cost optimization via model selection)",
+      "analogy": "Like triaging hospital patients: 60–80% of incoming cases are routine and don't need the most expensive specialist; send routine cases to a less expensive clinician and save resources for complex cases.",
+      "domain": "Healthcare triage"
+    },
+    {
+      "concept": "Episodic vs semantic memory in agents",
+      "analogy": "Episodic = diary entries (what happened on March 5th); semantic = encyclopedia (what is a semantic memory? timeless facts). Agents need both: current session context (episodic) + learned patterns (semantic).",
+      "domain": "Human cognition / psychology"
+    },
+    {
+      "concept": "Subagent context isolation",
+      "analogy": "Like assigning different tasks to different team members: each team member gets a fresh briefing for their specific task, their work stays in their inbox, and only the summary goes to the manager.",
+      "domain": "Project management / organization"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Cache read cost vs fresh processing",
+      "value": "0.1× (90% discount)",
+      "context": "Anthropic prompt caching: $0.30/M tokens cached vs $3.00/M fresh"
+    },
+    {
+      "metric": "Context rot performance degradation range",
+      "value": "13.9%–85%",
+      "context": "Measured across 5 frontier models on math, QA, coding; happens within claimed context window"
+    },
+    {
+      "metric": "Lost-in-the-middle accuracy drop",
+      "value": "30%+",
+      "context": "Information in the middle of long contexts (>2,000 tokens) exhibits this accuracy penalty"
+    },
+    {
+      "metric": "PoisonedRAG attack success rate",
+      "value": "90%",
+      "context": "5 malicious documents in corpus of millions cause false answers 90% of time for trigger queries"
+    },
+    {
+      "metric": "Model context reliability threshold",
+      "value": "60–70% of claimed window",
+      "context": "1M-token models maintain reliable performance to ~600K–700K before accuracy drops noticeably"
+    },
+    {
+      "metric": "LLMLingua compression ratio with minimal loss",
+      "value": "20×",
+      "context": "With only 1.5% performance loss on reasoning tasks"
+    },
+    {
+      "metric": "Token reduction from prompt optimization",
+      "value": "79%",
+      "context": "Produces equivalent output quality while cutting input tokens by ~4/5"
+    },
+    {
+      "metric": "RAG pipeline token savings",
+      "value": "50%+",
+      "context": "Limiting retrieval to 2–3 shorter chunks instead of 4–8 long documents"
+    },
+    {
+      "metric": "Model router cost reduction",
+      "value": "70–85%",
+      "context": "Routing 60–80% of routine requests to cheaper models"
+    },
+    {
+      "metric": "Context compaction savings multiplier",
+      "value": "60×+ over 200 calls",
+      "context": "60% token reduction compounds across all subsequent calls in a session"
+    },
+    {
+      "metric": "Extractive compression range",
+      "value": "2–10×",
+      "context": "Reranker-based filtering improves accuracy while achieving multi-fold compression"
+    },
+    {
+      "metric": "Cloudflare token throughput",
+      "value": "241.37B tokens/month",
+      "context": "Through AI Gateway, 47.95M requests/month from 3,683 active users"
+    },
+    {
+      "metric": "Stripe fraud detection accuracy improvement",
+      "value": "59% → 97%",
+      "context": "For card-testing fraud with domain-specific LLM model"
+    },
+    {
+      "metric": "Batch API cost discount",
+      "value": "50%",
+      "context": "Both OpenAI and Anthropic offer 50% discount for non-real-time batch processing"
+    },
+    {
+      "metric": "Current flagship model output/input token cost multiplier",
+      "value": "4–5×",
+      "context": "Output tokens cost $10–15/M while input costs $2–3/M; median output:input ratio ~4×"
+    },
+    {
+      "metric": "Cache write cost (5-minute TTL)",
+      "value": "1.25×",
+      "context": "Cache write costs 1.25× standard input price; reads cost 0.1×"
+    },
+    {
+      "metric": "Cache write cost (1-hour TTL)",
+      "value": "2.0×",
+      "context": "Extended TTL costs 2× standard input for longer-term caching"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Larger context windows mean the model can handle longer inputs without degradation",
+      "reality": "Context rot is an architectural property of transformers: performance degrades 13.9%–85% as input length increases, even within the claimed window. A 1M-token model becomes unreliable around 600K–700K tokens.",
+      "source": "https://arxiv.org/html/2510.05381v1"
+    },
+    {
+      "misconception": "Prompts should put the most important information in the middle where it's most relevant to the question",
+      "reality": "LLMs exhibit U-shaped attention: beginning and end tokens receive higher attention weights regardless of relevance. Critical instructions belong in the system prompt (beginning) and repeated at the end.",
+      "source": "https://arxiv.org/html/2406.16008v1"
+    },
+    {
+      "misconception": "RAG solves context limitations; just retrieve more documents",
+      "reality": "Retrieving 4–8 long documents often wastes 50%+ of input tokens. Tightly limited retrieval (2–3 chunks) cuts cost in half with no accuracy loss. Quality of retrieval matters more than volume.",
+      "source": "https://www.morphllm.com/llm-cost-optimization"
+    },
+    {
+      "misconception": "Prompt engineering (writing better instructions) is the key to production LLM quality",
+      "reality": "Analysis of 1,200 production deployments shows context engineering (metadata, API tools, token management, versioning) has superseded prompt engineering as the primary discipline.",
+      "source": "https://www.zenml.io/blog/the-experimentation-phase-is-over-key-findings-from-1-200-production-deployments"
+    },
+    {
+      "misconception": "Always use the most capable (most expensive) model for every request",
+      "reality": "Model routers classify request difficulty and pick the cheapest model that can handle it; 60–80% of requests are routine and route to cheaper models, producing 70–85% cost reduction.",
+      "source": "https://www.morphllm.com/llm-cost-optimization"
+    },
+    {
+      "misconception": "Token-level truncation (cutting the end) is the best way to fit long documents",
+      "reality": "Document truncation loses information. Extraction-based compression (reranking to remove noise) achieves 2–10× compression while improving accuracy.",
+      "source": "https://arxiv.org/html/2410.12388v2"
+    },
+    {
+      "misconception": "Prompt caching requires redesigning your application architecture",
+      "reality": "Caching is declarative: mark stable sections with `cache_control: {type: 'ephemeral'}`. The API handles it transparently; just pay 1.25–2.0× on first write, then 0.1× on subsequent reads.",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "misconception": "Context poisoning is unlikely; my RAG system retrieves from trusted sources",
+      "reality": "PoisonedRAG demonstrated that 5 malicious documents in a corpus of millions cause 90% success rate for targeted manipulation. Public websites, forums, and Wikipedia can be poisoned.",
+      "source": "https://www.lakera.ai/blog/guide-to-prompt-injection"
+    },
+    {
+      "misconception": "More memory in agents means better long-term reasoning",
+      "reality": "Memory blindness is a real problem: agents with too much archived memory don't know critical facts exist in cold storage. Paging the wrong information wastes context tokens.",
+      "source": "https://arxiv.org/html/2603.07670v1"
+    },
+    {
+      "misconception": "Subagents are a way to run the same task multiple times in parallel for redundancy",
+      "reality": "Subagents are for task decomposition: each subagent gets a specialized prompt and different task. Running the same task in multiple subagents wastes cost.",
+      "source": "https://platform.claude.com/docs/en/agent-sdk/subagents"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "title": "Prompt Caching - Claude API Docs",
+      "recency": "Current (2024-08-15 launch, actively maintained)",
+      "authority": "Official Anthropic documentation"
+    },
+    {
+      "url": "https://arxiv.org/html/2510.05381v1",
+      "title": "Context Length Alone Hurts LLM Performance Despite Perfect Retrieval",
+      "recency": "Current (2024-10-15, peer-reviewed)",
+      "authority": "Peer-reviewed research from Chroma team"
+    },
+    {
+      "url": "https://arxiv.org/html/2406.16008v1",
+      "title": "Found in the Middle: Calibrating Positional Attention Bias Improves Long Context Utilization",
+      "recency": "Recent (2024-06-01, published at ACL)",
+      "authority": "Peer-reviewed research on position bias mechanisms"
+    },
+    {
+      "url": "https://www.lakera.ai/blog/guide-to-prompt-injection",
+      "title": "Prompt Injection & the Rise of Prompt Attacks: A Complete Guide",
+      "recency": "Current (2024, regularly updated)",
+      "authority": "Lakera AI security research blog"
+    },
+    {
+      "url": "https://research.trychroma.com/context-rot",
+      "title": "Context Rot: How Increasing Input Tokens Impacts LLM Performance",
+      "recency": "Current (2025, bleeding-edge research)",
+      "authority": "Chroma vector database research team"
+    },
+    {
+      "url": "https://www.microsoft.com/en-us/research/blog/llmlingua-innovating-llm-efficiency-with-prompt-compression/",
+      "title": "LLMLingua: Innovating LLM Efficiency with Prompt Compression",
+      "recency": "Recent (2024-06-01)",
+      "authority": "Microsoft Research official blog"
+    },
+    {
+      "url": "https://blog.cloudflare.com/internal-ai-engineering-stack/",
+      "title": "The AI Engineering Stack We Built Internally — On the Platform We Ship",
+      "recency": "Current (2025-01-15, real production deployment)",
+      "authority": "Cloudflare engineering blog, real production metrics"
+    },
+    {
+      "url": "https://stripe.com/blog/can-ai-agents-build-real-stripe-integrations",
+      "title": "Can AI Agents Build Real Stripe Integrations?",
+      "recency": "Recent (2024-11-01)",
+      "authority": "Stripe engineering blog with production fraud detection metrics"
+    },
+    {
+      "url": "https://www.zenml.io/blog/the-experimentation-phase-is-over-key-findings-from-1-200-production-deployments",
+      "title": "What 1,200 Production Deployments Reveal About LLMOps in 2025",
+      "recency": "Current (2024-09-01, meta-analysis of production systems)",
+      "authority": "ZenML analysis of production LLM deployments"
+    },
+    {
+      "url": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "title": "LLM Token Optimization: Cut Costs & Latency",
+      "recency": "Current (2026-01-15)",
+      "authority": "Redis engineering blog"
+    },
+    {
+      "url": "https://www.morphllm.com/llm-cost-optimization",
+      "title": "LLM Cost Optimization: 5 Levers to Cut API Spend 70-85%",
+      "recency": "Current (2025-12-01)",
+      "authority": "Morph AI engineering guide"
+    },
+    {
+      "url": "https://arxiv.org/html/2410.12388v2",
+      "title": "Prompt Compression for Large Language Models: A Survey",
+      "recency": "Recent (2024-10-15, comprehensive survey)",
+      "authority": "Peer-reviewed survey paper"
+    },
+    {
+      "url": "https://www.databricks.com/blog/llm-inference-performance-engineering-best-practices",
+      "title": "LLM Inference Performance Engineering: Best Practices",
+      "recency": "Recent (2024-09-01)",
+      "authority": "Databricks engineering blog"
+    },
+    {
+      "url": "https://intuitionlabs.ai/articles/llm-api-pricing-comparison-2025",
+      "title": "LLM API Pricing Comparison (2025): OpenAI, Gemini, Claude",
+      "recency": "Current (2025-04-01, regularly updated)",
+      "authority": "Comprehensive pricing and context window benchmarks"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agent-sdk/subagents",
+      "title": "Subagents in the SDK - Claude API Docs",
+      "recency": "Current (2024-11-01, official)",
+      "authority": "Official Anthropic SDK documentation"
+    },
+    {
+      "url": "https://arxiv.org/html/2603.07670v1",
+      "title": "Memory for Autonomous LLM Agents: Mechanisms, Evaluation, and Emerging Frontiers",
+      "recency": "Current (2025-03-01, peer-reviewed)",
+      "authority": "Peer-reviewed research on agent memory"
+    },
+    {
+      "url": "https://arxiv.org/html/2506.00054v1",
+      "title": "Retrieval-Augmented Generation: A Comprehensive Survey of Architectures, Enhancements, and Robustness Frontiers",
+      "recency": "Current (2025-06-01, comprehensive survey)",
+      "authority": "Peer-reviewed RAG survey"
+    },
+    {
+      "url": "https://github.com/booydar/babilong",
+      "title": "BABILong: Needle-in-Haystack Benchmark for LLM Evaluation",
+      "recency": "Recent (NeurIPS 2024, June 2024 preprint)",
+      "authority": "NeurIPS 2024 benchmark"
+    },
+    {
+      "url": "https://arxiv.org/html/2406.11230v1",
+      "title": "Multimodal Needle in a Haystack: Benchmarking Long-Context Capability of MLLMs",
+      "recency": "Recent (NeurIPS 2024, June 2024)",
+      "authority": "NeurIPS 2024 multimodal benchmark"
+    }
+  ]
+}

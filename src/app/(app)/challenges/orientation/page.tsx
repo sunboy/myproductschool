@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MOCK_ORIENTATION_CHALLENGE } from '@/lib/mock-data'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Md } from '@/components/ui/Md'
 
 const MAX_CHARS = 1200
 
@@ -35,7 +36,7 @@ export default function OrientationPage() {
         <div>
           <h2 className="font-headline font-bold text-on-surface text-lg">Welcome to HackProduct</h2>
           <p className="text-sm text-on-surface-variant mt-1">
-            This is your orientation challenge — a quick 5-minute exercise to establish your baseline.
+            This is your orientation challenge - a quick 5-minute exercise to establish your baseline.
             Don&apos;t worry about being perfect. The point is to see how Hatch&apos;s feedback works.
           </p>
         </div>
@@ -53,9 +54,9 @@ export default function OrientationPage() {
 
         <h1 className="font-headline font-bold text-on-surface text-xl">{challenge.title}</h1>
 
-        <p className="text-sm text-on-surface-variant leading-relaxed whitespace-pre-line">
-          {challenge.prompt_text}
-        </p>
+        <div className="text-sm text-on-surface-variant leading-relaxed">
+          <Md variant="compact" tone="inherit">{challenge.prompt_text}</Md>
+        </div>
       </div>
 
       {/* Hatch coaching tip */}
@@ -64,7 +65,7 @@ export default function OrientationPage() {
         <div>
           <p className="text-xs font-label font-semibold text-primary mb-1">Hatch&apos;s tip</p>
           <p className="text-sm text-on-surface-variant">
-            Don&apos;t restate the symptom — dig into what changed and why. Name at least 3 hypotheses before picking your priority order.
+            Don&apos;t restate the symptom - dig into what changed and why. Name at least 3 hypotheses before picking your priority order.
           </p>
         </div>
       </div>

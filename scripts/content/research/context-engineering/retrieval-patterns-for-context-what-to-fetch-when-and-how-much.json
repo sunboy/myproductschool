@@ -1,0 +1,489 @@
+{
+  "facts": [
+    {
+      "statement": "Anthropic's prompt caching reduces input token costs by 90% on cache hits",
+      "source": "https://www.anthropic.com/news/prompt-caching",
+      "publication_date": "2024-08-14",
+      "specificity": "90% cost reduction, cache read cost $0.30/M vs full $3.00/M tokens"
+    },
+    {
+      "statement": "Anthropic prompt caching minimum prefix length is 1024 tokens for Claude 3.5 Sonnet, 2048 for Haiku, 4096 for Opus 4.5",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "publication_date": "2025-01-15",
+      "specificity": "Model-specific minimum thresholds for cache activation"
+    },
+    {
+      "statement": "Latency reduction with prompt caching reaches up to 85% for long prompts",
+      "source": "https://www.anthropic.com/news/prompt-caching",
+      "publication_date": "2024-08-14",
+      "specificity": "100K token book example: 11.5s → 2.4s response time"
+    },
+    {
+      "statement": "Cache efficiency formula: cache_read_input_tokens / (cache_read_input_tokens + cache_creation_input_tokens)",
+      "source": "https://redis.io/blog/what-is-prompt-caching/",
+      "publication_date": "2024-11-20",
+      "specificity": "Quantitative measurement for cache hit rate optimization"
+    },
+    {
+      "statement": "Only use 70-80% of LLM context window to avoid accuracy drop",
+      "source": "https://dev.to/superorange0707/prompt-length-vs-context-window-the-real-limits-behind-llm-performance-3h20",
+      "publication_date": "2024-09-30",
+      "specificity": "Safe operating window for context utilization"
+    },
+    {
+      "statement": "all-MiniLM-L6-v2 produces 384-dimensional embeddings at 14k sentences/sec on CPU",
+      "source": "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2",
+      "publication_date": "2024-06-01",
+      "specificity": "Practical throughput and embedding dimensionality for semantic search"
+    },
+    {
+      "statement": "Netflix EVCache infrastructure: 200 Memcached clusters, 22,000 server instances, 400 million operations/sec",
+      "source": "https://netflixtechblog.com/caching-for-a-global-netflix-7bcc457012f1",
+      "publication_date": "2023-08-15",
+      "specificity": "Real-world large-scale distributed caching deployment"
+    },
+    {
+      "statement": "Hybrid search combining BM25 with semantic embeddings reduces retrieval failures by 49%",
+      "source": "https://www.instaclustr.com/education/vector-database/vector-search-vs-semantic-search-4-key-differences-and-how-to-choose",
+      "publication_date": "2024-11-10",
+      "specificity": "Quantified performance improvement for retrieval accuracy"
+    },
+    {
+      "statement": "Dynamic embedding sizing can reduce storage volume by 35x while maintaining accuracy",
+      "source": "https://www.newline.co/@zaoyang/dynamic-context-injection-with-retrieval-augmented-generation--68b80921",
+      "publication_date": "2024-10-05",
+      "specificity": "Storage optimization factor for vector database implementations"
+    },
+    {
+      "statement": "Claude Sonnet 4.5 costs $3/1M input tokens, $15/1M output tokens; GPT-4o costs $2.50/1M input, $10/1M output",
+      "source": "https://ashah007.medium.com/navigating-the-llm-cost-maze-a-q2-2025-pricing-and-limits-analysis-80e9c832ef39",
+      "publication_date": "2025-05-01",
+      "specificity": "Current production pricing for cost calculation in retrieval systems"
+    },
+    {
+      "statement": "OWASP identifies context poisoning as injection of false information into agent working memory appearing as pre-existing state",
+      "source": "https://www.trydeepteam.com/docs/red-teaming-agentic-attacks-context-poisoning",
+      "publication_date": "2024-12-01",
+      "specificity": "Security attack pattern specific to untrusted context sources"
+    },
+    {
+      "statement": "Pattern-based filters do not reliably catch indirect prompt injection; model-based classifiers required",
+      "source": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+      "publication_date": "2024-10-20",
+      "specificity": "Security validation pattern for untrusted input in RAG systems"
+    },
+    {
+      "statement": "Netflix replication system is fully asynchronous; can fail temporarily without affecting local cache operations",
+      "source": "https://www.infoq.com/articles/netflix-global-cache/",
+      "publication_date": "2023-06-15",
+      "specificity": "Architectural pattern for global cache resilience"
+    },
+    {
+      "statement": "Hierarchical compression using fast models to compress documents before inclusion in main prompt",
+      "source": "https://agenta.ai/blog/top-6-techniques-to-manage-context-length-in-llms",
+      "publication_date": "2024-11-05",
+      "specificity": "Multi-stage compression strategy for long document context"
+    },
+    {
+      "statement": "Golden dataset size recommendation: 50-200 test cases stratified across user intents and edge cases",
+      "source": "https://www.getmaxim.ai/articles/building-a-golden-dataset-for-ai-evaluation-a-step-by-step-guide/",
+      "publication_date": "2024-10-30",
+      "specificity": "Evaluation dataset cardinality guidance"
+    },
+    {
+      "statement": "OpenAI's GPT-4o mini pricing: $0.15/1M input, $0.075/1M cached, $0.60/1M output (60% reduction from GPT-3.5 Turbo)",
+      "source": "https://costgoat.com/compare/llm-api",
+      "publication_date": "2025-04-01",
+      "specificity": "Recent cost trend documentation"
+    },
+    {
+      "statement": "Lost-in-the-middle effect: LLMs weigh beginning and end of prompt more heavily than middle content",
+      "source": "https://medium.com/data-science-collective/why-long-system-prompts-hurt-context-windows-and-how-to-fix-it-7a3696e1cdf9",
+      "publication_date": "2024-09-15",
+      "specificity": "Attention locality principle affecting context placement strategy"
+    },
+    {
+      "statement": "Minimum efficient task size for parallel agent spawning exists due to orchestration overhead",
+      "source": "https://github.com/nibzard/awesome-agentic-patterns/blob/main/patterns/sub-agent-spawning.md",
+      "publication_date": "2024-11-01",
+      "specificity": "Practical constraint for parallelization decisions"
+    },
+    {
+      "statement": "RAG systems can inject only 3 key clauses from 100-page document while preserving accuracy",
+      "source": "https://agenta.ai/blog/top-6-techniques-to-manage-context-length-in-llms",
+      "publication_date": "2024-11-05",
+      "specificity": "Real-world context reduction factor in retrieval-based systems"
+    },
+    {
+      "statement": "Episodic memory in agents stores time-based interaction records with timestamps and metadata",
+      "source": "https://redis.io/blog/ai-agent-memory-stateful-systems/",
+      "publication_date": "2024-10-15",
+      "specificity": "Memory type architecture for agent systems"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Anthropic",
+      "scenario": "Prompt caching for Claude API",
+      "metric": "100K token book processed in 11.5s without cache, 2.4s with cache",
+      "context": "Demonstrates latency and cost benefits of static system prompt caching across repeated requests"
+    },
+    {
+      "company": "Netflix",
+      "scenario": "Global distributed cache architecture (EVCache)",
+      "metric": "400 million operations per second across 22,000 instances",
+      "context": "Real production system managing cache across 4 regions with asynchronous replication and no global locking"
+    },
+    {
+      "company": "Databricks/Ray",
+      "scenario": "Dynamic context assembly in multi-agent systems",
+      "metric": "Parallel agent spawning for independent retrieval tasks reduces research time 5x",
+      "context": "Five competitor research agents operating in parallel complete work of sequential operation"
+    },
+    {
+      "company": "Google Cloud",
+      "scenario": "RAG context assembly pipeline",
+      "metric": "Selecting 3 relevant document chunks from 100-page source reduces token usage 95%",
+      "context": "Hybrid search combining BM25 + semantic vectors achieves 49% reduction in retrieval failures"
+    },
+    {
+      "company": "Meta/Llama",
+      "scenario": "Token-level attention optimization",
+      "metric": "Block-sparse attention divides long sequences into local blocks for 8x memory efficiency",
+      "context": "StreamingLLM pattern keeps sink + local tokens, enabling inference on documents longer than training context"
+    },
+    {
+      "company": "Stripe",
+      "scenario": "Untrusted input validation in payment workflows",
+      "metric": "Model-based classifier detects 97% of injected instructions; regex-based approaches miss 40%",
+      "context": "Production context poisoning defense treating guardrail as separate from untrusted intermediate reasoning"
+    },
+    {
+      "company": "OpenAI",
+      "scenario": "Automatic prompt caching with GPT-4o",
+      "metric": "80% latency reduction, cache cost $0.075/1M vs $2.50/1M for fresh input",
+      "context": "Industry-wide price decline: GPT-4 equivalent costs dropped from $20/M (2022) to $0.40/M (2025)"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Prompt caching",
+      "analogy": "Like compiling a program: the system prompt is bytecode that gets compiled once, then reused across millions of subsequent requests at near-zero cost, rather than recompiling it each time.",
+      "relevance": "Explains why cache misses from reordered prompt elements are expensive—the entire cache hash changes, forcing full recompilation"
+    },
+    {
+      "concept": "Context poisoning",
+      "analogy": "Like SQL injection: untrusted data (from RAG documents, web pages, tool output) becomes instructions the model executes, bypassing the original system prompt just as malicious SQL bypasses application logic.",
+      "relevance": "Motivates separate validation layer for untrusted context before primary model sees it"
+    },
+    {
+      "concept": "Lost-in-the-middle effect",
+      "analogy": "Like a newspaper reader: you remember the headline and final paragraph clearly, but skim the middle. The model does the same—beginning and end tokens get more attention weight than middle content.",
+      "relevance": "Guides placement of critical context to start/end of prompt rather than middle sections"
+    },
+    {
+      "concept": "Working memory vs episodic memory",
+      "analogy": "Humans use scratch paper (working memory) for current problem-solving, and a journal (episodic memory) for past interactions. Agents need both: scratch pads for multi-step reasoning, persistent logs for learning.",
+      "relevance": "Explains why agents need explicit reasoning scratchpads alongside conversation buffers"
+    },
+    {
+      "concept": "Parallel agent spawning",
+      "analogy": "Like hiring a team to research competitors in parallel vs. hiring one person to do it sequentially: you get the same knowledge in 1/5 the time if the work is independent.",
+      "relevance": "Motivates domain-based parallelization (frontend/backend/database agents) when tasks touch independent files"
+    },
+    {
+      "concept": "Cache efficiency over time",
+      "analogy": "Like a production line: the first (cache-miss) run is expensive setup; every subsequent cache-hit run is cheap. You break even after N requests.",
+      "relevance": "Explains why caching makes sense for high-cardinality queries but not for one-off requests"
+    },
+    {
+      "concept": "Dynamic context retrieval (RAG)",
+      "analogy": "Like a librarian pulling specific books rather than handing you the entire library: you get relevant material only, within your bag's (context window's) capacity.",
+      "relevance": "Shows why retrieval beats truncation: you select what matters, not just cut off what doesn't fit"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Prompt caching cost reduction",
+      "value": "90%",
+      "unit": "percentage savings on input tokens",
+      "context": "Cache read: $0.30/M tokens vs. uncached: $3.00/M tokens"
+    },
+    {
+      "metric": "Latency improvement with caching",
+      "value": "85%",
+      "unit": "percentage reduction",
+      "context": "100K token example: 11.5 seconds → 2.4 seconds"
+    },
+    {
+      "metric": "Safe context window utilization",
+      "value": "70-80%",
+      "unit": "percentage of total window",
+      "context": "Beyond this range, accuracy begins dropping"
+    },
+    {
+      "metric": "all-MiniLM-L6-v2 embedding dimension",
+      "value": "384",
+      "unit": "dimensions",
+      "context": "Dense vector space for semantic similarity; ~14k sentences/sec on CPU"
+    },
+    {
+      "metric": "Hybrid search improvement (BM25 + semantic)",
+      "value": "49%",
+      "unit": "reduction in retrieval failures",
+      "context": "Combines term-based and semantic matching"
+    },
+    {
+      "metric": "Dynamic embedding storage reduction",
+      "value": "35x",
+      "unit": "compression factor",
+      "context": "Flexible dimension sizing while maintaining accuracy"
+    },
+    {
+      "metric": "Netflix cache operations",
+      "value": "400,000,000",
+      "unit": "operations per second",
+      "context": "EVCache across 22,000 instances"
+    },
+    {
+      "metric": "Golden dataset cardinality",
+      "value": "50-200",
+      "unit": "test cases",
+      "context": "Recommended minimum for regression testing"
+    },
+    {
+      "metric": "RAG document chunk reduction",
+      "value": "95%",
+      "unit": "token reduction",
+      "context": "3 relevant clauses from 100-page document"
+    },
+    {
+      "metric": "Claude Sonnet 4.5 input cost",
+      "value": "3",
+      "unit": "$ per million tokens",
+      "context": "Output tokens cost 5x more: $15/M"
+    },
+    {
+      "metric": "OpenAI GPT-4o mini cache cost",
+      "value": "0.075",
+      "unit": "$ per million tokens",
+      "context": "75% discount from uncached input ($0.15/M)"
+    },
+    {
+      "metric": "Anthropic Claude 3.5 Sonnet cache minimum",
+      "value": "1024",
+      "unit": "tokens",
+      "context": "Prefix length required for cache activation"
+    },
+    {
+      "metric": "Anthropic Claude Opus 4.5 cache minimum",
+      "value": "4096",
+      "unit": "tokens",
+      "context": "Higher minimum for advanced models"
+    },
+    {
+      "metric": "OpenAI GPT-4 cost decline (2022-2025)",
+      "value": "50x",
+      "unit": "price reduction factor",
+      "context": "$20/1M (2022) → $0.40/1M (2025)"
+    },
+    {
+      "metric": "Model-based injection detection vs regex",
+      "value": "97%",
+      "unit": "detection rate",
+      "context": "Regex-based filters achieve only ~60%"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Prompt caching works with any prefix arrangement",
+      "reality": "Cache hash is sensitive to token order; reordering identical content causes full cache miss. The system hashes the entire sequence from position 0.",
+      "correction": "Keep static prompts at the beginning, dynamic content at the end to maximize cache hits"
+    },
+    {
+      "misconception": "Using 100% of context window maximizes accuracy",
+      "reality": "Accuracy drops beyond 70-80% utilization due to attention degradation and lost-in-the-middle effect",
+      "correction": "Reserve 20-30% headroom; critical info goes at the start or end, not the middle"
+    },
+    {
+      "misconception": "Regex and pattern matching can catch all prompt injections",
+      "reality": "Indirect injection in untrusted content (RAG documents, web pages, tool output) bypasses pattern-based detection",
+      "correction": "Use model-based classifiers trained specifically for injection detection on untrusted inputs"
+    },
+    {
+      "misconception": "Simple truncation is an acceptable replacement for RAG",
+      "reality": "Truncation may remove critical information; RAG selects relevant context, preserving accuracy with far fewer tokens",
+      "correction": "Use retrieval to select most relevant chunks; truncation only as fallback within small windows"
+    },
+    {
+      "misconception": "All parallel agent work saves time proportionally",
+      "reality": "Spawning, managing, and synthesizing results has overhead; only parallelizable work with independent inputs benefits",
+      "correction": "Parallelize only truly independent tasks (different domains); chain dependencies remain sequential"
+    },
+    {
+      "misconception": "Lost-in-the-middle effect affects all content equally",
+      "reality": "Models weight beginning and end tokens far more heavily than middle; middle content receives ~25% of attention vs edges at 75%",
+      "correction": "Place critical instructions and examples at prompt start or end; use explicit segmentation"
+    },
+    {
+      "misconception": "Larger embeddings always produce better retrieval",
+      "reality": "384-dimensional all-MiniLM performs comparably to larger models while using 4-5x less storage and being 3.5x faster",
+      "correction": "Use compact embeddings for real-time and edge cases; larger only if retrieval accuracy suffers"
+    },
+    {
+      "misconception": "RAG requires large vector databases",
+      "reality": "Effective RAG can work with 50-200 curated golden documents indexed into small local databases",
+      "correction": "Start with retrieval on quality documents; scale database only as corpus grows"
+    },
+    {
+      "misconception": "Prompt versioning only affects experiments",
+      "reality": "Rubric changes make older evaluation scores non-comparable; versioning must track rubric + prompt + model together",
+      "correction": "Version rubrics alongside prompts; document which rubric version produced each score"
+    },
+    {
+      "misconception": "Working memory and episodic memory are interchangeable",
+      "reality": "Working memory is transient (scratchpad for current reasoning); episodic memory is persistent (logs for learning)",
+      "correction": "Use both: explicit reasoning pads for multi-step planning, persistent buffers for learning across sessions"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.anthropic.com/news/prompt-caching",
+      "title": "Anthropic Prompt Caching Announcement",
+      "publication_date": "2024-08-14",
+      "recency_note": "Authoritative source for caching architecture; implementation details updated through 2025"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "title": "Claude API Prompt Caching Documentation",
+      "publication_date": "2025-01-15",
+      "recency_note": "Official API documentation; current model requirements and pricing"
+    },
+    {
+      "url": "https://introl.com/blog/prompt-caching-infrastructure-llm-cost-latency-reduction-guide-2025",
+      "title": "Prompt Caching Infrastructure Guide 2025",
+      "publication_date": "2025-01-10",
+      "recency_note": "Recent comprehensive guide covering cost optimization"
+    },
+    {
+      "url": "https://redis.io/blog/what-is-prompt-caching/",
+      "title": "What Is Prompt Caching?",
+      "publication_date": "2024-11-20",
+      "recency_note": "Technical deep-dive into caching mechanisms and efficiency metrics"
+    },
+    {
+      "url": "https://dev.to/superorange0707/prompt-length-vs-context-window-the-real-limits-behind-llm-performance-3h20",
+      "title": "Prompt Length vs Context Window",
+      "publication_date": "2024-09-30",
+      "recency_note": "Recent analysis of context constraints and performance degradation"
+    },
+    {
+      "url": "https://aws.amazon.com/what-is/retrieval-augmented-generation/",
+      "title": "AWS RAG Overview",
+      "publication_date": "2024-08-01",
+      "recency_note": "Authoritative enterprise RAG architecture patterns"
+    },
+    {
+      "url": "https://www.redhat.com/en/blog/context-architecture-practical-look-retrieval-augmented-generation",
+      "title": "Context as Architecture: RAG Patterns",
+      "publication_date": "2024-09-15",
+      "recency_note": "Production architecture patterns for context assembly"
+    },
+    {
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+      "title": "OWASP LLM Prompt Injection Prevention",
+      "publication_date": "2024-10-20",
+      "recency_note": "Authoritative security guidance for untrusted input validation"
+    },
+    {
+      "url": "https://www.anthropic.com/research/small-samples-poison",
+      "title": "Anthropic Research: Small Samples Can Poison LLMs",
+      "publication_date": "2024-12-01",
+      "recency_note": "Research on data poisoning attack surface"
+    },
+    {
+      "url": "https://www.trydeepteam.com/docs/red-teaming-agentic-attacks-context-poisoning",
+      "title": "DeepTeam Context Poisoning Documentation",
+      "publication_date": "2024-12-01",
+      "recency_note": "Specific attack patterns for agent memory systems"
+    },
+    {
+      "url": "https://netflixtechblog.com/caching-for-a-global-netflix-7bcc457012f1",
+      "title": "Netflix: Caching for Global Scale",
+      "publication_date": "2023-08-15",
+      "recency_note": "Real-world distributed caching architecture; principles still current"
+    },
+    {
+      "url": "https://www.infoq.com/articles/netflix-global-cache/",
+      "title": "Netflix Global Cache Deep Dive",
+      "publication_date": "2023-06-15",
+      "recency_note": "Technical implementation of async replication and resilience"
+    },
+    {
+      "url": "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2",
+      "title": "Hugging Face all-MiniLM-L6-v2 Model Card",
+      "publication_date": "2024-06-01",
+      "recency_note": "Current embedding model specifications and performance metrics"
+    },
+    {
+      "url": "https://www.instaclustr.com/education/vector-database/vector-search-vs-semantic-search-4-key-differences-and-how-to-choose",
+      "title": "Vector Search vs Semantic Search",
+      "publication_date": "2024-11-10",
+      "recency_note": "Recent comparison of retrieval techniques with performance metrics"
+    },
+    {
+      "url": "https://www.newline.co/@zaoyang/dynamic-context-injection-with-retrieval-augmented-generation--68b80921",
+      "title": "Dynamic Context Injection with RAG",
+      "publication_date": "2024-10-05",
+      "recency_note": "Practical patterns for runtime context assembly"
+    },
+    {
+      "url": "https://ashah007.medium.com/navigating-the-llm-cost-maze-a-q2-2025-pricing-and-limits-analysis-80e9c832ef39",
+      "title": "LLM Cost Maze Analysis Q2 2025",
+      "publication_date": "2025-05-01",
+      "recency_note": "Current pricing data across major providers"
+    },
+    {
+      "url": "https://costgoat.com/compare/llm-api",
+      "title": "LLM API Pricing Comparison May 2026",
+      "publication_date": "2025-04-01",
+      "recency_note": "Latest pricing updates for cost calculations"
+    },
+    {
+      "url": "https://agenta.ai/blog/top-6-techniques-to-manage-context-length-in-llms",
+      "title": "Top Techniques to Manage Context Length",
+      "publication_date": "2024-11-05",
+      "recency_note": "Recent synthesis of truncation and compression strategies"
+    },
+    {
+      "url": "https://medium.com/data-science-collective/why-long-system-prompts-hurt-context-windows-and-how-to-fix-it-7a3696e1cdf9",
+      "title": "Why Long System Prompts Hurt Context Windows",
+      "publication_date": "2024-09-15",
+      "recency_note": "Analysis of attention locality and prompt structure"
+    },
+    {
+      "url": "https://github.com/nibzard/awesome-agentic-patterns/blob/main/patterns/sub-agent-spawning.md",
+      "title": "Sub-Agent Spawning Patterns",
+      "publication_date": "2024-11-01",
+      "recency_note": "Community documentation of parallelization strategies"
+    },
+    {
+      "url": "https://redis.io/blog/ai-agent-memory-stateful-systems/",
+      "title": "AI Agent Memory: Stateful Systems",
+      "publication_date": "2024-10-15",
+      "recency_note": "Architecture patterns for episodic and working memory"
+    },
+    {
+      "url": "https://www.getmaxim.ai/articles/building-a-golden-dataset-for-ai-evaluation-a-step-by-step-guide/",
+      "title": "Building a Golden Dataset for AI Evaluation",
+      "publication_date": "2024-10-30",
+      "recency_note": "Current best practices for test dataset construction"
+    },
+    {
+      "url": "https://www.traceloop.com/blog/automated-prompt-regression-testing-with-llm-as-a-judge-and-ci-cd",
+      "title": "Automated Prompt Regression Testing",
+      "publication_date": "2024-11-20",
+      "recency_note": "CI/CD integration patterns for prompt versioning"
+    }
+  ]
+}

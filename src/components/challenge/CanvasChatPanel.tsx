@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { ReportButton } from '@/components/feedback/ReportButton'
 import { Md } from '@/components/ui/Md'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { VoiceInputButton } from './VoiceInputButton'
@@ -8,11 +9,21 @@ import type { CanvasScene } from '@/lib/hatch/canvas-scene'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
+import { ChallengePaywallGate } from '@/components/paywalls/ChallengePaywallGate'
+import { useUpgrade } from '@/hooks/useUpgrade'
 
 interface ChatMessage {
   role: 'user' | 'hatch'
   content: string
   kind?: 'canvas_action' | 'chat' | 'nudge'
+}
+
+interface LimitErrorPayload {
+  error?: string
+  feature?: string
+  used?: number
+  limit?: number
+  retryAfter?: number
 }
 
 interface CanvasChatPanelProps {
@@ -53,35 +64,35 @@ function getInitialMessage(challengeType: 'system_design' | 'data_modeling' | 'c
   if (challengeType === 'data_modeling') {
     return "Let's model this data together. Draw your entities and relationships, or describe them and I'll add them to the canvas."
   }
-  return "I'm here to help you design this system. You can draw by hand, type here, or speak — I'll help build and critique your diagram."
+  return "I'm here to help you design this system. You can draw by hand, type here, or speak - I'll help build and critique your diagram."
 }
 
-function getExamplePrompts(challengeType: 'system_design' | 'data_modeling' | 'coding', language?: string): string[] {
+function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' | 'coding', language?: string): string[] {
   if (challengeType === 'coding') {
     if (language === 'sql') {
       return [
-        "Can you explain the schema?",
-        "What kind of JOIN do I need here?",
-        "How do I aggregate by user?",
+        "What's the strongest query move I'm missing?",
+        'Compare my SQL to a top response.',
+        "What's the trade-off in this join or aggregation?",
       ]
     }
     return [
-      "What approach should I take?",
-      "What edge cases should I think about?",
-      "Walk me through the time complexity",
+      "What's the strongest implementation move I'm missing?",
+      'Compare my approach to a top response.',
+      "What's the trade-off in this complexity choice?",
     ]
   }
   if (challengeType === 'data_modeling') {
     return [
-      'What is missing from this schema?',
-      'Turn my context notes into tables',
-      'Check keys, cardinality, and indexes',
+      "What's the strongest schema move I'm missing?",
+      'Compare my model to a top response.',
+      "What's the trade-off in this relationship?",
     ]
   }
   return [
-    'What is missing from this design?',
-    'Turn my context notes into components',
-    'Stress-test the failure modes',
+    "What's the strongest system move I'm missing?",
+    'Compare my design to a top response.',
+    "What's the trade-off here?",
   ]
 }
 
@@ -115,6 +126,7 @@ export function CanvasChatPanel({
 }: CanvasChatPanelProps) {
   const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
   const { muted, toggleMuted, play } = useHatchSonics()
+  const { startUpgrade } = useUpgrade()
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -125,6 +137,8 @@ export function CanvasChatPanel({
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [retryAfter, setRetryAfter] = useState<number | null>(null)
+  const [limitGate, setLimitGate] = useState<{ feature: string; used: number; limit: number } | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
   const lastQueuedPromptIdRef = useRef<string | null>(null)
@@ -132,9 +146,16 @@ export function CanvasChatPanel({
   const canvasStatusLabel = challengeType === 'coding'
     ? null
     : `${scene.entities.length} ${challengeType === 'data_modeling' ? 'tables' : 'nodes'} · ${scene.connections.length} ${challengeType === 'data_modeling' ? 'links' : 'flows'}`
-  const starterPrompts = getExamplePrompts(challengeType, currentLanguage)
+  const suggestionPrompts = getSuggestionPrompts(challengeType, currentLanguage)
+  const isThrottled = retryAfter != null && retryAfter > 0
+  const inputDisabled = isLoading || isThrottled
+  const inputPlaceholder = isThrottled
+    ? `Slow down. Try again in ${retryAfter}s.`
+    : challengeType === 'coding'
+      ? "Ask Hatch about your code…"
+      : "Ask Hatch, or tell it what to draw from your notes…"
 
-  // Suppress unused variable warnings — grade is reserved for future use; isOpen kept for callers
+  // Suppress unused variable warnings - grade is reserved for future use; isOpen kept for callers
   void grade
   void isOpen
 
@@ -159,15 +180,27 @@ export function CanvasChatPanel({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  useEffect(() => {
+    if (!isThrottled) return
+    const interval = window.setInterval(() => {
+      setRetryAfter((current) => {
+        if (!current || current <= 1) return null
+        return current - 1
+      })
+    }, 1000)
+
+    return () => window.clearInterval(interval)
+  }, [isThrottled])
+
   const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || isLoading) return
+    if (!text.trim() || isLoading || isThrottled) return
     const userMsg: ChatMessage = { role: 'user', content: text, kind: 'chat' }
     play('send')
     setMessages((prev) => [...prev, userMsg])
     setInput('')
     setIsLoading(true)
 
-    // Unified coach endpoint — model decides build vs coach vs both.
+    // Unified coach endpoint - model decides build vs coach vs both.
     try {
       const baseBody = {
         message: text,
@@ -202,7 +235,44 @@ export function CanvasChatPanel({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...baseBody, ...codingBody }),
       })
-      if (!res.ok) throw new Error('coach call failed')
+      if (!res.ok) {
+        const errorPayload = await res.json().catch(() => ({})) as LimitErrorPayload
+        if (res.status === 402 && errorPayload.error === 'limit_reached') {
+          setLimitGate({
+            feature: errorPayload.feature ?? 'hatch_canvas_interprets',
+            used: errorPayload.used ?? errorPayload.limit ?? 0,
+            limit: errorPayload.limit ?? 0,
+          })
+          play('error')
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'hatch',
+              content: 'You have hit the free Hatch canvas review limit. Upgrade to keep coaching available.',
+              kind: 'chat',
+            },
+          ])
+          return
+        }
+
+        if (res.status === 429) {
+          const retryHeader = Number(res.headers.get('Retry-After'))
+          const seconds = errorPayload.retryAfter ?? (Number.isFinite(retryHeader) && retryHeader > 0 ? retryHeader : 30)
+          setRetryAfter(seconds)
+          play('error')
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'hatch',
+              content: `Slow down. Try again in ${seconds}s.`,
+              kind: 'chat',
+            },
+          ])
+          return
+        }
+
+        throw new Error('coach call failed')
+      }
       const data = (await res.json()) as CanvasInterpretResponse
       const willBuild = data.actions.length > 0 && !!onCanvasActions
       if (willBuild && onCanvasActions) {
@@ -234,7 +304,7 @@ export function CanvasChatPanel({
       currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
       challengeTitle, problemStatement,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
-      activePartResponseType, activePartWeightPct, play])
+      activePartResponseType, activePartWeightPct, play, isThrottled])
 
   useEffect(() => {
     if (!queuedPrompt || queuedPrompt.id === lastQueuedPromptIdRef.current) return
@@ -272,6 +342,7 @@ export function CanvasChatPanel({
   if (mode === 'closed') {
     return (
       <button
+        data-hatch-target="workspace-hatch-chat"
         onClick={() => { play('open'); setMode('floating'); onToggle() }}
         className="absolute bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
         title="Open Hatch chat"
@@ -284,11 +355,13 @@ export function CanvasChatPanel({
 
   if (mode === 'docked') {
     return (
-      <div
-        data-testid="hatch-chat-panel"
-        style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
-        className="relative flex flex-col border-l border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
-      >
+      <>
+        <div
+          data-testid="hatch-chat-panel"
+          data-hatch-target="workspace-hatch-chat"
+          style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
+          className="relative flex flex-col border-l border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
+        >
         {/* Drag handle */}
         <div
           onMouseDown={startResize}
@@ -343,36 +416,54 @@ export function CanvasChatPanel({
               {msg.role === 'hatch' && (
                 <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
               )}
-              <div
-                data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
-                className={`rounded-xl px-3 py-2 text-sm max-w-[85%] font-body leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-on-primary'
-                    : msg.kind === 'canvas_action'
-                      ? 'bg-primary-container text-on-primary-container'
-                      : msg.kind === 'nudge'
-                        ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
-                        : 'bg-surface-container-high text-on-surface'
-                }`}
-              >
-                {msg.kind === 'nudge' && (
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
-                    {onDismissNudge && (
-                      <button onClick={onDismissNudge} className="text-xs opacity-60 hover:opacity-100" aria-label="Dismiss nudge">✕</button>
-                    )}
-                  </div>
-                )}
-                {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
-                {msg.kind === 'canvas_action' && (
-                  <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+              <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div
+                  data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
+                  className={`rounded-xl px-3 py-2 text-sm font-body leading-relaxed ${
+                    msg.role === 'user'
+                      ? 'bg-primary text-on-primary'
+                      : msg.kind === 'canvas_action'
+                        ? 'bg-primary-container text-on-primary-container'
+                        : msg.kind === 'nudge'
+                          ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                          : 'bg-surface-container-high text-on-surface'
+                  }`}
+                >
+                  {msg.kind === 'nudge' && (
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
+                      {onDismissNudge && (
+                        <button onClick={onDismissNudge} className="text-xs opacity-60 hover:opacity-100" aria-label="Dismiss nudge">✕</button>
+                      )}
+                    </div>
+                  )}
+                  {msg.role === 'hatch' ? <Md variant="chat">{msg.content}</Md> : msg.content}
+                  {msg.kind === 'canvas_action' && (
+                    <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+                  )}
+                </div>
+                {msg.role === 'hatch' && (
+                  <ReportButton
+                    compact
+                    targetType="hatch_response"
+                    targetId={`${attemptId}:${i}`}
+                    targetUrl={`/workspace/challenges/${challengeId}`}
+                    metadata={{
+                      attemptId,
+                      challengeId,
+                      challengeType,
+                      messageKind: msg.kind ?? 'chat',
+                      messageExcerpt: msg.content.slice(0, 240),
+                    }}
+                    className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-on-surface-variant/70 hover:bg-surface-container-highest hover:text-on-surface disabled:opacity-50"
+                  />
                 )}
               </div>
             </div>
           ))}
-          {starterPrompts.length > 0 && messages.length === 1 && !isLoading && (
+          {suggestionPrompts.length > 0 && messages.length === 1 && !isLoading && (
             <div className="flex flex-col gap-1.5 mt-2">
-              {starterPrompts.map((prompt) => (
+              {suggestionPrompts.map((prompt) => (
                 <button
                   key={prompt}
                   onClick={() => sendMessage(prompt)}
@@ -402,29 +493,46 @@ export function CanvasChatPanel({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch, or tell it what to draw from your notes…"}
+                disabled={inputDisabled}
+                placeholder={inputPlaceholder}
                 rows={2}
-                className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+                className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary disabled:opacity-60"
               />
               <div className="flex flex-col gap-1">
-                <VoiceInputButton onTranscript={sendMessage} disabled={isLoading} />
+                <VoiceInputButton onTranscript={sendMessage} disabled={inputDisabled} />
                 <button
                   onClick={() => sendMessage(input)}
-                  disabled={isLoading || !input.trim()}
+                  disabled={inputDisabled || !input.trim()}
                   className="p-2 rounded-full bg-primary text-on-primary disabled:opacity-40 hover:opacity-90 transition-opacity"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
                 </button>
               </div>
             </div>
+            {isThrottled && (
+              <p className="mt-2 font-body text-xs text-on-surface-variant">
+                Slow down. Try again in {retryAfter}s.
+              </p>
+            )}
           </div>
         )}
-      </div>
+        </div>
+        {limitGate && (
+          <ChallengePaywallGate
+            used={limitGate.used}
+            limit={limitGate.limit}
+            feature={limitGate.feature}
+            onUpgrade={startUpgrade}
+            onDismiss={() => setLimitGate(null)}
+          />
+        )}
+      </>
     )
   }
 
   return (
-    <div data-testid="hatch-chat-panel" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
+    <>
+    <div data-testid="hatch-chat-panel" data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high">
         <div className="flex items-center gap-2">
@@ -477,43 +585,61 @@ export function CanvasChatPanel({
             {msg.role === 'hatch' && (
               <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
             )}
-            <div
-              data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
-              className={`rounded-xl px-3 py-2 text-sm max-w-[85%] font-body leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-primary text-on-primary'
-                  : msg.kind === 'canvas_action'
-                    ? 'bg-primary-container text-on-primary-container'
-                    : msg.kind === 'nudge'
-                      ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
-                      : 'bg-surface-container-high text-on-surface'
-              }`}
-            >
-              {msg.kind === 'nudge' && (
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
-                  {onDismissNudge && (
-                    <button
-                      onClick={onDismissNudge}
-                      className="text-xs opacity-60 hover:opacity-100"
-                      aria-label="Dismiss nudge"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              )}
-              {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
-              {msg.kind === 'canvas_action' && (
-                <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+            <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div
+                data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
+                className={`rounded-xl px-3 py-2 text-sm font-body leading-relaxed ${
+                  msg.role === 'user'
+                    ? 'bg-primary text-on-primary'
+                    : msg.kind === 'canvas_action'
+                      ? 'bg-primary-container text-on-primary-container'
+                      : msg.kind === 'nudge'
+                        ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                        : 'bg-surface-container-high text-on-surface'
+                }`}
+              >
+                {msg.kind === 'nudge' && (
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
+                    {onDismissNudge && (
+                      <button
+                        onClick={onDismissNudge}
+                        className="text-xs opacity-60 hover:opacity-100"
+                        aria-label="Dismiss nudge"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )}
+                {msg.role === 'hatch' ? <Md variant="chat">{msg.content}</Md> : msg.content}
+                {msg.kind === 'canvas_action' && (
+                  <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+                )}
+              </div>
+              {msg.role === 'hatch' && (
+                <ReportButton
+                  compact
+                  targetType="hatch_response"
+                  targetId={`${attemptId}:${i}`}
+                  targetUrl={`/workspace/challenges/${challengeId}`}
+                  metadata={{
+                    attemptId,
+                    challengeId,
+                    challengeType,
+                    messageKind: msg.kind ?? 'chat',
+                    messageExcerpt: msg.content.slice(0, 240),
+                  }}
+                  className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-on-surface-variant/70 hover:bg-surface-container-highest hover:text-on-surface disabled:opacity-50"
+                />
               )}
             </div>
           </div>
         ))}
-        {/* Example prompts — shown in coding mode when chat is at initial state */}
-        {starterPrompts.length > 0 && messages.length === 1 && !isLoading && (
+        {/* Suggestion chips shown while the Hatch thread is still empty. */}
+        {suggestionPrompts.length > 0 && messages.length === 1 && !isLoading && (
           <div className="flex flex-col gap-1.5 mt-2">
-            {starterPrompts.map((prompt) => (
+            {suggestionPrompts.map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => sendMessage(prompt)}
@@ -544,23 +670,39 @@ export function CanvasChatPanel({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch, or tell it what to draw from your notes…"}
+              disabled={inputDisabled}
+              placeholder={inputPlaceholder}
               rows={2}
-              className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+              className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary disabled:opacity-60"
             />
             <div className="flex flex-col gap-1">
-              <VoiceInputButton onTranscript={sendMessage} disabled={isLoading} />
+              <VoiceInputButton onTranscript={sendMessage} disabled={inputDisabled} />
               <button
                 onClick={() => sendMessage(input)}
-                disabled={isLoading || !input.trim()}
+                disabled={inputDisabled || !input.trim()}
                 className="p-2 rounded-full bg-primary text-on-primary disabled:opacity-40 hover:opacity-90 transition-opacity"
               >
                 <span className="material-symbols-outlined text-[18px]">send</span>
               </button>
             </div>
           </div>
+          {isThrottled && (
+            <p className="mt-2 font-body text-xs text-on-surface-variant">
+              Slow down. Try again in {retryAfter}s.
+            </p>
+          )}
         </div>
       )}
     </div>
+    {limitGate && (
+      <ChallengePaywallGate
+        used={limitGate.used}
+        limit={limitGate.limit}
+        feature={limitGate.feature}
+        onUpgrade={startUpgrade}
+        onDismiss={() => setLimitGate(null)}
+      />
+    )}
+    </>
   )
 }

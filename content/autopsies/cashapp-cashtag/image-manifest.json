@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "cashapp",
+  "story_slug": "cashapp-cashtag",
+  "story_title": "Cash App's Cashtag",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/cashapp-cashtag/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/cashapp-cashtag/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot holding a phone displaying a dollar-sign username, representing the Cashtag mechanic.",
+      "caption": "Hatch mascot holding a phone displaying a dollar-sign username, representing the Cashtag mechanic.",
+      "prompt": "Cash App's Cashtag | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) holding an oversized phone displaying a Cashtag-style username ($hatch) on a cream background. The username is displayed prominently in green text on the phone screen. Hatch's expression is cheerful and curious. No speech bubble, no copy. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/cashapp-cashtag/hero.png",
+      "generated_image_sha256": "f2f329b45e72cb6273176e6e60b334832a5e607a7a6a1ebea5b1e3e5b57254c0",
+      "final_image_sha256": "66442700b1985da5831f39351e9cf6c2b98f9d52ac6b833aa89118c0e001d449",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/cashapp-cashtag/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/cashapp-cashtag/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/cashapp-cashtag/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between a plain phone number and a glowing Cashtag handle with a public URL, showing two design choices.",
+      "caption": "Hatch gesturing between a plain phone number and a glowing Cashtag handle with a public URL, showing two design choices.",
+      "prompt": "Cash App's Cashtag | hatch-narrator: Hatch in narrator pose, gesturing toward two paths: on the left, a plain phone number label (representing a traditional payment identifier); on the right, a glowing $username handle with a URL visible underneath. The contrast is the point. Cream background, no speech bubble. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/cashapp-cashtag/hatch-narrator.png",
+      "generated_image_sha256": "893404f6afa2e30dedaa176112ad1e1f04b7ebf1e38dc237ab26694bd1e4c30b",
+      "final_image_sha256": "736d68cf5ceefff4607e07c1802ae580f0eb63d85f537b7cc5fe2d7acf35474a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/cashapp-cashtag/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/cashapp-cashtag/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/cashapp-cashtag/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a flow diagram showing how a Cashtag mention becomes a cold acquisition event.",
+      "caption": "Hatch examining a flow diagram showing how a Cashtag mention becomes a cold acquisition event.",
+      "prompt": "Cash App's Cashtag | failure-mechanism: Hatch in a thinking pose, looking at a simple flow diagram: social media post with $cashtag handle → public URL → payment page reachable without app download → new user created. The flow shows how a mention generates an acquisition event. Cream background. Watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/cashapp-cashtag/failure-mechanism.png",
+      "generated_image_sha256": "e13717d40f5b63534d023ce4231c1405c6fa40726fde17d117ae881582cb406f",
+      "final_image_sha256": "d85350433cda605090137ecc691d77d0bee90e21027a7c63e5e1e57cc0ade5d7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/cashapp-cashtag/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/cashapp-cashtag/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/cashapp-cashtag/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a Cash App user growth chart with the Cashtag launch marked.",
+      "caption": "Hatch pointing at a Cash App user growth chart with the Cashtag launch marked.",
+      "prompt": "Cash App's Cashtag | evidence-card: Hatch pointing at a simple growth chart showing Cash App monthly active users rising from 2015 to 2022, with an annotation marker at the 2015 Cashtag launch. The chart is clean, cream background, minimal. Watermark bottom-right. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/cashapp-cashtag/evidence-card.png",
+      "generated_image_sha256": "85e9eeb1b7c5abbab7a5e1e8d52272457bd0a62604535a03ad35df598b024659",
+      "final_image_sha256": "cc2dab1d9db4b05aa2ac74bb8b9733310ead62343f5c6ad833f837460118a585",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/cashapp-cashtag/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/cashapp-cashtag/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/cashapp-cashtag/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm coaching pose against a cream background with a faint dollar sign.",
+      "caption": "Hatch in a calm coaching pose against a cream background with a faint dollar sign.",
+      "prompt": "Cash App's Cashtag | lesson-frame: Hatch in coaching pose, calm and settled, standing slightly turned. Background is cream with a faint dollar-sign watermark at low opacity behind Hatch. No copy, no speech bubble. Considered and complete feeling. Watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/cashapp-cashtag/lesson-frame.png",
+      "generated_image_sha256": "087c8e24b05cd8afeeb1d2f704a1cb384b477156a4d545e695fdb7eee52c51b9",
+      "final_image_sha256": "53e906d5ba3e36b6b840468fba9dbaf24940245272f9793b06c907d6473040f7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/cashapp-cashtag/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/cashapp-cashtag/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/cashapp-cashtag/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small phone displaying a dollar-sign username.",
+      "caption": "Hatch holding a small phone displaying a dollar-sign username.",
+      "prompt": "Hatch mascot small and recognisable, holding a miniature phone with a $username displayed on screen. Cream background, no text. Watermark bottom-right at small scale. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/cashapp-cashtag/hero.png",
+      "generated_image_sha256": "f2f329b45e72cb6273176e6e60b334832a5e607a7a6a1ebea5b1e3e5b57254c0",
+      "final_image_sha256": "39c8ac4d2108f69406343087fee7afa1d9ce37f1356b72a6ac24f9b5c1d9f290",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/cashapp-cashtag/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/cashapp-cashtag/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/cashapp-cashtag/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot holding a phone with a Cashtag username displayed, HackProduct wordmark visible.",
+      "caption": "Hatch mascot holding a phone with a Cashtag username displayed, HackProduct wordmark visible.",
+      "prompt": "Hero composition adapted for OG share card: Hatch holding the oversized phone with $hatch displayed, cream background, \"HackProduct\" wordmark visible at bottom-right. Composition tightened for 2400x1260 format. No additional copy.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/cashapp-cashtag/hero.png",
+      "generated_image_sha256": "f2f329b45e72cb6273176e6e60b334832a5e607a7a6a1ebea5b1e3e5b57254c0",
+      "final_image_sha256": "d37c333e048cb93b9d2a3f9d5c4a4b2f2b6736a7a5d2e07101707668b895da33",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/cashapp-cashtag/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/cashapp-cashtag/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/cashapp-cashtag/v1"
+}

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "craigslist",
+  "story_slug": "craigslist-minimalism",
+  "story_title": "Craigslist Minimalism",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/craigslist-minimalism/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/craigslist-minimalism/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing in front of a vintage-looking browser showing plain HTML links, representing Craigslist's unchanged interface.",
+      "caption": "Hatch standing in front of a vintage-looking browser showing plain HTML links, representing Craigslist's unchanged interface.",
+      "prompt": "Craigslist Minimalism | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) standing in front of a giant browser window showing plain blue hyperlinks on a white background, circa-1996 web aesthetic. Hatch's expression is curious and slightly amused, cap tilted. Cream background behind the browser. No speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/craigslist-minimalism/hero.png",
+      "generated_image_sha256": "e6001b4b34137a1fa9c35765abf0770590b950254a16b7470500f079df766966",
+      "final_image_sha256": "d029718201e8a9a5783ccf6f07c9ce1c021317f21accfa68676e41e2e291fb9c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/craigslist-minimalism/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/craigslist-minimalism/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/craigslist-minimalism/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a side-by-side comparison of a polished app and a plain HTML page, highlighting the unchanged interface.",
+      "caption": "Hatch gesturing toward a side-by-side comparison of a polished app and a plain HTML page, highlighting the unchanged interface.",
+      "prompt": "Craigslist Minimalism | hatch-narrator: Hatch in narrator pose, gesturing toward a split scene: on the left, a polished 2015 mobile app interface with image galleries and ratings; on the right, a plain HTML page with blue links from 1996 that looks identical to 2020. Hatch's gesture highlights the right side. Cream background. No speech. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/craigslist-minimalism/hatch-narrator.png",
+      "generated_image_sha256": "e23775390445ec7c1c4fbe2c071a59f114d99c9879c49d8fa91d9afe537fcb43",
+      "final_image_sha256": "897fe606c68c1b55908cce6430e23ad77c47173fb31f0b1624f9df14317d8f27",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/craigslist-minimalism/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/craigslist-minimalism/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/craigslist-minimalism/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a diagram showing users repeatedly returning to the same URL structure across two decades, representing workflow lock-in.",
+      "caption": "Hatch examining a diagram showing users repeatedly returning to the same URL structure across two decades, representing workflow lock-in.",
+      "prompt": "Craigslist Minimalism | failure-mechanism: Hatch in thinking pose, looking at a diagram showing users with arrows pointing to the same URL structure over and over across years labeled 2000, 2005, 2010, 2015, 2020. The arrows represent repeated workflows. A small lock icon near the URL structure. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/craigslist-minimalism/failure-mechanism.png",
+      "generated_image_sha256": "97f07c2da3f1e340cec3028b0159b2721bb55a6de1b54df2af7353d5c46439b4",
+      "final_image_sha256": "0c3b03ff1e5418c54a640c0588b098dc0ed7060fbd45a53dcb5f4589f81a995a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/craigslist-minimalism/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/craigslist-minimalism/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/craigslist-minimalism/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a chart showing newspaper classified revenue declining while Craigslist traffic holds steady over a decade.",
+      "caption": "Hatch pointing at a chart showing newspaper classified revenue declining while Craigslist traffic holds steady over a decade.",
+      "prompt": "Craigslist Minimalism | evidence-card: Hatch pointing at a simple bar chart showing US newspaper classified ad revenue collapsing from 2000 to 2012 while a second bar (Craigslist visitors) holds steady. Minimal chart style, cream background. Hatch's expression is attentive, not triumphant. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/craigslist-minimalism/evidence-card.png",
+      "generated_image_sha256": "bf39e8e8f5c283ac07b5d4fdd2fbe1e2c5524be53c281896ced68294624b46d7",
+      "final_image_sha256": "4fa70ffb16d7b92995b2532f4e9e22250216874e578edd87ad13e29944874696",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/craigslist-minimalism/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/craigslist-minimalism/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/craigslist-minimalism/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a signpost with Redesign and Stability arrows, looking at the viewer in a coaching posture.",
+      "caption": "Hatch standing beside a signpost with Redesign and Stability arrows, looking at the viewer in a coaching posture.",
+      "prompt": "Craigslist Minimalism | lesson-frame: Hatch in calm coaching pose, standing beside a large signpost with two arrows: one pointing to \"Redesign\" and one pointing to \"Stability.\" Hatch is not pointing to either — it is looking at the viewer, as if inviting reflection. Cream background, no copy. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/craigslist-minimalism/lesson-frame.png",
+      "generated_image_sha256": "e999ef501f8d641296cbd0b4794a055f4332794c8d7bd60853f931dec7ec3f3d",
+      "final_image_sha256": "022fc6c7bd1cdd4c7340061a8862a1d98577a162d19724eca319f9ba826d8f19",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/craigslist-minimalism/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/craigslist-minimalism/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/craigslist-minimalism/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small browser window with blue links, thumbnail version.",
+      "caption": "Hatch holding a small browser window with blue links, thumbnail version.",
+      "prompt": "Hatch mascot small and recognizable, holding a tiny browser window showing plain blue links. Cream background, no text. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/craigslist-minimalism/hero.png",
+      "generated_image_sha256": "e6001b4b34137a1fa9c35765abf0770590b950254a16b7470500f079df766966",
+      "final_image_sha256": "8f198644a25782c81c3dd38dec207b5b320a18cfb1eeb0994341fde9631f0223",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/craigslist-minimalism/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/craigslist-minimalism/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/craigslist-minimalism/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in front of a vintage browser window for social sharing card.",
+      "caption": "Hatch in front of a vintage browser window for social sharing card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG card: standing in front of the giant browser window showing plain blue HTML links. Title text area below Hatch. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/craigslist-minimalism/hero.png",
+      "generated_image_sha256": "e6001b4b34137a1fa9c35765abf0770590b950254a16b7470500f079df766966",
+      "final_image_sha256": "5dfe5cad8864fcfc70262025f1e5516be13ba120001eadf756bdab518ab48d7e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/craigslist-minimalism/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/craigslist-minimalism/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/craigslist-minimalism/v1"
+}

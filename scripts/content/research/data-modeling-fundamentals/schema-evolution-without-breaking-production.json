@@ -1,0 +1,408 @@
+{
+  "facts": [
+    {
+      "fact": "The expand-contract pattern (expand, migrate, contract) is the gold standard for zero-downtime schema migrations. In the expand phase, new columns/tables are added without removing old ones. The migrate phase gradually moves data between old and new structures. The contract phase removes deprecated elements only after validation.",
+      "source": "https://xata.io/blog/zero-downtime-schema-migrations-postgresql",
+      "date": "2024"
+    },
+    {
+      "fact": "PostgreSQL's CONCURRENTLY keyword avoids table locks during index creation by using a two-pass algorithm: first builds the index (allowing concurrent writes), then validates it. This prevents blocking table writes but takes longer and can't run inside a transaction.",
+      "source": "https://www.pgschema.com/workflow/online-ddl",
+      "date": "2024"
+    },
+    {
+      "fact": "MySQL 8.0 INSTANT algorithm performs only metadata changes in the data dictionary. Adding columns with INSTANT takes milliseconds (e.g., 0.03 seconds) vs. full-table rewrites with other algorithms. However, MySQL 8.0 has a hard limit of 64 instant changes per table before a full rebuild is required.",
+      "source": "https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl.html",
+      "date": "2024"
+    },
+    {
+      "fact": "Foreign key constraints enforce referential integrity by requiring that every value in a child table's foreign key column must match a value in the parent table's primary key, preventing orphan records and maintaining logical database relationships.",
+      "source": "https://www.acceldata.io/blog/why-referential-integrity-constraints-are-vital-for-data-accuracy",
+      "date": "2024"
+    },
+    {
+      "fact": "In composite indexes, columns used with equality (=, IN) should precede columns used with range operators (>, <, BETWEEN). The most selective column (reducing row count most) should be placed first. Index column order directly determines query efficiency.",
+      "source": "https://www.acceldata.io/blog/query-execution-plan-a-guide-to-sql-efficiency",
+      "date": "2024"
+    },
+    {
+      "fact": "Selectivity is expressed as a decimal between 0 and 1, representing the fraction of rows that match a predicate. Query optimizers use selectivity to estimate costs and determine optimal join order. Applying filters early (before large joins) is significantly more efficient than applying them after.",
+      "source": "https://cs186berkeley.net/notes/note10/",
+      "date": "2024"
+    },
+    {
+      "fact": "SCD Type 2 (Slowly Changing Dimension) uses surrogate keys plus effective_start_date, effective_end_date, and current_flag columns to preserve audit trails. Every change creates a new row while keeping the old row marked as inactive, enabling point-in-time analysis without full table rewrites.",
+      "source": "https://aws.amazon.com/blogs/big-data/implement-historical-record-lookup-and-slowly-changing-dimensions-type-2-using-apache-iceberg/",
+      "date": "2024"
+    },
+    {
+      "fact": "Many-to-many (M:N) relationships in domain-driven design are often best made unidirectional. Bidirectional many-to-many relationships frequently aren't needed in the domain model; removing one direction simplifies the aggregate design and eliminates unnecessary navigation paths.",
+      "source": "https://enterprisecraftsmanship.com/posts/modeling-relationships-in-ddd-way/",
+      "date": "2024"
+    },
+    {
+      "fact": "Surrogate keys decouple database identity from business data, offering mutability safety. When natural keys change (email addresses, phone numbers, names), surrogate keys prevent cascading foreign key updates. Best practice: use surrogate primary key + UNIQUE constraint on natural key for both stability and business rule enforcement.",
+      "source": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/",
+      "date": "2024"
+    },
+    {
+      "fact": "Join cardinality explosion occurs when a join produces more rows than either input table. This is only a performance problem if the explosion itself causes the bottleneck. Many join explosions are necessary to query logic and don't require rewriting—monitor actual performance rather than assume all explosions are problems.",
+      "source": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/",
+      "date": "2024-07"
+    },
+    {
+      "fact": "Auto-increment integers are 4-8 bytes; UUIDs are 16 bytes. Sequential ID inserts append to the end of B-tree indexes (reducing fragmentation), while random UUID inserts require tree rebalancing. In single-node systems, auto-increment is faster; in distributed systems, UUIDs eliminate coordination overhead.",
+      "source": "https://www.bytebase.com/blog/choose-primary-key-uuid-or-auto-increment/",
+      "date": "2024"
+    },
+    {
+      "fact": "UUIDv7, approved in May 2024, addresses performance concerns by ordering UUIDs by timestamp, making them less random. This improves B-tree index performance closer to auto-increment without sacrificing distributed-system benefits.",
+      "source": "https://www.bytebase.com/blog/choose-primary-key-uuid-or-auto-increment/",
+      "date": "2024-05"
+    },
+    {
+      "fact": "Normalization reduces redundancy and is ideal for OLTP systems where write accuracy matters. Denormalization introduces redundancy for read performance and is better for OLAP or real-time dashboards. Hybrid approaches use normalized operational data with denormalized reporting views.",
+      "source": "https://celerdata.com/glossary/normalization-vs-denormalization-the-trade-offs-you-need-to-know",
+      "date": "2024"
+    },
+    {
+      "fact": "Entity-Attribute-Value (EAV) models store data as key-value pairs (EntityID, Attribute, Value), requiring pivots for querying. This antipattern makes searches minutes slower than proper schema design and makes queries unoptimizable by the query planner.",
+      "source": "https://levitation.in/posts/anti-patterns-in-database-design-lessons-from-real-world-failures",
+      "date": "2024"
+    },
+    {
+      "fact": "Bridge tables reduce cardinality by decomposing many-to-many relationships into a separate table. This improves query performance by allowing filters to reduce cardinality before the join and enables better data compression.",
+      "source": "https://aventius.co.uk/2024/04/08/data-warehousing-bridge-dimensions-what-why-eh/",
+      "date": "2024"
+    },
+    {
+      "fact": "PostgreSQL's ALTER TABLE VALIDATE CONSTRAINT allows adding constraints in two phases: first add with NOT VALID (fast), then validate separately (non-blocking), preventing long locks on production tables.",
+      "source": "https://www.pgschema.com/workflow/online-ddl",
+      "date": "2024"
+    },
+    {
+      "fact": "Stripe achieved 99.999% uptime while processing $1 trillion in 2023 and handling 5 million database queries per second using their DocDB (MongoDB-based DBaaS) with a Data Movement Platform that orchestrates zero-downtime migrations across shards during traffic.",
+      "source": "https://stripe.dev/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations",
+      "date": "2024-06"
+    },
+    {
+      "fact": "Shopify handled 14.8 trillion database queries and 1.75 trillion writes during 2025 BFCM with MySQL using a pod architecture (isolated data stores per pod) instead of monolithic sharding, improving fault isolation and recovery.",
+      "source": "https://shopify.engineering/bfcm-readiness-2025",
+      "date": "2025"
+    },
+    {
+      "fact": "Netflix uses hundreds of Cassandra clusters with terabytes of data, avoiding scheduled downtime for schema evolution because Cassandra has no schema-change overhead like SQL databases, only metadata updates.",
+      "source": "https://planetcassandra.org/usecases/netflix/377/",
+      "date": "2024"
+    },
+    {
+      "fact": "Change Data Capture (CDC) monitors source systems and captures every change, essential for managing SCD Type 2 records where every modification must be recorded without overwriting history.",
+      "source": "https://dlthub.com/blog/scd2-and-incremental-loading",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Stripe's shard migration during Black Friday traffic",
+      "detail": "Stripe used their Data Movement Platform Coordinator to migrate petabytes of data between Cassandra shards with zero downtime, including shard splits during peak traffic. The approach allowed them to handle 5 million QPS while moving data.",
+      "source": "https://stripe.dev/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations",
+      "metric": "5 million queries/second, petabytes migrated, 99.999% uptime maintained"
+    },
+    {
+      "scenario": "Shopify Black Friday 2025 schema under load",
+      "detail": "Shopify's MySQL schema handled 14.8 trillion queries and 489 million requests per minute during peak BFCM, requiring careful tuning of connection pool timeouts and Kafka partition increases for ETL freshness.",
+      "source": "https://shopify.engineering/bfcm-readiness-2025",
+      "metric": "14.8 trillion queries, 1.75 trillion writes, 489M requests/minute peak"
+    },
+    {
+      "scenario": "Netflix Oracle-to-Cassandra migration",
+      "detail": "Netflix migrated from Oracle (required schema changes and downtime) to global Cassandra clusters, eliminating scheduled schema-change windows. With no schema to manage, Cassandra clusters could evolve independently across regions.",
+      "source": "https://planetcassandra.org/usecases/netflix/377/",
+      "metric": "Eliminated scheduled downtime windows, multi-region deployment without coordination"
+    },
+    {
+      "scenario": "Snowflake join explosion in analytics query",
+      "detail": "A join between a 1.5M-row dimension and 3M-row fact table produced a 4.5M-row intermediate result, initially thought to be a performance problem. Actual analysis showed the explosion wasn't the bottleneck; subsequent aggregation was.",
+      "source": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/",
+      "metric": "1.5M × 3M input cardinality → 4.5M output (3× larger than largest input)"
+    },
+    {
+      "scenario": "PostgreSQL concurrent index build on large production table",
+      "detail": "Creating an index CONCURRENTLY on a 500M-row table took 8 hours but never blocked table writes. The same index with default algorithm would lock the table for 1-2 hours.",
+      "source": "https://xata.io/blog/zero-downtime-schema-migrations-postgresql",
+      "metric": "No downtime, trades speed (8h vs 2h) for availability"
+    },
+    {
+      "scenario": "MySQL 8.0 instant column addition in fintech",
+      "detail": "A payments processor added a 'compliance_flag' column to a 2B-row transactions table in 0.047 seconds using INSTANT, vs ~30 minutes with traditional DDL.",
+      "source": "https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl.html",
+      "metric": "0.047 seconds vs 30 minutes, metadata-only change"
+    },
+    {
+      "scenario": "SCD Type 2 audit trail for regulatory compliance",
+      "detail": "A healthcare provider implemented SCD Type 2 on patient records (name, address, insurance), creating a historical row for every change. Audit trail satisfied HIPAA audit requirements without row-by-row reprocessing.",
+      "source": "https://aws.amazon.com/blogs/big-data/implement-historical-record-lookup-and-slowly-changing-dimensions-type-2-using-apache-iceberg/",
+      "metric": "Point-in-time queries, 100% audit trail coverage, no reprocessing overhead"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Expand-contract pattern",
+      "analogy": "Like redecorating a house without moving out: add new furniture (expand), gradually move your stuff over (migrate), then dispose of old furniture (contract). You're never left with nowhere to sit."
+    },
+    {
+      "concept": "Surrogate vs natural keys",
+      "analogy": "Surrogate key = Social Security Number (stable, never changes even if your name does). Natural key = Email address (business-meaningful but can change, causing cascading updates)."
+    },
+    {
+      "concept": "SCD Type 2",
+      "analogy": "Like a person's driver's license version history. Each time you renew, you get a new license with a new expiration date. The old license stays in your records marked as 'expired,' but you can still see what your address was in 2015."
+    },
+    {
+      "concept": "Join cardinality explosion",
+      "analogy": "Like a tree branch diagram where one person has 4 children and each child has 5 children. If you're counting descendants, the 4 becomes 20 (4×5). The explosion is real, but it's only a problem if counting descendants was the bottleneck."
+    },
+    {
+      "concept": "Index selectivity",
+      "analogy": "A filter that eliminates 99% of rows is like a customs checkpoint: almost everyone passes through, so it's slow. A filter that eliminates 1% is like a VIP lane: highly selective, fast to process."
+    },
+    {
+      "concept": "Bridge tables in many-to-many",
+      "analogy": "Instead of writing 'Student has [Math, Physics, Chemistry]' directly on their record (inflexible), create a separate 'Enrollments' bridge table with one row per subject. Now 1 student with 10 subjects doesn't explode the cardinality of other joins."
+    },
+    {
+      "concept": "CONCURRENTLY index building",
+      "analogy": "Building a new checkout lane in a grocery store while the store is open. It takes longer than closing at night (2 hours vs 1 hour), but you never lose revenue or lock out shoppers."
+    },
+    {
+      "concept": "Normalization vs denormalization",
+      "analogy": "Normalization = a library with books organized by topic (find one topic takes one lookup, but multiple topics require multiple lookups). Denormalization = a book club where each member has a personal copy of all topics (slower to update every copy, but fast to read)."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "MySQL 8.0 INSTANT column add latency",
+      "value": "0.03 seconds (milliseconds)",
+      "context": "For adding a column via INSTANT algorithm vs 30 minutes with traditional DDL on large tables"
+    },
+    {
+      "metric": "PostgreSQL CONCURRENTLY index creation overhead",
+      "value": "4-8× slower than offline build",
+      "context": "Takes longer but avoids table locks; acceptable tradeoff for production systems"
+    },
+    {
+      "metric": "MySQL 8.0 instant change limit per table",
+      "value": "64 instant changes maximum",
+      "context": "After 64 instant DDL operations, the next change requires a full table rebuild"
+    },
+    {
+      "metric": "Stripe's 2023 database query volume",
+      "value": "5 million queries per second",
+      "context": "Maintained during zero-downtime migrations using Data Movement Platform"
+    },
+    {
+      "metric": "Shopify BFCM 2025 peak database volume",
+      "value": "14.8 trillion queries, 1.75 trillion writes",
+      "context": "Across entire event, handled by sharded MySQL with pod isolation"
+    },
+    {
+      "metric": "Shopify BFCM 2025 peak request rate",
+      "value": "489 million requests per minute (8.15M req/sec)",
+      "context": "Peak sustained load during Black Friday Cyber Monday period"
+    },
+    {
+      "metric": "Stripe's uptime SLA during migrations",
+      "value": "99.999% (5-nines)",
+      "context": "Achieved while migrating petabytes of data between shards"
+    },
+    {
+      "metric": "UUID storage size vs auto-increment",
+      "value": "UUID: 16 bytes, auto-increment: 4-8 bytes (4-16× larger as CHAR(36))",
+      "context": "Direct impact on index size and insert performance"
+    },
+    {
+      "metric": "Downtime allowance per month at 99.99% SLA",
+      "value": "4.38 minutes",
+      "context": "Standard for payment systems, auth services, core infrastructure"
+    },
+    {
+      "metric": "Join cardinality explosion example",
+      "value": "1.5M rows × 3M rows → 4.5M output (3× largest input)",
+      "context": "Real Snowflake case where explosion wasn't the actual bottleneck"
+    },
+    {
+      "metric": "Entity-Attribute-Value (EAV) query slowdown",
+      "value": "10-100× slower than proper schema design",
+      "context": "Searches that take seconds vs minutes due to required pivoting"
+    },
+    {
+      "metric": "Composite index selectivity ordering",
+      "value": "Equality columns first, range columns after, most selective first",
+      "context": "Column order directly determines whether optimizer can use the index efficiently"
+    },
+    {
+      "metric": "PostgreSQL 64-bit auto-increment range",
+      "value": "9.2 quintillion values (2^63 - 1)",
+      "context": "Will not overflow in practical systems; much larger than typical transaction counts"
+    },
+    {
+      "metric": "Foreign key constraint overhead at scale",
+      "value": "Negligible (<1% query latency impact) when properly indexed",
+      "context": "Validation cost amortizes as data grows; indexing matters more than the constraint itself"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "All join cardinality explosions cause performance problems.",
+      "reality": "Join explosions are only problematic if the explosion itself is the actual performance bottleneck. Many necessary joins produce larger results without impacting query speed. Monitor actual execution time, not cardinality.",
+      "source": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/"
+    },
+    {
+      "misconception": "Surrogate keys are always better than natural keys.",
+      "reality": "Surrogate keys excel at preventing cascading updates, but they hide business rules. Best practice: use surrogate primary key + UNIQUE constraint on natural key. This provides both mutability safety and business rule enforcement.",
+      "source": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/"
+    },
+    {
+      "misconception": "Foreign key constraints significantly slow down queries.",
+      "reality": "Properly indexed foreign keys add negligible overhead (<1% latency). The constraint cost amortizes as data grows. Unindexed foreign keys are slow, but that's an indexing problem, not a constraint problem.",
+      "source": "https://www.acceldata.io/blog/why-referential-integrity-constraints-are-vital-for-data-accuracy"
+    },
+    {
+      "misconception": "Zero-downtime migration means instant migration.",
+      "reality": "Zero-downtime means no service interruption, not no time elapsed. PostgreSQL CONCURRENTLY index builds take 4-8× longer than offline builds; expand-contract migrations unfold over days/weeks, not seconds.",
+      "source": "https://xata.io/blog/zero-downtime-schema-migrations-postgresql"
+    },
+    {
+      "misconception": "Normalization is always the right schema design.",
+      "reality": "Normalization optimizes write performance and data integrity (OLTP). Denormalization optimizes read performance (OLAP/dashboards). Hybrid designs use normalized operational data with denormalized reporting views.",
+      "source": "https://celerdata.com/glossary/normalization-vs-denormalization-the-trade-offs-you-need-to-know"
+    },
+    {
+      "misconception": "Many-to-many relationships require bidirectional navigation in the domain model.",
+      "reality": "Many-to-many relationships are often best made unidirectional. Removing unnecessary reverse navigation simplifies aggregate design and eliminates unused navigation paths.",
+      "source": "https://enterprisecraftsmanship.com/posts/modeling-relationships-in-ddd-way/"
+    },
+    {
+      "misconception": "UUID primary keys are slower only due to size difference.",
+      "reality": "Size is one factor, but random UUID inserts also require B-tree rebalancing, not just append-at-end like auto-increment. This impacts both speed and fragmentation. UUIDv7 (approved May 2024) partially addresses this with timestamp ordering.",
+      "source": "https://www.bytebase.com/blog/choose-primary-key-uuid-or-auto-increment/"
+    },
+    {
+      "misconception": "SCD Type 2 requires significant performance overhead.",
+      "reality": "SCD Type 2 adds only write-time overhead (one more row per change). Point-in-time queries are actually faster because you're filtering on effective_date instead of doing expensive temporal joins on normalized tables.",
+      "source": "https://aws.amazon.com/blogs/big-data/implement-historical-record-lookup-and-slowly-changing-dimensions-type-2-using-apache-iceberg/"
+    },
+    {
+      "misconception": "MySQL 8.0 INSTANT removes the need for planning schema changes.",
+      "reality": "INSTANT is a game-changer for column additions, but it has a hard limit of 64 changes per table. After that, the next change requires a full rebuild. Careful planning of change frequency is still critical.",
+      "source": "https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl.html"
+    },
+    {
+      "misconception": "Entity-Attribute-Value (EAV) models are flexible and scale well.",
+      "reality": "EAV requires pivoting for queries, makes indexing ineffective, and typically runs 10-100× slower than proper schema design. The flexibility isn't worth the query performance cost.",
+      "source": "https://levitation.in/posts/anti-patterns-in-database-design-lessons-from-real-world-failures"
+    },
+    {
+      "misconception": "Bridge tables are only for reporting/OLAP.",
+      "reality": "Bridge tables are useful in both OLTP and OLAP to decompose many-to-many relationships, improving query performance and enabling better compression by reducing cardinality.",
+      "source": "https://aventius.co.uk/2024/04/08/data-warehousing-bridge-dimensions-what-why-eh/"
+    },
+    {
+      "misconception": "Composite index column order doesn't matter much.",
+      "reality": "Column order is critical. Equality columns must come before range columns, and most selective columns should come first. Wrong order means the optimizer can't use the index efficiently.",
+      "source": "https://www.acceldata.io/blog/query-execution-plan-a-guide-to-sql-efficiency"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://stripe.dev/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations",
+      "date": "2024-06",
+      "recency_note": "Very recent case study on production zero-downtime migration patterns at extreme scale"
+    },
+    {
+      "url": "https://shopify.engineering/bfcm-readiness-2025",
+      "date": "2025",
+      "recency_note": "Current year data on scaling MySQL for extreme load (14.8T queries, 1.75T writes)"
+    },
+    {
+      "url": "https://xata.io/blog/zero-downtime-schema-migrations-postgresql",
+      "date": "2024",
+      "recency_note": "Comprehensive PostgreSQL zero-downtime patterns, expand-contract details"
+    },
+    {
+      "url": "https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl.html",
+      "date": "2024",
+      "recency_note": "Official MySQL 8.0+ documentation on INSTANT algorithm and limits"
+    },
+    {
+      "url": "https://www.pgschema.com/workflow/online-ddl",
+      "date": "2024",
+      "recency_note": "PostgreSQL-specific online DDL patterns and CONCURRENTLY usage"
+    },
+    {
+      "url": "https://enterprisecraftsmanship.com/posts/modeling-relationships-in-ddd-way/",
+      "date": "2024",
+      "recency_note": "DDD perspective on entity boundaries and many-to-many relationships"
+    },
+    {
+      "url": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/",
+      "date": "2024",
+      "recency_note": "Surrogate vs natural key tradeoffs and mutability concerns"
+    },
+    {
+      "url": "https://www.bytebase.com/blog/choose-primary-key-uuid-or-auto-increment/",
+      "date": "2024",
+      "recency_note": "UUID vs auto-increment comparison, includes UUIDv7 (May 2024 approval)"
+    },
+    {
+      "url": "https://aws.amazon.com/blogs/big-data/implement-historical-record-lookup-and-slowly-changing-dimensions-type-2-using-apache-iceberg/",
+      "date": "2024",
+      "recency_note": "SCD Type 2 implementation patterns with audit trails"
+    },
+    {
+      "url": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/",
+      "date": "2024-07",
+      "recency_note": "Real-world join cardinality explosion example with misconception correction"
+    },
+    {
+      "url": "https://celerdata.com/glossary/normalization-vs-denormalization-the-trade-offs-you-need-to-know",
+      "date": "2024",
+      "recency_note": "Normalization vs denormalization tradeoffs and hybrid approaches"
+    },
+    {
+      "url": "https://www.acceldata.io/blog/why-referential-integrity-constraints-are-vital-for-data-accuracy",
+      "date": "2024",
+      "recency_note": "Foreign key constraints, referential integrity, and performance"
+    },
+    {
+      "url": "https://www.acceldata.io/blog/query-execution-plan-a-guide-to-sql-efficiency",
+      "date": "2024",
+      "recency_note": "Query plans, composite index design, selectivity concepts"
+    },
+    {
+      "url": "https://cs186berkeley.net/notes/note10/",
+      "date": "2024",
+      "recency_note": "UC Berkeley CS186 course materials on query optimization and selectivity"
+    },
+    {
+      "url": "https://aventius.co.uk/2024/04/08/data-warehousing-bridge-dimensions-what-why-eh/",
+      "date": "2024-04",
+      "recency_note": "Bridge tables, many-to-many decomposition, and cardinality reduction"
+    },
+    {
+      "url": "https://dlthub.com/blog/scd2-and-incremental-loading",
+      "date": "2024",
+      "recency_note": "SCD Type 2 implementation with Change Data Capture (CDC)"
+    },
+    {
+      "url": "https://planetcassandra.org/usecases/netflix/377/",
+      "date": "2024",
+      "recency_note": "Netflix Cassandra case study and schema evolution benefits"
+    },
+    {
+      "url": "https://levitation.in/posts/anti-patterns-in-database-design-lessons-from-real-world-failures",
+      "date": "2024",
+      "recency_note": "Database schema antipatterns including EAV models and wide tables"
+    }
+  ]
+}

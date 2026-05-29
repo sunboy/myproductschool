@@ -1,16 +1,35 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
-import Anthropic from '@anthropic-ai/sdk'
+import { IS_MOCK } from '@/lib/mock'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
-import {
-  AiBudgetExceededError,
-  assertAiBudget,
-  estimateAnthropicPreflightCents,
-  getUserPlanForBudget,
-  recordAnthropicUsage,
-} from '@/lib/usage/ai-budget'
+import { liveInterviewModel } from '@/lib/live-interview/model-policy'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
+import { z, ZodError } from 'zod'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const ROUTE_KEY = 'live_interview_turn'
+
+const RequestSchema = z.object({
+  messages: z.array(z.object({
+    role: z.string().min(1).max(40),
+    content: z.string().max(20000),
+  })).min(1).max(100),
+})
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function POST(
   request: Request,
@@ -18,7 +37,7 @@ export async function POST(
 ) {
   const { id } = await params
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return Response.json({
       choices: [{
         message: {
@@ -30,8 +49,22 @@ export async function POST(
     })
   }
 
-  const body = await request.json()
-  const messages: Array<{ role: string; content: string }> = body.messages ?? []
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
+
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
+    }
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
+  }
+  const { messages } = body
 
   const adminClient = createAdminClient()
 
@@ -39,10 +72,11 @@ export async function POST(
     .from('live_interview_sessions')
     .select('*')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (!session || session.status !== 'active') {
-    return new Response('Session not found or not active', { status: 404 })
+    return apiError(404, 'session_not_found', 'Session not found or not active')
   }
 
   const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')?.content ?? ''
@@ -56,57 +90,62 @@ export async function POST(
 
   const turnCount = count ?? 0
 
-  // Build conversation messages from turns table
-  const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
-    ...(turns ?? []).map((t) => ({
-      role: (t.role === 'hatch' ? 'assistant' : 'user') as 'user' | 'assistant',
-      content: t.content,
-    })),
-    { role: 'user' as const, content: lastUserMsg },
-  ]
+  const conversation = [
+    ...(turns ?? []).map((t) => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`),
+    `Candidate: ${lastUserMsg}`,
+  ].join('\n\n')
 
   // Call Claude with multi-turn messages format
-  const model = 'claude-sonnet-4-6'
+  const model = liveInterviewModel('chat')
   const maxTokens = 300
-  const sessionUserId = session.user_id as string
+  const sessionUserId = user.id
   const userPlan = await getUserPlanForBudget(sessionUserId)
-  const systemPrompt = session.system_prompt ?? ''
-  const promptCharCount = systemPrompt.length + conversationMessages.reduce((sum, msg) => sum + msg.content.length, 0)
-  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, promptCharCount)
+  const throttle = await rateLimit({
+    key: `ai:${sessionUserId}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
 
-  let response
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
+  }
+
+  const systemPrompt = session.system_prompt ?? ''
+
+  let rawContent = ''
   try {
-    await assertAiBudget(sessionUserId, userPlan, preflightCostCents)
-    response = await anthropic.messages.create({
+    await assertPlanLimit(sessionUserId, userPlan, 'live_interview_turns')
+
+    const response = await guardedCachedMessage(systemPrompt, `Interview transcript:\n\n${conversation}`, {
       model,
       max_tokens: maxTokens,
-      system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
-      messages: conversationMessages,
+      budget: { userId: sessionUserId, userPlan, route: ROUTE_KEY },
     })
-    await recordAnthropicUsage({
-      userId: sessionUserId,
-      model,
-      usage: response.usage,
-      fallbackCostCents: preflightCostCents,
-      route: 'live_interview_turn',
-    })
+    rawContent = response.sanitized
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: error.feature,
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
+    }
+
     if (error instanceof AiBudgetExceededError) {
-      return Response.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
     throw error
   }
 
-  const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
   const { cleanContent, signal } = parseGradingSignal(rawContent)
 
   // Save turns and update session in parallel.

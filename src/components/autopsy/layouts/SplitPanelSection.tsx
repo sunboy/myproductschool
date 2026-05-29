@@ -11,7 +11,7 @@ interface Props {
 
 export function SplitPanelSection({ section, isVisible, hasBeenVisible }: Props) {
   const { label, title, paragraphs, textSide } = section.content
-  const [entered, setEntered] = React.useState(false)
+  const [entered, setEntered] = React.useState(hasBeenVisible)
 
   React.useEffect(() => {
     if (hasBeenVisible) {

@@ -1,0 +1,314 @@
+{
+  "facts": [
+    {
+      "fact": "Java HashMap switches a bucket from linked list to Red-Black Tree when the number of entries exceeds TREEIFY_THRESHOLD of 8 nodes, improving lookup from O(n) to O(log n)",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2024-present"
+    },
+    {
+      "fact": "Java HashMap uses a default load factor of 0.75, which means resize triggers at capacity * 0.75 (e.g., 16 * 0.75 = 12 for default 16-capacity map)",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2024-present"
+    },
+    {
+      "fact": "Quadratic probing is 95%-98% faster than linear probing with significantly reduced collisions and no increase in memory usage",
+      "source": "https://www.iiardjournals.org/get/IJCSMT/VOL.%2011%20NO.%205%202025/COLLISION%20RESOLUTION%20HASH%2034-45.pdf",
+      "date": "2025"
+    },
+    {
+      "fact": "Robin Hood hashing reduces probe length variance from 16.2 to 0.98 at load factor 0.9, and from 194 to 1.87 at load factor 0.99",
+      "source": "https://programming.guide/robin-hood-hashing.html",
+      "date": "2023-2025"
+    },
+    {
+      "fact": "When doubling hash table size on resize, the total cost to insert n elements is O(n) because n hashes are computed for insertions plus n + n/2 + n/4 + ... = 2n additional hashes during resizing, totaling 3n hashes",
+      "source": "https://www.cs.cornell.edu/courses/cs312/2008sp/lectures/lec20.html",
+      "date": "2008-2025 (Cornell CS course, canonical reference)"
+    },
+    {
+      "fact": "If hash table grows by fixed increment instead of doubling, insertion becomes O(n²) instead of O(n), because each element is rehashed O(n) times on average",
+      "source": "https://www.cs.cornell.edu/courses/cs3110/2008fa/lectures/lec22_amort.html",
+      "date": "2008-2025 (Cornell CS course)"
+    },
+    {
+      "fact": "Python 3.6+ dict uses compact layout with indices pointing to an array of entries stored in insertion order, reducing memory footprint vs pre-3.6 unordered dicts",
+      "source": "https://tenthousandmeters.com/blog/python-behind-the-scenes-10-how-python-dictionaries-work/",
+      "date": "2023-2025"
+    },
+    {
+      "fact": "Python dict initializes with 8-element array and ensures at least 1/3 of buckets remain empty; doubles size when space needed; uses SipHash (not standard hashing) to prevent collision DoS attacks",
+      "source": "https://github.com/zpoint/CPython-Internals/blob/master/BasicObject/dict/dict.md",
+      "date": "2023-2025"
+    },
+    {
+      "fact": "Separate chaining can tolerate load factors > 1.0, while open addressing must keep load factor < 0.7-0.8 to avoid clustering",
+      "source": "https://chalmersgu-data-structure-courses.github.io/OpenDSA/Published/ChalmersGU-DSABook/html/OpenHash.html",
+      "date": "2023-2025"
+    },
+    {
+      "fact": "Linear probing has superior cache locality but suffers from primary clustering (long runs of filled cells), while double hashing shows virtually no clustering but poor cache performance",
+      "source": "https://www.cs.rice.edu/~as143/COMP480_580_Fall24/scribe/chaining_probing_Analysis.pdf",
+      "date": "2024"
+    },
+    {
+      "fact": "Halkarnikar et al. (2024) introduced binary probing, a new collision resolution technique with demonstrated performance improvements over traditional methods",
+      "source": "https://www.iiardjournals.org/get/IJCSMT/VOL.%2011%20NO.%205%202025/COLLISION%20RESOLUTION%20HASH%2034-45.pdf",
+      "date": "2025"
+    },
+    {
+      "fact": "Cuckoo hashing guarantees O(1) worst-case lookup by maintaining two hash tables with independent functions, displacing colliding elements between tables",
+      "source": "https://en.wikipedia.org/wiki/Hash_table",
+      "date": "2023-2025"
+    },
+    {
+      "fact": "A good hash function must exhibit the avalanche effect: any single-bit change in input should affect ~50% of output bits",
+      "source": "https://eng.libretexts.org/Courses/Folsom_Lake_College/CISP_430:_Data_Structures_(Aljuboori)/07:_Hash_Tables/7.02:_Choosing_a_good_hash_function",
+      "date": "2023-2025"
+    },
+    {
+      "fact": "High-performance in-memory dictionaries (language runtimes) use linear probing variants for cache locality, while Redis and Memcached use chaining for dynamic key-value storage",
+      "source": "https://www.numberanalytics.com/blog/ultimate-guide-to-linear-probing",
+      "date": "2023-2025"
+    },
+    {
+      "fact": "Rustc-hash FxHashMap switched from fnv to fxhash and achieved 6% speedup in compiler benchmarks; hash function quality affects performance by 4%-84% across applications",
+      "source": "https://nnethercote.github.io/perf-book/hashing.html",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Java HashMap with default settings (capacity=16, load factor=0.75)",
+      "detail": "Threshold is 12 entries. On 13th insert, capacity doubles to 32 and all 13 entries are rehashed. This O(13) rehashing is amortized: average cost per insert over many operations is still O(1)",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor"
+    },
+    {
+      "scenario": "Python dict handling typical function kwargs",
+      "detail": "CPython initializes dicts with 8 slots for common case (function arguments). For large dicts, it maintains ≥1/3 empty slots via doubling, preventing collision cascade",
+      "source": "https://github.com/zpoint/CPython-Internals/blob/master/BasicObject/dict/dict.md"
+    },
+    {
+      "scenario": "Robin Hood hashing at production scale",
+      "detail": "At load factor 0.9, standard open addressing shows variance 16.2 (wide spread in probe distances), while Robin Hood variance is 0.98 (uniform probe distances). Matters for tail latency in services",
+      "source": "https://programming.guide/robin-hood-hashing.html"
+    },
+    {
+      "scenario": "Linear probing clustering pathology",
+      "detail": "After insertions, clusters form (e.g., 20 consecutive filled slots). Finding next empty slot requires probing through entire cluster. At load factor 0.9, expected probe count for linear probing approaches 50+ probes",
+      "source": "https://www.cs.rice.edu/~as143/COMP480_580_Fall24/scribe/chaining_probing_Analysis.pdf"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Load factor cliff",
+      "analogy": "Like a parking lot: empty (0.1 load factor) you find a spot instantly. At 75% full, still fast. At 95% full (cliff), you circle endlessly. The cliff is sharp: collision costs stay linear until threshold, then explode exponentially",
+      "reference": "Hash table performance degradation dynamics"
+    },
+    {
+      "concept": "Chaining vs open addressing",
+      "analogy": "Chaining = overflow parking lot outside (extra memory, no cascade). Open addressing = rearrange parked cars in existing lot (cache-friendly, clustering risk)",
+      "reference": "Collision resolution strategies"
+    },
+    {
+      "concept": "Amortized O(1) with doubling",
+      "analogy": "Like compound interest: each insert costs $3 (hash + reserve for future rehash). When resize happens, accumulated reserves pay for it. Over n inserts, cost is linear, so per-insert is O(1)",
+      "reference": "https://www.cs.cornell.edu/courses/cs312/2008sp/lectures/lec20.html"
+    },
+    {
+      "concept": "Robin Hood hashing",
+      "analogy": "Like Robin Hood: redistribute wealth (probe distances). Rich elements (close to home slot) give up space to poor elements (far from home). Result: everyone ends up roughly equally far, reducing worst-case latency",
+      "reference": "https://programming.guide/robin-hood-hashing.html"
+    },
+    {
+      "concept": "Hash function quality (avalanche effect)",
+      "analogy": "Like shuffling a deck: one card flip should randomize the whole order. One bit flip in input should affect ~50% of output bits. Bad shuffling leaves patterns; bad hashing leaves clustering",
+      "reference": "Hash function design principles"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Default load factor (Java, Python, most implementations)",
+      "value": 0.75,
+      "interpretation": "Resize triggers at 75% capacity to balance time (fewer collisions) vs space (not too sparse)"
+    },
+    {
+      "metric": "Load factor for open addressing (recommended max)",
+      "value": 0.7,
+      "interpretation": "Beyond 0.7, clustering/variance in probe distances degrades performance sharply for linear/quadratic probing"
+    },
+    {
+      "metric": "Load factor for chaining (acceptable)",
+      "value": 1,
+      "interpretation": "Chaining tolerates load factor > 1.0 because lists grow; open addressing cannot"
+    },
+    {
+      "metric": "Treeify threshold (Java HashMap)",
+      "value": 8,
+      "interpretation": "Bucket converts from linked list to Red-Black Tree at 8 collisions to maintain O(log n) worst-case lookup in pathological cases"
+    },
+    {
+      "metric": "Untreeify threshold (Java HashMap)",
+      "value": 6,
+      "interpretation": "Tree converts back to list at 6 entries to save memory during resize"
+    },
+    {
+      "metric": "Cache line size (typical CPU)",
+      "value": 64,
+      "interpretation": "Linear probing prefetches 64-byte line efficiently; chaining jumps across memory, breaking cache"
+    },
+    {
+      "metric": "Expected probe count (linear probing) at load 0.5",
+      "value": 1.5,
+      "interpretation": "Average ~1.5 probes to find/insert at 50% load; grows to 50+ at 95%"
+    },
+    {
+      "metric": "Expected probe count (double hashing) at load 0.5",
+      "value": 1.4,
+      "interpretation": "Slightly better than linear probing; avoids clustering"
+    },
+    {
+      "metric": "Quadratic probing speedup vs linear",
+      "value": "95-98%",
+      "interpretation": "Measured in practice; due to eliminated primary clustering"
+    },
+    {
+      "metric": "Robin Hood probe variance at load 0.9 (open addressing)",
+      "value": 0.98,
+      "interpretation": "vs. 16.2 for standard open addressing; minimizes tail latency"
+    },
+    {
+      "metric": "Python dict initial size",
+      "value": 8,
+      "interpretation": "Sufficient for most function kwargs; experiments showed 8 is practical minimum"
+    },
+    {
+      "metric": "Python dict minimum empty slots",
+      "value": 0.33,
+      "interpretation": "Maintains at least 1/3 empty to prevent clustering; doubles on breach"
+    },
+    {
+      "metric": "Rustc hash function speedup (fnv→fxhash)",
+      "value": "6%",
+      "interpretation": "Measured in compiler benchmarks; shows hash function quality directly impacts throughput"
+    },
+    {
+      "metric": "Amortized rehash cost per insert (with doubling)",
+      "value": "3 hashes per element",
+      "interpretation": "1 for insert + 2 amortized for future rehashes (accounting method)"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Hash table with a good hash function never has collisions",
+      "truth": "Collisions are unavoidable by pigeonhole principle. Even perfect hash functions collide when load > 1.0. The goal is to minimize collision *impact*, not eliminate collisions",
+      "source": "https://en.wikipedia.org/wiki/Hash_table"
+    },
+    {
+      "misconception": "Load factor should be kept as high as possible to save memory",
+      "truth": "High load factor (>0.75) causes exponential performance degradation due to clustering. 0.75 is sweet spot: ~4% extra memory for 10-50x better performance",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor"
+    },
+    {
+      "misconception": "Linear probing is the simplest and thus best collision resolution",
+      "truth": "Linear probing has worst clustering behavior. Quadratic probing or double hashing are 95-98% faster with minimal extra complexity",
+      "source": "https://www.iiardjournals.org/get/IJCSMT/VOL.%2011%20NO.%205%202025/COLLISION%20RESOLUTION%20HASH%2034-45.pdf"
+    },
+    {
+      "misconception": "Hash table lookup is always O(1)",
+      "truth": "With poor hash function or high load factor, lookup degrades to O(n). Java 8+ mitigates with tree fallback at 8 collisions",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor"
+    },
+    {
+      "misconception": "Growing hash table by fixed increment (e.g., +100) is fine",
+      "truth": "Fixed increment causes O(n²) amortized insertion time (each element rehashed O(n) times). Exponential growth (doubling) maintains O(n) total cost",
+      "source": "https://www.cs.cornell.edu/courses/cs3110/2008fa/lectures/lec22_amort.html"
+    },
+    {
+      "misconception": "Chaining always uses less memory than open addressing",
+      "truth": "Chaining adds pointer overhead per node (8+ bytes). Modern implementations (Java 8+, Python 3.6+) use compact layouts that can be more efficient than poorly-implemented chaining",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor"
+    },
+    {
+      "misconception": "Hash function quality doesn't matter if collision resolution is good",
+      "truth": "Poor hash function causes clustering regardless of resolution method. Avalanche effect (bit-flipping sensitivity) is mandatory; rushing hashing leaves distribution artifacts",
+      "source": "https://eng.libretexts.org/Courses/Folsom_Lake_College/CISP_430:_Data_Structures_(Aljuboori)/07:_Hash_Tables/7.02:_Choosing_a_good_hash_function"
+    },
+    {
+      "misconception": "Rehashing during resize is wasted work",
+      "truth": "Rehashing cost is amortized O(1) per insert when done with doubling. The O(n) rehash cost spreads across n subsequent inserts, each 'paying' for it incrementally",
+      "source": "https://www.cs.cornell.edu/courses/cs312/2008sp/lectures/lec20.html"
+    },
+    {
+      "misconception": "Cuckoo hashing is always faster than chaining",
+      "truth": "Cuckoo hashing guarantees O(1) worst-case but has high constant factors and insertion complexity. Best for read-heavy workloads; chaining better for write-heavy",
+      "source": "https://en.wikipedia.org/wiki/Hash_table"
+    },
+    {
+      "misconception": "Cache performance is irrelevant for hash tables",
+      "truth": "Open addressing's linear memory layout is 2-3x faster than chaining's pointer-chased list (L3 cache miss vs. L1 hit). Matters in production; negligible in academic tests",
+      "source": "https://www.cs.rice.edu/~as143/COMP480_580_Fall24/scribe/chaining_probing_Analysis.pdf"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.baeldung.com/java-hashmap-load-factor",
+      "title": "Java HashMap Load Factor",
+      "recency": "2024-present"
+    },
+    {
+      "url": "https://www.iiardjournals.org/get/IJCSMT/VOL.%2011%20NO.%205%202025/COLLISION%20RESOLUTION%20HASH%2034-45.pdf",
+      "title": "Collision Resolution Hash Tables: A Comparative Study (2025)",
+      "recency": "2025 (latest)"
+    },
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs312/2008sp/lectures/lec20.html",
+      "title": "CS 312 Lecture 20: Hash tables and amortized analysis (Cornell)",
+      "recency": "2008-2025 (canonical academic reference)"
+    },
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs3110/2008fa/lectures/lec22_amort.html",
+      "title": "CS 3110 Lecture 22: Hash tables and amortized analysis (Cornell)",
+      "recency": "2008-2025 (canonical academic reference)"
+    },
+    {
+      "url": "https://programming.guide/robin-hood-hashing.html",
+      "title": "Robin Hood Hashing",
+      "recency": "2023-2025"
+    },
+    {
+      "url": "https://github.com/zpoint/CPython-Internals/blob/master/BasicObject/dict/dict.md",
+      "title": "CPython Internals: Dict Implementation",
+      "recency": "2023-2025"
+    },
+    {
+      "url": "https://tenthousandmeters.com/blog/python-behind-the-scenes-10-how-python-dictionaries-work/",
+      "title": "Python Behind the Scenes #10: How Python Dictionaries Work",
+      "recency": "2023"
+    },
+    {
+      "url": "https://chalmersgu-data-structure-courses.github.io/OpenDSA/Published/ChalmersGU-DSABook/html/OpenHash.html",
+      "title": "9.4. Separate Chaining — Data Structures and Algorithms",
+      "recency": "2023-2025"
+    },
+    {
+      "url": "https://www.cs.rice.edu/~as143/COMP480_580_Fall24/scribe/chaining_probing_Analysis.pdf",
+      "title": "Lecture 4: Hashing, Chaining, and Probing Analysis (Rice University)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://eng.libretexts.org/Courses/Folsom_Lake_College/CISP_430:_Data_Structures_(Aljuboori)/07:_Hash_Tables/7.02:_Choosing_a_good_hash_function",
+      "title": "7.2: Choosing a good hash function",
+      "recency": "2023-2025"
+    },
+    {
+      "url": "https://nnethercote.github.io/perf-book/hashing.html",
+      "title": "Hashing — The Rust Performance Book",
+      "recency": "2024"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Hash_table",
+      "title": "Hash table — Wikipedia",
+      "recency": "2023-2025"
+    }
+  ]
+}

@@ -39,8 +39,8 @@ const STATE_TO_MOOD: Record<string, string> = {
 /** Load TalkingHead class from /public as native ES module (bypasses bundler). */
 async function loadTalkingHead(): Promise<any> {
   const url = new URL('/talkinghead/talkinghead.mjs', window.location.origin).href
-  const module = await import(/* webpackIgnore: true */ url)
-  return module.TalkingHead
+  const talkingHeadModule = await import(/* webpackIgnore: true */ url)
+  return talkingHeadModule.TalkingHead
 }
 
 // Walk the avatar's three.js scene graph and apply a morph target influence

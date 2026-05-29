@@ -1,6 +1,7 @@
 // src/app/api/admin/content/drafts/[id]/regenerate-step/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { checkAdminSecret } from '@/lib/content/admin-auth'
 import { regenerateStep } from '@/lib/content/generator'
 import type { ChallengeJson, FlowStep } from '@/lib/types'
@@ -37,6 +38,12 @@ export async function POST(
       .eq('id', id)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    await logAdminAction(supabase, {
+      action: 'draft_challenge.regenerate_step',
+      targetType: 'draft_challenges',
+      targetId: id,
+      after: { step, challenge_json: updatedJson as unknown as Record<string, unknown> },
+    })
     return NextResponse.json({ ok: true, step: newStep })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })

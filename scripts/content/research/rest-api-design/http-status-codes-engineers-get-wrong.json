@@ -1,0 +1,373 @@
+{
+  "facts": [
+    {
+      "fact": "Stripe uses date-based rolling versions (e.g., 2017-05-24) with automatic account pinning to the most recent version at first request, enabling ~100 backwards-incompatible upgrades since 2011 while maintaining full compatibility",
+      "source": "https://stripe.com/blog/api-versioning",
+      "date": "2024"
+    },
+    {
+      "fact": "GitHub API versions follow the same date-based naming scheme, with previous versions supported for at least 24 months after a new version is released",
+      "source": "https://docs.github.com/en/rest/about-the-rest-api/api-versions",
+      "date": "2025"
+    },
+    {
+      "fact": "Cursor-based pagination is 17x faster than offset pagination when accessing deep pages (900,000+ rows), executing in 41ms vs 704ms on a 1-million-record dataset",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "date": "2024"
+    },
+    {
+      "fact": "Cursor-based pagination prevents duplicate and skipped items under concurrent writes because it uses a reference point rather than counting rows, unlike offset pagination which must scan and discard all preceding rows",
+      "source": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/",
+      "date": "2024"
+    },
+    {
+      "fact": "Contentful moved its entire content API platform to cursor-based pagination due to inefficiency of offset pagination in dynamic environments where entries are constantly created, updated, and deleted",
+      "source": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "date": "2024"
+    },
+    {
+      "fact": "Maximum REST API resource nesting depth should be limited to 2 (occasionally 3) to avoid overly complex URLs, especially with UUID identifiers",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "date": "2024"
+    },
+    {
+      "fact": "Google Cloud APIs use channel-based versioning with three stability levels: alpha, beta, and stable; beta deprecations should persist for approximately 180 days before removal",
+      "source": "https://google.aip.dev/185",
+      "date": "2024"
+    },
+    {
+      "fact": "HTTP 201 Created requires including a Location header with the URI of the newly created resource; returning 200 OK for POST creation is semantically incorrect as it doesn't indicate resource creation",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/201",
+      "date": "2024"
+    },
+    {
+      "fact": "HTTP 204 No Content must have an empty response body per RFC specification; sending 204 with JSON body violates HTTP semantics",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/204",
+      "date": "2024"
+    },
+    {
+      "fact": "HTTP 422 Unprocessable Entity indicates semantic validation errors (invalid field values, missing parameters) while 400 Bad Request indicates syntax errors (malformed JSON, missing headers)",
+      "source": "https://beeceptor.com/docs/concepts/400-vs-422/",
+      "date": "2024"
+    },
+    {
+      "fact": "HTTP 409 Conflict with optimistic locking uses ETags or version numbers; server must validate If-Match headers and return 409 if resource has been modified since the client's last read",
+      "source": "https://httpstatus.com/codes/409",
+      "date": "2024"
+    },
+    {
+      "fact": "HTTP 429 Too Many Requests Retry-After header can be specified as seconds (e.g., 'Retry-After: 120') or as an HTTP date (e.g., 'Retry-After: Thu, 16 Nov 2024 10:00:00 GMT')",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+      "date": "2024"
+    },
+    {
+      "fact": "Rate-limiting best practice: include X-RateLimit-Remaining on every response (not just 429s) so clients can self-throttle before hitting the limit",
+      "source": "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api",
+      "date": "2025"
+    },
+    {
+      "fact": "HTTP 202 Accepted is for asynchronous processing; the server must return either a Location header or status URL in the response body so clients can poll for results",
+      "source": "https://learn.microsoft.com/en-us/azure/architecture/patterns/asynchronous-request-reply",
+      "date": "2024"
+    },
+    {
+      "fact": "OpenAPI Generator supports 50+ client generators and achieves 600k weekly NPM downloads; oapi-codegen moved from deepmap organization to its own organization in May 2024",
+      "source": "https://github.com/OpenAPITools/openapi-generator",
+      "date": "2024"
+    },
+    {
+      "fact": "Idempotent operations can legitimately return different HTTP status codes on retries; a 409 Conflict can be returned on a duplicate idempotent request if detected via idempotency key, even though the operation succeeded the first time",
+      "source": "https://pradeepl.com/blog/rest/rest-idempotency-safety/",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "name": "Stripe API Versioning",
+      "context": "Payment platform managing ~100 backwards-incompatible upgrades since 2011",
+      "detail": "Date-based versioning with automatic account pinning. When breaking changes like replacing a boolean with a status field occur, Stripe applies version-change modules server-side that downgrade responses to maintain compatibility",
+      "url": "https://stripe.com/blog/api-versioning"
+    },
+    {
+      "name": "GitHub API Deprecation",
+      "context": "Deprecating password authentication and Authorizations API",
+      "detail": "24-month support window after new version release; used X-GitHub-Api-Version header for explicit version specification",
+      "url": "https://docs.github.com/en/rest/about-the-rest-api/api-versions"
+    },
+    {
+      "name": "Contentful Cursor Migration",
+      "context": "Large content management platform with high concurrency",
+      "detail": "Migrated entire REST and GraphQL APIs from offset to cursor pagination due to performance degradation under continuous create/update/delete load",
+      "url": "https://www.contentful.com/blog/cursor-based-pagination/"
+    },
+    {
+      "name": "Concurrent Editor Conflict (409)",
+      "context": "CMS with multiple editors on same document",
+      "detail": "Two authors save edits simultaneously; second save returns 409 with current version number, client refreshes and retries with If-Match header containing latest ETag",
+      "url": "https://codewithmukesh.com/blog/concurrency-control-optimistic-locking-efcore/"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "HTTP 201 Created vs 200 OK for POST",
+      "analogy": "Receiving a package: 201 is 'your package was successfully delivered' with a tracking number (Location header). 200 is 'your request was successful' without confirming what was created. Client needs the Location header to know where to find the new resource."
+    },
+    {
+      "concept": "HTTP 204 No Content vs 200 OK for DELETE",
+      "analogy": "Deleting a file: 204 means 'the file is gone, nothing left to report.' 200 with empty body is confusing—it suggests content exists but is just empty. 204 is semantically precise."
+    },
+    {
+      "concept": "Cursor-based pagination vs offset pagination",
+      "analogy": "Offset is like 'skip the first 1000 items and get the next 10'—expensive if the list keeps growing. Cursor is like a bookmark: 'give me the next 10 items after this marker'—works even as the list changes."
+    },
+    {
+      "concept": "HTTP 409 Conflict with optimistic locking",
+      "analogy": "Editing a shared spreadsheet: your client doesn't lock rows. Instead, it reads a version number, makes changes offline, then tries to save with 'save only if version still matches.' If someone else updated it, you get 409 and must refresh."
+    },
+    {
+      "concept": "HTTP 422 Unprocessable Entity vs 400 Bad Request",
+      "analogy": "400 is 'I can't read your handwriting' (syntax error). 422 is 'I read your handwriting fine, but you wrote an invalid zip code' (semantic error)."
+    },
+    {
+      "concept": "Stripe's date-based versioning",
+      "analogy": "Like a newspaper archive: old editions remain available indefinitely. Readers stay on the edition they first subscribed to until they explicitly upgrade. Breaking changes appear in new dated editions; old editions continue unchanged."
+    },
+    {
+      "concept": "HTTP 202 Accepted for async jobs",
+      "analogy": "Dropping off laundry: you get a claim ticket (job ID) and told when to pick it up (Retry-After). You don't wait for the results; you check back later using the ticket."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Cursor pagination performance advantage",
+      "value": "17x faster",
+      "context": "Accessing page 900,000+ on 1M-row dataset: 41ms (cursor) vs 704ms (offset)",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive"
+    },
+    {
+      "metric": "Maximum REST nesting depth",
+      "value": "2 (occasionally 3)",
+      "context": "Beyond this, URLs become unwieldy and N+1 query problems emerge",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "metric": "GitHub API version support duration",
+      "value": "24 months minimum",
+      "context": "After a new version is released, the previous version remains supported for at least 24 months",
+      "source": "https://docs.github.com/en/rest/about-the-rest-api/api-versions"
+    },
+    {
+      "metric": "Google Cloud beta deprecation notice",
+      "value": "180 days recommended",
+      "context": "Beta deprecations should remain available for approximately 180 days before removal",
+      "source": "https://google.aip.dev/185"
+    },
+    {
+      "metric": "OpenAPI Generator adoption",
+      "value": "600k weekly NPM downloads",
+      "context": "Via openapi-generator-cli, plus 30M via Docker image",
+      "source": "https://github.com/OpenAPITools/openapi-generator"
+    },
+    {
+      "metric": "Stripe backwards-incompatible upgrades",
+      "value": "~100 major changes",
+      "context": "Successfully deployed since 2011 while maintaining full compatibility with every prior version",
+      "source": "https://stripe.com/blog/api-versioning"
+    },
+    {
+      "metric": "Standard API deprecation timeline",
+      "value": "6-18 months",
+      "context": "6 months announcement, 12 months active migration support, 18-24 months total before removal",
+      "source": "https://www.postman.com/api-platform/api-versioning/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "HTTP 200 OK can be used for any successful operation, including validations errors or permission failures",
+      "reality": "200 OK should only be used when the request truly succeeds. Validation errors should return 422, permission failures 403, conflicts 409. Returning 200 for failures hides issues and breaks observability.",
+      "consequence": "Clients can't distinguish success from failure by status code alone; must parse response body, breaking HTTP semantics"
+    },
+    {
+      "misconception": "HTTP 201 Created and 200 OK are interchangeable for POST requests",
+      "reality": "201 Created explicitly signals a new resource was created and must include Location header. 200 OK is for successful requests that don't necessarily create a resource (e.g., status update, search).",
+      "consequence": "Clients don't know where to access the newly created resource if Location header is missing"
+    },
+    {
+      "misconception": "HTTP 204 No Content can include a JSON response body",
+      "reality": "204 is defined by RFC 9110 to have no content. Including a body violates the specification and breaks clients expecting an empty response.",
+      "consequence": "Clients parsing the empty body will encounter JSON parsing errors or unexpected behavior"
+    },
+    {
+      "misconception": "HTTP 400 Bad Request and 422 Unprocessable Entity are the same thing",
+      "reality": "400 is for syntax errors (malformed JSON, invalid headers). 422 is for semantic errors (validation failures, invalid field values). They address different problems.",
+      "consequence": "Clients can't distinguish whether to fix request format vs request content; different remediation strategies"
+    },
+    {
+      "misconception": "Offset pagination scales well even with millions of rows",
+      "reality": "Offset pagination requires scanning and discarding all rows before the offset, becoming 10-100x slower at deep pages. Cursor pagination maintains consistent O(1) performance.",
+      "consequence": "Performance degrades catastrophically for deep pagination; cursor-based is non-negotiable for large datasets"
+    },
+    {
+      "misconception": "Offset pagination correctly handles concurrent inserts and deletes",
+      "reality": "Offset pagination causes duplicate or skipped items when data changes between requests. Cursor pagination is stable under concurrent writes because it uses a reference point, not a count.",
+      "consequence": "Users see duplicate entries or entries get skipped in feeds/event streams with concurrent write activity"
+    },
+    {
+      "misconception": "REST resources can be arbitrarily nested (e.g., /orgs/{id}/teams/{id}/members/{id}/projects/{id}/tasks)",
+      "reality": "Beyond 2-3 levels, nesting creates N+1 query problems, fragile URLs vulnerable to relationship changes, and complex URL parsing. Root resources are more maintainable.",
+      "consequence": "Excessive database queries per request; URLs break if resource ownership changes; difficult to query a resource without knowing its entire hierarchy"
+    },
+    {
+      "misconception": "API versioning requires v1, v2, v3 in the URL path",
+      "reality": "Date-based versioning (Stripe), channel-based versioning (Google), and header-based versioning (GitHub) all work better. Sequential versioning conflates semantic changes with timeline.",
+      "consequence": "Sequential versioning creates artificial version numbers that don't map to real changes; clients don't know what changed between versions"
+    },
+    {
+      "misconception": "Deprecation can happen immediately upon release of a new API version",
+      "reality": "Industry standard is 6-24 months of overlap support. GitHub provides 24 months, Google Cloud recommends 180 days for beta. Immediate removal breaks integrations.",
+      "consequence": "Clients are forced to upgrade on short notice, causing downtime or incompatible dependencies"
+    },
+    {
+      "misconception": "HTTP 429 Too Many Requests doesn't need a Retry-After header if the client uses exponential backoff",
+      "reality": "Retry-After is mandatory. Without it, naive clients hammer the server in synchronized bursts. With it, clients can respect server hints. Exponential backoff without Retry-After causes thundering herd.",
+      "consequence": "Server gets pounded harder during recovery; distributed denial of service risk from synchronized retries"
+    },
+    {
+      "misconception": "Rate limit information only matters in 429 responses",
+      "reality": "Including X-RateLimit-Remaining in every response (2xx and 4xx) lets clients self-throttle before hitting the limit.",
+      "consequence": "Clients overshoot the limit and waste requests; better client behavior possible with proactive rate-limit data"
+    },
+    {
+      "misconception": "HTTP 409 Conflict is only for database constraint violations",
+      "reality": "409 is for any state conflict: concurrent updates (optimistic locking), state machine violations (publishing already-published resource), duplicate unique constraints. It's a broad semantic error.",
+      "consequence": "Unclear semantics; client doesn't know what action to take (retry vs refresh vs abort)"
+    },
+    {
+      "misconception": "OpenAPI specs are mostly documentation; client generation is a 'nice-to-have'",
+      "reality": "OpenAPI with proper client generation (via openapi-generator, oapi-codegen, Hey API) eliminates 50% of API integration bugs. Type-safe clients prevent schema mismatches.",
+      "consequence": "Manual client implementation introduces field name typos, type mismatches, missing error handling; higher bug density"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://stripe.com/blog/api-versioning",
+      "title": "APIs as infrastructure: future-proofing Stripe with versioning",
+      "recency": "2024 (canonical)",
+      "authority": "Official Stripe engineering blog"
+    },
+    {
+      "url": "https://docs.stripe.com/api/versioning",
+      "title": "Stripe API Versioning",
+      "recency": "2025 (current)",
+      "authority": "Official Stripe API documentation"
+    },
+    {
+      "url": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "title": "Understanding Cursor Pagination and Why It's So Fast (Deep Dive)",
+      "recency": "2024",
+      "authority": "Engineering blog with benchmarks"
+    },
+    {
+      "url": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/",
+      "title": "Cursor-based pagination for stable lists",
+      "recency": "2024",
+      "authority": "API design guide"
+    },
+    {
+      "url": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "title": "Why Contentful is moving to cursor-based pagination across all content APIs",
+      "recency": "2024",
+      "authority": "Contentful official announcement"
+    },
+    {
+      "url": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "title": "REST API Design Best Practices for Sub and Nested Resources",
+      "recency": "2024",
+      "authority": "API analytics platform, API design expertise"
+    },
+    {
+      "url": "https://google.aip.dev/185",
+      "title": "AIP-185: API Versioning",
+      "recency": "2024",
+      "authority": "Google API Improvement Proposals (official)"
+    },
+    {
+      "url": "https://docs.github.com/en/rest/about-the-rest-api/api-versions",
+      "title": "API Versions - GitHub Docs",
+      "recency": "2025",
+      "authority": "Official GitHub API documentation"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/201",
+      "title": "201 Created - HTTP - MDN Web Docs",
+      "recency": "2024",
+      "authority": "Mozilla Developer Network (canonical HTTP reference)"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/204",
+      "title": "204 No Content - HTTP - MDN Web Docs",
+      "recency": "2024",
+      "authority": "Mozilla Developer Network"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409",
+      "title": "409 Conflict - HTTP - MDN Web Docs",
+      "recency": "2024",
+      "authority": "Mozilla Developer Network"
+    },
+    {
+      "url": "https://beeceptor.com/docs/concepts/400-vs-422/",
+      "title": "400 Bad Request vs 422 Unprocessable Entity",
+      "recency": "2024",
+      "authority": "API testing platform documentation"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+      "title": "429 Too Many Requests - HTTP - MDN Web Docs",
+      "recency": "2024",
+      "authority": "Mozilla Developer Network"
+    },
+    {
+      "url": "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api",
+      "title": "Rate limits for the REST API",
+      "recency": "2025",
+      "authority": "Official GitHub API documentation"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/asynchronous-request-reply",
+      "title": "Asynchronous Request-Reply Pattern",
+      "recency": "2024",
+      "authority": "Microsoft Azure Architecture Center"
+    },
+    {
+      "url": "https://github.com/OpenAPITools/openapi-generator",
+      "title": "OpenAPI Generator - GitHub Repository",
+      "recency": "2025",
+      "authority": "Official repository with 50+ language generators"
+    },
+    {
+      "url": "https://pradeepl.com/blog/rest/rest-idempotency-safety/",
+      "title": "REST Idempotency and Safety",
+      "recency": "2024",
+      "authority": "Technical blog with RFC citations"
+    },
+    {
+      "url": "https://httpstatus.com/codes/409",
+      "title": "409 Status Code Explained",
+      "recency": "2024",
+      "authority": "HTTP status code reference"
+    },
+    {
+      "url": "https://codewithmukesh.com/blog/concurrency-control-optimistic-locking-efcore/",
+      "title": "Optimistic Concurrency in EF Core 10: ASP.NET Core Web API Guide",
+      "recency": "2025",
+      "authority": "Code example with .NET patterns"
+    },
+    {
+      "url": "https://www.postman.com/api-platform/api-versioning/",
+      "title": "What is API versioning? Benefits, types & best practices",
+      "recency": "2024",
+      "authority": "Postman API platform documentation"
+    }
+  ]
+}

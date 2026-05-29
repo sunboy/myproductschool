@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "eslint",
+  "story_slug": "eslint",
+  "story_title": "ESLint",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/eslint/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/eslint/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch connecting a new plugin into a large ESLint plugin grid, representing the extensible architecture.",
+      "caption": "Hatch connecting a new plugin into a large ESLint plugin grid, representing the extensible architecture.",
+      "prompt": "ESLint | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing in front of a large modular plugin grid — each cell is a different eslint-plugin icon (React, TypeScript, Import, Security, A11y). Hatch holds a small puzzle piece connecting a new plugin into the grid. Background is warm cream. Cap slightly tilted, friendly expression. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/eslint/hero.png",
+      "generated_image_sha256": "b4e7b466a26660ec9d267e9dd2e94476c271ffdff0ceae746328293ca780bcfe",
+      "final_image_sha256": "74eb4ef108086f517d09d26a6a37cd7a4a2846993fa6a96a58117e9c26b158fc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/eslint/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/eslint/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/eslint/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a code editor showing JSHint's inability to support custom rules, the moment that motivated ESLint.",
+      "caption": "Hatch beside a code editor showing JSHint's inability to support custom rules, the moment that motivated ESLint.",
+      "prompt": "ESLint | hatch-narrator: Hatch in narrator pose: standing beside a vintage 2013 code editor with a JSHint error highlighted in red and a tooltip showing \"Cannot add custom rule.\" Hatch looks at it with a thoughtful, slightly frustrated expression. Cream background. No copy. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/eslint/hatch-narrator.png",
+      "generated_image_sha256": "41a7d994c22542d8095808819738ad35518c9e42ec8be46951b448233544a12d",
+      "final_image_sha256": "b2f18c12b76b127e41d33b255dc486c56508d8d493e086e1bb84227311f5e47d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/eslint/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/eslint/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/eslint/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch explaining the ESLint AST-visitor architecture where each rule is a separate module.",
+      "caption": "Hatch explaining the ESLint AST-visitor architecture where each rule is a separate module.",
+      "prompt": "ESLint | failure-mechanism: Hatch in thinking pose, gesturing at a diagram of JavaScript source code being parsed into an AST (abstract syntax tree) with multiple rule modules each inspecting a node. The AST is the shared foundation; each rule is a separate module. Clean, minimal, cream background. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/eslint/failure-mechanism.png",
+      "generated_image_sha256": "24be8a13cdce6971ad6fe1bdc0c06ff95d1fdbf25b53242c1a5db9966611f753",
+      "final_image_sha256": "54009d4eff82484662a05b0454f462414ae6e04d8dacc0d65a5eb71f1edddaa2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/eslint/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/eslint/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/eslint/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at ESLint's 40 million weekly download count with a growth chart.",
+      "caption": "Hatch pointing at ESLint's 40 million weekly download count with a growth chart.",
+      "prompt": "ESLint | evidence-card: Hatch pointing at a large download counter — \"40,000,000+ per week\" — with a bar chart below showing growth from 2013 to present. The Y axis is downloads; the bars grow steadily then steeply. Cream background, infographic style. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/eslint/evidence-card.png",
+      "generated_image_sha256": "20788a212fad90fdf7655b26a16e6a19e2b7acb53831776f0e8cefb31267b909",
+      "final_image_sha256": "f85d4082f5b1d89a06554ac65046a3702986914edb0ace2f679da7b9d55dabd3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/eslint/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/eslint/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/eslint/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch illustrating the difference between a fixed linter and an extensible platform with a growing plugin ecosystem.",
+      "caption": "Hatch illustrating the difference between a fixed linter and an extensible platform with a growing plugin ecosystem.",
+      "prompt": "ESLint | lesson-frame: Hatch in coaching pose, standing beside two columns: left shows a single monolithic linter with a fixed rule list; right shows a small ESLint core with an ever-growing cloud of plugin bubbles around it. The message is \"platform beats product.\" Cream background, no copy. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/eslint/lesson-frame.png",
+      "generated_image_sha256": "0d8b9bbcc372280e9135cf79b93a0d6f480c4afed4f0c23ace954ff88dfec7c1",
+      "final_image_sha256": "0430931c85b1d5f50acec5353264044c39e06bb1c2dafdebe28e466d62e6a0ae",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/eslint/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/eslint/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/eslint/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch thumbnail holding an ESLint plugin puzzle piece.",
+      "caption": "Hatch thumbnail holding an ESLint plugin puzzle piece.",
+      "prompt": "Small, bold composition: Hatch's face and torso with a small puzzle piece in one hand labeled \"eslint-plugin\". Cream background. Bold and recognizable at small size. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/eslint/hero.png",
+      "generated_image_sha256": "b4e7b466a26660ec9d267e9dd2e94476c271ffdff0ceae746328293ca780bcfe",
+      "final_image_sha256": "5775c41ab94eb892ab202655ee8585dbae7c1d60f78b296011580def600bc7f2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/eslint/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/eslint/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/eslint/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "ESLint social cover with Hatch connecting a plugin into a modular architecture grid.",
+      "caption": "ESLint social cover with Hatch connecting a plugin into a modular architecture grid.",
+      "prompt": "Hero pose adapted for OG share card: Hatch connecting a plugin into a modular grid on a cream background. Bold composition with \"ESLint\" in large Literata type above. HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/eslint/hero.png",
+      "generated_image_sha256": "b4e7b466a26660ec9d267e9dd2e94476c271ffdff0ceae746328293ca780bcfe",
+      "final_image_sha256": "9f33f579981427fff782d1b91177c488bdf6cdda66606bb5034015a837a18dab",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/eslint/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/eslint/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/eslint/v1"
+}

@@ -3,6 +3,29 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getUsageForUser } from '@/lib/usage/check-limit'
+import { effectivePlanFromRows } from '@/lib/billing/entitlements'
+import { computeDunningStatus } from '@/lib/billing/dunning'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = z.object({
+  display_name: z.string().trim().min(1).max(80).optional(),
+  avatar_url: z.union([z.string().url().max(2048), z.literal(''), z.null()]).optional(),
+}).superRefine((body, ctx) => {
+  if (Object.keys(body).length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [],
+      message: 'At least one profile field is required.',
+    })
+  }
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function GET() {
   // Mock mode: return a stub profile so the shell doesn't redirect to /login
@@ -16,6 +39,7 @@ export async function GET() {
       role: 'SWE',
       preferred_role: 'SWE',
       streak_days: 0,
+      streak_shield_count: 0,
       xp_total: 0,
       onboarding_completed_at: new Date().toISOString(),
       archetype: null,
@@ -40,7 +64,7 @@ export async function GET() {
   const adminClient = createAdminClient()
 
   const [profileResult, subscriptionResult, attemptsResult] = await Promise.all([
-    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, preferred_role, streak_days, xp_total, onboarding_completed_at, archetype, archetype_description, created_at, updated_at').eq('id', user.id).single(),
+    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, preferred_role, streak_days, streak_shield_count, xp_total, onboarding_completed_at, archetype, archetype_description, created_at, updated_at, pro_access, subscription_status, payment_failures, past_due_since').eq('id', user.id).single(),
     adminClient
       .from('subscriptions')
       .select('plan, status, current_period_end, billing_interval, stripe_price_id, cancel_at_period_end, cancel_at, canceled_at')
@@ -55,15 +79,25 @@ export async function GET() {
 
   if (profileResult.error) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
-  const plan = profileResult.data.plan || 'free'
+  const plan = effectivePlanFromRows(profileResult.data, subscriptionResult.data)
   const dailyLimit = plan === 'pro' ? null : 3
   const dailyAttemptsToday = attemptsResult.count ?? 0
-  const usage = await getUsageForUser(user.id, profileResult.data.role === 'admin' ? 'pro' : plan)
+  const usage = await getUsageForUser(user.id, plan)
+
+  // Dunning state for the in-grace banner + countdown. Driven by the profile
+  // dunning columns (past_due_since / payment_failures / subscription_status).
+  const dunning = computeDunningStatus({
+    subscription_status: profileResult.data.subscription_status ?? subscriptionResult.data?.status ?? null,
+    past_due_since: profileResult.data.past_due_since ?? null,
+    payment_failures: profileResult.data.payment_failures ?? null,
+  })
 
   return NextResponse.json({
     ...profileResult.data,
+    plan,
     email: user.email,
     subscription: subscriptionResult.data,
+    dunning,
     usage,
     daily_attempts_today: dailyAttemptsToday,
     daily_limit: dailyLimit,
@@ -75,9 +109,18 @@ export async function PATCH(request: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
-  const allowed = ['display_name', 'avatar_url']
-  const updates = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)))
+  let updates: z.infer<typeof RequestSchema>
+  try {
+    updates = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
   const adminClient = createAdminClient()
   const { data, error } = await adminClient.from('profiles').update(updates).eq('id', user.id).select().single()

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "perplexity",
+  "story_slug": "perplexity-early",
+  "story_title": "Perplexity's Answer Engine",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/perplexity-early/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/perplexity-early/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at a fork between ten blue links and a direct answer card, representing Perplexity's founding choice.",
+      "caption": "Hatch at a fork between ten blue links and a direct answer card, representing Perplexity's founding choice.",
+      "prompt": "Perplexity's Answer Engine | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing at a fork in a road. One path leads to a stack of blue links labeled \"10 Results.\" The other path leads to a glowing answer card with citations. Hatch points firmly toward the answer card. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/perplexity-early/hero.png",
+      "generated_image_sha256": "6bc152791f53fc7142d40be51d1a4a0039e0d279dbf9e4461e5677cc1e4a32fe",
+      "final_image_sha256": "2b9c9849c0a2e4901d7d0a786cb8f5f1ddd67f2d42be6be04fad1d339e4aaf30",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/perplexity-early/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/perplexity-early/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/perplexity-early/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between a traditional search results page and a Perplexity-style answer with citations.",
+      "caption": "Hatch gesturing between a traditional search results page and a Perplexity-style answer with citations.",
+      "prompt": "Perplexity's Answer Engine | hatch-narrator: Hatch in narrator pose, gesturing toward a stylized search bar on the left and a floating question bubble on the right. The search bar shows \"10 results\" below; the question bubble shows a paragraph answer with small numbered citation markers. Hatch's body language says \"look at the difference.\" Cream background. HackProduct wordmark watermark. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/perplexity-early/hatch-narrator.png",
+      "generated_image_sha256": "65fa69b9d53a4cf5ef6ca8a9433a2673cd24d0745c3cf3be3c5daacbfe4aaa83",
+      "final_image_sha256": "efa4519a3d3f4ae17561377fce037be5d42723698f62df5b92a8e8b73c9a13b9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/perplexity-early/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/perplexity-early/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/perplexity-early/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a diagram showing how Perplexity synthesizes multiple sources into a single cited answer.",
+      "caption": "Hatch beside a diagram showing how Perplexity synthesizes multiple sources into a single cited answer.",
+      "prompt": "Perplexity's Answer Engine | failure-mechanism: Hatch in thinking pose, standing beside a flowing diagram: user query enters on the left, multiple source documents are gathered in the middle (shown as small floating cards), and a synthesized answer with citation numbers emerges on the right. The diagram is clean and diagrammatic, not cluttered. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/perplexity-early/failure-mechanism.png",
+      "generated_image_sha256": "c544e47bfc8140b924118b51f03063fc2a5317036117b7ec961f4504c65db68b",
+      "final_image_sha256": "b3b17ef9a75ab264d31f0ee497ab3b1b3b310837e3f297f49e7afdfaab2c7b9b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/perplexity-early/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/perplexity-early/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/perplexity-early/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Perplexity's January 2024 funding and user metrics.",
+      "caption": "Hatch pointing at Perplexity's January 2024 funding and user metrics.",
+      "prompt": "Perplexity's Answer Engine | evidence-card: Hatch pointing at three floating metric cards: \"$520M valuation,\" \"~10M monthly users,\" \"$73.6M Series B.\" Each card styled as a simple data chip. Hatch expression: quietly impressed. Cream background. HackProduct wordmark watermark. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/perplexity-early/evidence-card.png",
+      "generated_image_sha256": "776b35cf2d6c62b3ddb67541dc9d0c41ea54a0a1e71e8a5a6beba6fd733760b6",
+      "final_image_sha256": "42beda4808e08c791446daac7ff9c7e1edbafdaff774384f25f09ae3369cdab4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/perplexity-early/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/perplexity-early/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/perplexity-early/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at the framing distinction between search engine and answer engine.",
+      "caption": "Hatch pointing at the framing distinction between search engine and answer engine.",
+      "prompt": "Perplexity's Answer Engine | lesson-frame: Hatch in calm coaching pose, one hand pointing at a simple visual: two word cards — \"Search Engine\" crossed out, \"Answer Engine\" highlighted in forest green. Expression: patient, warm. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/perplexity-early/lesson-frame.png",
+      "generated_image_sha256": "f094935391b502409d0bb2c2e8bdd2e7ff5809ae6feb85a19538881c8fb731b1",
+      "final_image_sha256": "1bcaa9502ffc07e8d6414db9077c9806f4c41bf69537d8f0a8ae92d6d9c361fb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/perplexity-early/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/perplexity-early/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/perplexity-early/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a citation card representing Perplexity's answer-with-sources interface.",
+      "caption": "Hatch holding a citation card representing Perplexity's answer-with-sources interface.",
+      "prompt": "Hatch mascot holding a small glowing card showing a short paragraph with two numbered citation markers. Expression: curious and thoughtful. Square composition. Cream background. HackProduct wordmark watermark. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/perplexity-early/hero.png",
+      "generated_image_sha256": "6bc152791f53fc7142d40be51d1a4a0039e0d279dbf9e4461e5677cc1e4a32fe",
+      "final_image_sha256": "e0fbf1ecd48b8363a39c777cbbd3309308d710a7b020582c82e9b6b14525b678",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/perplexity-early/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/perplexity-early/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/perplexity-early/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at the fork between links and answers, social share cover for Perplexity autopsy.",
+      "caption": "Hatch at the fork between links and answers, social share cover for Perplexity autopsy.",
+      "prompt": "Hatch at the fork in the road, wide OG card format. Title text area at left: \"The Search Engine That Refused to Rank.\" Cream background. HackProduct wordmark watermark. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/perplexity-early/hero.png",
+      "generated_image_sha256": "6bc152791f53fc7142d40be51d1a4a0039e0d279dbf9e4461e5677cc1e4a32fe",
+      "final_image_sha256": "b965b193ea8890eed4467fc636f9a3037971063d4c3a120dd85befa9c3441391",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/perplexity-early/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/perplexity-early/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/perplexity-early/v1"
+}

@@ -1,6 +1,6 @@
 import pLimit from 'p-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 
 function globalCacheKey(
   challengeId: string,
@@ -117,7 +117,7 @@ Tone: Direct, warm. Senior ${role.label} mentoring a junior. No filler.
 Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
               try {
-                const message = await createCachedMessage(systemPrompt, userPrompt, {
+                const message = await guardedCachedMessage(systemPrompt, userPrompt, {
                   model: 'claude-sonnet-4-6',
                   max_tokens: 800,
                 })

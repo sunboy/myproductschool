@@ -80,7 +80,11 @@ export interface ChallengePrompt {
   title: string
   prompt_text: string
   difficulty: Difficulty
-  tags: string[]
+  /**
+   * @deprecated Column dropped in R3.E.1 — always undefined at runtime.
+   * Kept optional so legacy read paths don't error on access.
+   */
+  tags?: string[]
   estimated_minutes: number
   is_published: boolean
   created_at: string
@@ -240,6 +244,16 @@ export interface Prescription {
   message?: string  // for onboarding/explore fallback types
 }
 
+export interface DiscussionReply {
+  id: string
+  discussion_id: string
+  user_id: string | null
+  display_name?: string | null
+  username?: string
+  content: string
+  created_at: string
+}
+
 export interface ChallengeDiscussion {
   id: string
   challenge_id: string
@@ -249,9 +263,14 @@ export interface ChallengeDiscussion {
   is_expert_pick: boolean
   upvote_count: number
   created_at: string
+  hidden_at?: string | null
+  hidden_by?: string | null
+  hidden_reason?: string | null
   username?: string
   reply_count?: number
   upvoted_by?: string[]
+  viewer_has_upvoted?: boolean
+  replies?: DiscussionReply[]
 }
 
 export interface AnalyticsSummary {
@@ -325,7 +344,7 @@ export interface MoveLevelHistory {
   user_id: string
   move: FlowMove
   xp_delta: number
-  source: 'challenge' | 'quick-take' | 'calibration' | 'cohort'
+  source: 'challenge' | 'quick-take' | 'calibration'
   source_id: string | null
   created_at: string
 }
@@ -376,28 +395,117 @@ export interface UserStudyPlan {
   completed_challenges: string[]
 }
 
-/* ── v2 Cohort ────────────────────────────────────────────── */
+/* ── v2 Community Engagement ──────────────────────────────── */
 
-export interface CohortChallenge {
+export type CommunityDisplayMode = 'anonymous' | 'named'
+export type CommunitySubmissionStatus = 'private' | 'published' | 'featured' | 'hidden'
+export type CommunityLensTag = 'metric-first' | 'segment-first' | 'tradeoff-aware' | 'strong win' | 'interesting miss'
+export type CommunityReactionTarget = 'discussion' | 'community_submission' | 'feedback_trade'
+export type CommunityReactionType =
+  | 'upvote'
+  | 'strong_win'
+  | 'interesting_miss'
+  | 'metric_hawk'
+  | 'tradeoff_catcher'
+  | 'clarity_builder'
+export type CommunityBadgeKey = 'frame_sharpener' | 'metric_hawk' | 'tradeoff_catcher' | 'clarity_builder'
+export type ActivityFeedEventType =
+  | 'completed_challenge'
+  | 'shared_answer'
+  | 'earned_badge'
+  | 'expert_picked_answer'
+  | 'weekly_room_milestone'
+  | 'feedback_trade'
+
+export interface CommunitySubmission {
   id: string
+  user_id: string
+  challenge_id: string
+  attempt_id: string | null
+  display_mode: CommunityDisplayMode
+  status: CommunitySubmissionStatus
+  response_text: string
+  excerpt: string
+  lens_tag: CommunityLensTag
+  score: number | null
+  hatch_summary: string | null
+  published_at: string | null
+  created_at: string
+  updated_at: string
+  display_name?: string | null
+  reaction_counts?: Partial<Record<CommunityReactionType, number>>
+  feedback_count?: number
+}
+
+export interface CommunityFeedbackTrade {
+  id: string
+  submission_id: string
+  challenge_id: string
+  reviewer_user_id: string
+  recipient_user_id: string
+  one_sharp_thing: string
+  one_question: string
+  suggested_rewrite: string | null
+  created_at: string
+}
+
+export interface CommunityReaction {
+  id: string
+  user_id: string
+  target_type: CommunityReactionTarget
+  target_id: string
+  reaction_type: CommunityReactionType
+  created_at: string
+}
+
+export interface CommunityBadge {
+  id: string
+  user_id: string
+  badge_key: CommunityBadgeKey
+  source_type: 'reaction' | 'expert_pick' | 'feedback_trade'
+  source_id: string | null
+  source_user_id: string | null
+  reason: string | null
+  created_at: string
+}
+
+export interface WeeklyRoom {
+  id: string
+  cohort_challenge_id: string | null
   title: string
   prompt_text: string
-  difficulty: Difficulty
+  difficulty: string
   move_tag: FlowMove | null
   week_start: string
   week_end: string
   is_active: boolean
+  hatch_digest: string | null
+  curated_highlights: Record<string, unknown>[]
   created_at: string
+  updated_at: string
 }
 
-export interface CohortSubmission {
+export interface ActivityFeedEvent {
   id: string
-  user_id: string
-  cohort_challenge_id: string
-  response_text: string
-  score: number | null
-  feedback_json: Record<string, unknown> | null
-  submitted_at: string
+  actor_user_id: string | null
+  event_type: ActivityFeedEventType
+  challenge_id: string | null
+  submission_id: string | null
+  badge_key: CommunityBadgeKey | null
+  display_mode: CommunityDisplayMode
+  headline: string
+  metadata: Record<string, unknown>
+  visibility: 'public' | 'authenticated' | 'private'
+  created_at: string
+  actor_display_name?: string | null
+  challenge_title?: string | null
+}
+
+export interface CommunityGalleryResponse {
+  own_submission: CommunitySubmission | null
+  peer_submissions: CommunitySubmission[]
+  has_feedback_trade: boolean
+  locked_count: number
 }
 
 /* ── v2 Settings ──────────────────────────────────────────── */
@@ -409,7 +517,6 @@ export interface UserSettings {
     weekly_summary: boolean
     streak_reminder: boolean
     new_challenges: boolean
-    cohort_updates: boolean
   }
   daily_goal_count: number
   preferred_role: UserRole | null
@@ -514,12 +621,12 @@ export interface SessionEvent {
 
 /* ── v2 FLOW Challenge System ───────────────────────────────── */
 
-export type DifficultyV2 = 'warmup' | 'standard' | 'advanced' | 'staff_plus'
+// DifficultyV2 removed in R3.F — consumers now use PracticeDifficulty from @/lib/practice/difficulty.
 export type FlowStep = 'frame' | 'list' | 'optimize' | 'win'
 /** Extended FlowStep that includes the coding sentinel step added in migration 072. */
 export type FlowStepAll = FlowStep | 'coding'
 export type OptionQuality = 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
-export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform' | 'coding_subtask'
+export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform' | 'coding_subtask' | 'multi_select_mcq'
 
 /** A single part of a multi-part coding challenge (loaded from flow_steps + step_questions). */
 export interface CodingPart {
@@ -550,7 +657,7 @@ export interface CodingPart {
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
-export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm'
+export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm' | 'claude_code_analytics'
 
 export interface Challenge {
   id: string; slug: string | null; title: string
@@ -558,7 +665,7 @@ export interface Challenge {
   scenario_role: string | null; scenario_context: string; scenario_trigger: string; scenario_question: string
   engineer_standout: string | null
   paradigm: Paradigm | null; industry: string | null; sub_vertical: string | null
-  difficulty: DifficultyV2; estimated_minutes: number
+  difficulty: PracticeDifficulty; estimated_minutes: number
   primary_competencies: string[]; secondary_competencies: string[]
   frameworks: string[]; relevant_roles: string[]; company_tags: string[]; tags: string[]
   is_published: boolean; is_calibration: boolean; is_premium: boolean; is_featured: boolean; created_at: string
@@ -587,6 +694,7 @@ export interface StepQuestionWithCoding extends StepQuestion {
 export interface StepQuestion {
   id: string; flow_step_id: string; question_text: string; question_nudge: string | null
   sequence: number; grading_weight_within_step: number; target_competencies: string[]
+  allow_multiple?: boolean
 }
 
 export interface FlowOption {
@@ -603,8 +711,11 @@ export interface ChallengeAttemptV2 {
   current_step: FlowStep | 'done'; current_question_sequence: number
   time_spent_seconds: number; is_replay: boolean
   started_at: string; completed_at: string | null
-  mental_models_breakdown?: Array<{ step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }> | null
+  mental_models_breakdown?: Array<{ step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string; framework_hint?: string; score?: number }> | null
+  primary_competency?: string | null
+  weakest_competency?: string | null
   canvas_final_snapshot?: Record<string, unknown>
+  canvas_png_url?: string | null
   draft_snapshot?: Record<string, unknown>
   draft_updated_at?: string
   conversation_summary?: string
@@ -643,9 +754,7 @@ export const COMPETENCY_LABELS: Record<Competency, string> = {
   taste: 'Taste', strategic_thinking: 'Strategic Thinking',
   creative_execution: 'Creative Execution', domain_expertise: 'Domain Expertise',
 }
-export const DIFFICULTY_V2_LABELS: Record<DifficultyV2, string> = {
-  warmup: 'Warm-up', standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+',
-}
+// DIFFICULTY_V2_LABELS removed in R3.F — use DIFFICULTY_LABELS from @/lib/practice/difficulty.
 export const PARADIGM_LABELS: Record<Paradigm, string> = {
   traditional: 'Traditional', 'ai-assisted': 'AI-Assisted', agentic: 'Agentic', 'ai-native': 'AI-Native',
 }
@@ -719,7 +828,12 @@ export interface StudyPlanWithItems extends StudyPlan {
 
 // ── Learn Section ─────────────────────────────────────────────
 
-export type LearnDifficulty = 'foundation' | 'beginner' | 'intermediate' | 'advanced' | 'new-era' | 'entry-point'
+// Learn modules now share the canonical PracticeDifficulty enum (easy/medium/hard).
+// The orthogonal "what kind of module" axis (Foundation / Core / New-Era / Entry-Point)
+// lives on `learn_modules.level_track` — see LearnLevelTrack below.
+import type { PracticeDifficulty } from '@/lib/practice/difficulty'
+export type LearnDifficulty = PracticeDifficulty
+export type LearnLevelTrack = 'foundation' | 'core' | 'new-era' | 'entry-point'
 
 export interface LearnModule {
   id: string
@@ -732,6 +846,7 @@ export interface LearnModule {
   cover_color: string    // dark hex e.g. '#1a3a2a'
   accent_color: string   // primary accent hex e.g. '#4a7c59'
   sort_order: number
+  track: string | null
   created_at: string
 }
 
@@ -848,7 +963,11 @@ export interface AutopsyDecision {
   sort_order: number
   title: string
   area: string
-  difficulty: 'warmup' | 'standard' | 'advanced'
+  /**
+   * R3.E.1 migrated autopsy_decisions rows to canonical easy/medium/hard values.
+   * Wide union removed in R3.F.
+   */
+  difficulty: PracticeDifficulty
   icon: string | null
   screenshot_url: string | null
   what_they_did: string
@@ -1008,8 +1127,16 @@ export interface AarrrStageContent {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+export interface StoryImageAsset {
+  src: string
+  alt: string
+  caption?: string
+  width?: number
+  height?: number
+}
+
 export type StorySection =
-  | { id: string; layout: 'fullbleed_cover'; content: { label: string; headline: string; subline: string; meta: string } }
+  | { id: string; layout: 'fullbleed_cover'; content: { label: string; headline: string; subline: string; meta: string; backdropWord?: string; image?: StoryImageAsset } }
   | { id: string; layout: 'split_panel'; content: { label: string; title: string; paragraphs: string[]; textSide: 'left' | 'right' }; illustration: IllustrationConfig }
   | { id: string; layout: 'fullbleed_stat'; content: { stat: string; context: string; source?: string } }
   | { id: string; layout: 'before_after'; content: { title: string; before: { label: string; items: string[]; summary?: string }; after: { label: string; items: string[]; summary?: string } } }
@@ -1017,6 +1144,10 @@ export type StorySection =
   | { id: string; layout: 'fullbleed_cta'; content: { headline: string; subline?: string; buttonText: string; targetPath: string } }
   | { id: string; layout: 'quote'; content: { quote: string; attribution: string; context?: string } }
   | { id: string; layout: 'timeline'; content: { title: string; events: Array<{ date: string; label: string; description: string; type: string }> } }
+  | { id: string; layout: 'quick_read'; content: { label: string; title: string; cards: Array<{ eyebrow: string; title: string; body: string; confidence: string; sourceIds: string[] }> } }
+  | { id: string; layout: 'image_panel'; content: { label: string; title: string; paragraphs: string[]; textSide: 'left' | 'right'; image: StoryImageAsset } }
+  | { id: string; layout: 'evidence_ledger'; content: { label: string; title: string; summary: string; rows: Array<{ label: string; value: string; confidence: string; sourceIds: string[] }> } }
+  | { id: string; layout: 'source_pack'; content: { label: string; title: string; summary: string; sources: Array<{ id: string; title: string; publisher: string; tier: string; url: string; supports: string }>; correctionSubject: string } }
   | { id: string; layout: 'aarrr_stage'; content: AarrrStageContent }
   | { id: string; layout: 'aarrr_hero'; content: { product_name: string; tagline: string; meta: string; accent_color: string } }
   | { id: string; layout: 'aarrr_closing'; content: { headline: string; summary: string; cta_text: string; cta_path: string } }
@@ -1094,7 +1225,7 @@ export interface ChallengeJsonMetadata {
   paradigm: string
   industry: string
   sub_vertical: string
-  difficulty: DifficultyV2
+  difficulty: PracticeDifficulty
   estimated_minutes: number
   primary_competencies: string[]
   secondary_competencies: string[]

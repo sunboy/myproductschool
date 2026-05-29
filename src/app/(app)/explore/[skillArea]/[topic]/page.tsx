@@ -35,7 +35,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
   const topicConcepts = concepts.slice(0, 5)
   const topicChallenges = challenges.slice(0, 3)
 
-  const hatchInsight = `Focus on understanding the core concepts in ${topicData.title} before jumping to challenges. Start with beginner-level items and work up — pattern recognition compounds quickly here.`
+  const hatchInsight = `Focus on understanding the core concepts in ${topicData.title} before jumping to challenges. Start with beginner-level items and work up - pattern recognition compounds quickly here.`
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6">

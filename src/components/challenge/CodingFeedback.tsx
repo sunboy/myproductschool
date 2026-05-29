@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Md } from '@/components/ui/Md'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { RunResult, GradingFeedback, GradingDimensionKey, SupportedLanguage } from '@/lib/coding/types'
 
@@ -23,7 +23,7 @@ interface CodingFeedbackProps {
 // Human-readable labels for dimension keys
 const DIMENSION_LABELS: Record<GradingDimensionKey, { label: string; icon: string }> = {
   problem_approach: { label: 'Problem Approach', icon: 'psychology' },
-  ai_collaboration: { label: 'AI Collaboration', icon: 'smart_toy' },
+  ai_collaboration: { label: 'Hatch Collaboration', icon: 'support_agent' },
   code_quality: { label: 'Code Quality', icon: 'code' },
   verification_discipline: { label: 'Verification Discipline', icon: 'verified' },
   interview_communication: { label: 'Interview Communication', icon: 'forum' },
@@ -443,14 +443,14 @@ function DimensionAccordion({
         <div className="overflow-hidden">
           <div className="px-4 pb-4 pt-2 space-y-3 bg-surface-container-low">
             {/* Verdict */}
-            <div className="text-sm text-on-surface leading-relaxed"><Md>{verdict}</Md></div>
+            <FeedbackText className="text-on-surface">{verdict}</FeedbackText>
 
             {/* Evidence */}
             <div data-testid={`dimension-${dimensionKey}-evidence`}>
               <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-1">
                 Evidence
               </p>
-              <div className="text-xs text-on-surface-variant leading-relaxed italic"><Md>{evidence}</Md></div>
+              <FeedbackText className="text-xs italic text-on-surface-variant">{evidence}</FeedbackText>
             </div>
 
             {/* Hole to poke */}
@@ -459,7 +459,7 @@ function DimensionAccordion({
                 <span className="material-symbols-outlined text-tertiary text-[15px] mt-0.5 flex-shrink-0">
                   search
                 </span>
-                <div className="text-xs text-on-surface-variant leading-relaxed"><Md>{hole_to_poke}</Md></div>
+                <FeedbackText className="text-xs text-on-surface-variant">{hole_to_poke}</FeedbackText>
               </div>
             )}
 
@@ -468,7 +468,7 @@ function DimensionAccordion({
               <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-1">
                 How to improve
               </p>
-              <div className="text-xs text-on-surface leading-relaxed"><Md>{how_to_improve}</Md></div>
+              <FeedbackText className="text-xs text-on-surface">{how_to_improve}</FeedbackText>
             </div>
           </div>
         </div>
@@ -519,7 +519,7 @@ function GradingColumn({
               Couldn&apos;t generate feedback.
             </p>
             <p className="text-xs text-error/80">
-              Your attempt is saved. {error}
+              Your code is still in the editor. {error}
             </p>
           </div>
         </div>
@@ -565,9 +565,46 @@ function GradingColumn({
               {grading.overall_score.toFixed(1)} / 5
             </span>
           </div>
-          <div className="text-sm text-on-primary-container leading-relaxed"><Md>{grading.headline}</Md></div>
+          <FeedbackText className="text-on-primary-container">{grading.headline}</FeedbackText>
         </div>
       </div>
+
+      {grading.score_breakdown && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-3">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant">
+                Correctness
+              </p>
+              <span className={`text-xs font-label font-bold px-2 py-0.5 rounded-full ${scoreBg(grading.score_breakdown.correctness.score)}`}>
+                {grading.score_breakdown.correctness.score.toFixed(1)} / 5
+              </span>
+            </div>
+            <p className="text-xs font-label font-semibold text-on-surface">
+              {grading.score_breakdown.correctness.tests_passed} / {grading.score_breakdown.correctness.tests_total} tests passed
+            </p>
+            <FeedbackText className="mt-1 text-xs text-on-surface-variant">
+              {grading.score_breakdown.correctness.summary}
+            </FeedbackText>
+          </div>
+          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-3">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant">
+                Process
+              </p>
+              <span className={`text-xs font-label font-bold px-2 py-0.5 rounded-full ${scoreBg(grading.score_breakdown.process.score)}`}>
+                {grading.score_breakdown.process.score.toFixed(1)} / 5
+              </span>
+            </div>
+            <p className="text-xs font-label font-semibold text-on-surface">
+              Reasoning, verification, Hatch use
+            </p>
+            <FeedbackText className="mt-1 text-xs text-on-surface-variant">
+              {grading.score_breakdown.process.summary}
+            </FeedbackText>
+          </div>
+        </div>
+      )}
 
       {/* Dimension accordions */}
       <div className="space-y-2">
@@ -598,7 +635,7 @@ function GradingColumn({
           <p className="text-[10px] font-label font-bold uppercase tracking-wider text-primary mb-0.5">
             Top strength
           </p>
-          <div className="text-xs text-on-surface leading-relaxed"><Md>{grading.top_strength}</Md></div>
+          <FeedbackText className="text-xs text-on-surface">{grading.top_strength}</FeedbackText>
         </div>
       </div>
 
@@ -611,7 +648,7 @@ function GradingColumn({
           <p className="text-[10px] font-label font-bold uppercase tracking-wider text-tertiary mb-0.5">
             Top improvement
           </p>
-          <div className="text-xs text-on-surface leading-relaxed"><Md>{grading.top_improvement}</Md></div>
+          <FeedbackText className="text-xs text-on-surface">{grading.top_improvement}</FeedbackText>
         </div>
       </div>
 
@@ -624,7 +661,7 @@ function GradingColumn({
           <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-0.5">
             What a 5 would look like
           </p>
-          <div className="text-xs text-on-surface-variant leading-relaxed"><Md>{grading.what_a_5_would_look_like}</Md></div>
+          <FeedbackText className="text-xs text-on-surface-variant">{grading.what_a_5_would_look_like}</FeedbackText>
         </div>
       </div>
 

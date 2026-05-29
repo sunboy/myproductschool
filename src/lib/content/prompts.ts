@@ -323,23 +323,23 @@ Return ONLY valid JSON:
   "paradigm": "...",             // one of: traditional, ai_assisted, agentic, ai_native
   "industry": "...",             // e.g. Fintech, HealthTech, EdTech, SaaS, E-commerce, Gaming, Media
   "sub_vertical": "...",
-  "difficulty": "standard",     // one of: warmup, standard, advanced, staff_plus
+  "difficulty": "medium",       // one of: easy, medium, hard
   "estimated_minutes": 20,
   "primary_competencies": ["..."],
   "secondary_competencies": ["..."],
-  "frameworks": [],
+  "frameworks": [],              // optional free-text reasoning frameworks; folded into technique_tags at publish
   "relevant_roles": ["swe", "tech_lead", "em"],    // prefer engineering roles by default
   "company_tags": [],
-  "tags": [],
-  "topic_tags": [],              // 1-3 slugs chosen from the allowed topic slugs above
-  "technique_tags": [],          // 1-3 slugs chosen from the allowed technique slugs above (may be empty if not applicable)
+  "topic_tags": [],              // REQUIRED: 1-3 slugs chosen from the allowed topic slugs above
+  "technique_tags": [],          // REQUIRED: 1-3 slugs chosen from the allowed technique slugs above
   "is_real_interview": false,    // true only if the source is a confirmed real interview question
   "source_url": null             // URL of the source confirming this is a real interview question; null otherwise
 }
 
 relevant_roles options: swe, data_eng, ml_eng, devops, founding_eng, em, tech_lead, pm, designer, data_scientist.
 competencies options: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise.
-topic_tags and technique_tags MUST only contain slugs from the allowed lists above. Do not invent slugs.`
+topic_tags and technique_tags MUST only contain slugs from the allowed lists above. Do not invent slugs.
+Both topic_tags and technique_tags MUST be non-empty — a challenge with an empty topic_tags or technique_tags is rejected at publish.`
 }
 
 // Helper for job-server.ts to decide whether to run the expansion + verifier path

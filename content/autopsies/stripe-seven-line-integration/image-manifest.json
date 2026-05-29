@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "stripe",
+  "story_slug": "stripe-seven-line-integration",
+  "story_title": "Stripe's 7-Line Integration",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/stripe-seven-line-integration/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/stripe-seven-line-integration/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A short code snippet centered on a cream canvas with Hatch pointing to it from the lower right, representing Stripe's seven-line integration.",
+      "caption": "Seven lines, no relationship manager required.",
+      "prompt": "Stripe's 7-Line Integration | hero: Create a flat geometric HackProduct autopsy illustration for Stripe about the seven-line integration. Canvas role: hero. Show a single large terminal-style code block centered on the canvas with seven short stylised lines, set on a warm cream `#faf6f0` background, with a small forest-green `#4a7c59` Stripe-style price tag chip floating above reading 2.9 plus 30. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower right pointing at the snippet, preserving the rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use deep forest `#244232` for the code text, amber `#705c30` for the chip, charcoal `#1e211c` for fine linework. Aspect 2400x1350. Leave quiet space in the upper left for title overlay. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/stripe-seven-line-integration/hero.png",
+      "generated_image_sha256": "2233c9e93ad9f5b4f3a8c94bf8fca94e0423e3a543a186d08c08d0ba20a1b4ee",
+      "final_image_sha256": "db119e431834fb9f4638954258574e0ccd14eff06ff4f77a56a62f515ccdf840",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/stripe-seven-line-integration/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/stripe-seven-line-integration/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/stripe-seven-line-integration/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A desk piled with payment paperwork and a blinking cursor, with Hatch gesturing toward the mess.",
+      "caption": "A desk piled with payment paperwork and a blinking cursor, with Hatch gesturing toward the mess.",
+      "prompt": "Stripe's 7-Line Integration | hatch-narrator: Create a flat geometric HackProduct autopsy illustration for Stripe about a 2009 developer drowning in payment paperwork. Canvas role: hatch-narrator scene. Show a tilted desk in soft amber `#c9ad68` covered with stacked forms labelled merchant account, KYC, XML spec, rolling reserve, set against a warm cream `#faf6f0` background, with a forest-green `#4a7c59` cursor blinking at the edge waiting for a missing API key. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in narrator pose, gesturing toward the paperwork stack, preserving the rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Aspect 1600x1600. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/stripe-seven-line-integration/hatch-narrator.png",
+      "generated_image_sha256": "615dd6ed287f72cc7454b9fba65b3d6d6fe7c4c6dd6915e3dd432771d11c186a",
+      "final_image_sha256": "42001570ddc3ca627e97c203a80be411b959ac7b3e948bd5479405291986a228",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/stripe-seven-line-integration/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/stripe-seven-line-integration/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/stripe-seven-line-integration/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three blocks showing browser to Stripe to merchant server with the card looping past the merchant, Hatch pointing at the token handoff.",
+      "caption": "Three blocks showing browser to Stripe to merchant server with the card looping past the merchant, Hatch pointing at the token handoff.",
+      "prompt": "Stripe's 7-Line Integration | failure-mechanism: Create a flat geometric HackProduct autopsy illustration for Stripe about how the seven-line snippet kept merchants out of PCI scope. Canvas role: failure-mechanism. Show three labelled blocks in horizontal sequence on a warm cream `#faf6f0` background. Block one labelled Browser holding a card icon in forest green `#4a7c59`. Block two labelled Stripe, accepting the card and emitting a small token shape in soft amber `#c9ad68`. Block three labelled Merchant server, holding only the token. A deep forest `#244232` arrow loops the card around the merchant box, never touching it, with a small mist `#dfe6dc` shield over the merchant labelled out of scope. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in pointing pose between block two and block three, preserving cap, growth arrow, H mark, mitten hands, and coach expression. Aspect 1800x1200. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/stripe-seven-line-integration/failure-mechanism.png",
+      "generated_image_sha256": "df199fafb34c05977753e38d3ef2d39748feca4077247d59f8dde1329d787a6a",
+      "final_image_sha256": "c1444289ec9502941188b78a2b378007bdc72b629eff40d5e400450a28b2f9a6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/stripe-seven-line-integration/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/stripe-seven-line-integration/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/stripe-seven-line-integration/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three stacked metric chips representing Stripe's public launch on September 29, 2011, with Hatch pointing at the customer count.",
+      "caption": "Three stacked metric chips representing Stripe's public launch on September 29, 2011, with Hatch pointing at the customer count.",
+      "prompt": "Stripe's 7-Line Integration | evidence-card: Create a flat geometric HackProduct autopsy illustration for Stripe about the September 29, 2011 launch numbers. Canvas role: evidence-card. Show three stacked evidence chips on a warm cream `#faf6f0` background. Top chip in forest green `#4a7c59` reads team of 10. Middle chip in soft amber `#c9ad68` reads roughly 100 customers. Bottom chip in deep forest `#244232` with cream text reads $2M seed, Thiel, Musk, Sequoia, Andreessen Horowitz. A thin charcoal `#1e211c` timeline beneath marks 29 Sep 2011. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png small on the left, pointing at the middle chip, preserving cap, growth arrow, H mark, and friendly coach face. Aspect 1600x1000. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/stripe-seven-line-integration/evidence-card.png",
+      "generated_image_sha256": "402560de31e686cc0ddd22d01a7b842fa33bb4a2e73bec551e3248dc75978bc1",
+      "final_image_sha256": "8a8c2e1c71d31ce547c96b5273fbf45892daa2fcec0fd31ddcde8204cca7ff2f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/stripe-seven-line-integration/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/stripe-seven-line-integration/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/stripe-seven-line-integration/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two figures side by side labelled Buyer and Builder, with an arrow showing the builder controls the decision, Hatch coaching between them.",
+      "caption": "Two figures side by side labelled Buyer and Builder, with an arrow showing the builder controls the decision, Hatch coaching between them.",
+      "prompt": "Stripe's 7-Line Integration | lesson-frame: Create a flat geometric HackProduct autopsy illustration for Stripe about who the buyer actually is. Canvas role: lesson-frame. Show a split composition on a warm cream `#faf6f0` background. On the left, a tall amber `#705c30` figure outline labelled Buyer holds a fountain pen above a contract. On the right, a slightly larger forest-green `#4a7c59` figure outline labelled Builder holds a laptop with a tiny code window. A deep forest `#244232` arrow points from Builder to a small cash icon, showing where the money actually decides. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in coaching pose at the bottom centre between the two figures, preserving cap, growth arrow, H mark, mitten hands, and warm coach expression. Aspect 1800x1200. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/stripe-seven-line-integration/lesson-frame.png",
+      "generated_image_sha256": "eb0f40b6edfbbd2f5f5cea1713474fc0c54c5ca8aad7c7cef51c3b9f9b8ce3b3",
+      "final_image_sha256": "9bdb26e56772344b0eed77ee742b567e3d79f9a531ddc4634d7292e232b139b8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/stripe-seven-line-integration/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/stripe-seven-line-integration/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/stripe-seven-line-integration/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A small panel of seven horizontal bars representing the seven-line Stripe snippet, with a tiny Hatch mark in the corner.",
+      "caption": "A small panel of seven horizontal bars representing the seven-line Stripe snippet, with a tiny Hatch mark in the corner.",
+      "prompt": "Create a flat geometric HackProduct autopsy thumbnail for Stripe about the seven-line integration. Canvas role: thumbnail. Show one strong focal shape on a warm cream `#faf6f0` background, a rectangular forest-green `#4a7c59` panel containing seven short horizontal bars in soft amber `#c9ad68` representing lines of code, with a tiny deep forest `#244232` chip in the corner reading 7. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower right, preserving cap, growth arrow, H chest mark, and friendly face, no larger than 12 percent of canvas height. Make the decision readable at small size with one strong focal shape. Aspect 1200x900. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/stripe-seven-line-integration/hero.png",
+      "generated_image_sha256": "2233c9e93ad9f5b4f3a8c94bf8fca94e0423e3a543a186d08c08d0ba20a1b4ee",
+      "final_image_sha256": "d6e9b4862d968a696604acf2d5bc2647920ce05219969959aad904283ef3d7e8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/stripe-seven-line-integration/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/stripe-seven-line-integration/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/stripe-seven-line-integration/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A centered snippet panel flanked by a price tag and a token icon, with Hatch as a small narrator on the right, sized for social sharing.",
+      "caption": "A centered snippet panel flanked by a price tag and a token icon, with Hatch as a small narrator on the right, sized for social sharing.",
+      "prompt": "Create a flat geometric HackProduct autopsy social cover for Stripe about the seven-line integration. Canvas role: social-cover. Show a horizontal composition on a warm cream `#faf6f0` background with a centered forest-green `#4a7c59` snippet panel of seven short stylised lines, flanked by a small soft amber `#c9ad68` price tag reading 2.9 plus 30 and a small deep forest `#244232` token icon. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator on the lower right pointing at the snippet, preserving cap, growth arrow, H mark, mitten hands, and friendly coach face. Keep the center 70 percent clear of edge-critical details. Aspect 2400x1260. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/stripe-seven-line-integration/hero.png",
+      "generated_image_sha256": "2233c9e93ad9f5b4f3a8c94bf8fca94e0423e3a543a186d08c08d0ba20a1b4ee",
+      "final_image_sha256": "9736108ad0dc65aa466cfd93e75a78b94c2ad9b467a32e9ef73cece3b56f3955",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/stripe-seven-line-integration/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/stripe-seven-line-integration/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/stripe-seven-line-integration/v1"
+}

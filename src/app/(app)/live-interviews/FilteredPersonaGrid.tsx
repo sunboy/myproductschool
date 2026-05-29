@@ -6,6 +6,7 @@ import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import StartInterviewButton from './StartInterviewButton'
 import type { InterviewDiscipline } from '@/components/live-interviews/DisciplineFilterStrip'
+import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 const FILTER_ROLES = ['All', 'PM', 'SWE', 'Data Eng', 'ML Eng'] as const
 type FilterRole = typeof FILTER_ROLES[number]
@@ -20,17 +21,15 @@ function matchesFilter(persona: LiveInterviewPersona, filter: FilterRole): boole
   return persona.role === filter
 }
 
-const DIFFICULTY_DOT: Record<LiveInterviewPersona['difficulty'], string> = {
-  standard: '#4a7c59',
-  advanced: '#f59e0b',
-  staff_plus: '#ef4444',
+const DIFFICULTY_DOT: Record<PracticeDifficulty, string> = {
+  easy: '#10b981',
+  medium: '#f59e0b',
+  hard: '#ef4444',
 }
 
-const SCENARIO_DIFFICULTY_DOT: Record<string, string> = {
-  warmup: '#4a7c59',
-  standard: '#4a7c59',
-  advanced: '#f59e0b',
-  staff_plus: '#ef4444',
+function getDotColor(difficulty: string | null | undefined): string {
+  const canon = coerceDifficulty(difficulty)
+  return canon ? DIFFICULTY_DOT[canon] : '#10b981'
 }
 
 interface FilteredPersonaGridProps {
@@ -101,7 +100,7 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
         ((p as unknown as { disciplines?: string[] }).disciplines ?? ['product_sense']).includes(disciplineFilter)
       )
 
-  // Deduplicate by companyId — one entry per company, left panel shows all
+  // Deduplicate by companyId - one entry per company, left panel shows all
   const seen = new Set<string>()
   const deduped = visiblePersonas.filter(p => {
     if (seen.has(p.companyId)) return false
@@ -142,14 +141,14 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
   if (!activePersona) return null
 
   return (
-    <div className="flex flex-row gap-0 rounded-2xl overflow-hidden border border-outline-variant/40 bg-surface-container-low">
+    <div className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-low lg:flex-row">
 
       {/* ── Left: Company Roster ───────────────────────────── */}
-      <div className="shrink-0 flex flex-col border-r border-outline-variant/30" style={{ width: '260px' }}>
-        <div className="overflow-y-auto px-3 py-3 space-y-1.5">
+      <div className="flex max-h-[320px] w-full shrink-0 flex-col border-b border-outline-variant/30 lg:max-h-none lg:w-[260px] lg:border-b-0 lg:border-r">
+        <div className="space-y-1.5 overflow-y-auto px-3 py-3">
           {leftPagedItems.map(persona => {
             const isActive = activePersona.companyId === persona.companyId
-            const dotColor = DIFFICULTY_DOT[persona.difficulty]
+            const dotColor = getDotColor(persona.difficulty)
             return (
               <button
                 key={persona.companyId}
@@ -221,7 +220,7 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
       </div>
 
       {/* ── Right: Scenarios Pane ─────────────────────────────────── */}
-      <div className="relative flex-1 flex flex-col overflow-hidden">
+      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
 
         {/* Ambient icon backdrop */}
         <div
@@ -239,7 +238,7 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
         {/* Content */}
         <div className="relative z-10 flex flex-col">
 
-          {/* Role filter pills — filters the scenario list */}
+          {/* Role filter pills - filters the scenario list */}
           <div className="px-5 pt-4 pb-3 flex flex-wrap gap-1.5 shrink-0">
             {FILTER_ROLES.map(role => (
               <button
@@ -257,10 +256,10 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
             ))}
           </div>
 
-          {/* Scenario list — capped to RIGHT_PAGE_SIZE rows */}
+          {/* Scenario list - capped to RIGHT_PAGE_SIZE rows */}
           <div className="px-5 pb-3 space-y-1.5">
 
-            {/* Free-form card — always at top, color-coded */}
+            {/* Free-form card - always at top, color-coded */}
             <div className="flex items-center justify-between p-4 rounded-xl bg-primary-fixed/50 border border-primary/20">
               <div>
                 <p className="text-sm font-label font-bold text-on-surface">Free-form interview</p>
@@ -271,8 +270,9 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
 
             {/* Paginated scenario rows */}
             {rightPagedScenarios.map(scenario => {
-              const dot = SCENARIO_DIFFICULTY_DOT[scenario.difficulty] ?? '#4a7c59'
-              const diffLabel = scenario.difficulty === 'staff_plus' ? 'Staff+' : scenario.difficulty.charAt(0).toUpperCase() + scenario.difficulty.slice(1)
+              const dot = getDotColor(scenario.difficulty)
+              const canon = coerceDifficulty(scenario.difficulty)
+              const diffLabel = canon ? DIFFICULTY_LABELS[canon] : scenario.difficulty
               return (
                 <div
                   key={scenario.id}

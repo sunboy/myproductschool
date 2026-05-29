@@ -103,8 +103,8 @@ export default function PaywallConfigPage() {
   }
 
   return (
-    <main className="max-w-6xl p-8">
-      <div className="mb-6 flex items-center justify-between gap-4">
+    <main className="max-w-6xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2">
             <Link href="/admin" className="text-on-surface-variant transition-colors hover:text-on-surface" aria-label="Back to admin">
@@ -119,7 +119,7 @@ export default function PaywallConfigPage() {
             Tune monthly free and Pro allowances without a deploy. Hatch AI budget is tracked in estimated vendor-cost cents.
           </p>
         </div>
-        <div className="rounded-2xl bg-primary/10 px-4 py-3 text-right">
+        <div className="w-full rounded-2xl bg-primary/10 px-4 py-3 text-left sm:w-auto sm:text-right">
           <p className="font-label text-[10px] font-bold uppercase tracking-[0.16em] text-primary">Pro target</p>
           <p className="font-headline text-xl font-bold text-on-surface">{formatPlanPrice(monthlyPlan)}/mo</p>
           <p className="font-body text-xs text-on-surface-variant">Keep AI COGS under $6</p>
@@ -131,6 +131,7 @@ export default function PaywallConfigPage() {
       )}
 
       <div className="overflow-hidden rounded-2xl border border-outline-variant/30 bg-surface-container">
+        <div className="overflow-x-auto">
         <table className="w-full min-w-[980px]">
           <thead>
             <tr className="border-b border-outline-variant/30">
@@ -265,6 +266,7 @@ export default function PaywallConfigPage() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </main>
   )

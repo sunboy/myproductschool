@@ -1,0 +1,357 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL doesn't maintain statistics on JSONB field values; the query planner estimates 0.1% selectivity for JSONB operators, leading to 2000x slower queries when the planner chooses sequential scans instead of indexes.",
+      "source": "https://pganalyze.com/blog/5mins-postgres-planner-jsonb-selectivity",
+      "published": "2023"
+    },
+    {
+      "fact": "PostgreSQL 12 introduced automatic CTE inlining: non-recursive CTEs referenced once are now inlined like subqueries, enabling predicate pushdown. CTEs referenced multiple times are still materialized as optimization fences.",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "published": "2024"
+    },
+    {
+      "fact": "PostgreSQL 14 introduced the CYCLE clause for built-in cycle detection in recursive queries, which is more efficient than manual cycle detection with arrays or visited-node tracking.",
+      "source": "https://developer.mamezou-tech.com/en/blogs/2025/01/17/cycle-postgres/",
+      "published": "2025"
+    },
+    {
+      "fact": "Materialized views without CONCURRENTLY option lock the entire view during refresh, blocking all concurrent SELECT queries. With CONCURRENTLY, you must have at least one UNIQUE index covering all rows.",
+      "source": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "published": "2024"
+    },
+    {
+      "fact": "GIN indexes on tsvector map each unique lexeme to documents containing it via inverted index, enabling bitmap index scans. ts_rank is only computed for rows matching the query, not the entire table.",
+      "source": "https://www.postgresql.org/docs/current/textsearch-indexes.html",
+      "published": "2024"
+    },
+    {
+      "fact": "JSONB storage uses 2x more disk space than normalized tables because PostgreSQL stores key strings in every row without dictionary compression.",
+      "source": "https://erthalion.info/2017/12/21/advanced-json-benchmarks/",
+      "published": "2017"
+    },
+    {
+      "fact": "ltree materialized path approach is 3-5x faster than recursive CTEs for ad-hoc tree queries due to GiST index support, but requires triggers to maintain path values during inserts/updates.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-ltree-vs-with-recursive/",
+      "published": "2023"
+    },
+    {
+      "fact": "Query planner estimates on JSONB @> (contains) operator are now reasonable in PostgreSQL 13+ when statistics target is raised above default, using most-common-values and histogram data.",
+      "source": "https://blog.anayrat.info/en/2017/11/26/postgresql-jsonb-and-statistics/",
+      "published": "2017"
+    },
+    {
+      "fact": "Materialized views can reduce query time from 28 seconds to 180 milliseconds for dashboard queries, with refresh overhead of 4.2 seconds for hourly refresh schedules.",
+      "source": "https://www.epsio.io/blog/postgres-refresh-materialized-view-a-comprehensive-guide",
+      "published": "2024"
+    },
+    {
+      "fact": "ts_rank function uses only term frequency within documents and lacks global document frequency (IDF) information, making it less sophisticated than Elasticsearch BM25 ranking.",
+      "source": "https://www.tigerdata.com/blog/pg-textsearch-bm25-full-text-search-postgres",
+      "published": "2023"
+    },
+    {
+      "fact": "PostgreSQL has no hardcoded statistics for JSONB operator selectivity; a real-world query estimated 43,000 rows but returned 1, with error factor of 39,000x.",
+      "source": "https://pganalyze.com/blog/5mins-postgres-planner-jsonb-selectivity",
+      "published": "2023"
+    },
+    {
+      "fact": "setweight function in tsvector allows marking lexemes with weights A, B, C, or D to reflect document sections (title vs body), enabling weighted ranking via ts_rank.",
+      "source": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Materialized path model (ltree) query execution in PostgreSQL takes milliseconds regardless of database size due to index support, but move operations require transaction-wide locks on entire subtrees.",
+      "source": "https://leonardqmarcq.com/posts/modeling-hierarchical-tree-data",
+      "published": "2023"
+    },
+    {
+      "fact": "PostgreSQL 17 improved query planning for materialized CTEs, enabling planner to reuse sort order and column cardinality information across CTE references.",
+      "source": "https://pganalyze.com/blog/5mins-postgres-17-materialized-cte-scans",
+      "published": "2024"
+    },
+    {
+      "fact": "Extended statistics on expressions (introduced PostgreSQL 14+) and functional indexes with collected statistics can work around JSONB's lack of built-in column statistics.",
+      "source": "https://vsevolod.net/postgresql-jsonb-index/",
+      "published": "2021"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Slack message history storage",
+      "choice": "JSONB",
+      "reasoning": "Message metadata (reactions, threads, edits) has variable schema. With schema changing across years, JSONB @> indexing avoids schema migration pain."
+    },
+    {
+      "scenario": "E-commerce product catalog (Stripe-like)",
+      "choice": "Normalized with hybrid JSONB",
+      "reasoning": "Core fields (SKU, price, inventory) normalized for indexing and joins. Custom attributes stored in JSONB. Separates 90% frequently-queried data from 10% rarely-accessed metadata."
+    },
+    {
+      "scenario": "Organization hierarchy (org chart with 50k nodes)",
+      "choice": "ltree materialized path over recursive CTE",
+      "reasoning": "Org rarely changes. Ad-hoc queries like 'all reports under Manager X' run 3-5x faster with GiST indexes vs WITH RECURSIVE. Avoid if frequent reorganizations."
+    },
+    {
+      "scenario": "Real-time search across 10M documents",
+      "choice": "Full-text search with tsvector + GIN + ts_rank",
+      "reasoning": "GIN index enables bitmap scans. Persistent tsvector avoids to_tsvector recomputation. setweight boosts title matches. 50-100ms queries vs 5-10s without index."
+    },
+    {
+      "scenario": "Dashboard with 4M+ row aggregations, queried every 15 minutes",
+      "choice": "Materialized view with CONCURRENTLY refresh",
+      "reasoning": "180ms response with materialized view vs 28s fresh computation. CONCURRENTLY refresh allows read-during-refresh. Scheduled refresh every 15-60 min via pg_cron."
+    },
+    {
+      "scenario": "Bill of materials tree (50 levels deep, 100k SKUs)",
+      "choice": "Recursive CTE with CYCLE clause + depth guard",
+      "reasoning": "PostgreSQL 14+ CYCLE clause detects cycles efficiently. Depth guard (WHERE depth < 50) prevents runaway recursion. Use UNION ALL (no duplicate elimination) for performance."
+    },
+    {
+      "scenario": "API integration storing third-party webhook payloads",
+      "choice": "JSONB for schemaless storage",
+      "reasoning": "External API shape changes without notice. JSONB @> on known fields + full-document backup avoids forward-incompatibility breaks."
+    },
+    {
+      "scenario": "Large analytics warehouse with 5+ join tables",
+      "choice": "Materialized view over complex joins + GIN index on JSONB summary field",
+      "reasoning": "Materialized view materializes expensive joins. JSONB summary stores pre-aggregated metrics for quick access. Refresh during maintenance window."
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "JSONB selectivity problem",
+      "analogy": "Like a librarian who can't read book spines (no statistics), so estimates 'probably 1% of books match' for every search. With bad estimates, the catalog system picks the slowest lookup path (sequential scan through entire library)."
+    },
+    {
+      "concept": "CTE optimization fence (before PG12)",
+      "analogy": "A filter wall that the planner can't see through. Like putting a cardboard box around your search criteria — the optimizer can't optimize through the box, so it computes the whole box contents before filtering."
+    },
+    {
+      "concept": "ltree materialized path",
+      "analogy": "Like writing the full address (street/city/state/zip) in a single field instead of 5 separate columns. Fast to find 'all buildings on Main Street', but slow to move 10k buildings when Main St is renamed."
+    },
+    {
+      "concept": "GIN index on tsvector",
+      "analogy": "Like a book index that maps 'chapter 5' to pages, not 'page 10' to chapters. Inverted: 'word → documents containing it' instead of 'document → words in it'."
+    },
+    {
+      "concept": "Materialized view refresh locking",
+      "analogy": "Taking a photograph of a city for a tourist guide. While you're taking the photo, the city is frozen (no traffic moves). Concurrent refresh is like having a second photographer while the first one is still shooting, but both must use the same camera."
+    },
+    {
+      "concept": "ts_rank vs BM25 ranking",
+      "analogy": "ts_rank counts word frequency in one book. BM25 counts frequency across all books (IDF) to know 'rare words are more important than common ones'. ts_rank is 'this book has 5 matches', BM25 is 'this book has 5 rare matches'."
+    },
+    {
+      "concept": "Recursive CTE vs materialized path",
+      "analogy": "Recursive CTE is like asking 'who reports to Alice? Who reports to them?' repeatedly. Materialized path is like a pre-printed org chart hanging on the wall: faster lookup, but must reprint when restructuring."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "JSONB selectivity estimate error factor",
+      "value": "15,000x to 39,000x worse than reality",
+      "context": "Query planner estimates 0.1% selectivity when actual selectivity is 0.000001%, causing sequential scans instead of index use"
+    },
+    {
+      "metric": "JSONB storage overhead vs normalized",
+      "value": "2x-3x more disk space",
+      "context": "Key strings repeated in every JSONB row with no dictionary compression"
+    },
+    {
+      "metric": "Query time reduction with materialized view",
+      "value": "28 seconds → 180 milliseconds (155x speedup)",
+      "context": "Dashboard aggregating 50M rows; refresh overhead 4.2 seconds hourly"
+    },
+    {
+      "metric": "ltree performance vs recursive CTE",
+      "value": "3x-5x faster for ad-hoc queries",
+      "context": "ltree uses GiST indexes; recursive CTE recalculates on each query"
+    },
+    {
+      "metric": "JSONB @> operator statistics improvement",
+      "value": "PostgreSQL 13+ with elevated statistics_target (100+)",
+      "context": "Uses most-common-values and histogram; reasonable estimates vs hardcoded 0.1%"
+    },
+    {
+      "metric": "Full-text search query time with GIN index",
+      "value": "50-100ms for 10M+ documents",
+      "context": "vs 5-10s without persistent tsvector + GIN, using bitmap scans"
+    },
+    {
+      "metric": "Materialized path query latency regardless of tree size",
+      "value": "Single-digit milliseconds",
+      "context": "With GiST index on path; size-independent due to index structure"
+    },
+    {
+      "metric": "CTE inlining threshold (PostgreSQL 12+)",
+      "value": "Referenced 0-1 times → inlined; 2+ times → materialized",
+      "context": "Determines whether predicate pushdown and optimization apply"
+    },
+    {
+      "metric": "Normalization option for ts_rank scaling",
+      "value": "32 = rank/(rank+1), scales all scores to 0-1 range",
+      "context": "Cosmetic change; does not affect result ordering"
+    },
+    {
+      "metric": "JSONB performance cliff on value size",
+      "value": "2x-10x slower for values > 2 KB",
+      "context": "TOAST storage overhead for long variable-length data"
+    },
+    {
+      "metric": "PostgreSQL recursive CTE default depth guard",
+      "value": "No built-in limit (use WHERE depth < N)",
+      "context": "Manual depth counter or CYCLE clause required to prevent runaway recursion"
+    },
+    {
+      "metric": "Materialized path write performance",
+      "value": "O(n) where n = subtree size",
+      "context": "Move operation locks entire subtree; unsuitable for frequent reorganizations"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "JSONB is always slower than normalized tables",
+      "reality": "JSONB is only 2-5% slower for simple filters with proper indexing. Aggregations and reads of denormalized data are faster in JSONB. Normalized is faster when filtering on the indexed normalized columns, due to selectivity statistics."
+    },
+    {
+      "misconception": "CTEs are always slower than subqueries",
+      "reality": "Since PostgreSQL 12, single-referenced CTEs are inlined and have identical performance to subqueries. Multi-referenced CTEs are materialized and can be *faster* if the same result is reused multiple times."
+    },
+    {
+      "misconception": "All JSONB queries benefit from @> (contains) indexing",
+      "reality": "GIN index on JSONB only helps if you're filtering on existence of keys/values. If you're selecting on computed values (e.g., 'age > 30' in a JSONB object), the index is useless; you must use generated columns or functional indexes."
+    },
+    {
+      "misconception": "Materialized views are stale and unreliable for analytics",
+      "reality": "Staleness is tunable: refresh every 15 minutes, 1 hour, or 1 day depending on acceptable freshness. Dashboard use case is perfectly suited to staleness thresholds."
+    },
+    {
+      "misconception": "Recursive CTEs are the best way to query hierarchies",
+      "reality": "ltree materialized paths are 3-5x faster for static/slow-changing trees. Recursive CTEs are flexible but slower. Foreign key and parent_id denormalization is ideal for frequent writes."
+    },
+    {
+      "misconception": "ts_rank ranking is comparable to Elasticsearch BM25",
+      "reality": "ts_rank only ranks by term frequency within a document; it lacks inverse document frequency (IDF). 'rare' and 'common' words have identical weight. At scale, ts_rank has no top-k optimization, requiring scoring every match."
+    },
+    {
+      "misconception": "UNION in recursive CTEs is the same speed as UNION ALL",
+      "reality": "UNION discards duplicates after each iteration (expensive). UNION ALL is 10-30% faster for cycle-free graphs. For graphs with cycles, use CYCLE clause (PG14+) instead of manual UNION deduplication."
+    },
+    {
+      "misconception": "Full-text search with tsvector requires manual updates",
+      "reality": "tsvector is normally computed via generated columns or triggers. Persistent tsvector in a dedicated column (updated via trigger) avoids to_tsvector recomputation at query time, enabling 3-5x faster queries."
+    },
+    {
+      "misconception": "Materialized views with CONCURRENTLY refresh can always run concurrently",
+      "reality": "CONCURRENTLY requires a UNIQUE index on all columns. Without it, CONCURRENTLY is rejected. Full refresh is often faster if the view changes dramatically; concurrent refresh excels when changes are incremental."
+    },
+    {
+      "misconception": "JSONB fields with statistics_target=100 have accurate selectivity estimates",
+      "reality": "Statistics improve (esp. PG13+) but remain worst-case 10-100x worse than normalized columns. Not eliminated, only reduced. Extended statistics can help further."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/datatype-json.html",
+      "title": "PostgreSQL JSON Types Documentation",
+      "recency": "2024 (current docs)"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-planner-jsonb-selectivity",
+      "title": "Postgres Planner Quirks: JSONB Selectivity Estimates",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.heap.io/blog/when-to-avoid-jsonb-in-a-postgresql-schema",
+      "title": "When To Avoid JSONB In A PostgreSQL Schema",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "title": "PostgreSQL CTEs as Optimization Fences",
+      "recency": "2024"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-17-materialized-cte-scans",
+      "title": "PostgreSQL 17: Better Query Plans for Materialized CTE Scans",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/queries-with.html",
+      "title": "PostgreSQL WITH Queries (Common Table Expressions)",
+      "recency": "2024 (current docs)"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/postgresql-speeding-up-recursive-queries-and-hierarchic-data/",
+      "title": "Speeding up Recursive Queries in PostgreSQL",
+      "recency": "2023"
+    },
+    {
+      "url": "https://developer.mamezou-tech.com/en/blogs/2025/01/17/cycle-postgres/",
+      "title": "Safe Recursive Queries in PostgreSQL: The CYCLE Clause",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "title": "REFRESH MATERIALIZED VIEW Documentation",
+      "recency": "2024 (current docs)"
+    },
+    {
+      "url": "https://www.epsio.io/blog/postgres-refresh-materialized-view-a-comprehensive-guide",
+      "title": "Postgres REFRESH MATERIALIZED VIEW: Comprehensive Guide",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/textsearch-indexes.html",
+      "title": "PostgreSQL Preferred Index Types for Text Search",
+      "recency": "2024 (current docs)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "title": "PostgreSQL Controlling Text Search",
+      "recency": "2024 (current docs)"
+    },
+    {
+      "url": "https://www.tigerdata.com/blog/pg-textsearch-bm25-full-text-search-postgres",
+      "title": "pg_textsearch: BM25 Full-Text Search on Postgres",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/postgresql-ltree-vs-with-recursive/",
+      "title": "PostgreSQL ltree vs WITH RECURSIVE",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/ltree.html",
+      "title": "PostgreSQL ltree Module Documentation",
+      "recency": "2024 (current docs)"
+    },
+    {
+      "url": "https://leonardqmarcq.com/posts/modeling-hierarchical-tree-data",
+      "title": "Modeling Hierarchical Tree Data in PostgreSQL",
+      "recency": "2023"
+    },
+    {
+      "url": "https://erthalion.info/2017/12/21/advanced-json-benchmarks/",
+      "title": "Advanced JSON Benchmarks",
+      "recency": "2017 (older, but still valid on storage facts)"
+    },
+    {
+      "url": "https://blog.anayrat.info/en/2017/11/26/postgresql-jsonb-and-statistics/",
+      "title": "PostgreSQL JSONB and Statistics",
+      "recency": "2017 (older reference; PG13+ improvements covered separately)"
+    },
+    {
+      "url": "https://vsevolod.net/postgresql-jsonb-index/",
+      "title": "Pitfalls of JSONB Indexes in PostgreSQL",
+      "recency": "2021"
+    },
+    {
+      "url": "https://thoughtbot.com/blog/advanced-postgres-performance-tips",
+      "title": "Advanced Postgres Performance Tips",
+      "recency": "2024"
+    }
+  ]
+}

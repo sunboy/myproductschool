@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 
 interface QuickTakeCardProps {
   prompt: string
@@ -50,7 +51,12 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
         body: JSON.stringify({ challenge_id: challengeId, response_text: response }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Submission failed')
+      if (!res.ok) {
+        const nextAction = Array.isArray(data.next_actions) ? data.next_actions[0] : undefined
+        throw new Error(data.status === 'not_ready'
+          ? [data.summary, nextAction].filter(Boolean).join(' ')
+          : data.error ?? 'Submission failed')
+      }
       setResult(data)
       setState('done')
       window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'quick-take' } }))
@@ -85,12 +91,12 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
   if (state === 'done' && result) {
     const { label, color } = gradeLabel(result.score)
     return (
-      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
+      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-center gap-3 relative">
           <HatchGlyph size={36} state="celebrating" className="text-on-primary shrink-0" />
           <div>
-            <h3 className="font-headline font-bold text-base leading-tight">Quick Take — graded</h3>
+            <h3 className="font-headline font-bold text-base leading-tight">Quick Take, graded</h3>
             <p className="text-on-primary/70 text-[11px] font-label mt-0.5">+{result.xp_earned} XP earned</p>
           </div>
         </div>
@@ -104,11 +110,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
             </span>
             <span className="text-on-primary/60 text-xs">{Math.round(result.score * 100)}%</span>
           </div>
-          <div className="flex flex-col gap-2">
-            {result.feedback_summary.split('\n\n').map((para, i) => (
-              <p key={i} className="text-on-primary/90 text-sm leading-relaxed">{para}</p>
-            ))}
-          </div>
+          <FeedbackText className="text-on-primary/90">{result.feedback_summary}</FeedbackText>
         </div>
         <button
           onClick={handleTryAnother}
@@ -122,7 +124,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   if (state === 'loading-next') {
     return (
-      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
+      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-center gap-3 relative">
           <HatchGlyph size={36} state="reviewing" className="text-on-primary shrink-0" />
@@ -136,7 +138,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   if (state === 'writing' || state === 'submitting') {
     return (
-      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
+      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-start gap-3 relative">
           <HatchGlyph size={36} state="listening" className="text-on-primary shrink-0 mt-0.5" />
@@ -179,7 +181,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   // idle
   return (
-    <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
+    <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden" data-hatch-target="dashboard-quick-take">
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
       <div className="flex items-start gap-3 relative">
         <HatchGlyph size={36} state="speaking" className="text-on-primary shrink-0 mt-0.5" />

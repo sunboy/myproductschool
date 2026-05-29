@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "midjourney",
+  "story_slug": "midjourney-discord-launch",
+  "story_title": "Midjourney's Discord Launch",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/midjourney-discord-launch/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/midjourney-discord-launch/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch sitting inside a Discord chat window as AI images generate around it, representing Midjourney's community-first launch.",
+      "caption": "Hatch sitting inside a Discord chat window as AI images generate around it, representing Midjourney's community-first launch.",
+      "prompt": "Midjourney's Discord Launch | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) sitting inside a stylized Discord chat window, surrounded by floating AI-generated images appearing in real time. Other small character figures visible reacting with emoji. Hatch looks delighted. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/midjourney-discord-launch/hero.png",
+      "generated_image_sha256": "8871b12cafd06b2fac7c29152829321b5a9e001b6664826950290c0c3ca8fa29",
+      "final_image_sha256": "60bcdf470d645b18bcb7ab9eaab26606237f09aebc1b9a7cc7c98dd9da67bb2f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/midjourney-discord-launch/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/midjourney-discord-launch/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/midjourney-discord-launch/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between an empty website and a busy Discord channel, representing the platform choice Midjourney made.",
+      "caption": "Hatch gesturing between an empty website and a busy Discord channel, representing the platform choice Midjourney made.",
+      "prompt": "Midjourney's Discord Launch | hatch-narrator: Hatch in narrator pose, gesturing toward a large empty webpage on one side (labeled \"Coming Soon\") and a busy Discord channel on the other side showing images generating in real time. The contrast makes the choice obvious. Cream background. HackProduct wordmark watermark. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/midjourney-discord-launch/hatch-narrator.png",
+      "generated_image_sha256": "42d8dff9dc9cb70ccba3bbcb998411685f607c5e3e15641c9db84806e9d2d463",
+      "final_image_sha256": "bd58b51921dde00bf4227dbc4435f480bd5a41f520c95a54da19ca57af6c16e3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/midjourney-discord-launch/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/midjourney-discord-launch/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/midjourney-discord-launch/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a diagram showing how public image generation in Discord creates a social feedback loop.",
+      "caption": "Hatch pointing at a diagram showing how public image generation in Discord creates a social feedback loop.",
+      "prompt": "Midjourney's Discord Launch | failure-mechanism: Hatch in thinking pose, pointing at a diagram showing a single user typing a prompt at the bottom and multiple observers watching above as images appear. Arrows indicate how each generation becomes visible to the whole channel. Clean, diagrammatic style. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/midjourney-discord-launch/failure-mechanism.png",
+      "generated_image_sha256": "c1015f90ec027a566a78938af78c6629e2f42a32d7307b6be7ef90cdcb65611c",
+      "final_image_sha256": "e92737600fe7d2e5e642ab22d628ddac60095a6e1d6612797cb0604a64ce9f2f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/midjourney-discord-launch/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/midjourney-discord-launch/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/midjourney-discord-launch/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at key Midjourney metrics — 3M Discord members, $200M ARR, 40-person team.",
+      "caption": "Hatch pointing at key Midjourney metrics — 3M Discord members, $200M ARR, 40-person team.",
+      "prompt": "Midjourney's Discord Launch | evidence-card: Hatch pointing at three floating metrics: \"3M Discord Members,\" \"~$200M ARR,\" \"~40 person team.\" Each metric presented on a simple card. Hatch's expression is one of quiet amazement. Cream background. HackProduct wordmark watermark. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/midjourney-discord-launch/evidence-card.png",
+      "generated_image_sha256": "a966333f41cfb098c491a331377e9515f71a73dd57b02cb9abcc67d7c7cfaf51",
+      "final_image_sha256": "7cf3344b4a76abad7433eadf574baeb3bee0602d6857c5536e4b1aed4d2dc7da",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/midjourney-discord-launch/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/midjourney-discord-launch/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/midjourney-discord-launch/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch showing how creation and sharing become inseparable in Midjourney's model.",
+      "caption": "Hatch showing how creation and sharing become inseparable in Midjourney's model.",
+      "prompt": "Midjourney's Discord Launch | lesson-frame: Hatch in calm coaching pose, standing in front of a simple visual: an arrow labeled \"Create\" flowing directly into another arrow labeled \"Share\" with no gap between them. Expression: warm, instructive. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/midjourney-discord-launch/lesson-frame.png",
+      "generated_image_sha256": "01cd5c35240d56a45c5125260ee39aff3eb42774f89a40dfb10fd9edc49afbb9",
+      "final_image_sha256": "8cbc77fa0b26390311e718de5b4e5520b0ddc0635f14d991d59879df02ae45d0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/midjourney-discord-launch/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/midjourney-discord-launch/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/midjourney-discord-launch/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a Discord chat bubble with an AI image inside, representing Midjourney's Discord-native launch.",
+      "caption": "Hatch holding a Discord chat bubble with an AI image inside, representing Midjourney's Discord-native launch.",
+      "prompt": "Hatch mascot holding a small Discord chat bubble with a tiny image thumbnail inside it. Expression: curious and excited. Square composition. Cream background. HackProduct wordmark watermark. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/midjourney-discord-launch/hero.png",
+      "generated_image_sha256": "8871b12cafd06b2fac7c29152829321b5a9e001b6664826950290c0c3ca8fa29",
+      "final_image_sha256": "e0836ea29414a385d28b1290f5257c0beedc504bdd560d0b3dba9ba8fe2080be",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/midjourney-discord-launch/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/midjourney-discord-launch/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/midjourney-discord-launch/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in Discord chat window, social share cover for Midjourney autopsy.",
+      "caption": "Hatch in Discord chat window, social share cover for Midjourney autopsy.",
+      "prompt": "Hatch in the Discord chat window, wide OG card format. Title text area at left: \"The AI Art Generator That Launched in a Chat App.\" Cream background. HackProduct wordmark watermark. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/midjourney-discord-launch/hero.png",
+      "generated_image_sha256": "8871b12cafd06b2fac7c29152829321b5a9e001b6664826950290c0c3ca8fa29",
+      "final_image_sha256": "0ee517701a47ded384df54bfe260ccf9e26acfd551a11a744945be781237c1d9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/midjourney-discord-launch/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/midjourney-discord-launch/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/midjourney-discord-launch/v1"
+}

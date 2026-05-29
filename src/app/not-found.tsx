@@ -1,10 +1,11 @@
 import Link from 'next/link'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 export default function RootNotFound() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
       <div className="flex items-center gap-2 mb-10">
-        <span className="font-headline text-2xl font-bold text-primary">HackProduct</span>
+        <HackProductWordmark className="h-12 w-auto max-w-[220px] object-cover" priority />
       </div>
       <span
         className="material-symbols-outlined text-6xl text-on-surface-variant mb-4"

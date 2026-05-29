@@ -1,9 +1,16 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 const { createClient } = require('@supabase/supabase-js')
 
-const supabase = createClient(
-  'https://tikkhvxlclivixqqqjyb.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpa2todnhsY2xpdml4cXFxanliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTMxMzI5MCwiZXhwIjoyMDc2ODg5MjkwfQ.SLtlceDB4vzlDWukbFpeYNQoXglqL1U41nuAKoRdSlM'
-)
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required')
+  process.exit(1)
+}
+
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
 const DOMAIN_STRATEGY = 'd0000001-0000-0000-0000-000000000001'
 const DOMAIN_METRICS = 'd0000001-0000-0000-0000-000000000002'

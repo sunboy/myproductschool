@@ -8,11 +8,11 @@ import { IS_MOCK } from '@/lib/mock'
 function buildMockModule(slug: string): { module: LearnModule; chapters: object[] } | null {
   const seedModule = LEARN_MODULES_SEED.find(m => m.slug === slug)
   if (!seedModule) return null
-  const module: LearnModule = { ...seedModule, id: `mock-${slug}`, created_at: new Date().toISOString() }
+  const learnModule: LearnModule = { ...seedModule, id: `mock-${slug}`, created_at: new Date().toISOString() }
   const chapterDefs = LEARN_CHAPTERS_SEED[slug] ?? []
   const chapters = chapterDefs.map((c, i) => ({
     id: `mock-${slug}-ch-${i + 1}`,
-    module_id: module.id,
+    module_id: learnModule.id,
     slug: `chapter-${i + 1}`,
     title: c.title,
     subtitle: c.subtitle,
@@ -23,7 +23,7 @@ function buildMockModule(slug: string): { module: LearnModule; chapters: object[
     is_completed: false,
     is_unlocked: i === 0,
   }))
-  return { module, chapters }
+  return { module: learnModule, chapters }
 }
 
 export async function GET(

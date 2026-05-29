@@ -2,22 +2,55 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext } from '@/lib/v2/hatch-context'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
+import { z, ZodError } from 'zod'
+
+const ROUTE_KEY = 'challenge_coaching'
+
+const RequestSchema = z.object({
+  attempt_id: z.string().uuid(),
+  question_id: z.string().uuid(),
+  option_id: z.string().uuid().nullable().optional(),
+  step: z.enum(['frame', 'list', 'optimize', 'win']),
+  role_id: z.string().max(100).optional(),
+  user_text: z.string().max(50000).nullable().optional(),
+})
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 function aiBudgetResponse(error: unknown) {
   if (!(error instanceof AiBudgetExceededError)) return null
 
-  return NextResponse.json(
-    {
-      error: 'limit_reached',
-      feature: 'hatch_ai_cents',
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    },
-    { status: 402 }
-  )
+  return apiError(402, 'limit_reached', 'limit_reached', {
+    feature: 'hatch_ai_cents',
+    used: error.used,
+    limit: error.limit,
+    windowDays: error.windowDays,
+  })
+}
+
+function planLimitResponse(error: unknown) {
+  if (!(error instanceof PlanLimitExceeded)) return null
+
+  return apiError(402, 'limit_reached', 'limit_reached', {
+    feature: error.feature,
+    used: error.used,
+    limit: error.limit,
+    windowDays: error.windowDays,
+  })
 }
 
 export async function POST(
@@ -26,24 +59,36 @@ export async function POST(
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
   const userPlan = await getUserPlanForBudget(user.id)
-  const budget = { userId: user.id, userPlan, route: 'challenge_coaching' }
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
+  }
+
+  const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
   const { id: challengeId } = await params
-  const body = await req.json().catch(() => ({})) as {
-    attempt_id?: string
-    question_id?: string
-    option_id?: string
-    step?: string
-    role_id?: string
-    user_text?: string
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
+    }
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { attempt_id, question_id, option_id, step, user_text } = body
-
-  if (!attempt_id || !question_id || !step) {
-    return NextResponse.json({ error: 'Missing required fields: attempt_id, question_id, step' }, { status: 400 })
-  }
 
   const admin = createAdminClient()
 
@@ -56,12 +101,12 @@ export async function POST(
     .single()
 
   if (attemptError || !attempt) {
-    return NextResponse.json({ error: 'Attempt not found or unauthorized' }, { status: 404 })
+    return apiError(404, 'attempt_not_found', 'Attempt not found or unauthorized')
   }
 
   const roleId = attempt.role_id as string
 
-  // Freeform path — no selected option
+  // Freeform path - no selected option
   if (!option_id) {
     const cacheKey = `${user.id}:${challengeId}:${step}:${question_id}:freeform`
 
@@ -79,7 +124,7 @@ export async function POST(
       return NextResponse.json({ role_context: cached.role_context, career_signal: cached.career_signal, cached: true })
     }
 
-    // Cache miss — fetch question + challenge + role lens
+    // Cache miss - fetch question + challenge + role lens
     const [
       { data: question },
       { data: challenge },
@@ -96,7 +141,7 @@ export async function POST(
     const scenarioTrigger = challenge?.scenario_trigger ?? ''
     const hatchContext = await getHatchContext(user.id, challengeId, step)
 
-    const systemPrompt = `You are Hatch, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+    const systemPrompt = `You are Hatch, a coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
     let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
 Question: ${questionText}
@@ -117,22 +162,22 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
     let message
     try {
-      message = await createCachedMessage(systemPrompt, userPrompt, {
+      await assertPlanLimit(user.id, userPlan, 'hatch_chat_msgs')
+      message = await guardedCachedMessage(systemPrompt, userPrompt, {
         model: 'claude-sonnet-4-6',
         max_tokens: 800,
         thinking: { type: 'adaptive' },
         budget,
       })
     } catch (error) {
+      const planResponse = planLimitResponse(error)
+      if (planResponse) return planResponse
       const response = aiBudgetResponse(error)
       if (response) return response
       throw error
     }
 
-    let rawText = ''
-    for (const block of message.content) {
-      if (block.type === 'text') { rawText = block.text; break }
-    }
+    const rawText = message.sanitized
 
     let role_context = ''
     let career_signal = ''
@@ -200,7 +245,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
     return NextResponse.json({ role_context: cached.role_context, career_signal: cached.career_signal, cached: true })
   }
 
-  // Cache miss — fetch all needed data in parallel
+  // Cache miss - fetch all needed data in parallel
   const [
     { data: question },
     { data: option },
@@ -248,7 +293,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   const hatchContext = await getHatchContext(user.id, challengeId, step)
 
   // Build the prompt
-  const systemPrompt = `You are Hatch, Hatch is an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+  const systemPrompt = `You are Hatch, a coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
 
   let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
@@ -272,26 +317,22 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
   let message
   try {
-    message = await createCachedMessage(systemPrompt, userPrompt, {
+    await assertPlanLimit(user.id, userPlan, 'hatch_chat_msgs')
+    message = await guardedCachedMessage(systemPrompt, userPrompt, {
       model: 'claude-sonnet-4-6',
       max_tokens: 800,
       thinking: { type: 'adaptive' },
       budget,
     })
   } catch (error) {
+    const planResponse = planLimitResponse(error)
+    if (planResponse) return planResponse
     const response = aiBudgetResponse(error)
     if (response) return response
     throw error
   }
 
-  // Extract text content from response
-  let rawText = ''
-  for (const block of message.content) {
-    if (block.type === 'text') {
-      rawText = block.text
-      break
-    }
-  }
+  const rawText = message.sanitized
 
   let role_context = ''
   let career_signal = ''

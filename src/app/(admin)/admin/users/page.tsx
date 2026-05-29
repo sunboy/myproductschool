@@ -8,14 +8,15 @@ export default function AdminUsersPage() {
   ]
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
         <h1 className="font-headline text-2xl font-bold text-on-surface">Users</h1>
         <p className="text-on-surface-variant text-sm mt-1">{MOCK_USERS.length} users total</p>
       </div>
 
-      <div className="bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container">
+        <div className="overflow-x-auto">
+        <table className="min-w-[560px] w-full text-sm">
           <thead className="bg-surface-container-high">
             <tr>
               <th className="text-left px-4 py-3 text-on-surface-variant font-medium">Email</th>
@@ -39,6 +40,7 @@ export default function AdminUsersPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

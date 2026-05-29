@@ -114,7 +114,7 @@ function FeedbackTab() {
           What to Fix
         </p>
         <ul className="text-sm text-on-surface-variant space-y-1 ml-6 list-disc">
-          <li>Missing user segmentation — power listeners vs. casual browsers behave differently</li>
+          <li>Missing user segmentation - power listeners vs. casual browsers behave differently</li>
           <li>No mention of what to deprioritize or trade off against the recommendation</li>
         </ul>
       </div>

@@ -1,12 +1,13 @@
 'use client'
 
-import { Component, use, useCallback, useEffect, useRef, useState } from 'react'
+import { Component, use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import HatchAvatar, { type HatchAvatarState } from '@/components/live-interview/HatchAvatar'
+import type { HatchAvatarState } from '@/components/live-interview/HatchAvatar'
 import dynamic from 'next/dynamic'
-import DeepgramVoiceSession from '@/components/live-interview/DeepgramVoiceSession'
+import DeepgramVoiceSession, { type DeepgramVoiceSessionHandle } from '@/components/live-interview/DeepgramVoiceSession'
+import { HatchConversationMascot } from '@/components/live-interview/HatchConversationMascot'
 import type { TalkingHeadHandle } from '@/components/live-interview/TalkingHeadAvatar'
 import { LoopProgressBar } from '@/components/live-interviews/LoopProgressBar'
 import { PriorRoundRecap } from '@/components/live-interviews/PriorRoundRecap'
@@ -27,13 +28,24 @@ const MonacoCodeEditor = dynamic(
   { ssr: false }
 )
 
+import type { PasteEvent } from '@/components/challenge/MonacoCodeEditor'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import {
+  AnimatedProgress,
+  CollapsiblePanel,
+  FocusSurface,
+  PresencePanel,
+  motion,
+  type FocusSurfaceEvent,
+} from '@/components/motion'
 import { Md } from '@/components/ui/Md'
 import { useInterviewTimer } from '@/hooks/useInterviewTimer'
 import { InterviewLimitModal } from '@/components/paywalls/InterviewLimitModal'
 import { useUpgrade } from '@/hooks/useUpgrade'
 import { useEntitlements } from '@/hooks/useEntitlements'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
+import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
+import { summarizeScene } from '@/lib/hatch/canvas-scene'
 import {
   DISCIPLINE_META,
   normalizeDiscipline,
@@ -41,7 +53,7 @@ import {
 } from '@/lib/live-interview/disciplines'
 import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
-const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+import { IS_MOCK } from '@/lib/mock'
 
 class AvatarErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
@@ -103,6 +115,59 @@ const COMPETENCY_LABELS: Record<string, string> = {
   domain_expertise: 'Domain',
 }
 
+const SNAPSHOT_CODE_MAX_CHARS = 40000
+const IDLE_FEELER_DELAY_MS = 45_000
+const IDLE_FEELER_COOLDOWN_MS = 120_000
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+async function liveInterviewErrorMessage(response: Response) {
+  const fallback = response.status === 503
+    ? 'Hatch is temporarily unavailable. Try again in a moment.'
+    : 'Failed to send message. Please try again.'
+  const body = await response.json().catch(() => null) as { error?: unknown } | null
+  return typeof body?.error === 'string' && body.error.trim() ? body.error : fallback
+}
+
+function isFocusSurfaceEvent(value: unknown): value is FocusSurfaceEvent {
+  if (!isRecord(value)) return false
+  return (
+    typeof value.id === 'string' &&
+    typeof value.title === 'string' &&
+    typeof value.body === 'string' &&
+    typeof value.kind === 'string' &&
+    ['challenge', 'topic', 'rubric', 'flow-signal', 'memory'].includes(value.kind)
+  )
+}
+
+function summarizeCanvasElements(elements: unknown[]) {
+  const elementTypes: Record<string, number> = {}
+  const textLabels: string[] = []
+
+  for (const element of elements) {
+    if (!isRecord(element)) continue
+    const type = typeof element.type === 'string' ? element.type : 'unknown'
+    elementTypes[type] = (elementTypes[type] ?? 0) + 1
+
+    const label = isRecord(element.label) && typeof element.label.text === 'string'
+      ? element.label.text
+      : typeof element.text === 'string'
+      ? element.text
+      : null
+
+    if (label?.trim()) {
+      textLabels.push(label.trim().slice(0, 80))
+    }
+  }
+
+  return {
+    elementTypes,
+    textLabels: [...new Set(textLabels)].slice(0, 12),
+  }
+}
+
 // ─── Signal Card ───
 function SignalCard({ signal, index }: { signal: CoachingSignal; index: number }) {
   const color = FLOW_COLORS[signal.flowMove] ?? '#4a7c59'
@@ -132,112 +197,6 @@ function SignalCard({ signal, index }: { signal: CoachingSignal; index: number }
       <p className="font-body text-[12px] leading-[1.5]" style={{ color: 'rgba(243,237,224,0.75)' }}>
         {signal.signal}
       </p>
-    </div>
-  )
-}
-
-// ─── Hatch Orb ───
-function HatchOrb({ state }: { state: HatchAvatarState }) {
-  const isActive = state === 'speaking' || state === 'listening'
-  const isSpeaking = state === 'speaking'
-
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: 200, height: 200 }}>
-      {/* Expanding rings */}
-      {isActive && (
-        <>
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: 200,
-                height: 200,
-                border: '1px solid rgba(74,124,89,0.4)',
-                animation: `orbRing 2s ease-out ${i * 0.6}s infinite`,
-              }}
-            />
-          ))}
-        </>
-      )}
-
-      {/* Main orb */}
-      <div
-        className="relative rounded-full flex items-center justify-center overflow-hidden"
-        style={{
-          width: 200,
-          height: 200,
-          background: isSpeaking
-            ? 'radial-gradient(circle at 40% 35%, #6fa87a, #3a6347 50%, #1e3a28)'
-            : 'radial-gradient(circle at 40% 35%, #527a60, #2d5240 50%, #162a20)',
-          boxShadow: isSpeaking
-            ? '0 0 60px rgba(74,124,89,0.5), 0 0 120px rgba(74,124,89,0.2)'
-            : isActive
-            ? '0 0 30px rgba(74,124,89,0.25)'
-            : '0 0 20px rgba(74,124,89,0.1)',
-          animation: 'floatHatch 5s ease-in-out infinite',
-          transition: 'box-shadow 0.5s ease',
-        }}
-      >
-        {/* Wave bars when speaking */}
-        {isSpeaking && (
-          <div className="flex items-end gap-1" style={{ height: 40 }}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="rounded-full"
-                style={{
-                  width: 5,
-                  height: 24,
-                  background: 'rgba(126,224,153,0.7)',
-                  animation: `wavebar 0.6s ease-in-out ${i * 0.1}s infinite alternate`,
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Hatch face — simple glowing eyes */}
-        {!isSpeaking && (
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex gap-4">
-              {[0, 1].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-full"
-                  style={{
-                    width: 10,
-                    height: 10,
-                    background: state === 'listening' ? '#7ee099' : 'rgba(126,224,153,0.5)',
-                    boxShadow: state === 'listening' ? '0 0 8px #7ee099' : 'none',
-                    animation: 'blink 3s ease-in-out infinite',
-                    animationDelay: `${i * 0.1}s`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <style jsx>{`
-        @keyframes orbRing {
-          0% { transform: scale(1); opacity: 0.6; }
-          100% { transform: scale(1.35); opacity: 0; }
-        }
-        @keyframes wavebar {
-          0% { transform: scaleY(0.4); }
-          100% { transform: scaleY(1); }
-        }
-        @keyframes floatHatch {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-        @keyframes blink {
-          0%, 90%, 100% { transform: scaleY(1); }
-          95% { transform: scaleY(0.1); }
-        }
-      `}</style>
     </div>
   )
 }
@@ -303,7 +262,7 @@ function TurnBubble({ turn }: { turn: TranscriptTurn }) {
                 }
           }
         >
-          {isHatch ? <Md>{turn.content}</Md> : turn.content}
+          {isHatch ? <Md variant="chat">{turn.content}</Md> : turn.content}
         </div>
 
         {/* User initials */}
@@ -345,6 +304,8 @@ function CtrlBtn({
   large,
   onClick,
   disabled,
+  testId,
+  ariaLabel,
 }: {
   icon: string
   label: string
@@ -353,6 +314,8 @@ function CtrlBtn({
   large?: boolean
   onClick: () => void
   disabled?: boolean
+  testId?: string
+  ariaLabel?: string
 }) {
   const size = large ? 64 : 52
   const iconSize = large ? 28 : 22
@@ -362,6 +325,8 @@ function CtrlBtn({
       <button
         onClick={onClick}
         disabled={disabled}
+        data-testid={testId}
+        aria-label={ariaLabel ?? label}
         className="flex items-center justify-center rounded-full transition-all duration-150"
         style={{
           width: size,
@@ -394,7 +359,7 @@ function CtrlBtn({
             ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
           }
         }}
-        aria-label={label}
+        aria-pressed={typeof active === 'boolean' ? active : undefined}
       >
         <span
           className="material-symbols-outlined"
@@ -417,21 +382,40 @@ function CtrlBtn({
 }
 
 // ─── Main Page ───
+const ENABLE_DIRECT_VOICE_AGENT = true
+
 export default function SessionPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ company?: string; role?: string; autostart?: string; loop_id?: string; round_index?: string; discipline?: string }>
+  searchParams: Promise<{
+    company?: string
+    role?: string
+    autostart?: string
+    loop_id?: string
+    round_index?: string
+    discipline?: string
+    challenge_id?: string
+    scenario_title?: string
+  }>
 }) {
   const { id } = use(params)
-  const { company, role: roleParam, autostart, loop_id: loopIdParam, round_index: roundIndexParam, discipline: disciplineParam } = use(searchParams)
+  const {
+    company,
+    role: roleParam,
+    autostart,
+    loop_id: loopIdParam,
+    round_index: roundIndexParam,
+    discipline: disciplineParam,
+    challenge_id: challengeIdParam,
+    scenario_title: scenarioTitleParam,
+  } = use(searchParams)
   const router = useRouter()
   const { startUpgrade } = useUpgrade()
   const { isPro, isAdmin } = useEntitlements()
 
   const [sessionId, setSessionId] = useState<string>(IS_MOCK ? 'mock-session-id' : id)
-  const [systemPrompt, setSystemPrompt] = useState('')
   const [companyName, setCompanyName] = useState(IS_MOCK ? MOCK_LIVE_SESSION.companyName ?? '' : '')
   const [roleName, setRoleName] = useState(IS_MOCK ? MOCK_LIVE_SESSION.role ?? '' : '')
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null)
@@ -456,6 +440,12 @@ export default function SessionPage({
   const [isVoiceAvailable, setIsVoiceAvailable] = useState(false)
   const [isCaptionsOn, setIsCaptionsOn] = useState(true)
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(true)
+  const [isFlowPanelOpen, setIsFlowPanelOpen] = useState(true)
+  const [isFocusMode, setIsFocusMode] = useState(false)
+  const [focusCollapsed, setFocusCollapsed] = useState(false)
+  const [focusDismissedId, setFocusDismissedId] = useState<string | null>(null)
+  const [remoteFocusEvent, setRemoteFocusEvent] = useState<FocusSurfaceEvent | null>(null)
   const [isEnding, setIsEnding] = useState(false)
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [showLimitModal, setShowLimitModal] = useState(false)
@@ -463,6 +453,7 @@ export default function SessionPage({
   const [currentCaption, setCurrentCaption] = useState('')
   const [recentSignals, setRecentSignals] = useState<Array<CoachingSignal & { id: string; time: number }>>([])
   const talkingHeadRef = useRef<TalkingHeadHandle | null>(null)
+  const voiceSessionRef = useRef<DeepgramVoiceSessionHandle | null>(null)
   const transcriptRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<HTMLInputElement>(null)
   const [chatInput, setChatInput] = useState('')
@@ -474,15 +465,20 @@ export default function SessionPage({
 
   // Artifact workspace state
   const [centerMode, setCenterMode] = useState<'orb' | 'canvas' | 'editor'>('orb')
-  const [isFlowHudCollapsed, setIsFlowHudCollapsed] = useState(false)
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
   const [currentCode, setCurrentCode] = useState('')
   const [currentLanguage, setCurrentLanguage] = useState<'python' | 'javascript' | 'java' | 'cpp' | 'go' | 'sql'>('python')
   const [lastRunResult, setLastRunResult] = useState<unknown>(null)
-  const [artifactSignals, setArtifactSignals] = useState<Array<{ id: string; text: string; time: number }>>([])
+  const [editorPasteEvents, setEditorPasteEvents] = useState<PasteEvent[]>([])
+  const [editorCursorLine, setEditorCursorLine] = useState<number | undefined>(undefined)
 
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
+  const openingRequestedRef = useRef(false)
+  const openingSpokenRef = useRef(false)
+  const idleFeelerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastFeelerAtRef = useRef(0)
+  const snapshotPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { formatted: timerDisplay, isWarning, isLimitReached } = useInterviewTimer(
     interviewStartedAt,
@@ -500,6 +496,48 @@ export default function SessionPage({
     (loopRounds[currentRoundIndex]?.discipline as LiveInterviewDiscipline | undefined)
     ?? normalizeDiscipline(disciplineParam)
     ?? null
+
+  const buildCurrentArtifactSnapshot = useCallback((): LiveInterviewArtifactSnapshot | null => {
+    if (centerMode === 'canvas') {
+      const elements = (canvasScene?.elements ?? []) as unknown[]
+      const summary = summarizeCanvasElements(elements)
+      const sceneSummary = summarizeScene(elements)
+
+      return {
+        type: 'canvas',
+        discipline: discipline ?? undefined,
+        capturedAt: Date.now(),
+        elementCount: sceneSummary.elementCount,
+        elementTypes: summary.elementTypes,
+        textLabels: summary.textLabels,
+        sceneSummary,
+      }
+    }
+
+    if (centerMode === 'editor') {
+      return {
+        type: 'editor',
+        discipline: discipline ?? undefined,
+        capturedAt: Date.now(),
+        code: currentCode.slice(0, SNAPSHOT_CODE_MAX_CHARS),
+        language: currentLanguage,
+        cursorLine: editorCursorLine,
+        pasteEvents: editorPasteEvents.slice(-5),
+        runResult: lastRunResult,
+      }
+    }
+
+    return null
+  }, [
+    canvasScene,
+    centerMode,
+    currentCode,
+    currentLanguage,
+    discipline,
+    editorCursorLine,
+    editorPasteEvents,
+    lastRunResult,
+  ])
 
   // Set the editor's default language based on discipline (sql vs coding).
   // Guard with !currentCode so we never stomp on user input.
@@ -525,7 +563,7 @@ export default function SessionPage({
     }
   }, [turns, isThinking])
 
-  // Start session — if autostart=1 the session was already created by StartInterviewButton
+  // Start session - if autostart=1 the session was already created by StartInterviewButton
   // so we use the id directly and skip the POST, going straight to active.
   useEffect(() => {
     if (IS_MOCK) return
@@ -535,19 +573,14 @@ export default function SessionPage({
       // Session already exists; company/role passed via query params
       setCompanyName(company ?? '')
       setRoleName(roleParam ?? '')
-      // Recover systemPrompt stashed by StartInterviewButton before navigation
-      const stored = sessionStorage.getItem(`hatch_prompt_${id}`)
-      if (stored) {
-        setSystemPrompt(stored)
-        sessionStorage.removeItem(`hatch_prompt_${id}`)
-      }
+      setScenarioTitle(scenarioTitleParam ?? null)
       setInterviewPhase('active')
       setInterviewStartedAt(Date.now())
       return
     }
 
-    // Resume path — loop_id present and no autostart means the user is
-    // returning to a paused round. Hit /resume to rebuild the system prompt
+    // Resume path: loop_id present and no autostart means the user is
+    // returning to a paused round. Hit /resume to rebuild session instructions
     // against current move levels before going active.
     if (loopIdParam) {
       let cancelled = false
@@ -557,14 +590,13 @@ export default function SessionPage({
           if (!res.ok) return
           const data = await res.json()
           if (cancelled) return
-          if (data.systemPrompt) setSystemPrompt(data.systemPrompt)
           if (data.session?.company_id) setCompanyName(company ?? data.session.company_id)
           else setCompanyName(company ?? '')
           setRoleName(roleParam ?? '')
           setInterviewPhase('active')
           setInterviewStartedAt(Date.now())
         } catch {
-          // Fall through silently — UI will still render in 'starting' phase
+          // Fall through silently - UI will still render in 'starting' phase
         }
       })()
       return () => { cancelled = true }
@@ -576,7 +608,12 @@ export default function SessionPage({
         const res = await fetch('/api/live-interview/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ companyId: company, roleId: roleParam }),
+          body: JSON.stringify({
+            companyId: company,
+            roleId: roleParam,
+            challengeId: challengeIdParam,
+            discipline: disciplineParam,
+          }),
         })
         if (!res.ok) {
           const d = await res.json().catch(() => ({}))
@@ -585,7 +622,6 @@ export default function SessionPage({
         const data = await res.json()
         if (cancelled) return
         setSessionId(data.sessionId)
-        setSystemPrompt(data.systemPrompt ?? '')
         setCompanyName(data.companyName ?? company ?? '')
         setRoleName(data.role ?? roleParam ?? '')
         setScenarioTitle(data.scenarioTitle ?? null)
@@ -628,6 +664,114 @@ export default function SessionPage({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loopIdParam])
 
+  useEffect(() => {
+    if (interviewPhase !== 'active' || !sessionId || turns.length > 0 || openingRequestedRef.current) return
+    openingRequestedRef.current = true
+    setError(null)
+
+    if (IS_MOCK) {
+      setTurns([{
+        id: crypto.randomUUID(),
+        role: 'hatch',
+        content: "Hey. Good to see you. I'll make this feel like a real interview, and I'm going to push hardest on whether you diagnose before solving.",
+        source: 'chat',
+      }])
+      setTotalTurns(1)
+      setIsChatOpen(true)
+      return
+    }
+
+    let cancelled = false
+    setHatchState('thinking')
+    setIsThinking(true)
+    setError(null)
+
+    fetch(`/api/live-interview/${sessionId}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'opening',
+        artifactSnapshot: buildCurrentArtifactSnapshot() ?? undefined,
+      }),
+    })
+      .then(async (res) => {
+        if (res.ok) return res.json()
+        throw new Error(await liveInterviewErrorMessage(res))
+      })
+      .then((data) => {
+        if (cancelled || !data?.reply) return
+        setTurns((prev) => prev.length > 0 ? prev : [{
+          id: crypto.randomUUID(),
+          role: 'hatch',
+          content: data.reply,
+          source: 'chat',
+        }])
+        setTotalTurns((prev) => Math.max(prev, 1))
+        setCurrentCaption(data.reply)
+        if (!isVoiceAvailable) {
+          setIsChatOpen(true)
+          setTimeout(() => chatInputRef.current?.focus(), 50)
+        }
+      })
+      .catch((err) => {
+        openingRequestedRef.current = false
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Hatch is temporarily unavailable. Try again in a moment.')
+          setIsChatOpen(true)
+        }
+      })
+      .finally(() => {
+        if (cancelled) return
+        setHatchState('idle')
+        setIsThinking(false)
+      })
+
+    return () => { cancelled = true }
+  }, [buildCurrentArtifactSnapshot, interviewPhase, isVoiceAvailable, sessionId, turns.length])
+
+  useEffect(() => {
+    if (
+      !ENABLE_DIRECT_VOICE_AGENT ||
+      openingSpokenRef.current ||
+      !isVoiceActive ||
+      !isVoiceAvailable ||
+      turns.length !== 1
+    ) {
+      return
+    }
+
+    const firstTurn = turns[0]
+    if (firstTurn?.role !== 'hatch') return
+
+    if (voiceSessionRef.current?.injectAgentMessage(firstTurn.content)) {
+      openingSpokenRef.current = true
+    }
+  }, [isVoiceActive, isVoiceAvailable, turns])
+
+  useEffect(() => {
+    if (IS_MOCK || interviewPhase !== 'active' || centerMode === 'orb' || !sessionId) return
+    const snapshot = buildCurrentArtifactSnapshot()
+    if (!snapshot) return
+
+    if (snapshotPersistTimerRef.current) {
+      clearTimeout(snapshotPersistTimerRef.current)
+    }
+
+    snapshotPersistTimerRef.current = setTimeout(() => {
+      fetch(`/api/live-interview/${sessionId}/snapshot`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ artifactSnapshot: snapshot }),
+      }).catch(() => {})
+    }, 1500)
+
+    return () => {
+      if (snapshotPersistTimerRef.current) {
+        clearTimeout(snapshotPersistTimerRef.current)
+      }
+    }
+  }, [buildCurrentArtifactSnapshot, centerMode, interviewPhase, sessionId])
+
   const handleStartInterview = useCallback(() => {
     setInterviewPhase('active')
     setInterviewStartedAt(Date.now())
@@ -660,7 +804,11 @@ export default function SessionPage({
           const signalTurnIndex = data.latestSignal.turnIndex as number
           if (signalTurnIndex > lastSignalTurnIndexRef.current) {
             lastSignalTurnIndexRef.current = signalTurnIndex
-            const { turnIndex: _, ...signalData } = data.latestSignal
+            const signalData: CoachingSignal = {
+              flowMove: data.latestSignal.flowMove,
+              competency: data.latestSignal.competency,
+              signal: data.latestSignal.signal,
+            }
             setRecentSignals(prev => [
               { ...signalData, id: crypto.randomUUID(), time: Date.now() },
               ...prev.slice(0, 9),
@@ -675,6 +823,9 @@ export default function SessionPage({
               return updated
             })
           }
+        }
+        if (isFocusSurfaceEvent(data.focusEvent)) {
+          setRemoteFocusEvent(data.focusEvent)
         }
         if (data.sessionPhase === 'done' && !isEnding) {
           setTimeout(() => {
@@ -726,6 +877,7 @@ export default function SessionPage({
   const handleTranscript = useCallback((text: string, role: 'hatch' | 'user') => {
     const { cleanContent, signal } = parseGradingSignal(text)
     if (!cleanContent) return
+    const turnIndex = totalTurns
 
     // Update caption for hatch
     if (role === 'hatch') setCurrentCaption(cleanContent)
@@ -747,9 +899,54 @@ export default function SessionPage({
       source: 'voice',
       coachingSignal,
     }
+    const localTurnsWithNewTurn = [...turns, turn]
+    const shouldGradeVoiceExchange = role === 'hatch' && turns[turns.length - 1]?.role === 'user'
+    const lastUserTurnIndex = shouldGradeVoiceExchange
+      ? turns.findLastIndex((t) => t.role === 'user')
+      : -1
     setTurns((prev) => [...prev, turn])
     setTotalTurns((prev) => prev + 1)
-    if (role === 'hatch') setHatchState('idle')
+
+    const persistVoiceTurn = !IS_MOCK
+      ? fetch(`/api/live-interview/${sessionId}/voice-turn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: cleanContent,
+          role,
+          turnIndex,
+        }),
+      })
+      : null
+
+    persistVoiceTurn?.then((res) => {
+      if (!res.ok) {
+        console.error('Failed to persist voice turn:', res.status)
+        return
+      }
+
+      if (shouldGradeVoiceExchange && lastUserTurnIndex >= 0) {
+        const artifactSnapshot = buildCurrentArtifactSnapshot()
+        fetch(`/api/live-interview/${sessionId}/grade-turn`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recentTurns: localTurnsWithNewTurn.slice(-4).map((t) => ({
+              role: t.role,
+              content: t.content,
+            })),
+            turnIndex: lastUserTurnIndex,
+            artifactSnapshot: artifactSnapshot ?? undefined,
+          }),
+        }).then((gradeRes) => {
+          if (!gradeRes.ok) console.error('Async voice grade-turn failed:', gradeRes.status)
+        }).catch((err) => {
+          console.error('Async voice grade-turn failed:', err)
+        })
+      }
+    }).catch((err) => {
+      console.error('Failed to persist voice turn:', err)
+    })
 
     const CLOSING_PHRASES = ["wrap up", "stop here", "covered good ground", "have what i need", "call it", "good session", "shall we stop", "want to stop"]
     const lower = cleanContent.toLowerCase()
@@ -768,24 +965,13 @@ export default function SessionPage({
     }
 
     if (role === 'user' && cleanContent) {
-      const artifactSnapshot = centerMode !== 'orb' ? {
-        type: centerMode as 'canvas' | 'editor',
-        ...(centerMode === 'canvas' ? {
-          elementCount: canvasScene ? (canvasScene.elements as unknown[]).length : 0,
-          discipline: discipline ?? undefined,
-        } : {
-          code: currentCode,
-          language: currentLanguage,
-          runResult: lastRunResult,
-          discipline: discipline ?? undefined,
-        }),
-      } : undefined
+      const artifactSnapshot = buildCurrentArtifactSnapshot()
 
       const turnId = turn.id
 
-      // turn_index for dedup: this user turn is being appended at position `totalTurns`
-      // (the server stores zero-indexed turns; totalTurns increments after this fetch).
-      const userTurnIndex = totalTurns
+      // turn_index for dedup/credit: this user turn is being appended at this
+      // position in the local transcript.
+      const userTurnIndex = turnIndex
 
       fetch(`/api/live-interview/${sessionId}/analyze`, {
         method: 'POST',
@@ -804,16 +990,12 @@ export default function SessionPage({
           }))
         }
         if (data?.artifactSignal) {
-          setArtifactSignals(prev => [
-            { id: crypto.randomUUID(), text: data.artifactSignal, time: Date.now() },
-            ...prev.slice(0, 9),
-          ])
           // Patch the turn bubble with the artifact signal
           setTurns(prev => prev.map(t => t.id === turnId ? { ...t, artifactSignal: data.artifactSignal } : t))
         }
       }).catch(() => {})
     }
-  }, [sessionId, router, centerMode, canvasScene, currentCode, currentLanguage, lastRunResult, discipline])
+  }, [sessionId, router, totalTurns, buildCurrentArtifactSnapshot, turns])
 
   const handleAgentSpeaking = useCallback(() => {
     setHatchState('speaking')
@@ -856,7 +1038,7 @@ export default function SessionPage({
         const hatchReply: TranscriptTurn = {
           id: crypto.randomUUID(),
           role: 'hatch',
-          content: "Hold on — you jumped straight to a solution. What's the actual problem here?",
+          content: "Hold on - you jumped straight to a solution. What's the actual problem here?",
           source: 'chat',
         }
         setTurns((prev) => [...prev, hatchReply])
@@ -868,10 +1050,14 @@ export default function SessionPage({
     }
 
     try {
+      const artifactSnapshot = buildCurrentArtifactSnapshot()
       const res = await fetch(`/api/live-interview/${sessionId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({
+          message: text,
+          artifactSnapshot: artifactSnapshot ?? undefined,
+        }),
       })
       if (res.ok) {
         const { reply } = await res.json()
@@ -883,18 +1069,136 @@ export default function SessionPage({
         }
         setTurns((prev) => [...prev, hatchTurn])
         setTotalTurns((prev) => prev + 1)
-      } else if (res.status === 410) {
-        setError('This session has ended.')
       } else {
-        setError('Failed to send message. Please try again.')
+        setError(res.status === 410 ? 'This session has ended.' : await liveInterviewErrorMessage(res))
       }
     } catch {
-      setError('Network error — check your connection.')
+      setError('Network error - check your connection.')
     } finally {
       setHatchState('idle')
       setIsThinking(false)
     }
-  }, [sessionId])
+  }, [buildCurrentArtifactSnapshot, sessionId])
+
+  const requestHatchFeeler = useCallback(async (idleSeconds: number) => {
+    if (interviewPhase !== 'active' || isThinking || isChatSending || isEnding) return
+
+    const now = Date.now()
+    if (now - lastFeelerAtRef.current < IDLE_FEELER_COOLDOWN_MS) return
+    lastFeelerAtRef.current = now
+
+    if (IS_MOCK) {
+      const mockReply = "Still with me? Want a hint, a minute to think, or a quick break?"
+      setTurns((prev) => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'hatch',
+        content: mockReply,
+        source: 'chat',
+      }])
+      setTotalTurns((prev) => prev + 1)
+      setCurrentCaption(mockReply)
+      setIsChatOpen(true)
+      return
+    }
+
+    setHatchState('thinking')
+    setIsThinking(true)
+
+    try {
+      const artifactSnapshot = buildCurrentArtifactSnapshot()
+      const res = await fetch(`/api/live-interview/${sessionId}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'feeler',
+          idleSeconds,
+          artifactSnapshot: artifactSnapshot ?? undefined,
+        }),
+      })
+
+      if (!res.ok) return
+
+      const { reply } = await res.json()
+      if (!reply) return
+
+      const hatchTurn: TranscriptTurn = {
+        id: crypto.randomUUID(),
+        role: 'hatch',
+        content: reply,
+        source: 'chat',
+      }
+      setTurns((prev) => [...prev, hatchTurn])
+      setTotalTurns((prev) => prev + 1)
+      setCurrentCaption(reply)
+      setIsChatOpen(true)
+    } catch {
+      // Silent feelers should never interrupt the interview with an error toast.
+    } finally {
+      setHatchState('idle')
+      setIsThinking(false)
+    }
+  }, [
+    buildCurrentArtifactSnapshot,
+    interviewPhase,
+    isChatSending,
+    isEnding,
+    isThinking,
+    sessionId,
+  ])
+
+  const handleQuickChatMessage = useCallback(async (text: string) => {
+    if (isChatSending || isThinking) return
+    setIsChatOpen(true)
+    setIsChatSending(true)
+    try {
+      await handleSendChatMessage(text)
+    } finally {
+      setIsChatSending(false)
+    }
+  }, [handleSendChatMessage, isChatSending, isThinking])
+
+  useEffect(() => {
+    if (idleFeelerTimerRef.current) {
+      clearTimeout(idleFeelerTimerRef.current)
+      idleFeelerTimerRef.current = null
+    }
+
+    const lastTurn = turns[turns.length - 1]
+    if (
+      interviewPhase !== 'active' ||
+      !lastTurn ||
+      lastTurn.role !== 'hatch' ||
+      isThinking ||
+      isChatSending ||
+      isEnding ||
+      chatInput.trim()
+    ) {
+      return
+    }
+
+    const sinceLastFeeler = Date.now() - lastFeelerAtRef.current
+    const cooldownDelay = Math.max(0, IDLE_FEELER_COOLDOWN_MS - sinceLastFeeler)
+    const delay = Math.max(IDLE_FEELER_DELAY_MS, cooldownDelay)
+
+    idleFeelerTimerRef.current = setTimeout(() => {
+      void requestHatchFeeler(Math.round(delay / 1000))
+    }, delay)
+
+    return () => {
+      if (idleFeelerTimerRef.current) {
+        clearTimeout(idleFeelerTimerRef.current)
+        idleFeelerTimerRef.current = null
+      }
+    }
+  }, [
+    chatInput,
+    interviewPhase,
+    isChatSending,
+    isEnding,
+    isThinking,
+    requestHatchFeeler,
+    turns,
+  ])
 
   const handleEndInterview = useCallback(() => {
     if (isEnding) return
@@ -913,17 +1217,17 @@ export default function SessionPage({
     try {
       // Save artifact snapshot before ending so the end route can grade it
       if (centerMode !== 'orb' && sessionId) {
-        const snapshot = centerMode === 'canvas'
-          ? { type: 'canvas' as const, elementCount: (canvasScene?.elements as unknown[])?.length ?? 0, discipline: discipline ?? undefined }
-          : { type: 'editor' as const, code: currentCode, language: currentLanguage, runResult: lastRunResult, discipline: discipline ?? undefined }
+        const snapshot = buildCurrentArtifactSnapshot()
         try {
-          await fetch(`/api/live-interview/${sessionId}/snapshot`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ artifactSnapshot: snapshot }),
-          })
+          if (snapshot) {
+            await fetch(`/api/live-interview/${sessionId}/snapshot`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ artifactSnapshot: snapshot }),
+            })
+          }
         } catch {
-          // Non-fatal — end still proceeds
+          // Non-fatal - end still proceeds
         }
       }
 
@@ -935,7 +1239,45 @@ export default function SessionPage({
       setIsEnding(false)
       setInterviewPhase('active')
     }
-  }, [sessionId, router, centerMode, canvasScene, currentCode, currentLanguage, lastRunResult, discipline])
+  }, [sessionId, router, centerMode, buildCurrentArtifactSnapshot])
+
+  const latestSignalFocus = useMemo<FocusSurfaceEvent | null>(() => {
+    const signal = recentSignals[0]
+    if (!signal) return null
+    return {
+      id: `local-signal-${signal.id}`,
+      kind: 'flow-signal',
+      title: `${FLOW_NAMES[signal.flowMove] ?? signal.flowMove} signal detected`,
+      body: signal.signal,
+    }
+  }, [recentSignals])
+
+  const scenarioFocus = useMemo<FocusSurfaceEvent | null>(() => {
+    if (!scenarioTitle && !discipline && !IS_MOCK) return null
+    return {
+      id: `scenario-${sessionId}`,
+      kind: 'challenge',
+      title: scenarioTitle ?? (IS_MOCK ? 'Mock interview challenge' : 'Interview challenge'),
+      body: discipline
+        ? DISCIPLINE_META[discipline].artifact === 'canvas'
+          ? `Keep the center of gravity on ${DISCIPLINE_META[discipline].label}. Hatch will read the canvas as part of the interview, so make the core artifact visible.`
+          : DISCIPLINE_META[discipline].artifact === 'editor'
+            ? `Keep the center of gravity on ${DISCIPLINE_META[discipline].label}. Hatch will read the editor and run signal as part of the interview.`
+            : `Keep the center of gravity on ${DISCIPLINE_META[discipline].label}. Hatch will watch how clearly you frame, explore options, compare tradeoffs, and make the call.`
+        : IS_MOCK
+        ? 'Keep the prompt visible while you practice. As grading signals arrive, the most useful challenge context will stay centered here.'
+        : 'Keep the challenge prompt visible while you work through the conversation.',
+    }
+  }, [discipline, scenarioTitle, sessionId])
+
+  const activeFocusEvent = remoteFocusEvent ?? latestSignalFocus ?? scenarioFocus
+  const activeFocusEventId = activeFocusEvent?.id ?? null
+  const visibleFocusEvent = activeFocusEvent?.id === focusDismissedId ? null : activeFocusEvent
+
+  useEffect(() => {
+    if (!activeFocusEventId || activeFocusEventId === focusDismissedId) return
+    setFocusCollapsed(false)
+  }, [activeFocusEventId, focusDismissedId])
 
   // ─── Loading ───
   if (interviewPhase === 'loading') {
@@ -1025,8 +1367,14 @@ export default function SessionPage({
     )
   }
 
-  // ─── Ready — modal overlay ───
+  // ─── Ready - modal overlay ───
   if (interviewPhase === 'ready') {
+    const readyCopy = discipline && DISCIPLINE_META[discipline].artifact === 'canvas'
+      ? 'Hatch will interview you while watching the canvas. Start with the first useful artifact, then talk through the tradeoffs.'
+      : discipline && DISCIPLINE_META[discipline].artifact === 'editor'
+        ? 'Hatch will interview you while watching the editor. Use the code or SQL pane as your working surface, then explain the choices you make.'
+        : 'Hatch will play the role of your interviewer. Speak naturally, make your reasoning visible, and commit to a clear answer.'
+
     return (
       <div
         className="fixed inset-0 flex items-center justify-center"
@@ -1085,9 +1433,13 @@ export default function SessionPage({
             <h2 className="font-headline text-xl font-bold" style={{ color: 'rgba(243,237,224,0.95)' }}>
               Ready to begin?
             </h2>
-            <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Hatch will play the role of your interviewer. Speak naturally — your microphone
-              activates when you start. Cover all four FLOW moves: Frame, List, Optimize, Win.
+            {scenarioTitle && (
+              <p className="font-label text-sm font-semibold" style={{ color: 'rgba(126,224,153,0.85)' }}>
+                {scenarioTitle}
+              </p>
+            )}
+            <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.52)' }}>
+              {readyCopy}
             </p>
           </div>
 
@@ -1106,8 +1458,8 @@ export default function SessionPage({
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
           >
             <span className="material-symbols-outlined text-[16px]" style={{ color: 'rgba(255,255,255,0.3)' }}>mic</span>
-            <span className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Your browser will request microphone access when you start.
+            <span className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Voice starts when available. Chat stays ready as the fallback.
             </span>
           </div>
 
@@ -1169,6 +1521,8 @@ export default function SessionPage({
       : ''
 
   const captionIsItalic = hatchState !== 'speaking'
+  const showTranscriptPanel = isTranscriptOpen && !isFocusMode && !isChatOpen
+  const showFlowPanel = isFlowPanelOpen && !isFocusMode
 
   return (
     <div
@@ -1209,7 +1563,7 @@ export default function SessionPage({
         }
       `}</style>
 
-      {/* Loop progress bar — shown when this session is part of a loop */}
+      {/* Loop progress bar - shown when this session is part of a loop */}
       {loopRounds.length > 0 && loopIdParam && (
         <LoopProgressBar
           loopTitle={companyName ? `${companyName} Loop` : 'Interview Loop'}
@@ -1234,7 +1588,7 @@ export default function SessionPage({
           style={{ background: 'rgba(201,147,58,0.15)', borderBottom: '1px solid rgba(201,147,58,0.25)' }}
         >
           <span className="font-label text-xs font-semibold" style={{ color: '#c9933a' }}>
-            Mock Mode — Voice disabled
+            Mock Mode - Voice disabled
           </span>
         </div>
       )}
@@ -1250,7 +1604,7 @@ export default function SessionPage({
         }}
       >
         {/* Left */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
             onClick={() => router.push('/live-interviews')}
             className="flex items-center justify-center rounded-full transition-colors"
@@ -1269,19 +1623,19 @@ export default function SessionPage({
 
           {companyName && (
             <span
-              className="rounded-full px-2.5 py-0.5 font-label text-xs font-semibold"
+              className="max-w-[120px] truncate rounded-full px-2.5 py-0.5 font-label text-xs font-semibold sm:max-w-none"
               style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}
             >
               {companyName}
             </span>
           )}
           {discipline && (
-            <span className="font-label text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            <span className="hidden font-label text-sm font-semibold sm:inline" style={{ color: 'rgba(255,255,255,0.7)' }}>
               {DISCIPLINE_META[discipline].label}
             </span>
           )}
           {roleName && (
-            <span className="font-label text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <span className="hidden font-label text-xs md:inline" style={{ color: 'rgba(255,255,255,0.45)' }}>
               · {roleName}
             </span>
           )}
@@ -1304,9 +1658,9 @@ export default function SessionPage({
           </div>
         </div>
 
-        {/* Center — Timer */}
+        {/* Center - Timer */}
         <div
-          className="rounded-full px-4 py-1 font-mono tabular-nums"
+          className="shrink-0 rounded-full px-3 py-1 font-mono tabular-nums sm:px-4"
           style={{
             fontSize: 20,
             fontWeight: 500,
@@ -1319,7 +1673,7 @@ export default function SessionPage({
         </div>
 
         {/* Right — FLOW mini-bars */}
-        <div className="flex items-center gap-4">
+        <div className="hidden items-center gap-4 sm:flex">
           {flowMoves.map(({ key, label }) => {
             const score = flowCoverage[key] ?? 0
             const color = FLOW_COLORS[key]
@@ -1385,51 +1739,45 @@ export default function SessionPage({
       )}
 
       {/* ── Body: 3-column ── */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
 
         {/* LEFT: Transcript (320px) */}
-        <div
-          className="shrink-0 flex flex-col overflow-hidden"
-          style={{
-            width: 320,
-            borderRight: '1px solid rgba(255,255,255,0.07)',
-          }}
-        >
-          {/* Header */}
-          <div className="shrink-0 px-4 pt-3 pb-2">
-            <span
-              className="font-label font-semibold tracking-widest uppercase"
-              style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
-            >
-              Transcript
-            </span>
-          </div>
-
-          {/* Turns */}
-          <div
-            ref={transcriptRef}
-            className="flex-1 overflow-y-auto px-4 pb-4"
-            style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}
+        <PresencePanel isOpen={showTranscriptPanel} className="hidden shrink-0 lg:flex">
+          <CollapsiblePanel
+            open
+            onOpenChange={setIsTranscriptOpen}
+            title="Transcript"
+            icon="notes"
+            className="h-full w-[320px] border-r border-white/10"
+            headerClassName="px-4 pt-3 pb-2 font-label text-[10.5px] font-semibold uppercase tracking-widest text-white/25 [&_button]:text-white/35 [&_button:hover]:bg-white/10"
+            bodyClassName="flex flex-col"
           >
-            {turns.length === 0 ? (
-              <p
-                className="font-body text-sm text-center mt-8"
-                style={{ color: 'rgba(255,255,255,0.2)' }}
-              >
-                Conversation will appear here
-              </p>
-            ) : (
-              turns.map((turn) => <TurnBubble key={turn.id} turn={turn} />)
-            )}
-          </div>
-        </div>
+            <div
+              ref={transcriptRef}
+              className="flex-1 overflow-y-auto px-4 pb-4"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}
+            >
+              {turns.length === 0 ? (
+                <p
+                  className="font-body text-sm text-center mt-8"
+                  style={{ color: 'rgba(255,255,255,0.2)' }}
+                >
+                  Conversation will appear here
+                </p>
+              ) : (
+                turns.map((turn) => <TurnBubble key={turn.id} turn={turn} />)
+              )}
+            </div>
+          </CollapsiblePanel>
+        </PresencePanel>
 
         {/* CENTER: Hatch orb / canvas / editor */}
         <div
           className="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
+          data-testid="live-interview-workspace"
           style={{ minWidth: 0 }}
         >
-          {/* Ambient radial glow — always visible */}
+          {/* Ambient radial glow - always visible */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -1459,11 +1807,22 @@ export default function SessionPage({
             </span>
           </div>
 
+          <div className="absolute left-1/2 top-14 z-20 w-[min(620px,calc(100%-32px))] -translate-x-1/2">
+            <FocusSurface
+              event={visibleFocusEvent}
+              collapsed={focusCollapsed}
+              onCollapsedChange={setFocusCollapsed}
+              onDismiss={() => {
+                if (activeFocusEvent) setFocusDismissedId(activeFocusEvent.id)
+              }}
+              tone="dark"
+            />
+          </div>
+
           {centerMode === 'orb' && (
-            /* Hatch Orb — existing content, unchanged */
             <div className="relative z-10 flex flex-col items-center gap-4">
               <div style={{ animation: 'floatHatchAnim 5s ease-in-out infinite' }}>
-                <HatchOrb state={hatchState} />
+                <HatchConversationMascot state={hatchState === 'speaking' ? 'speaking' : 'listening'} />
               </div>
               <span
                 className="font-label uppercase tracking-widest text-[12px]"
@@ -1498,7 +1857,7 @@ export default function SessionPage({
           )}
 
           {centerMode === 'canvas' && (
-            <div className="absolute inset-0">
+            <div className="absolute inset-0" data-testid="live-interview-canvas">
               <ExcalidrawCanvas
                 sessionId={sessionId}
                 onSnapshot={handleCanvasSnapshot}
@@ -1508,19 +1867,20 @@ export default function SessionPage({
           )}
 
           {centerMode === 'editor' && (
-            <div className="absolute inset-0 flex flex-col">
+            <div className="absolute inset-0 flex flex-col" data-testid="live-interview-editor">
               <MonacoCodeEditor
                 value={currentCode}
                 onChange={(val) => setCurrentCode(val ?? '')}
                 language={currentLanguage}
                 theme="vs-dark"
                 height="100%"
-                onPaste={() => {}}
+                onPaste={(event) => setEditorPasteEvents((prev) => [...prev.slice(-4), event])}
+                onCursorMove={(line) => setEditorCursorLine(line)}
               />
             </div>
           )}
 
-          {/* Hatch pip — shown when workspace is active */}
+          {/* Hatch pip - shown when workspace is active */}
           {centerMode !== 'orb' && (
             <div
               className="absolute bottom-4 left-4 z-20 flex items-center justify-center"
@@ -1548,176 +1908,152 @@ export default function SessionPage({
         </div>
 
         {/* RIGHT: FLOW HUD (280px) */}
-        <div
-          className="shrink-0 flex flex-col overflow-hidden"
-          style={{
-            width: 280,
-            background: 'rgba(0,0,0,0.15)',
-            borderLeft: '1px solid rgba(255,255,255,0.07)',
-          }}
-        >
-          {/* FLOW Coverage header with collapse toggle */}
-          <div className="shrink-0 px-4 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <div className="flex items-center justify-between mb-3">
-              <span
-                className="font-label font-semibold tracking-widest uppercase"
-                style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
-              >
-                FLOW Coverage
-              </span>
-              <button
-                onClick={() => setIsFlowHudCollapsed(c => !c)}
-                className="flex items-center justify-center rounded w-5 h-5 transition-colors"
-                style={{ color: 'rgba(255,255,255,0.25)' }}
-                aria-label={isFlowHudCollapsed ? 'Expand FLOW HUD' : 'Collapse FLOW HUD'}
-                aria-expanded={!isFlowHudCollapsed}
-              >
-                <span className="material-symbols-outlined text-[14px]">
-                  {isFlowHudCollapsed ? 'expand_more' : 'expand_less'}
-                </span>
-              </button>
-            </div>
-
-            {!isFlowHudCollapsed && (
-              <>
-                <div className="flex flex-col gap-3">
-                  {flowMoves.map(({ key, name }) => {
-                    const score = flowCoverage[key] ?? 0
-                    const pct = Math.round(score * 100)
-                    const color = FLOW_COLORS[key]
-                    const active = score > 0.5
-                    return (
-                      <div key={key}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-[14px]" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
-                              {key === 'frame' ? 'frame_inspect' : key === 'list' ? 'list' : key === 'optimize' ? 'tune' : 'emoji_events'}
-                            </span>
-                            <span className="font-label text-[12px] font-semibold" style={{ color: active ? 'rgba(243,237,224,0.85)' : 'rgba(255,255,255,0.35)' }}>
-                              {name}
-                            </span>
-                          </div>
-                          <span className="font-label text-[11px] tabular-nums" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
-                            {pct}%
+        <PresencePanel isOpen={showFlowPanel} className="hidden shrink-0 lg:flex">
+          <CollapsiblePanel
+            open
+            onOpenChange={setIsFlowPanelOpen}
+            title="FLOW Coverage"
+            icon="analytics"
+            className="h-full w-[280px] border-l border-white/10 bg-black/15"
+            headerClassName="px-4 pt-4 pb-3 font-label text-[10.5px] font-semibold uppercase tracking-widest text-white/25 [&_button]:text-white/35 [&_button:hover]:bg-white/10"
+            bodyClassName="flex flex-col"
+          >
+            <div className="shrink-0 px-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="flex flex-col gap-3">
+                {flowMoves.map(({ key, name }) => {
+                  const score = flowCoverage[key] ?? 0
+                  const pct = Math.round(score * 100)
+                  const color = FLOW_COLORS[key]
+                  const active = score > 0.5
+                  return (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[14px]" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
+                            {key === 'frame' ? 'frame_inspect' : key === 'list' ? 'list' : key === 'optimize' ? 'tune' : 'emoji_events'}
+                          </span>
+                          <span className="font-label text-[12px] font-semibold" style={{ color: active ? 'rgba(243,237,224,0.85)' : 'rgba(255,255,255,0.35)' }}>
+                            {name}
                           </span>
                         </div>
-                        <div
-                          className="w-full rounded-full overflow-hidden"
-                          style={{ height: 5, background: 'rgba(255,255,255,0.07)' }}
-                        >
-                          <div
-                            className="h-full rounded-full transition-all duration-700"
-                            style={{
-                              width: `${pct}%`,
-                              background: color,
-                              boxShadow: active ? `0 0 8px ${color}88` : 'none',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Overall score card */}
-                <div
-                  className="mt-4 rounded-xl p-3 flex items-center justify-between"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div>
-                    <p className="font-label text-[11px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                      Overall signal
-                    </p>
-                    <p
-                      className="font-label text-[12px] font-semibold mt-0.5"
-                      style={{ color: overallScore >= 60 ? '#7ee099' : overallScore >= 35 ? '#c9933a' : 'rgba(255,255,255,0.4)' }}
-                    >
-                      {overallScore >= 60 ? 'Strong' : overallScore >= 35 ? 'Building' : 'Developing'}
-                    </p>
-                  </div>
-                  <span
-                    className="font-headline font-bold"
-                    style={{ fontSize: 28, color: 'rgba(243,237,224,0.9)' }}
-                  >
-                    {overallScore}
-                    <span className="font-label font-normal text-[13px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                      /100
-                    </span>
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="material-symbols-outlined text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>swap_horiz</span>
-                  <span className="font-label text-[10.5px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                    {totalTurns} exchanges
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Recent signals — scrollable */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
-            <span
-              className="font-label font-semibold tracking-widest uppercase mb-2 block"
-              style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
-            >
-              Recent Signals
-            </span>
-
-            {recentSignals.length === 0 ? (
-              <p
-                className="font-body text-[12px] text-center mt-4"
-                style={{ color: 'rgba(255,255,255,0.2)' }}
-              >
-                Signals appear as you answer
-              </p>
-            ) : (
-              recentSignals.map((s, i) => (
-                <div
-                  key={s.id}
-                  className="rounded-[10px] p-3 mb-2"
-                  style={{
-                    background: `${FLOW_COLORS[s.flowMove] ?? '#4a7c59'}12`,
-                    border: `1px solid ${FLOW_COLORS[s.flowMove] ?? '#4a7c59'}25`,
-                    animation: 'fadeUp 0.3s ease-out',
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: FLOW_COLORS[s.flowMove] ?? '#4a7c59' }} />
-                      <span
-                        className="font-label text-[11px] font-semibold uppercase tracking-wider"
-                        style={{ color: FLOW_COLORS[s.flowMove] ?? '#4a7c59' }}
-                      >
-                        {FLOW_NAMES[s.flowMove] ?? s.flowMove}
-                      </span>
-                      {s.competency && (
-                        <span className="font-label text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                          · {COMPETENCY_LABELS[s.competency] ?? s.competency}
+                        <span className="font-label text-[11px] tabular-nums" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
+                          {pct}%
                         </span>
-                      )}
+                      </div>
+                      <AnimatedProgress
+                        value={pct}
+                        state={active ? 'complete' : pct > 0 ? 'active' : 'idle'}
+                        trackClassName="h-[5px] bg-white/10"
+                        barStyle={{
+                          background: color,
+                          boxShadow: active ? `0 0 8px ${color}88` : 'none',
+                        }}
+                      />
                     </div>
-                    <span className="material-symbols-outlined text-[14px]" style={{ color: '#7ee099' }}>thumb_up</span>
-                  </div>
-                  <p className="font-body text-[12px] leading-[1.5]" style={{ color: 'rgba(243,237,224,0.7)' }}>
-                    {s.signal}
+                  )
+                })}
+              </div>
+
+              {/* Overall score card */}
+              <div
+                className="mt-4 rounded-xl p-3 flex items-center justify-between"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                <div>
+                  <p className="font-label text-[11px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    Overall signal
                   </p>
-                  <p className="font-label text-[11px] mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                    {totalTurns} exchanges · {Math.round((Date.now() - s.time) / 60000)}m ago
+                  <p
+                    className="font-label text-[12px] font-semibold mt-0.5"
+                    style={{ color: overallScore >= 60 ? '#7ee099' : overallScore >= 35 ? '#c9933a' : 'rgba(255,255,255,0.4)' }}
+                  >
+                    {overallScore >= 60 ? 'Strong' : overallScore >= 35 ? 'Building' : 'Developing'}
                   </p>
                 </div>
-              ))
-            )}
-
-            {/* Prior round recap — only visible in loop sessions */}
-            {previousRound && (
-              <div className="mt-3">
-                <PriorRoundRecap previousRound={previousRound} />
+                <span
+                  className="font-headline font-bold"
+                  style={{ fontSize: 28, color: 'rgba(243,237,224,0.9)' }}
+                >
+                  {overallScore}
+                  <span className="font-label font-normal text-[13px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    /100
+                  </span>
+                </span>
               </div>
-            )}
-          </div>
-        </div>
+
+              <div className="flex items-center gap-2 mt-2">
+                <span className="material-symbols-outlined text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>swap_horiz</span>
+                <span className="font-label text-[10.5px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                  {totalTurns} exchanges
+                </span>
+              </div>
+            </div>
+
+            {/* Recent signals - scrollable */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
+              <span
+                className="font-label font-semibold tracking-widest uppercase mb-2 block"
+                style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
+              >
+                Recent Signals
+              </span>
+
+              {recentSignals.length === 0 ? (
+                <p
+                  className="font-body text-[12px] text-center mt-4"
+                  style={{ color: 'rgba(255,255,255,0.2)' }}
+                >
+                  Signals appear as you answer
+                </p>
+              ) : (
+                recentSignals.map((s) => (
+                  <motion.div
+                    key={s.id}
+                    layout
+                    className="rounded-[10px] p-3 mb-2"
+                    style={{
+                      background: `${FLOW_COLORS[s.flowMove] ?? '#4a7c59'}12`,
+                      border: `1px solid ${FLOW_COLORS[s.flowMove] ?? '#4a7c59'}25`,
+                    }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: FLOW_COLORS[s.flowMove] ?? '#4a7c59' }} />
+                        <span
+                          className="font-label text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: FLOW_COLORS[s.flowMove] ?? '#4a7c59' }}
+                        >
+                          {FLOW_NAMES[s.flowMove] ?? s.flowMove}
+                        </span>
+                        {s.competency && (
+                          <span className="font-label text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                            · {COMPETENCY_LABELS[s.competency] ?? s.competency}
+                          </span>
+                        )}
+                      </div>
+                      <span className="material-symbols-outlined text-[14px]" style={{ color: '#7ee099' }}>thumb_up</span>
+                    </div>
+                    <p className="font-body text-[12px] leading-[1.5]" style={{ color: 'rgba(243,237,224,0.7)' }}>
+                      {s.signal}
+                    </p>
+                    <p className="font-label text-[11px] mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                      {totalTurns} exchanges · {Math.round((Date.now() - s.time) / 60000)}m ago
+                    </p>
+                  </motion.div>
+                ))
+              )}
+
+              {/* Prior round recap - only visible in loop sessions */}
+              {previousRound && (
+                <div className="mt-3">
+                  <PriorRoundRecap previousRound={previousRound} />
+                </div>
+              )}
+            </div>
+          </CollapsiblePanel>
+        </PresencePanel>
       </div>
 
       {/* ── Controls Bar (96px) ── */}
@@ -1730,7 +2066,7 @@ export default function SessionPage({
           borderTop: '1px solid rgba(255,255,255,0.07)',
         }}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex max-w-full items-center gap-3 overflow-x-auto px-4">
           {isVoiceAvailable && (
             <CtrlBtn
               icon={isMuted ? 'mic_off' : 'mic'}
@@ -1742,8 +2078,8 @@ export default function SessionPage({
 
           <CtrlBtn
             icon="pause"
-            label="Pause"
-            onClick={() => {}}
+            label="Break"
+            onClick={() => { void handleQuickChatMessage('Can we take a quick break?') }}
           />
 
           <CtrlBtn
@@ -1754,27 +2090,62 @@ export default function SessionPage({
           />
 
           <CtrlBtn
+            icon="notes"
+            label="Transcript"
+            active={isTranscriptOpen && !isFocusMode}
+            onClick={() => {
+              setIsFocusMode(false)
+              setIsTranscriptOpen((open) => !open)
+            }}
+          />
+
+          <CtrlBtn
+            icon="analytics"
+            label="FLOW"
+            testId="live-interview-mode-flow"
+            active={showFlowPanel}
+            onClick={() => {
+              setIsFocusMode(false)
+              setIsFlowPanelOpen((open) => !open)
+            }}
+          />
+
+          <CtrlBtn
             icon="chat"
             label="Chat"
+            testId="live-interview-mode-chat"
             active={isChatOpen}
             onClick={() => setIsChatOpen((o) => !o)}
           />
 
-          {/* Canvas button — system_design or data_modeling rounds */}
+          <CtrlBtn
+            icon="center_focus_strong"
+            label="Focus"
+            testId="live-interview-mode-focus"
+            active={isFocusMode}
+            onClick={() => {
+              setIsFocusMode((focused) => !focused)
+              if (activeFocusEvent) setFocusDismissedId(null)
+            }}
+          />
+
+          {/* Canvas button - system_design or data_modeling rounds */}
           {(discipline === 'system_design' || discipline === 'data_modeling') && (
             <CtrlBtn
               icon="draw"
               label={centerMode === 'canvas' ? 'Hide Canvas' : 'Canvas'}
+              testId="live-interview-mode-canvas"
               active={centerMode === 'canvas'}
               onClick={() => setCenterMode(m => m === 'canvas' ? 'orb' : 'canvas')}
             />
           )}
 
-          {/* Editor button — coding + sql rounds */}
+          {/* Editor button - coding + sql rounds */}
           {(discipline === 'coding' || discipline === 'sql') && (
             <CtrlBtn
               icon={discipline === 'sql' ? 'terminal' : 'code'}
               label={centerMode === 'editor' ? 'Hide Editor' : 'Editor'}
+              testId="live-interview-mode-editor"
               active={centerMode === 'editor'}
               onClick={() => setCenterMode(m => m === 'editor' ? 'orb' : 'editor')}
             />
@@ -1789,6 +2160,8 @@ export default function SessionPage({
           <CtrlBtn
             icon="call_end"
             label="End"
+            ariaLabel="End interview"
+            testId="live-interview-end"
             danger
             large
             onClick={handleEndInterview}
@@ -1797,17 +2170,19 @@ export default function SessionPage({
       </div>
 
       {/* ── Chat Slide-in Panel (340px) ── */}
-      <div
+      <PresencePanel
+        isOpen={isChatOpen}
+        data-testid="live-interview-chat-panel"
         className="fixed top-0 right-0 h-full flex flex-col z-40"
+        initial={{ opacity: 0, x: 36 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 36 }}
         style={{
           width: 340,
           background: 'rgba(13,20,16,0.97)',
           backdropFilter: 'blur(16px)',
           borderLeft: '1px solid rgba(255,255,255,0.07)',
-          transform: isChatOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s ease',
         }}
-        aria-hidden={!isChatOpen}
       >
         {/* Chat header */}
         <div
@@ -1871,7 +2246,7 @@ export default function SessionPage({
                           }
                     }
                   >
-                    {turn.role === 'hatch' ? <Md>{turn.content}</Md> : turn.content}
+                    {turn.role === 'hatch' ? <Md variant="chat">{turn.content}</Md> : turn.content}
                   </div>
                 </div>
               ))}
@@ -1910,15 +2285,17 @@ export default function SessionPage({
 
         {/* Suggestion chips */}
         <div className="shrink-0 flex gap-2 flex-wrap px-4 pb-2">
-          {['Repeat the question', 'Give me a hint', 'Rephrase my answer'].map((chip) => (
+          {["I'm here", 'Give me a hint', 'I need a minute', 'Can we take a quick break?'].map((chip) => (
             <button
               key={chip}
-              onClick={() => handleSendChatMessage(chip)}
+              type="button"
+              disabled={isChatSending || isThinking}
+              onClick={() => { void handleQuickChatMessage(chip) }}
               className="rounded-full px-3 py-1 font-label text-[11px] transition-colors"
               style={{
                 background: 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(255,255,255,0.09)',
-                color: 'rgba(255,255,255,0.5)',
+                color: isChatSending || isThinking ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.5)',
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.11)' }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)' }}
@@ -1943,6 +2320,7 @@ export default function SessionPage({
         >
           <input
             ref={chatInputRef}
+            data-testid="live-interview-chat-input"
             type="text"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
@@ -1957,6 +2335,7 @@ export default function SessionPage({
           />
           <button
             type="submit"
+            data-testid="live-interview-chat-send"
             disabled={isChatSending || !chatInput.trim()}
             className="flex items-center justify-center rounded-full disabled:opacity-40"
             style={{ width: 38, height: 38, background: '#4a7c59' }}
@@ -1965,21 +2344,22 @@ export default function SessionPage({
             <span className="material-symbols-outlined text-[18px]" style={{ color: '#fff' }}>send</span>
           </button>
         </form>
-      </div>
+      </PresencePanel>
 
-      {/* Deepgram Voice */}
-      <DeepgramVoiceSession
-        sessionId={sessionId}
-        systemPrompt={systemPrompt}
-        isMuted={isMuted}
-        onTranscript={handleTranscript}
-        onAgentSpeaking={handleAgentSpeaking}
-        onAgentDoneSpeaking={handleAgentDoneSpeaking}
-        onConnected={handleConnected}
-        onError={handleVoiceError}
-        onAnalyserReady={(analyser) => talkingHeadRef.current?.setAnalyser(analyser)}
-        disabled={IS_MOCK || interviewPhase !== 'active'}
-      />
+      {ENABLE_DIRECT_VOICE_AGENT && (
+        <DeepgramVoiceSession
+          ref={voiceSessionRef}
+          sessionId={sessionId}
+          isMuted={isMuted}
+          onTranscript={handleTranscript}
+          onAgentSpeaking={handleAgentSpeaking}
+          onAgentDoneSpeaking={handleAgentDoneSpeaking}
+          onConnected={handleConnected}
+          onError={handleVoiceError}
+          onAnalyserReady={(analyser) => talkingHeadRef.current?.setAnalyser(analyser)}
+          disabled={IS_MOCK || interviewPhase !== 'active'}
+        />
+      )}
 
       {/* Interview limit modal */}
       {showLimitModal && (

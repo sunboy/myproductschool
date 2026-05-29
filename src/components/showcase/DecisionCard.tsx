@@ -1,5 +1,7 @@
 'use client'
 import type { AutopsyDecision } from '@/lib/types'
+import { coerceDifficulty } from '@/lib/practice/difficulty'
+import type { PracticeDifficulty } from '@/lib/practice/difficulty'
 
 interface DecisionCardProps {
   decision: AutopsyDecision
@@ -41,16 +43,17 @@ const AREA_ICONS: Record<string, string> = {
   'AI Growth': 'auto_awesome',
 }
 
-const DIFFICULTY_STYLES: Record<string, string> = {
-  warmup: 'bg-primary-container text-on-primary-container',
-  standard: 'bg-secondary-container text-on-secondary-container',
-  advanced: 'bg-tertiary-container text-on-tertiary-container',
+const DIFFICULTY_STYLES: Record<PracticeDifficulty, string> = {
+  easy: 'bg-primary-container text-on-primary-container',
+  medium: 'bg-secondary-container text-on-secondary-container',
+  hard: 'bg-tertiary-container text-on-tertiary-container',
 }
 
 export function DecisionCard({ decision, isSelected, onClick }: DecisionCardProps) {
   const areaColor = AREA_COLORS[decision.area] ?? 'bg-surface-container-high'
   const areaIcon = decision.icon ?? AREA_ICONS[decision.area] ?? 'lightbulb'
-  const difficultyStyle = DIFFICULTY_STYLES[decision.difficulty] ?? DIFFICULTY_STYLES.standard
+  const canonicalDiff = coerceDifficulty(decision.difficulty)
+  const difficultyStyle = (canonicalDiff ? DIFFICULTY_STYLES[canonicalDiff] : null) ?? DIFFICULTY_STYLES.medium
 
   return (
     <button

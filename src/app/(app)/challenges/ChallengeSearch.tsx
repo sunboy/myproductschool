@@ -25,7 +25,7 @@ export function ChallengeSearch({ total }: { total: number }) {
   }
 
   return (
-    <div className="relative">
+    <div className="relative w-full sm:w-auto">
       <span
         className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]"
         style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
@@ -37,7 +37,7 @@ export function ChallengeSearch({ total }: { total: number }) {
         defaultValue={currentValue}
         onChange={onChange}
         placeholder={`Search ${total} challenges…`}
-        className="pl-9 pr-4 py-2.5 rounded-full bg-surface border border-outline-variant text-sm font-body text-on-surface outline-none focus:border-primary min-w-[220px]"
+        className="w-full min-w-0 rounded-full border border-outline-variant bg-surface py-2.5 pl-9 pr-4 font-body text-sm text-on-surface outline-none focus:border-primary sm:min-w-[220px]"
       />
     </div>
   )

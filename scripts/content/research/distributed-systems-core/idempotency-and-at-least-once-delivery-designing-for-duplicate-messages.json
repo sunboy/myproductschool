@@ -1,0 +1,382 @@
+{
+  "facts": [
+    {
+      "fact": "Kafka guarantees at-least-once delivery by default; consumers must implement idempotency to achieve exactly-once semantics",
+      "source": "https://docs.confluent.io/kafka/design/delivery-semantics.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Stripe's idempotency keys use V4 UUIDs and are valid for 24 hours; subsequent requests with the same key return the cached result including 500 errors",
+      "source": "https://stripe.com/blog/idempotency",
+      "published": "2023"
+    },
+    {
+      "fact": "Lamport timestamps provide a total ordering of events in distributed systems but cannot distinguish between concurrent events; vector clocks can detect concurrency",
+      "source": "https://amturing.acm.org/p558-lamport.pdf",
+      "published": "1978"
+    },
+    {
+      "fact": "In Raft consensus, a follower expects a heartbeat from the leader within a timeout (typically 150-300ms); if no heartbeat arrives, the follower becomes a candidate and initiates leader election",
+      "source": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "published": "2023"
+    },
+    {
+      "fact": "A log entry in Raft is committed once replicated on a majority of servers; the leader will never overwrite a committed log entry even if its local log becomes stale during an election",
+      "source": "https://arorashu.github.io/posts/raft.html",
+      "published": "2023"
+    },
+    {
+      "fact": "CockroachDB uses hybrid logical clocks (HLC) for transaction ordering and requires clock skew between nodes to be < 500ms; nodes with >80% clock skew against a quorum crash immediately",
+      "source": "https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer",
+      "published": "2024"
+    },
+    {
+      "fact": "AWS SQS standard queues deliver messages at-least-once; FIFO queues with MessageDeduplicationId prevent duplicates within a 5-minute deduplication window",
+      "source": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Kafka transactions enable atomic writes to multiple partitions and commit consumer offsets atomically; transactions require a transactional.id persistent across producer restarts to prevent zombie producers",
+      "source": "https://developer.confluent.io/courses/architecture/transactions/",
+      "published": "2023"
+    },
+    {
+      "fact": "DynamoDB's conditional writes (attribute_not_exists()) combined with TTL provide a cost-effective way to implement idempotency stores; expired items are automatically deleted without consuming write capacity",
+      "source": "https://medium.com/@aaron.rose.tx/the-secret-life-of-aws-the-idempotency-key-amazon-dynamodb-72b4304d43ac",
+      "published": "2026"
+    },
+    {
+      "fact": "Google Chubby lock service exemplifies Paxos consensus for distributed coordination; maintains consistent metadata by ensuring only one client can hold a particular lock even with network failures",
+      "source": "https://www.designgurus.io/blog/consistency-patterns-distributed-systems",
+      "published": "2024"
+    },
+    {
+      "fact": "In Lamport's algorithm, when a process sends a message, it includes its timestamp; the receiving process sets its own timestamp to max(its_clock, received_clock) + 1",
+      "source": "https://www.baeldung.com/cs/lamport-clock",
+      "published": "2023"
+    },
+    {
+      "fact": "Vector clocks require O(N) space for N processes and must be sent with each message; Lamport clocks require only one integer per event",
+      "source": "https://sookocheff.com/post/time/vector-clocks/",
+      "published": "2023"
+    },
+    {
+      "fact": "The idempotent consumer pattern stores processed message IDs in a database to detect and discard duplicates; the eager approach stores the ID before handling, the lazy approach stores it after",
+      "source": "https://microservices.io/patterns/communication-style/idempotent-consumer.html",
+      "published": "2023"
+    },
+    {
+      "fact": "Strong consistency requires acknowledging writes from all replicas before confirming to the client; global operations become as slow as the slowest network path (cross-continental latency)",
+      "source": "https://cloud.google.com/blog/products/databases/why-you-should-pick-strong-consistency-whenever-possible",
+      "published": "2024"
+    },
+    {
+      "fact": "Eventual consistency guarantees nodes will eventually converge to the latest state; replicas are updated asynchronously and clients may temporarily receive stale data",
+      "source": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "published": "2024"
+    },
+    {
+      "fact": "Kafka's at-least-once consumer semantics work by committing offsets only after processing messages; if the consumer crashes before committing, the next consumer may process the same messages again",
+      "source": "https://oneuptime.com/blog/post/2026-01-27-kafka-consumers-at-least-once/view",
+      "published": "2026"
+    }
+  ],
+  "examples": [
+    {
+      "description": "Stripe payment processing uses idempotency keys to ensure that network retries don't create duplicate charges; clients generate unique IDs for each payment request and Stripe caches the response for 24 hours",
+      "company": "Stripe",
+      "domain": "Payment processing",
+      "impact": "Prevents duplicate transactions in production payment systems"
+    },
+    {
+      "description": "Netflix uses DynamoDB with conditional writes to implement idempotency for API calls; processes that timeout and retry use the same idempotency key to detect and skip duplicate processing",
+      "company": "Netflix",
+      "domain": "Streaming & API orchestration",
+      "impact": "Eliminates duplicate state updates during transient network failures"
+    },
+    {
+      "description": "Confluent documented a tier-1 bank optimizing Kafka for trading systems where p99 latency was critical; they achieved ultra-low latency by tuning partition leadership and replication settings",
+      "company": "Fortune 500 Bank (via Confluent)",
+      "domain": "High-frequency trading",
+      "impact": "Sub-millisecond message delivery guarantees for financial transactions"
+    },
+    {
+      "description": "CockroachDB uses hybrid logical clocks to order transactions across geographically distributed nodes; when clock skew exceeds 80% of the allowed 500ms maximum, nodes crash to preserve consistency",
+      "company": "Cockroach Labs (CockroachDB)",
+      "domain": "Distributed SQL database",
+      "impact": "Ensures linearizable transaction ordering without full time synchronization"
+    },
+    {
+      "description": "Meta Ads platform handles event deduplication to prevent double-counting user interactions; duplicate detection is critical for accurate billing in their ad system",
+      "company": "Meta",
+      "domain": "Advertising",
+      "impact": "Prevents revenue loss from miscounted impressions and clicks"
+    },
+    {
+      "description": "Amazon SQS FIFO queues with MessageDeduplicationId prevent duplicate message delivery within a 5-minute window; enables exactly-once processing semantics for Lambda functions",
+      "company": "Amazon Web Services",
+      "domain": "Serverless message processing",
+      "impact": "Eliminates duplicate Lambda invocations for the same SQS message"
+    },
+    {
+      "description": "Allegro optimized their Kafka cluster and found median produce latency was 5ms but p99 latency was 1 second; after migrating to XFS filesystem, they reduced requests exceeding 65ms by 82%",
+      "company": "Allegro (Polish e-commerce)",
+      "domain": "Event streaming",
+      "impact": "Eliminated tail latency spikes that were causing user-facing incidents"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Idempotency keys are like a recipe instruction that says 'if you've already added salt, don't add it again' — the operation itself (adding salt) is repeated, but the side effect (increased saltiness) happens exactly once",
+      "concept": "Idempotent message processing"
+    },
+    {
+      "analogy": "Lamport timestamps are like numbering pages in a book sequentially; if you know page 5 comes before page 7, you know the causal order. Vector clocks are like footnotes on each page showing which other pages it references — they reveal not just order but also independence",
+      "concept": "Logical clocks for causal ordering"
+    },
+    {
+      "analogy": "Raft leader election is like a classroom where the teacher (leader) sends regular signals (heartbeats) to students (followers); if a student doesn't hear from the teacher for too long, they raise their hand to nominate themselves as the new teacher, and everyone votes",
+      "concept": "Raft consensus protocol"
+    },
+    {
+      "analogy": "At-least-once delivery is like a phone call where the receiver always says 'I got your message' but the line is bad, so you might say the same thing twice and both times they hear it; exactly-once is having a transcript that says 'you already told me that'",
+      "concept": "Message delivery semantics"
+    },
+    {
+      "analogy": "Strong consistency is like all employees in a building sharing a single printed schedule on the wall — if it changes, everyone must wait for the update before acting. Eventual consistency is like each employee having their own calendar that syncs overnight — they may act on stale info temporarily",
+      "concept": "Consistency models"
+    },
+    {
+      "analogy": "Clock skew in distributed systems is like students arriving at a meeting with watches that don't match; you can't tell who arrived first by their watch times, so you need a separate agreement mechanism (Lamport timestamps, Raft) to establish order",
+      "concept": "Ordering without synchronized clocks"
+    },
+    {
+      "analogy": "A commit in Raft is like a bank transaction; it only becomes permanent once a majority of branches confirm they've recorded it — no single branch can unilaterally erase a committed transaction",
+      "concept": "Committed log entries in Raft"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Raft follower heartbeat timeout",
+      "value": "150-300 milliseconds",
+      "source": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "context": "If no heartbeat from leader arrives within this window, follower initiates election"
+    },
+    {
+      "metric": "Stripe idempotency key expiration",
+      "value": "24 hours",
+      "source": "https://stripe.com/blog/idempotency",
+      "context": "Keys expire after 24 hours; clients must resubmit if retrying beyond this window"
+    },
+    {
+      "metric": "CockroachDB maximum clock skew tolerance",
+      "value": "500 milliseconds",
+      "source": "https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer",
+      "context": "CockroachDB expects clock skew < 500ms; events >500ms apart are guaranteed ordered"
+    },
+    {
+      "metric": "CockroachDB crash threshold for clock skew",
+      "value": "80% of 500ms maximum = 400ms skew against quorum",
+      "source": "https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer",
+      "context": "Nodes immediately crash if detected clock skew exceeds this threshold to prevent split-brain"
+    },
+    {
+      "metric": "AWS SQS FIFO deduplication window",
+      "value": "5 minutes",
+      "source": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html",
+      "context": "Messages with the same deduplication ID within 5 minutes are deduplicated; window resets after 5 minutes"
+    },
+    {
+      "metric": "Typical distributed system p99 latency vs median",
+      "value": "100x to 1000x difference (e.g., p50 5ms, p99 500ms-5s)",
+      "source": "https://aerospike.com/blog/what-is-p99-latency/",
+      "context": "Tail latencies reveal performance quality; averages hide outliers affecting user experience"
+    },
+    {
+      "metric": "Allegro Kafka p99 latency before optimization",
+      "value": "1 second produce latency at p99",
+      "source": "https://www.conduktor.io/blog/kafka-latency",
+      "context": "Median was 5ms but tail latency caused incidents; filesystem optimization reduced latency spikes by 82%"
+    },
+    {
+      "metric": "Cassandra/DynamoDB typical replication factor",
+      "value": "3 (quorum = 2)",
+      "source": "https://www.designgurus.io/blog/consistency-patterns-distributed-systems",
+      "context": "Majority quorum ensures durability and enables consensus without all replicas"
+    },
+    {
+      "metric": "Vector clock payload size",
+      "value": "O(N) space for N processes",
+      "source": "https://sookocheff.com/post/time/vector-clocks/",
+      "context": "Vector clocks must store one counter per node; Lamport timestamps use only one integer"
+    },
+    {
+      "metric": "Kafka transaction latency overhead",
+      "value": "Measurable impact on throughput and p99 latency vs at-least-once",
+      "source": "https://developer.confluent.io/courses/architecture/transactions/",
+      "context": "Exactly-once guarantees require coordination overhead; used when duplicate processing cost is high"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "If I commit my database transaction, the message has been processed exactly once",
+      "reality": "You must commit offsets AFTER processing the message and updating state. If you commit offsets before processing, crashes will skip messages. If you commit after processing but lose the commit, duplicates will reprocess.",
+      "source": "https://docs.confluent.io/kafka/design/delivery-semantics.html"
+    },
+    {
+      "misconception": "Lamport timestamps tell me whether two events actually happened at the same time",
+      "reality": "Lamport timestamps assign an order to all events, but two concurrent (independent) events will still get arbitrary ordering. Vector clocks are needed to detect true concurrency.",
+      "source": "https://amturing.acm.org/p558-lamport.pdf"
+    },
+    {
+      "misconception": "If I set up strong consistency, my entire system is safe from inconsistency",
+      "reality": "Strong consistency only applies within a single service boundary. Between services, eventual consistency still governs; network partitions still happen; clients must still handle stale reads from replicas in transit.",
+      "source": "https://cloud.google.com/blog/products/databases/why-you-should-pick-strong-consistency-whenever-possible"
+    },
+    {
+      "misconception": "I should use idempotency keys for every API call to be safe",
+      "reality": "Idempotency keys add complexity, storage, and latency overhead. Use them only where duplicate processing causes real harm (financial transactions, inventory updates). For read-only operations or operations with no side effects, skip them.",
+      "source": "https://microservices.io/patterns/communication-style/idempotent-consumer.html"
+    },
+    {
+      "misconception": "Raft leader election happens instantly when a leader fails",
+      "reality": "The follower must wait for its election timeout (150-300ms) before becoming a candidate. In a 3-node cluster, you lose availability for 150-300ms during failure. Real systems tune these timeouts based on acceptable recovery time.",
+      "source": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/"
+    },
+    {
+      "misconception": "If my clock is off by 1ms, my distributed system breaks",
+      "reality": "Most systems tolerate clock skew up to 100-500ms (CockroachDB allows 500ms). Lamport timestamps and Raft don't depend on clock accuracy at all. Clock skew becomes critical when you're using wall-clock timestamps for causality.",
+      "source": "https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer"
+    },
+    {
+      "misconception": "At-least-once delivery means I get each message exactly as many times as it was sent",
+      "reality": "At-least-once means each message is delivered one or more times, unpredictably. You might get a message 1, 2, or 3 times depending on when failures occur. Only idempotent processing makes this safe.",
+      "source": "https://docs.confluent.io/kafka/design/delivery-semantics.html"
+    },
+    {
+      "misconception": "If my median latency is low, my system is fast",
+      "reality": "Median (p50) hides tail latency. A system with p50=5ms but p99=1s is slower for 1% of users than a system with p50=10ms but p99=20ms. Measure and optimize the percentiles that matter to your SLA.",
+      "source": "https://aerospike.com/blog/what-is-p99-latency/"
+    },
+    {
+      "misconception": "Exactly-once delivery is always better than at-least-once",
+      "reality": "Exactly-once adds coordination overhead, increases latency, and reduces throughput. Use it only when duplicate processing is expensive (payments, inventory). For analytics or event counts, at-least-once + idempotent aggregation is cheaper.",
+      "source": "https://developer.confluent.io/courses/architecture/transactions/"
+    },
+    {
+      "misconception": "If I generate a UUID, my idempotency key is guaranteed unique",
+      "reality": "UUIDs are collision-resistant but not collision-proof. Use UUIDs (v4 or v6) as the base, but your system must gracefully handle the rare case of collision through careful database constraints and conditional logic.",
+      "source": "https://stripe.com/blog/idempotency"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://docs.confluent.io/kafka/design/delivery-semantics.html",
+      "title": "Message Delivery Guarantees for Apache Kafka",
+      "recency": "Current (2024)",
+      "authority": "Official Confluent documentation"
+    },
+    {
+      "url": "https://stripe.com/blog/idempotency",
+      "title": "Designing robust and predictable APIs with idempotency",
+      "recency": "Current (2023)",
+      "authority": "Official Stripe engineering blog"
+    },
+    {
+      "url": "https://amturing.acm.org/p558-lamport.pdf",
+      "title": "Time, clocks, and the ordering of events in a distributed system",
+      "recency": "Classic (1978, foundational paper)",
+      "authority": "ACM Turing Award winner Leslie Lamport"
+    },
+    {
+      "url": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "title": "A closer look at Raft internals – leader election and log replication",
+      "recency": "Recent (2023)",
+      "authority": "CoDiLime engineering blog"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer",
+      "title": "CockroachDB Transaction Layer Architecture",
+      "recency": "Current (2024)",
+      "authority": "Official CockroachDB documentation"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html",
+      "title": "Using the message deduplication ID in Amazon SQS",
+      "recency": "Current (2024)",
+      "authority": "Official AWS documentation"
+    },
+    {
+      "url": "https://microservices.io/patterns/communication-style/idempotent-consumer.html",
+      "title": "Microservices Pattern: Idempotent Consumer",
+      "recency": "Current (2023)",
+      "authority": "Chris Richardson microservices patterns"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/databases/why-you-should-pick-strong-consistency-whenever-possible",
+      "title": "Why you should pick strong consistency, whenever possible",
+      "recency": "Recent (2024)",
+      "authority": "Google Cloud official blog"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/lamport-clock",
+      "title": "Lamport Clock",
+      "recency": "Current (2023)",
+      "authority": "Baeldung Computer Science"
+    },
+    {
+      "url": "https://sookocheff.com/post/time/vector-clocks/",
+      "title": "Vector Clocks",
+      "recency": "Current (2023)",
+      "authority": "Kevin Sookocheff distributed systems"
+    },
+    {
+      "url": "https://developer.confluent.io/courses/architecture/transactions/",
+      "title": "Kafka Transactional Support: How It Enables Exactly-Once Semantics",
+      "recency": "Current (2023)",
+      "authority": "Confluent official developer courses"
+    },
+    {
+      "url": "https://medium.com/@aaron.rose.tx/the-secret-life-of-aws-the-idempotency-key-amazon-dynamodb-72b4304d43ac",
+      "title": "The Secret Life of AWS: The Idempotency Key (Amazon DynamoDB)",
+      "recency": "Recent (2026)",
+      "authority": "AWS practitioner deep dive"
+    },
+    {
+      "url": "https://aerospike.com/blog/what-is-p99-latency/",
+      "title": "What Is P99 Latency? Understanding the 99th Percentile of Performance",
+      "recency": "Current (2024)",
+      "authority": "Aerospike database engineering blog"
+    },
+    {
+      "url": "https://www.conduktor.io/blog/kafka-latency",
+      "title": "Kafka Latency: Why Averages Lie",
+      "recency": "Current (2024)",
+      "authority": "Conduktor Kafka platform blog"
+    },
+    {
+      "url": "https://arorashu.github.io/posts/raft.html",
+      "title": "Understanding Raft consensus algorithm",
+      "recency": "Current (2023)",
+      "authority": "Distributed systems engineer"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-27-kafka-consumers-at-least-once/view",
+      "title": "How to Implement Kafka Consumers with At-Least-Once Semantics",
+      "recency": "Very recent (2026)",
+      "authority": "Oneuptime uptime monitoring blog"
+    },
+    {
+      "url": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "title": "Strong vs Eventual Consistency in Distributed Systems",
+      "recency": "Recent (2024)",
+      "authority": "LevelUp Coding"
+    },
+    {
+      "url": "https://www.designgurus.io/blog/consistency-patterns-distributed-systems",
+      "title": "Consistency Patterns in Distributed Systems: Strong, Eventual, Causal & More",
+      "recency": "Current (2024)",
+      "authority": "Design Gurus system design curriculum"
+    }
+  ]
+}

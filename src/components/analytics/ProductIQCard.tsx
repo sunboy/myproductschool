@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function ProductIQCard({ score, delta, weeklyActivity, totalAttempts, dimensions }: Props) {
-  // Generate sparkline bar heights from weekly activity — pad to 14 bars to match Stitch
+  // Generate sparkline bar heights from weekly activity - pad to 14 bars to match Stitch
   const bars = weeklyActivity.length >= 14
     ? weeklyActivity
     : [...Array(14 - weeklyActivity.length).fill(0), ...weeklyActivity]

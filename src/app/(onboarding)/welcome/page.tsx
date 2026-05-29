@@ -6,7 +6,7 @@ const THINKING_MOVES = [
     icon: 'diamond',
     title: 'Frame',
     tagline: '"What\'s the real problem?"',
-    example: 'DAU up 20% but revenue flat — what do you ask first?',
+    example: 'DAU up 20% but revenue flat. What do you ask first?',
     iconColor: 'text-[#5eaeff]',
     bgColor: 'bg-blue-100',
     hoverBorder: 'hover:border-blue-200',
@@ -24,7 +24,7 @@ const THINKING_MOVES = [
     icon: 'balance',
     title: 'Optimize',
     tagline: '"What are the tradeoffs?"',
-    example: 'Cut free tier from 10K to 1K API calls — or find a smarter lever?',
+    example: 'Cut free tier from 10K to 1K API calls, or find a smarter lever?',
     iconColor: 'text-amber-500',
     bgColor: 'bg-amber-100',
     hoverBorder: 'hover:border-amber-200',
@@ -81,7 +81,7 @@ export default function WelcomePage() {
             </div>
           </div>
 
-          {/* Headlines — visceral, specific to engineers */}
+          {/* Headlines: visceral, specific to engineers */}
           <div className="space-y-3">
             <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-on-surface">
               Your code ships.
@@ -90,12 +90,12 @@ export default function WelcomePage() {
               Your product thinking doesn&apos;t.
             </h2>
             <p className="text-on-surface-variant text-base md:text-lg max-w-2xl mx-auto mt-4 leading-relaxed">
-              Staff engineers don&apos;t just build features — they frame problems, weigh tradeoffs, and win buy-in.
+              Staff engineers don&apos;t just build features. They frame problems, weigh tradeoffs, and win buy-in.
               Practice these 4 moves with AI-graded scenarios. See exactly where you stand in 5 minutes.
             </p>
           </div>
 
-          {/* Live scenario preview — show what you GET */}
+          {/* Live scenario preview: show what you GET */}
           <div className="max-w-2xl mx-auto bg-surface-container rounded-xl border border-outline-variant/50 overflow-hidden text-left">
             <div className="px-5 py-3 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container-low">
               <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export default function WelcomePage() {
                 <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
                 <p className="text-xs text-on-surface leading-snug">
                   <span className="font-bold text-primary">Hatch says: </span>
-                  Write your diagnosis, and I&apos;ll score you on 4 dimensions — problem reframing, diagnostic accuracy, data reasoning, and recommendation strength.
+                  Write your diagnosis, and I&apos;ll score you on 4 dimensions: problem reframing, diagnostic accuracy, data reasoning, and recommendation strength.
                 </p>
               </div>
               <div className="grid grid-cols-4 gap-2">
@@ -164,7 +164,7 @@ export default function WelcomePage() {
               <span className="material-symbols-outlined text-base">arrow_forward</span>
             </Link>
             <div className="text-xs text-on-surface-variant opacity-75">
-              5-min assessment — no signup required — get your skill radar
+              5-min assessment. No signup required. Get your skill radar.
             </div>
             <Link
               href="/dashboard"
@@ -192,7 +192,7 @@ export default function WelcomePage() {
             </div>
           </div>
 
-          {/* Social Proof — more specific, more credible */}
+          {/* Social Proof: more specific, more credible */}
           <div className="pt-6 space-y-4">
             <div className="flex items-center justify-center gap-2">
               <div className="flex -space-x-2">
@@ -213,10 +213,10 @@ export default function WelcomePage() {
             {/* Specific proof point */}
             <div className="max-w-md mx-auto bg-surface-container-low rounded-xl p-4 border border-outline-variant/30 text-left">
               <p className="text-xs text-on-surface-variant italic leading-relaxed">
-                &ldquo;I got promoted to Staff 3 months after starting HackProduct. The thinking traps feedback alone was worth it — I didn&apos;t know I had a &apos;premature solution&apos; habit until Hatch called it out.&rdquo;
+                &ldquo;I got promoted to Staff 3 months after starting HackProduct. The thinking traps feedback alone was worth it. I didn&apos;t know I had a &apos;premature solution&apos; habit until Hatch called it out.&rdquo;
               </p>
               <p className="text-[10px] font-bold text-on-surface-variant mt-2">
-                — SWE at a Series C startup
+                SWE at a Series C startup
               </p>
             </div>
           </div>

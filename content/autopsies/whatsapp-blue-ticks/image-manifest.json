@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "meta",
+  "story_slug": "whatsapp-blue-ticks",
+  "story_title": "WhatsApp Blue Ticks",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/whatsapp-blue-ticks/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/whatsapp-blue-ticks/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three speech bubbles show a single grey tick, then two grey ticks, then two green ticks while Hatch points at the third.",
+      "caption": "Two pixels changed colour. The social contract changed with them.",
+      "prompt": "WhatsApp Blue Ticks | hero: A flat geometric HackProduct autopsy hero illustration for WhatsApp blue ticks. Canvas role hero at aspect 2400x1350. Show a horizontal sequence of three abstract speech bubble shapes, the first with a single grey tick, the second with two grey ticks, and the third with two forest green ticks rendered in slightly cool tint with a small soft amber glow underneath. The bubbles are mist coloured with charcoal outlines on a cream background. Between bubble two and bubble three, a subtle forest green arrow showing the state change. Hatch as a small narrator at the lower right, about 14 percent of canvas height, in narrator pose pointing at the third bubble, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no fake WhatsApp UI screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/whatsapp-blue-ticks/hero.png",
+      "generated_image_sha256": "05dd6a62a2817fc598e79045c17e8e41e10b9c335c3681d900514594daf6a341",
+      "final_image_sha256": "ff67f39358b694eb54bd9c8c91835d0612aa4db713d8e3528ae244b64bba2593",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-blue-ticks/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-blue-ticks/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/whatsapp-blue-ticks/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A stylised phone shows a speech bubble whose checkmarks are shifting from grey to green while Hatch gestures from beside it.",
+      "caption": "A stylised phone shows a speech bubble whose checkmarks are shifting from grey to green while Hatch gestures from beside it.",
+      "prompt": "WhatsApp Blue Ticks | hatch-narrator: A flat geometric HackProduct illustration of the moment a recipient opens a chat. Canvas role hatch-narrator at aspect 1600x1600. Show a stylised phone outline in deep forest tilted at a slight angle, with one outgoing speech bubble inside it carrying a checkmark pair just shifting from grey to forest green, and a soft amber pulse ring radiating from the checkmarks. The background is cream with mist accent rings. Hatch at center, about 30 percent of canvas height, in narrator pose with a hand raised toward the phone, with cap and growth arrow visible and green H mark on chest. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no real WhatsApp UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/whatsapp-blue-ticks/hatch-narrator.png",
+      "generated_image_sha256": "bc930995d6f85ffdb8927d0ef7613e820ac2f00b479e1a6561dcadca6678d4a9",
+      "final_image_sha256": "f78911f5e8264ca091795f14f50f797f762380f3aff286d897e748dfb402ed62",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-blue-ticks/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-blue-ticks/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/whatsapp-blue-ticks/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three labelled columns show one grey tick, two grey ticks, and two green ticks while Hatch points at the green pair.",
+      "caption": "Three labelled columns show one grey tick, two grey ticks, and two green ticks while Hatch points at the green pair.",
+      "prompt": "WhatsApp Blue Ticks | failure-mechanism: A flat geometric HackProduct mechanism illustration for the three tick states. Canvas role failure-mechanism at aspect 1800x1200. Show three labelled columns running left to right, each containing a single tick or pair of ticks. The leftmost column has one grey tick labelled Sent in small charcoal type. The middle has two grey ticks labelled Delivered. The rightmost has two forest green ticks labelled Read with a soft amber underline. A thick forest green arrow connects column two to column three to emphasise the new state. Use cream background, mist column dividers, deep forest type. Hatch in thinking pose at the lower left, about 18 percent of canvas height, pointing at the third column, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no fake WhatsApp UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/whatsapp-blue-ticks/failure-mechanism.png",
+      "generated_image_sha256": "d0f186678797c58d20c6beda4d39d3ef4b59653d1efdd7c3d432c5880065ec38",
+      "final_image_sha256": "9b3b52a087b489254a9d3fe2fe9567b055b34f34a20c0958732e6f0e3a997f55",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-blue-ticks/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-blue-ticks/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/whatsapp-blue-ticks/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A toggle labelled Read receipts sits next to a note reading 2.11.44 and a small crossed-out pair of green ticks.",
+      "caption": "A toggle labelled Read receipts sits next to a note reading 2.11.44 and a small crossed-out pair of green ticks.",
+      "prompt": "WhatsApp Blue Ticks | evidence-card: A flat geometric HackProduct evidence card visualising the privacy toggle that arrived within a week of the November 2014 launch. Canvas role evidence-card at aspect 1600x1000. Show a single horizontal toggle switch shape with the handle on the right and a small forest green check next to a label reading Read receipts. Below the toggle, a thin mist coloured note shape with the words 2.11.44 in charcoal numerals. To the right of the toggle, a small symmetrical diagram showing a pair of green ticks crossed out with a soft amber line. Cream background, deep forest linework. Hatch absent. Use one short label and one visible artifact shape only. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/whatsapp-blue-ticks/evidence-card.png",
+      "generated_image_sha256": "1013000859e7fb6a2d225eaaf99cd897370e65f392354546f8c5b8cb37c88383",
+      "final_image_sha256": "e0e84f88681dc26a9f476127fd737c761a8bd3099039515fe41cde4f1b334e47",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-blue-ticks/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-blue-ticks/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/whatsapp-blue-ticks/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A pair of green ticks on the left connects via an arrow to three small clock shapes on the right while Hatch stands in coaching pose nearby.",
+      "caption": "A pair of green ticks on the left connects via an arrow to three small clock shapes on the right while Hatch stands in coaching pose nearby.",
+      "prompt": "WhatsApp Blue Ticks | lesson-frame: A flat geometric HackProduct lesson illustration. Canvas role lesson-frame at aspect 1800x1200. Show a single oversized icon at the left, two forest green ticks, paired with three small social pressure markers on the right rendered as small clock shapes in soft amber. A forest green arrow runs from the ticks to the clocks. The cream background is divided by a faint mist diagonal. Hatch in coaching pose at the lower right, about 22 percent of canvas height, calm and explanatory, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no fake WhatsApp UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/whatsapp-blue-ticks/lesson-frame.png",
+      "generated_image_sha256": "92051a996aeebd856ac0e1f94be2707e3e3ce2feda75eaae04743b7fd0f60548",
+      "final_image_sha256": "01aea3b812decc6191bedc576b5f6545417970cd385d22927968eb18b783e1af",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-blue-ticks/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-blue-ticks/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/whatsapp-blue-ticks/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two large forest green ticks centred on cream with a faint speech bubble behind and a tiny Hatch silhouette in the corner.",
+      "caption": "Two large forest green ticks centred on cream with a faint speech bubble behind and a tiny Hatch silhouette in the corner.",
+      "prompt": "A flat geometric HackProduct thumbnail composition for WhatsApp blue ticks. Canvas role thumbnail at aspect 1200x900. Show a single pair of bold forest green ticks centred on the canvas with a thin soft amber underline beneath. A small mist coloured speech bubble sits behind the ticks at 25 percent opacity. A tiny Hatch mark, just the rounded green head silhouette with cap and growth arrow, sits in the bottom left at about 8 percent of canvas height. Make the decision readable at small size with one strong focal shape. Cream background. No human faces, no fake WhatsApp UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/whatsapp-blue-ticks/hero.png",
+      "generated_image_sha256": "05dd6a62a2817fc598e79045c17e8e41e10b9c335c3681d900514594daf6a341",
+      "final_image_sha256": "ef2956f199f8d7335393734c62124f883cbc41cc7bc47712bacb80c1d1cec504",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-blue-ticks/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-blue-ticks/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/whatsapp-blue-ticks/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three speech bubbles in a row show the progression from one grey tick to two green ticks with a small Hatch in the corner.",
+      "caption": "Three speech bubbles in a row show the progression from one grey tick to two green ticks with a small Hatch in the corner.",
+      "prompt": "A flat geometric HackProduct social cover for WhatsApp blue ticks. Canvas role social-cover at aspect 2400x1260. Show a horizontal trio of speech bubbles across the centre, the leftmost with a single grey tick, the middle with two grey ticks, the right with two forest green ticks. The right bubble carries a faint soft amber halo. Behind the bubbles, a wide cream field with a faint mist diagonal band. A small Hatch in narrator pose sits at the lower right at about 12 percent of canvas height, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the center 70 percent clear of edge-critical details. No human faces, no fake WhatsApp UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/whatsapp-blue-ticks/hero.png",
+      "generated_image_sha256": "05dd6a62a2817fc598e79045c17e8e41e10b9c335c3681d900514594daf6a341",
+      "final_image_sha256": "bbd4db85c55c9e3f6f72734439c70d0224b145b3e5acadfe3307dac12e8b046f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/whatsapp-blue-ticks/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/whatsapp-blue-ticks/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/whatsapp-blue-ticks/v1"
+}

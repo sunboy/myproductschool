@@ -1,0 +1,462 @@
+{
+  "facts": [
+    {
+      "fact": "Anthropic prompt caching writes cost 1.25x base input price for 5-minute cache and 2x for 60-minute cache, while cache reads cost only 0.1x base price",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "date": "2025"
+    },
+    {
+      "fact": "Cache hits require 100% byte-for-byte identical prompt segments; a single trailing space, punctuation change, or timestamp difference invalidates the entire cached prefix",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/",
+      "date": "2025-08"
+    },
+    {
+      "fact": "A stable prefix strategy achieved 85.2% cache hit rate, reusing an average of 46,059 tokens per request, while perturbed prompts had 0% cache hit rate",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/",
+      "date": "2025-08"
+    },
+    {
+      "fact": "Cache reads cost $0.30/MTok versus $3.00/MTok for fresh processing, representing 90% cost savings on cache hits",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "date": "2025"
+    },
+    {
+      "fact": "ProjectDiscovery cut LLM costs by 59% with prompt caching, reaching 66% savings post-optimization and 70% for the last 10 days",
+      "source": "https://projectdiscovery.io/blog/how-we-cut-llm-cost-with-prompt-caching",
+      "date": "2025"
+    },
+    {
+      "fact": "Prompt caching reduces latency by up to 80% and input token costs by up to 90% for large repetitive prompts",
+      "source": "https://ngrok.com/blog/prompt-caching",
+      "date": "2025"
+    },
+    {
+      "fact": "Removing tokens from the middle of a conversation invalidates the KV cache entirely, causing all tokens after the edit point to be reprocessed from scratch",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/",
+      "date": "2025-08"
+    },
+    {
+      "fact": "LLMs exhibit 30%+ accuracy drop on multi-document QA when the answer document moves from position 1 to position 10 in a 20-document context (lost-in-the-middle effect)",
+      "source": "https://aclanthology.org/2024.tacl-1.9/",
+      "date": "2024"
+    },
+    {
+      "fact": "PoisonedRAG achieved 90% attack success rate by injecting just 5 malicious texts per target question into a knowledge database with millions of documents",
+      "source": "https://arxiv.org/abs/2402.07867",
+      "date": "2024"
+    },
+    {
+      "fact": "Retrieval poisoning attacks in RAG systems successfully conveyed malicious injected sequences to LLMs in 86.67% of cases after the complex RAG workflow",
+      "source": "http://www.wingtecher.com/themes/WingTecherResearch/assets/papers/paper_from_24/RetrievalPoisoning_FSE24.pdf",
+      "date": "2024"
+    },
+    {
+      "fact": "Google DeepMind's CaMel framework (April 2025) uses dual-LLM pattern: privileged LLM holds tools but never reads untrusted content; quarantined LLM reads untrusted content but cannot take action",
+      "source": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "date": "2025-04"
+    },
+    {
+      "fact": "OWASP Gen AI Security Project lists prompt injection as the #1 security risk for LLM applications as of 2025",
+      "source": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "date": "2025"
+    },
+    {
+      "fact": "Independent benchmarks show models claiming 200K token context become unreliable around 130K tokens; 1M-token models maintain high-quality recall to approximately 600K-700K tokens before accuracy drops",
+      "source": "https://www.mindstudio.ai/blog/1m-token-context-window-vs-rag-claude",
+      "date": "2025"
+    },
+    {
+      "fact": "As of March 13, 2026, Anthropic eliminated the long-context surcharge entirely; a 900K-token request is billed at the same $5.00/MTok input rate as a 9K-token request",
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "date": "2026-03"
+    },
+    {
+      "fact": "A well-designed RAG pipeline retrieves 5–20 relevant chunks totaling 2,000–10,000 tokens, representing 50–200x reduction in input tokens per query compared to full-context approaches",
+      "source": "https://www.promptingguide.ai/research/rag",
+      "date": "2025"
+    },
+    {
+      "fact": "Context placed in the middle of a prompt tends to be overlooked by LLMs due to primacy and recency bias; this is called the 'lost in the middle' phenomenon",
+      "source": "https://arxiv.org/html/2512.14313v1",
+      "date": "2025"
+    },
+    {
+      "fact": "Five carefully crafted documents can manipulate AI responses 90% of the time through Retrieval-Augmented Generation poisoning",
+      "source": "https://www.lakera.ai/blog/indirect-prompt-injection",
+      "date": "2024"
+    },
+    {
+      "fact": "Cached content hierarchy in Anthropic's caching: tools → system → messages; changes at any level invalidate that level and all subsequent levels",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "date": "2025"
+    },
+    {
+      "fact": "Thinking blocks cannot be cached directly with cache_control, but can be cached when they appear in previous assistant turns alongside other content",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "date": "2025"
+    },
+    {
+      "fact": "At 1M tokens, a single request to Claude Opus 4.6 costs $9.00 in input tokens alone (at $9/MTok base rate) before any output costs",
+      "source": "https://www.cloudidr.com/blog/llm-pricing-comparison-2026",
+      "date": "2026"
+    }
+  ],
+  "examples": [
+    {
+      "company": "ProjectDiscovery",
+      "scenario": "Security scanning platform processing thousands of vulnerability reports daily with repetitive system prompts and scanning instructions",
+      "metric": "59% cost reduction with prompt caching; optimization reached 66% savings, with 70% achieved over last 10 days",
+      "source": "https://projectdiscovery.io/blog/how-we-cut-llm-cost-with-prompt-caching"
+    },
+    {
+      "company": "Academic research (Liu et al., Stanford/MIT/Google)",
+      "scenario": "Multi-document question answering with GPT-3.5, GPT-4, Claude 1.3, and LLaMA-2 models",
+      "metric": "30%+ accuracy drop when relevant document moved from position 1 to position 10 in 20-document context",
+      "source": "https://aclanthology.org/2024.tacl-1.9/"
+    },
+    {
+      "company": "Research team (UW/MIT/Google, ACL 2024)",
+      "scenario": "Countering position bias in retrieval-augmented generation using calibration methods",
+      "metric": "15 percentage point improvement in accuracy for middle-positioned information after bias correction",
+      "source": "https://aclanthology.org/2024.tacl-1.9/"
+    },
+    {
+      "company": "ChatGPT (May 2024)",
+      "scenario": "Web browsing feature poisoned with malicious content from untrusted websites during RAG retrieval",
+      "metric": "Successful prompt injection through retrieval poisoning demonstrated",
+      "source": "https://www.lakera.ai/blog/indirect-prompt-injection"
+    },
+    {
+      "company": "Slack AI (August 2024)",
+      "scenario": "Data exfiltration vulnerability combining RAG poisoning with social engineering attacks",
+      "metric": "Vulnerability discovered and patched; incident disclosed publicly",
+      "source": "https://www.lakera.ai/blog/indirect-prompt-injection"
+    },
+    {
+      "company": "Academic research (PoisonedRAG, USENIX 2025)",
+      "scenario": "Injecting malicious documents into knowledge database with millions of documents to manipulate target answers",
+      "metric": "90% attack success rate with just 5 poisoned documents per target question",
+      "source": "https://arxiv.org/abs/2402.07867"
+    },
+    {
+      "company": "Production RAG system (FSE 2024)",
+      "scenario": "Retrieval poisoning attack on LLM-powered application",
+      "metric": "86.67% of injected sequences successfully conveyed to LLMs after complex RAG workflow",
+      "source": "http://www.wingtecher.com/themes/WingTecherResearch/assets/papers/paper_from_24/RetrievalPoisoning_FSE24.pdf"
+    },
+    {
+      "company": "Anthropic API users (2025)",
+      "scenario": "Chat application with stable system prompts, consistent document retrieval, and repetitive user questions",
+      "metric": "70%+ of input tokens cached through prefix caching; 30% handled by semantic caching; combined savings exceeding 80%",
+      "source": "https://developers.openai.com/cookbook/examples/prompt_caching_201"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "KV cache invalidation",
+      "analogy": "Like a memoized function result becoming invalid if any input parameter changes by even one bit; the entire downstream computation must run again from scratch",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/"
+    },
+    {
+      "concept": "Lost-in-the-middle effect",
+      "analogy": "Like reading a long report where you skip the middle pages; you remember the first few points clearly and the last few points vividly, but miss critical details buried in the middle",
+      "source": "https://aclanthology.org/2024.tacl-1.9/"
+    },
+    {
+      "concept": "Cache hit rate measurement",
+      "analogy": "Like a memoization cache in programming: high hit rate means repeated computations are avoided; low hit rate means you're recalculating expensive operations",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/"
+    },
+    {
+      "concept": "Context poisoning via RAG",
+      "analogy": "Like contaminating a source of drinking water; the poison is mixed into the retrieval results and reaches all downstream systems, affecting every decision made with that context",
+      "source": "https://arxiv.org/abs/2402.07867"
+    },
+    {
+      "concept": "Prompt caching breakeven math",
+      "analogy": "Like upfront investment with high interest: the 1.25x write cost is expensive upfront, but the 0.1x read cost recovers that investment quickly; breakeven happens after 1-2 reads",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "concept": "Dual-LLM context isolation pattern",
+      "analogy": "Like a firewall: the quarantined LLM reads untrusted content but cannot affect systems; the privileged LLM takes actions but never directly reads untrusted input",
+      "source": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Cache write cost multiplier",
+      "value": "1.25x",
+      "context": "Anthropic 5-minute cache writes cost 1.25x base input price; 60-minute cache writes cost 2x",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "metric": "Cache read cost multiplier",
+      "value": "0.1x",
+      "context": "Cached reads cost only 10% of base input price, representing 90% savings on repeated context",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "metric": "Cache hit rate (stable prefix)",
+      "value": "85.2%",
+      "context": "Real-world deployment with stable prompt structure achieved 85.2% cache hit rate reusing 46,059 tokens/request",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/"
+    },
+    {
+      "metric": "Cost reduction (ProjectDiscovery)",
+      "value": "59-70%",
+      "context": "ProjectDiscovery achieved 59% initial savings, 66% post-optimization, 70% over last 10 days with prompt caching",
+      "source": "https://projectdiscovery.io/blog/how-we-cut-llm-cost-with-prompt-caching"
+    },
+    {
+      "metric": "Lost-in-the-middle accuracy drop",
+      "value": "30%+",
+      "context": "Accuracy drops 30%+ when relevant document moves from position 1 to position 10 in 20-document context",
+      "source": "https://aclanthology.org/2024.tacl-1.9/"
+    },
+    {
+      "metric": "PoisonedRAG attack success rate",
+      "value": "90%",
+      "context": "Five malicious documents per target question achieved 90% attack success rate in knowledge bases with millions of documents",
+      "source": "https://arxiv.org/abs/2402.07867"
+    },
+    {
+      "metric": "Retrieval poisoning effectiveness",
+      "value": "86.67%",
+      "context": "Injected sequences successfully reached LLMs in 86.67% of cases after complex RAG workflow",
+      "source": "http://www.wingtecher.com/themes/WingTecherResearch/assets/papers/paper_from_24/RetrievalPoisoning_FSE24.pdf"
+    },
+    {
+      "metric": "Latency improvement (stable prefix)",
+      "value": "65%",
+      "context": "65% median TTFT improvement for stable prefixes compared to perturbed prompts",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/"
+    },
+    {
+      "metric": "Latency reduction (general)",
+      "value": "80%",
+      "context": "Prompt caching reduces latency by up to 80% for large repetitive prompts",
+      "source": "https://ngrok.com/blog/prompt-caching"
+    },
+    {
+      "metric": "Token cost reduction (general)",
+      "value": "90%",
+      "context": "Prompt caching reduces input token costs by up to 90% for large repetitive prompts",
+      "source": "https://ngrok.com/blog/prompt-caching"
+    },
+    {
+      "metric": "RAG context reduction",
+      "value": "50-200x",
+      "context": "Well-designed RAG pipelines retrieve 5-20 chunks (2,000-10,000 tokens) vs full context, reducing input tokens 50-200x",
+      "source": "https://www.promptingguide.ai/research/rag"
+    },
+    {
+      "metric": "Claude Opus 4.6 cost per 1M tokens",
+      "value": "$9.00",
+      "context": "At 1M input tokens, Claude Opus 4.6 costs $9.00 in input tokens alone (before output)",
+      "source": "https://www.cloudidr.com/blog/llm-pricing-comparison-2026"
+    },
+    {
+      "metric": "Cache lifetime (standard)",
+      "value": "5 minutes",
+      "context": "Standard cache entries have minimum lifetime of 5 minutes before deletion",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "metric": "Cache lifetime (extended)",
+      "value": "60 minutes",
+      "context": "Extended cache entries have minimum lifetime of 60 minutes before deletion",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "metric": "Effective context window (1M claim)",
+      "value": "600K-700K",
+      "context": "Models claiming 1M tokens maintain high-quality recall to approximately 600K-700K before accuracy drops noticeably",
+      "source": "https://www.mindstudio.ai/blog/1m-token-context-window-vs-rag-claude"
+    },
+    {
+      "metric": "Cache poisoning success (5 documents)",
+      "value": "90%",
+      "context": "Five carefully crafted documents can manipulate AI responses 90% of the time through RAG poisoning",
+      "source": "https://www.lakera.ai/blog/indirect-prompt-injection"
+    },
+    {
+      "metric": "Prompt injection risk ranking",
+      "value": "#1",
+      "context": "OWASP Gen AI Security Project ranks prompt injection as #1 security risk for LLM applications (2025)",
+      "source": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"
+    },
+    {
+      "metric": "Model reliability threshold",
+      "value": "130K",
+      "context": "Models claiming 200K token context become unreliable around 130K tokens in real benchmarks",
+      "source": "https://www.mindstudio.ai/blog/1m-token-context-window-vs-rag-claude"
+    },
+    {
+      "metric": "Position bias correction gain",
+      "value": "15%",
+      "context": "Correcting positional bias via calibration improved middle-positioned information accuracy by 15 percentage points",
+      "source": "https://aclanthology.org/2024.tacl-1.9/"
+    },
+    {
+      "metric": "Explicit cache breakpoints per request",
+      "value": "4",
+      "context": "Anthropic allows up to 4 explicit cache breakpoints per request",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Caching is only worth it if you have 100% identical requests repeatedly",
+      "truth": "Prefix caching works as long as the static portion is identical; variable parts (user queries, timestamps) go after the cache breakpoint. A 70% cached prefix still saves 70% of those tokens on every request",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/"
+    },
+    {
+      "misconception": "Prompt caching always pays off immediately on the first request",
+      "truth": "Cache writes cost 1.25x input price (5-min) or 2x (1-hr), so breakeven requires 1-2 cache reads. Single-use prompts will never reach breakeven",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "misconception": "A 1M token context window means you can safely use all 1M tokens",
+      "truth": "Real-world testing shows models claiming 1M tokens become unreliable around 130K; effective reliable context is 600K-700K. Advertised limits are not practical limits",
+      "source": "https://www.mindstudio.ai/blog/1m-token-context-window-vs-rag-claude"
+    },
+    {
+      "misconception": "Placing context in the middle of your prompt is neutral; position doesn't matter",
+      "truth": "LLMs exhibit 30%+ accuracy drops when relevant information moves from the beginning to the middle of the context due to lost-in-the-middle effect. Beginning and end of prompt are strongly preferred",
+      "source": "https://aclanthology.org/2024.tacl-1.9/"
+    },
+    {
+      "misconception": "Simple truncation of old conversation history is a safe way to manage context",
+      "truth": "Naive truncation removes important information, reducing accuracy and introducing hallucinations. Intelligent truncation should preserve must-have content (system prompt, current message) and only trim optional context",
+      "source": "https://agenta.ai/blog/top-6-techniques-to-manage-context-length-in-llms"
+    },
+    {
+      "misconception": "RAG systems are safer than direct prompts because they retrieve only 'trusted' documents",
+      "truth": "RAG poisoning is highly effective: five crafted documents can manipulate responses 90% of the time; 86.67% of injected sequences reach the LLM after RAG workflow. Retrieval does not equal safety",
+      "source": "https://arxiv.org/abs/2402.07867"
+    },
+    {
+      "misconception": "Clearing untrusted content from the prompt is sufficient defense against prompt injection",
+      "truth": "Prompt injection is a system-level vulnerability; defense requires architecture (dual-LLM patterns, trust boundaries, strict output validation), not just prompt hygiene",
+      "source": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"
+    },
+    {
+      "misconception": "If you add a space or change a timestamp, the cache is still valid",
+      "truth": "Cache requires 100% byte-for-byte identical text. A single trailing space, punctuation change, or timestamp reformatting invalidates the entire cached prefix",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/"
+    },
+    {
+      "misconception": "Removing a token from the middle of a conversation invalidates only that token's cache",
+      "truth": "Removing or editing tokens from the middle of a prompt invalidates the entire KV cache from that point forward; all downstream tokens must be reprocessed from scratch due to causal attention",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/"
+    },
+    {
+      "misconception": "Context cost is purely about input token count × model price",
+      "truth": "Total cost includes cache write premium (1.25-2x), cache read discount (0.1x), and output tokens (which cost 3-10x more than input). A naive calculation misses 80%+ of the cost structure",
+      "source": "https://www.finout.io/blog/anthropic-api-pricing"
+    },
+    {
+      "misconception": "A stable prompt structure is the only lever for cache hit rates",
+      "truth": "Cache hit rate depends on: prefix stability (100% match required), request frequency (enough volume to reuse), and time within cache lifetime. Low request volume means cache never hits despite stable prefixes",
+      "source": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/"
+    },
+    {
+      "misconception": "Dynamic context injection is about randomly selecting the most relevant documents",
+      "truth": "Advanced dynamic context assembly adapts k (number of chunks retrieved) to query complexity using a classifier, avoids lost-in-the-middle placement, and uses re-ranking (cross-encoder or LLM-based) to order results",
+      "source": "https://arxiv.org/html/2512.14313v1"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "title": "Prompt Caching — Anthropic Claude API Docs",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "title": "Pricing — Anthropic Claude API Docs",
+      "recency": "Current (2026-03)"
+    },
+    {
+      "url": "https://ankitbko.github.io/blog/2025/08/prompt-engineering-kv-cache/",
+      "title": "KV-Cache Aware Prompt Engineering — F5 Blog",
+      "recency": "Recent (2025-08)"
+    },
+    {
+      "url": "https://projectdiscovery.io/blog/how-we-cut-llm-cost-with-prompt-caching",
+      "title": "How We Cut LLM Costs by 59% With Prompt Caching — ProjectDiscovery Blog",
+      "recency": "Recent (2025)"
+    },
+    {
+      "url": "https://aclanthology.org/2024.tacl-1.9/",
+      "title": "Lost in the Middle: How Language Models Use Long Contexts — ACL 2024",
+      "recency": "2024"
+    },
+    {
+      "url": "https://arxiv.org/abs/2402.07867",
+      "title": "PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented Generation — arXiv",
+      "recency": "2024"
+    },
+    {
+      "url": "http://www.wingtecher.com/themes/WingTecherResearch/assets/papers/paper_from_24/RetrievalPoisoning_FSE24.pdf",
+      "title": "Human-Imperceptible Retrieval Poisoning Attacks in LLM-Powered Applications — FSE 2024",
+      "recency": "2024"
+    },
+    {
+      "url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "title": "LLM01:2025 Prompt Injection — OWASP Gen AI Security Project",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.lakera.ai/blog/indirect-prompt-injection",
+      "title": "Indirect Prompt Injection: The Hidden Threat Breaking Modern AI Systems — Lakera",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://ngrok.com/blog/prompt-caching",
+      "title": "Prompt Caching: 10x Cheaper LLM Tokens — ngrok Blog",
+      "recency": "2025"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/examples/prompt_caching_201",
+      "title": "Prompt Caching 201 — OpenAI Cookbook",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.promptingguide.ai/research/rag",
+      "title": "Retrieval Augmented Generation (RAG) for LLMs — Prompt Engineering Guide",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://arxiv.org/html/2512.14313v1",
+      "title": "Dynamic Context Selection for Retrieval-Augmented Generation — arXiv",
+      "recency": "2025"
+    },
+    {
+      "url": "https://agenta.ai/blog/top-6-techniques-to-manage-context-length-in-llms",
+      "title": "Top Techniques to Manage Context Lengths in LLMs — Agenta AI",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.mindstudio.ai/blog/1m-token-context-window-vs-rag-claude",
+      "title": "Does a 1M Token Context Window Replace RAG? — MindStudio",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.cloudidr.com/blog/llm-pricing-comparison-2026",
+      "title": "Complete LLM Pricing Comparison 2026 — CloudiDR",
+      "recency": "Current (2026)"
+    },
+    {
+      "url": "https://www.finout.io/blog/anthropic-api-pricing",
+      "title": "Anthropic API Pricing in 2026 — Finout",
+      "recency": "Current (2026)"
+    },
+    {
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+      "title": "LLM Prompt Injection Prevention Cheat Sheet — OWASP",
+      "recency": "Current (2025)"
+    }
+  ]
+}

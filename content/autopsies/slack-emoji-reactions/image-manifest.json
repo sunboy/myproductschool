@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "slack",
+  "story_slug": "slack-emoji-reactions",
+  "story_title": "Slack Emoji Reactions",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/slack-emoji-reactions/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/slack-emoji-reactions/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A message bubble with a row of emoji reaction tiles below it, and a struck-through stack of old +1 reply bubbles to the right, with Hatch narrating from the corner.",
+      "caption": "The same acknowledgment. Zero extra messages.",
+      "prompt": "Slack Emoji Reactions | hero: Create a flat geometric HackProduct autopsy hero illustration for Slack's 2015 emoji reactions feature. Canvas role: hero, aspect 2400x1350. Background is warm cream #faf6f0. In the centre-left, draw a charcoal #1e211c message bubble with three lines of text in mist #dfe6dc. Along the bottom edge of the bubble, attach a horizontal row of five small rounded emoji tiles in forest green #4a7c59, soft amber #c9ad68, and deep forest #244232, each with a simple glyph face, showing the react-to-message pattern. To the right of the bubble, draw the ghost of an older pattern: a vertical stack of three small cream reply bubbles labelled +1, thanks, got it, struck through with a thin deep forest line. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, one mitten hand pointing at the emoji tile row. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in upper left for title overlay. No human faces, no photorealism, no real Slack screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-emoji-reactions/hero.png",
+      "generated_image_sha256": "778f526d2ea6245dd0e6d3d7be7b1711a95a2abecb2561d0332e0d5be34ba54c",
+      "final_image_sha256": "c5d586b33bbd2b0abbcbfacbe378cd6c2fc34e475805a7f264cee9771b84d2eb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-emoji-reactions/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-emoji-reactions/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/slack-emoji-reactions/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing at a low table with four symbol options laid out, beside a tall panel of stacked chat bubbles representing notification noise.",
+      "caption": "Hatch standing at a low table with four symbol options laid out, beside a tall panel of stacked chat bubbles representing notification noise.",
+      "prompt": "Slack Emoji Reactions | hatch-narrator: Flat geometric scene illustration for the Slack team in 2015 debating which symbol to use for acknowledgment, aspect 1600x1600. Background is warm cream #faf6f0. Draw a low deep forest #244232 table with four simple shape markers on it — a heart outline, a star outline, a thumbs-up silhouette, and a checkmark — arranged like options on a whiteboard. To the left of the table, draw a tall mist #dfe6dc panel of stacked small chat bubbles, suggesting the noisy +1 channel pattern. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing at the centre of the table in a narrator pose, one mitten hand sweeping across all four symbols as if questioning each, gaze directed at the viewer. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Ambient light is soft amber #c9ad68 from a small lamp shape upper right. No human figures other than Hatch, no photorealism, no Slack screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-emoji-reactions/hatch-narrator.png",
+      "generated_image_sha256": "7cf9ea8a02257b46a763237dd1b2bb224d64ed17392fd3227026d89c110eec69",
+      "final_image_sha256": "2da70cc6628d6b5bc01f04273542147a73e603a4634802c74255e13ecbbe37ea",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-emoji-reactions/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-emoji-reactions/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/slack-emoji-reactions/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two horizontal tracks contrasting the old reply-and-notify path with the new react-and-silence path, with Hatch pointing at the no-notification bell.",
+      "caption": "Two horizontal tracks contrasting the old reply-and-notify path with the new react-and-silence path, with Hatch pointing at the no-notification bell.",
+      "prompt": "Slack Emoji Reactions | failure-mechanism: Flat geometric mechanism diagram for Slack's emoji reactions feature, aspect 1800x1200. Background is warm cream #faf6f0. Lay out two parallel horizontal tracks. Top track labelled OLD PATH: a charcoal #1e211c message bubble, a thin arrow right, a stack of three small cream reply bubbles labelled +1 / thanks / got it, another arrow right, a bell icon in amber #705c30 with a dot indicating notification. Bottom track labelled NEW PATH: the same charcoal message bubble, a thin arrow right, a single forest-green #4a7c59 emoji tile row attached beneath the bubble, another arrow right, a bell icon in mist #dfe6dc with a strikethrough dot indicating no notification. Connect the two tracks at the start with a downward-pointing branch arrow. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a pointing pose at the lower right, one mitten hand directed at the no-notification bell on the new path. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-emoji-reactions/failure-mechanism.png",
+      "generated_image_sha256": "0816a1534884cb699ccd32e45fb9a3d57f956e0afcd3b462fbf3cded2184cdc1",
+      "final_image_sha256": "e411974578647678d55700eb3d0e2a9bc07b9114d2bc1afea1cf9e373c1a129e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-emoji-reactions/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-emoji-reactions/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/slack-emoji-reactions/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A left-to-right timeline with three nodes for Slack July 2015, GitHub March 2016, and Facebook February 2016, each with emoji tile rows below, and Hatch pointing along the timeline.",
+      "caption": "A left-to-right timeline with three nodes for Slack July 2015, GitHub March 2016, and Facebook February 2016, each with emoji tile rows below, and Hatch pointing along the timeline.",
+      "prompt": "Slack Emoji Reactions | evidence-card: Flat geometric evidence card showing the spread of emoji reactions from Slack to GitHub to Facebook, aspect 1600x1000. Background is warm cream #faf6f0. Draw a left-to-right timeline with three milestone nodes. Node one: a small forest-green #4a7c59 rounded square labelled SLACK July 2015. Node two: a mist #dfe6dc rounded square labelled GITHUB March 2016 with an 8-month gap label beneath the connecting line. Node three: a soft amber #c9ad68 rounded square labelled FACEBOOK Feb 2016 with a 7-month gap label. Above the line, draw small emoji tile rows beneath each node. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing between the Slack and GitHub nodes, one mitten hand pointing right along the timeline. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no dense text, no platform logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-emoji-reactions/evidence-card.png",
+      "generated_image_sha256": "93d7410df88d81ad88af774e39d1d501f39c875ed3682c808b261b1d591892fa",
+      "final_image_sha256": "d19efcd2d95a02c840beb5bd9d0ecfb075499bd1f2210212c80d45005a5c5949",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-emoji-reactions/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-emoji-reactions/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/slack-emoji-reactions/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A divided rectangle labelled Acknowledgment and No Interruption, with a struck-through bell on the right side and Hatch coaching from the left.",
+      "caption": "A divided rectangle labelled Acknowledgment and No Interruption, with a struck-through bell on the right side and Hatch coaching from the left.",
+      "prompt": "Slack Emoji Reactions | lesson-frame: Flat geometric lesson illustration for the takeaway that acknowledgment without interruption is a product constraint, aspect 1800x1200. Background is warm cream #faf6f0. Draw a central forest-green #4a7c59 divided rectangle: left half labelled ACKNOWLEDGMENT with a small emoji tile row icon, right half labelled NO INTERRUPTION with a struck-through bell icon. Below the rectangle, draw two thin streams, one amber #705c30 flowing into the left half and one mist #dfe6dc struck-through flowing away from the right half. Above the rectangle, a single charcoal #1e211c label reads THE CONSTRAINT, NOT THE FEATURE. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left, one mitten hand resting lightly on the left half of the rectangle. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-emoji-reactions/lesson-frame.png",
+      "generated_image_sha256": "7cdb6b7991ea9f6b64ebbb2304b02da68e65b89f02d97e786bf5ab14ace9f387",
+      "final_image_sha256": "db8f86f73e3a33c37cba485b9929c1ba6880b1158d933d9fa33b84cf842de14d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-emoji-reactions/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-emoji-reactions/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/slack-emoji-reactions/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A message bubble with emoji reaction tiles along its base, a struck-through bell to the right, and a small Hatch mark in the corner.",
+      "caption": "A message bubble with emoji reaction tiles along its base, a struck-through bell to the right, and a small Hatch mark in the corner.",
+      "prompt": "Flat geometric thumbnail for Slack emoji reactions, aspect 1200x900. On warm cream #faf6f0, draw one strong focal shape: a charcoal #1e211c message bubble with a row of four small forest-green #4a7c59 emoji tiles attached along its bottom edge. To the right and slightly smaller, a mist #dfe6dc bell icon with a clear strikethrough in deep forest #244232. A soft amber #c9ad68 dot accents the first emoji tile. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small corner mark in the lower left, no taller than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the composition readable at small sizes. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-emoji-reactions/hero.png",
+      "generated_image_sha256": "778f526d2ea6245dd0e6d3d7be7b1711a95a2abecb2561d0332e0d5be34ba54c",
+      "final_image_sha256": "fcd67b8f171195218003c428567024960b76d2d6baea92ef92fabcb605a6f5f4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-emoji-reactions/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-emoji-reactions/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/slack-emoji-reactions/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover showing a message bubble with emoji reaction tiles below it, a struck-through column of old reply bubbles to the right, and small Hatch narrating from the upper corner.",
+      "caption": "A wide cover showing a message bubble with emoji reaction tiles below it, a struck-through column of old reply bubbles to the right, and small Hatch narrating from the upper corner.",
+      "prompt": "Flat geometric social cover image for Slack emoji reactions, aspect 2400x1260. Background is warm cream #faf6f0. In the centre 70 percent of the canvas, place a charcoal #1e211c message bubble with a row of five forest-green #4a7c59 emoji tiles below it. To the right, draw a vertical stack of three mist #dfe6dc old-style reply bubbles labelled +1 / thanks / nice, with a deep forest #244232 diagonal strikethrough across all three. A single thin soft amber #c9ad68 horizontal line connects the emoji tile row to the left edge, labelled NO NOTIFICATION. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right, pointing one mitten hand at the emoji tiles. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No dense text beyond the single label, no fake screenshots, no platform logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-emoji-reactions/hero.png",
+      "generated_image_sha256": "778f526d2ea6245dd0e6d3d7be7b1711a95a2abecb2561d0332e0d5be34ba54c",
+      "final_image_sha256": "6870d26af0d7d368356bbc75214cbbef2b8069ef1ebccf3998953b5bad422d3e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-emoji-reactions/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-emoji-reactions/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/slack-emoji-reactions/v1"
+}

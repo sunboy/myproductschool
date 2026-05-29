@@ -1,0 +1,568 @@
+{
+  "facts": [
+    {
+      "fact": "Anthropic prompt caching achieves 90% cost reduction on cached tokens, charged at 0.10x the base input token price, with writes costing 1.25x for 5-minute TTL or 2.0x for 1-hour TTL.",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "date": "2025"
+    },
+    {
+      "fact": "Latency reduction from prompt caching reaches up to 85% for long prompts, with a 100K-token example showing response time drop from 11.5 seconds to 2.4 seconds.",
+      "source": "https://www.anthropic.com/news/prompt-caching",
+      "date": "2024"
+    },
+    {
+      "fact": "Every LLM tested (18 models including GPT-4.1, Claude, Gemini) exhibits performance degradation as input length increases, with 13.9-85% accuracy loss within claimed context lengths.",
+      "source": "https://www.trychroma.com/research/context-rot",
+      "date": "2025"
+    },
+    {
+      "fact": "The 'Lost in the Middle' phenomenon shows language models achieve 85-95% accuracy on early and late context, but only 76-82% on middle-positioned information.",
+      "source": "https://cs.stanford.edu/~nfliu/papers/lost-in-the-middle.arxiv2023.pdf",
+      "date": "2023"
+    },
+    {
+      "fact": "Claude maintains less than 5% accuracy degradation across its full 200,000-token range, while most competing models become unreliable around 130K tokens despite claiming 200K support.",
+      "source": "https://www.morphllm.com/claude-context-window",
+      "date": "2025"
+    },
+    {
+      "fact": "Stripe achieved 73% inference cost reduction via vLLM migration with PagedAttention, eliminating 60-80% memory waste from KV cache fragmentation while processing 50 million daily API calls.",
+      "source": "https://www.zenml.io/blog/what-1200-production-deployments-reveal-about-llmops-in-2025",
+      "date": "2025"
+    },
+    {
+      "fact": "Context poisoning via fine-tuning requires as few as 15 harmful examples (<1% of data) to induce targeted misinformation in GPT-4, even against specific public figures.",
+      "source": "https://arxiv.org/html/2603.22489v1",
+      "date": "2025"
+    },
+    {
+      "fact": "DynamicKV cache pruning achieves 85% of full-KV performance with only 1.7% of original memory, while TokenSkipping achieves 37.5% memory reduction with comparable throughput.",
+      "source": "https://arxiv.org/html/2603.20397v1",
+      "date": "2025"
+    },
+    {
+      "fact": "Hybrid retrieval combining BM25 (lexical) and vector search improves recall by first capturing exact-match documents before reranking for precision, preventing reranker data loss.",
+      "source": "https://blog.premai.io/hybrid-search-for-rag-bm25-splade-and-vector-search-combined/",
+      "date": "2025"
+    },
+    {
+      "fact": "Tool poisoning in Model Context Protocol (MCP) ranks #1 in OWASP LLM Top 10 with DREAD severity of 46.5/50, with 18,000+ MCP servers as of 2025.",
+      "source": "https://arxiv.org/html/2603.22489v1",
+      "date": "2025"
+    },
+    {
+      "fact": "Episodic memory consolidation in agents uses Complementary Learning Systems theory: hippocampal fast learning captures single episodes, neocortical slow learning generalizes them into semantic knowledge.",
+      "source": "https://arxiv.org/html/2404.00573",
+      "date": "2024"
+    },
+    {
+      "fact": "Semantic caching has achieved up to 73% cost reduction in high-repetition workloads, with cache hits returning in milliseconds versus seconds for fresh LLM inference.",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "date": "2025"
+    },
+    {
+      "fact": "Five optimization levers together (semantic caching, context compaction, output control, prompt optimization, model routing) can cut API spend by 70-85% without degrading output quality.",
+      "source": "https://www.morphllm.com/llm-cost-optimization",
+      "date": "2025"
+    },
+    {
+      "fact": "One token roughly equals 4 characters of English text or about ¾ of a word, with a 100-word paragraph consuming around 133 tokens on average.",
+      "source": "https://winder.ai/calculating-token-counts-llm-context-windows-practical-guide/",
+      "date": "2025"
+    },
+    {
+      "fact": "LLM API pricing multiplies output tokens 4-5x the input cost: $2-3 per million input tokens versus $10-15 per million output tokens for flagship models.",
+      "source": "https://mobisoftinfotech.com/resources/blog/ai-development/llm-api-pricing-guide",
+      "date": "2025"
+    },
+    {
+      "fact": "Context compaction reduces token consumption by 50-70% while preserving quality, saving approximately 60% on input costs for long conversation histories.",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "date": "2025"
+    },
+    {
+      "fact": "Inference time increases non-linearly as context scales from 4,096 to 10,000 to 15,000 words, dominated by input processing time regardless of needle position.",
+      "source": "https://arxiv.org/html/2510.05381v1",
+      "date": "2024"
+    },
+    {
+      "fact": "Core Context Aware Attention (CCA-Attention) uses globality-pooling and locality-preserved attention to achieve near-linear complexity in favorable cases for long contexts.",
+      "source": "https://arxiv.org/html/2412.12465v1",
+      "date": "2024"
+    },
+    {
+      "fact": "Microsoft's Prompt Shields detect and filter malicious instructions via machine learning and NLP, evolving beyond regex-based pattern matching to detect intent analysis.",
+      "source": "https://developer.microsoft.com/blog/protecting-against-indirect-injection-attacks-mcp",
+      "date": "2025"
+    },
+    {
+      "fact": "Model routing saves 40-70% on API costs by classifying prompt difficulty and routing easy tasks to cheaper models, since 60-80% of requests are routine.",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "date": "2025"
+    },
+    {
+      "fact": "Reranker (cross-encoder) improves MRR@3 from 0.433 to 0.605, providing fine-grained query-document relevance scoring beyond hybrid retrieval.",
+      "source": "https://docs.bswen.com/blog/2026-02-25-hybrid-search-vs-reranker/",
+      "date": "2026"
+    },
+    {
+      "fact": "Attention distribution is sparse across the context window, with models naturally attending less to middle-positioned information due to distribution bias introduced during training.",
+      "source": "https://arxiv.org/html/2411.01101",
+      "date": "2024"
+    },
+    {
+      "fact": "Analysis of 1,200 production LLM deployments reveals context engineering (not prompt engineering) as the primary predictor of success alongside infrastructure guardrails and rigorous evaluation.",
+      "source": "https://www.zenml.io/blog/what-1200-production-deployments-reveal-about-llmops-in-2025",
+      "date": "2025"
+    },
+    {
+      "fact": "Direct LLM-to-untrusted-content pattern is unsafe; the dual-LLM pattern uses a quarantined LLM reading untrusted input and a privileged LLM holding tools, receiving only structured summaries.",
+      "source": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+      "date": "2024"
+    },
+    {
+      "fact": "Prompt versioning requires coupling rubric versions with prompt versions via Git LFS, as rubric changes make historical scores non-comparable without version metadata.",
+      "source": "https://www.confident-ai.com/docs/llm-evaluation/core-concepts/test-cases-goldens-datasets",
+      "date": "2025"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Stripe",
+      "context": "Payment fraud detection",
+      "metric": "Improved card-testing fraud detection accuracy from 59% to 97% for largest merchants using domain-specific foundation model processing tens of billions of transactions as tokens/context.",
+      "source": "https://www.zenml.io/blog/what-1200-production-deployments-reveal-about-llmops-in-2025",
+      "date": "2025"
+    },
+    {
+      "company": "Cognition (applied AI lab)",
+      "context": "Code assistance",
+      "metric": "Prompt caching allowed providing more context about codebase to get higher quality results while reducing cost and latency via cache-aware ITPM limits optimization.",
+      "source": "https://www.finout.io/blog/anthropic-api-pricing",
+      "date": "2025"
+    },
+    {
+      "company": "Netflix",
+      "context": "Recommendation and search systems",
+      "metric": "Post-training aligns foundation models to concrete intents, domain constraints, and production reliability for member experiences; core engineering problem of coordinating distributed state across GPU clusters.",
+      "source": "https://noise.getoto.net/2026/02/13/scaling-llm-post-training-at-netflix/",
+      "date": "2026"
+    },
+    {
+      "example": "SmartShoes GPT Attack",
+      "context": "OpenAI GPT platform",
+      "metric": "Attacker injected prompt into custom GPT system instructions; despite NIKE being globally recognized, ChatGPT o3-mini biased recommendation toward fictional 'Xiangyu's Shoes' with fabricated justifications.",
+      "source": "https://arxiv.org/html/2504.16125v1",
+      "date": "2025"
+    },
+    {
+      "example": "Anthropic Cache Hit Case Study",
+      "context": "Multi-turn agent loop with 10k-token system prompt",
+      "metric": "5x to 10x cost reduction on input; 50-turn session without cache costs $1.20 in re-billed prefix; with caching costs $0.0024 per cached turn after first write.",
+      "source": "https://medium.com/@labeveryday/prompt-caching-is-a-must-how-i-went-from-spending-720-to-72-monthly-on-api-costs-3086f3635d63",
+      "date": "2025"
+    },
+    {
+      "example": "Vector Database Retrieval",
+      "context": "RAG systems at scale",
+      "metric": "Modern search engines leverage vector databases for semantic retrieval; initial vector search misses relevant information below top_k; reranking reorders results to keep only most relevant for LLM.",
+      "source": "https://cloud.google.com/use-cases/retrieval-augmented-generation",
+      "date": "2024"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Context window as working memory, not unlimited storage",
+      "explanation": "Just as your conscious mind can hold only 5-9 items while solving complex problems, an LLM's context window is working memory—the finite amount of text it can actively process. A 128K token window doesn't mean the model can reason over all 128K simultaneously; it's the shelf size, not how many books it can read at once.",
+      "source": "https://glenrhodes.com/context-window-management-treating-llm-context-as-working-memory-not-unlimited-storage/",
+      "date": "2024"
+    },
+    {
+      "analogy": "Lost in the Middle like information in a crowded room",
+      "explanation": "Imagine sitting in a crowded room where someone introduces themselves at the start (you remember clearly), people chat in the middle (you miss most of it), and someone important speaks at the end (you remember). LLMs have this same bias: perfect recall at context edges, 30+ percentage point accuracy drop in the middle.",
+      "source": "https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00638/119630/Lost-in-the-Middle-How-Language-Models-Use-Long-Contexts",
+      "date": "2023"
+    },
+    {
+      "analogy": "KV cache like keeping the most-visited shelves in reach",
+      "explanation": "KV cache pruning is like a librarian who notices books in the first shelf and last shelf are consulted constantly, so they remove rarely-used middle shelves. DynamicKV keeps 85% of performance while removing 98.3% of shelf space by tracking which token pairs actually attend to each other.",
+      "source": "https://arxiv.org/html/2603.20397v1",
+      "date": "2025"
+    },
+    {
+      "analogy": "Semantic caching like remembering frequent questions",
+      "explanation": "When a customer support team gets 1000 variations of the same question ('How do I reset my password?'), it's efficient to answer once and cache the response. Semantic caching works the same—it recognizes similar queries (not just identical strings) and serves cached answers 90% cheaper.",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "date": "2025"
+    },
+    {
+      "analogy": "Episodic memory consolidation like sleep-based learning",
+      "explanation": "Just as humans learn new skills during day, then consolidate them into long-term knowledge during sleep, episodic memory in agents captures fast-learning episodes (hippocampus) and consolidates them into slow-learning semantic knowledge (neocortex) over time.",
+      "source": "https://arxiv.org/html/2404.00573",
+      "date": "2024"
+    },
+    {
+      "analogy": "Prompt injection like SQL injection in databases",
+      "explanation": "SQL injection treats user input as code, breaking the boundary between data and instructions. Prompt injection does the same with LLM inputs—attacker-supplied text masquerades as instructions, bypassing the model's intended role and safety measures.",
+      "source": "https://owasp.org/www-community/attacks/PromptInjection",
+      "date": "2024"
+    },
+    {
+      "analogy": "Hybrid search like consulting both a dictionary and a thesaurus",
+      "explanation": "BM25 (keyword search) is like a dictionary—exact matches are reliable but miss synonyms. Vector search is like a thesaurus—captures semantic closeness but misses exact wording. Hybrid search uses both: BM25 ensures precision on exact matches, vector search captures meaning.",
+      "source": "https://blog.premai.io/hybrid-search-for-rag-bm25-splade-and-vector-search-combined/",
+      "date": "2025"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Context caching cost reduction",
+      "value": "90%",
+      "detail": "Cached tokens cost 0.10x vs standard input price; break-even after 2 cache hits with 5-min TTL.",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "metric": "Latency reduction from caching",
+      "value": "85%",
+      "detail": "100K-token example: 11.5s → 2.4s response time with caching enabled.",
+      "source": "https://www.anthropic.com/news/prompt-caching"
+    },
+    {
+      "metric": "Context degradation at middle positions",
+      "value": "30+%",
+      "detail": "Accuracy drop from 85-95% (start/end) to 76-82% (middle) within claimed context window.",
+      "source": "https://www.trychroma.com/research/context-rot"
+    },
+    {
+      "metric": "Claude accuracy degradation",
+      "value": "<5%",
+      "detail": "Claude maintains <5% accuracy drop across full 200K token range; competitors unreliable ~130K.",
+      "source": "https://www.morphllm.com/claude-context-window"
+    },
+    {
+      "metric": "Stripe KV cache fragmentation waste reduction",
+      "value": "60-80%",
+      "detail": "PagedAttention via vLLM eliminated memory waste; 73% total cost reduction.",
+      "source": "https://www.zenml.io/blog/what-1200-production-deployments-reveal-about-llmops-in-2025"
+    },
+    {
+      "metric": "Fine-tuning data poisoning threshold",
+      "value": "15 examples",
+      "detail": "<1% of data needed to induce targeted harmful behavior in GPT-4.",
+      "source": "https://arxiv.org/html/2603.22489v1"
+    },
+    {
+      "metric": "DynamicKV memory reduction",
+      "value": "98.3%",
+      "detail": "Achieves 85% of full-KV performance with only 1.7% of original memory.",
+      "source": "https://arxiv.org/html/2603.20397v1"
+    },
+    {
+      "metric": "TokenSkipping memory reduction",
+      "value": "37.5%",
+      "detail": "Maintains comparable throughput with reduced KV cache footprint.",
+      "source": "https://arxiv.org/html/2603.20397v1"
+    },
+    {
+      "metric": "Token-to-word ratio",
+      "value": "1.33 tokens/word",
+      "detail": "100-word paragraph ≈ 133 tokens; 1 token ≈ 4 characters.",
+      "source": "https://winder.ai/calculating-token-counts-llm-context-windows-practical-guide/"
+    },
+    {
+      "metric": "API output cost multiplier",
+      "value": "4-5x",
+      "detail": "Output tokens cost 4-5x input tokens; $10-15M output vs $2-3M input on flagship models.",
+      "source": "https://mobisoftinfotech.com/resources/blog/ai-development/llm-api-pricing-guide"
+    },
+    {
+      "metric": "Context compaction savings",
+      "value": "60%",
+      "detail": "50-70% token reduction while preserving conversation quality.",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/"
+    },
+    {
+      "metric": "Combined optimization savings",
+      "value": "70-85%",
+      "detail": "Five levers (caching, compaction, output control, prompt opt, routing) together.",
+      "source": "https://www.morphllm.com/llm-cost-optimization"
+    },
+    {
+      "metric": "Semantic caching cost reduction",
+      "value": "73%",
+      "detail": "High-repetition workloads; cache hits in milliseconds vs seconds.",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/"
+    },
+    {
+      "metric": "Model routing savings",
+      "value": "40-70%",
+      "detail": "60-80% of requests are routine; route to cheaper models.",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/"
+    },
+    {
+      "metric": "Reranker MRR@3 improvement",
+      "value": "0.172 absolute",
+      "detail": "Cross-encoder MRR@3: 0.433 → 0.605 over hybrid retrieval alone.",
+      "source": "https://docs.bswen.com/blog/2026-02-25-hybrid-search-vs-reranker/"
+    },
+    {
+      "metric": "MCP tool poisoning DREAD severity",
+      "value": "46.5/50",
+      "detail": "Critical severity; #1 risk in OWASP LLM Top 10.",
+      "source": "https://arxiv.org/html/2603.22489v1"
+    },
+    {
+      "metric": "MCP servers in market",
+      "value": "18000+",
+      "detail": "As of 2025; largely unvalidated by clients.",
+      "source": "https://arxiv.org/html/2603.22489v1"
+    },
+    {
+      "metric": "Stripe fraud detection accuracy improvement",
+      "value": "59% → 97%",
+      "detail": "Card-testing fraud detection for largest merchants via domain-specific model.",
+      "source": "https://www.zenml.io/blog/what-1200-production-deployments-reveal-about-llmops-in-2025"
+    },
+    {
+      "metric": "Stripe API call volume",
+      "value": "50 million daily",
+      "detail": "Processed via reduced GPU fleet (1/3 original) after optimization.",
+      "source": "https://www.zenml.io/blog/what-1200-production-deployments-reveal-about-llmops-in-2025"
+    },
+    {
+      "metric": "Cache hit routing reliability",
+      "value": "100%",
+      "detail": "Anthropic routes requests to cached entries 100% of time when requested.",
+      "source": "https://www.anthropic.com/news/prompt-caching"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Larger context windows always mean better performance.",
+      "truth": "Every LLM shows performance degradation as context grows, even within claimed limits. Claude at 200K has <5% drop; most models break around 130K. Size alone doesn't improve reasoning capacity.",
+      "source": "https://www.trychroma.com/research/context-rot"
+    },
+    {
+      "misconception": "More context in a prompt always helps—stuff the window.",
+      "truth": "Working memory overloads on small inputs before context limits hit. Models manage only 5-9 variables reliably. Production teams found they had to delete context to improve performance.",
+      "source": "https://atlan.com/know/working-memory-llms/"
+    },
+    {
+      "misconception": "Context window limits are hard stops; you can't fail before hitting them.",
+      "truth": "Distribution bias from training causes 'Lost in the Middle' phenomenon—accuracy drops 30+ points for middle-positioned info while edges stay at 85-95%, regardless of total window size.",
+      "source": "https://cs.stanford.edu/~nfliu/papers/lost-in-the-middle.arxiv2023.pdf"
+    },
+    {
+      "misconception": "Prompt injection is only a direct threat from user input.",
+      "truth": "Indirect prompt injection via retrieved web content, tool metadata, and fine-tuning data is equally dangerous. Untrusted sources need dual-LLM quarantine pattern.",
+      "source": "https://developer.microsoft.com/blog/protecting-against-indirect-injection-attacks-mcp"
+    },
+    {
+      "misconception": "You need 10K+ queries to poison a model via fine-tuning.",
+      "truth": "As few as 15 malicious examples (<1% of data) induce targeted harmful behavior in GPT-4. Poisoning scales inversely with attacker precision.",
+      "source": "https://arxiv.org/html/2603.22489v1"
+    },
+    {
+      "misconception": "Vector search alone is sufficient for RAG retrieval.",
+      "truth": "Vector search misses exact-match documents; BM25 misses synonyms. Hybrid search (BM25 + vector) for recall, then reranking for precision, is the production baseline.",
+      "source": "https://blog.premai.io/hybrid-search-for-rag-bm25-splade-and-vector-search-combined/"
+    },
+    {
+      "misconception": "Reranking improves recall.",
+      "truth": "Reranking only reorders what's already retrieved; it can't recover missed documents. Recall must come first (hybrid retrieval), then reranking improves precision.",
+      "source": "https://docs.bswen.com/blog/2026-02-25-hybrid-search-vs-reranker/"
+    },
+    {
+      "misconception": "Token counting is exact across all tokenizers.",
+      "truth": "Tokenization varies by model; benchmarks should use model-specific token counters. 1 token ≈ 4 characters is a rough average; actual varies 20-30%.",
+      "source": "https://winder.ai/calculating-token-counts-llm-context-windows-practical-guide/"
+    },
+    {
+      "misconception": "Semantic caching is a bleeding-edge optimization, not production-ready.",
+      "truth": "Semantic caching deployed in production achieves 73% cost reduction on high-repetition workloads. It's a proven lever alongside prompt optimization and model routing.",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/"
+    },
+    {
+      "misconception": "Prompt engineering beats infrastructure engineering for LLM success.",
+      "truth": "1,200-deployment analysis shows context engineering (system design) and infrastructure guardrails, not prompt tweaks, predict production success.",
+      "source": "https://www.zenml.io/blog/what-1200-production-deployments-reveal-about-llmops-in-2025"
+    },
+    {
+      "misconception": "MCP servers are inherently safe because they're standardized.",
+      "truth": "MCP tool poisoning ranks Critical (46.5/50 DREAD) in OWASP LLM Top 10. Most clients don't validate server metadata; 5 of 7 evaluated skip static validation.",
+      "source": "https://arxiv.org/html/2603.22489v1"
+    },
+    {
+      "misconception": "Episodic memory requires storing every raw interaction.",
+      "truth": "Consolidation identifies important moments, summarizes them into compact records, and organizes for retrieval. Raw storage is noise; smart summarization is signal.",
+      "source": "https://arxiv.org/html/2404.00573"
+    },
+    {
+      "misconception": "Attention locality means local context is always sufficient.",
+      "truth": "Sliding window and local attention reduce complexity but fail on tasks requiring synthesis from non-local contexts (e.g., comparing start and middle of document).",
+      "source": "https://arxiv.org/html/2411.01101"
+    },
+    {
+      "misconception": "Rubric versioning is optional; historical scores are always comparable.",
+      "truth": "Rubric changes make historical scores non-comparable without metadata. Teams must version rubrics alongside prompts via Git LFS and track which rubric version produced each score.",
+      "source": "https://www.confident-ai.com/docs/llm-evaluation/core-concepts/test-cases-goldens-datasets"
+    },
+    {
+      "misconception": "Cache hit rates above 50% are exceptional.",
+      "truth": "Well-designed RAG systems and code assistants regularly achieve 80-95% cache hit rates; break-even is just 2 hits with 5-min TTL.",
+      "source": "https://startdebugging.net/2026/04/how-to-add-prompt-caching-to-an-anthropic-sdk-app-and-measure-the-hit-rate/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "title": "Prompt Caching - Claude API Docs",
+      "recency": "Current (2025+)"
+    },
+    {
+      "url": "https://www.anthropic.com/news/prompt-caching",
+      "title": "Prompt Caching Announcement - Anthropic",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.trychroma.com/research/context-rot",
+      "title": "Context Rot Research - Chroma",
+      "recency": "2025"
+    },
+    {
+      "url": "https://cs.stanford.edu/~nfliu/papers/lost-in-the-middle.arxiv2023.pdf",
+      "title": "Lost in the Middle: How Language Models Use Long Contexts - Stanford",
+      "recency": "2023"
+    },
+    {
+      "url": "https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00638/119630/Lost-in-the-Middle-How-Language-Models-Use-Long",
+      "title": "Lost in the Middle: ACL Publication - MIT Press",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.morphllm.com/claude-context-window",
+      "title": "Claude Context Window Comparison - Morph",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.zenml.io/blog/what-1200-production-deployments-reveal-about-llmops-in-2025",
+      "title": "1200 Production Deployments Analysis - ZenML",
+      "recency": "2025"
+    },
+    {
+      "url": "https://arxiv.org/html/2603.22489v1",
+      "title": "Model Context Protocol Threat Modeling - arXiv",
+      "recency": "2026"
+    },
+    {
+      "url": "https://arxiv.org/html/2404.00573",
+      "title": "Dynamic Memory Recall in LLM Agents - arXiv",
+      "recency": "2024"
+    },
+    {
+      "url": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "title": "LLM Token Optimization - Redis",
+      "recency": "2025"
+    },
+    {
+      "url": "https://blog.premai.io/hybrid-search-for-rag-bm25-splade-and-vector-search-combined/",
+      "title": "Hybrid Search for RAG - Premai",
+      "recency": "2025"
+    },
+    {
+      "url": "https://arxiv.org/html/2603.20397v1",
+      "title": "KV Cache Optimization Strategies - arXiv",
+      "recency": "2026"
+    },
+    {
+      "url": "https://developer.microsoft.com/blog/protecting-against-indirect-injection-attacks-mcp",
+      "title": "MCP Prompt Injection Defense - Microsoft",
+      "recency": "2025"
+    },
+    {
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+      "title": "OWASP LLM Prompt Injection Cheat Sheet",
+      "recency": "2024+"
+    },
+    {
+      "url": "https://www.confident-ai.com/docs/llm-evaluation/core-concepts/test-cases-goldens-datasets",
+      "title": "Golden Datasets and Versioning - Confident AI",
+      "recency": "2025"
+    },
+    {
+      "url": "https://mobisoftinfotech.com/resources/blog/ai-development/llm-api-pricing-guide",
+      "title": "LLM API Pricing Guide",
+      "recency": "2025"
+    },
+    {
+      "url": "https://winder.ai/calculating-token-counts-llm-context-windows-practical-guide/",
+      "title": "Token Counting Practical Guide - Winder AI",
+      "recency": "2025"
+    },
+    {
+      "url": "https://medium.com/@labeveryday/prompt-caching-is-a-must-how-i-went-from-spending-720-to-72-monthly-on-api-costs-3086f3635d63",
+      "title": "Prompt Caching Case Study - Medium",
+      "recency": "2025"
+    },
+    {
+      "url": "https://arxiv.org/html/2510.05381v1",
+      "title": "Context Length Alone Hurts LLM Performance - arXiv",
+      "recency": "2024"
+    },
+    {
+      "url": "https://arxiv.org/html/2412.12465v1",
+      "title": "Core Context Aware Attention - arXiv",
+      "recency": "2024"
+    },
+    {
+      "url": "https://atlan.com/know/working-memory-llms/",
+      "title": "Working Memory in LLMs - Atlan",
+      "recency": "2025"
+    },
+    {
+      "url": "https://glenrhodes.com/context-window-management-treating-llm-context-as-working-memory-not-unlimited-storage/",
+      "title": "Context Window Management - Glen Rhodes",
+      "recency": "2024"
+    },
+    {
+      "url": "https://cloud.google.com/use-cases/retrieval-augmented-generation",
+      "title": "RAG Overview - Google Cloud",
+      "recency": "2024+"
+    },
+    {
+      "url": "https://www.morphllm.com/llm-cost-optimization",
+      "title": "LLM Cost Optimization Levers - Morph",
+      "recency": "2025"
+    },
+    {
+      "url": "https://docs.bswen.com/blog/2026-02-25-hybrid-search-vs-reranker/",
+      "title": "Hybrid Search vs Reranking - BSWEN",
+      "recency": "2026"
+    },
+    {
+      "url": "https://arxiv.org/html/2411.01101",
+      "title": "Self-Consistency and Positional Bias - arXiv",
+      "recency": "2024"
+    },
+    {
+      "url": "https://noise.getoto.net/2026/02/13/scaling-llm-post-training-at-netflix/",
+      "title": "Scaling LLM Post-Training - Netflix",
+      "recency": "2026"
+    },
+    {
+      "url": "https://startdebugging.net/2026/04/how-to-add-prompt-caching-to-an-anthropic-sdk-app-and-measure-the-hit-rate/",
+      "title": "Prompt Caching Hit Rate Measurement",
+      "recency": "2026"
+    },
+    {
+      "url": "https://arxiv.org/html/2504.16125v1",
+      "title": "SmartShoes Attack Case Study - arXiv",
+      "recency": "2025"
+    },
+    {
+      "url": "https://owasp.org/www-community/attacks/PromptInjection",
+      "title": "Prompt Injection - OWASP",
+      "recency": "2024+"
+    }
+  ]
+}

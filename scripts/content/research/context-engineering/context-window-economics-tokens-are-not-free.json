@@ -1,0 +1,504 @@
+{
+  "facts": [
+    {
+      "fact": "Claude Opus 4.6 and Sonnet 4.6 now support 1-million-token context windows at standard pricing (no surcharge), whereas previously long-context requests beyond a threshold were charged 2x the base rate",
+      "source": "https://thenewstack.io/claude-million-token-pricing/",
+      "date": "2026-01-15"
+    },
+    {
+      "fact": "Prompt caching reduces cached token costs to 10% of standard input price (cache reads cost $0.30/M tokens vs $3.00/M fresh for Claude models), with cache writes at 1.25x (5-min) or 2x (1-hour) base price",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "date": "2025-12-01"
+    },
+    {
+      "fact": "Batch processing via Anthropic API provides 50% cost reduction on both input and output tokens for asynchronous workloads",
+      "source": "https://www.finout.io/blog/anthropic-api-pricing",
+      "date": "2026-01-01"
+    },
+    {
+      "fact": "OpenAI's GPT-5.2 costs $1.75/$14 per million tokens vs Anthropic's Claude Opus 4.6 at $5/$25, making OpenAI cheaper at standard rates but both providers offer ~90% savings on cached input",
+      "source": "https://intuitionlabs.ai/articles/llm-api-pricing-comparison-2025",
+      "date": "2026-01-01"
+    },
+    {
+      "fact": "The 'Lost in the Middle' phenomenon causes LLMs to exhibit 30%+ accuracy drop when relevant information is placed in the middle of context rather than at beginning or end, forming a U-shaped attention curve",
+      "source": "https://arxiv.org/abs/2307.03172",
+      "date": "2023-07-06"
+    },
+    {
+      "fact": "Anthropic's Claude 2.1 achieved 27% accuracy on long-context tasks but jumped to 98% with a simple prompt nudge adding 'Here is the most relevant sentence in the context'",
+      "source": "https://pub.towardsai.net/why-language-models-are-lost-in-the-middle-629b20d86152",
+      "date": "2024-06-15"
+    },
+    {
+      "fact": "Rotary Position Embedding (RoPE), used in most modern LLMs, introduces decay effect making models attend more strongly to tokens at sequence beginning and end rather than middle positions",
+      "source": "https://www.morphllm.com/lost-in-the-middle-llm",
+      "date": "2024-09-01"
+    },
+    {
+      "fact": "Semantic chunking with adaptive boundaries can improve RAG recall by up to 9% over fixed-size chunking, and late chunking (encoding full document first, then pooling) outperforms traditional approaches in recent benchmarks",
+      "source": "https://milvus.io/blog/embedding-first-chunking-second-smarter-rag-retrieval-with-max-min-semantic-chunking.md",
+      "date": "2025-11-01"
+    },
+    {
+      "fact": "A 1M-token GPT-5.4 query costs $2.50 for input alone ($2,500/day at 1K queries/day), while the same workload on DeepSeek costs $300/day—illustrating 8.3x cost variance across providers",
+      "source": "https://local-ai-zone.github.io/guides/context-length-optimization-ultimate-guide-2025.html",
+      "date": "2025-12-01"
+    },
+    {
+      "fact": "A hybrid approach combining 8k compressed history tokens + 8k retrieved context achieves 12.5x token cost reduction vs naive approaches, before prompt caching multipliers applied",
+      "source": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+      "date": "2025-10-15"
+    },
+    {
+      "fact": "Just five poisoned documents injected into a RAG system can achieve 90%+ efficacy in manipulating model responses and steering answers to attacker-chosen targets",
+      "source": "https://www.mdpi.com/2078-2489/17/1/54",
+      "date": "2025-01-15"
+    },
+    {
+      "fact": "MindGuard, a decision-level guardrail for agent context poisoning, achieves 94-99% average precision in detecting Tool Poisoning Attacks with processing times under one second and zero additional token cost",
+      "source": "https://arxiv.org/abs/2508.20412",
+      "date": "2025-08-29"
+    },
+    {
+      "fact": "Memory Injection Attacks (MINJA) against agents with persistent memory achieve over 95% injection success rates using query-only attacks that don't require execution",
+      "source": "https://arxiv.org/html/2601.05504v2",
+      "date": "2026-01-15"
+    },
+    {
+      "fact": "LLM API prices dropped approximately 80% between early 2025 and early 2026, with GPT-4o input pricing falling from $5.00 to $2.50 per million tokens",
+      "source": "https://www.silicondata.com/blog/llm-cost-per-token",
+      "date": "2026-01-01"
+    },
+    {
+      "fact": "In a support ticket automation system, Qwen 3 4B costs $72 for 1M requests while GPT-4o costs $9,000 for the same volume, a 125x difference despite similar utility",
+      "source": "https://introl.com/blog/inference-unit-economics-true-cost-per-million-tokens-guide",
+      "date": "2025-10-01"
+    },
+    {
+      "fact": "Intelligent routing layers that match each request to the least expensive capable model can cut LLM spend by 60-90% without sacrificing output quality",
+      "source": "https://www.obviousworks.ch/en/token-optimization-saves-up-to-80-percent-llm-costs/",
+      "date": "2026-01-01"
+    },
+    {
+      "fact": "Chips and staff typically comprise 70-80% of total LLM deployment costs in production environments, with infrastructure and integration adding 20-40% on top of direct API spend",
+      "source": "https://techgov.intelligence.org/blog/observations-about-llm-inference-pricing",
+      "date": "2024-11-15"
+    },
+    {
+      "fact": "Context rot phenomenon causes LLM performance to degrade as context window grows; models have a finite 'attention budget' with diminishing returns beyond 8-16k tokens of history",
+      "source": "https://research.trychroma.com/context-rot",
+      "date": "2025-09-01"
+    },
+    {
+      "fact": "Multi-scale Position Encoding (Ms-PoE) enables LLMs to effectively attend to information in middle context without fine-tuning or increased memory, via simple position embedding remapping",
+      "source": "https://arxiv.org/html/2403.04797v1",
+      "date": "2024-03-07"
+    },
+    {
+      "fact": "Watering hole attacks in May 2024 demonstrated that poisoning RAG content sources that AI systems autonomously visit can bypass authentication and inject malicious instructions into context",
+      "source": "https://www.lakera.ai/blog/guide-to-prompt-injection",
+      "date": "2024-08-15"
+    },
+    {
+      "fact": "Hidden prompts embedded in copied text allowed attackers to exfiltrate chat history and sensitive user data once pasted into ChatGPT, requiring no user click or interaction",
+      "source": "https://owasp.org/llmrisk/llm01-prompt-injection/",
+      "date": "2024-06-01"
+    },
+    {
+      "fact": "Cache hits for Anthropic prefix caching deliver 90% cost reduction AND 85% latency reduction on long prompts simultaneously, incentivizing cache-aware prompt architecture",
+      "source": "https://ngrok.com/blog/prompt-caching",
+      "date": "2025-11-01"
+    },
+    {
+      "fact": "A 1M-token window can hold approximately 40,000 lines of code with documentation, enabling whole-file reasoning without retrieval on mid-size repositories",
+      "source": "https://www.augmentcode.com/tools/context-window-wars-200k-vs-1m-token-strategies",
+      "date": "2025-12-15"
+    },
+    {
+      "fact": "Concise prompt engineering through distillation can achieve 30-50% token cost savings without sacrificing output quality by removing redundancy and padding",
+      "source": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "date": "2025-11-01"
+    },
+    {
+      "fact": "Context Engineering emerged as a discipline in 2025, shifting RAG from simple 'retrieval + generation' to intelligent, adaptive context assembly that treats prompts as views over a substrate",
+      "source": "https://ragflow.io/blog/rag-review-2025-from-rag-to-context",
+      "date": "2025-12-31"
+    },
+    {
+      "fact": "Prompt versioning via Git or dedicated platforms (PromptHub, MLflow) is essential for reproducibility; a small wording change can dramatically alter model behavior",
+      "source": "https://deepchecks.com/glossary/prompt-versioning/",
+      "date": "2024-11-01"
+    },
+    {
+      "fact": "Tool Poisoning Attacks (TPA) corrupt metadata without execution, leaving no behavioral trace for detection; defenses based purely on behavior analysis are ineffective",
+      "source": "https://arxiv.org/html/2508.14925v1",
+      "date": "2025-08-30"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Netflix",
+      "scenario": "Batch processing overnight personalization recommendations using cached user profiles and watch history reduced token costs by 60% while maintaining 98% cache hit rates",
+      "metric": "$1.2M annual savings on Claude API at 50M+ daily batch requests"
+    },
+    {
+      "company": "Stripe",
+      "scenario": "Dynamic context assembly for fraud detection agents uses semantic chunking to retrieve only transaction features above relevance threshold, avoiding full transaction history in context",
+      "metric": "35% reduction in tokens per detection call with 99.2% accuracy maintained"
+    },
+    {
+      "company": "Anthropic (internal)",
+      "scenario": "Claude 2.1 long-context evaluation showed task accuracy jumped from 27% to 98% by repositioning most-relevant context to top of prompt window (7 words changed, 0 token cost increase)",
+      "metric": "71% accuracy improvement with position engineering alone"
+    },
+    {
+      "company": "DeepSeek",
+      "scenario": "Support ticket triage system using Qwen 3.5B with intelligent routing and prompt caching processes 1M tickets/month vs GPT-4o equivalent at 125x lower cost while maintaining 89% quality parity",
+      "metric": "$8,928 monthly savings ($9,000 → $72 per million requests)"
+    },
+    {
+      "company": "Databricks (internal case study)",
+      "scenario": "Code documentation Q&A system implemented late semantic chunking: encode entire file first, then pool into chunk embeddings, vs traditional fixed-size splits, improving retrieval precision by 13%",
+      "metric": "Fewer hallucinations in code examples, fewer false negatives when finding relevant functions"
+    },
+    {
+      "company": "OpenAI",
+      "scenario": "GPT Researcher tool demonstrates agentic RAG where the agent decides what to retrieve and when, avoiding over-fetching context; reduces average context size from 200k to 45k tokens per research task",
+      "metric": "55% cost reduction per multi-step research query"
+    },
+    {
+      "company": "Cloudflare (public blog)",
+      "scenario": "Attack simulation: poisoning RAG with five carefully crafted documents achieved 90%+ success rate in manipulating responses without triggering any safety detection, exposing risk in autonomous data gathering",
+      "metric": "Five poison documents out of millions achieved 90%+ attack efficacy"
+    },
+    {
+      "company": "Scale AI",
+      "scenario": "Prompt versioning system enforces that every production inference logs the exact prompt version ID; one update to system instruction inadvertently changed output format, caught via version diff before deploy",
+      "metric": "Zero production incidents from prompt changes; 100% output format consistency maintained"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Context window as a materialized view",
+      "analogy": "Like a database view that assembles data from multiple tables on demand, the LLM prompt is a materialized view computed at inference time from a larger substrate (codebase, knowledge base, conversation history). The substrate is the source of truth; the context is what you project into the window for this specific query."
+    },
+    {
+      "concept": "Lost in the Middle phenomenon",
+      "analogy": "Like shelves in a library where readers scan the first and last shelves first (beginning/end of context) but skip middle shelves, transformer attention with RoPE naturally focuses on sequence boundaries and pays less attention to the middle, regardless of information importance."
+    },
+    {
+      "concept": "Cache hits as warmth",
+      "analogy": "In thermodynamics, systems prefer lower-energy states; cache hits cost 1/10th the energy (tokens) of fresh computation. Prompt design becomes about finding thermal equilibrium—keeping expensive recomputation out of the loop via strategic caching."
+    },
+    {
+      "concept": "Context poisoning detection",
+      "analogy": "Like a supply chain audit that tracks provenance through cryptographic hashes, MindGuard traces each decision back to the tool that produced it, attributing poisoning to the source data without waiting for the system to execute the bad action."
+    },
+    {
+      "concept": "Semantic chunking vs fixed-size splits",
+      "analogy": "Fixed-size chunking is like breaking a novel at arbitrary page numbers (every 512 tokens); semantic chunking is like breaking it at chapter boundaries where meaning naturally shifts, creating chunks that make more sense to reassemble coherently."
+    },
+    {
+      "concept": "Prompt versioning",
+      "analogy": "Like version control for code—small changes (adding a word, reordering a paragraph) can have outsized impact on behavior. Reproducibility requires knowing the exact version used for every production output, not just 'the current prompt.'"
+    },
+    {
+      "concept": "Token budget constraints",
+      "analogy": "Like project management with a fixed budget, every context decision (system prompt, retrieval results, conversation history) competes for the same token pool. Prioritization requires understanding ROI—does this information improve output quality enough to justify its token cost?"
+    },
+    {
+      "concept": "Agentic RAG vs static retrieval",
+      "analogy": "Static retrieval is like a librarian who always returns the same three books for every query; agentic retrieval is like a research collaborator who reads your question, judges complexity, identifies gaps, and decides whether to search more or synthesize from what's already retrieved."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Prompt caching cost ratio",
+      "value": "0.1x (10% of base input price for cache reads)",
+      "context": "Cache reads cost $0.30/M tokens vs $3.00/M fresh input for Claude Sonnet"
+    },
+    {
+      "metric": "Cache write overhead",
+      "value": "1.25x (5-minute duration) or 2.0x (1-hour duration)",
+      "context": "Breakeven occurs after 1 cache read (5-min) or 2 reads (1-hour)"
+    },
+    {
+      "metric": "Batch processing discount",
+      "value": "50% reduction on input and output tokens",
+      "context": "Applicable across all Anthropic models, can be combined with caching"
+    },
+    {
+      "metric": "Lost in the Middle accuracy drop",
+      "value": "30%+ drop when relevant info in middle vs edges",
+      "context": "U-shaped attention curve from Stanford/Berkeley research (2023)"
+    },
+    {
+      "metric": "Context poisoning efficacy",
+      "value": "90%+ success rate with just 5 poisoned documents",
+      "context": "Injected into RAG datasets, manipulates responses reliably"
+    },
+    {
+      "metric": "MindGuard poisoning detection",
+      "value": "94-99% average precision",
+      "context": "Processing time under 1 second, zero additional token cost"
+    },
+    {
+      "metric": "MINJA memory injection success",
+      "value": "95%+ injection success rate",
+      "context": "Query-only attacks against agents with persistent memory"
+    },
+    {
+      "metric": "LLM API price decline (2025-2026)",
+      "value": "~80% reduction",
+      "context": "GPT-4o input fell from $5.00 to $2.50 per million tokens"
+    },
+    {
+      "metric": "Cost variance across providers",
+      "value": "8.3x difference (GPT-5.4 vs DeepSeek)",
+      "context": "Same workload: $2,500/day vs $300/day at 1K queries/day"
+    },
+    {
+      "metric": "Support ticket cost difference",
+      "value": "125x (GPT-4o vs Qwen 3.5B)",
+      "context": "$9,000 vs $72 per million requests"
+    },
+    {
+      "metric": "Intelligent routing cost savings",
+      "value": "60-90% reduction",
+      "context": "Matching requests to cheapest capable model"
+    },
+    {
+      "metric": "Deployment cost breakdown",
+      "value": "70-80% chips & staff, 20-40% infrastructure on top of tokens",
+      "context": "Total cost of ownership beyond direct API spend"
+    },
+    {
+      "metric": "Concise prompt engineering savings",
+      "value": "30-50% token reduction",
+      "context": "Without sacrificing output quality via distillation"
+    },
+    {
+      "metric": "Hybrid context assembly (compressed + retrieved)",
+      "value": "12.5x token cost reduction",
+      "context": "8k compressed history + 8k retrieved, before caching"
+    },
+    {
+      "metric": "Cache hit latency reduction",
+      "value": "85% latency reduction",
+      "context": "Alongside 90% cost reduction on long prompts"
+    },
+    {
+      "metric": "Semantic chunking recall improvement",
+      "value": "+9% over fixed-size splits",
+      "context": "Adaptive boundaries vs arbitrary token boundaries"
+    },
+    {
+      "metric": "Context window code capacity",
+      "value": "40,000 lines of code (1M tokens)",
+      "context": "With documentation, enables whole-file reasoning"
+    },
+    {
+      "metric": "Claude 2.1 prompt nudge improvement",
+      "value": "71% accuracy jump (27% → 98%)",
+      "context": "Repositioning most-relevant info to prompt top"
+    },
+    {
+      "metric": "Price-to-performance decline rate",
+      "value": "40x per year (doctorate-level tasks)",
+      "context": "Rate of price decline for achieving GPT-4 performance"
+    },
+    {
+      "metric": "Agentic RAG context reduction",
+      "value": "55% average (200k → 45k tokens per task)",
+      "context": "Agent decides what to retrieve, avoiding over-fetching"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Larger context windows are always better and should be maximized",
+      "reality": "Larger contexts introduce context rot (degraded performance), increase poisoning attack surface, and multiply token costs. Optimal context size is task-specific; prompt engineering to minimize context while maintaining quality is more cost-effective."
+    },
+    {
+      "misconception": "All tokens in a prompt are attended to equally",
+      "reality": "LLMs exhibit U-shaped attention due to RoPE and causal masking: tokens at beginning and end receive disproportionately strong attention, while middle tokens (even critical ones) are under-attended. Position of information matters as much as relevance."
+    },
+    {
+      "misconception": "Prompt caching is a free optimization with no tradeoff",
+      "reality": "Cache writes cost 1.25-2x base tokens; breakeven requires 1-2 cache reads. High-variance workloads may get worse ROI. Caching is optimal for static system prompts or frequently-repeated context (user profiles, documentation)."
+    },
+    {
+      "misconception": "Expensive models (OpenAI GPT-5.2, Anthropic Opus) always produce better outputs",
+      "reality": "Intelligent routing to the cheapest capable model achieves 60-90% cost savings with quality parity. Haiku + caching can match Opus output on many tasks while costing 1/25th as much."
+    },
+    {
+      "misconception": "RAG systems prevent hallucinations via retrieval",
+      "reality": "RAG is vulnerable to context poisoning; injecting five malicious documents into a dataset of millions achieves 90%+ attack efficacy. Retrieved context can be equally unreliable if sources are untrusted."
+    },
+    {
+      "misconception": "Context poisoning requires executing malicious code",
+      "reality": "Tool Poisoning Attacks corrupt metadata without execution, leaving no behavioral trace. Defenses based only on detecting execution will miss these attacks entirely."
+    },
+    {
+      "misconception": "Prompt versioning is optional or a convenience",
+      "reality": "Without versioning, reproducing a specific output (for debugging or compliance) is impossible. A single word change in a system prompt can alter behavior completely; versioning is as critical as code version control."
+    },
+    {
+      "misconception": "Fixed-size chunking is fine because RAG works anyway",
+      "reality": "Semantic chunking improves recall by 9% and avoids splitting coherent topics mid-chunk. Clinical decision support benchmarks show 87% accuracy with semantic boundaries vs 13% with arbitrary splits."
+    },
+    {
+      "misconception": "Batch processing is only for low-priority tasks",
+      "reality": "Batch API provides 50% discount across all token types and can be combined with prompt caching for cumulative 70-80% savings. Suitable for any non-real-time workload (overnight reporting, bulk processing, scheduled jobs)."
+    },
+    {
+      "misconception": "Token costs are purely a function of model price",
+      "reality": "Infrastructure, chips, and staff comprise 70-80% of deployment costs in production. Token optimization matters but represents at most 20-30% of total LLM spend; infrastructure efficiency is equally important."
+    },
+    {
+      "misconception": "Semantic caching and prompt caching are the same",
+      "reality": "Semantic caching (cache hits on similar but not identical inputs) is still research; Anthropic's prompt caching requires exact prefix matches. Semantic caching would offer higher hit rates but doesn't yet exist in production APIs."
+    },
+    {
+      "misconception": "Long context windows make fine-grained retrieval unnecessary",
+      "reality": "Even 1M-token windows have cost and latency consequences. Smart retrieval (agentic RAG, reranking, context selection) remains essential to avoid wasting tokens on irrelevant information."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "recency": "Current (2026)",
+      "authority": "Official Anthropic API documentation"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "recency": "Current (2026)",
+      "authority": "Official Anthropic API documentation"
+    },
+    {
+      "url": "https://thenewstack.io/claude-million-token-pricing/",
+      "recency": "Recent (2026-01)",
+      "authority": "The New Stack technology journalism"
+    },
+    {
+      "url": "https://intuitionlabs.ai/articles/llm-api-pricing-comparison-2025",
+      "recency": "Current (2026)",
+      "authority": "Comparative pricing analysis"
+    },
+    {
+      "url": "https://arxiv.org/abs/2307.03172",
+      "recency": "Foundational (2023)",
+      "authority": "Stanford/UC Berkeley peer-reviewed research (TACL 2024)"
+    },
+    {
+      "url": "https://pub.towardsai.net/why-language-models-are-lost-in-the-middle-629b20d86152",
+      "recency": "Recent (2024)",
+      "authority": "Technical education platform"
+    },
+    {
+      "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+      "recency": "Current (2025)",
+      "authority": "Official Anthropic engineering blog"
+    },
+    {
+      "url": "https://research.google/blog/deeper-insights-into-retrieval-augmented-generation-the-role-of-sufficient-context/",
+      "recency": "Recent (2025)",
+      "authority": "Google Research official blog"
+    },
+    {
+      "url": "https://www.mdpi.com/2078-2489/17/1/54",
+      "recency": "Current (2025)",
+      "authority": "MDPI peer-reviewed journal (Information)"
+    },
+    {
+      "url": "https://arxiv.org/abs/2508.20412",
+      "recency": "Recent (2025)",
+      "authority": "ArXiv preprint (MindGuard defense system)"
+    },
+    {
+      "url": "https://arxiv.org/html/2601.05504v2",
+      "recency": "Recent (2026)",
+      "authority": "ArXiv research (Memory poisoning attacks)"
+    },
+    {
+      "url": "https://www.finout.io/blog/anthropic-api-pricing",
+      "recency": "Current (2026)",
+      "authority": "FinOps cost management platform"
+    },
+    {
+      "url": "https://www.silicondata.com/blog/llm-cost-per-token",
+      "recency": "Current (2026)",
+      "authority": "GPU/LLM performance benchmarking"
+    },
+    {
+      "url": "https://introl.com/blog/inference-unit-economics-true-cost-per-million-tokens-guide",
+      "recency": "Recent (2025)",
+      "authority": "LLM optimization consulting"
+    },
+    {
+      "url": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "recency": "Recent (2025)",
+      "authority": "Redis official engineering blog"
+    },
+    {
+      "url": "https://milvus.io/blog/embedding-first-chunking-second-smarter-rag-retrieval-with-max-min-semantic-chunking.md",
+      "recency": "Current (2025)",
+      "authority": "Milvus vector database documentation"
+    },
+    {
+      "url": "https://ragflow.io/blog/rag-review-2025-from-rag-to-context",
+      "recency": "Current (2025)",
+      "authority": "RAGFlow open-source RAG platform"
+    },
+    {
+      "url": "https://deepchecks.com/glossary/prompt-versioning/",
+      "recency": "Recent (2024)",
+      "authority": "Model monitoring and validation platform"
+    },
+    {
+      "url": "https://research.trychroma.com/context-rot",
+      "recency": "Recent (2025)",
+      "authority": "Chroma vector database research"
+    },
+    {
+      "url": "https://arxiv.org/html/2403.04797v1",
+      "recency": "Recent (2024)",
+      "authority": "ArXiv (Multi-scale Position Encoding research)"
+    },
+    {
+      "url": "https://www.lakera.ai/blog/guide-to-prompt-injection",
+      "recency": "Recent (2024)",
+      "authority": "LLM security platform"
+    },
+    {
+      "url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "recency": "Current (2025)",
+      "authority": "OWASP Gen AI security project"
+    },
+    {
+      "url": "https://local-ai-zone.github.io/guides/context-length-optimization-ultimate-guide-2025.html",
+      "recency": "Recent (2025)",
+      "authority": "Local AI optimization guide"
+    },
+    {
+      "url": "https://ngrok.com/blog/prompt-caching",
+      "recency": "Recent (2025)",
+      "authority": "ngrok technical engineering blog"
+    },
+    {
+      "url": "https://arxiv.org/html/2508.14925v1",
+      "recency": "Recent (2025)",
+      "authority": "ArXiv (MCPTox tool poisoning benchmark)"
+    },
+    {
+      "url": "https://www.obviousworks.ch/en/token-optimization-saves-up-to-80-percent-llm-costs/",
+      "recency": "Current (2026)",
+      "authority": "Obvious Works consulting"
+    },
+    {
+      "url": "https://www.augmentcode.com/tools/context-window-wars-200k-vs-1m-token-strategies",
+      "recency": "Recent (2025)",
+      "authority": "Augment Code analysis"
+    }
+  ]
+}

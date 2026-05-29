@@ -1,6 +1,7 @@
 // src/app/api/admin/content/jobs/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { checkAdminSecret } from '@/lib/content/admin-auth'
 import { generateChallenge } from '@/lib/content/generator'
 
@@ -32,6 +33,16 @@ export async function POST(req: NextRequest) {
   if (error || !job) {
     return NextResponse.json({ error: error?.message }, { status: 500 })
   }
+
+  await logAdminAction(supabase, {
+    action: 'content_generation_job.create',
+    targetType: 'generation_jobs',
+    targetId: job.id,
+    after: {
+      input_type: body.input_type,
+      mode,
+    },
+  })
 
   // API mode: trigger generation inline (async, don't await)
   if (mode === 'api') {

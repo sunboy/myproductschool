@@ -53,7 +53,7 @@ export function InterviewPaywallGate({
           <div className="w-full h-1.5 rounded-full bg-white/20 overflow-hidden">
             <div className="h-full rounded-full bg-white" style={{ width: `${progressPct}%` }} />
           </div>
-          <p className="font-body text-xs text-white/60 mt-2">Monthly limit reached — upgrade to keep practicing</p>
+          <p className="font-body text-xs text-white/60 mt-2">Monthly limit reached. Upgrade to keep practicing.</p>
         </div>
         <div className="px-7 pt-5 pb-7 space-y-4">
           <p className="font-body text-sm text-on-surface-variant leading-relaxed">

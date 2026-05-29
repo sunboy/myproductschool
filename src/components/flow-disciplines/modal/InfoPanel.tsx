@@ -1,6 +1,6 @@
 'use client'
 
-import type { Discipline } from '@/lib/data/flow-framework/types'
+import type { Discipline, FlowStepId } from '@/lib/data/flow-framework/types'
 
 interface InfoPanelProps {
   discipline: Discipline
@@ -8,23 +8,167 @@ interface InfoPanelProps {
   selectedType: 'tradition' | 'competency' | 'step' | null
 }
 
+const FLOW_STEPS: FlowStepId[] = ['F', 'L', 'O', 'W']
+
+function formatLabel(label: string) {
+  return label.replace(/_/g, ' ')
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="font-label text-[13px] uppercase tracking-wider mb-2"
+      style={{ color: 'rgba(212,164,116,0.68)' }}
+    >
+      {children}
+    </p>
+  )
+}
+
+function ChipList({ items }: { items: string[] }) {
+  if (items.length === 0) return null
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => (
+        <span
+          key={item}
+          className="font-label text-[13px] px-2.5 py-1 rounded-full leading-snug"
+          style={{ background: 'rgba(212,164,116,0.12)', color: '#d4a574', border: '1px solid rgba(212,164,116,0.25)' }}
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function PlainList({ items }: { items: string[] }) {
+  if (items.length === 0) return null
+  return (
+    <ul className="flex flex-col gap-1.5">
+      {items.map((item) => (
+        <li key={item} className="font-body text-[15px] leading-relaxed flex gap-2" style={{ color: 'rgba(245,240,230,0.62)' }}>
+          <span aria-hidden="true" style={{ color: 'rgba(212,164,116,0.7)' }}>-</span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function ReasoningMove({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="rounded-lg p-4 mt-auto"
+      style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(74,124,89,0.25)' }}
+    >
+      <p className="font-label text-[13px] uppercase tracking-wider mb-1.5" style={{ color: 'rgba(142,207,158,0.72)' }}>
+        Reasoning move
+      </p>
+      <p className="font-body text-[16px] leading-relaxed" style={{ color: '#8ecf9e' }}>
+        {children}
+      </p>
+    </div>
+  )
+}
+
+function PanelHeader({
+  eyebrow,
+  title,
+  accent = '#d4a574',
+}: {
+  eyebrow: string
+  title: string
+  accent?: string
+}) {
+  return (
+    <div className="pl-4 py-1" style={{ borderLeft: `3px solid ${accent}` }}>
+      <p
+        className="font-label text-[13px] uppercase tracking-widest mb-1"
+        style={{ color: 'rgba(212,164,116,0.68)' }}
+      >
+        {eyebrow}
+      </p>
+      <h3
+        className="font-headline text-[20px] font-bold leading-snug capitalize"
+        style={{ color: '#ffc580' }}
+      >
+        {title}
+      </h3>
+    </div>
+  )
+}
+
 export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelProps) {
   if (!selectedId || !selectedType) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12">
+      <div className="flex flex-col gap-5 h-full overflow-y-auto px-1">
+        <PanelHeader
+          eyebrow="Map overview"
+          title={`How ${discipline.name} uses FLOW`}
+        />
+
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
-          style={{ background: 'rgba(212,164,116,0.15)', border: '1px solid rgba(212,164,116,0.3)' }}
+          className="rounded-lg p-4"
+          style={{ background: 'rgba(212,164,116,0.08)', border: '1px solid rgba(212,164,116,0.18)' }}
         >
-          <span
-            className="text-lg font-label font-semibold"
-            style={{ color: '#d4a574' }}
-          >
-            ↖
-          </span>
+          <SectionLabel>What this trains</SectionLabel>
+          <p className="font-body text-[16px] leading-relaxed" style={{ color: '#e8c99a' }}>
+            {discipline.learnerExplanation.plainPurpose}
+          </p>
         </div>
-        <p className="font-label text-[17.5px]" style={{ color: 'rgba(245,240,230,0.45)' }}>
-          Click any node in the circuit to explore it
+
+        <div>
+          <SectionLabel>Example prompt</SectionLabel>
+          <p className="font-body text-[16px] leading-relaxed italic" style={{ color: 'rgba(245,240,230,0.72)' }}>
+            &quot;{discipline.learnerExplanation.examplePrompt}&quot;
+          </p>
+        </div>
+
+        <div>
+          <SectionLabel>How FLOW shows up</SectionLabel>
+          <div className="flex flex-col gap-2.5">
+            {FLOW_STEPS.map((stepId) => {
+              const step = discipline.steps.find((candidate) => candidate.id === stepId)
+              if (!step) return null
+              return (
+                <div
+                  key={stepId}
+                  className="rounded-lg p-3"
+                  style={{ background: 'rgba(245,240,230,0.035)', border: '1px solid rgba(212,164,116,0.12)' }}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className="font-label text-[13px] font-bold px-1.5 py-0.5 rounded"
+                      style={{ background: 'rgba(212,164,116,0.2)', color: '#d4a574' }}
+                    >
+                      {step.id}
+                    </span>
+                    <span className="font-label text-[13px] font-semibold uppercase tracking-wider" style={{ color: '#e8c99a' }}>
+                      {step.name}
+                    </span>
+                  </div>
+                  <p className="font-body text-[14px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.62)' }}>
+                    {discipline.learnerExplanation.stepMeanings[step.id]}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div
+          className="rounded-lg p-4"
+          style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(74,124,89,0.25)' }}
+        >
+          <SectionLabel>Practice outcome</SectionLabel>
+          <p className="font-body text-[16px] leading-relaxed" style={{ color: '#8ecf9e' }}>
+            {discipline.learnerExplanation.practiceOutcome}
+          </p>
+        </div>
+
+        <p className="font-label text-[13px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.48)' }}>
+          Click any node to see which source idea, trainable skill, or scored FLOW move it represents.
         </p>
       </div>
     )
@@ -35,94 +179,33 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
     if (!tradition) return null
     return (
       <div className="flex flex-col gap-5 h-full overflow-y-auto px-1">
-        <div
-          className="pl-4 py-1"
-          style={{ borderLeft: '3px solid #d4a574' }}
-        >
-          <p
-            className="font-label text-[15px] uppercase tracking-widest mb-1"
-            style={{ color: 'rgba(212,164,116,0.65)' }}
-          >
-            Tradition
-          </p>
-          <h3
-            className="font-headline text-[20px] font-bold leading-snug"
-            style={{ color: '#ffc580' }}
-          >
-            {tradition.label}
-          </h3>
-        </div>
+        <PanelHeader eyebrow="Source idea" title={tradition.label.toLowerCase()} />
 
-        <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
+        <p className="font-body text-[16px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.68)' }}>
           {tradition.body}
         </p>
 
-        {tradition.contribution && (
-          <div
-            className="rounded-lg p-4"
-            style={{ background: 'rgba(212,164,116,0.08)', border: '1px solid rgba(212,164,116,0.18)' }}
-          >
-            <p
-              className="font-label text-[15px] uppercase tracking-wider mb-1.5"
-              style={{ color: 'rgba(212,164,116,0.65)' }}
-            >
-              What it contributes
-            </p>
-            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: '#e8c99a' }}>
-              {tradition.contribution}
-            </p>
-          </div>
-        )}
+        <div
+          className="rounded-lg p-4"
+          style={{ background: 'rgba(212,164,116,0.08)', border: '1px solid rgba(212,164,116,0.18)' }}
+        >
+          <SectionLabel>What it contributes</SectionLabel>
+          <p className="font-body text-[16px] leading-relaxed" style={{ color: '#e8c99a' }}>
+            {tradition.contribution}
+          </p>
+        </div>
 
-        {tradition.absorbed && tradition.absorbed.length > 0 && (
-          <div>
-            <p
-              className="font-label text-[15px] uppercase tracking-wider mb-2"
-              style={{ color: 'rgba(212,164,116,0.65)' }}
-            >
-              Absorbed
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {tradition.absorbed.map((item) => (
-                <span
-                  key={item}
-                  className="font-label text-[15px] px-2.5 py-1 rounded-full"
-                  style={{ background: 'rgba(212,164,116,0.12)', color: '#d4a574', border: '1px solid rgba(212,164,116,0.25)' }}
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        <div>
+          <SectionLabel>What FLOW keeps</SectionLabel>
+          <ChipList items={tradition.absorbed} />
+        </div>
 
-        {tradition.leftBehind && (
-          <div>
-            <p
-              className="font-label text-[15px] uppercase tracking-wider mb-1.5"
-              style={{ color: 'rgba(212,164,116,0.65)' }}
-            >
-              Left behind
-            </p>
-            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
-              {tradition.leftBehind}
-            </p>
-          </div>
-        )}
+        <div>
+          <SectionLabel>What stays out</SectionLabel>
+          <PlainList items={tradition.leftBehind} />
+        </div>
 
-        {tradition.reasoningMove && (
-          <div
-            className="rounded-lg p-4 mt-auto"
-            style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(74,124,89,0.25)' }}
-          >
-            <p className="font-label text-[15px] uppercase tracking-wider mb-1.5" style={{ color: 'rgba(142,207,158,0.7)' }}>
-              Reasoning move
-            </p>
-            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: '#8ecf9e' }}>
-              {tradition.reasoningMove}
-            </p>
-          </div>
-        )}
+        <ReasoningMove>{tradition.reasoningMove}</ReasoningMove>
       </div>
     )
   }
@@ -132,92 +215,42 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
     if (!competency) return null
     return (
       <div className="flex flex-col gap-5 h-full overflow-y-auto px-1">
-        <div
-          className="pl-4 py-1"
-          style={{ borderLeft: '3px solid #d4a574' }}
-        >
-          <p
-            className="font-label text-[15px] uppercase tracking-widest mb-1"
-            style={{ color: 'rgba(212,164,116,0.65)' }}
-          >
-            Competency
-          </p>
-          <h3
-            className="font-headline text-[20px] font-bold leading-snug"
-            style={{ color: '#ffc580' }}
-          >
-            {competency.label.replace(/_/g, ' ')}
-          </h3>
-        </div>
+        <PanelHeader eyebrow="Skill you practice" title={formatLabel(competency.label)} />
 
-        {competency.what && (
-          <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
-            {competency.what}
-          </p>
-        )}
+        <p className="font-body text-[16px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.72)' }}>
+          {competency.what}
+        </p>
 
-        <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
+        <p className="font-body text-[16px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.62)' }}>
           {competency.body}
         </p>
 
-        {competency.measuredIn && (
-          <div
-            className="rounded-lg p-4"
-            style={{ background: 'rgba(212,164,116,0.08)', border: '1px solid rgba(212,164,116,0.18)' }}
-          >
-            <p
-              className="font-label text-[15px] uppercase tracking-wider mb-1.5"
-              style={{ color: 'rgba(212,164,116,0.65)' }}
-            >
-              Measured in
-            </p>
-            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: '#e8c99a' }}>
-              {competency.measuredIn}
-            </p>
-          </div>
-        )}
+        <div
+          className="rounded-lg p-4"
+          style={{ background: 'rgba(212,164,116,0.08)', border: '1px solid rgba(212,164,116,0.18)' }}
+        >
+          <SectionLabel>Scored in</SectionLabel>
+          <ChipList items={competency.measuredIn} />
+        </div>
 
-        {competency.coaching && (
-          <div>
-            <p
-              className="font-label text-[15px] uppercase tracking-wider mb-1.5"
-              style={{ color: 'rgba(212,164,116,0.65)' }}
-            >
-              Coaching signal
-            </p>
-            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
-              {competency.coaching}
-            </p>
-          </div>
-        )}
+        <div>
+          <SectionLabel>Coaching signal</SectionLabel>
+          <p className="font-body text-[16px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.66)' }}>
+            {competency.coaching}
+          </p>
+        </div>
 
-        {competency.failureMode && (
-          <div
-            className="rounded-lg p-4"
-            style={{ background: 'rgba(184,50,48,0.08)', border: '1px solid rgba(184,50,48,0.2)' }}
-          >
-            <p className="font-label text-[15px] uppercase tracking-wider mb-1.5 text-error opacity-70">
-              Failure mode
-            </p>
-            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
-              {competency.failureMode}
-            </p>
-          </div>
-        )}
+        <div
+          className="rounded-lg p-4"
+          style={{ background: 'rgba(184,50,48,0.08)', border: '1px solid rgba(184,50,48,0.2)' }}
+        >
+          <SectionLabel>Failure mode</SectionLabel>
+          <p className="font-body text-[16px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.64)' }}>
+            {competency.failureMode}
+          </p>
+        </div>
 
-        {competency.reasoningMove && (
-          <div
-            className="rounded-lg p-4 mt-auto"
-            style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(74,124,89,0.25)' }}
-          >
-            <p className="font-label text-[15px] uppercase tracking-wider mb-1.5 text-primary opacity-70">
-              Reasoning move
-            </p>
-            <p className="font-body text-[17.5px] leading-relaxed text-primary">
-              {competency.reasoningMove}
-            </p>
-          </div>
-        )}
+        <ReasoningMove>{competency.reasoningMove}</ReasoningMove>
       </div>
     )
   }
@@ -227,40 +260,25 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
     if (!step) return null
     return (
       <div className="flex flex-col gap-5 h-full overflow-y-auto px-1">
+        <PanelHeader eyebrow={`FLOW move - ${step.id}`} title={step.name.toLowerCase()} accent="#ffc580" />
+
         <div
-          className="pl-4 py-1"
-          style={{ borderLeft: '3px solid #ffc580' }}
+          className="rounded-lg p-4"
+          style={{ background: 'rgba(212,164,116,0.08)', border: '1px solid rgba(212,164,116,0.18)' }}
         >
-          <p
-            className="font-label text-[15px] uppercase tracking-widest mb-1"
-            style={{ color: 'rgba(255,197,128,0.65)' }}
-          >
-            FLOW Step · {step.id}
+          <SectionLabel>Plain meaning</SectionLabel>
+          <p className="font-body text-[16px] leading-relaxed" style={{ color: '#e8c99a' }}>
+            {discipline.learnerExplanation.stepMeanings[step.id]}
           </p>
-          <h3
-            className="font-headline text-[20px] font-bold leading-snug"
-            style={{ color: '#ffc580' }}
-          >
-            {step.name}
-          </h3>
         </div>
 
-        <p className="font-label text-[17.5px] leading-relaxed" style={{ color: '#ffc580', opacity: 0.8 }}>
-          {step.label}
-        </p>
-
-        <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
+        <p className="font-body text-[16px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.66)' }}>
           {step.body}
         </p>
 
-        {step.criteriaList && step.criteriaList.length > 0 && (
+        {step.criteriaList.length > 0 && (
           <div>
-            <p
-              className="font-label text-[15px] uppercase tracking-wider mb-3"
-              style={{ color: 'rgba(212,164,116,0.65)' }}
-            >
-              Criteria
-            </p>
+            <SectionLabel>Scoring criteria</SectionLabel>
             <div className="flex flex-col gap-3">
               {step.criteriaList.map((item) => (
                 <div
@@ -270,16 +288,16 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span
-                      className="font-label text-[15px] font-bold px-1.5 py-0.5 rounded"
+                      className="font-label text-[13px] font-bold px-1.5 py-0.5 rounded"
                       style={{ background: 'rgba(212,164,116,0.2)', color: '#d4a574' }}
                     >
                       {item.code}
                     </span>
-                    <span className="font-label text-[15px] font-semibold" style={{ color: '#e8c99a' }}>
+                    <span className="font-label text-[13px] font-semibold" style={{ color: '#e8c99a' }}>
                       {item.title}
                     </span>
                   </div>
-                  <p className="font-body text-[15px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.55)' }}>
+                  <p className="font-body text-[14px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.58)' }}>
                     {item.desc}
                   </p>
                 </div>
@@ -288,41 +306,14 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
           </div>
         )}
 
-        {step.antiPatterns && step.antiPatterns.length > 0 && (
+        {step.antiPatterns.length > 0 && (
           <div>
-            <p
-              className="font-label text-[15px] uppercase tracking-wider mb-2"
-              style={{ color: 'rgba(184,50,48,0.7)' }}
-            >
-              Anti-patterns
-            </p>
-            <ul className="flex flex-col gap-1.5">
-              {step.antiPatterns.map((ap, i) => (
-                <li
-                  key={i}
-                  className="font-body text-[15px] leading-relaxed flex gap-2" style={{ color: 'rgba(245,240,230,0.55)' }}
-                >
-                  <span style={{ color: 'rgba(184,50,48,0.6)' }}>–</span>
-                  {ap}
-                </li>
-              ))}
-            </ul>
+            <SectionLabel>Common misses</SectionLabel>
+            <PlainList items={step.antiPatterns} />
           </div>
         )}
 
-        {step.reasoningMove && (
-          <div
-            className="rounded-lg p-4 mt-auto"
-            style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(74,124,89,0.25)' }}
-          >
-            <p className="font-label text-[15px] uppercase tracking-wider mb-1.5 text-primary opacity-70">
-              Reasoning move
-            </p>
-            <p className="font-body text-[17.5px] leading-relaxed text-primary">
-              {step.reasoningMove}
-            </p>
-          </div>
-        )}
+        <ReasoningMove>{step.reasoningMove}</ReasoningMove>
       </div>
     )
   }

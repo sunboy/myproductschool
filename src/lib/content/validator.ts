@@ -1,6 +1,13 @@
 // src/lib/content/validator.ts
 import type { ChallengeJson, DraftFlowStep, DraftQuestion } from '@/lib/types'
 import { isValidTopicAny, isValidTechniqueAny } from '@/lib/data/taxonomy'
+import { validateChallengeTags } from '@/lib/practice/policy'
+import {
+  EM_DASH_PATTERNS,
+  ROLE_FRAMING_PATTERNS,
+  SLOP_PATTERNS,
+  type VoicePattern,
+} from '@/lib/ai/voice-rules'
 
 export interface ValidationError {
   path: string
@@ -110,14 +117,6 @@ function validateStep(step: DraftFlowStep, idx: number): StepChecks {
   return { errors, warnings }
 }
 
-// Second-person role-framing patterns we never want in user-facing copy
-const ROLE_FRAMING_PATTERNS: RegExp[] = [
-  /^you are (a|an) /i,
-  /\bas a (senior|staff|tech lead|founding|engineer|pm|em|designer|product manager|data scientist)/i,
-  /\bimagine you\b/i,
-  /\byou(?:'re| are) (a|an) /i,
-]
-
 const STOP_WORDS = new Set([
   'the','a','an','and','or','but','is','are','was','were','in','on','at','to','for','of','with','by',
   'from','as','it','this','that','these','those','your','their','its','you','we','they','he','she',
@@ -148,8 +147,29 @@ function groundingTokens(json: ChallengeJson): Set<string> {
   return tokens
 }
 
+function matchingNeedles(patterns: VoicePattern[], text: string): string[] {
+  const matches = new Set<string>()
+
+  for (const pattern of patterns) {
+    pattern.re.lastIndex = 0
+    for (const match of text.matchAll(pattern.re)) {
+      if (match[0]) matches.add(match[0].trim())
+    }
+  }
+
+  return [...matches]
+}
+
 function hasRoleFraming(text: string): boolean {
-  return ROLE_FRAMING_PATTERNS.some(re => re.test(text))
+  return matchingNeedles(ROLE_FRAMING_PATTERNS, text).length > 0
+}
+
+function checkEmDash(text: string): boolean {
+  return matchingNeedles(EM_DASH_PATTERNS, text).length > 0
+}
+
+function checkSlop(text: string): string[] {
+  return matchingNeedles(SLOP_PATTERNS, text)
 }
 
 export function validateChallengeJson(json: ChallengeJson): ValidationResult {
@@ -219,7 +239,7 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
     }
   }
 
-  // --- Voice warnings: reject second-person role framing in user-facing copy ---
+  // --- Voice checks: reject em dashes, warn on slop and role framing in user-facing copy ---
   const copyFields: Array<{ path: string; text: string }> = []
   if (json.scenario?.context) copyFields.push({ path: 'scenario.context', text: json.scenario.context })
   if (json.scenario?.trigger) copyFields.push({ path: 'scenario.trigger', text: json.scenario.trigger })
@@ -239,8 +259,17 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
   }
 
   for (const { path, text } of copyFields) {
+    if (checkEmDash(text)) {
+      errors.push({ path, message: 'Contains an em dash or double hyphen. Rewrite with a comma, period, or clearer sentence.' })
+    }
+
     if (hasRoleFraming(text)) {
-      warnings.push({ path, message: 'Contains second-person role framing ("you are a…", "as a…"). Rewrite to drop into the situation.' })
+      warnings.push({ path, message: 'Contains second-person role framing ("you are a...", "as a..."). Rewrite to drop into the situation.' })
+    }
+
+    const slopMatches = checkSlop(text)
+    if (slopMatches.length > 0) {
+      warnings.push({ path, message: `Contains banned launch voice copy: ${slopMatches.join(', ')}` })
     }
   }
 
@@ -260,8 +289,21 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
     }
   }
 
-  if (topicTags.length === 0) {
-    warnings.push({ path: 'metadata.topic_tags', message: 'No topic_tags set. At least 1 topic tag recommended for discovery.' })
+  // Enforce the per-type tag policy. This pipeline emits FLOW challenges, so
+  // type='flow': topic required + exactly one of technique/move. The publisher
+  // folds free-text `frameworks` into technique_tags, so a challenge with
+  // frameworks but no explicit technique_tags still satisfies the policy — mirror
+  // that here so the validator doesn't reject something the publisher accepts.
+  const effectiveTechnique = techniqueTags.length > 0
+    ? techniqueTags
+    : (json.metadata?.frameworks ?? [])
+  const policyResult = validateChallengeTags('flow', {
+    topic_tags: topicTags,
+    technique_tags: effectiveTechnique,
+    move_tags: [],
+  })
+  for (const msg of policyResult.errors) {
+    errors.push({ path: 'metadata.topic_tags/technique_tags', message: msg })
   }
 
   if (json.metadata?.is_real_interview === true && !json.metadata?.source_url) {

@@ -23,7 +23,7 @@ export default function InterviewControls({
 }: InterviewControlsProps) {
   return (
     <div className="flex items-center gap-3 px-6 py-4 bg-surface-container rounded-full border border-outline-variant shadow-sm">
-      {/* Mute toggle — only shown when voice is available */}
+      {/* Mute toggle - only shown when voice is available */}
       {isVoiceAvailable && (
         <button
           onClick={onToggleMute}

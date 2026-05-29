@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StepDetailModal } from './StepDetailModal'
+import { AnswerGalleryPanel } from '@/components/community/AnswerGalleryPanel'
 import {
   type Verdict,
   VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL, VERDICT_ICON,
@@ -59,6 +60,7 @@ interface PostSessionMirrorProps {
   xpAwarded: number
   stepResults: StepResult[]
   competencyDeltas: CompetencyDelta[]
+  challengeId?: string
   attemptId?: string
   onRunAnother?: () => void
   onDashboard: () => void
@@ -143,7 +145,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
   const verdict = qualityToVerdict(result.quality_label)
   const verdictColor = VERDICT_COLOR[verdict]
   const coaching = result.hatchSignal ?? result.competency_signal?.signal
-    ?? (verdict === 'pass' ? 'Strong reasoning on this move.' : verdict === 'partial' ? 'Partially on track — room to sharpen.' : 'The key move was missed here.')
+    ?? (verdict === 'pass' ? 'Strong reasoning on this move.' : verdict === 'partial' ? 'Partially on track - room to sharpen.' : 'The key move was missed here.')
   // Transitional fallback: post-migration rows store `competency`; pre-migration rows store `primary`.
   const competencyKey = result.competency_signal?.competency ?? result.competency_signal?.primary
   const competency = competencyKey
@@ -248,7 +250,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
         </div>
       </div>
 
-      {/* Hatch coaching — always visible, clamp when collapsed */}
+      {/* Hatch coaching - always visible, clamp when collapsed */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         <div style={{ flexShrink: 0, marginTop: 1 }}>
           <HatchGlyph size={22} state={verdict === 'pass' ? 'celebrating' : verdict === 'partial' ? 'listening' : 'idle'} className="text-primary" />
@@ -437,6 +439,7 @@ export function PostSessionMirror({
   xpAwarded,
   stepResults,
   competencyDeltas,
+  challengeId,
   attemptId,
   onRunAnother,
   onDashboard,
@@ -451,7 +454,7 @@ export function PostSessionMirror({
   const footerRef = useRef<HTMLDivElement>(null)
   const [modalStep, setModalStep] = useState<StepResult | null>(null)
 
-  // Deduplicate by step key — keep the last occurrence (most recent data wins)
+  // Deduplicate by step key - keep the last occurrence (most recent data wins)
   const seenSteps = new Set<string>()
   const uniqueStepResults = [...stepResults].reverse().filter(r => {
     if (seenSteps.has(r.step)) return false
@@ -467,7 +470,7 @@ export function PostSessionMirror({
     ? 'Clean run. Every move landed.'
     : passCount >= 2
     ? `You framed the right problem, but ${missCount > 0 ? 'your Win needed a metric' : 'room to sharpen the final move'}.`
-    : 'Partial run — the coaching below shows where each move went.'
+    : 'Partial run - the coaching below shows where each move went.'
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -531,7 +534,7 @@ export function PostSessionMirror({
             <HatchGlyph size={48} state="celebrating" className="text-primary" />
             <div>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
-                Hatch's Debrief
+                Hatch&rsquo;s Debrief
               </div>
               <div style={{ fontFamily: 'var(--font-headline)', fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em', marginTop: 2, lineHeight: 1.3 }}>
                 {summaryLine}
@@ -610,7 +613,7 @@ export function PostSessionMirror({
           </div>
         )}
 
-        {/* Competency delta strip — always shown, falls back to neutral 50 baseline if no deltas */}
+        {/* Competency delta strip - always shown, falls back to neutral 50 baseline if no deltas */}
         {(() => {
           const ALL_COMPETENCIES = ['motivation_theory', 'cognitive_empathy', 'taste', 'strategic_thinking', 'creative_execution', 'domain_expertise']
           const displayDeltas: CompetencyDelta[] = ALL_COMPETENCIES.map(key => {
@@ -649,6 +652,8 @@ export function PostSessionMirror({
             </div>
           )
         })()}
+
+        <AnswerGalleryPanel challengeId={challengeId} attemptId={attemptId} />
       </div>
 
       {/* Footer */}

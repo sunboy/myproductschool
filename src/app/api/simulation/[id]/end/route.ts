@@ -1,12 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import Anthropic from '@anthropic-ai/sdk'
 import { HATCH_SIMULATION_DEBRIEF_PROMPT } from '@/lib/hatch/system-prompt'
 import { HatchFeedbackSchema, clampFeedbackScores } from '@/lib/hatch/feedback-schema'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const ROUTE_KEY = 'simulation_end'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 export async function POST(
   _request: Request,
@@ -15,7 +23,8 @@ export async function POST(
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
+  const userPlan = await getUserPlanForBudget(user.id)
 
   const adminClient = createAdminClient()
 
@@ -24,25 +33,68 @@ export async function POST(
     adminClient.from('simulation_turns').select('role, content, turn_index').eq('session_id', id).order('turn_index', { ascending: true }),
   ])
 
-  if (sessionResult.error || !sessionResult.data) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+  if (sessionResult.error || !sessionResult.data) return apiError(404, 'session_not_found', 'Session not found')
   if (sessionResult.data.status === 'completed') return NextResponse.json(sessionResult.data.debrief_json)
+  const shouldCallModel = !IS_MOCK && Boolean(process.env.ANTHROPIC_API_KEY)
+
+  if (shouldCallModel) {
+    const throttle = await rateLimit({
+      key: `ai:${user.id}:${ROUTE_KEY}`,
+      limit: userPlan === 'pro' ? 15 : 5,
+      windowSec: 60,
+    })
+
+    if (!throttle.allowed) {
+      const retryAfter = retryAfterSeconds(throttle.resetAt)
+      const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+      response.headers.set('Retry-After', String(retryAfter))
+      return response
+    }
+  }
 
   const transcript = (turnsResult.data ?? []).map(t => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`).join('\n\n')
 
   let debrief: object
-  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
+  if (!shouldCallModel) {
     debrief = { overall_score: 72, dimensions: [], strengths: ['Clear structure'], improvements: ['Add more metrics'], detected_patterns: [], interview_summary: 'Good overall performance.' }
   } else {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      system: HATCH_SIMULATION_DEBRIEF_PROMPT,
-      messages: [{ role: 'user', content: `Interview transcript:\n\n${transcript}` }],
-    })
-    const raw = response.content[0].type === 'text' ? response.content[0].text : '{}'
-    const parsed = JSON.parse(raw)
-    const validated = HatchFeedbackSchema.safeParse(parsed)
-    debrief = validated.success ? clampFeedbackScores(validated.data) : parsed
+    try {
+      await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+
+      const response = await guardedCachedMessage(
+        HATCH_SIMULATION_DEBRIEF_PROMPT,
+        `Interview transcript:\n\n${transcript}`,
+        {
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          budget: { userId: user.id, userPlan, route: ROUTE_KEY },
+        }
+      )
+      const raw = response.sanitized || '{}'
+      const parsed = JSON.parse(raw)
+      const validated = HatchFeedbackSchema.safeParse(parsed)
+      debrief = validated.success ? clampFeedbackScores(validated.data) : parsed
+    } catch (error) {
+      if (error instanceof PlanLimitExceeded) {
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
+      }
+
+      if (error instanceof AiBudgetExceededError) {
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
+      }
+
+      throw error
+    }
   }
 
   await adminClient.from('simulation_sessions').update({

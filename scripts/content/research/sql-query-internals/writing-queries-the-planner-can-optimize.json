@@ -1,0 +1,480 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL cost estimation uses relative units where seq_page_cost = 1.0, random_page_cost = 4.0, and cpu_tuple_cost = 0.01, making sequential I/O 4x cheaper than random access",
+      "source": "https://scalegrid.io/blog/postgres-explain-cost/",
+      "date": "2024"
+    },
+    {
+      "fact": "EXPLAIN ANALYZE startup cost estimates time to fetch the first row; total cost estimates time to fetch all rows. For EXISTS subqueries, planners choose smallest startup cost, not total cost",
+      "source": "https://www.postgresql.org/docs/current/using-explain.html",
+      "date": "2025"
+    },
+    {
+      "fact": "Covering indexes with INCLUDE clause allow index-only scans: a dashboard query filtering 2,000 rows saw performance improve from 280ms to 4ms (70x improvement) by adding three columns to INCLUDE",
+      "source": "https://medium.com/@philmcc/postgresql-covering-indexes-eliminate-heap-fetches-with-include-a2d574b5f7d2",
+      "date": "2026"
+    },
+    {
+      "fact": "Cardinality estimation errors can be many orders of magnitude worse than cost model errors (which max at 30%), making bad CE the root cause of most suboptimal plans",
+      "source": "https://link.springer.com/article/10.1007/s41019-020-00149-7",
+      "date": "2020"
+    },
+    {
+      "fact": "SQL Server's Cardinality Estimation feedback (CE feedback) learns which model assumptions fit data distributions best, and automatically hints subsequent executions if an adjusted plan improves performance",
+      "source": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/intelligent-query-processing-ce-feedback-for-expressions?view=sql-server-ver17",
+      "date": "2025"
+    },
+    {
+      "fact": "Window functions in aggregates (LAG, ROW_NUMBER) force full table scans when placed in views, even when the underlying SQL uses an index—solved by adding composite index on PARTITION BY and ORDER BY columns",
+      "source": "https://algomaster.io/learn/sql-interview/query-optimization-anti-patterns",
+      "date": "2024"
+    },
+    {
+      "fact": "For large partitioned tables with window functions, adding a partition filter (e.g., WHERE date_column = '2025-07-20') enables partition pruning and avoids full table scan",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82",
+      "date": "2024"
+    },
+    {
+      "fact": "Index selectivity measures ability to filter rows; B-tree indexes work best on high-cardinality columns (many distinct values), while bitmap indexes suit low-cardinality (many duplicates)",
+      "source": "https://dbsnoop.com/composite-indexes-database/",
+      "date": "2024"
+    },
+    {
+      "fact": "Query rewriting systems (E3-Rewrite, QUITE) preserve query semantics while rewriting for performance, but struggle with 20% failure rate in syntax/semantic errors even with LLMs—verified equivalence is NP-hard",
+      "source": "https://arxiv.org/pdf/2508.09023",
+      "date": "2024"
+    },
+    {
+      "fact": "Filter pushdown (predicate pushdown) reduces data transmitted across joins: pushing WHERE clauses below joins filters rows before entering hash/merge operations, can improve performance 10x",
+      "source": "https://airbyte.com/data-engineering-resources/predicate-pushdown",
+      "date": "2024"
+    },
+    {
+      "fact": "Netflix's Media Database encountered cardinality explosion: high-cardinality entities (Events, Regions) created hundreds of thousands of child documents per parent, requiring careful cardinality-aware indexing",
+      "source": "https://netflixtechblog.com/implementing-the-netflix-media-database-53b5a840b42a",
+      "date": "2024"
+    },
+    {
+      "fact": "Databricks ZORDER optimization on TPC-DI dataset: a query filtering currenttradeid scanned 448 files to return 1 row; ZORDER BY currenttradeid eliminated all 448 file scans, reducing data from 50GB to single row",
+      "source": "https://community.databricks.com/t5/community-articles/9-powerful-spark-optimization-techniques-in-databricks-with-real/td-p/132925",
+      "date": "2024"
+    },
+    {
+      "fact": "Adaptive Query Execution (AQE) in Spark/Databricks dynamically adjusts execution plans at runtime based on real statistics, achieved 8-minute → 2-minute improvement on misoptimized joins",
+      "source": "https://medium.com/@jorge.hopkins/smarter-query-optimization-in-databricks-understanding-spark-sql.adaptive.enabled-91f649812eeb",
+      "date": "2024"
+    },
+    {
+      "fact": "Stripe's DocDB B-tree optimization: sorting insertion order by most-common index attributes increased write throughput 10x by improving write proximity in B-tree structure",
+      "source": "https://stripe.dev/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations",
+      "date": "2024"
+    },
+    {
+      "fact": "Stripe's DocDB supports 10,000+ distinct query types on petabytes of financial data across 5,000+ collections on 2,000 database shards, requiring sophisticated cardinality-aware routing",
+      "source": "https://stripe.dev/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations",
+      "date": "2024"
+    },
+    {
+      "fact": "PostgreSQL Adaptive Query Optimization (AQO) extension uses execution statistics to improve cardinality estimates in iterative query runs, learning which plan assumptions are incorrect",
+      "source": "https://github.com/postgrespro/aqo",
+      "date": "2024"
+    },
+    {
+      "fact": "XGBoost learned cost models predict SQL runtime from EXPLAIN ANALYZE features (rows, cost, plan depth) achieving <10% prediction error on 65% of test queries",
+      "source": "https://arxiv.org/html/2510.05612v1",
+      "date": "2024"
+    },
+    {
+      "fact": "Recent 2025 study: traditional cost models still outperform state-of-the-art learned cost models on join ordering, access path selection, and physical operator selection tasks",
+      "source": "https://arxiv.org/html/2502.01229v1",
+      "date": "2025"
+    },
+    {
+      "fact": "Functions applied to indexed columns prevent index usage and force full table scan; even mismatched data types (comparing string to int) trigger full table scans",
+      "source": "https://blog.newtum.com/avoid-full-table-scan-in-sql-for-faster-query-performance",
+      "date": "2024"
+    },
+    {
+      "fact": "Broadcast joins in Spark are faster than shuffle joins for tables <200MB joining with fact tables >1GB; broadcast copies small table to all executors, eliminating shuffle network overhead",
+      "source": "https://community.databricks.com/t5/community-articles/9-powerful-spark-optimization-techniques-in-databricks-with-real/td-p/132925",
+      "date": "2024"
+    },
+    {
+      "fact": "Uber's query engine handles billion-scale cardinality time series data; cardinality explosion occurs when user refreshes dashboards, creating redundant query submissions that waste execution time",
+      "source": "https://www.uber.com/en-DK/blog/billion-data-point-challenge/",
+      "date": "2024"
+    },
+    {
+      "fact": "Query Store hints in SQL Server eliminate manual hint maintenance: system automatically uses LEGACY_CARDINALITY_ESTIMATION for single queries without rewriting entire application",
+      "source": "https://blog.sqlauthority.com/2023/06/27/sql-server-2022-cardinality-estimation-ce-feedback-for-performance/",
+      "date": "2023"
+    },
+    {
+      "fact": "LITHE query rewriting system outputs (1) optimizer estimated cost savings, (2) verification label for semantic equivalence, (3) reasoning for why transformation helps—avoiding unsalvageable rewrites",
+      "source": "https://arxiv.org/pdf/2506.07675",
+      "date": "2024"
+    },
+    {
+      "fact": "CMU database course (15-445) teaches join ordering as a cost-based decision: n-way joins have (2n)! possible left-deep orders, requiring heuristics or dynamic programming",
+      "source": "https://15445.courses.cs.cmu.edu/fall2024/slides/15-optimization.pdf",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Dashboard query at large tech company",
+      "description": "A dashboard query finding 2,000 matching rows via B-tree index performed random I/O on heap 276ms. Adding three columns (user_id, timestamp, status) to INCLUDE clause enabled index-only scan, reducing latency from 280ms to 4ms (70x improvement)",
+      "lesson": "Covering indexes eliminate heap fetches; INCLUDE columns are retrieved from index leaf pages, not heap",
+      "source": "https://medium.com/@philmcc/postgresql-covering-indexes-eliminate-heap-fetches-with-include-a2d574b5f7d2"
+    },
+    {
+      "scenario": "Netflix Media Database content catalog",
+      "description": "Media documents stored cardinality explosion: Events (high cardinality) and Regions (lower cardinality) created hundreds of thousands of child documents per parent, requiring document composition refactoring and careful index design to avoid quadratic child lookups",
+      "lesson": "High cardinality nested structures require flattened indexes and denormalization tradeoff analysis",
+      "source": "https://netflixtechblog.com/implementing-the-netflix-media-database-53b5a840b42a"
+    },
+    {
+      "scenario": "Databricks TPC-DI benchmark on large fact table",
+      "description": "Query filtering on currenttradeid (composite key) read 448 files scanning 50GB to return single row. After ZORDER BY currenttradeid, file pruning eliminated all 448 files, returning result from single block",
+      "lesson": "Z-order clustering sorts insertion order by most-filtered columns, enabling aggressive file pruning in data lakes",
+      "source": "https://community.databricks.com/t5/community-articles/9-powerful-spark-optimization-techniques-in-databricks-with-real/td-p/132925"
+    },
+    {
+      "scenario": "Poorly optimized Spark join at financial company",
+      "description": "Shuffle join executed in 8 minutes; Adaptive Query Execution (AQE) detected shuffle output was <200MB, converted to broadcast join in next execution, reducing to 2 minutes",
+      "lesson": "Adaptive optimization learns runtime cardinality and converts join strategies mid-execution",
+      "source": "https://medium.com/@jorge.hopkins/smarter-query-optimization-in-databricks-understanding-spark-sql.adaptive.enabled-91f649812eeb"
+    },
+    {
+      "scenario": "Stripe's write-heavy document database",
+      "description": "DocDB B-tree write throughput increased 10x by sorting insertion order by most-common index columns (user_id, timestamp) before bulk inserts, improving tree locality and cache hit rates",
+      "lesson": "B-tree node organization depends on insertion order; grouped inserts reduce tree splits and improve write proximity",
+      "source": "https://stripe.dev/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations"
+    },
+    {
+      "scenario": "SQL Server CE feedback over 3 months",
+      "description": "Real-world case: query execution time reduced from 10 hours to ~4 minutes after SQL Server 2022 automatically applied LEGACY_CARDINALITY_ESTIMATION hint via CE feedback mechanism",
+      "lesson": "Adaptive cardinality estimation learns which model assumptions fit data distribution; query store hints avoid manual rewrites",
+      "source": "https://blog.sqlauthority.com/2023/06/27/sql-server-2022-cardinality-estimation-ce-feedback-for-performance/"
+    },
+    {
+      "scenario": "Window function in analytics view at SaaS company",
+      "description": "Query with ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY timestamp) placed in view forced full table scan despite composite index on (user_id, timestamp). Solution: add composite index on base table, materialize view with indexed subquery",
+      "lesson": "Window functions in views don't inherit base table indexes; must index base table before window operation",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82"
+    },
+    {
+      "scenario": "Uber time-series cardinality explosion",
+      "description": "Uber's query engine handles billion-scale cardinality: time-series data with many distinct entity IDs (high cardinality) required specialized query engines to avoid full table scans",
+      "lesson": "High cardinality time series benefit from time-partitioning and cardinality-aware indexing to prune scans",
+      "source": "https://www.uber.com/en-DK/blog/billion-data-point-challenge/"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Cost estimation units in EXPLAIN",
+      "analogy": "Cost units are like 'relative fuel consumption' in a car: seq_page_cost=1 (highway driving), random_page_cost=4 (city driving with stops). The numbers are abstract ratios, not milliseconds—what matters is the relative difference between plans",
+      "source": "https://scalegrid.io/blog/postgres-explain-cost/"
+    },
+    {
+      "concept": "Covering indexes (INCLUDE clause)",
+      "analogy": "A covering index is like ordering takeout and asking for extra utensils packed in the bag instead of returning to get them. The index leaf page 'includes' payload columns alongside key columns, so you never need to fetch the heap (main table)",
+      "source": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html"
+    },
+    {
+      "concept": "Cardinality estimation failure",
+      "analogy": "The query planner is like a chef ordering ingredients for a dinner party. If the planner thinks 10 guests are coming (estimates 10 rows) but 10,000 actually show up (actual 10,000 rows), every downstream decision—table choice, prep time, cooking method—is wrong by orders of magnitude",
+      "source": "https://link.springer.com/article/10.1007/s41019-020-00149-7"
+    },
+    {
+      "concept": "Window function full-table scan",
+      "analogy": "A window function without partition-aware indexing is like a mail carrier sorting everyone's mail before walking the route, instead of sorting houses first. Partitioning the data (index on PARTITION BY column) lets you walk each neighborhood separately",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82"
+    },
+    {
+      "concept": "Filter pushdown (predicate pushdown)",
+      "analogy": "Pushing filters down a join is like security screening passengers at the boarding gate instead of at the airplane door. Filtering upstream means fewer rows travel downstream (fewer passengers board the plane), reducing downstream work",
+      "source": "https://airbyte.com/data-engineering-resources/predicate-pushdown"
+    },
+    {
+      "concept": "B-tree index selectivity",
+      "analogy": "An index on a low-cardinality column (e.g., gender with 2 values) is like a library catalog organized by book color: red books are in 40% of shelves, so the 'color index' doesn't help much. An index on ISBN (high cardinality, one per book) is highly selective—you find exactly what you need",
+      "source": "https://dbsnoop.com/composite-indexes-database/"
+    },
+    {
+      "concept": "Adaptive query execution (AQE)",
+      "analogy": "Traditional query optimization is like a chef planning a 4-course meal before starting. Adaptive query execution is like cooking the appetizer, tasting it, then adjusting the main course plan based on the results",
+      "source": "https://medium.com/@jorge.hopkins/smarter-query-optimization-in-databricks-understanding-spark.sql.adaptive.enabled-91f649812eeb"
+    },
+    {
+      "concept": "Z-order clustering",
+      "analogy": "Z-order (space-filling curve) is like arranging books on a shelf: instead of sorting purely by one dimension (author), interleave sorting by author AND genre AND year so nearby physical positions match nearby multi-dimensional query regions",
+      "source": "https://community.databricks.com/t5/community-articles/9-powerful-spark-optimization-techniques-in-databricks-with-real/td-p/132925"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Random vs. sequential I/O cost",
+      "value": "4.0x",
+      "context": "PostgreSQL random_page_cost / seq_page_cost ratio; random disk seeks cost 4x more than sequential reads",
+      "source": "https://scalegrid.io/blog/postgres-explain-cost/"
+    },
+    {
+      "metric": "Covering index performance improvement (real example)",
+      "value": "70x",
+      "context": "Dashboard query latency: 280ms → 4ms by adding 3 columns to INCLUDE clause, enabling index-only scan",
+      "source": "https://medium.com/@philmcc/postgresql-covering-indexes-eliminate-heap-fetches-with-include-a2d574b5f7d2"
+    },
+    {
+      "metric": "Cardinality estimation error magnitude",
+      "value": "Many orders of magnitude",
+      "context": "Cost model errors max at 30%, but CE errors can be 1000x+ off, making bad CE the primary source of query plan failure",
+      "source": "https://link.springer.com/article/10.1007/s41019-020-00149-7"
+    },
+    {
+      "metric": "Query rewriting LLM failure rate",
+      "value": "20%",
+      "context": "LLM-based query rewrite systems produce syntax/semantic errors in ~20% of rewrites; equivalence verification is NP-hard",
+      "source": "https://arxiv.org/pdf/2508.09023"
+    },
+    {
+      "metric": "Filter pushdown performance improvement",
+      "value": "10x",
+      "context": "Join filter pushdown optimization (pushing minimum/maximum key filters before hash join probe) achieves 10x speedup",
+      "source": "https://airbyte.com/data-engineering-resources/predicate-pushdown"
+    },
+    {
+      "metric": "Stripe DocDB write throughput improvement",
+      "value": "10x",
+      "context": "B-tree insertion order optimization (grouping by index columns) increased write throughput 10x",
+      "source": "https://stripe.dev/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations"
+    },
+    {
+      "metric": "Databricks AQE join conversion improvement",
+      "value": "4x",
+      "context": "Poorly optimized 8-minute shuffle join converted to broadcast join by AQE, reducing to 2 minutes",
+      "source": "https://medium.com/@jorge.hopkins/smarter-query-optimization-in-databricks-understanding-spark.sql.adaptive.enabled-91f649812eeb"
+    },
+    {
+      "metric": "Databricks ZORDER file pruning (TPC-DI)",
+      "value": "448 files → 1 file",
+      "context": "Query filtering on currenttradeid: eliminated all 448 file scans, reducing data scanned from 50GB to single block",
+      "source": "https://community.databricks.com/t5/community-articles/9-powerful-spark-optimization-techniques-in-databricks-with-real/td-p/132925"
+    },
+    {
+      "metric": "SQL Server CE feedback query execution time reduction",
+      "value": "~250x",
+      "context": "Real case: 10 hours → ~4 minutes after automatic LEGACY_CARDINALITY_ESTIMATION hint applied",
+      "source": "https://blog.sqlauthority.com/2023/06/27/sql-server-2022-cardinality-estimation-ce-feedback-for-performance/"
+    },
+    {
+      "metric": "XGBoost learned cost model prediction accuracy",
+      "value": "65%",
+      "context": "ML cost models predict query runtime within 10% of true execution time on 65% of test queries",
+      "source": "https://arxiv.org/html/2510.05612v1"
+    },
+    {
+      "metric": "CPU tuple cost in PostgreSQL",
+      "value": "0.01",
+      "context": "Processing each row in memory costs 0.01 units; much cheaper than I/O (1.0 for sequential, 4.0 for random)",
+      "source": "https://scalegrid.io/blog/postgres-explain-cost/"
+    },
+    {
+      "metric": "Broadcast join threshold",
+      "value": "200MB",
+      "context": "Spark broadcast joins are faster than shuffle joins for tables <200MB; broadcast copies small table to all executors",
+      "source": "https://community.databricks.com/t5/community-articles/9-powerful-spark-optimization-techniques-in-databricks-with-real/td-p/132925"
+    },
+    {
+      "metric": "Netflix Media Database cardinality (Events per document)",
+      "value": "Hundreds of thousands",
+      "context": "High-cardinality nested entities (Events, Regions) created cardinality explosion in document structure",
+      "source": "https://netflixtechblog.com/implementing-the-netflix-media-database-53b5a840b42a"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Cost units in EXPLAIN are milliseconds or real time units",
+      "reality": "Cost units are abstract, relative ratios. They're anchored to page reads (seq_page_cost=1.0), not wall-clock time. What matters is plan A costs 100 vs plan B costs 50 (plan B is cheaper), not that 100 means 100ms",
+      "source": "https://scalegrid.io/blog/postgres-explain-cost/"
+    },
+    {
+      "misconception": "Higher startup cost always means slower query execution",
+      "reality": "Startup cost only matters for queries that may return early (EXISTS, LIMIT). For full-row return queries, total cost matters. For EXISTS, the planner chooses lowest startup cost",
+      "source": "https://www.postgresql.org/docs/current/using-explain.html"
+    },
+    {
+      "misconception": "Adding more indexes always improves query performance",
+      "reality": "Over-indexing increases write overhead, maintenance cost, and storage. Indexes are only useful if selective (filter out majority of rows). Low-cardinality columns (e.g., gender) produce non-selective indexes that may slow writes more than they speed reads",
+      "source": "https://www.mydbops.com/blog/postgresql-indexing-best-practices-guide"
+    },
+    {
+      "misconception": "Cardinality estimation errors are 30-40% off (same as cost model errors)",
+      "reality": "CE errors can be many orders of magnitude (100x, 1000x, more), while cost model errors max at 30%. Bad cardinality is the primary source of suboptimal query plans",
+      "source": "https://link.springer.com/article/10.1007/s41019-020-00149-7"
+    },
+    {
+      "misconception": "Window functions (ROW_NUMBER, LAG) are always efficient if the base query uses an index",
+      "reality": "Window functions in views often force full table scans even if the underlying query uses an index. Must add composite index on base table with PARTITION BY and ORDER BY columns",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82"
+    },
+    {
+      "misconception": "Query rewriting always preserves semantics if you follow syntactic rules",
+      "reality": "Verifying semantic equivalence between any two SQL queries is NP-hard. Even LLM rewriters produce ~20% incorrect rewrites (syntax or semantic errors). Formal verification is required",
+      "source": "https://arxiv.org/pdf/2508.09023"
+    },
+    {
+      "misconception": "Applying functions to indexed columns still uses the index (e.g., WHERE UPPER(name) = 'JOHN' uses name index)",
+      "reality": "Functions applied to indexed columns prevent index usage and force full table scans. Rewrite as WHERE name = 'john' (lowercase literal) or use expression indexes",
+      "source": "https://blog.newtum.com/avoid-full-table-scan-in-sql-for-faster-query-performance"
+    },
+    {
+      "misconception": "Machine learning learned cost models outperform traditional cost models in all tasks",
+      "reality": "Recent 2025 studies show traditional cost models still outperform state-of-the-art LCMs on join ordering, access path selection, and physical operator selection—ML is not automatically better",
+      "source": "https://arxiv.org/html/2502.01229v1"
+    },
+    {
+      "misconception": "B-tree indexes are optimal for low-cardinality columns (many duplicate values)",
+      "reality": "B-tree indexes perform poorly on low-cardinality columns; bitmap indexes are better for many duplicates. Low cardinality = low selectivity = index not worth using",
+      "source": "https://dbsnoop.com/composite-indexes-database/"
+    },
+    {
+      "misconception": "EXPLAIN ANALYZE is free—just run it to verify plan quality",
+      "reality": "EXPLAIN ANALYZE actually executes the query (including writes). On INSERT/UPDATE/DELETE, this modifies data. Must ROLLBACK or use EXPLAIN (without ANALYZE) for cost estimates only",
+      "source": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan"
+    },
+    {
+      "misconception": "Hints are a sign of database design failure and should be avoided",
+      "reality": "Query hints are legitimate workarounds when the optimizer's statistics are stale or assumptions are wrong. CE feedback mechanisms make hints automatic (Query Store hints), avoiding manual maintenance",
+      "source": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/intelligent-query-processing-ce-feedback-for-expressions?view=sql-server-ver17"
+    },
+    {
+      "misconception": "Predicate pushdown only works for simple WHERE filters",
+      "reality": "Filter pushdown applies to complex predicates, join conditions, and multi-table scenarios. Join filter pushdown (pushing min/max key filters before hash joins) is a distinct optimization achieving 10x improvement",
+      "source": "https://airbyte.com/data-engineering-resources/predicate-pushdown"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://scalegrid.io/blog/postgres-explain-cost/",
+      "title": "What Is The Cost In PostgreSQL EXPLAIN Query",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/using-explain.html",
+      "title": "PostgreSQL: Documentation: Using EXPLAIN",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html",
+      "title": "PostgreSQL: Documentation: Index-Only Scans and Covering Indexes",
+      "recency": "2025"
+    },
+    {
+      "url": "https://medium.com/@philmcc/postgresql-covering-indexes-eliminate-heap-fetches-with-include-a2d574b5f7d2",
+      "title": "PostgreSQL Covering Indexes: Eliminate Heap Fetches with INCLUDE",
+      "recency": "2026"
+    },
+    {
+      "url": "https://link.springer.com/article/10.1007/s41019-020-00149-7",
+      "title": "A Survey on Advancing the DBMS Query Optimizer: Cardinality Estimation, Cost Model, and Plan Enumeration",
+      "recency": "2020 (foundational, still authoritative)"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/intelligent-query-processing-ce-feedback-for-expressions?view=sql-server-ver17",
+      "title": "SQL Server 2025: Cardinality Estimation Feedback for Expressions",
+      "recency": "2025"
+    },
+    {
+      "url": "https://blog.sqlauthority.com/2023/06/27/sql-server-2022-cardinality-estimation-ce-feedback-for-performance/",
+      "title": "SQL Server 2022 - Cardinality Estimation (CE) Feedback for Performance",
+      "recency": "2023"
+    },
+    {
+      "url": "https://algomaster.io/learn/sql-interview/query-optimization-anti-patterns",
+      "title": "Query Optimization and Anti-Patterns",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82",
+      "title": "SQL Optimization: Window Function Performance Comparison and Optimization Strategies",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dbsnoop.com/composite-indexes-database/",
+      "title": "Composite Indexes in the Database Universe – Selectivity, Cardinality, and Performance",
+      "recency": "2024"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2508.09023",
+      "title": "E3-Rewrite: Learning to Rewrite SQL for Executability, Equivalence",
+      "recency": "2024"
+    },
+    {
+      "url": "https://airbyte.com/data-engineering-resources/predicate-pushdown",
+      "title": "Demystifying Predicate Pushdown: A Guide to Optimized Database Queries",
+      "recency": "2024"
+    },
+    {
+      "url": "https://netflixtechblog.com/implementing-the-netflix-media-database-53b5a840b42a",
+      "title": "Implementing the Netflix Media Database",
+      "recency": "2024"
+    },
+    {
+      "url": "https://community.databricks.com/t5/community-articles/9-powerful-spark-optimization-techniques-in-databricks-with-real/td-p/132925",
+      "title": "9 Powerful Spark Optimization Techniques in Databricks (With Real Examples)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@jorge.hopkins/smarter-query-optimization-in-databricks-understanding-spark-sql.adaptive.enabled-91f649812eeb",
+      "title": "Smarter Query Optimization in Databricks: Understanding spark.sql.adaptive.enabled",
+      "recency": "2024"
+    },
+    {
+      "url": "https://stripe.dev/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations",
+      "title": "How Stripe's Document Databases Supported 99.999% Uptime with Zero-Downtime Data Migrations",
+      "recency": "2024"
+    },
+    {
+      "url": "https://github.com/postgrespro/aqo",
+      "title": "PostgreSQL Adaptive Query Optimization (AQO) Extension",
+      "recency": "2024"
+    },
+    {
+      "url": "https://arxiv.org/html/2510.05612v1",
+      "title": "Redefining Cost Estimation in Database Systems: The Role of Execution Plan Features and Machine Learning",
+      "recency": "2024"
+    },
+    {
+      "url": "https://arxiv.org/html/2502.01229v1",
+      "title": "How Good are Learned Cost Models, Really? Insights from Query Optimization Tasks",
+      "recency": "2025"
+    },
+    {
+      "url": "https://blog.newtum.com/avoid-full-table-scan-in-sql-for-faster-query-performance",
+      "title": "Avoid Full Table Scan in SQL for Faster Query Performance",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.uber.com/en-DK/blog/billion-data-point-challenge/",
+      "title": "The Billion Data Point Challenge: Building a Query Engine for High Cardinality Time Series Data",
+      "recency": "2024"
+    },
+    {
+      "url": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "title": "Reading a Postgres EXPLAIN ANALYZE Query Plan",
+      "recency": "2024"
+    },
+    {
+      "url": "https://15445.courses.cs.cmu.edu/fall2024/slides/15-optimization.pdf",
+      "title": "CMU 15-445/645 Database Systems: Query Planning & Optimization Lecture",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.mydbops.com/blog/postgresql-indexing-best-practices-guide",
+      "title": "PostgreSQL Indexing Best Practices Guide",
+      "recency": "2024"
+    }
+  ]
+}

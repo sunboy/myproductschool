@@ -79,7 +79,7 @@ export async function GET(
   // Collect all challenge IDs across all chapters (chapters are now fetched above)
   const allChallengeIds = chapters.flatMap((ch: { challenge_ids: string[] }) => ch.challenge_ids ?? [])
 
-  let challengeMap: Record<string, { id: string; slug?: string; title: string; difficulty: string; paradigm?: string | null }> = {}
+  const challengeMap: Record<string, { id: string; slug?: string; title: string; difficulty: string; paradigm?: string | null }> = {}
   if (allChallengeIds.length > 0) {
     const { data: challengeRows } = await adminClient
       .from('challenges')

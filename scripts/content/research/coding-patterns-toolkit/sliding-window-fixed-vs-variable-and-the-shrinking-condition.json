@@ -1,0 +1,299 @@
+{
+  "facts": [
+    {
+      "fact": "Fixed-size sliding window reduces time complexity from O(N*K) using nested loops to O(N) by adding the new element entering and subtracting the element leaving: current_sum = current_sum - element_out + element_in",
+      "source_url": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Variable-size sliding window expands the right pointer until a condition is met, then contracts the left pointer to find the optimal window size, with both pointers traversing the array exactly once for O(N) complexity",
+      "source_url": "https://leetcode.com/discuss/post/3722472/sliding-window-technique-a-comprehensive-ix2k/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Monotonic stack solves range query problems in O(N) time by ensuring every element enters and exits the stack exactly once, eliminating nested loops entirely",
+      "source_url": "https://algo.monster/problems/mono_stack_intro",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Prefix sum array construction takes O(N) preprocessing time and reduces range sum queries to O(1) per query, making total complexity O(N + Q) for N elements and Q queries",
+      "source_url": "https://usaco.guide/silver/prefix-sums",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Monotonic deque for sliding window maximum maintains indices in decreasing order of values, removing elements from back when new larger elements arrive and from front when they exit the window, achieving O(N) for all max values across K-sized windows",
+      "source_url": "https://algo.monster/liteproblems/239",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Hash map sliding window for substring problems tracks character frequencies as two-sided comparisons: when window expands past the condition, contract from left while updating the frequency map until the condition is restored",
+      "source_url": "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Sliding window technique converts problems that would require O(N²) brute force (recalculating entire window each step) into O(N) by maintaining incremental state and reusing computation",
+      "source_url": "https://builtin.com/data-science/sliding-window-algorithm",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Six main sliding window problem classifications: (1) fixed window size k, (2) conditions like sum ≥ K, (3) anagrams/permutations with frequency matching, (4) substring length constraints, (5) distinct element counting, (6) product/aggregate rules on windows",
+      "source_url": "https://leetcode.com/discuss/post/3630462/top-20-sliding-window-problems-for-begin-zgm5/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Fenwick tree (Binary Indexed Tree) extends prefix sum to dynamic scenarios, allowing both prefix sum queries and element updates in O(log N) time, useful when the array changes after initial construction",
+      "source_url": "https://usaco.guide/silver/prefix-sums",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Monotonic stack tree uses next-greater-element relationships to form a tree structure that answers Range Min/Max Queries via binary lifting in O(log N) per query after O(N) preprocessing",
+      "source_url": "https://codeforces.com/blog/entry/153011",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "title": "Longest Substring Without Repeating Characters (LeetCode #3)",
+      "description": "Input: 'abcabcbb' → Output: 3 (answer is 'abc'). Variable-size window expands with right pointer, and when a duplicate is encountered, left pointer shrinks until no duplicates remain. Hash set tracks characters in current window.",
+      "pattern": "Variable-size with shrinking condition + hash set",
+      "complexity": "O(N) time, O(min(N, alphabet_size)) space",
+      "source_url": "https://leetcode.com/problems/longest-substring-without-repeating-characters/"
+    },
+    {
+      "title": "Sliding Window Maximum (LeetCode #239)",
+      "description": "Find maximum value in every K-sized window across array. Input: [1,3,-1,-3,5,3,6,7], K=3 → Output: [3,3,5,5,6,7]. Monotonic deque stores indices in decreasing order; removes stale indices from front and dominated smaller indices from back.",
+      "pattern": "Fixed-size window + monotonic deque",
+      "complexity": "O(N) time, O(K) space",
+      "source_url": "https://algo.monster/liteproblems/239"
+    },
+    {
+      "title": "Maximum Sum Subarray of Size K",
+      "description": "Find maximum sum among all K-sized windows. Calculate sum of first K elements, then slide by adding new element and subtracting the one that exits. Update max_sum at each step.",
+      "pattern": "Fixed-size window with incremental sum",
+      "complexity": "O(N) vs O(N*K) brute force",
+      "source_url": "https://www.geeksforgeeks.org/dsa/find-maximum-minimum-sum-subarray-size-k/"
+    },
+    {
+      "title": "Longest Substring with K Distinct Characters",
+      "description": "Variable-size window tracks distinct character count. When count exceeds K, shrink from left while updating frequency map until valid. Store longest valid window length.",
+      "pattern": "Variable-size with hash map frequency counting",
+      "complexity": "O(N) despite two pointers, each element processed twice",
+      "source_url": "https://www.codeintuition.io/courses/array/tFob_VIXJQJ8bUN3hlSMB"
+    },
+    {
+      "title": "Next Greater Element (Monotonic Stack Classic)",
+      "description": "For each element, find the nearest larger element to the right. Stack stores indices in decreasing order; when a larger element arrives, pop smaller elements and record their next greater. Single pass produces result.",
+      "pattern": "Monotonic stack traversal",
+      "complexity": "O(N) instead of O(N²) nested loops",
+      "source_url": "https://algo.monster/problems/mono_stack_intro"
+    },
+    {
+      "title": "Range Sum Query (Prefix Sum Pattern)",
+      "description": "Build prefix array once: prefix[i] = prefix[i-1] + arr[i]. Then any range sum query [i,j] = prefix[j] - prefix[i-1] in O(1). Processing 1M queries on 1M elements: prefix sum approach O(1M), naive approach O(1T).",
+      "pattern": "Prefix sum preprocessing + O(1) queries",
+      "complexity": "O(N) build + O(1) per query = O(N+Q) total",
+      "source_url": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "title": "Minimum Window Substring (Variable-size, Hash Map)",
+      "description": "Find shortest substring containing all characters from target string. Expand right pointer to include all characters, track with frequency map. When condition met, shrink left to minimize window while maintaining the condition.",
+      "pattern": "Variable-size window with two-map comparison",
+      "complexity": "O(N + M) where M is target length",
+      "source_url": "https://leetcode.com/discuss/post/3722472/sliding-window-technique-a-comprehensive-ix2k/"
+    },
+    {
+      "title": "Permutation in String (Fixed-size Window, Frequency Comparison)",
+      "description": "Check if s2 contains permutation of s1. Use fixed-size window equal to s1 length. Maintain frequency maps for window and s1. Slide and compare frequencies; if they match, permutation found.",
+      "pattern": "Fixed-size window + frequency matching",
+      "complexity": "O(N) with constant alphabet overhead",
+      "source_url": "https://dev.to/jayk0001/dsa-fundamentals-two-pointers-sliding-window-from-theory-to-leetcode-practice-80f"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Fixed-size sliding window is like a camera viewfinder of fixed dimensions panning across a landscape. You don't reprocess everything in view each step; you just remove what exits the left edge and add what enters the right edge.",
+      "concept": "Why fixed-size windows avoid recalculation"
+    },
+    {
+      "analogy": "Variable-size window is like an accordion that expands when you want to capture more, then compresses when you need tighter focus. The expansion and compression happen based on whether your current 'view' meets your criteria.",
+      "concept": "How shrinking conditions in variable windows work"
+    },
+    {
+      "analogy": "Monotonic stack is like a stack of plates at a buffet where you remove smaller plates whenever a larger one arrives, because the larger plate will block access to the smaller ones anyway. The remaining plates form a strict ordering.",
+      "concept": "Why monotonic stacks eliminate nested loops"
+    },
+    {
+      "analogy": "Prefix sum is like a running total at a grocery checkout. Instead of re-adding items 1-5 when you later want the sum through item 6, you've already computed it incrementally and stored it.",
+      "concept": "Why preprocessing converts range queries to O(1)"
+    },
+    {
+      "analogy": "Monotonic deque for sliding window maximum is like maintaining a 'best candidate list' where you only keep candidates who are strictly better than newer arrivals. Old candidates can never beat future ones if a strong candidate is already present.",
+      "concept": "Why deques efficiently track max/min in windows"
+    },
+    {
+      "analogy": "Hash map in sliding window is like a tally sheet. Instead of scanning the window to verify 'do I have all required items?', the tally tells you instantly via counter lookups.",
+      "concept": "Why hash maps accelerate frequency validation in windows"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Time complexity reduction: nested loops O(N²) → sliding window O(N)",
+      "context": "Standard fixed-size window optimization",
+      "authority": "GeeksforGeeks, LeetCode"
+    },
+    {
+      "metric": "Brute force for max sum subarray: O(N*K); sliding window: O(N)",
+      "context": "Fixed window with K elements",
+      "authority": "GeeksforGeeks"
+    },
+    {
+      "metric": "Monotonic stack operations per element: at most 2 (one push, one pop)",
+      "context": "Guarantees O(N) total despite nested-looking code",
+      "authority": "Codeforces, algo.monster"
+    },
+    {
+      "metric": "Prefix sum query time: O(1) after O(N) preprocessing",
+      "context": "Multiple queries: O(N + Q) vs naive O(N*Q)",
+      "authority": "USACO Guide, CMU"
+    },
+    {
+      "metric": "Monotonic deque space worst-case: O(K) for sliding window maximum",
+      "context": "Array strictly decreasing; deque holds all K elements",
+      "authority": "NeetCode, algo.monster"
+    },
+    {
+      "metric": "Hash map space for substring problems: O(min(N, alphabet_size))",
+      "context": "English text: ~26 characters; Unicode: ~1M",
+      "authority": "LeetCode discussions"
+    },
+    {
+      "metric": "Variable-size window pointer traversals: 2N (both left and right pointers traverse array exactly once total)",
+      "context": "Despite appearing to loop within loop, each element added/removed once",
+      "authority": "InterviewIO, Medium tutorials"
+    },
+    {
+      "metric": "Sliding window six-pattern classification: 80% of array/string interview problems",
+      "context": "Fixed size K, sum ≥ K, distinct count ≤ K, anagrams, length constraints, product rules",
+      "authority": "LeetCode problem analysis"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Sliding window always has O(N) complexity because it uses two pointers",
+      "reality": "Two pointers ≠ guaranteed O(N). Complexity depends on whether you maintain state incrementally. Nested hash map operations inside loop still explodes. Only O(N) if state updates are O(1).",
+      "source_url": "https://interviewing.io/sliding-window-interview-questions"
+    },
+    {
+      "misconception": "Fixed-size windows and variable-size windows are solved with the same template",
+      "reality": "Fixed windows: pre-calculate first window, then slide and update. Variable windows: expand right until condition breaks, then contract left. Different control flow.",
+      "source_url": "https://www.codeintuition.io/courses/array/tFob_VIXJQJ8bUN3hlSMB"
+    },
+    {
+      "misconception": "If I need to find range min/max across windows, I should use a priority queue (heap)",
+      "reality": "Priority queues are O(log N) per operation. Monotonic deque is O(1) amortized for sliding window max/min because elements are added and removed at most once.",
+      "source_url": "https://jimmy-shen.medium.com/sliding-window-min-max-priority-queue-monotonic-queue-ec77636cdc31"
+    },
+    {
+      "misconception": "Prefix sum works for all range queries",
+      "reality": "Prefix sum only works for operations where prefix[j] and prefix[i] combine to give range[i,j]. Works for sum, XOR. Does NOT work for range min/max without a different data structure (segment tree, sparse table).",
+      "source_url": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "misconception": "Monotonic stack is only for 'next/previous greater/smaller element'",
+      "reality": "Monotonic stack solves any problem where you need efficient range statistics (min/max/GCD) lookup. Used in DP optimization, largest rectangle in histogram, trapping rain water.",
+      "source_url": "https://codeforces.com/blog/entry/149014"
+    },
+    {
+      "misconception": "I should jump straight to the optimized solution in interviews",
+      "reality": "Common interview pitfall. Start with brute force (nested loops), explain inefficiencies clearly, then show sliding window optimization. Demonstrates problem-solving maturity, not just algorithm knowledge.",
+      "source_url": "https://interviewing.io/sliding-window-interview-questions"
+    },
+    {
+      "misconception": "Off-by-one errors don't matter if the logic is right",
+      "reality": "Off-by-one errors are the #1 bug in sliding window implementations. Miss one character, process one extra, or miscalculate boundaries → wrong answer or TLE. Requires careful testing on boundary cases.",
+      "source_url": "https://medium.com/@gayathri.hey/everything-i-learned-about-sliding-windows-the-hard-way-part-1-88d49513e206"
+    },
+    {
+      "misconception": "Hash set is always better than hash map for sliding windows",
+      "reality": "Use hash set only when presence/absence matters (no duplicates). Use hash map when you need frequency counts or character positions. Using the wrong structure wastes memory and obscures intent.",
+      "source_url": "https://labuladong.online/en/algo/essential-technique/sliding-window-framework/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/",
+      "title": "Sliding Window Technique - GeeksforGeeks",
+      "recency_note": "2024 — current, authoritative reference"
+    },
+    {
+      "url": "https://leetcode.com/discuss/post/3722472/sliding-window-technique-a-comprehensive-ix2k/",
+      "title": "Sliding Window Technique: A Comprehensive Guide - LeetCode Discuss",
+      "recency_note": "2024 — active LeetCode discussion with community validation"
+    },
+    {
+      "url": "https://algo.monster/problems/mono_stack_intro",
+      "title": "Monotonic Stack/Queue Intro - AlgoMonster",
+      "recency_note": "2024 — structured algorithm reference"
+    },
+    {
+      "url": "https://usaco.guide/silver/prefix-sums",
+      "title": "Introduction to Prefix Sums - USACO Guide",
+      "recency_note": "2024 — competitive programming authority"
+    },
+    {
+      "url": "https://algo.monster/liteproblems/239",
+      "title": "239. Sliding Window Maximum - In-Depth Explanation",
+      "recency_note": "2024 — detailed monotonic deque walkthrough"
+    },
+    {
+      "url": "https://codeforces.com/blog/entry/153011",
+      "title": "The Monotonic Stack Tree - Codeforces",
+      "recency_note": "2024 — advanced pattern optimization"
+    },
+    {
+      "url": "https://labuladong.online/en/algo/essential-technique/sliding-window-framework/",
+      "title": "Sliding Window Algorithm Code Template - Labuladong",
+      "recency_note": "2023 — widely-referenced algorithm template collection"
+    },
+    {
+      "url": "https://interviewing.io/sliding-window-interview-questions",
+      "title": "Sliding Window Interview Questions & Tips for Senior Engineers - Interviewing.io",
+      "recency_note": "2024 — interview-focused common pitfalls"
+    },
+    {
+      "url": "https://medium.com/@gayathri.hey/everything-i-learned-about-sliding-windows-the-hard-way-part-1-88d49513e206",
+      "title": "Everything I Learned About Sliding Windows (The Hard Way) - Medium",
+      "recency_note": "2023 — practical lessons from implementation experience"
+    },
+    {
+      "url": "https://www.codeintuition.io/courses/array/tFob_VIXJQJ8bUN3hlSMB",
+      "title": "Understanding the variable sized sliding window pattern - CodeIntuition",
+      "recency_note": "2024 — interactive course reference"
+    },
+    {
+      "url": "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
+      "title": "Longest Substring Without Repeating Characters - LeetCode",
+      "recency_note": "2024 — canonical sliding window problem (#3 globally solved)"
+    },
+    {
+      "url": "https://jimmy-shen.medium.com/sliding-window-min-max-priority-queue-monotonic-queue-ec77636cdc31",
+      "title": "Sliding window min/max, priority queue & Monotonic Queue - Medium",
+      "recency_note": "2023 — comparative analysis of approaches"
+    },
+    {
+      "url": "https://builtin.com/data-science/sliding-window-algorithm",
+      "title": "Sliding Window Algorithm Explained - Built In",
+      "recency_note": "2023 — accessible explanation with examples"
+    },
+    {
+      "url": "https://www.cs.cmu.edu/~guyb/papers/Ble93.pdf",
+      "title": "Prefix Sums and Their Applications - CMU Research Paper",
+      "recency_note": "1993 — foundational (but still canonical authority)"
+    },
+    {
+      "url": "https://dev.to/jayk0001/dsa-fundamentals-two-pointers-sliding-window-from-theory-to-leetcode-practice-80f",
+      "title": "DSA Fundamentals: Two Pointers & Sliding Window - DEV Community",
+      "recency_note": "2024 — practical LeetCode problem walkthroughs"
+    }
+  ]
+}

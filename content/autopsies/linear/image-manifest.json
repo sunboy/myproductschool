@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "linear",
+  "story_slug": "linear",
+  "story_title": "Linear's Opinionated Defaults",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/linear/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/linear/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at an organized issue board with four clear statuses and a keyboard-only workspace.",
+      "caption": "Hatch at an organized issue board with four clear statuses and a keyboard-only workspace.",
+      "prompt": "Linear's Opinionated Defaults | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing at a clean desk with a precisely organized issue board behind it — four columns (Backlog, Todo, In Progress, Done), each with a small stack of cards. The desk has a single keyboard, no mouse visible. Cream background, no speech bubbles. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400×1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/linear/hero.png",
+      "generated_image_sha256": "431e94cc44ef4c31707836525eec56bc95eda74d63863d10c94e94f1e67e7396",
+      "final_image_sha256": "51d5893558e0bc857e7305f8cefd823eecd12ba154b22b48ca990940b2f2c482",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/linear/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch looking at the complexity of a fully configurable project management tool setup.",
+      "caption": "Hatch looking at the complexity of a fully configurable project management tool setup.",
+      "prompt": "Linear's Opinionated Defaults | hatch-narrator: Hatch in narrator pose looking at an overwhelmingly complex Jira-like settings panel — dozens of dropdown menus, custom field configurators, workflow diagram builder, all crowding a single screen. Hatch looks sympathetically overwhelmed. Cream background. Aspect 1600×1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/linear/hatch-narrator.png",
+      "generated_image_sha256": "596e3e201657bcb34fa1a1b30ec2ed4364f486445b59599b22708dd1817585c1",
+      "final_image_sha256": "5954d197e58c1afa08788d0bc7cefe9e6b55f9b731af06fbf5b1be7d7e42a7a0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/linear/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining Linear's keyboard-first interface with predetermined workflow structure.",
+      "caption": "Hatch examining Linear's keyboard-first interface with predetermined workflow structure.",
+      "prompt": "Linear's Opinionated Defaults | failure-mechanism: Hatch in thinking pose looking at a keyboard with several keys highlighted (representing Linear's keyboard shortcuts). Behind Hatch, a clean issue list with just four status columns — no configuration panel visible. The contrast is \"opinions built in\" versus \"configure everything.\" Cream background. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/linear/failure-mechanism.png",
+      "generated_image_sha256": "afb68f20654970497371d8d6acb16a2234d47a03fdb7b8d6a232d9de9a66fddd",
+      "final_image_sha256": "903578c7ae8fa60e57f63e5c52984b1d560fb0d4c7548dd74e7572e4923fc799",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/linear/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch presenting Linear's bottom-up adoption pattern from individual engineers to organizational purchase.",
+      "caption": "Hatch presenting Linear's bottom-up adoption pattern from individual engineers to organizational purchase.",
+      "prompt": "Linear's Opinionated Defaults | evidence-card: Hatch pointing at a simple adoption funnel diagram: individual engineer at the bottom (loves it), team at the middle (converted), organization at the top (pays). An upward arrow labeled \"bottom-up.\" Clean presentation pose. Cream background. Aspect 1600×1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/linear/evidence-card.png",
+      "generated_image_sha256": "236a46657e3e7dcc44c336b1f9b7335f7a3f771cb9c3a5596ad172334fae7779",
+      "final_image_sha256": "4523ffcd1ceb4608073831a0061aa10bebeb0fcd837abc7ad146ace17ce53470",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/linear/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch presenting an opinion as a product feature, with a relieved user behind it.",
+      "caption": "Hatch presenting an opinion as a product feature, with a relieved user behind it.",
+      "prompt": "Linear's Opinionated Defaults | lesson-frame: Hatch in coaching pose holding a small sign that reads \"OPINION\" — not phrased as an apology but as a product feature. Behind Hatch, a user figure looking relieved. Cream background. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/linear/lesson-frame.png",
+      "generated_image_sha256": "d166398b9a3f1ec80afda8aa3a9ec7f9c2657a549679258a316fb118ade4f45e",
+      "final_image_sha256": "6fa4230ee3542344255f521319ed8ab5738d001bebfee5371e306ca1302eef2f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/linear/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a compact four-column issue board representing Linear's opinionated workflow.",
+      "caption": "Hatch holding a compact four-column issue board representing Linear's opinionated workflow.",
+      "prompt": "Hatch holding a small four-column issue board — Backlog, Todo, In Progress, Done — compact and instantly legible at thumbnail size. Cream background. Aspect 1200×900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/linear/hero.png",
+      "generated_image_sha256": "431e94cc44ef4c31707836525eec56bc95eda74d63863d10c94e94f1e67e7396",
+      "final_image_sha256": "195ead6470c47943d1be1367410bebf95bdf092938de6fd59783ce9f67ce4472",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/linear/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch between a complex configurable tool and a clean opinionated one, pointing toward the latter.",
+      "caption": "Hatch between a complex configurable tool and a clean opinionated one, pointing toward the latter.",
+      "prompt": "Hatch in hero pose adapted for wide share card: on the left, a chaotic configurable settings panel; on the right, a clean four-column board with a keyboard in front. Hatch stands in the center, pointing right. Title text area at left. Cream background, HackProduct wordmark bottom-right. Aspect 2400×1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/linear/hero.png",
+      "generated_image_sha256": "431e94cc44ef4c31707836525eec56bc95eda74d63863d10c94e94f1e67e7396",
+      "final_image_sha256": "29d886acc74d11236e1ebe3213c03057169cf17683d6ffbbdee101cf1d1a691c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/linear/v1"
+}

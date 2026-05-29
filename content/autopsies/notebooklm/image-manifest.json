@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "google",
+  "story_slug": "notebooklm",
+  "story_title": "Google NotebookLM",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/notebooklm/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/notebooklm/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch inside a walled notebook surrounded by documents, with the broader web blurred beyond the boundary.",
+      "caption": "Hatch inside a walled notebook surrounded by documents, with the broader web blurred beyond the boundary.",
+      "prompt": "Google NotebookLM | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) sitting inside a walled notebook — literally surrounded by a low fence of floating document pages. Beyond the fence, the wider web is visible but blurred and out of reach. Hatch looks comfortable and focused inside the fence. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/notebooklm/hero.png",
+      "generated_image_sha256": "9481f60f96ee09d0c964c32a450877343e4971fff4d82fc4bd1eff20cfc3138d",
+      "final_image_sha256": "4f9e607582edad590e8d218b5bf1606faf785790d99a4eb7097ddcf2fae8aae4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notebooklm/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notebooklm/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/notebooklm/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at the contrast between an uncited AI answer and a cited, source-grounded response.",
+      "caption": "Hatch gesturing at the contrast between an uncited AI answer and a cited, source-grounded response.",
+      "prompt": "Google NotebookLM | hatch-narrator: Hatch in narrator pose, gesturing at a table where a researcher sits with a large stack of printed documents. On the left, a generic AI chat window shows an answer without any citation markers. On the right, a NotebookLM-style window shows the same answer with highlighted passage citations. The contrast is clear. Cream background. HackProduct wordmark watermark. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/notebooklm/hatch-narrator.png",
+      "generated_image_sha256": "52ebd68a87f5ba36718fb78becaadad8d82701347c6464b1daf33fe98d9242fc",
+      "final_image_sha256": "33a36da72ecfa3be2efe7787379f5e571a67c2a581ef55800ed50dce56465768",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notebooklm/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notebooklm/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/notebooklm/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a diagram showing how NotebookLM generates cited answers from uploaded documents only.",
+      "caption": "Hatch pointing at a diagram showing how NotebookLM generates cited answers from uploaded documents only.",
+      "prompt": "Google NotebookLM | failure-mechanism: Hatch in thinking pose, pointing at a diagram. On the left: a user uploads three documents (represented as floating cards). In the center: a processing arrow. On the right: an answer card with small [1] [2] citation markers, each linked back to the corresponding document card. Clean, diagrammatic. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/notebooklm/failure-mechanism.png",
+      "generated_image_sha256": "ddc88628dbefe5cebf5b76b5cefc793cea7c8e8957484cc323f4c8c95e23eb77",
+      "final_image_sha256": "42902f10a36268171fc6052dfdb95a58d59840c7f819c48639957046550fc268",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notebooklm/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notebooklm/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/notebooklm/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at the Audio Overview podcast card, representing the viral September 2024 feature launch.",
+      "caption": "Hatch pointing at the Audio Overview podcast card, representing the viral September 2024 feature launch.",
+      "prompt": "Google NotebookLM | evidence-card: Hatch pointing at a stylized podcast player card labeled \"Audio Overview\" with a waveform animation visible. Behind Hatch, small floating social media reaction icons (thumbs up, surprised face) suggest viral spread. Cream background. HackProduct wordmark watermark. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/notebooklm/evidence-card.png",
+      "generated_image_sha256": "354ad621ac86ba9d9bac589d80d9e6d9858ba3c61ea58b57ab59a35b06f0701b",
+      "final_image_sha256": "17bdcf5dde1ffbcc24d9cbb194b3fbce2d4a6bc2b7e28bc1bdff901037a6940b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notebooklm/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notebooklm/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/notebooklm/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at the boundary of NotebookLM's source scope, illustrating that the limit is the feature.",
+      "caption": "Hatch at the boundary of NotebookLM's source scope, illustrating that the limit is the feature.",
+      "prompt": "Google NotebookLM | lesson-frame: Hatch in calm coaching pose, standing in front of a simple fence labeled \"Your Sources Only.\" Expression: warm and instructive. Behind the fence, floating citation markers. Outside the fence, blurred web icons. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/notebooklm/lesson-frame.png",
+      "generated_image_sha256": "fe55e1c84387f1acd9cfa7ef8bb98ab319c52acf01ee41c88abfa5a9409c7ba6",
+      "final_image_sha256": "ff91ab1985b9978bfffe900a8a19ce6df74ddabcad95c08f891798712577cfb9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notebooklm/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notebooklm/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/notebooklm/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a notebook with a citation marker, representing NotebookLM's grounded knowledge model.",
+      "caption": "Hatch holding a notebook with a citation marker, representing NotebookLM's grounded knowledge model.",
+      "prompt": "Hatch mascot holding a small notebook with a glowing citation marker floating above it. Expression: focused and confident. Square composition. Cream background. HackProduct wordmark watermark. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/notebooklm/hero.png",
+      "generated_image_sha256": "9481f60f96ee09d0c964c32a450877343e4971fff4d82fc4bd1eff20cfc3138d",
+      "final_image_sha256": "5e38a341562ad7731ddb5f7616f751cfc8c46c55a46793a5ea0c68c9aa344b77",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notebooklm/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notebooklm/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/notebooklm/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch inside a walled notebook, social share cover for NotebookLM autopsy.",
+      "caption": "Hatch inside a walled notebook, social share cover for NotebookLM autopsy.",
+      "prompt": "Hatch inside the walled notebook, wide OG card format. Title text area at left: \"The AI That Only Knows What You Tell It.\" Cream background. HackProduct wordmark watermark. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/notebooklm/hero.png",
+      "generated_image_sha256": "9481f60f96ee09d0c964c32a450877343e4971fff4d82fc4bd1eff20cfc3138d",
+      "final_image_sha256": "1f2a0075ee3f26024aa1ebb35ae52f7a4be0514f1653dc92c080b472a876fe37",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notebooklm/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notebooklm/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/notebooklm/v1"
+}

@@ -40,11 +40,13 @@ export async function GET() {
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const adminClient = createAdminClient()
-  let { data, error } = await adminClient
+  const result = await adminClient
     .from('move_levels')
     .select('*')
     .eq('user_id', user.id)
     .order('move')
+  let data = result.data
+  const error = result.error
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

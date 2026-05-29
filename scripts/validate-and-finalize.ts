@@ -588,7 +588,7 @@ async function main() {
   const scrapedRaw = loadScrapedRaw()
 
   // Load staged JSON — we'll mutate this array in-place
-  let staged = JSON.parse(fs.readFileSync(STAGED_PATH, 'utf-8')) as StagedChallenge[]
+  const staged = JSON.parse(fs.readFileSync(STAGED_PATH, 'utf-8')) as StagedChallenge[]
 
   // Separate out notion-scraped vs pre-existing
   const preExisting = staged.filter((c) => (c.metadata as AlgoMetadata).source !== 'notion-scraped')

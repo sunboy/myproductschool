@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "gamma",
+  "story_slug": "gamma",
+  "story_title": "Gamma's Presentation Engine",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/gamma/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/gamma/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a blank slide canvas and an organized card grid, pointing toward the structured option.",
+      "caption": "Hatch beside a blank slide canvas and an organized card grid, pointing toward the structured option.",
+      "prompt": "Gamma's Presentation Engine | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing beside two visual objects: a traditional blank slide canvas (empty, daunting) and a neat card grid with content already organized. Hatch is gesturing toward the card grid as the better path. Cream background, no speech bubbles. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400×1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/gamma/hero.png",
+      "generated_image_sha256": "1c73e585d24835714c82c63f14a0d78e0cd16c598236529b92f0aab923827f31",
+      "final_image_sha256": "b86efedd167b77cc6111b33c0433d0d56c1f9482771655a99c5b8ab57ad4d146",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gamma/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gamma/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/gamma/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch inside a blank slide canvas, evoking the paralysis of infinite creative choice.",
+      "caption": "Hatch inside a blank slide canvas, evoking the paralysis of infinite creative choice.",
+      "prompt": "Gamma's Presentation Engine | hatch-narrator: Hatch in narrator pose standing inside a metaphorical \"empty slide\" — a completely blank canvas with no guides or tools, looking slightly overwhelmed by the infinite options. Cream background, sympathetic expression, no text. Aspect 1600×1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/gamma/hatch-narrator.png",
+      "generated_image_sha256": "9ac9f4f2d64b4bd6798a9f548400a5a40d2e65d434307a43559e41121228243d",
+      "final_image_sha256": "a2514ee34f40a4146b1e8d1d1655126188acd0b94592079988d79479d3f50bc7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gamma/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gamma/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/gamma/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch tracing the path from structured cards to finished presentation output.",
+      "caption": "Hatch tracing the path from structured cards to finished presentation output.",
+      "prompt": "Gamma's Presentation Engine | failure-mechanism: Hatch in thinking pose looking at a card grid layout — six cards arranged in a 2x3 pattern, each card with a small placeholder illustration and lines representing text. Hatch's hand traces from the card grid to a polished \"presentation view\" on the right. Cream background. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/gamma/failure-mechanism.png",
+      "generated_image_sha256": "708a3e04b7e6737973308c32536d90011ac2e91e9644da83c9c2d0c4a921fc21",
+      "final_image_sha256": "49920014fae22418a28b0219977a22c85955f6f1a71a07ba0780c325838f6559",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gamma/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gamma/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/gamma/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch presenting Gamma's user growth and funding milestone.",
+      "caption": "Hatch presenting Gamma's user growth and funding milestone.",
+      "prompt": "Gamma's Presentation Engine | evidence-card: Hatch pointing at a simple chart showing \"3M users\" milestone and funding bar. Clean data-presentation pose, calm expression. Cream background. Aspect 1600×1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/gamma/evidence-card.png",
+      "generated_image_sha256": "f8d988d145d13c2dbe463b9c69379f09fa05e73aef7a591244080842f18e9409",
+      "final_image_sha256": "1100d211d93df18af2906ea90617a94e711824ffec5d6ce8e6e8c9db83c7316b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gamma/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gamma/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/gamma/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance with the visual of structure becoming presentation.",
+      "caption": "Hatch in coaching stance with the visual of structure becoming presentation.",
+      "prompt": "Gamma's Presentation Engine | lesson-frame: Hatch in coaching pose with a subtle visual of a structured document morphing into a polished presentation behind it — suggesting the insight that format determines output. Calm expression, open hand toward reader. Cream background. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/gamma/lesson-frame.png",
+      "generated_image_sha256": "130d3429097a9aed316f9c837fc8f988b19c0bd32559313418bfc1216e32c88f",
+      "final_image_sha256": "ff6ff3fb8b9748928cd3cc01771d0453d8fb81b544c4217a205170e9ac428857",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gamma/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gamma/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/gamma/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small card grid representing Gamma's structured output.",
+      "caption": "Hatch holding a small card grid representing Gamma's structured output.",
+      "prompt": "Hatch holding a small card grid — compact, recognizable at thumbnail size. One card glows slightly to indicate the AI-structured nature of the content. Cream background. Aspect 1200×900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/gamma/hero.png",
+      "generated_image_sha256": "1c73e585d24835714c82c63f14a0d78e0cd16c598236529b92f0aab923827f31",
+      "final_image_sha256": "536c13e2d017212e1e111634abc5226a630048ebf8958bb58ebd94208db92e96",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gamma/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gamma/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/gamma/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch between blank-canvas chaos and structured card order, illustrating Gamma's product insight.",
+      "caption": "Hatch between blank-canvas chaos and structured card order, illustrating Gamma's product insight.",
+      "prompt": "Hatch in hero pose adapted for wide share card: standing beside the visual contrast of a chaotic blank canvas on one side and a clean organized card grid on the other. Title text area reserved at left third. Cream background, HackProduct wordmark bottom-right. Aspect 2400×1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/gamma/hero.png",
+      "generated_image_sha256": "1c73e585d24835714c82c63f14a0d78e0cd16c598236529b92f0aab923827f31",
+      "final_image_sha256": "c0c164cb152afcffb27739adbc80a34e85fdf6a0bf3118ba7775451b38a4e0fb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gamma/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gamma/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/gamma/v1"
+}

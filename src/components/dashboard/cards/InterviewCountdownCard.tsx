@@ -48,7 +48,7 @@ export function InterviewCountdownCard({ interviews = [] }: InterviewCountdownCa
     )
   }
 
-  // ── Single interview — ring countdown ────────────────────────
+  // ── Single interview - ring countdown ────────────────────────
   if (interviews.length === 1) {
     const interview = interviews[0]
     const days = daysUntil(interview.interview_date)
@@ -118,7 +118,7 @@ export function InterviewCountdownCard({ interviews = [] }: InterviewCountdownCa
     )
   }
 
-  // ── Multiple interviews — compact list ───────────────────────
+  // ── Multiple interviews - compact list ───────────────────────
   return (
     <>
       <div className="bg-surface-container rounded-xl p-5 flex flex-col gap-3">

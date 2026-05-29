@@ -1,0 +1,388 @@
+{
+  "facts": [
+    {
+      "text": "OpenAPI Specification (OAS) is a standard, programming language-agnostic interface description for HTTP APIs that enables both humans and computers to discover and understand service capabilities without accessing source code",
+      "source": "https://spec.openapis.org/oas/v3.2.0.html",
+      "published": "2024"
+    },
+    {
+      "text": "Contract-first development allows teams to define the API interface before implementing business logic, enabling contract-driven testing and automated integration tests",
+      "source": "https://www.openapis.org/",
+      "published": "2024"
+    },
+    {
+      "text": "HTTP 422 (Unprocessable Entity) is semantically distinct from 400—400 indicates structural/syntactic errors (malformed JSON), while 422 indicates syntactically valid payloads that fail domain validation rules",
+      "source": "https://beeceptor.com/docs/concepts/400-vs-422/",
+      "published": "2024"
+    },
+    {
+      "text": "The first digit of HTTP status codes defines response class: 1xx (informational), 2xx (success), 3xx (redirection), 4xx (client error), 5xx (server error)",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+      "published": "2024"
+    },
+    {
+      "text": "Offset-based pagination costs scale linearly with offset value—OFFSET 99980 requires scanning and discarding 99,980 rows even when requesting only 20 rows",
+      "source": "https://blog.sentry.io/paginating-large-datasets-in-production-why-offset-fails-and-cursors-win/",
+      "published": "2024"
+    },
+    {
+      "text": "Cursor-based pagination uses opaque position markers (often derived from last item's ID) instead of offsets, remaining stable under concurrent inserts/deletes—new items appear only on future pages",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "published": "2023"
+    },
+    {
+      "text": "Stripe's list API uses cursor-based pagination with limit (1-100), starting_after (cursor forward), and ending_before (cursor backward) parameters; responses include has_more boolean",
+      "source": "https://docs.stripe.com/api/pagination",
+      "published": "2024"
+    },
+    {
+      "text": "Contentful's cursor pagination implementation encodes all query parameters except limit into the opaque cursor token; limit can be changed between pages but other filters are locked",
+      "source": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "published": "2024"
+    },
+    {
+      "text": "Recommended REST API nesting depth is maximum 3 levels; deeper nesting creates brittle URLs that are difficult to evolve and maintain",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "published": "2023"
+    },
+    {
+      "text": "API versioning strategies include URI path versioning (/v1/, /v2/), header-based versioning (Accept-Version header), and query parameter versioning (?version=2)",
+      "source": "https://www.speakeasy.com/api-design/versioning",
+      "published": "2024"
+    },
+    {
+      "text": "Typical API deprecation timeline: 6-month announcement period, 12 months active migration support, 18-24 months total before version removal",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis",
+      "published": "2024"
+    },
+    {
+      "text": "OpenAPI 3.1 introduced the deprecate keyword to communicate deprecations as an API evolves, supporting API evolution without full version breaks",
+      "source": "https://redocly.com/blog/api-versioning-best-practices",
+      "published": "2024"
+    },
+    {
+      "text": "HTTP 409 Conflict indicates the request conflicts with the current resource state (concurrent updates, duplicate creation). Optimistic concurrency control uses ETags and If-Match headers to prevent blind overwrites",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409",
+      "published": "2024"
+    },
+    {
+      "text": "Stripe's OpenAPI specification is publicly available on GitHub and enables automatic generation of SDKs in multiple programming languages (Rust, D, etc.)",
+      "source": "https://github.com/stripe/openapi",
+      "published": "2024"
+    },
+    {
+      "text": "OpenAPI Generator supports 50+ language targets for client code generation, using operation IDs and tags to organize generated code—operation IDs must be unique across all endpoints",
+      "source": "https://openapi-generator.tech/",
+      "published": "2024"
+    },
+    {
+      "text": "Cursor pagination can achieve 17x performance improvement over offset pagination on large datasets—query performance stays consistent regardless of dataset size",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "published": "2023"
+    },
+    {
+      "text": "Netflix transitioned from monolithic API → direct microservice access → gateway aggregation → federated GraphQL architecture to handle scaling across thousands of data consumers",
+      "source": "https://newsletter.techworld-with-milan.com/p/evolution-of-the-netflix-api-architecture",
+      "published": "2023"
+    },
+    {
+      "text": "RFC 9110 (IETF June 2022) elevated HTTP 422 from WebDAV extension (RFC 4918) to Internet Standard, renaming it from 'Unprocessable Entity' to 'Unprocessable Content'",
+      "source": "https://beeceptor.com/docs/concepts/400-vs-422/",
+      "published": "2024"
+    },
+    {
+      "text": "Consumer-Driven Contract (CDC) testing isolates provider-consumer interactions using mocks that conform to a shared contract specification (JSON format from Pact)",
+      "source": "https://microsoft.github.io/code-with-engineering-playbook/automated-testing/cdc-testing/",
+      "published": "2024"
+    },
+    {
+      "text": "GraphQL enables clients to request exactly the data they need in a single query, eliminating over-fetching and multiple round-trips required by REST's fixed response shapes",
+      "source": "https://www.howtographql.com/basics/1-graphql-is-the-better-rest/",
+      "published": "2023"
+    }
+  ],
+  "examples": [
+    {
+      "context": "GitHub API returns 422 when creating a team with a non-unique name: 'POST api.github.com/orgs/my-org/teams: 422 Validation Failed [{Resource:Team Field:data Code:unprocessable Message:Name must be unique for this org}]'",
+      "lesson": "Status codes must distinguish structural errors (400) from semantic validation failures (422)",
+      "source": "https://github.com/integrations/terraform-provider-github/issues/1093"
+    },
+    {
+      "context": "GitHub API returns 422 when uploaded SSH key already exists on account with 'The key is already in use' message",
+      "lesson": "Resource uniqueness constraints should return 422, not 400",
+      "source": "https://github.com/cli/cli/discussions/6271"
+    },
+    {
+      "context": "PostgreSQL OFFSET pagination: querying a 50M row table with OFFSET 99980 takes 8 seconds. Cursor pagination on same table returns in 0.01 seconds",
+      "lesson": "Offset pagination performance degrades exponentially with offset value; cursor pagination is stable",
+      "source": "https://blog.sentry.io/paginating-large-datasets-in-production-why-offset-fails-and-cursors-win/"
+    },
+    {
+      "context": "Stripe API lists objects with limit (1-100), returns has_more boolean, uses starting_after and ending_before for pagination",
+      "lesson": "Cursor-based design prevents duplicate/skipped records under concurrent writes",
+      "source": "https://docs.stripe.com/api/pagination"
+    },
+    {
+      "context": "Contentful migrated entire content APIs to cursor pagination; query parameters (except limit) are encoded into cursor and locked—cannot change filters between pages",
+      "lesson": "Cursors must encode all filtering state to remain stable across requests",
+      "source": "https://www.contentful.com/blog/cursor-based-pagination/"
+    },
+    {
+      "context": "Netflix API evolved through 4 stages: Monolith → Direct Microservice Access → Gateway Aggregation → Federated GraphQL with Domain Graph Services (DGS)",
+      "lesson": "Hierarchical resource design scales by decentralizing schema definition to domain teams",
+      "source": "https://newsletter.techworld-with-milan.com/p/evolution-of-the-netflix-api-architecture"
+    },
+    {
+      "context": "REST API endpoints using GET /users/{id}/delete violate HTTP semantics. Correct pattern: DELETE /users/{id}",
+      "lesson": "HTTP methods must express intent, not hide operations in paths",
+      "source": "https://www.milanjovanovic.tech/blog/the-5-most-common-rest-api-design-mistakes-and-how-to-avoid-them"
+    },
+    {
+      "context": "Common mistake: returning 200 OK for all responses including errors. Correct: use 4xx for client errors, 5xx for server errors",
+      "lesson": "Status codes are part of the contract; clients depend on them for logic",
+      "source": "https://zuplo.com/learning-center/common-pitfalls-in-restful-api-design"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "REST resource nesting is like file system paths: /users/{id}/posts/{postId} creates clear hierarchy. But excessive nesting (/users/{id}/posts/{postId}/comments/{commentId}/reactions/{reactionId}) becomes brittle, like deeply nested folders that break when renamed.",
+      "concept": "Resource hierarchy design"
+    },
+    {
+      "analogy": "Offset pagination is like reading a book starting from page 100: you must read sequentially from the beginning (page 1) to reach page 100, even though you only want that one page. Cursor pagination is like bookmarks: jump directly to where you left off.",
+      "concept": "Pagination mechanisms"
+    },
+    {
+      "analogy": "HTTP status codes are like exit codes in Unix: 2xx = success (exit 0), 4xx = client error (exit 1-9 range), 5xx = program error (exit 10+). Clients parse these signals to decide what to do next.",
+      "concept": "Status code semantics"
+    },
+    {
+      "analogy": "API versioning is like semantic versioning in code: major.minor.patch. Major versions break clients (v1 → v2), minor versions add features (1.1 → 1.2), patches fix bugs (1.2.1 → 1.2.2). Deprecation is the migration period between versions.",
+      "concept": "API evolution and deprecation"
+    },
+    {
+      "analogy": "OpenAPI specs are like type signatures in typed languages: they describe inputs, outputs, and errors. Code generators read these signatures and produce client libraries, eliminating boilerplate.",
+      "concept": "OpenAPI as contract"
+    },
+    {
+      "analogy": "Cursor pagination under concurrent writes is like maintaining a position in a deck of cards: even if cards are inserted before your position, you still know which card comes next. Offset pagination is like counting from the start each time—inserting a card shuffles positions.",
+      "concept": "Stability under concurrency"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Cursor pagination performance improvement",
+      "value": "17x faster than offset pagination on large datasets",
+      "context": "PostgreSQL with millions of rows"
+    },
+    {
+      "metric": "Offset pagination performance on 50M row table",
+      "value": "8 seconds for OFFSET 99980, LIMIT 20",
+      "context": "Each offset value scans and discards that many rows"
+    },
+    {
+      "metric": "Cursor pagination on same 50M row table",
+      "value": "0.01 seconds with cursor-based query",
+      "context": "Direct index lookup without scanning"
+    },
+    {
+      "metric": "REST API nesting depth recommendation",
+      "value": "Maximum 3 levels",
+      "context": "Deeper nesting creates brittleness and maintenance burden"
+    },
+    {
+      "metric": "Stripe API limit parameter range",
+      "value": "1-100 objects per page",
+      "context": "Default is 10 results per page"
+    },
+    {
+      "metric": "OpenAPI Generator supported language targets",
+      "value": "50+ language targets",
+      "context": "Including Go, Rust, Python, TypeScript, Java, C#, PHP, etc."
+    },
+    {
+      "metric": "HTTP status code first digit meaning",
+      "value": "5 primary classes (1xx-5xx)",
+      "context": "1xx: info, 2xx: success, 3xx: redirect, 4xx: client error, 5xx: server error"
+    },
+    {
+      "metric": "API deprecation typical timeline",
+      "value": "6 months announcement + 12 months migration support + 6 months sunset = 24 months total",
+      "context": "Industry best practice for breaking changes"
+    },
+    {
+      "metric": "Netflix API concurrent request volume",
+      "value": "Millions of requests per second",
+      "context": "Drove evolution from monolith to federated GraphQL"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Offset pagination works fine for any dataset size",
+      "truth": "Offset pagination performance degrades linearly with offset value. At OFFSET 1,000,000, the database scans 1M rows to discard them. For large datasets, cursor pagination is mandatory.",
+      "source": "https://blog.sentry.io/paginating-large-datasets-in-production-why-offset-fails-and-cursors-win/"
+    },
+    {
+      "misconception": "HTTP 400 is the right status code for all validation errors",
+      "truth": "400 is for malformed requests (structural errors). 422 is for valid syntax with semantic/business rule violations. GitHub, Stripe, and others distinguish them.",
+      "source": "https://beeceptor.com/docs/concepts/400-vs-422/"
+    },
+    {
+      "misconception": "Deeper REST nesting improves code organization (e.g., /orgs/{id}/teams/{id}/members/{id}/roles/{id})",
+      "truth": "Deep nesting creates brittle URLs that break during refactors. Recommended max is 3 levels; beyond that use separate endpoints with references.",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "misconception": "200 OK response means no error occurred",
+      "truth": "200 is only semantically correct for successful requests. Returning 200 with error details in the body breaks HTTP contract. Use 4xx/5xx for errors.",
+      "source": "https://zuplo.com/learning-center/common-pitfalls-in-restful-api-design"
+    },
+    {
+      "misconception": "OpenAPI specs are only for documentation",
+      "truth": "OpenAPI is a contract-first specification. It enables mock servers, automated tests, SDK generation, and client-server testing without coupling.",
+      "source": "https://spec.openapis.org/oas/v3.2.0.html"
+    },
+    {
+      "misconception": "REST APIs should use POST for everything to be flexible",
+      "truth": "HTTP methods encode semantics: GET (safe, cacheable), POST (creates resource), PUT (replaces), PATCH (modifies), DELETE (removes). Using POST for everything breaks HTTP caching and client expectations.",
+      "source": "https://www.milanjovanovic.tech/blog/the-5-most-common-rest-api-design-mistakes-and-how-to-avoid-them"
+    },
+    {
+      "misconception": "Cursor pagination requires exposing record IDs to clients",
+      "truth": "Cursors are opaque tokens (often base64-encoded JSON) that encode position and query state. Clients never inspect their contents.",
+      "source": "https://www.contentful.com/blog/cursor-based-pagination/"
+    },
+    {
+      "misconception": "Versioning an API means creating completely separate codebases (v1, v2, v3)",
+      "truth": "API evolution maintains backward compatibility via additive changes. Full version breaks are last resort. OpenAPI 3.1's deprecate keyword enables gradual transitions.",
+      "source": "https://redocly.com/blog/api-versioning-best-practices"
+    },
+    {
+      "misconception": "GraphQL solves all API design problems",
+      "truth": "GraphQL eliminates over-fetching but complicates caching (POST-based, no URL-based HTTP caching), security (field-level access control complexity), and introduces query complexity attacks.",
+      "source": "https://blog.postman.com/graphql-vs-rest/"
+    },
+    {
+      "misconception": "OpenAPI is only useful for REST APIs",
+      "truth": "OpenAPI 3.1 extends to webhooks, callbacks, and multi-step workflows (Arazzo). The spec is evolving beyond pure REST.",
+      "source": "https://nordicapis.com/the-top-8-api-specifications-to-know-in-2025/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://spec.openapis.org/oas/v3.2.0.html",
+      "title": "OpenAPI Specification v3.2.0",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.openapis.org/",
+      "title": "OpenAPI Initiative",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+      "title": "HTTP Status Codes - MDN Web Docs",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://beeceptor.com/docs/concepts/400-vs-422/",
+      "title": "400 Bad Request vs 422 Unprocessable Entity",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://blog.sentry.io/paginating-large-datasets-in-production-why-offset-fails-and-cursors-win/",
+      "title": "Paginating Large Datasets: Why OFFSET Fails and Cursors Win - Sentry Blog",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "title": "Understanding Cursor Pagination Deep Dive",
+      "recency": "Recent (2023)"
+    },
+    {
+      "url": "https://docs.stripe.com/api/pagination",
+      "title": "Stripe API Pagination",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "title": "Why Contentful is Moving to Cursor-Based Pagination",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "title": "REST API Design Best Practices for Sub and Nested Resources",
+      "recency": "Recent (2023)"
+    },
+    {
+      "url": "https://www.speakeasy.com/api-design/versioning",
+      "title": "Versioning Best Practices in REST API Design - Speakeasy",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://zuplo.com/learning-center/deprecating-rest-apis",
+      "title": "How to Deprecate a REST API: Complete Developer's Guide",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409",
+      "title": "HTTP 409 Conflict - MDN Web Docs",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://github.com/stripe/openapi",
+      "title": "Stripe OpenAPI Specification - GitHub",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://openapi-generator.tech/",
+      "title": "OpenAPI Generator",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://newsletter.techworld-with-milan.com/p/evolution-of-the-netflix-api-architecture",
+      "title": "Evolution of Netflix API Architecture",
+      "recency": "Recent (2023)"
+    },
+    {
+      "url": "https://microsoft.github.io/code-with-engineering-playbook/automated-testing/cdc-testing/",
+      "title": "Consumer-Driven Contract Testing - Microsoft Engineering Playbook",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.howtographql.com/basics/1-graphql-is-the-better-rest/",
+      "title": "GraphQL is the Better REST",
+      "recency": "Recent (2023)"
+    },
+    {
+      "url": "https://www.milanjovanovic.tech/blog/the-5-most-common-rest-api-design-mistakes-and-how-to-avoid-them",
+      "title": "5 Most Common REST API Design Mistakes",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://zuplo.com/learning-center/common-pitfalls-in-restful-api-design",
+      "title": "Common Pitfalls in RESTful API Design",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://redocly.com/blog/api-versioning-best-practices",
+      "title": "API Versioning Best Practices - Redocly",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://blog.postman.com/graphql-vs-rest/",
+      "title": "GraphQL vs REST - Postman Blog",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://nordicapis.com/the-top-8-api-specifications-to-know-in-2025/",
+      "title": "Top 8 API Specifications to Know in 2025 - Nordic APIs",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://github.com/integrations/terraform-provider-github/issues/1093",
+      "title": "GitHub API 422 Validation Failed Example",
+      "recency": "Reference example"
+    }
+  ]
+}

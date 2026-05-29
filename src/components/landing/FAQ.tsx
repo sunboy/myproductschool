@@ -1,11 +1,15 @@
 const FAQ_ITEMS = [
   {
     q: 'Is this just for PMs, or for engineers too?',
-    a: "Both, and that's the point. Engineers who understand product thinking, system design, and data at a deep level are the ones who stay relevant as AI takes over routine coding. HackProduct is for anyone who wants to think clearly and move fast.",
+    a: "Both, and that's the point. Engineers who understand product thinking, system design, SQL, and data at a deep level are the ones who stay relevant as AI handles more routine coding. HackProduct is for anyone who wants to think clearly and move fast.",
   },
   {
     q: 'Which discipline should I start with?',
-    a: "Start with what's most relevant to your next interview or current role. Engineers often start with System Design or Coding; PMs usually start with Product Sense. You can run all five tracks in parallel. FLOW transfers across all of them.",
+    a: "Start with what's most relevant to your next interview or current role. Engineers often start with System Design, SQL, or Coding; PMs usually start with Product Sense. You can run the core tracks in parallel. FLOW transfers across all of them.",
+  },
+  {
+    q: 'Is HackProduct a LeetCode alternative?',
+    a: "Yes, for the judgment layer. Keep LeetCode for algorithm repetition if you need it. Use HackProduct for product sense, systems, data modeling, SQL, AI-assisted coding, and live interview communication.",
   },
   {
     q: 'What is FLOW?',
@@ -17,7 +21,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What makes Hatch different from just using ChatGPT?",
-    a: "Hatch knows your last 50 reps, tracks your weak spots in the FLOW rubric, and pushes back when you hand-wave. It's not a general assistant. It's a coach with context and a specific point of view on what good looks like.",
+    a: "Hatch knows the scenario, the directory context, your recent reps, and the FLOW rubric. It's not a general assistant. It's a coach with context and a specific point of view on what good looks like.",
   },
   {
     q: 'Can my company expense it?',

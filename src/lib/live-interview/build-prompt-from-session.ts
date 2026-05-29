@@ -127,7 +127,7 @@ export async function buildPromptFromSession(input: BuildPromptInput): Promise<B
       trigger: challenge.scenario_trigger ?? '',
       engineerStandout: challenge.engineer_standout ?? '',
       role: challenge.scenario_role,
-      difficulty: challenge.difficulty ?? 'standard',
+      difficulty: challenge.difficulty ?? 'medium',
       primaryCompetencies: challenge.primary_competencies ?? [],
       estimatedMinutes: challenge.estimated_minutes ?? 20,
       flowNudges,

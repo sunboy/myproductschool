@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "morningbrew",
+  "story_slug": "morning-brew-referral",
+  "story_title": "Morning Brew's Referral Engine",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/morning-brew-referral/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/morning-brew-referral/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot holding Morning Brew coffee mugs — the referral rewards that turned readers into recruiters.",
+      "caption": "Hatch mascot holding Morning Brew coffee mugs — the referral rewards that turned readers into recruiters.",
+      "prompt": "Morning Brew's Referral Engine | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) holding a stack of coffee mugs labeled \"Morning Brew\" on a cream background. Hatch's expression is pleased and slightly mischievous — these are the referral rewards, and they worked. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/morning-brew-referral/hero.png",
+      "generated_image_sha256": "7228a81329188f4631440656423af26bd2589a6b9eaa58425639116059465cee",
+      "final_image_sha256": "f59c2616d3f24577a953285c819768785a7551de55b626da4315ef5e7e2604bf",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/morning-brew-referral/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/morning-brew-referral/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/morning-brew-referral/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at an email with a referral link, showing how readers became recruiters.",
+      "caption": "Hatch gesturing at an email with a referral link, showing how readers became recruiters.",
+      "prompt": "Morning Brew's Referral Engine | hatch-narrator: Hatch in narrator pose, gesturing at an oversized email envelope with a small \"Share\" link at the bottom. A chain of small user icons radiates outward from the link — each one connected to the next. The chain suggests exponential reach from a single link. Cream background, no copy. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/morning-brew-referral/hatch-narrator.png",
+      "generated_image_sha256": "7ad02ca29b49684f0ced1c6d4aa94775ec8ae67c2b07bcf3f0fd5f21d0ecf1d8",
+      "final_image_sha256": "d4b4299e127f0036d06bcefca3e1f73af5ce1c43b22a47bb91f2f88189352922",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/morning-brew-referral/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/morning-brew-referral/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/morning-brew-referral/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at the milestone structure in Morning Brew's referral ladder.",
+      "caption": "Hatch pointing at the milestone structure in Morning Brew's referral ladder.",
+      "prompt": "Morning Brew's Referral Engine | failure-mechanism: Hatch in thinking pose, looking at a progress bar divided into milestone segments — labeled \"1,\" \"5,\" \"15,\" \"25\" — with a coffee mug icon at 5, a t-shirt at 15, a larger prize at 25. A small reader figure stands at the \"3\" mark, close to the next reward. Hatch is pointing at the gap between the figure and the milestone. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/morning-brew-referral/failure-mechanism.png",
+      "generated_image_sha256": "ec833fcbecad6242479820ad5083bfa2be940df6c758bc1533b7596c041fda75",
+      "final_image_sha256": "bd7dc92b4e0e057d1447435d0a6405d4e94be68a9cb89335e0e78a194c90b01a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/morning-brew-referral/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/morning-brew-referral/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/morning-brew-referral/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Morning Brew's 2.5 million subscriber count before the $75M acquisition.",
+      "caption": "Hatch pointing at Morning Brew's 2.5 million subscriber count before the $75M acquisition.",
+      "prompt": "Morning Brew's Referral Engine | evidence-card: Hatch pointing at a subscriber counter reading \"2,500,000\" with a green upward line leading to it. Behind the line, the text \"$75M acquisition\" appears in small, secondary type. Hatch's expression is impressed. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/morning-brew-referral/evidence-card.png",
+      "generated_image_sha256": "1f7d5ecf55f0b577f3dbad99bbd287ddffc4bbef471baf7399038f43f162eaec",
+      "final_image_sha256": "9de821637b49d0442baec00b917651ab0bf083302300fc58773662acc03a2bf2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/morning-brew-referral/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/morning-brew-referral/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/morning-brew-referral/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching pose holding a referral link mechanism — the concrete action that turns inclination into growth.",
+      "caption": "Hatch in coaching pose holding a referral link mechanism — the concrete action that turns inclination into growth.",
+      "prompt": "Morning Brew's Referral Engine | lesson-frame: Hatch in coaching pose on a cream background, holding a small link icon with arrows branching out from it — the mechanism made visual. The expression is calm and instructional. No copy. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/morning-brew-referral/lesson-frame.png",
+      "generated_image_sha256": "ebfce168ca1f48907ec5e3fefb2420a63dc5cb25358f77beab6ba88ed2aa6c94",
+      "final_image_sha256": "4a24400ece78e41c5c0a870be4c0be47fb997b941e9fc61fcb978b3b092b7de8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/morning-brew-referral/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/morning-brew-referral/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/morning-brew-referral/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a Morning Brew coffee mug for the referral story thumbnail.",
+      "caption": "Hatch holding a Morning Brew coffee mug for the referral story thumbnail.",
+      "prompt": "Hatch mascot small and centered, holding a tiny coffee mug. Cream background, no text. Immediately readable at small size. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/morning-brew-referral/hero.png",
+      "generated_image_sha256": "7228a81329188f4631440656423af26bd2589a6b9eaa58425639116059465cee",
+      "final_image_sha256": "3c81df514d1aacddedd4fb99fa5e2544df280f8a6b4cc93ec62f86910237e931",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/morning-brew-referral/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/morning-brew-referral/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/morning-brew-referral/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Social share card for the Morning Brew referral story.",
+      "caption": "Social share card for the Morning Brew referral story.",
+      "prompt": "Hero composition adapted for OG share card: Hatch holding coffee mugs, title \"Morning Brew's Referral Engine\" in large Literata-style serif type above. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/morning-brew-referral/hero.png",
+      "generated_image_sha256": "7228a81329188f4631440656423af26bd2589a6b9eaa58425639116059465cee",
+      "final_image_sha256": "1c4f6b7140eb63803f5bc54fd97185a723246c474bc51b2670eaa3c88aae258d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/morning-brew-referral/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/morning-brew-referral/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/morning-brew-referral/v1"
+}

@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 import type { InterviewGrade, ChallengeType } from '@/lib/types'
 
 interface InterviewFeedbackProps {
   grade: InterviewGrade
   challengeType: ChallengeType
+  canvasPngUrl?: string | null
   onRetry?: () => void
   onBackToCanvas?: () => void
 }
@@ -27,7 +29,7 @@ function scoreLabel(score: number) {
 // Animated SVG score ring with count-up
 function ScoreRing({ score }: { score: number }) {
   const [displayed, setDisplayed] = useState(0)
-  // r=44 inside a 120×120 viewBox gives 16px margin each side — strokeWidth=10 fits cleanly
+  // r=44 inside a 120×120 viewBox gives 16px margin each side - strokeWidth=10 fits cleanly
   const radius = 44
   const circumference = 2 * Math.PI * radius
   // Start fully offset (arc hidden), animate to final fill
@@ -85,7 +87,7 @@ function ScoreRing({ score }: { score: number }) {
           <span className="font-label text-xs text-on-surface-variant">/5</span>
         </div>
       </div>
-      {/* Score label badge — outside/below the ring */}
+      {/* Score label badge - outside/below the ring */}
       <span className={`font-label text-xs font-semibold px-3 py-1 rounded-full ${colors.badge}`}>
         {scoreLabel(score)}
       </span>
@@ -123,7 +125,7 @@ function DimensionTile({
         }`}
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      {/* Compact header — always visible */}
+      {/* Compact header - always visible */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <p className="font-headline font-semibold text-base text-on-surface truncate tracking-tight">{label}</p>
@@ -145,9 +147,9 @@ function DimensionTile({
           </span>
         </div>
       </div>
-      <p className={`font-body text-sm text-on-surface mt-1.5 leading-relaxed ${expanded ? 'font-medium' : 'line-clamp-1 text-on-surface-variant'}`}>
+      <FeedbackText className={`mt-1.5 ${expanded ? 'font-medium text-on-surface' : 'line-clamp-1 text-on-surface-variant'}`}>
         {dim.verdict}
-      </p>
+      </FeedbackText>
 
       {/* Expanded content */}
       <div
@@ -157,9 +159,9 @@ function DimensionTile({
         <div className="pt-4 space-y-3 border-t border-outline-variant/40 mt-3">
           {dim.evidence && (
             <blockquote className="border-l-2 border-outline-variant pl-3 py-0.5">
-              <p className="text-xs text-on-surface-variant italic font-body leading-relaxed">
+              <FeedbackText className="text-xs italic text-on-surface-variant">
                 {dim.evidence}
-              </p>
+              </FeedbackText>
             </blockquote>
           )}
           {dim.hole_to_poke && (
@@ -168,7 +170,7 @@ function DimensionTile({
                 <span className="material-symbols-outlined text-tertiary text-[14px]">warning</span>
                 <p className="font-label text-[10px] font-bold uppercase tracking-wider text-tertiary">Watch out</p>
               </div>
-              <p className="text-sm text-on-surface font-body leading-relaxed pl-[22px]">{dim.hole_to_poke}</p>
+              <FeedbackText className="pl-[22px] text-on-surface">{dim.hole_to_poke}</FeedbackText>
             </div>
           )}
           {dim.how_to_improve && (
@@ -177,7 +179,7 @@ function DimensionTile({
                 <span className="material-symbols-outlined text-primary text-[14px]">lightbulb</span>
                 <p className="font-label text-[10px] font-bold uppercase tracking-wider text-primary">How to improve</p>
               </div>
-              <p className="text-sm text-on-surface font-body leading-relaxed pl-[22px]">{dim.how_to_improve}</p>
+              <FeedbackText className="pl-[22px] text-on-surface">{dim.how_to_improve}</FeedbackText>
             </div>
           )}
         </div>
@@ -186,7 +188,7 @@ function DimensionTile({
   )
 }
 
-export function InterviewFeedback({ grade, challengeType: _challengeType, onRetry, onBackToCanvas }: InterviewFeedbackProps) {
+export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, onRetry, onBackToCanvas }: InterviewFeedbackProps) {
   const [calloutVisible, setCalloutVisible] = useState(false)
 
   // Lift expanded state up so parent can collapse grid to 1-col when any tile is open
@@ -214,7 +216,21 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, onRetr
           </h2>
         </div>
 
-        {/* ── 2. PATH FORWARD CALLOUTS (above dimensions) ────── */}
+        {/* ── 2. CANVAS SNAPSHOT ─────────────────────────────── */}
+        {canvasPngUrl && (
+          <div className="rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low">
+            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-3 py-2 border-b border-outline-variant">
+              Your diagram
+            </p>
+            <img
+              src={canvasPngUrl}
+              alt="Canvas snapshot"
+              className="w-full object-contain max-h-64"
+            />
+          </div>
+        )}
+
+        {/* ── 3. PATH FORWARD CALLOUTS (above dimensions) ────── */}
         {(grade.top_strength || grade.top_improvement) && (
           <div
             className="space-y-3 transition-all duration-500"
@@ -225,7 +241,7 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, onRetr
                 <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5">check_circle</span>
                 <div>
                   <p className="font-label text-xs font-semibold uppercase tracking-wide mb-1">What you got right</p>
-                  <p className="font-body text-sm leading-relaxed">{grade.top_strength}</p>
+                  <FeedbackText>{grade.top_strength}</FeedbackText>
                 </div>
               </div>
             )}
@@ -234,14 +250,14 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, onRetr
                 <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5">arrow_forward</span>
                 <div>
                   <p className="font-label text-xs font-semibold uppercase tracking-wide mb-1">Focus next time</p>
-                  <p className="font-body text-sm leading-relaxed">{grade.top_improvement}</p>
+                  <FeedbackText>{grade.top_improvement}</FeedbackText>
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* ── 3. DIMENSIONS GRID ─────────────────────────────── */}
+        {/* ── 4. DIMENSIONS GRID ─────────────────────────────── */}
         {/* Collapse to 1-col when any tile is expanded so heights stay even */}
         <div>
           <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-3">
@@ -263,7 +279,7 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, onRetr
         </div>
       </div>
 
-      {/* ── 4. STICKY BOTTOM ACTIONS ───────────────────────── */}
+      {/* ── 5. STICKY BOTTOM ACTIONS ───────────────────────── */}
       {(onBackToCanvas || onRetry) && (
         <div className="mt-auto pt-4 sticky bottom-0 bg-surface border-t border-outline-variant px-5 pb-5 flex flex-col gap-2">
           {onBackToCanvas && (

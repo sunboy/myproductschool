@@ -1,0 +1,416 @@
+{
+  "facts": [
+    {
+      "fact": "GIN indexes are approximately 3x faster for full-text search lookups than GiST indexes, but GIN indexes take 3x longer to build and are 10x slower to update",
+      "source": "https://www.citusdata.com/blog/2017/10/17/tour-of-postgres-index-types/",
+      "date": "2017-10-17",
+      "recency_note": "Foundational comparison; still valid"
+    },
+    {
+      "fact": "GIN indexes are most effective for static data with fewer than 100,000 unique lexemes; GiST indexes handle dynamic data better and are faster for updates but slower for reads",
+      "source": "https://pganalyze.com/blog/gin-index",
+      "date": "2024",
+      "recency_note": "Recent analysis"
+    },
+    {
+      "fact": "Pre-computing tsvectors in GENERATED ALWAYS STORED columns with GIN indexes eliminates the need to call to_tsvector() on every search, turning full table scans into bitmap index scans",
+      "source": "https://www.postgresql.org/docs/current/textsearch-tables.html",
+      "date": "2024",
+      "recency_note": "Official PostgreSQL documentation"
+    },
+    {
+      "fact": "PostgreSQL 12+ allows CTEs to be inlined by default if called only once, removing the optimization fence; however, CTEs called multiple times remain materialized by default unless explicitly inlined",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "date": "2019+",
+      "recency_note": "Still accurate for PostgreSQL 12-18"
+    },
+    {
+      "fact": "Materialized views can improve dashboard query performance by 350x to 9000x in real-world cases; however, concurrent refreshes require a unique index with no WHERE clause",
+      "source": "https://sngeth.com/rails/performance/postgresql/2025/10/03/materialized-views-performance-case-study/",
+      "date": "2025-10-03",
+      "recency_note": "Recent real-world case study"
+    },
+    {
+      "fact": "ts_rank_cd computes relevance based on term frequency, term proximity (cover density), and field priority weights (A=highest, B, C, D); ts_rank only considers term frequency",
+      "source": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "date": "2024",
+      "recency_note": "Current PostgreSQL documentation"
+    },
+    {
+      "fact": "PostgreSQL's ts_rank and ts_rank_cd do not compute inverse document frequency (IDF), meaning scores do not change as the corpus grows; BM25 accounts for corpus-wide term rarity",
+      "source": "https://emschwartz.me/comparing-full-text-search-algorithms-bm25-tf-idf-and-postgres/",
+      "date": "2024",
+      "recency_note": "Recent algorithmic comparison"
+    },
+    {
+      "fact": "Without indexing the join column in recursive CTEs, each iteration performs a sequential scan; a 12ms query can degrade to 400ms on modest datasets without proper indexing",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-speeding-up-recursive-queries-and-hierarchic-data/",
+      "date": "2024",
+      "recency_note": "Recent optimization guide"
+    },
+    {
+      "fact": "Recursive CTEs with path arrays accumulate memory proportional to path_length × node_count; max_recursive_depth defaults to 1000 as a safety limit",
+      "source": "https://www.yugabyte.com/blog/using-postgresql-recursive-cte-part-2-bacon-numbers/",
+      "date": "2024",
+      "recency_note": "Current best practice guide"
+    },
+    {
+      "fact": "JSONB columns require PostgreSQL to rewrite the entire value to disk even for small modifications; JSONB statistics are not tracked by the query planner, severely impacting plan optimization",
+      "source": "https://www.heap.io/blog/when-to-avoid-jsonb-in-a-postgresql-schema/",
+      "date": "2024",
+      "recency_note": "Recent analysis"
+    },
+    {
+      "fact": "Normalized tables with proper indexing outperform denormalized JSONB for filtering on indexed fields; JSONB wins for aggregations when data is already denormalized",
+      "source": "https://medium.com/@sruthiganesh/comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "date": "2024",
+      "recency_note": "Recent comparative analysis"
+    },
+    {
+      "fact": "A bitmap index scan reads table pages sequentially after fetching row locations from the index, balancing between sequential scans (all pages) and index scans (random access)",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-indexing-index-scan-vs-bitmap-scan-vs-sequential-scan-basics/",
+      "date": "2024",
+      "recency_note": "Current optimization documentation"
+    },
+    {
+      "fact": "PostgreSQL full-text search can replace Elasticsearch for ~80% of use cases without additional infrastructure; Elasticsearch is necessary for the ~20% where search is a core feature",
+      "source": "https://www.paradedb.com/blog/elasticsearch-vs-postgres",
+      "date": "2024",
+      "recency_note": "Recent comparative architecture guide"
+    },
+    {
+      "fact": "Low-cardinality columns (many rows sharing same value) make indexes ineffective; the planner often chooses sequential scans over index scans for low-cardinality indexes",
+      "source": "https://www.mydbops.com/blog/postgresql-indexing-best-practices-guide/",
+      "date": "2024",
+      "recency_note": "Current best practices"
+    },
+    {
+      "fact": "The MATERIALIZED keyword in PostgreSQL CTEs forces materialization as an optimization fence, preventing the outer query from influencing the inner query's execution plan",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "date": "2019+",
+      "recency_note": "Still applicable"
+    }
+  ],
+  "examples": [
+    {
+      "title": "Blockost's Elasticsearch-to-PostgreSQL Migration",
+      "description": "Blockost replaced Elasticsearch with PostgreSQL full-text search to eliminate sync complexity between the main database and search index. They found PostgreSQL's native FTS sufficient for their use case and reduced infrastructure overhead.",
+      "source": "https://blog.blockost.com/why-we-replaced-elasticsearch-with-postgres-full-text-search",
+      "date": "2024",
+      "metric": "Zero additional infrastructure required"
+    },
+    {
+      "title": "Bilt Rewards – ParadeDB Case Study",
+      "description": "Bilt Rewards, processing over $36B in rent payments annually (2024), uses PostgreSQL full-text search via ParadeDB extension for search functionality, avoiding separate Elasticsearch infrastructure.",
+      "source": "https://www.paradedb.com/blog/elasticsearch-vs-postgres",
+      "date": "2024",
+      "metric": "$36B annual payments processed"
+    },
+    {
+      "title": "Dashboard Query Performance – 9000x Speedup via Materialized Views",
+      "description": "A Rails-based system achieved 9000x faster dashboard queries by materializing complex aggregations into a view and refreshing every 5 minutes. Query time dropped from ~30s to ~3ms.",
+      "source": "https://sngeth.com/rails/performance/postgresql/2025/10/03/materialized-views-performance-case-study/",
+      "date": "2025-10-03",
+      "metric": "9000x speedup (30 seconds → 3 milliseconds)"
+    },
+    {
+      "title": "CTE Optimization Fence – 500x Slowdown in Production",
+      "description": "Hans Buschmann reported a query that slowed 500x due to CTE materialization preventing row restriction pushdown. Rewriting to inline the CTE restored performance.",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "date": "2019",
+      "metric": "500x performance regression from CTEs"
+    },
+    {
+      "title": "Recursive CTE with Missing Index – 400ms Regression",
+      "description": "A simple hierarchical query that should take 12ms degrades to 400ms when the parent_id join column lacks an index. Each recursive iteration becomes a sequential scan.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-speeding-up-recursive-queries-and-hierarchic-data/",
+      "date": "2024",
+      "metric": "12ms → 400ms (33x slower without index)"
+    },
+    {
+      "title": "Xata's BM25 Ranking Implementation",
+      "description": "Xata published a detailed comparison showing that PostgreSQL's ts_rank_cd lacks inverse document frequency, making BM25 extensions necessary for search-primary applications.",
+      "source": "https://xata.io/blog/postgres-full-text-search-postgres-vs-elasticsearch",
+      "date": "2024",
+      "metric": "BM25 outperforms ts_rank_cd in ranking accuracy"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "CTE Optimization Fence",
+      "analogy": "A CTE is like a wall between the inner query and the outer query. Without the wall, the outer query's restrictions can reach back and optimize the inner query. With the wall, the inner query executes in full isolation, often wastefully.",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences"
+    },
+    {
+      "concept": "Bitmap Index Scan",
+      "analogy": "A bitmap scan is the Goldilocks zone between sequential and index scans. Instead of jumping randomly through pages (index scan) or reading all pages (sequential scan), it reads the index to find page numbers, then reads those pages sequentially.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-indexing-index-scan-vs-bitmap-scan-vs-sequential-scan-basics/"
+    },
+    {
+      "concept": "GIN Index Lossiness",
+      "analogy": "GiST indexes are like a sieve that catches most matches but produces some false positives; PostgreSQL then filters those false positives. GIN indexes are more precise, like a mesh screen with no false catches.",
+      "source": "https://www.citusdata.com/blog/2017/10/17/tour-of-postgres-index-types/"
+    },
+    {
+      "concept": "JSONB Modification Cost",
+      "analogy": "Updating a single field in a JSONB column is like editing one word in a printed book: the entire page must be reprinted. In a normalized table, you only change the one cell you need.",
+      "source": "https://www.heap.io/blog/when-to-avoid-jsonb-in-a-postgresql-schema/"
+    },
+    {
+      "concept": "Recursive CTE Path Arrays",
+      "analogy": "Building a path array in a recursive CTE is like adding a car to a train at each iteration. The first iteration has 1 car, the second has 2 cars (duplicated across all rows), the third has 3 cars per row, etc. Memory grows combinatorially.",
+      "source": "https://www.yugabyte.com/blog/using-postgresql-recursive-cte-part-2-bacon-numbers/"
+    },
+    {
+      "concept": "Materialized View Refresh Timing",
+      "analogy": "A materialized view refresh is like a snapshot camera. If your refresh takes 6 minutes but you schedule it every 5 minutes, you have overlapping snapshots (old job still running while new one starts), leading to lock contention.",
+      "source": "https://www.epsio.io/blog/postgres-refresh-materialized-view-a-comprehensive-guide/"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "GIN lookup performance vs GiST",
+      "value": "3x faster",
+      "context": "Full-text search index reads",
+      "source": "https://www.citusdata.com/blog/2017/10/17/tour-of-postgres-index-types/"
+    },
+    {
+      "metric": "GIN build time vs GiST",
+      "value": "3x longer to build",
+      "context": "One-time index creation cost",
+      "source": "https://pganalyze.com/blog/gin-index"
+    },
+    {
+      "metric": "GIN update overhead vs GiST",
+      "value": "10x slower updates",
+      "context": "Write-heavy workloads",
+      "source": "https://pganalyze.com/blog/gin-index"
+    },
+    {
+      "metric": "Maximum GIN effectiveness",
+      "value": "100,000 unique lexemes",
+      "context": "GIN performance degrades significantly beyond this threshold for dynamic data",
+      "source": "https://pganalyze.com/blog/gin-index"
+    },
+    {
+      "metric": "PostgreSQL coverage of search use cases",
+      "value": "~80%",
+      "context": "Percentage of search applications that don't need Elasticsearch",
+      "source": "https://www.paradedb.com/blog/elasticsearch-vs-postgres"
+    },
+    {
+      "metric": "Materialized view speedup (real-world case)",
+      "value": "350x to 9000x faster",
+      "context": "Dashboard query performance improvement",
+      "source": "https://sngeth.com/rails/performance/postgresql/2025/10/03/materialized-views-performance-case-study/"
+    },
+    {
+      "metric": "Recursive CTE depth safety limit",
+      "value": "1000 (max_recursive_depth)",
+      "context": "Hard enforced limit to prevent runaway recursion",
+      "source": "https://www.yugabyte.com/blog/using-postgresql-recursive-cte-part-2-bacon-numbers/"
+    },
+    {
+      "metric": "CTE optimization fence regression",
+      "value": "500x slower",
+      "context": "Real production case where CTE materialization killed query performance",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences"
+    },
+    {
+      "metric": "Recursive CTE without index performance",
+      "value": "400ms (vs 12ms with index)",
+      "context": "Cost of missing join column index in recursive queries",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-speeding-up-recursive-queries-and-hierarchic-data/"
+    },
+    {
+      "metric": "ts_rank normalization options",
+      "value": "4 options (0, 1, 2, 4, 8, 16, 32)",
+      "context": "Different strategies for document length normalization",
+      "source": "https://www.postgresql.org/docs/current/textsearch-controls.html"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "CTEs always improve query performance by breaking complex queries into readable chunks",
+      "reality": "CTEs act as optimization fences in PostgreSQL < 12, preventing predicate pushdown and causing 10-500x slowdowns. Even in PostgreSQL 12+, multiple-call CTEs remain materialized by default.",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences"
+    },
+    {
+      "misconception": "Using LIKE or ILIKE is simpler and sufficient for text search",
+      "reality": "LIKE and ILIKE lack index support, require sequential scans of all documents, and are significantly slower than tsvector + GIN indexes. Engineers often overlook PostgreSQL's full built-in text search engine.",
+      "source": "https://www.crunchydata.com/blog/postgres-full-text-search-a-search-engine-in-a-database"
+    },
+    {
+      "misconception": "Every recursive CTE with path arrays is automatically slow",
+      "reality": "Path arrays are slow because memory grows combinatorially (path_length × node_count), not because of the recursion itself. Limiting depth or materializing to a temp table fixes this.",
+      "source": "https://www.yugabyte.com/blog/using-postgresql-recursive-cte-part-2-bacon-numbers/"
+    },
+    {
+      "misconception": "JSONB is a drop-in replacement for normalized tables with better flexibility",
+      "reality": "JSONB updates require rewriting the entire value to disk, the planner has no statistics on JSONB fields (causing bad query plans), and filtering on indexed normalized columns is consistently faster.",
+      "source": "https://www.heap.io/blog/when-to-avoid-jsonb-in-a-postgresql-schema/"
+    },
+    {
+      "misconception": "ts_rank is sufficient for relevance ranking in production applications",
+      "reality": "ts_rank and ts_rank_cd lack inverse document frequency, term frequency saturation, and corpus-aware length normalization that BM25 provides. Modern search applications need BM25 extensions.",
+      "source": "https://emschwartz.me/comparing-full-text-search-algorithms-bm25-tf-idf-and-postgres/"
+    },
+    {
+      "misconception": "GIN indexes are always better than GiST for full-text search",
+      "reality": "GIN is 3x faster for reads but 10x slower for updates and 3x slower to build. For dynamic data or frequent writes, GiST may be the better choice despite slower reads.",
+      "source": "https://pganalyze.com/blog/gin-index"
+    },
+    {
+      "misconception": "You must compute tsvector on every search for best results",
+      "reality": "Pre-computing tsvectors in GENERATED ALWAYS STORED columns allows PostgreSQL to index them once and reuse the index for all searches, improving performance dramatically.",
+      "source": "https://www.postgresql.org/docs/current/textsearch-tables.html"
+    },
+    {
+      "misconception": "Materialized views refresh instantly without overhead",
+      "reality": "Standard refreshes lock the view during refresh (blocking reads). Concurrent refreshes require a unique index and still compete with concurrent queries. Overlapping refresh jobs cause contention.",
+      "source": "https://www.epsio.io/blog/postgres-refresh-materialized-view-a-comprehensive-guide/"
+    },
+    {
+      "misconception": "ts_headline is fast for generating search result snippets",
+      "reality": "ts_headline searches the original document, not the tsvector, making it slow when called for every matching row. Use it sparingly or only for top-N results.",
+      "source": "https://www.crunchydata.com/blog/postgres-full-text-search-a-search-engine-in-a-database"
+    },
+    {
+      "misconception": "You need Elasticsearch for all production search applications",
+      "reality": "PostgreSQL covers ~80% of search use cases without additional infrastructure. Companies like Blockost and Bilt Rewards successfully replaced Elasticsearch with native PostgreSQL FTS.",
+      "source": "https://blog.blockost.com/why-we-replaced-elasticsearch-with-postgres-full-text-search"
+    },
+    {
+      "misconception": "Low-cardinality columns are fine to index",
+      "reality": "Low-cardinality columns (many rows per value) make indexes ineffective; the planner chooses sequential scans over index scans because the index must be traversed for each matching row.",
+      "source": "https://www.mydbops.com/blog/postgresql-indexing-best-practices-guide/"
+    },
+    {
+      "misconception": "Materialized views automatically stay fresh",
+      "reality": "PostgreSQL has no automatic refresh mechanism. Refreshes must be scheduled via cron jobs, and refresh time must be less than the refresh interval to avoid lock contention.",
+      "source": "https://www.epsio.io/blog/postgres-refresh-materialized-view-a-comprehensive-guide/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/textsearch-tables.html",
+      "title": "PostgreSQL Official: Tables and Indexes for Full-Text Search",
+      "recency": "Current (2024)",
+      "authority": "Official PostgreSQL documentation"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "title": "PostgreSQL Official: Controlling Text Search",
+      "recency": "Current (2024)",
+      "authority": "Official PostgreSQL documentation"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/queries-with.html",
+      "title": "PostgreSQL Official: WITH Queries (Common Table Expressions)",
+      "recency": "Current (2024)",
+      "authority": "Official PostgreSQL documentation"
+    },
+    {
+      "url": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "title": "EDB: PostgreSQL CTEs as Optimization Fences",
+      "recency": "2019+ (still accurate)",
+      "authority": "Major PostgreSQL vendor (EDB)"
+    },
+    {
+      "url": "https://pganalyze.com/blog/gin-index",
+      "title": "pganalyze: Understanding Postgres GIN Indexes",
+      "recency": "2024",
+      "authority": "PostgreSQL monitoring & analysis platform"
+    },
+    {
+      "url": "https://www.citusdata.com/blog/2017/10/17/tour-of-postgres-index-types/",
+      "title": "Citus Data: Tour of Postgres Index Types",
+      "recency": "2017-10-17 (foundational; still valid)",
+      "authority": "PostgreSQL distributed extensions vendor"
+    },
+    {
+      "url": "https://sngeth.com/rails/performance/postgresql/2025/10/03/materialized-views-performance-case-study/",
+      "title": "Sid Ngeth: Materialized Views Performance Case Study (9000x speedup)",
+      "recency": "2025-10-03",
+      "authority": "Real-world production case study"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/postgresql-speeding-up-recursive-queries-and-hierarchic-data/",
+      "title": "Cybertec: Speeding Up Recursive Queries",
+      "recency": "2024",
+      "authority": "PostgreSQL consultancy"
+    },
+    {
+      "url": "https://www.yugabyte.com/blog/using-postgresql-recursive-cte-part-2-bacon-numbers/",
+      "title": "Yugabyte: Recursive CTEs Part 2 – Path Arrays & Memory",
+      "recency": "2024",
+      "authority": "Database systems expert (Yugabyte founder)"
+    },
+    {
+      "url": "https://www.heap.io/blog/when-to-avoid-jsonb-in-a-postgresql-schema/",
+      "title": "Heap: When to Avoid JSONB in PostgreSQL",
+      "recency": "2024",
+      "authority": "Analytics platform with PostgreSQL expertise"
+    },
+    {
+      "url": "https://medium.com/@sruthiganesh/comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "title": "Sruthi Ganesh: JSONB vs Normalized Tables Performance Comparison",
+      "recency": "2024",
+      "authority": "Database performance analysis"
+    },
+    {
+      "url": "https://emschwartz.me/comparing-full-text-search-algorithms-bm25-tf-idf-and-postgres/",
+      "title": "Evan Schwartz: Comparing BM25, TF-IDF, and PostgreSQL FTS",
+      "recency": "2024",
+      "authority": "Search algorithm expert"
+    },
+    {
+      "url": "https://xata.io/blog/postgres-full-text-search-postgres-vs-elasticsearch",
+      "title": "Xata: PostgreSQL vs Elasticsearch Full-Text Search Comparison",
+      "recency": "2024",
+      "authority": "Serverless database platform"
+    },
+    {
+      "url": "https://blog.blockost.com/why-we-replaced-elasticsearch-with-postgres-full-text-search",
+      "title": "Blockost: Why We Replaced Elasticsearch with PostgreSQL FTS",
+      "recency": "2024",
+      "authority": "Real-world case study"
+    },
+    {
+      "url": "https://www.paradedb.com/blog/elasticsearch-vs-postgres",
+      "title": "ParadeDB: Elasticsearch vs PostgreSQL Full-Text Search",
+      "recency": "2024",
+      "authority": "PostgreSQL search extension vendor"
+    },
+    {
+      "url": "https://www.crunchydata.com/blog/postgres-full-text-search-a-search-engine-in-a-database",
+      "title": "Crunchy Data: Postgres Full-Text Search as a Search Engine",
+      "recency": "2024",
+      "authority": "PostgreSQL consultancy & vendor"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/postgresql-indexing-index-scan-vs-bitmap-scan-vs-sequential-scan-basics/",
+      "title": "Cybertec: Index Scan vs Bitmap Scan vs Sequential Scan",
+      "recency": "2024",
+      "authority": "PostgreSQL consultancy"
+    },
+    {
+      "url": "https://www.mydbops.com/blog/postgresql-indexing-best-practices-guide/",
+      "title": "MyDBOps: PostgreSQL Indexing Best Practices",
+      "recency": "2024",
+      "authority": "Database operations platform"
+    },
+    {
+      "url": "https://www.epsio.io/blog/postgres-refresh-materialized-view-a-comprehensive-guide/",
+      "title": "EPSIO: Postgres Refresh Materialized View – Comprehensive Guide",
+      "recency": "2024",
+      "authority": "PostgreSQL performance optimization platform"
+    },
+    {
+      "url": "https://danielabaron.me/blog/speed-up-pg-fts-with-persistent-ts-vectors/",
+      "title": "Daniela Baron: Speeding Up PostgreSQL FTS with Persistent TSVectors",
+      "recency": "2024",
+      "authority": "PostgreSQL expert"
+    }
+  ]
+}

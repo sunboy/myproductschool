@@ -3,8 +3,20 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import type { UserRoleV2 } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
+import { z, ZodError } from 'zod'
 
-const VALID_ROLES: UserRoleV2[] = ['swe', 'data_eng', 'ml_eng', 'devops', 'em', 'founding_eng', 'tech_lead', 'pm', 'designer', 'data_scientist']
+const VALID_ROLES = ['swe', 'data_eng', 'ml_eng', 'devops', 'em', 'founding_eng', 'tech_lead', 'pm', 'designer', 'data_scientist'] as const
+
+const RequestSchema = z.object({
+  role: z.enum(VALID_ROLES),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function POST(request: Request) {
   if (IS_MOCK) {
@@ -15,12 +27,19 @@ export async function POST(request: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
-  const { role } = body as { role: UserRoleV2 }
-
-  if (!role || !VALID_ROLES.includes(role)) {
-    return NextResponse.json({ error: `role must be one of: ${VALID_ROLES.join(', ')}` }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
+  const role: UserRoleV2 = body.role
 
   const adminClient = createAdminClient()
   const { error } = await adminClient

@@ -19,7 +19,7 @@ export function WaitlistCountdown() {
         d: String(Math.floor(gap / 86400000)),
         h: String(Math.floor((gap % 86400000) / 3600000)),
       })
-      // Update every minute — days+hours don't need per-second updates
+      // Update every minute - days+hours don't need per-second updates
       setTimeout(tick, 60000)
     }
     tick()

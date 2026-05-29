@@ -29,13 +29,13 @@ export function ShareableCard({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Fallback — silently fail
+      // Fallback - silently fail
     }
   }
 
   const handleShareLinkedIn = () => {
     const url = encodeURIComponent(window.location.origin + '/profile/share')
-    const percentileText = percentile !== null ? ` — Top ${percentile}%` : ''
+    const percentileText = percentile !== null ? ` - Top ${percentile}%` : ''
     const text = encodeURIComponent(
       `My ProductIQ score is ${score}${percentileText} on HackProduct! Check it out:`
     )
@@ -81,7 +81,7 @@ export function ShareableCard({
         <p className="text-xs opacity-40 text-center mt-4">{name}</p>
       </div>
 
-      {/* Action buttons — outside the card */}
+      {/* Action buttons - outside the card */}
       <div className="flex gap-3">
         <button
           onClick={handleCopyLink}

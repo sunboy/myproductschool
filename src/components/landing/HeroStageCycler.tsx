@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import {
-  LivePreview_Practice,
-  LivePreview_LiveInterview,
-  LivePreview_StudyPlans,
-  LivePreview_LumaCoach,
-  LivePreview_Grading,
+  FeedbackConsole,
+  OrchestrationMap,
+  PracticeWorkbench,
+  ProductCommandCenter,
+  RoadmapPreview,
 } from './LivePreviews'
 
 const ORDER = ['practice', 'interview', 'plans', 'coach', 'grading'] as const
@@ -22,11 +22,11 @@ const LABELS: Record<StageKey, string> = {
 
 function renderStage(key: StageKey) {
   switch (key) {
-    case 'practice':  return <LivePreview_Practice />
-    case 'interview': return <LivePreview_LiveInterview />
-    case 'plans':     return <LivePreview_StudyPlans />
-    case 'coach':     return <LivePreview_LumaCoach />
-    case 'grading':   return <LivePreview_Grading />
+    case 'practice':  return <PracticeWorkbench />
+    case 'interview': return <ProductCommandCenter />
+    case 'plans':     return <RoadmapPreview />
+    case 'coach':     return <OrchestrationMap />
+    case 'grading':   return <FeedbackConsole />
   }
 }
 

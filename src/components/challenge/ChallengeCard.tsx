@@ -32,14 +32,9 @@ export function ChallengeCard({
   const codingMeta = isCoding
     ? ((challenge as unknown as { metadata?: CodingMetadata }).metadata ?? {})
     : null
-  const CardWrapper = locked ? 'div' : Link
-  const cardProps = locked
-    ? { className: 'relative flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant opacity-75 cursor-default' }
-    : {
-        href: `/workspace/challenges/${challenge.id}`,
-        'data-hatch-sound': 'open',
-        className: 'relative flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant hover:bg-surface-container-high hover:border-primary/30 transition-all',
-      }
+  const cardClassName = locked
+    ? 'relative flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant opacity-75 cursor-default'
+    : 'relative flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant hover:bg-surface-container-high hover:border-primary/30 transition-all'
 
   const statusIcon =
     challenge.is_completed
@@ -48,14 +43,13 @@ export function ChallengeCard({
         ? { icon: 'incomplete_circle', colorClass: 'text-tertiary' }
         : { icon: 'circle', colorClass: 'text-on-surface-variant/40' }
 
-  const tags: string[] = Array.isArray(challenge.tags) ? (challenge.tags as string[]) : []
+  const tags: string[] = Array.from(new Set([
+    ...(challenge.topic_tags ?? []),
+    ...(challenge.technique_tags ?? []),
+  ]))
 
-  return (
-    // @ts-expect-error - polymorphic component
-    <CardWrapper
-      {...cardProps}
-      data-testid={`challenge-card-${challenge.id}`}
-    >
+  const content = (
+    <>
       {locked && (
         <div className="absolute inset-0 rounded-lg flex items-center justify-end pr-4 pointer-events-none">
           <span
@@ -174,6 +168,25 @@ export function ChallengeCard({
           chevron_right
         </span>
       )}
-    </CardWrapper>
+    </>
+  )
+
+  if (locked) {
+    return (
+      <div className={cardClassName} data-testid={`challenge-card-${challenge.id}`}>
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      href={`/workspace/challenges/${challenge.id}`}
+      data-hatch-sound="open"
+      className={cardClassName}
+      data-testid={`challenge-card-${challenge.id}`}
+    >
+      {content}
+    </Link>
   )
 }

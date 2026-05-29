@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { isBillingPlanId } from '@/lib/billing/plans'
 import {
@@ -7,6 +8,12 @@ import {
   getCheckoutBrandingSettings,
   getStripePlanConfig,
 } from '@/lib/stripe/config'
+import {
+  affiliateCheckoutMetadata,
+  resolveAffiliateForCheckout,
+} from '@/lib/stripe/affiliates'
+
+const PRO_TRIAL_DAYS = 7
 
 export async function POST(req: NextRequest) {
   const { stripe, config: stripeRuntime } = createStripeClient()
@@ -41,6 +48,8 @@ export async function POST(req: NextRequest) {
 
   const config = getStripePlanConfig(plan)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const affiliate = await resolveAffiliateForCheckout(createAdminClient(), req, user.id)
+  const referralMetadata = affiliateCheckoutMetadata(affiliate)
 
   const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = config.priceId
     ? { price: config.priceId, quantity: 1 }
@@ -53,6 +62,7 @@ export async function POST(req: NextRequest) {
           },
           unit_amount: config.unitAmount,
           recurring: { interval: config.interval },
+          tax_behavior: 'exclusive',
         },
         quantity: 1,
       }
@@ -63,28 +73,42 @@ export async function POST(req: NextRequest) {
     line_items: [lineItem],
     customer_email: user.email,
     client_reference_id: user.id,
-    metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode },
+    metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode, ...referralMetadata },
     subscription_data: {
-      metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode },
+      trial_period_days: PRO_TRIAL_DAYS,
+      metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode, ...referralMetadata },
     },
-    allow_promotion_codes: true,
+    billing_address_collection: 'required',
+    automatic_tax: { enabled: true },
     branding_settings: getCheckoutBrandingSettings(appUrl),
+    allow_promotion_codes: true,
   }
 
+  // Round to the nearest minute so client-side retries within the same minute
+  // (network blip, double-click) collapse to the same Stripe session.
+  const minuteBucket = Math.floor(Date.now() / 60_000)
+  const idempotencyKey = `checkout-${user.id}-${plan}-${embedded ? 'e' : 'h'}-${minuteBucket}`
+
   if (embedded) {
-    const session = await stripe.checkout.sessions.create({
-      ...baseSessionParams,
-      ui_mode: 'embedded',
-      return_url: `${appUrl}/dashboard?upgraded=1`,
-    })
+    const session = await stripe.checkout.sessions.create(
+      {
+        ...baseSessionParams,
+        ui_mode: 'embedded',
+        return_url: `${appUrl}/dashboard?upgraded=1`,
+      },
+      { idempotencyKey }
+    )
     return NextResponse.json({ clientSecret: session.client_secret, mode: stripeRuntime.mode })
   }
 
-  const session = await stripe.checkout.sessions.create({
-    ...baseSessionParams,
-    success_url: `${appUrl}/dashboard?upgraded=1`,
-    cancel_url: `${appUrl}/dashboard`,
-  })
+  const session = await stripe.checkout.sessions.create(
+    {
+      ...baseSessionParams,
+      success_url: `${appUrl}/dashboard?upgraded=1`,
+      cancel_url: `${appUrl}/dashboard`,
+    },
+    { idempotencyKey }
+  )
 
   return NextResponse.json({ url: session.url, mode: stripeRuntime.mode })
 }

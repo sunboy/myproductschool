@@ -1,0 +1,455 @@
+{
+  "facts": [
+    {
+      "claim": "DNS resolution typically takes between 10–100ms depending on the resolver and network conditions, with <50ms being preferred for good user experience",
+      "source": "https://cleanbrowsing.org/learn/what-is-dns-latency",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TLS handshake with TLS 1.2 adds 30-50 milliseconds of latency for initial connections; TLS 1.3 saves 1 RTT vs TLS 1.2 due to fewer roundtrips",
+      "source": "https://developers.google.com/speed/public-dns/docs/performance",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TLS session resumption reduces handshake overhead to under 5 milliseconds on subsequent queries by avoiding key exchange",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "TCP three-way handshake takes approximately 1.5 × RTT (typically 75 to 300 milliseconds) before application data can be transferred",
+      "source": "https://hpbn.co/building-blocks-of-tcp/",
+      "publication_date": "2023"
+    },
+    {
+      "claim": "HTTP/2 with TLS 1.2 requires at least 4 network round trips before first HTTP response; HTTP/2 with TLS 1.3 requires 3 RTT; HTTP/3 with QUIC requires 1-RTT for connection establishment",
+      "source": "https://www.pubnub.com/blog/http-vs-http-2-vs-http-3-whats-the-difference/",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "HTTP/3 can establish secure connections up to 50% faster than HTTP/2 by combining TLS handshake with connection setup in a single step",
+      "source": "https://www.pubnub.com/blog/http-vs-http-2-vs-http-3-whats-the-difference/",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "OCSP stapling can improve connection times by up to 30% by caching certificate status on the server and delivering it during TLS handshake",
+      "source": "https://www.ssl.com/article/ocsp-stapling-secure-and-efficient-certificate-validation/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Cloudflare DNS consistently achieves 5–10ms latency in North America, Europe, and Asia, generally 2-5ms faster on average than Google Public DNS globally",
+      "source": "https://www.dnsperf.com/dns-provider/cloudflare",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "Layer 4 load balancers make routing decisions based on IPs and TCP/UDP ports without decrypting content; Layer 7 load balancers terminate connections and route based on HTTP headers, URLs, and cookie data",
+      "source": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Good TTFB values are 0.8 seconds or less; typical good TTFB is 200 milliseconds or less; poor TTFB is greater than 1.8 seconds",
+      "source": "https://web.dev/articles/ttfb",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Static resources should use Cache-Control: max-age with long TTL (6+ months) and immutable directive; version/hash in URL prevents stale caching",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Dynamic HTML and API responses should use Cache-Control: no-store, no-cache to ensure freshness; no-cache allows conditional requests",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TCP slow start begins with initial window size (IW) of 2-10 MSS depending on maximum segment size; window effectively doubles each RTT during exponential growth phase",
+      "source": "https://datatracker.ietf.org/doc/html/rfc6928",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "ALPN (Application-Layer Protocol Negotiation) completes protocol negotiation as part of TLS handshake without additional roundtrips; h3 ALPN ID indicates HTTP/3 over QUIC v1",
+      "source": "https://datatracker.ietf.org/meeting/106/materials/slides-106-quic-alpn-00",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Around 40% of HTTPS connections are resumptions; with 0-RTT, a round trip can be eliminated for most resumed sessions",
+      "source": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Session cache can fall under memory pressure during traffic spikes, causing even 'fast' resumed sessions to queue behind full handshakes, increasing latency from 20-30ms to 5 seconds",
+      "source": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Connection pooling with keep-alive can save 50-100ms of latency per new TLS connection; at 1000 requests/second, this overhead alone would saturate a database without pooling",
+      "source": "https://devblogs.microsoft.com/premier-developer/the-art-of-http-connection-pooling-how-optimize-your-connections-for-peak-performance/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Chrome DevTools categorizes request delays as Queueing (waiting for available TCP connection or higher-priority requests), Stalled (after connection start), and Waiting (TTFB, time for server to prepare response)",
+      "source": "https://developer.chrome.com/docs/devtools/network/reference",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Wix's internal testing showed HTTP/3 delivers 33% faster connection setup and 20% better LCP at 75th percentile, often improving LCP by over 500ms",
+      "source": "https://www.pubnub.com/blog/http-vs-http-2-vs-http-3-whats-the-difference/",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "Network waterfall analysis requires examining DNS lookup, TCP connection, TLS negotiation, request send, wait for first byte (TTFB), and response receive in sequence",
+      "source": "https://nitropack.io/blog/how-to-read-waterfall-chart-speed-test/",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Netflix edge load balancing during red-black deployments and auto-scaling events",
+      "problem": "Cold servers post-startup caused slow connection establishment; session resumption cache under memory pressure prevented optimization from working",
+      "company": "Netflix",
+      "source": "https://netflixtechblog.com/investigation-of-a-cross-regional-network-performance-issue-422d6218fdf1",
+      "publication_date": "2024"
+    },
+    {
+      "scenario": "Incomplete TLS certificate chains in mobile environments",
+      "problem": "Desktop browser testing passed because Chrome and Firefox cache intermediate certificates; mobile browsers and API clients failed silently in production with missing intermediates",
+      "company": "Multiple (identified via testing tools)",
+      "source": "https://www.svix.com/blog/ssl-tls-incomplete-certificate-chain/",
+      "publication_date": "2024"
+    },
+    {
+      "scenario": "CDN performance impact on TTFB",
+      "problem": "Serving content from distant servers added 200-500ms to TTFB; CDN edge servers reduced latency by serving from points of presence closer to users",
+      "company": "Fastly (example)",
+      "source": "https://www.fastly.com/learning/cdn/what-is-time-to-first-byte",
+      "publication_date": "2024"
+    },
+    {
+      "scenario": "Java 21 Virtual Threads causing socket stalls",
+      "problem": "Netflix services on Java 21 with SpringBoot 3 and embedded Tomcat experienced intermittent timeouts and sockets stuck in closeWait state, degrading connection responsiveness",
+      "company": "Netflix",
+      "source": "https://www.infoq.com/news/2024/08/netflix-performance-case-study/",
+      "publication_date": "2024"
+    },
+    {
+      "scenario": "HTTP/2 multiplexing under load",
+      "problem": "Browser limits to 6 TCP connections per origin in HTTP/1.1; HTTP/2 opens single connection multiplexed, reducing connection overhead by 83% when all 6 connections would have been needed",
+      "company": "Google, Cloudflare reference implementations",
+      "source": "https://www.gravitee.io/blog/layer-4-vs-layer-7-load-balancing",
+      "publication_date": "2024"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "TCP three-way handshake",
+      "analogy": "Like a phone call handshake: you dial (SYN), they pick up and acknowledge (SYN-ACK), you confirm they're there (ACK) — only then can you speak. Until all three steps complete, no conversation happens.",
+      "source": "https://rrawat.com/blog/three-way-handshake"
+    },
+    {
+      "concept": "TLS session resumption",
+      "analogy": "Like recognizing a repeat customer at a store: the first visit requires full handshake (ID check, account setup, etc.); subsequent visits with the same customer skip the setup and go straight to service. A session ID or ticket is like a frequent-customer card.",
+      "source": "https://medium.com/@connect.hashblock/tls-at-scale-handshake-offload-and-session-resumption-f37cd04a4edc"
+    },
+    {
+      "concept": "DNS as first bottleneck",
+      "analogy": "Like looking up a friend's address in a phonebook before driving to their house: if the lookup takes 50ms and the drive takes 100ms, you've wasted 33% of your journey time before leaving. Caching the address (DNS caching) eliminates this waste.",
+      "source": "https://www.thousandeyes.com/blog/ranking-performance-of-public-dns-providers-2018"
+    },
+    {
+      "concept": "OCSP stapling",
+      "analogy": "Like carrying a letter from the bank certifying your identity rather than having the merchant call the bank every time: eliminates the roundtrip to verify without losing security.",
+      "source": "https://blog.cloudflare.com/high-reliability-ocsp-stapling/"
+    },
+    {
+      "concept": "Layer 4 vs Layer 7 load balancing",
+      "analogy": "Layer 4 is like a postal service sorting mail by zip code (IP/port) without reading envelopes; Layer 7 is like a smart receptionist who reads the letter, understands the request, and routes it to the right department based on content.",
+      "source": "https://www.haproxy.com/blog/layer-4-vs-layer-7-load-balancing"
+    },
+    {
+      "concept": "HTTP/3 0-RTT resumption",
+      "analogy": "Like a returning customer who can immediately order from memory without repeating their address and payment info: the handshake happens in parallel with the first request, not before it.",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/"
+    },
+    {
+      "concept": "TCP slow start windowing",
+      "analogy": "Like gradually increasing water flow through a pipe: start with 2-4 segments, double the flow with each ACK received. This probes the network's capacity without flooding it immediately.",
+      "source": "https://intronetworks.cs.luc.edu/current/uhtml/reno.html"
+    },
+    {
+      "concept": "Connection pooling",
+      "analogy": "Like maintaining standing tables in a restaurant instead of building and tearing down tables for each customer: the overhead of setup (TLS 50-100ms per connection) is amortized across many requests.",
+      "source": "https://devblogs.microsoft.com/premier-developer/the-art-of-http-connection-pooling-how-optimize-your-connections-for-peak-performance/"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "DNS lookup latency",
+      "value": "10–100ms typical, <50ms preferred",
+      "context": "Fresh DNS resolution depends on resolver proximity and network conditions",
+      "source": "https://cleanbrowsing.org/learn/what-is-dns-latency"
+    },
+    {
+      "metric": "TLS 1.2 handshake latency",
+      "value": "30-50ms additional",
+      "context": "Initial HTTPS connection setup overhead",
+      "source": "https://developers.google.com/speed/public-dns/docs/performance"
+    },
+    {
+      "metric": "TLS 1.3 handshake latency (resumed session)",
+      "value": "<5ms",
+      "context": "Session resumption with TLS 1.3; skips key exchange",
+      "source": "https://blog.cloudflare.com/introducing-0-rtt/"
+    },
+    {
+      "metric": "TCP three-way handshake",
+      "value": "1.5 × RTT (75-300ms typical)",
+      "context": "Connection establishment overhead before any data transfer",
+      "source": "https://hpbn.co/building-blocks-of-tcp/"
+    },
+    {
+      "metric": "HTTP/2 with TLS 1.2 round trips",
+      "value": "4 RTT minimum",
+      "context": "TCP handshake (1) + TLS key exchange (2) + HTTP request (1)",
+      "source": "https://www.pubnub.com/blog/http-vs-http-2-vs-http-3-whats-the-difference/"
+    },
+    {
+      "metric": "HTTP/3 with QUIC round trips",
+      "value": "1-RTT for initial, 0-RTT for resumed",
+      "context": "Combines TLS and connection setup; ALPN negotiation included",
+      "source": "https://www.pubnub.com/blog/http-vs-http-2-vs-http-3-whats-the-difference/"
+    },
+    {
+      "metric": "OCSP stapling latency improvement",
+      "value": "Up to 30% reduction in connection time",
+      "context": "Eliminates roundtrip to CA's OCSP responder",
+      "source": "https://www.ssl.com/article/ocsp-stapling-secure-and-efficient-certificate-validation/"
+    },
+    {
+      "metric": "Cloudflare DNS latency",
+      "value": "5–10ms (North America, Europe, Asia)",
+      "context": "Average 2-5ms faster than Google Public DNS globally",
+      "source": "https://www.dnsperf.com/dns-provider/cloudflare"
+    },
+    {
+      "metric": "Good TTFB benchmark",
+      "value": "0.8 seconds or less; optimal is 200ms or less",
+      "context": "Poor TTFB is >1.8 seconds",
+      "source": "https://web.dev/articles/ttfb"
+    },
+    {
+      "metric": "TCP initial window size (modern)",
+      "value": "2-10 MSS depending on maximum segment size",
+      "context": "RFC 6928 standard for initial CWND",
+      "source": "https://datatracker.ietf.org/doc/html/rfc6928"
+    },
+    {
+      "metric": "HTTPS session resumption adoption",
+      "value": "40% of HTTPS connections",
+      "context": "Session reuse rate; enables 0-RTT optimization",
+      "source": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load"
+    },
+    {
+      "metric": "TLS handshake latency under traffic spike",
+      "value": "20-30ms normal, 5+ seconds under memory pressure",
+      "context": "Session cache eviction under high load causes full handshakes to queue",
+      "source": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load"
+    },
+    {
+      "metric": "Connection pooling latency savings",
+      "value": "50-100ms per new TLS connection avoided",
+      "context": "Reusing persistent connections eliminates handshake overhead",
+      "source": "https://devblogs.microsoft.com/premier-developer/the-art-of-http-connection-pooling-how-optimize-your-connections-for-peak-performance/"
+    },
+    {
+      "metric": "HTTP/3 connection setup speedup",
+      "value": "33% faster setup, 20% better LCP at P75 (Wix testing)",
+      "context": "Often improves LCP by >500ms in real-world conditions",
+      "source": "https://www.pubnub.com/blog/http-vs-http-2-vs-http-3-whats-the-difference/"
+    },
+    {
+      "metric": "Acceptable latency (user perception)",
+      "value": "<100ms feels instant; 100-300ms acceptable; >500ms feels laggy",
+      "context": "Varies by application (VoIP <100ms, gaming <50ms, web APIs <100ms ideal)",
+      "source": "https://obkio.com/blog/what-is-internet-latency/"
+    },
+    {
+      "metric": "HTTP/1.1 connection limit per origin",
+      "value": "6 TCP connections",
+      "context": "Browser limit; HTTP/2 multiplexes single connection",
+      "source": "https://www.gravitee.io/blog/layer-4-vs-layer-7-load-balancing"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "HTTPS is always slow due to TLS handshake overhead",
+      "reality": "TLS 1.3 + session resumption reduces overhead to <5ms on repeat connections; initial overhead is mostly recovered by modern optimizations like 0-RTT and OCSP stapling",
+      "source": "https://istlsfastyet.com/"
+    },
+    {
+      "misconception": "You must include the root certificate in the TLS certificate chain",
+      "reality": "Root certificates are already in client trust stores; including them wastes bandwidth and slows connections. Only serve the server cert + intermediates.",
+      "source": "https://www.svix.com/blog/ssl-tls-incomplete-certificate-chain/"
+    },
+    {
+      "misconception": "Desktop browser testing is sufficient for HTTPS certificate validation",
+      "reality": "Desktop browsers cache intermediate certificates locally, masking incomplete chains. Mobile browsers and API clients will fail silently in production without proper intermediates.",
+      "source": "https://www.svix.com/blog/ssl-tls-incomplete-certificate-chain/"
+    },
+    {
+      "misconception": "DNS is a negligible part of connection latency",
+      "reality": "DNS adds 10-100ms per fresh lookup; a page with 20 domains means 20 DNS queries. This compounds significantly for first visits without caching.",
+      "source": "https://cleanbrowsing.org/learn/what-is-dns-latency"
+    },
+    {
+      "misconception": "Connection pooling is optional optimization",
+      "reality": "Without pooling, 50-100ms TLS overhead per connection multiplied across requests becomes a critical bottleneck (e.g., 1000 req/s = 50-100 seconds of overhead per second of traffic)",
+      "source": "https://devblogs.microsoft.com/premier-developer/the-art-of-http-connection-pooling-how-optimize-your-connections-for-peak-performance/"
+    },
+    {
+      "misconception": "Layer 7 load balancing is always better than Layer 4",
+      "reality": "Layer 4 is faster and simpler for stateless routing; Layer 7 adds latency by terminating connections and inspecting content. Use Layer 4 when content-based routing isn't needed.",
+      "source": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/"
+    },
+    {
+      "misconception": "Session resumption always works under high load",
+      "reality": "Session cache can be evicted under memory pressure during traffic spikes, forcing servers to do full handshakes and queuing connections, increasing latency from 20-30ms to 5+ seconds",
+      "source": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load"
+    },
+    {
+      "misconception": "HTTP/3 is necessary for all applications",
+      "reality": "HTTP/3 benefits are most pronounced for high-latency networks and initial connections. For LAN or persistent connections, the 33% speedup may be negligible relative to application logic latency.",
+      "source": "https://www.pubnub.com/blog/http-vs-http-2-vs-http-3-whats-the-difference/"
+    },
+    {
+      "misconception": "TTFB and LCP are the same metric",
+      "reality": "TTFB is only the time to first byte; LCP (Largest Contentful Paint) includes rendering and is what users perceive as 'page load speed'",
+      "source": "https://web.dev/articles/ttfb"
+    },
+    {
+      "misconception": "Cache-Control max-age should be short to minimize staleness",
+      "reality": "Static assets (CSS, JS, images) benefit from 6-month max-age + URL versioning; short TTLs increase bandwidth and CPU. Staleness risk is version-based, not TTL-based.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://cleanbrowsing.org/learn/what-is-dns-latency",
+      "title": "What Is DNS Latency? Understanding DNS Response Times",
+      "recency": "2024, current"
+    },
+    {
+      "url": "https://developers.google.com/speed/public-dns/docs/performance",
+      "title": "Performance Benefits | Public DNS | Google for Developers",
+      "recency": "2024, current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "title": "Introducing Zero Round Trip Time Resumption (0-RTT)",
+      "recency": "2025, latest"
+    },
+    {
+      "url": "https://hpbn.co/building-blocks-of-tcp/",
+      "title": "High Performance Browser Networking: Building Blocks of TCP",
+      "recency": "2023, authoritative O'Reilly reference"
+    },
+    {
+      "url": "https://www.pubnub.com/blog/http-vs-http-2-vs-http-3-whats-the-difference/",
+      "title": "HTTP vs. HTTP/2 vs. HTTP/3: What's the Difference?",
+      "recency": "2025, current"
+    },
+    {
+      "url": "https://www.ssl.com/article/ocsp-stapling-secure-and-efficient-certificate-validation/",
+      "title": "OCSP Stapling: Secure and Efficient Certificate Validation",
+      "recency": "2024, current"
+    },
+    {
+      "url": "https://www.dnsperf.com/dns-provider/cloudflare",
+      "title": "DNS Performance for Cloudflare DNS | DNSperf",
+      "recency": "2025, real-time benchmarks"
+    },
+    {
+      "url": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "title": "Layer 4 vs Layer 7 Load Balancing | A10 Networks",
+      "recency": "2024, current"
+    },
+    {
+      "url": "https://web.dev/articles/ttfb",
+      "title": "Time to First Byte (TTFB) | web.dev",
+      "recency": "2024, Google authority"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control",
+      "title": "Cache-Control header - HTTP - MDN Web Docs",
+      "recency": "2024, current"
+    },
+    {
+      "url": "https://datatracker.ietf.org/doc/html/rfc6928",
+      "title": "RFC 6928 - Increasing TCP's Initial Window",
+      "recency": "2025, IETF standard"
+    },
+    {
+      "url": "https://datatracker.ietf.org/meeting/106/materials/slides-106-quic-alpn-00",
+      "title": "QUIC, HTTP/3, and ALPN QUIC @IETF 106, Singapore",
+      "recency": "2024, IETF reference"
+    },
+    {
+      "url": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load",
+      "title": "TLS Handshake Latency: When Your Load Balancer Becomes a Bottleneck",
+      "recency": "2024, systems engineering analysis"
+    },
+    {
+      "url": "https://devblogs.microsoft.com/premier-developer/the-art-of-http-connection-pooling-how-optimize-your-connections-for-peak-performance/",
+      "title": "The Art of HTTP Connection Pooling",
+      "recency": "2024, Microsoft Premier Developer"
+    },
+    {
+      "url": "https://developer.chrome.com/docs/devtools/network/reference",
+      "title": "Network features reference | Chrome DevTools",
+      "recency": "2024, Google authority"
+    },
+    {
+      "url": "https://netflixtechblog.com/investigation-of-a-cross-regional-network-performance-issue-422d6218fdf1",
+      "title": "Investigation of a Cross-regional Network Performance Issue | Netflix TechBlog",
+      "recency": "2024, Netflix engineering"
+    },
+    {
+      "url": "https://www.svix.com/blog/ssl-tls-incomplete-certificate-chain/",
+      "title": "Incomplete TLS Certificate Chains and How to Fix Them | Svix Blog",
+      "recency": "2024, current"
+    },
+    {
+      "url": "https://www.fastly.com/learning/cdn/what-is-time-to-first-byte",
+      "title": "Time to first byte (TTFB) | Fastly",
+      "recency": "2024, CDN authority"
+    },
+    {
+      "url": "https://www.infoq.com/news/2024/08/netflix-performance-case-study/",
+      "title": "Netflix Adopts Virtual Threads: a Case Study on Performance and Pitfalls",
+      "recency": "2024, Netflix case study"
+    },
+    {
+      "url": "https://www.gravitee.io/blog/layer-4-vs-layer-7-load-balancing",
+      "title": "Layer 4 vs Layer 7: Load Balancing for HTTP/2, gRPC, and More",
+      "recency": "2024, current"
+    },
+    {
+      "url": "https://istlsfastyet.com/",
+      "title": "Is TLS Fast Yet?",
+      "recency": "2024, authoritative TLS performance reference"
+    },
+    {
+      "url": "https://medium.com/@connect.hashblock/tls-at-scale-handshake-offload-and-session-resumption-f37cd04a4edc",
+      "title": "TLS at Scale: Handshake Offload and Session Resumption",
+      "recency": "2024, systems analysis"
+    },
+    {
+      "url": "https://obkio.com/blog/what-is-internet-latency/",
+      "title": "Internet Latency: What Is It, How to Measure It, and How to Improve It",
+      "recency": "2024, current"
+    },
+    {
+      "url": "https://nitropack.io/blog/how-to-read-waterfall-chart-speed-test/",
+      "title": "How to Read a Waterfall Chart in Site Speed Testing Tools",
+      "recency": "2024, current"
+    }
+  ]
+}

@@ -361,7 +361,7 @@ export function AnswerPane({
       {/* Tab bar */}
       <TabBar activeTab={activeTab} onTabChange={onTabChange} mode={mode} onModeChange={onModeChange} />
 
-      {/* Tab content — fills remaining height, no outer scroll */}
+      {/* Tab content - fills remaining height, no outer scroll */}
       <div className="flex-1 overflow-hidden flex flex-col">
 
         {/* ── Your Answer tab ── */}
@@ -372,7 +372,7 @@ export function AnswerPane({
               <textarea
                 value={response}
                 onChange={(e) => onResponseChange(e.target.value)}
-                placeholder="Write your complete answer here — structure it however you like..."
+                placeholder="Write your complete answer here - structure it however you like..."
                 className="w-full h-full border-none focus:ring-0 text-on-surface-variant font-headline text-lg leading-relaxed placeholder:text-outline/40 bg-transparent resize-none outline-none"
               />
             </div>

@@ -1,7 +1,14 @@
-export const IS_MOCK =
+const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production'
+export const IS_MOCK = isProd ? false : (
   process.env.USE_MOCK_DATA === 'true' ||
-  process.env.NEXT_PUBLIC_MOCK_MODE === 'true' ||
-  process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+  process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' ||
+  process.env.NEXT_PUBLIC_MOCK_MODE === 'true'
+)
+
+if (isProd && (process.env.USE_MOCK_DATA === 'true' || process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || process.env.NEXT_PUBLIC_MOCK_MODE === 'true')) {
+  console.error('[SECURITY TRIPWIRE] Mock mode env vars detected in production environment. IS_MOCK is force-disabled but this configuration must be corrected.')
+  // When Sentry is configured, add: Sentry.captureMessage('Mock mode env vars in production', 'fatal')
+}
 
 // ── Dashboard mock data ──────────────────────────────────────
 

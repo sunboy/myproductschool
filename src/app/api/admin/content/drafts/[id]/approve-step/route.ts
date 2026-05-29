@@ -1,6 +1,7 @@
 // src/app/api/admin/content/drafts/[id]/approve-step/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { checkAdminSecret } from '@/lib/content/admin-auth'
 
 export async function POST(
@@ -30,5 +31,12 @@ export async function POST(
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  await logAdminAction(supabase, {
+    action: 'draft_challenge.approve_step',
+    targetType: 'draft_challenges',
+    targetId: id,
+    before: { step_approvals: (draft.step_approvals as Record<string, unknown>) ?? {} },
+    after: { step, step_approvals: updatedApprovals },
+  })
   return NextResponse.json({ ok: true, step_approvals: updatedApprovals })
 }

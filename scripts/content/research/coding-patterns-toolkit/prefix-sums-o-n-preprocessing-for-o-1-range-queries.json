@@ -1,0 +1,252 @@
+{
+  "facts": [
+    {
+      "fact": "Prefix sums reduce range query time complexity from O(s) per query (where s is the number of elements) to O(1) after O(n) preprocessing, making total complexity O(n + q) for n elements and q queries",
+      "source": "https://usaco.guide/silver/prefix-sums",
+      "date": "2024"
+    },
+    {
+      "fact": "For a range sum query from index L to R, the result is computed as: prefix[R] - prefix[L-1], or simply prefix[R] if L=0",
+      "source": "https://codeforces.com/blog/entry/146389",
+      "date": "2024"
+    },
+    {
+      "fact": "2D prefix sums extend to matrices using the formula: ans = prefix[xe][ye] - prefix[xe][ys-1] - prefix[xs-1][ye] + prefix[xs-1][ys-1], enabling O(1) rectangular range sum queries",
+      "source": "https://leetcode.com/problems/range-sum-query-2d-immutable/solutions/75440/prefix-sum-with-2d-matrix/",
+      "date": "2023"
+    },
+    {
+      "fact": "Fenwick Trees (Binary Indexed Trees) achieve O(log N) time for both point updates and range queries with O(N) space, making them more memory-efficient than segment trees which require O(4*N)",
+      "source": "https://www.geeksforgeeks.org/dsa/fenwick-tree-vs-segment-tree/",
+      "date": "2024"
+    },
+    {
+      "fact": "Monotonic stacks transform O(n²) nested-loop range query solutions into O(n) single-pass algorithms by maintaining a stack of elements in monotonic order",
+      "source": "https://dwf.dev/blog/2024/04/26/2024/monotonic-stacks-queues/",
+      "date": "2024"
+    },
+    {
+      "fact": "Sliding window maximum problems can be solved with a monotonic deque in O(n) by maintaining elements in decreasing order of value within the current window",
+      "source": "https://medium.com/@saipranavmoluguri2001/neetcode-150-faang-hard-sliding-window-maximum-monotonic-queue-deep-dive-leetcode-239-8c0e43d2e374",
+      "date": "2026"
+    },
+    {
+      "fact": "Prefix sums work for counting, not just summing values, making them versatile for problems involving frequency queries and range updates",
+      "source": "https://algocademy.com/blog/mastering-prefix-sum-a-powerful-technique-for-efficient-array-computations/",
+      "date": "2024"
+    },
+    {
+      "fact": "2D Segment Trees store an entire segment tree at each node to handle the second coordinate, achieving O(log²n) query time and O(log n) update time for 2D range sum queries",
+      "source": "https://blog.garybricks.com/2d-prefix-array-and-2d-segment-tree-overview",
+      "date": "2024"
+    },
+    {
+      "fact": "Prefix sums can be computed efficiently in parallel, making them a fundamental primitive in parallel algorithm design",
+      "source": "https://en.wikipedia.org/wiki/Prefix_sum",
+      "date": "2024"
+    },
+    {
+      "fact": "Range minimum query (RMQ) preprocessing is a classical problem in algorithm design, with trade-offs between storage S(n), preprocessing time P(n), and query time Q(n)",
+      "source": "https://web.stanford.edu/class/archive/cs/cs166/cs166.1256/lectures/00/",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "example": "LeetCode 239 (Sliding Window Maximum): Given array [1,3,-1,-3,5,3,6,7] and window k=3, output [3,3,5,5,6,7]. Monotonic deque solution maintains indices in decreasing order of values, achieving O(n) instead of O(n*k)",
+      "source": "https://algo.monster/liteproblems/239",
+      "company": "LeetCode"
+    },
+    {
+      "example": "LeetCode 304 (Range Sum Query 2D): Build a 2D prefix sum matrix to answer rectangular range sum queries in O(1) time for a static matrix",
+      "source": "https://leetcode.com/problems/range-sum-query-2d-immutable/",
+      "company": "LeetCode"
+    },
+    {
+      "example": "LeetCode 907 (Sum of Subarray Minimums): Uses monotonic stack to determine, for each element, the previous and next smaller elements, reducing the problem from O(n²) enumeration to O(n) processing",
+      "source": "https://dwf.dev/blog/2024/04/26/2024/monotonic-stacks-queues/",
+      "company": "LeetCode"
+    },
+    {
+      "example": "LeetCode 2104 (Sum of Subarray Ranges): Similar to problem 907, uses monotonic stack to efficiently compute the sum of max - min for all subarrays",
+      "source": "https://leetcode.com/discuss/post/5085517/templates-for-monotonic-stacks-and-queue-2lfq/",
+      "company": "LeetCode"
+    },
+    {
+      "example": "USACO Silver-level problems regularly use prefix sum arrays to preprocess input for subsequent O(1) range queries, enabling competitive programmers to solve otherwise O(n*q) problems in O(n+q)",
+      "source": "https://usaco.guide/silver/prefix-sums",
+      "organization": "USA Computing Olympiad"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "A prefix sum array is like a speedometer's odometer—instead of counting every mile traveled from the start for each distance query, you just subtract the odometer readings at two points to get the distance between them",
+      "category": "intuitive_comparison"
+    },
+    {
+      "analogy": "Monotonic stacks are like a stack of dinner plates where you only keep plates in decreasing height order—when a taller plate arrives, shorter ones become irrelevant (you pop them) because they can never be the 'next greater' element for anything above them",
+      "category": "intuitive_comparison"
+    },
+    {
+      "analogy": "A 2D prefix sum is to a matrix what a cumulative distribution function (CDF) is to a probability distribution—it lets you answer 'total up to this point' queries in constant time",
+      "category": "mathematical_parallel"
+    },
+    {
+      "analogy": "Segment trees are like a recursive folder structure where leaf nodes store single values and parent nodes store aggregates—each level halves the search space, giving you O(log n) access",
+      "category": "data_structure_analogy"
+    },
+    {
+      "analogy": "A Fenwick tree is like the carry mechanism in addition—each bit position stores partial sums that, when combined correctly, reconstruct any prefix sum query",
+      "category": "mathematical_insight"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Prefix sum preprocessing time",
+      "value": "O(n)",
+      "unit": "time complexity",
+      "source": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "metric": "Range sum query time after preprocessing",
+      "value": "O(1)",
+      "unit": "time complexity",
+      "source": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "metric": "Fenwick Tree point update and range query time",
+      "value": "O(log N)",
+      "unit": "time complexity",
+      "source": "https://www.geeksforGeeks.org/dsa/fenwick-tree-vs-segment-tree/"
+    },
+    {
+      "metric": "Segment Tree space complexity",
+      "value": "O(4*N)",
+      "unit": "space",
+      "source": "https://dev.to/rock_win_c053fa5fb2399067/blog-3-segment-tree-fenwick-tree-bit-range-queries-made-easy-3m62"
+    },
+    {
+      "metric": "Fenwick Tree space complexity",
+      "value": "O(N)",
+      "unit": "space",
+      "source": "https://dev.to/rock_win_c053fa5fb2399067/blog-3-segment-tree-fenwick-tree-bit-range-queries-made-easy-3m62"
+    },
+    {
+      "metric": "2D Segment Tree query time complexity",
+      "value": "O(log²n)",
+      "unit": "time complexity",
+      "source": "https://blog.garybricks.com/2d-prefix-array-and-2d-segment-tree-overview"
+    },
+    {
+      "metric": "2D Segment Tree update time complexity",
+      "value": "O(log n)",
+      "unit": "time complexity",
+      "source": "https://blog.garybricks.com/2d-prefix-array-and-2d-segment-tree-overview"
+    },
+    {
+      "metric": "Monotonic stack/queue single-pass complexity",
+      "value": "O(n)",
+      "unit": "time complexity for problems that appear O(n²)",
+      "source": "https://dwf.dev/blog/2024/04/26/2024/monotonic-stacks-queues/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Prefix sums only work for summing numbers",
+      "reality": "Prefix sums work for any associative operation with identity element: summing, counting, XOR, min/max, and any prefix-compatible aggregation",
+      "source": "https://algocademy.com/blog/mastering-prefix-sum-a-powerful-technique-for-efficient-array-computations/"
+    },
+    {
+      "misconception": "Prefix sums require the entire array to be immutable/preprocessed upfront",
+      "reality": "For mutable arrays with updates, you can use Fenwick Trees or Segment Trees to maintain O(log n) both update and query time, though pure prefix sums are O(1) query only",
+      "source": "https://www.geeksforgeeks.org/dsa/fenwick-tree-vs-segment-tree/"
+    },
+    {
+      "misconception": "Segment trees are always better than Fenwick trees",
+      "reality": "Fenwick trees are preferable for range sum and prefix sum problems due to simpler implementation, better cache locality, and lower memory overhead (O(n) vs O(4n))",
+      "source": "https://dev.to/wengao/fenwick-tree-vs-segment-tree-1edk"
+    },
+    {
+      "misconception": "Monotonic stacks are only for 'next greater element' problems",
+      "reality": "Monotonic stacks solve range query problems (min/max in subarrays), histogram problems, sum of subarray extrema, and any problem where you need next/previous greater/smaller efficiently",
+      "source": "https://dwf.dev/blog/2024/04/26/2024/monotonic-stacks-queues/"
+    },
+    {
+      "misconception": "2D prefix sums require O(n²) preprocessing for an n×n matrix",
+      "reality": "2D prefix sums can be computed in O(n²) preprocessing but queries remain O(1); the trade-off is fixed upfront, unlike dynamic structures",
+      "source": "https://leetcode.com/problems/range-sum-query-2d-immutable/solutions/75440/prefix-sum-with-2d-matrix/"
+    },
+    {
+      "misconception": "A sliding window monotonic deque requires two separate deques for min and max",
+      "reality": "You can use a single monotonic deque for either min or max; using two deques is optional, just maintains both simultaneously",
+      "source": "https://medium.com/@saipranavmoluguri2001/neetcode-150-faang-hard-sliding-window-maximum-monotonic-queue-deep-dive-leetcode-239-8c0e43d2e374"
+    },
+    {
+      "misconception": "Prefix sums cannot handle negative numbers",
+      "reality": "Prefix sums work identically with negative numbers; the subtraction formula prefix[R] - prefix[L-1] handles all integer ranges",
+      "source": "https://codeforces.com/blog/entry/146389"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://usaco.guide/silver/prefix-sums",
+      "title": "Introduction to Prefix Sums · USACO Guide",
+      "recency_note": "2024, actively maintained competitive programming curriculum"
+    },
+    {
+      "url": "https://codeforces.com/blog/entry/146389",
+      "title": "Prefix Sum — A Complete Guide - Codeforces",
+      "recency_note": "2024, high-quality editorial from Codeforces community"
+    },
+    {
+      "url": "https://dwf.dev/blog/2024/04/26/2024/monotonic-stacks-queues/",
+      "title": "Introduction to monotonic stacks and queues",
+      "recency_note": "April 2024, recent comprehensive guide"
+    },
+    {
+      "url": "https://leetcode.com/problems/range-sum-query-2d-immutable/solutions/75440/prefix-sum-with-2d-matrix/",
+      "title": "Range Sum Query 2D - Immutable (2D Prefix Sum)",
+      "recency_note": "2024, LeetCode problem with accepted solution"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/fenwick-tree-vs-segment-tree/",
+      "title": "Comparison between Fenwick Tree vs Segment Tree - GeeksforGeeks",
+      "recency_note": "2024, authoritative algorithm reference"
+    },
+    {
+      "url": "https://blog.garybricks.com/2d-prefix-array-and-2d-segment-tree-overview",
+      "title": "2D prefix Sum Matrix & 2D segment Tree Implementation",
+      "recency_note": "2024, practical implementation guide"
+    },
+    {
+      "url": "https://medium.com/@saipranavmoluguri2001/neetcode-150-faang-hard-sliding-window-maximum-monotonic-queue-deep-dive-leetcode-239-8c0e43d2e374",
+      "title": "NeetCode 150 / FAANG Hard: Sliding Window Maximum — Monotonic Queue Deep Dive",
+      "recency_note": "March 2026, very recent FAANG interview preparation"
+    },
+    {
+      "url": "https://algo.monster/liteproblems/239",
+      "title": "239. Sliding Window Maximum - In-Depth Explanation",
+      "recency_note": "2024-2025, curated competitive programming problems"
+    },
+    {
+      "url": "https://web.stanford.edu/class/archive/cs/cs166/cs166.1256/lectures/00/",
+      "title": "CS166 Range Minimum Queries - Stanford University",
+      "recency_note": "Stanford CS curriculum, authoritative academic source"
+    },
+    {
+      "url": "https://dev.to/wengao/fenwick-tree-vs-segment-tree-1edk",
+      "title": "Fenwick Tree vs Segment Tree - DEV Community",
+      "recency_note": "2024, developer community comparison guide"
+    },
+    {
+      "url": "https://en.algorithmica.org/hpc/algorithms/prefix/",
+      "title": "Prefix Sum with SIMD - Algorithmica",
+      "recency_note": "2024, advanced HPC-focused analysis"
+    },
+    {
+      "url": "https://dev.to/rock_win_c053fa5fb2399067/blog-3-segment-tree-fenwick-tree-bit-range-queries-made-easy-3m62",
+      "title": "Segment Tree & Fenwick Tree (BIT) — Range Queries Made Easy",
+      "recency_note": "2024, practical comparison with examples"
+    }
+  ]
+}

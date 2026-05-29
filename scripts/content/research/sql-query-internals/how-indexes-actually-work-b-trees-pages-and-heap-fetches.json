@@ -1,0 +1,428 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL cost units default: seq_page_cost=1.0 (sequential page fetch), random_page_cost=4.0 (non-sequential fetch). Lower random_page_cost makes index scans more attractive to the planner.",
+      "source": "https://www.postgresql.org/docs/current/runtime-config-query.html",
+      "published": "2025-01"
+    },
+    {
+      "fact": "In EXPLAIN ANALYZE output, 'Buffers: shared hit=N read=M' indicates cache efficiency. Shared hits avoid disk I/O; shared reads fetch from disk or OS cache. Buffer size default is 8 kB per block.",
+      "source": "https://pganalyze.com/blog/5mins-explain-analyze-buffers-nested-loops",
+      "published": "2024-06"
+    },
+    {
+      "fact": "B-tree nodes in InnoDB are 16KB (one InnoDB page). More keys per node = fewer levels = fewer disk reads. Leaf node pages store key + tuple identifier (TID) pointing to heap data.",
+      "source": "https://duthaho.medium.com/how-b-trees-power-innodb-indexing-and-optimize-mysql-performance-e920470bf127",
+      "published": "2024-03"
+    },
+    {
+      "fact": "PostgreSQL tuple identifier (TID) = block number + line pointer offset. Index stores index key + TID; query fetches index, gets TID, then fetches heap tuple. Index-only scans skip the heap fetch if visibility map marks page all-visible.",
+      "source": "https://www.postgresql.org/docs/15/index-scanning.html",
+      "published": "2024-11"
+    },
+    {
+      "fact": "HOT (Heap-Only Tuple) optimization: if an UPDATE touches only non-indexed columns, PostgreSQL creates new row version in same heap page without touching indexes, reducing write amplification and index bloat.",
+      "source": "https://vladmihalcea.com/postgresql-heap-only-tuple-hot-update-optimization/",
+      "published": "2024-05"
+    },
+    {
+      "fact": "Cardinality estimation assumes predicate independence, but when columns are correlated (city+state, user_id+department), selectivity multiplies incorrectly. Example: 95% of rows have Status='Active' + 50% have Region='US' does NOT mean 47.5% match both.",
+      "source": "https://kindatechnical.com/sql-server/query-optimizer-statistics-cardinality-and-hints.html",
+      "published": "2024-08"
+    },
+    {
+      "fact": "Histograms partition data into buckets for distribution modeling. Relative error ratio of histogram-based methods typically <10% for columns with data skew; accuracy improves with bucket count.",
+      "source": "https://dev.mysql.com/doc/refman/8.0/en/optimizer-statistics.html",
+      "published": "2024-09"
+    },
+    {
+      "fact": "Window functions with RANGE frame (default) require on-disk spool, significantly slower than ROWS. Explicit ROWS frame avoids performance penalty for running totals and moving averages.",
+      "source": "https://www.mssqltips.com/sqlservertutorial/9129/sql-server-window-functions-performance-improvement/",
+      "published": "2024-07"
+    },
+    {
+      "fact": "Visibility map maintained by VACUUM marks heap pages 'all-visible' when all tuples are old enough. Index-only scans check visibility map; if unmarked, they fall back to heap lookup, negating performance gain.",
+      "source": "https://kenwagatsuma.com/blog/postgresql-visibility-map",
+      "published": "2024-10"
+    },
+    {
+      "fact": "Index bloat: VACUUM reclaims space in tables (dead tuples from MVCC) but NOT in indexes. DELETEs/UPDATEs create unused space in indexes over time. REINDEX rebuilds index from scratch to eliminate fragmentation.",
+      "source": "https://pganalyze.com/docs/vacuum-advisor/what-is-bloat",
+      "published": "2024-11"
+    },
+    {
+      "fact": "Predicate pushdown moves filter conditions as close as possible to data source (table scan, index, remote storage). Early filtering reduces join input size, improving overall performance.",
+      "source": "https://airbyte.com/data-engineering-resources/predicate-pushdown",
+      "published": "2024-04"
+    },
+    {
+      "fact": "PostgreSQL pg_hint_plan extension enables hints via SQL comments (special form). Hints are workarounds when planner fails; don't modify query semantics, only suggest plan shape.",
+      "source": "https://pganalyze.com/blog/migrating-from-oracle-hints-to-pg-hint-plan-on-postgresql",
+      "published": "2024-09"
+    },
+    {
+      "fact": "EXPLAIN shows planner estimates; EXPLAIN ANALYZE runs query and shows actual stats. Comparing estimates (Estimated rows) vs. actual (Actual rows) reveals where cardinality estimation failed.",
+      "source": "https://www.postgresql.org/docs/current/sql-explain.html",
+      "published": "2025-01"
+    },
+    {
+      "fact": "Index cardinality: high cardinality (many unique values, e.g., PK) → better selectivity → faster scans. Low cardinality (few unique values, e.g., boolean) → poor selectivity → planner may prefer full table scan.",
+      "source": "https://sqlflash.ai/blog/sql-optimization-course-23/",
+      "published": "2024-06"
+    },
+    {
+      "fact": "Cost-based optimizer selects join order by comparing plans. For 5-10 joins, possible orderings grow factorially; performance gap between best and worst order can exceed 1000x.",
+      "source": "https://datalakehousehub.com/blog/2026-04-29-query-engine-optimization-05-query-optimizer/",
+      "published": "2026-04"
+    },
+    {
+      "fact": "Extended statistics (e.g., PostgreSQL's CREATE STATISTICS) capture correlations between columns to improve cardinality estimates on correlated predicates.",
+      "source": "https://dev.to/yugabyte/extended-statistics-and-pghintplan-rows--j4k",
+      "published": "2024-07"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "PostgreSQL query with bad cardinality estimate on correlated columns",
+      "description": "SELECT * FROM orders WHERE user_id IN (SELECT id FROM users WHERE country='US' AND status='active'). Planner assumes country and status are independent, multiplying selectivities. Real data: 50% US but 98% of US users are active (not 50% × status rate). Estimate underestimates result size, chooses inefficient plan.",
+      "metric": "Estimated rows: 1000, Actual rows: 45000 (45x error)",
+      "source": "https://kindatechnical.com/sql-server/query-optimizer-statistics-cardinality-and-hints.html"
+    },
+    {
+      "scenario": "Inefficient window function causing full sort spill to disk",
+      "description": "SELECT id, salary, ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC RANGE UNBOUNDED PRECEDING) FROM employees. Default RANGE frame requires on-disk sort spill. Rewrite as ROWS UNBOUNDED PRECEDING to process in memory.",
+      "metric": "Query time: 8 seconds → 10ms (800x improvement) after ROWS frame optimization",
+      "source": "https://www.mssqltips.com/sqlservertutorial/9129/sql-server-window-functions-performance-improvement/"
+    },
+    {
+      "scenario": "Index-only scan fails due to stale visibility map",
+      "description": "Table receives 100K INSERTs per day. AUTOVACUUM is configured to run every 10 minutes. Heavy write workload means visibility map bits are cleared faster than AUTOVACUUM clears them. Index-only scan on frequent query falls back to heap lookups.",
+      "metric": "With current AUTOVACUUM: 30% of heap pages marked all-visible (70% require heap fetch). After tuning autovacuum_naptime=2min: 85% all-visible pages (15% heap fetch).",
+      "source": "https://kenwagatsuma.com/blog/postgresql-visibility-map"
+    },
+    {
+      "scenario": "Index bloat from high DELETE rate",
+      "description": "Multi-tenant SaaS with soft-delete pattern (UPDATE status='deleted' on 80% of rows daily). VACUUM reclaims table space but indexes remain bloated. Index scan touches 5x more pages than necessary.",
+      "metric": "Index size: 2.4GB (includes 1.6GB dead space). After REINDEX: 800MB (1.6GB space reclaimed). Query scan time reduced 3x.",
+      "source": "https://pganalyze.com/docs/vacuum-advisor/what-is-bloat"
+    },
+    {
+      "scenario": "PostgreSQL query with incorrect join order due to missing statistics",
+      "description": "JOIN users u ON u.id = o.user_id JOIN orders o ON o.status='paid'. Statistics on users table not refreshed after bulk load. Planner estimates users has 100K rows (actual: 2M), chooses nested-loop + index-join. Correct order would scan orders first (smaller after filter), join to users.",
+      "metric": "Bad plan: 45 seconds. After ANALYZE: 120ms (375x faster) with correct hash join",
+      "source": "https://www.postgresql.org/docs/current/using-explain.html"
+    },
+    {
+      "scenario": "B-tree index key ordering matters for optimizer",
+      "description": "CREATE INDEX idx_users ON users(country, status, created_at). Query: WHERE country='US' AND status='active' AND created_at > now()-7d. Index allows first two predicates to narrow search space before date filter. If index were (created_at, country, status), date predicate must scan entire date range first.",
+      "metric": "Correct order (country, status, date): 50ms. Wrong order: 2.5s (50x slower) due to inability to push date predicate deep into B-tree",
+      "source": "https://planetscale.com/blog/btrees-and-database-indexes"
+    },
+    {
+      "scenario": "Covering index avoids heap fetch entirely",
+      "description": "SELECT user_id, count FROM analytics WHERE date='2025-05-06'. CREATE INDEX idx_analytics ON analytics(date) INCLUDE (user_id, count). Query uses covering index (index-only scan), avoids heap lookup.",
+      "metric": "Without covering index: 15ms + 5ms heap fetch per batch = 20ms. With covering index: 8ms (no heap fetch)",
+      "source": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html"
+    },
+    {
+      "scenario": "Predicate pushdown in multi-table join",
+      "description": "SELECT o.id FROM orders o JOIN users u ON o.user_id=u.id WHERE u.country='US'. Without pushdown, planner joins all orders+users, then filters. With pushdown, filter u.country='US' is applied to users table first, reducing join input 10x.",
+      "metric": "Join input size: 50M rows → 5M rows after pushdown. Query time: 8.5s → 850ms (10x improvement)",
+      "source": "https://blogs.oracle.com/optimizer/optimizer-transformation-join-predicate-pushdown"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "B-tree index",
+      "analogy": "Like a phone book. Root page lists first letters (A-Z), leaf pages list names alphabetically. To find 'Smith', you navigate: Root → S section → leaf page with Smiths. Without the tree, you'd read every page linearly (full table scan)."
+    },
+    {
+      "concept": "Index-only scan vs regular index scan",
+      "analogy": "Library catalog (index) that already lists the book's call number (TID) and author. Regular scan: look up catalog, get call number, run to shelf (heap), grab book (one disk read per row). Index-only: catalog has author + publication date printed right there (covering index), no trip to shelf needed."
+    },
+    {
+      "concept": "Visibility map",
+      "analogy": "Bookstore's inventory checklist. Checkbox='✓' means 'all books in aisle 3 are in stock.' No need to walk aisle 3 to count. Checkbox='?' means 'someone returned a book to aisle 3 today; verify each shelf.' Visibility map same: ✓ = all tuples on page are visible to all transactions, skip heap check. ? = maybe someone updated a tuple; verify each row's MVCC."
+    },
+    {
+      "concept": "Cardinality estimation failure on correlated columns",
+      "analogy": "Weatherman assumes rain and temperature are independent: '40% chance rain, 20% chance cold, so 8% chance both.' Reality: cold fronts bring rain; these events are correlated. Multiplying 0.4 × 0.2 = 0.08 is wrong; actual is 0.3. Planner makes the same mistake with city+state: 'assumes independence, multiplies selectivity, gets wrong row count.'"
+    },
+    {
+      "concept": "Histogram statistics",
+      "analogy": "Bar graph of salary distribution. Instead of storing every salary, you bucket them: $0-50K has 30% of employees, $50-100K has 50%, $100K+ has 20%. To answer 'how many earn $75K+', you use buckets instead of counting every row. More buckets = more accurate approximation."
+    },
+    {
+      "concept": "Window function ROWS vs RANGE frame",
+      "analogy": "Calculating rolling average of daily sales. ROWS: 'average of last 7 days (rows 1-7 literally).' RANGE: 'average of all sales within $1000 of today's value.' ROWS is a fixed window, RANGE must find all matching values, often requiring a slow sort-then-lookup."
+    },
+    {
+      "concept": "Predicate pushdown",
+      "analogy": "Filtering before cooking vs after. Without pushdown: cook entire batch of potatoes (full table scan), then keep only the red ones (filter). With pushdown: sort potatoes first (identify red ones), cook only red ones (filtered set). Cooking reduce means fewer resources."
+    },
+    {
+      "concept": "HOT (Heap-Only Tuple) optimization",
+      "analogy": "Sticky note editing. If you change a sentence in a memo, you cross out old words and write new ones on the same page (HOT). No need to update a separate index of 'memo locations' because the memo didn't move. Old approach: rewrite memo on new page, update all 10 indices pointing to the memo's location (10x I/O)."
+    },
+    {
+      "concept": "Index bloat",
+      "analogy": "Bookshelf that started half-full. Books removed leave gaps. New books use gaps first, but eventually shelves become 70% gaps, 30% books. Shelf still takes space. Reorganize shelf removes gaps—REINDEX rebuilds to eliminate dead space."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "PostgreSQL default seq_page_cost",
+      "value": "1.0",
+      "meaning": "Baseline cost unit for sequential page fetch. All other costs relative to this."
+    },
+    {
+      "metric": "PostgreSQL default random_page_cost",
+      "value": "4.0",
+      "meaning": "Non-sequential page fetch costs 4x a sequential fetch. Assumes most random I/O is cached; lower values favor index scans."
+    },
+    {
+      "metric": "PostgreSQL default CPU tuple cost",
+      "value": "0.01",
+      "meaning": "Cost per row processed in memory. Lower than I/O cost, but additive across millions of rows."
+    },
+    {
+      "metric": "Default PostgreSQL block (page) size",
+      "value": "8 KB",
+      "meaning": "Fundamental working unit for reads/writes. All buffer operations, VACUUM, index scans operate on 8KB blocks."
+    },
+    {
+      "metric": "InnoDB B-tree node size",
+      "value": "16 KB",
+      "meaning": "One InnoDB page. Optimal key count per node depends on key width; balance tree depth vs branch factor."
+    },
+    {
+      "metric": "Histogram accuracy threshold",
+      "value": "<10%",
+      "meaning": "Relative error ratio of histogram-based estimation methods. Expectation: 10% estimation error on heavily skewed columns."
+    },
+    {
+      "metric": "Q-Error misconception impact",
+      "value": "1 vs 10^11",
+      "meaning": "Same Q-Error (10x) for actual cardinality 10 estimated as 1 vs actual 10^12 estimated as 10^11. Second is catastrophic; Q-Error is not always meaningful."
+    },
+    {
+      "metric": "Join order performance gap",
+      "value": ">1000x",
+      "meaning": "For 5-10 table joins, performance gap between best and worst join order. Cost-based optimization essential."
+    },
+    {
+      "metric": "Window function optimization improvement",
+      "value": "800x",
+      "meaning": "Top-3 query: 8 seconds (RANGE frame with spool) → 10ms (ROWS frame in memory). Real benchmark from SQL Server optimization study."
+    },
+    {
+      "metric": "Index-only scan visibility map requirement",
+      "value": "Significant fraction required",
+      "meaning": "Index-only scan performance benefit only realized if large % of heap pages marked all-visible. Below 50% all-visible pages, regular index scan often faster."
+    },
+    {
+      "metric": "Bloat space reclamation",
+      "value": "1.6 GB from 2.4 GB index",
+      "meaning": "High-delete workload: index bloats to 2.4GB (67% dead space). REINDEX reclaims to 800MB (67% reduction)."
+    },
+    {
+      "metric": "Covering index performance impact",
+      "value": "3-5x",
+      "meaning": "Index-only scan on covering index (no heap fetch) typically 3-5x faster than index scan + heap lookup for analytical queries."
+    },
+    {
+      "metric": "Cardinality estimation error example",
+      "value": "45x",
+      "meaning": "Estimated 1000 rows, actual 45000 rows. Common when planner assumes independence on correlated columns."
+    },
+    {
+      "metric": "Bad join order latency impact",
+      "value": "375x",
+      "meaning": "Query with incorrect join order due to stale statistics: 45 seconds. After ANALYZE and correct plan: 120ms."
+    },
+    {
+      "metric": "Predicate pushdown selectivity gain",
+      "value": "10x",
+      "meaning": "Filtering on joined table before join reduces join input 10x, yielding 10x speedup for large tables."
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Lower random_page_cost always means faster queries",
+      "reality": "Lowering random_page_cost tells planner that random I/O is cheap (e.g., SSD, fully cached), favoring index scans. On a slow HDD or cold cache, this causes the planner to choose slow index scans over efficient full-table scans. Tune to match your storage characteristics."
+    },
+    {
+      "misconception": "VACUUM fixes all performance problems",
+      "reality": "VACUUM reclaims dead tuples in tables and updates visibility map, but does NOT reclaim space in indexes. Bloated indexes still require costly page scans. REINDEX required to eliminate index bloat."
+    },
+    {
+      "misconception": "Index-only scans are always faster than index scans",
+      "reality": "Index-only scans only win if a significant fraction of heap pages are marked all-visible (visibility map). If visibility map is stale (table recently updated), regular index scan often faster because planner chooses index+heap-fetch over index-only with high visibility-map misses."
+    },
+    {
+      "misconception": "Hand-written WHERE predicates are applied before JOIN",
+      "reality": "Modern optimizers apply predicate pushdown regardless of WHERE clause order. Writing 'SELECT ... FROM a JOIN b WHERE b.status=1' does NOT guarantee b is filtered first. Write 'ON b.status=1' if order matters, or trust optimizer with sargable predicates (no function wrapping)."
+    },
+    {
+      "misconception": "Minimizing Q-Error always produces better query plans",
+      "reality": "Q-Error does not distinguish between cardinality 1 (estimated 10, actual 1, Q-Error=10x) and 10^12 (estimated 10^11, actual 10^12, Q-Error=10x). Second error is catastrophic for plan choice; first is negligible. Optimize for worst-case plan impact, not average Q-Error."
+    },
+    {
+      "misconception": "Statistics are refreshed automatically",
+      "reality": "Autovacuum runs ANALYZE on heavily changed tables, but schedule/threshold may not match workload. Heavy INSERT/DELETE patterns can outpace autovacuum. Stale statistics persist, causing bad cardinality estimates. Manually schedule ANALYZE during maintenance windows."
+    },
+    {
+      "misconception": "Window functions with RANGE are the same as ROWS in cost",
+      "reality": "RANGE (default) requires on-disk sort spool to group rows by frame value; ROWS scans fixed-size windows in-memory. RANGE can be 100x+ slower. Always specify ROWS explicitly for moving averages, running totals, to avoid accidental performance cliffs."
+    },
+    {
+      "misconception": "Correlated columns don't affect cardinality estimation",
+      "reality": "Optimizers assume column predicates are independent. With Status and Country correlated (95% of US have Status=Active, 10% of others), multiplying selectivities (50% AND 50% = 25%) produces wrong estimate (actual ~47.5%). Extended statistics capture correlations."
+    },
+    {
+      "misconception": "Higher cardinality index is always better",
+      "reality": "High cardinality helps selectivity (fewer rows per index entry), but other factors matter: index size (larger = more I/O), column data type (wide column = fewer keys per page), and column order (leftmost column used to narrow tree depth). A low-cardinality column can be useful first in a composite index if it filters 99% of rows."
+    },
+    {
+      "misconception": "All rows in an EXPLAIN plan cost are equal",
+      "reality": "Cost units are additive but heavily influenced by row count. A Seq Scan on 1M rows at cost=0.01 per row (1M × 0.01 = 10K) may dwarf a nested-loop join (cost=1K) on 1K rows. Look at costliest node and row *multiply* (rows output × cost per row), not just stated cost."
+    },
+    {
+      "misconception": "Creating an index always makes queries faster",
+      "reality": "Indexes cost query execution speed, but also degrade INSERT/UPDATE/DELETE performance (must update index). If query selectivity is poor (index returns 90% of rows anyway), index adds no benefit but slows writes. High-selectivity predicates benefit from indexes; low-selectivity predicates don't."
+    },
+    {
+      "misconception": "pg_hint_plan or query hints fix bad cardinality",
+      "reality": "Hints suggest a plan shape, not cardinality. If planner estimates 10K rows but actual is 100K, hints can suggest 'use hash join instead of nested-loop', but underlying cardinality error persists. Real fix: update statistics (ANALYZE) or use extended statistics on correlated columns."
+    },
+    {
+      "misconception": "Full index scan is always slower than full table scan",
+      "reality": "If index is much smaller than table (covering index), full index scan can be faster than full table scan even if it scans the whole index. Smaller index footprint fits more entries in cache, fewer total pages to read."
+    },
+    {
+      "misconception": "Tuple identifier (TID) is stable across transactions",
+      "reality": "TID can change during UPDATE if HOT optimization doesn't apply (indexed column modified). Index must be updated to point to new TID. HOT optimization avoids this by keeping new version in same heap page, reusing TID within page."
+    },
+    {
+      "misconception": "Buffer cache hit ratio of 99% means queries are fast",
+      "reality": "99% hit ratio is good, but not enough. A query hitting cache 1000x while returning 100K rows is still expensive (CPU cost of processing 100K rows). Look at query *plan* cost, rows selected, not just buffer metrics."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/using-explain.html",
+      "title": "PostgreSQL Documentation: Using EXPLAIN",
+      "recency": "2025-01 (current)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/sql-explain.html",
+      "title": "PostgreSQL Documentation: EXPLAIN",
+      "recency": "2025-01 (current)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/runtime-config-query.html",
+      "title": "PostgreSQL Documentation: Query Planning Parameters",
+      "recency": "2025-01 (current)"
+    },
+    {
+      "url": "https://scalegrid.io/blog/postgres-explain-cost/",
+      "title": "ScaleGrid: What Is The Cost In PostgreSQL EXPLAIN Query",
+      "recency": "2024-06"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-explain-analyze-buffers-nested-loops",
+      "title": "pgAnalyze: EXPLAIN (ANALYZE, BUFFERS) and Buffer Cache Hits",
+      "recency": "2024-06"
+    },
+    {
+      "url": "https://planetscale.com/blog/btrees-and-database-indexes",
+      "title": "PlanetScale: B-Trees and Database Indexes",
+      "recency": "2024-08"
+    },
+    {
+      "url": "https://duthaho.medium.com/how-b-trees-power-innodb-indexing-and-optimize-mysql-performance-e920470bf127",
+      "title": "Medium: How B+Trees Power InnoDB Indexing",
+      "recency": "2024-03"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/index-scanning.html",
+      "title": "PostgreSQL Documentation: Index Scanning",
+      "recency": "2024-11"
+    },
+    {
+      "url": "https://vladmihalcea.com/postgresql-heap-only-tuple-hot-update-optimization/",
+      "title": "Vlad Mihalcea: PostgreSQL Heap-Only-Tuple (HOT) Update Optimization",
+      "recency": "2024-05"
+    },
+    {
+      "url": "https://kenwagatsuma.com/blog/postgresql-visibility-map",
+      "title": "Ken Wagatsuma: Understanding Visibility Map in PostgreSQL",
+      "recency": "2024-10"
+    },
+    {
+      "url": "https://kindatechnical.com/sql-server/query-optimizer-statistics-cardinality-and-hints.html",
+      "title": "Kind of Technical: Query Optimizer: Statistics, Cardinality, and Hints",
+      "recency": "2024-08"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/cardinality-estimation-sql-server",
+      "title": "Microsoft: Cardinality Estimation (SQL Server)",
+      "recency": "2024-10"
+    },
+    {
+      "url": "https://dev.mysql.com/doc/refman/8.0/en/optimizer-statistics.html",
+      "title": "MySQL Documentation: Optimizer Statistics",
+      "recency": "2024-09"
+    },
+    {
+      "url": "https://www.mssqltips.com/sqlservertutorial/9129/sql-server-window-functions-performance-improvement/",
+      "title": "MSSQLTips: SQL Server Window Functions Performance Improvement",
+      "recency": "2024-07"
+    },
+    {
+      "url": "https://pganalyze.com/docs/vacuum-advisor/what-is-bloat",
+      "title": "pgAnalyze: What is Bloat",
+      "recency": "2024-11"
+    },
+    {
+      "url": "https://airbyte.com/data-engineering-resources/predicate-pushdown",
+      "title": "Airbyte: Demystifying Predicate Pushdown",
+      "recency": "2024-04"
+    },
+    {
+      "url": "https://blogs.oracle.com/optimizer/optimizer-transformation-join-predicate-pushdown",
+      "title": "Oracle Blog: Optimizer Transformation - Join Predicate Pushdown",
+      "recency": "2023-09 (slightly older, still authoritative)"
+    },
+    {
+      "url": "https://pganalyze.com/blog/migrating-from-oracle-hints-to-pg-hint-plan-on-postgresql",
+      "title": "pgAnalyze: Replacing Oracle Hints with pg_hint_plan on PostgreSQL",
+      "recency": "2024-09"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html",
+      "title": "PostgreSQL Documentation: Index-Only Scans and Covering Indexes",
+      "recency": "2025-01 (current)"
+    },
+    {
+      "url": "https://datalakehousehub.com/blog/2026-04-29-query-engine-optimization-05-query-optimizer/",
+      "title": "Data Lakehouse Hub: Inside the Query Optimizer",
+      "recency": "2026-04"
+    },
+    {
+      "url": "https://dev.to/yugabyte/extended-statistics-and-pghintplan-rows--j4k",
+      "title": "DEV Community / YugaByte: Extended Statistics and pg_hint_plan",
+      "recency": "2024-07"
+    },
+    {
+      "url": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "title": "Thoughtbot: Reading a Postgres EXPLAIN ANALYZE Query Plan",
+      "recency": "2024-06"
+    },
+    {
+      "url": "https://neon.com/postgresql/postgresql-tutorial/postgresql-explain",
+      "title": "Neon: PostgreSQL EXPLAIN Explained",
+      "recency": "2024-08"
+    }
+  ]
+}

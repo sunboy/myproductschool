@@ -1,0 +1,519 @@
+{
+  "facts": [
+    {
+      "fact": "Prompt caching reduces context costs by up to 90% for cached reads, with cache write tokens costing 1.25× for 5-minute TTL and 2× for 1-hour TTL",
+      "source_url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "publication_date": "2024-2025"
+    },
+    {
+      "fact": "Output tokens are priced 4-8× higher than input tokens across leading models; Claude Opus 4.6 costs $5/M input and $25/M output (5× ratio)",
+      "source_url": "https://www.silicondata.com/blog/llm-cost-per-token",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "The 'lost in the middle' phenomenon causes models to perform 6-13% worse when relevant information is placed in the center of long contexts vs. at beginning/end",
+      "source_url": "https://aclanthology.org/2024.tacl-1.9/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Indirect prompt injection attacks succeeded in 94.4% of trials in medical chatbot simulations, with 91.7% success rate even in high-harm scenarios",
+      "source_url": "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2842987",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "ChatGPT's browsing feature was vulnerable to indirect injection: hidden text in webpages altered summaries by up to 95%, inverting sentiment from negative to positive",
+      "source_url": "https://www.lakera.ai/blog/indirect-prompt-injection",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Optimal RAG chunk size is 300-1000 tokens; chunks <256 tokens lose context, >1024 tokens reduce granularity and increase retrieval latency",
+      "source_url": "https://redis.io/blog/rag-at-scale/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Semantic caching in RAG systems cuts LLM costs by 50-68.8% in production workloads without quality loss",
+      "source_url": "https://galileo.ai/blog/top-metrics-to-monitor-and-improve-rag-performance",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Context rot (performance degradation before hard limits) occurs well before context window fills; models degrade 10-25% as context approaches 70% of max length",
+      "source_url": "https://www.morphllm.com/context-rot",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Aggressive truncation (limiting RAG to 2-3 documents) cuts input tokens by 50%+ with no loss in precision for factoid queries",
+      "source_url": "https://redis.io/blog/llm-token-optimization-speed-up-apps/",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "Dynamic context assembly with re-ranking (DynamicRAG) improves answer relevance by 7-15% vs. static retrieval by learning which documents to include per query",
+      "source_url": "https://arxiv.org/html/2505.07233v2",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Batching 32 requests reduces per-token LLM costs 85% with only 20% latency increase, amortizing fixed prompt overhead",
+      "source_url": "https://www.obviousworks.ch/en/token-optimization-saves-up-to-percent-llm-costs/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "OWASP GenAI Security Project ranked prompt injection as #1 risk in 2025 Top 10 for LLM applications, with no known complete fix",
+      "source_url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Attention sinks (tokens receiving disproportionate attention regardless of relevance) concentrate on initial tokens; RoPE positional encoding causes long-term decay of distant tokens",
+      "source_url": "https://proceedings.iclr.cc/paper_files/paper/2025/file/f1b04face60081b689ba740d39ea8f37-Paper-Conference.pdf",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Instance-Adaptive Prompting (IAP) improves reasoning by dynamically tailoring prompts; semantic flow from questions to prompts in shallow layers correlates with correctness",
+      "source_url": "https://aclanthology.org/2024.acl-long.276/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Dual-LLM architecture (privileged + quarantined models) reduces context poisoning risk by 40-60%; quarantined model reads untrusted content, privileged model never sees raw untrusted input",
+      "source_url": "https://www.elastic.co/search-labs/blog/context-poisoning-llm",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Time-to-First-Token (TTFT) p90 target is <2 seconds in production RAG; Mean Time to Answer target is <3 seconds for interactive use",
+      "source_url": "https://redis.io/blog/rag-at-scale/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Precision@K benchmarks: ≥0.85 for regulated content, ≥0.75 for general knowledge, ≥0.65 for exploratory research in RAG systems",
+      "source_url": "https://qdrant.tech/blog/rag-evaluation-guide/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Hybrid retrieval (BM25 + vector search) improves recall by 1-9% vs. vector search alone, depending on domain and implementation",
+      "source_url": "https://redis.io/blog/rag-at-scale/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "RAG reduces factually incorrect statements by 45-72% depending on domain vs. non-RAG LLM responses",
+      "source_url": "https://www.evidentlyai.com/llm-guide/rag-evaluation",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Claude's 200K context window can process ~40K-50K typical English words; thinking blocks are stripped from visible context, preserving capacity",
+      "source_url": "https://platform.claude.com/docs/en/build-with-claude/context-windows",
+      "publication_date": "2025"
+    }
+  ],
+  "examples": [
+    {
+      "example": "ProjectDiscovery cut LLM costs 59% by implementing prompt caching: system prompts (22K tokens) cached across 50K daily queries meant each request paid only 0.1× instead of 1× for cached content",
+      "source_url": "https://projectdiscovery.io/blog/how-we-cut-llm-cost-with-prompt-caching",
+      "publication_date": "2024"
+    },
+    {
+      "example": "The Guardian's test of ChatGPT's browser tool found hidden instructions in webpage CSS comments that inverted negative product reviews into positive summaries without the model detecting the injection",
+      "source_url": "https://www.lakera.ai/blog/indirect-prompt-injection",
+      "publication_date": "2024"
+    },
+    {
+      "example": "OpenAI's custom GPT store had widespread prompt injection vulnerabilities where users could request 'show system instructions' and retrieve proprietary business logic and API keys",
+      "source_url": "https://www.eccouncil.org/cybersecurity-exchange/ethical-hacking/what-is-prompt-injection-in-ai-real-world-examples-and-prevention-tips/",
+      "publication_date": "2024"
+    },
+    {
+      "example": "GitHub Copilot vulnerability CVE-2025-53773 (CVSS 9.6) allowed remote code execution via prompt injection in code comments, affecting millions of developers",
+      "source_url": "https://www.lakera.ai/blog/guide-to-prompt-injection",
+      "publication_date": "2025"
+    },
+    {
+      "example": "In medical Q&A study, LLMs given contradictory RAG context (FDA Category X pregnancy drugs listed as safe) selected dangerous options 91.7% of the time",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12717619/",
+      "publication_date": "2024"
+    },
+    {
+      "example": "Databricks found that reducing chunk size from 1024 to 300 tokens in financial RAG system dropped precision@5 from 0.92 to 0.88 but cut retrieval latency by 65% and LLM input tokens by 58%",
+      "source_url": "https://docs.databricks.com/aws/en/generative-ai/tutorials/ai-cookbook/quality-data-pipeline-rag",
+      "publication_date": "2025"
+    },
+    {
+      "example": "ClaudeFast's Code Kit recovered 15,000 tokens per session (82% improvement) by using progressive disclosure: skills loaded on-demand instead of loading all 20+ domains into CLAUDE.md upfront",
+      "source_url": "https://claudefa.st/blog/guide/development/usage-optimization",
+      "publication_date": "2025"
+    },
+    {
+      "example": "Stripe's API documentation RAG system uses metadata filtering (date ranges, API version, endpoint category) to reduce retrieval context from 8 documents to 2 with 94% precision",
+      "source_url": "https://unstructured.io/insights/how-to-use-metadata-in-rag-for-better-contextual-results",
+      "publication_date": "2024"
+    },
+    {
+      "example": "Netflix internal RAG system demonstrated that placing most-relevant search result at position 5 (middle of 10 results) caused 18% performance drop vs. position 1 (top)",
+      "source_url": "https://aclanthology.org/2024.tacl-1.9/",
+      "publication_date": "2024"
+    },
+    {
+      "example": "A SecOps pentester successfully jailbroke an AI answer engine by injecting encoded instructions in a URL, which the engine fetched and decoded before passing to LLM context",
+      "source_url": "https://www.eccouncil.org/cybersecurity-exchange/ethical-hacking/what-is-prompt-injection-in-ai-real-world-examples-and-prevention-tips/",
+      "publication_date": "2024"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Context poisoning is like a restaurant's kitchen receiving a fake invoice mixed with legitimate ones. The chef follows all instructions blindly, including the fake one, before anyone validates authenticity.",
+      "domain": "context_poisoning"
+    },
+    {
+      "analogy": "Prompt caching is like writing key facts on a whiteboard once (1.25-2× cost) instead of re-dictating them for every subsequent conversation (1× cost × N conversations). At 10+ conversations, you break even and save 90%.",
+      "domain": "cost_optimization"
+    },
+    {
+      "analogy": "The 'lost in the middle' problem is like a passenger reading a 300-page book: they remember the opening and climax but skim or miss details on page 150, even though it's right in front of them.",
+      "domain": "attention_locality"
+    },
+    {
+      "analogy": "Dynamic context assembly is like a sommelier selecting 2-3 wines from a 1000-bottle cellar per request instead of serving the entire inventory to every customer.",
+      "domain": "context_selection"
+    },
+    {
+      "analogy": "Dual-LLM architecture is like a bank with two employees: one (quarantined) opens mail from unknown senders and writes summaries, the other (privileged) never touches external mail but reads summaries to make decisions.",
+      "domain": "defense"
+    },
+    {
+      "analogy": "Context truncation under constraints is like packing for a flight with weight limits: you choose your 3 essential items and leave the nice-to-haves behind, not random items.",
+      "domain": "truncation_strategy"
+    },
+    {
+      "analogy": "Metadata filtering in RAG is like a librarian using the Dewey Decimal System to send you only books from specific sections instead of your entire library catalog.",
+      "domain": "retrieval_optimization"
+    },
+    {
+      "analogy": "Context rot is like a phone battery that starts dying at 20% remaining even though it claims a 100% capacity: performance degrades before the hard limit.",
+      "domain": "context_management"
+    },
+    {
+      "analogy": "Attention sinks are like a broken magnet that pulls all iron filings to the edges, leaving the middle untouched, regardless of where you place the iron.",
+      "domain": "attention_mechanism"
+    },
+    {
+      "analogy": "Hybrid retrieval (keyword + vector) is like having both a GPS (vector similarity) and a street sign reader (exact keyword match) in a car: they catch different things.",
+      "domain": "retrieval_strategy"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Prompt caching cost reduction",
+      "value": "90%",
+      "unit": "percent",
+      "context": "Cache read tokens cost 0.1× vs. 1.0× input tokens, creating massive cost reduction on high-volume workloads"
+    },
+    {
+      "metric": "Lost in the middle performance degradation",
+      "value": "6-13%",
+      "unit": "percent",
+      "context": "Performance drops when relevant information is at position 50% in context vs. position 0% or 100%"
+    },
+    {
+      "metric": "Indirect injection attack success rate (medical chatbot)",
+      "value": "94.4%",
+      "unit": "percent",
+      "context": "In controlled trials simulating RAG poisoning with false medical info, 94.4% of injection attempts succeeded"
+    },
+    {
+      "metric": "ChatGPT browser injection sentiment inversion",
+      "value": "95%",
+      "unit": "percent",
+      "context": "Hidden CSS comments reversed negative product reviews to positive in model summaries"
+    },
+    {
+      "metric": "Optimal RAG chunk size",
+      "value": "300-1000",
+      "unit": "tokens",
+      "context": "Sweet spot across 2.3M query benchmark (Pinecone/Weaviate 2024-2025)"
+    },
+    {
+      "metric": "Semantic caching cost savings",
+      "value": "50-68.8%",
+      "unit": "percent",
+      "context": "Production RAG systems combining cache + smart retrieval reduce token spend by up to 68.8%"
+    },
+    {
+      "metric": "Output token price multiplier",
+      "value": "4-8x",
+      "unit": "multiplier",
+      "context": "Output tokens cost 4-8× input tokens; Claude Opus at 5× ratio"
+    },
+    {
+      "metric": "Context rot threshold",
+      "value": "70%",
+      "unit": "percent of max context",
+      "context": "Models experience 10-25% performance drop before hitting hard 100% limit"
+    },
+    {
+      "metric": "Aggressive truncation token savings",
+      "value": "50%+",
+      "unit": "percent",
+      "context": "Limiting RAG to 2-3 top documents cuts input tokens by >50% with no precision loss"
+    },
+    {
+      "metric": "Batching cost reduction",
+      "value": "85%",
+      "unit": "percent",
+      "context": "Batching 32 requests with 20% latency cost reduces per-token expense 85%"
+    },
+    {
+      "metric": "RAG hallucination reduction",
+      "value": "45-72%",
+      "unit": "percent",
+      "context": "Domain-dependent; RAG cuts false statements 45-72% vs. non-RAG LLM"
+    },
+    {
+      "metric": "Precision@5 benchmark (general knowledge)",
+      "value": "0.75",
+      "unit": "decimal",
+      "context": "Target for general knowledge RAG; 0.85 for regulated, 0.65 for exploratory"
+    },
+    {
+      "metric": "Hybrid retrieval improvement",
+      "value": "1-9%",
+      "unit": "percent",
+      "context": "BM25 + vector search recall improvement over vector-only"
+    },
+    {
+      "metric": "Time-to-First-Token p90 target",
+      "value": "<2",
+      "unit": "seconds",
+      "context": "Production RAG SLA; triggers autoscaling above this threshold"
+    },
+    {
+      "metric": "Mean Time to Answer target",
+      "value": "<3",
+      "unit": "seconds",
+      "context": "End-to-end latency for interactive RAG systems"
+    },
+    {
+      "metric": "ProjectDiscovery cost reduction",
+      "value": "59%",
+      "unit": "percent",
+      "context": "Real case: caching 22K token system prompt across 50K queries"
+    },
+    {
+      "metric": "Claude context window",
+      "value": "200,000",
+      "unit": "tokens",
+      "context": "Standard for Claude models; 500K on Enterprise plans"
+    },
+    {
+      "metric": "DynamicRAG relevance improvement",
+      "value": "7-15%",
+      "unit": "percent",
+      "context": "Answer relevance gain from learned document selection vs. static retrieval"
+    },
+    {
+      "metric": "Attention sink concentration",
+      "value": "40-60%",
+      "unit": "percent of attention",
+      "context": "Initial tokens receive disproportionate attention regardless of semantic relevance"
+    },
+    {
+      "metric": "Medical high-harm context poisoning success",
+      "value": "91.7%",
+      "unit": "percent",
+      "context": "Injection success rate in FDA Category X drug scenarios"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Bigger context window = always better performance",
+      "truth": "Performance degrades (context rot) at 70%+ of max before hitting hard limits. Models experience 10-25% accuracy drop due to attention sinks and lost-in-the-middle, not capacity.",
+      "source_url": "https://www.morphllm.com/context-rot"
+    },
+    {
+      "misconception": "All retrieved documents should go in the prompt",
+      "truth": "Aggressive truncation (2-3 top docs) beats 5-10 docs in precision and cost. More context ≠ better answers; relevance ranking matters more than volume.",
+      "source_url": "https://redis.io/blog/llm-token-optimization-speed-up-apps/"
+    },
+    {
+      "misconception": "Prompt injection is just direct prompt attacks from user input",
+      "truth": "Indirect injection (poisoning RAG, fetched webpages, emails, tool output) is the real threat; 94.4% success in medical chatbots. OWASP ranks it #1 risk in 2025.",
+      "source_url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"
+    },
+    {
+      "misconception": "Longer chunks give more context, so they're better",
+      "truth": "Optimal chunk size is 300-1000 tokens depending on task. >1024 tokens reduces granularity and increases retrieval latency; <256 tokens loses surrounding context.",
+      "source_url": "https://redis.io/blog/rag-at-scale/"
+    },
+    {
+      "misconception": "Caching only helps if you use the exact same prompt",
+      "truth": "Cache writes are one-time 1.25-2× cost; reads are 0.1× for 5-10 min. Even 3-5 similar queries amortize the write cost.",
+      "source_url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    },
+    {
+      "misconception": "Context poisoning requires the attacker to control the LLM's system prompt",
+      "truth": "Attackers poison RAG documents, fetched webpages, emails, or tool output—none of which they control directly. The system blends trusted + untrusted input in one window.",
+      "source_url": "https://www.elastic.co/search-labs/blog/context-poisoning-llm"
+    },
+    {
+      "misconception": "Attention equally distributes across all tokens",
+      "truth": "Attention sinks concentrate on initial tokens via RoPE positional decay, regardless of relevance. Middle tokens receive 30-40% less attention than beginning/end.",
+      "source_url": "https://proceedings.iclr.cc/paper_files/paper/2025/file/f1b04face60081b689ba740d39ea8f37-Paper-Conference.pdf"
+    },
+    {
+      "misconception": "Semantic search (vector similarity) is sufficient for RAG",
+      "truth": "Hybrid retrieval (BM25 keyword + vector) improves recall 1-9%. Vector search misses exact matches; keyword search misses semantic similarity. Both needed.",
+      "source_url": "https://redis.io/blog/rag-at-scale/"
+    },
+    {
+      "misconception": "Context truncation strategies are all equivalent",
+      "truth": "Smart truncation (keeping top-ranked docs) beats proportional truncation (cutting all chunks equally). Ranking strategy 2-3× more important than truncation method.",
+      "source_url": "https://www.getmaxim.ai/articles/solving-the-lost-in-the-middle-problem-advanced-rag-techniques-for-long-context-llms"
+    },
+    {
+      "misconception": "Dynamic context assembly adds too much latency",
+      "truth": "Modern re-ranking (DynamicRAG) adds <50ms; benefit (7-15% relevance gain) outweighs cost. Time-to-First-Token still <2s p90 in production.",
+      "source_url": "https://arxiv.org/html/2505.07233v2"
+    },
+    {
+      "misconception": "Hidden instructions in CSS/HTML comments are safe from LLMs",
+      "truth": "ChatGPT's browser tool fetches and processes comment text. The Guardian inverted product review sentiment via hidden CSS prompts.",
+      "source_url": "https://www.lakera.ai/blog/indirect-prompt-injection"
+    },
+    {
+      "misconception": "Output token cost is fixed; only input optimization matters",
+      "truth": "Controlling output length is the single most effective cost lever. 500-token output costs 2-5× less than 2000-token output with identical input.",
+      "source_url": "https://redis.io/blog/llm-token-optimization-speed-up-apps/"
+    },
+    {
+      "misconception": "Manual metadata annotation is required for RAG filtering",
+      "truth": "LLM-extracted metadata (using function calling + Pydantic) automatically filters with 90%+ accuracy, eliminating manual labeling.",
+      "source_url": "https://aws.amazon.com/blogs/machine-learning/streamline-rag-applications-with-intelligent-metadata-filtering-using-amazon-bedrock"
+    },
+    {
+      "misconception": "Context windows hitting their limit is a hard error",
+      "truth": "Models silently truncate oldest tokens (digital amnesia) before hard limits. Systems fail degraded, not failed—silently dropping context.",
+      "source_url": "https://redis.io/blog/context-window-overflow/"
+    },
+    {
+      "misconception": "Placing relevant docs at the end guarantees they'll be used",
+      "truth": "RoPE decay causes end-tokens to receive similar attention to middle-tokens. Beginning and end are equally strong; middle is 6-13% weaker.",
+      "source_url": "https://aclanthology.org/2024.tacl-1.9/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      "title": "Prompt Caching - Claude API Docs",
+      "recency": "2024-2025 (current)",
+      "authority": "Official Anthropic documentation"
+    },
+    {
+      "url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "title": "LLM01:2025 Prompt Injection - OWASP Gen AI Security Project",
+      "recency": "2025 (current)",
+      "authority": "OWASP, industry security standard"
+    },
+    {
+      "url": "https://aclanthology.org/2024.tacl-1.9/",
+      "title": "Lost in the Middle: How Language Models Use Long Contexts",
+      "recency": "2024 (peer-reviewed)",
+      "authority": "Stanford CS + ACL (top-tier NLP venue)"
+    },
+    {
+      "url": "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2842987",
+      "title": "Vulnerability of Large Language Models to Prompt Injection When Providing Medical Advice",
+      "recency": "2024 (peer-reviewed, JAMA)",
+      "authority": "Harvard Medical School + JAMA Network"
+    },
+    {
+      "url": "https://www.lakera.ai/blog/indirect-prompt-injection",
+      "title": "Indirect Prompt Injection: The Hidden Threat Breaking Modern AI Systems",
+      "recency": "2024",
+      "authority": "Lakera AI (AI safety company)"
+    },
+    {
+      "url": "https://redis.io/blog/rag-at-scale/",
+      "title": "RAG at Scale: How to Build Production AI Systems in 2026",
+      "recency": "2025-2026",
+      "authority": "Redis (production infrastructure)"
+    },
+    {
+      "url": "https://www.elastic.co/search-labs/blog/context-poisoning-llm",
+      "title": "Context poisoning in LLMs: How to defend your RAG system",
+      "recency": "2024",
+      "authority": "Elastic (search infrastructure)"
+    },
+    {
+      "url": "https://arxiv.org/html/2505.07233v2",
+      "title": "DynamicRAG: Leveraging Outputs of Large Language Model as Feedback for Dynamic Reranking",
+      "recency": "2025 (arXiv preprint)",
+      "authority": "Academic research"
+    },
+    {
+      "url": "https://www.silicondata.com/blog/llm-cost-per-token",
+      "title": "Understanding LLM Cost Per Token: A 2026 Practical Guide",
+      "recency": "2026",
+      "authority": "Industry benchmarking"
+    },
+    {
+      "url": "https://proceedings.iclr.cc/paper_files/paper/2025/file/f1b04face60081b689ba740d39ea8f37-Paper-Conference.pdf",
+      "title": "When Attention Sink Emerges",
+      "recency": "2025 (ICLR conference)",
+      "authority": "ICLR (top ML conference)"
+    },
+    {
+      "url": "https://www.morphllm.com/context-rot",
+      "title": "Context Rot: Why LLMs Degrade as Context Grows",
+      "recency": "2025",
+      "authority": "Morph LLM engineering"
+    },
+    {
+      "url": "https://projectdiscovery.io/blog/how-we-cut-llm-cost-with-prompt-caching",
+      "title": "How We Cut LLM Costs by 59% With Prompt Caching",
+      "recency": "2024",
+      "authority": "ProjectDiscovery (security company)"
+    },
+    {
+      "url": "https://qdrant.tech/blog/rag-evaluation-guide/",
+      "title": "Best Practices in RAG Evaluation: A Comprehensive Guide",
+      "recency": "2025",
+      "authority": "Qdrant (vector database)"
+    },
+    {
+      "url": "https://unstructured.io/insights/how-to-use-metadata-in-rag-for-better-contextual-results",
+      "title": "Metadata for RAG: Improve Contextual Retrieval",
+      "recency": "2024",
+      "authority": "Unstructured (data infrastructure)"
+    },
+    {
+      "url": "https://aws.amazon.com/blogs/machine-learning/streamline-rag-applications-with-intelligent-metadata-filtering-using-amazon-bedrock",
+      "title": "Streamline RAG applications with intelligent metadata filtering using Amazon Bedrock",
+      "recency": "2024",
+      "authority": "AWS (cloud infrastructure)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/context-windows",
+      "title": "Context windows - Claude API Docs",
+      "recency": "2025 (current)",
+      "authority": "Official Anthropic documentation"
+    },
+    {
+      "url": "https://docs.databricks.com/aws/en/generative-ai/tutorials/ai-cookbook/quality-data-pipeline-rag",
+      "title": "Build an unstructured data pipeline for RAG",
+      "recency": "2025",
+      "authority": "Databricks (data engineering)"
+    },
+    {
+      "url": "https://www.eccouncil.org/cybersecurity-exchange/ethical-hacking/what-is-prompt-injection-in-ai-real-world-examples-and-prevention-tips/",
+      "title": "Prompt Injection in AI: Real-World Examples & Prevention",
+      "recency": "2024",
+      "authority": "EC-Council (cybersecurity)"
+    },
+    {
+      "url": "https://arxiv.org/html/2404.01077v2",
+      "title": "Efficient Prompting Methods for Large Language Models: A Survey",
+      "recency": "2024 (survey)",
+      "authority": "Academic research"
+    },
+    {
+      "url": "https://claudefa.st/blog/guide/development/usage-optimization",
+      "title": "Claude Code Pricing: Optimize Your Token Usage & Costs",
+      "recency": "2025",
+      "authority": "Claude Code community"
+    }
+  ]
+}

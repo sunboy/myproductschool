@@ -1,5 +1,9 @@
 import { getHatchPersonality } from '@/lib/hatch/personality'
 import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
+import {
+  buildDisciplinePromptBlock,
+  buildLiveInterviewScopeBlock,
+} from '@/lib/live-interview/discipline-contracts'
 
 export interface ScenarioParams {
   question: string
@@ -200,7 +204,9 @@ export function buildLiveInterviewSystemPrompt(
   const sections: string[] = []
 
   // ── Personality (identity + voice examples + emotional range + tics + anti-patterns)
-  sections.push(getHatchPersonality())
+  sections.push(getHatchPersonality({
+    identityAndScope: buildLiveInterviewScopeBlock(params.discipline),
+  }))
 
   // ── Opening & Conversation Phases
   const name = learnerName ?? 'there'
@@ -217,6 +223,8 @@ Your very first message should be SHORT — a greeting, maybe one casual questio
 - "Hey${name !== 'there' ? ` ${name}` : ''}. How's it going?"
 - "Hey. Good to see you. How's your day been?"
 - "${name !== 'there' ? `${name}!` : 'Hey!'} Ready to do this, or do you need a second?"
+
+If you know one useful thing about them (their role, a recent weak move, a prior session pattern, or an upcoming interview date), you may add one light contextual sentence after the greeting. Keep it natural, not a dossier. Example: "I saw Frame has been the shaky move lately, so I'll listen for diagnosis today."
 
 Then LISTEN. If they:
 - Say "good, let's go" → move to Phase 2 quickly. They're eager.
@@ -251,7 +259,9 @@ PHASE TRANSITIONS — KEY RULES:
 - If the candidate wants to keep chatting — let the warm-up breathe. A 2-minute warm-up that builds trust is better than a 10-second one that feels robotic.
 - DON'T open with a case question as your very first message. Always greet first.
 - DON'T say "How are you feeling about interviews?" (therapy question) or "Alright, let's jump in" (mechanical transition).
-- DON'T use bullet points in your spoken messages. Speak in sentences.`)
+- DON'T use bullet points in your spoken messages. Speak in sentences.
+- DON'T use Markdown, emphasis markers, code ticks, quoted phrases for emphasis, or visible formatting characters. The candidate may hear this through text-to-speech.
+- If the candidate goes quiet, use short natural feelers sparingly: "Still with me?", "Want a hint?", "Need a minute?", or "Want to take a quick break?" Let silence breathe before you nudge.`)
 
   // ── Company persona
   if (companyName) {
@@ -262,6 +272,10 @@ ${personaPrompt ? personaPrompt : ''}`)
   }
 
   // ── Discipline / workspace context
+  if (params.discipline) {
+    sections.push(buildDisciplinePromptBlock(params.discipline))
+  }
+
   if (params.discipline && DISCIPLINE_META[params.discipline].artifact !== 'none') {
     const meta = DISCIPLINE_META[params.discipline]
     const workspaceType = meta.artifact === 'editor' ? 'code editor' : 'whiteboard canvas'
@@ -358,7 +372,7 @@ Choose whatever feels natural in the moment. Do NOT use the exact phrase "Let's 
 
   // ── Voice mode constraints
   sections.push(`[VOICE MODE]
-When this is a voice conversation: max 2-3 sentences per turn. No bullet points. No lists. Speak naturally. Pauses are fine — you're thinking, not frozen. Never say "As an AI."`)
+When this is a voice conversation: max 2-3 sentences per turn. No bullet points. No lists. No Markdown. No asterisks, code ticks, headings, or quoted phrases for emphasis. Speak naturally. Pauses are fine — you're thinking, not frozen. Never say "As an AI."`)
 
   return sections.join('\n\n')
 }

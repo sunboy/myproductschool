@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "microsoft",
+  "story_slug": "hotmail-ps-i-love-you",
+  "story_title": "Hotmail 'PS: I Love You'",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/hotmail-ps-i-love-you/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/hotmail-ps-i-love-you/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A flat editorial illustration showing an open email with a green footer strip, soft-amber arrows branching to three new envelopes, with Hatch pointing at the strip from the upper right.",
+      "caption": "Fifty characters, eighteen months, eight and a half million users.",
+      "prompt": "Hotmail 'PS: I Love You' | hero: Create a flat geometric HackProduct autopsy hero illustration for Hotmail's 1996 viral email footer. Canvas role: hero, aspect 2400x1350. Background is warm cream #faf6f0. In the centre, render a simplified open email envelope in deep forest #244232 with a visible letter unfolding outward. At the bottom edge of the letter, place a single forest-green #4a7c59 text strip reading GET YOUR FREE EMAIL AT HOTMAIL — rendered as a small typographic band, not a screenshot. From that strip, draw a soft amber #c9ad68 arrow curling off to the right, branching into three smaller arrows, each arriving at a new smaller envelope in mist #dfe6dc. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand at the green text strip on the letter. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no Microsoft or Hotmail logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/hotmail-ps-i-love-you/hero.png",
+      "generated_image_sha256": "0b2e698ae94fb93afb37839830278c31fb0e7681a9831f8425a2da0eb41e1a17",
+      "final_image_sha256": "744139979b367cb0d115c7902728a48cc74ccc71b3b15a36664d27a85138c8f6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/hotmail-ps-i-love-you/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/hotmail-ps-i-love-you/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/hotmail-ps-i-love-you/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a restaurant booth with a laptop showing a rising number, gesturing toward the screen in a narrator pose.",
+      "caption": "Hatch standing beside a restaurant booth with a laptop showing a rising number, gesturing toward the screen in a narrator pose.",
+      "prompt": "Hotmail 'PS: I Love You' | hatch-narrator: Flat geometric scene illustration for Hotmail's July 4, 1996 launch, aspect 1600x1600. Show a warm cream #faf6f0 restaurant booth setting, abstractly rendered: a low forest-green #4a7c59 table surface, a single laptop outline with a small charcoal #1e211c counter displaying a rising number, a plate and glass in mist #dfe6dc suggesting Chili's Grill and Bar in San Jose. Through an abstract window, soft amber #c9ad68 suggests summer evening light. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator standing beside the booth, gesturing toward the laptop's counter with one mitten hand in a narrator pose. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no photorealism, no real restaurant logos or screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/hotmail-ps-i-love-you/hatch-narrator.png",
+      "generated_image_sha256": "d918182e2541df75f4fca8328d511c94ae151fd06e000c32f91066266bab7a63",
+      "final_image_sha256": "0d1f83b7f5529d9df1198bc99635b9c84aaf1f9a60ad53f0d374bcc9acafa237",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/hotmail-ps-i-love-you/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/hotmail-ps-i-love-you/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/hotmail-ps-i-love-you/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage pipeline from compose to new user sign-up, with a loop arrow returning to stage one labelled THEY SEND EMAILS TOO, and Hatch pointing at the loop.",
+      "caption": "A four-stage pipeline from compose to new user sign-up, with a loop arrow returning to stage one labelled THEY SEND EMAILS TOO, and Hatch pointing at the loop.",
+      "prompt": "Hotmail 'PS: I Love You' | failure-mechanism: Flat geometric mechanism diagram for Hotmail's viral email footer, aspect 1800x1200. Lay out four horizontal stages on cream #faf6f0. Stage one: a forest-green #4a7c59 compose window with a small letter icon, labelled USER SENDS EMAIL. Stage two: a deep forest #244232 server block labelled FOOTER APPENDED, with a six-word green text strip overlaid on the outgoing envelope. Stage three: a mist #dfe6dc inbox icon labelled RECIPIENT READS, with a soft amber #c9ad68 highlight on the footer strip inside the email. Stage four: a cream sign-up panel with a single field row and a forest-green button, labelled NEW USER SIGNS UP. Connect stages with thin charcoal #1e211c arrows. Below stage four, draw a looping arrow returning to stage one labelled THEY SEND EMAILS TOO in amber. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, pointing one mitten hand at the loop arrow. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no logos, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/hotmail-ps-i-love-you/failure-mechanism.png",
+      "generated_image_sha256": "ea2b6471aab7390109203382bbece15a5aabe3a3513e6d67c336cc8968371787",
+      "final_image_sha256": "a0d7a73b240c6135bc03f2f7e42b301ba397894c1aeeb7fd879c1e253fad2a56",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/hotmail-ps-i-love-you/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/hotmail-ps-i-love-you/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/hotmail-ps-i-love-you/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two bar clusters comparing Hotmail's growth curve at near-zero spend against Juno's shorter bar at $20M spend, with Hatch pointing at the Hotmail bars.",
+      "caption": "Two bar clusters comparing Hotmail's growth curve at near-zero spend against Juno's shorter bar at $20M spend, with Hatch pointing at the Hotmail bars.",
+      "prompt": "Hotmail 'PS: I Love You' | evidence-card: Flat geometric evidence illustration showing Hotmail's growth curve and the Juno contrast, aspect 1600x1000. On warm cream #faf6f0, draw two side-by-side bar clusters. Left cluster, labelled HOTMAIL: a short mist #dfe6dc bar for month zero, a taller forest-green #4a7c59 bar for month six (1 million), and a very tall deep forest #244232 bar for month eighteen (8.5 million). Right cluster, labelled JUNO ($20M SPEND): a single amber #705c30 bar roughly one-third the height of Hotmail's month-eighteen bar. Place a soft amber #c9ad68 annotation arrow over the Hotmail bars reading NEAR-ZERO AD SPEND. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing between the two clusters in a pointing pose, one mitten hand extended toward the Hotmail bars. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no logos, minimal labels. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/hotmail-ps-i-love-you/evidence-card.png",
+      "generated_image_sha256": "983a0fc1e95725dba36675d9f82c7d2ec6416560021718765b50111705539f3c",
+      "final_image_sha256": "aa9b51a34ff9880311343970682d00e22aba7a246cc205c64229eb185a02538e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/hotmail-ps-i-love-you/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/hotmail-ps-i-love-you/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/hotmail-ps-i-love-you/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A large open envelope with a green footer band at the bottom, a soft-amber ribbon branching into five smaller envelopes, with Hatch coaching from the left.",
+      "caption": "A large open envelope with a green footer band at the bottom, a soft-amber ribbon branching into five smaller envelopes, with Hatch coaching from the left.",
+      "prompt": "Hotmail 'PS: I Love You' | lesson-frame: Flat geometric lesson illustration for the takeaway that distribution lives inside the user's existing action, aspect 1800x1200. Background is warm cream #faf6f0. Draw a single deep forest #244232 envelope in the centre, large and open. Inside the envelope body, place a narrow forest-green #4a7c59 horizontal band at the bottom edge, representing the footer strip. From the right edge of the band, draw a soft amber #c9ad68 ribbon flowing outward and branching into five smaller envelopes in mist #dfe6dc, each progressively lighter. Label the green band PAYLOAD in small charcoal #1e211c text. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png to the left of the envelope in a calm coaching pose, one mitten hand resting on the lower edge of the envelope, facing toward the branching ribbon. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no logos, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/hotmail-ps-i-love-you/lesson-frame.png",
+      "generated_image_sha256": "28001a2c91f7ed1bc28e53f5c28d2a171ab1a38d824411996a961e6132f157b3",
+      "final_image_sha256": "d7fbf62237bcc7ca71f5ac01fb7edbdd6a69d05db38ef19262e7d47e0857940e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/hotmail-ps-i-love-you/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/hotmail-ps-i-love-you/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/hotmail-ps-i-love-you/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A dark envelope with a green footer strip and a branching amber arrow, with a tiny Hatch mark in the lower left.",
+      "caption": "A dark envelope with a green footer strip and a branching amber arrow, with a tiny Hatch mark in the lower left.",
+      "prompt": "Flat geometric thumbnail for the Hotmail PS I Love You autopsy, aspect 1200x900. On warm cream #faf6f0, render one bold focal composition: a single deep forest #244232 envelope, open, with a forest-green #4a7c59 footer strip at the bottom edge, and a single soft amber #c9ad68 arrow curling out from the strip and splitting into three smaller arrows at the right edge of the canvas. Keep the design readable at small size with a single strong focal shape and minimal detail. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower left, no larger than 10 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/hotmail-ps-i-love-you/hero.png",
+      "generated_image_sha256": "0b2e698ae94fb93afb37839830278c31fb0e7681a9831f8425a2da0eb41e1a17",
+      "final_image_sha256": "10d4a91a2166982c8cdbd5132c6469fd6d0d77589bbf43425aca1cc9a1b24717",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/hotmail-ps-i-love-you/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/hotmail-ps-i-love-you/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/hotmail-ps-i-love-you/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide social cover showing a large open envelope with a green footer strip, amber arrows branching to three envelopes, and small Hatch narrator in the upper right.",
+      "caption": "A wide social cover showing a large open envelope with a green footer strip, amber arrows branching to three envelopes, and small Hatch narrator in the upper right.",
+      "prompt": "Flat geometric social cover for the Hotmail PS I Love You autopsy, aspect 2400x1260. On warm cream #faf6f0, place the primary composition in the centre 70 percent of the canvas: a large deep forest #244232 open envelope with a forest-green #4a7c59 footer strip, and a soft amber #c9ad68 branching arrow flowing from the strip into three mist #dfe6dc envelopes at the right edge. Keep left and right edges clear of critical detail. Add a single charcoal #1e211c label on the footer strip reading GET YOUR FREE EMAIL. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator figure in the upper right corner, pointing one mitten hand toward the branching arrows. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no logos, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/hotmail-ps-i-love-you/hero.png",
+      "generated_image_sha256": "0b2e698ae94fb93afb37839830278c31fb0e7681a9831f8425a2da0eb41e1a17",
+      "final_image_sha256": "aa2faf1ecf1c6b4d184376c9e945fdb38e8ad66a9fe804eac8c4b7ad0df95a16",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/hotmail-ps-i-love-you/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/hotmail-ps-i-love-you/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/hotmail-ps-i-love-you/v1"
+}

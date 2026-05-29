@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "supabase",
+  "story_slug": "supabase",
+  "story_title": "Supabase's Open Source Bet",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/supabase/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/supabase/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot standing beside a Postgres elephant, signaling the architectural bet at Supabase's core.",
+      "caption": "Hatch mascot standing beside a Postgres elephant, signaling the architectural bet at Supabase's core.",
+      "prompt": "Supabase's Open Source Bet | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) standing in front of an oversized Postgres elephant logo on a cream background, one hand resting on it proprietorially. Hatch's expression is calm and confident — this is a declaration, not a question. The elephant is friendly-looking, slightly cartoonish. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/supabase/hero.png",
+      "generated_image_sha256": "e5f7f3bef80950ba695fc889e290d455ae4ee914acdf78927ba246469e3b3089",
+      "final_image_sha256": "19d45bef55a3626b151f7eff84195928ff825bb3ed92e45605be2150261a077a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/supabase/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/supabase/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/supabase/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at a whiteboard illustrating the architectural fork between Firebase and Postgres.",
+      "caption": "Hatch at a whiteboard illustrating the architectural fork between Firebase and Postgres.",
+      "prompt": "Supabase's Open Source Bet | hatch-narrator: Hatch in narrator pose: standing at a whiteboard showing two paths — one labeled \"Firebase\" (fast, closed) and one labeled \"Postgres\" (structured, open). Hatch is gesturing toward the Postgres path with one hand, looking at the viewer with a \"watch what happens next\" expression. Cream background, no copy on the board beyond two simple branch lines. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/supabase/hatch-narrator.png",
+      "generated_image_sha256": "6eaeb89b48dc19c210d13469d6726dc7a3719b3ea3211b2822cc61e4e53de1c2",
+      "final_image_sha256": "d9d8e1065d5366cb99da93e26589114199b0fdac12122e4cdadd6417de14e10d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/supabase/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/supabase/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/supabase/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch tracing Supabase's Postgres-native stack from database layer to developer SDK.",
+      "caption": "Hatch tracing Supabase's Postgres-native stack from database layer to developer SDK.",
+      "prompt": "Supabase's Open Source Bet | failure-mechanism: Hatch in thinking pose, looking at a simplified layered diagram: at the bottom \"Postgres,\" middle layer showing \"Auth / Storage / Realtime\" as three small labeled boxes, top layer showing \"REST API / SDK.\" Hatch is tracing the stack with a finger, expression curious and engaged. Cream background, no decorative elements. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/supabase/failure-mechanism.png",
+      "generated_image_sha256": "529b8d7d4aff479451d527e6ae2a0cc69ba35ac7abf2d1d18bc2eb75e0cd2f6f",
+      "final_image_sha256": "73087127fce299d3aef4a397d70eeddd7caaade815585ea4dec2714fb6b83f4d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/supabase/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/supabase/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/supabase/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Supabase's GitHub star count as evidence of developer adoption through open source distribution.",
+      "caption": "Hatch pointing at Supabase's GitHub star count as evidence of developer adoption through open source distribution.",
+      "prompt": "Supabase's Open Source Bet | evidence-card: Hatch pointing at a large GitHub star counter showing \"70,000+\" with a rising trend arrow. The star icon is oversized and stylized. Hatch's expression is slightly surprised but pleased — the numbers validate the bet. Cream background, minimal additional elements. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/supabase/evidence-card.png",
+      "generated_image_sha256": "d2a32c90952e9d4f7adee5041e92842c7d28a1b7ca96d983efcc7eabbf9190e2",
+      "final_image_sha256": "260dd626a5221ae97c5527d8a48e07562ea73b196e49c5a86d0a46cda9dd4848",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/supabase/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/supabase/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/supabase/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm coaching stance, underscoring the architectural nature of Supabase's open source bet.",
+      "caption": "Hatch in a calm coaching stance, underscoring the architectural nature of Supabase's open source bet.",
+      "prompt": "Supabase's Open Source Bet | lesson-frame: Hatch in coaching pose: arms slightly open, calm expression, standing against a cream background with the text \"Open source is architecture, not marketing\" rendered as a faint watermark behind it. No pointer, no chart — this is a quiet, final-word moment. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/supabase/lesson-frame.png",
+      "generated_image_sha256": "e2634372afb5ab4c86be71dd0d13c83faaa0f9d9726f6ef715e041f6d05e3588",
+      "final_image_sha256": "8aa6a922d4a21e423d19f013728d36d429b009afe5f951b836ea37d4ba609e7f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/supabase/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/supabase/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/supabase/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small Postgres elephant for Supabase story thumbnail.",
+      "caption": "Hatch holding a small Postgres elephant for Supabase story thumbnail.",
+      "prompt": "Hatch mascot small and centered, holding a tiny Postgres elephant. Cream background, no text. The pair should read as a unit — Hatch and Postgres together. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/supabase/hero.png",
+      "generated_image_sha256": "e5f7f3bef80950ba695fc889e290d455ae4ee914acdf78927ba246469e3b3089",
+      "final_image_sha256": "6787f48281436bf515d77f31c4ac32c15b6c4e9c1c6be99257ac70b8dc422bfd",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/supabase/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/supabase/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/supabase/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Social share card for the Supabase autopsy showing Hatch and the Postgres elephant.",
+      "caption": "Social share card for the Supabase autopsy showing Hatch and the Postgres elephant.",
+      "prompt": "Hero composition adapted for OG share card: Hatch standing beside the Postgres elephant on a cream background, with the title \"Supabase's Open Source Bet\" rendered in large Literata-style serif type above them. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/supabase/hero.png",
+      "generated_image_sha256": "e5f7f3bef80950ba695fc889e290d455ae4ee914acdf78927ba246469e3b3089",
+      "final_image_sha256": "4e8c0fea2a72c2e1b80f8d2a2c09aff44fa17181e94c71d4fe8248783603d030",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/supabase/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/supabase/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/supabase/v1"
+}

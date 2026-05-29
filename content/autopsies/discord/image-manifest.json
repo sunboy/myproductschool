@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "discord",
+  "story_slug": "discord",
+  "story_title": "Discord",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/discord/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/discord/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream editorial illustration showing a failed game controller on the left, persistent voice channel blocks in the centre, and a growing hexagon network on the right, with Hatch narrating from the upper right.",
+      "caption": "A chat tool inside a failed game became the internet's town square.",
+      "prompt": "Discord | hero: Create a flat geometric HackProduct autopsy hero illustration for Discord's founding decision in 2015. Canvas role: hero, aspect 2400x1350. Background in warm cream #faf6f0. On the left, render a small crumbling game controller shape in mist #dfe6dc suggesting a failed mobile game. In the centre, draw a deep forest #244232 server-room schematic of three stacked rectangular voice channel blocks, each labelled with a simple abstract gamer icon, connected by thin charcoal #1e211c lines suggesting always-on presence. On the right, show a soft amber #c9ad68 cluster of community hexagons expanding outward, representing the network growing beyond gaming. Hatch, the HackProduct mascot with a graduation cap and a growth arrow on its back, appears in the upper right in narrator pose, one mitten hand gesturing toward the expanding hexagons. Preserve Hatch's rounded forest-green head frame, cream face and body, bright curious eyes, and friendly coach expression. Leave quiet space in the upper left for title overlay. No photorealism, no recreated UI screenshots, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/discord/hero.png",
+      "generated_image_sha256": "c752cbe088147dd1911b5db069c24068a2bc02c50d27d98795debb9bf8e84952",
+      "final_image_sha256": "c530e8311b01dea69ec505829d2dc66198708d5c648fa51ca63eec881844929b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/discord/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/discord/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/discord/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside two desks, one showing a faded mobile game and one showing an early Discord wireframe, with an arrow between them and sticky note feedback on the desk.",
+      "caption": "Hatch standing beside two desks, one showing a faded mobile game and one showing an early Discord wireframe, with an arrow between them and sticky note feedback on the desk.",
+      "prompt": "Discord | hatch-narrator: Flat geometric scene illustration for the Hammer and Chisel office circa early 2015, aspect 1600x1600. Show a warm cream #faf6f0 interior with two desks pushed together, each with a simple laptop outline. On one screen, draw a faint mobile game grid (the failed Fates Forever). On the second screen, draw a simple wireframe of voice channel blocks labelled in charcoal #1e211c with abstract names like GENERAL and RAID. Between the screens, draw a single deep forest #244232 arrow going from the game screen to the chat screen. A small stack of printed user feedback sheets with soft amber #c9ad68 sticky notes sits on the desk. Hatch, the HackProduct mascot with graduation cap and growth arrow, stands beside the second screen in a narrator pose, one mitten hand resting lightly on the chat wireframe. Preserve Hatch's rounded forest-green head frame, cream face and body, bright curious eyes, mitten hands, and friendly coach expression. No human figures, no real screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/discord/hatch-narrator.png",
+      "generated_image_sha256": "8b5bea8f67d5ad670952b9cea45ec8d9ba1be3eaa3a5d49e0b9910a8ff642cff",
+      "final_image_sha256": "2c09747d6cac98c871a841e4a66800f1ded6ac4a7ea0aa05d58ac498c724ba0a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/discord/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/discord/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/discord/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage flow from persistent server through one-click invite to users walking in, with Hatch pointing at the invite link stage.",
+      "caption": "A four-stage flow from persistent server through one-click invite to users walking in, with Hatch pointing at the invite link stage.",
+      "prompt": "Discord | failure-mechanism: Flat geometric mechanism diagram for Discord's always-on voice channel architecture, aspect 1800x1200. Lay out four stages horizontally on cream #faf6f0. Stage one on the far left: a deep forest #244232 rectangle labelled SERVER EXISTS with three stacked horizontal bars suggesting voice channels. Stage two: a forest-green #4a7c59 link-shaped icon labelled ONE-CLICK INVITE, no download required. Stage three: a mist #dfe6dc cluster of three small abstract gamer figures walking into the server rectangle, with a soft amber #c9ad68 dotted path. Stage four: a charcoal #1e211c text channel panel running vertically beside the voice channels, labelled PERSISTENT TEXT, suggesting the combined voice-plus-text surface. Connect stages with thin charcoal arrows. Hatch, the HackProduct mascot with graduation cap and growth arrow, stands between stage two and stage three in a pointing pose, one mitten hand indicating the link icon. Preserve Hatch's rounded forest-green head frame, cream face and body, bright curious eyes, mitten hands, and friendly coach expression. No dense text, no real screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/discord/failure-mechanism.png",
+      "generated_image_sha256": "fd2d50f29645798d67471928fa7f10d634901f87b7133a29c4a9d84934e5f8a1",
+      "final_image_sha256": "73e2ef510beda34bc111145897b61ecccbee1bb9f0bcb8c26c8d408374885320",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/discord/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/discord/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/discord/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A bar chart showing Discord's user growth from 2015 to 2020 with a soft amber marker at 2016 indicating the first revenue from Nitro, and Hatch pointing at the tallest bar.",
+      "caption": "A bar chart showing Discord's user growth from 2015 to 2020 with a soft amber marker at 2016 indicating the first revenue from Nitro, and Hatch pointing at the tallest bar.",
+      "prompt": "Discord | evidence-card: Flat geometric evidence illustration showing Discord's growth from 2015 to 2020, aspect 1600x1000. Draw a horizontal timeline bar in charcoal #1e211c across the bottom third of the canvas on cream #faf6f0. Above the timeline, place five vertical bars of increasing height representing registered users at five points: 2015 launch (tiny stub), 2016 year-end 25M (small bar in forest-green #4a7c59), 2017 45M (medium bar in forest-green), 2019 56M MAU (taller bar in deep forest #244232), 2020 140M MAU (tallest bar in deep forest). Label each bar with a simple number in charcoal text. Add a soft amber #c9ad68 marker at the 2016 bar with the label FIRST DOLLAR OF REVENUE, indicating Nitro launched that December. Hatch, the HackProduct mascot with graduation cap and growth arrow, stands to the right of the 2020 bar in a pointing pose, gesturing at the growth curve. Preserve Hatch's rounded forest-green head frame, cream face and body, bright curious eyes, mitten hands, and friendly coach expression. No dense text, no real screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/discord/evidence-card.png",
+      "generated_image_sha256": "170de129788b812b4f7824f494be13ec57f1a90463750e3f5cee8e6354c6b1fe",
+      "final_image_sha256": "4b4072271b2a95716da3afd953bc6f1363f3bc3d052446e9016e018267d5c7bb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/discord/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/discord/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/discord/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central free hexagon radiating outward to a network of smaller hexagons, with a Nitro-labelled coin hexagon at the edge and Hatch coaching from the left.",
+      "caption": "A central free hexagon radiating outward to a network of smaller hexagons, with a Nitro-labelled coin hexagon at the edge and Hatch coaching from the left.",
+      "prompt": "Discord | lesson-frame: Flat geometric lesson illustration for the takeaway that you can give a product away until the network builds itself, aspect 1800x1200. Background in warm cream #faf6f0. In the centre of the canvas, draw a large forest-green #4a7c59 hexagon with the label FREE in deep forest #244232 inside it. From each of the six hexagon edges, draw a thin charcoal #1e211c line connecting to a smaller hexagon, each one progressively filled in soft amber #c9ad68, suggesting a network growing outward. At the outermost ring, draw one hexagon that is filled with a small coin shape in amber, labelled NITRO, suggesting monetisation arrives after the network is established. Hatch, the HackProduct mascot with graduation cap and growth arrow, stands to the left of the central hexagon in a calm coaching pose, one mitten hand resting on the free hexagon's edge, looking toward the viewer. Preserve Hatch's rounded forest-green head frame, cream face and body, bright curious eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no recreated screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/discord/lesson-frame.png",
+      "generated_image_sha256": "5b2302b555cb68240a08df0fd52e25652f8d060b5ded4a46c633ea0a3c8aaa5f",
+      "final_image_sha256": "eae4a69dcd1371da260a89c5ba72e6770bbab9e91d9c0b53479a9d04d69484d1",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/discord/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/discord/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/discord/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A server block with three voice channel bars on the left, a soft amber fan of joining users on the right, and a small Hatch mark in the lower corner.",
+      "caption": "A server block with three voice channel bars on the left, a soft amber fan of joining users on the right, and a small Hatch mark in the lower corner.",
+      "prompt": "Flat geometric thumbnail for the Discord autopsy, aspect 1200x900. On warm cream #faf6f0, place one bold focal composition: a deep forest #244232 server-room block with three stacked horizontal bars representing always-on voice channels. From the right side of the block, draw a soft amber #c9ad68 expanding fan of thin lines suggesting users joining, with the fan growing wider as it moves right. Keep the design readable at thumbnail size with only two shapes and the expanding fan. Hatch, the HackProduct mascot with graduation cap and growth arrow, appears as a small mark in the lower left, no larger than 10 percent of canvas height. Preserve Hatch's rounded forest-green head frame, cream face and body, and bright curious eyes. No labels, no dense text, no screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/discord/hero.png",
+      "generated_image_sha256": "c752cbe088147dd1911b5db069c24068a2bc02c50d27d98795debb9bf8e84952",
+      "final_image_sha256": "2c09cafee4265ddd535f16f833f84cfe590e091078481f44c32b5ec2536c6dc8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/discord/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/discord/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/discord/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image showing a failed game controller on the left, a Discord server schematic in the centre labelled GIVE IT AWAY, and an expanding hexagon network on the right, with Hatch narrating from the upper corner.",
+      "caption": "A wide cover image showing a failed game controller on the left, a Discord server schematic in the centre labelled GIVE IT AWAY, and an expanding hexagon network on the right, with Hatch narrating from the upper corner.",
+      "prompt": "Flat geometric social cover image for the Discord autopsy, aspect 2400x1260. On warm cream #faf6f0, centre a composition that occupies 70 percent of the canvas. On the left, draw a crumbling mist #dfe6dc game controller suggesting the failed Fates Forever. In the centre, draw a deep forest #244232 server schematic with three stacked voice channel bars and a forest-green #4a7c59 invite link shape below it. On the right, draw a soft amber #c9ad68 hexagon cluster expanding outward, representing the community network. Connect the three shapes with thin charcoal #1e211c arrows flowing left to right. Place a short charcoal label on the central server: GIVE IT AWAY. Hatch, the HackProduct mascot with graduation cap and growth arrow, appears in the upper right as a small narrator, one mitten hand pointing at the expanding hexagons. Preserve Hatch's rounded forest-green head frame, cream face and body, bright curious eyes, mitten hands, and friendly coach expression. No human faces, no dense text, no real screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/discord/hero.png",
+      "generated_image_sha256": "c752cbe088147dd1911b5db069c24068a2bc02c50d27d98795debb9bf8e84952",
+      "final_image_sha256": "4de24d0507660eae90365593e9d7bea6f54633efe3cc4aab2ddce7e5f1351af8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/discord/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/discord/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/discord/v1"
+}

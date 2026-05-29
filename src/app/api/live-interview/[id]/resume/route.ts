@@ -17,8 +17,9 @@ export async function POST(
 
   const { data: session } = await adminClient
     .from('live_interview_sessions')
-    .select('*')
+    .select('id, user_id, status, loop_id, round_index, flow_coverage, conversation_memory, company_id, role_id, challenge_id, calibration_snapshot')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (!session) return new Response('Session not found', { status: 404 })
@@ -32,6 +33,7 @@ export async function POST(
     company_id?: string | null
     role_id?: string | null
     challenge_id?: string | null
+    calibration_snapshot?: Record<string, unknown> | null
   }
   const s = session as SessionRow
 
@@ -50,7 +52,7 @@ export async function POST(
 
   const now = new Date().toISOString()
 
-  // Rebuild the system prompt from current move_levels / competencies / failure
+  // Rebuild the session instructions from current move_levels / competencies / failure
   // patterns so a long-paused session reflects the user's latest state.
   const built = await buildPromptFromSession({
     adminClient,
@@ -69,7 +71,13 @@ export async function POST(
       conversation_memory: snapshot?.conversation_memory ?? s.conversation_memory,
       system_prompt: built.systemPrompt,
       scenario_rubric: built.scenarioRubric,
-      calibration_snapshot: built.calibrationSnapshot,
+      calibration_snapshot: {
+        ...(s.calibration_snapshot ?? {}),
+        ...built.calibrationSnapshot,
+        companyName: built.companyName ?? s.calibration_snapshot?.companyName ?? null,
+        scenarioTitle: built.scenarioTitle ?? s.calibration_snapshot?.scenarioTitle ?? null,
+        effectiveDiscipline: built.effectiveDiscipline ?? s.calibration_snapshot?.effectiveDiscipline ?? null,
+      },
     })
     .eq('id', id)
 
@@ -85,16 +93,17 @@ export async function POST(
     .update({ status: 'active' })
     .eq('id', s.loop_id)
 
-  const { data: refreshed } = await adminClient
-    .from('live_interview_sessions')
-    .select('*')
-    .eq('id', id)
-    .single()
-
   return Response.json({
-    session: refreshed,
+    session: {
+      id,
+      company_id: s.company_id ?? null,
+      role_id: s.role_id ?? null,
+      challenge_id: s.challenge_id ?? null,
+      loop_id: s.loop_id,
+      round_index: s.round_index ?? 0,
+      status: 'active',
+    },
     resumedAt: now,
-    systemPrompt: built.systemPrompt,
     discipline: built.effectiveDiscipline,
   })
 }

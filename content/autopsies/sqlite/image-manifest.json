@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "sqlite",
+  "story_slug": "sqlite",
+  "story_title": "SQLite",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/sqlite/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/sqlite/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot sitting on a flat file with a server crossed out above it, representing SQLite's serverless design.",
+      "caption": "Hatch mascot sitting on a flat file with a server crossed out above it, representing SQLite's serverless design.",
+      "prompt": "SQLite | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) sitting cross-legged on a giant single flat file, with a minimalist database cylinder icon floating above it with a large red X through it. Background is warm cream. Hatch looks calm and satisfied, graduation cap slightly tilted. No speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/sqlite/hero.png",
+      "generated_image_sha256": "a13513876c0dc4b18d3a3f8e073e2406ab5e70b563db324ba2c4f190e1db2e70",
+      "final_image_sha256": "3af166e75b5f76929e98f174779a0f0a21afe0acb45b8d4df8aff313d2ee4ae9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/sqlite/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/sqlite/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/sqlite/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing before a ship-deck scene with disconnected cables, illustrating the embedded deployment problem.",
+      "caption": "Hatch standing before a ship-deck scene with disconnected cables, illustrating the embedded deployment problem.",
+      "prompt": "SQLite | hatch-narrator: Hatch in narrator pose: standing in front of an illustration of a ship deck with networking cables hanging loose, disconnected — the moment Hipp realized the Navy contractor's database needed an administrator who wasn't there. Cream background. Hatch looks thoughtful, not frustrated. No copy. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/sqlite/hatch-narrator.png",
+      "generated_image_sha256": "7bcade3cdd7f99f01a7c2b7da983a706d471e657c23c91ca599c41796da4b74d",
+      "final_image_sha256": "19f62dc1d66ae389cd43017872a13d8fe3d6dea5d6562453d30f169e3dc8878a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/sqlite/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/sqlite/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/sqlite/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch explaining the contrast between client-server and embedded library database architecture.",
+      "caption": "Hatch explaining the contrast between client-server and embedded library database architecture.",
+      "prompt": "SQLite | failure-mechanism: Hatch in a thinking pose, gesturing at a split diagram: left side shows a conventional client-server setup with arrows going across a network boundary; right side shows a C library compiling directly into an application binary with a single .db file underneath. The right side is highlighted. Cream background. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/sqlite/failure-mechanism.png",
+      "generated_image_sha256": "93d7a024ec878f56ebf11fe19d5df68f52b11c5c0385352c5c7a0b1c98077545",
+      "final_image_sha256": "6d81fc2abc64fe09a5df5bb80783379df2768c45a681d55d95145a841b059342",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/sqlite/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/sqlite/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/sqlite/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to a device deployment chart showing SQLite embedded in every category of computing device.",
+      "caption": "Hatch pointing to a device deployment chart showing SQLite embedded in every category of computing device.",
+      "prompt": "SQLite | evidence-card: Hatch pointing at a chart showing silhouettes of devices — phone, tablet, laptop, browser window, car dashboard, smart TV — each with a small SQLite logo embedded inside it. The scale feels infinite. Cream background, clean infographic style. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/sqlite/evidence-card.png",
+      "generated_image_sha256": "d57637dea02972601070f4d00bdfc80cc41b930a312206e124c55b88c03d9bbc",
+      "final_image_sha256": "a37b8a67e6b3b178b68dec57b5109d6525d4770ed3585eae7dea6f957a081ca6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/sqlite/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/sqlite/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/sqlite/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a coaching stance beside a single glowing database file, representing the simplicity of the embedded model.",
+      "caption": "Hatch in a coaching stance beside a single glowing database file, representing the simplicity of the embedded model.",
+      "prompt": "SQLite | lesson-frame: Hatch in coaching pose — standing tall, calm, arms slightly open — in front of a single floating file icon that has a subtle glow around it. The message is \"this is the whole database.\" Warm cream background, no copy. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/sqlite/lesson-frame.png",
+      "generated_image_sha256": "b7410bff6e4ac7d409f3fca21f2238fc46580416ee140eb3c6063b66584ef495",
+      "final_image_sha256": "52f43b1a94cbbc67e4085107b05738431de89eb438c6e60f32734e3fc931c42f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/sqlite/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/sqlite/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/sqlite/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch thumbnail holding a database file with a crossed-out server.",
+      "caption": "Hatch thumbnail holding a database file with a crossed-out server.",
+      "prompt": "Small, bold composition: Hatch's face and torso only, holding a tiny .db file in one outstretched hand, the other hand showing a crossed-out server rack. Cream background. Recognizable at small size. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/sqlite/hero.png",
+      "generated_image_sha256": "a13513876c0dc4b18d3a3f8e073e2406ab5e70b563db324ba2c4f190e1db2e70",
+      "final_image_sha256": "d6add50faea92185fc2ca80e35bfe040309ba3cc28aaa34ab7edd9942fd906d9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/sqlite/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/sqlite/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/sqlite/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "SQLite social cover with Hatch standing beside a single database file.",
+      "caption": "SQLite social cover with Hatch standing beside a single database file.",
+      "prompt": "Hero pose adapted for OG share card: Hatch standing confidently beside a giant single file icon on a cream background. Bold composition with \"SQLite\" in large Literata type above. HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/sqlite/hero.png",
+      "generated_image_sha256": "a13513876c0dc4b18d3a3f8e073e2406ab5e70b563db324ba2c4f190e1db2e70",
+      "final_image_sha256": "0db6a668a706627a85534d6f3562ed7da4c9332012e08c980f733c8ec8933d6f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/sqlite/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/sqlite/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/sqlite/v1"
+}

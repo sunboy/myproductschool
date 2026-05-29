@@ -72,7 +72,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       sort_order: 1,
       title: 'Block-based editor over rich text',
       area: 'Core UX',
-      difficulty: 'standard',
+      difficulty: 'medium',
       icon: 'grid_view',
       screenshot_url: null,
       what_they_did:
@@ -129,7 +129,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       sort_order: 2,
       title: 'Free personal tier with no time limit',
       area: 'Monetization',
-      difficulty: 'warmup',
+      difficulty: 'easy',
       icon: 'volunteer_activism',
       screenshot_url: null,
       what_they_did:
@@ -186,7 +186,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       sort_order: 3,
       title: 'Databases as a first-class citizen',
       area: 'Product Strategy',
-      difficulty: 'advanced',
+      difficulty: 'hard',
       icon: 'table_chart',
       screenshot_url: null,
       what_they_did:
@@ -363,7 +363,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
             headline: 'Now make the call yourself',
             subline: 'You\'re the PM. Rich text or blocks — and why? This is the exact decision Notion faced.',
             buttonText: 'Take the challenge',
-            targetPath: '/explore/showcase/notion',
+            targetPath: '/explore/autopsies/notion',
           },
         },
       ],
@@ -1095,7 +1095,7 @@ const MOCK_AIRBNB_DETAIL: AutopsyProductDetail = {
             headline: 'The Full Picture',
             summary: 'Anika started as a product designer Googling weekend cabins. Nine stages later, she\'s a host earning $14,400 a year, a repeat guest with eight trips booked, a wishlist curator with 26 saved listings, an Experiences buyer, a Business travel booker, and an ecosystem participant who would need months to unwind her platform relationship. A product is replaceable. An ecosystem is defensible. Airbnb stopped competing on listings a long time ago. Now it competes on how deeply hosts depend on it for income, how deeply guests depend on it for trust, and how deeply both are connected to a network no competitor can replicate.',
             cta_text: 'Back to all autopsies',
-            cta_path: '/explore/showcase',
+            cta_path: '/explore/autopsies',
           },
         },
       ],
@@ -1140,11 +1140,15 @@ export async function getShowcaseProducts(): Promise<AutopsyProduct[]> {
   })) as AutopsyProduct[]
 }
 
+export function getMockShowcaseProduct(slug: string): AutopsyProductDetail | null {
+  if (slug === 'notion') return MOCK_NOTION_DETAIL
+  if (slug === 'airbnb') return MOCK_AIRBNB_DETAIL
+  return null
+}
+
 export async function getShowcaseProduct(slug: string): Promise<AutopsyProductDetail | null> {
   if (IS_MOCK) {
-    if (slug === 'notion') return MOCK_NOTION_DETAIL
-    if (slug === 'airbnb') return MOCK_AIRBNB_DETAIL
-    return null
+    return getMockShowcaseProduct(slug)
   }
 
   const { createClient } = await import('@/lib/supabase/server')

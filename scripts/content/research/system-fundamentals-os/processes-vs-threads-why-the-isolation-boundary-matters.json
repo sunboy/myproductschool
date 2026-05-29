@@ -1,0 +1,568 @@
+{
+  "facts": [
+    {
+      "fact": "Each process gets its own virtual address space (4GB on 32-bit, 128TB on 64-bit systems) managed by a separate page table. No process can directly read or write another's memory.",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "date": "2024"
+    },
+    {
+      "fact": "All threads in a process share the same heap memory but each thread gets its own stack (typically 1-8MB per thread).",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/memory-management/virtual-memory-fundamentals-address-translation-process-isolation",
+      "date": "2024"
+    },
+    {
+      "fact": "Creating a process takes 1-10ms and requires allocating a new virtual address space and setting up page tables. Creating a thread takes 10-100 microseconds, making thread creation 10-100x faster than process creation.",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "date": "2024"
+    },
+    {
+      "fact": "Context switching between processes requires flushing the TLB (Translation Lookaside Buffer), adding 1000-2000 CPU cycles of overhead. Switching between threads in the same process preserves TLB validity and L1/L2 cache 'hotness'.",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "date": "2024"
+    },
+    {
+      "fact": "Context switches cause an average increase in TLB MPKI (misses per thousand instructions) of over 6X in multi-threaded workloads. After a TLB flush, every memory access is a TLB miss until the working set is re-cached.",
+      "source": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "date": "2024"
+    },
+    {
+      "fact": "A TLB miss costs approximately 50 nanoseconds, compared to approximately 1 nanosecond for a TLB hit—a 50x performance penalty per access.",
+      "source": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "date": "2024"
+    },
+    {
+      "fact": "Measured context switching overhead is 2.7-5.48 microseconds. lmbench measurements are more accurate because they account for additional overhead caused by cache misses after the switch.",
+      "source": "https://blog.codingconfessions.com/p/context-switching-and-performance",
+      "date": "2024"
+    },
+    {
+      "fact": "Modern processors use Address Space Identifiers (ASIDs/PCID) to avoid flushing the TLB entirely during process context switches. The CPU simply changes the current ASID and TLB lookups only match entries with the current ASID.",
+      "source": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "date": "2024"
+    },
+    {
+      "fact": "Copy-on-Write (CoW) makes fork() fast: the kernel shares memory pages between parent and child processes with read-only marking. Copying only occurs when one process writes to a shared page.",
+      "source": "https://medium.com/@Ibraheemcisse/copy-on-write-why-linux-process-creation-is-lightning-fast-90cf08644504",
+      "date": "2024"
+    },
+    {
+      "fact": "In the fork-exec pattern, the child process typically calls exec immediately, which replaces its memory with a new program. Most of the time, no copying happens at all, making process creation extremely fast.",
+      "source": "https://dev.to/farhadrahimiklie/understanding-fork-in-linux-how-process-creation-really-works-13id",
+      "date": "2024"
+    },
+    {
+      "fact": "Virtual memory uses demand paging: when a process calls mmap, the kernel sets up a VMA but does not allocate physical pages. The first access triggers a page fault, which is a CPU exception that the kernel's page fault handler manages.",
+      "source": "https://www.shayon.dev/post/2026/65/linux-page-faults-mmap-and-userfaultfd/",
+      "date": "2026"
+    },
+    {
+      "fact": "There are three types of page faults: minor (page table entry missing), major (requires disk read), and invalid (illegal access or permission denied).",
+      "source": "https://www.site24x7.com/learn/linux/page-faults-memory-swapping.html",
+      "date": "2024"
+    },
+    {
+      "fact": "Event loops (epoll on Linux, kqueue on BSD/macOS) use readiness-based I/O: the kernel indicates when a file descriptor is ready for read/write, but an additional syscall is still required to actually perform the I/O.",
+      "source": "https://tuhuynh.com/en/posts/nio-under-the-hood/",
+      "date": "2024"
+    },
+    {
+      "fact": "Redis uses an event-driven single-threaded model with multiplexed I/O via epoll to achieve high performance and handle millions of concurrent connections.",
+      "source": "https://redixhumayun.github.io/async/2024/09/18/async-runtimes-part-ii.html",
+      "date": "2024"
+    },
+    {
+      "fact": "The reactive event loop model achieves 75% higher throughput and 68% lower memory footprint than thread-per-request in I/O-bound caching scenarios. However, both converge at identical CPU saturation with the reactive model incurring latency penalty due to event-loop contention.",
+      "source": "https://www.mdpi.com/2076-3417/16/1/90",
+      "date": "2024"
+    },
+    {
+      "fact": "When workloads become heavily CPU-intensive, the event loop model becomes problematic. If event loop threads are starved by CPU-intensive tasks (encryption, compression, ML inference), the system's capacity to handle load responsively is drastically diminished.",
+      "source": "https://dzone.com/articles/spring-webflux-eventloop-vs-thread-per-request-mod",
+      "date": "2024"
+    },
+    {
+      "fact": "The CPU time of a single thread is insufficient to saturate modern hardware like a single PCIe 5.0 SSD. Significant parallelism via multi-threading is strictly required to saturate contemporary hardware setups.",
+      "source": "https://medium.com/@sonampatel_97163/the-event-loop-lie-why-your-async-code-still-blocks-dbc19a71af1e",
+      "date": "2024"
+    },
+    {
+      "fact": "io_uring is completion-based (not readiness-based like epoll), allowing batch submission and reading completions in a single operation, which amortizes syscall cost over many I/Os.",
+      "source": "https://www.alibabacloud.com/blog/io-uring-vs--epoll-which-is-better-in-network-programming_599544",
+      "date": "2024"
+    },
+    {
+      "fact": "io_uring performance is workload-dependent: it is faster than epoll in ping-pong mode (low-depth workloads), but slower than epoll in streaming mode (high-depth workloads).",
+      "source": "https://github.com/axboe/liburing/issues/536",
+      "date": "2024"
+    },
+    {
+      "fact": "In database workloads, io_uring-enabled engines demonstrate up to 30% less CPU utilization and up to 5M+ IOPS with low queue depth.",
+      "source": "https://www.gocodeo.com/post/what-is-io-uring-high-performance-i-o-in-linux",
+      "date": "2024"
+    },
+    {
+      "fact": "Netflix discovered that when launching hundreds of container images in parallel, threads were spinning in the Linux kernel's VFS path lookup code, with 95.5% of CPU pipeline slots stalled on contested accesses.",
+      "source": "https://netflixtechblog.medium.com/mount-mayhem-at-netflix-scaling-containers-on-modern-cpus-f3b09b68beac",
+      "date": "2024"
+    },
+    {
+      "fact": "Netflix uses a GBRT model retrained every couple of hours on weeks of data to predict P95 CPU usage for container scheduling, incorporating contextual and time-series features from kernel CPU accounting.",
+      "source": "https://netflixtechblog.com/predictive-cpu-isolation-of-containers-at-netflix-91f014d856c7",
+      "date": "2024"
+    },
+    {
+      "fact": "Java 21 Virtual Threads improve performance by multiplexing many virtual threads onto a handful of OS threads. When a virtual thread enters a blocking call, it relinquishes its OS thread, allowing reassignment to other virtual threads.",
+      "source": "https://netflixtechblog.com/java-21-virtual-threads-dude-wheres-my-lock-3052540e231d",
+      "date": "2024"
+    },
+    {
+      "fact": "Cloudflare Workers use V8 isolates, which start in a few milliseconds and use a few megabytes of memory—around 100x faster and 10x-100x more memory efficient than typical containers.",
+      "source": "https://blog.cloudflare.com/sandboxing-ai-agents-100x-faster/",
+      "date": "2026"
+    },
+    {
+      "fact": "Cloudflare deploys internal modifications to V8 to use memory protection keys to isolate isolates from each other, giving each isolate a random key which protects its V8 heap data.",
+      "source": "https://blog.cloudflare.com/safe-in-the-sandbox-security-hardening-for-cloudflare-workers/",
+      "date": "2025"
+    },
+    {
+      "fact": "At the process level, Cloudflare applies sandboxing using Linux namespaces and seccomp to prohibit all access to the filesystem and network. Certain Workers are scheduled in separate processes for extra isolation.",
+      "source": "https://developers.cloudflare.com/workers/reference/security-model/",
+      "date": "2024"
+    },
+    {
+      "fact": "If one thread corrupts shared heap memory, every thread in that process sees the corruption. If one thread triggers a segmentation fault, the operating system terminates the entire process, killing all its threads.",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "date": "2024"
+    },
+    {
+      "fact": "SIGTERM (signal 15) is the preferred way to end a process because it allows graceful shutdown. The industry standard escalation path is: send SIGTERM, wait 10-30 seconds for cleanup, then send SIGKILL if needed.",
+      "source": "https://www.suse.com/c/observability-sigkill-vs-sigterm-a-developers-guide-to-process-termination/",
+      "date": "2024"
+    },
+    {
+      "fact": "SIGINT is generally used for user-initiated interrupts (Ctrl+C), while SIGTERM is sent by system schedulers for graceful shutdown. Both can be caught and handled; SIGKILL cannot be caught.",
+      "source": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-shutdown/",
+      "date": "2024"
+    },
+    {
+      "fact": "To diagnose EMFILE ('too many open files') errors, check soft limit with 'ulimit -n', hard limit with 'ulimit -Hn', open files for a process with 'lsof -p <PID>', and system-wide limits with 'cat /proc/sys/fs/file-max'.",
+      "source": "https://support.circleci.com/hc/en-us/articles/30553108286107-Handling-EMFILE-Too-Many-Open-Files-Error",
+      "date": "2024"
+    },
+    {
+      "fact": "Permanent EMFILE fixes on Linux involve modifying /etc/security/limits.conf instead of using temporary ulimit commands, ensuring limits persist across reboots.",
+      "source": "https://learn.microsoft.com/en-us/answers/questions/4164551/too-many-open-files-error-ulimit-alternative",
+      "date": "2024"
+    },
+    {
+      "fact": "In Node.js, using tmp.file({discardDescriptor: true}) closes the file descriptor immediately after creation, preventing EMFILE errors. Using fs-extra instead of fs in scripts provides better EMFILE error handling.",
+      "source": "https://oneuptime.com/blog/post/2026-01-22-nodejs-emfile-too-many-open-files/view",
+      "date": "2026"
+    }
+  ],
+  "examples": [
+    {
+      "description": "Netflix container scaling bottleneck (2024)",
+      "metric": "95.5% CPU pipeline slots stalled on contested kernel VFS locks during concurrent container launches",
+      "company": "Netflix",
+      "source": "https://netflixtechblog.medium.com/mount-mayhem-at-netflix-scaling-containers-on-modern-cpus-f3b09b68beac"
+    },
+    {
+      "description": "Redis single-threaded event-driven throughput",
+      "metric": "Millions of concurrent connections handled with epoll-based I/O multiplexing on a single thread",
+      "company": "Redis",
+      "source": "https://redixhumayun.github.io/async/2024/09/18/async-runtimes-part-ii.html"
+    },
+    {
+      "description": "Cloudflare Dynamic Workers performance",
+      "metric": "V8 isolates start in milliseconds and use megabytes—100x faster and 10-100x more memory efficient than containers",
+      "company": "Cloudflare",
+      "source": "https://blog.cloudflare.com/sandboxing-ai-agents-100x-faster/"
+    },
+    {
+      "description": "Database io_uring optimization (2024)",
+      "metric": "30% CPU reduction and up to 5M+ IOPS with low queue depth on io_uring-enabled database engines",
+      "company": "Multiple database vendors (tested)",
+      "source": "https://www.gocodeo.com/post/what-is-io-uring-high-performance-i-o-in-linux"
+    },
+    {
+      "description": "Event loop vs thread-per-request in Spring WebFlux",
+      "metric": "75% higher throughput, 68% lower memory on reactive model for I/O-bound caching; performance converges at CPU saturation",
+      "company": "Tested via MDPI study",
+      "source": "https://www.mdpi.com/2076-3417/16/1/90"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Process isolation is like having separate buildings with independent HVAC, electrical, and water systems. A fire in one building doesn't spread to others. A thread is like separate rooms in the same building sharing one HVAC system—fast to move between, but a leak in one room affects the whole building.",
+      "relates_to": "Process vs thread memory isolation"
+    },
+    {
+      "analogy": "Virtual address translation is like a mail address (virtual) that gets routed through postal codes and delivery zones (page tables) to find the actual house (physical memory). Different buildings can have the same street address in different cities (different processes can have the same virtual address in different page tables).",
+      "relates_to": "Virtual to physical address mapping"
+    },
+    {
+      "analogy": "Copy-on-Write fork is like photocopying a book: you don't actually copy every page upfront. Both copies point to the same physical pages. Only if you write a note in a margin (write to a page) does the kernel make a copy of that page just for your book.",
+      "relates_to": "Process creation with fork/exec"
+    },
+    {
+      "analogy": "The TLB (Translation Lookaside Buffer) is like a secretary's desk next to your desk with the 'phone-to-office' directory. If you context-switch to another office (another process), that secretary is cleared out and replaced—now your next 50 lookups are slow until the new secretary memorizes the new directory.",
+      "relates_to": "TLB flushing on context switch"
+    },
+    {
+      "analogy": "epoll is like having a mailbox that tells you 'a letter is here' when you ask it. You still have to open the mailbox, read, and respond. io_uring is like having the mailbox automatically sort letters and stack them on your desk in batches—you process them all in one go without checking the mailbox each time.",
+      "relates_to": "Readiness-based vs completion-based I/O"
+    },
+    {
+      "analogy": "An event loop is like a single cashier processing customers one at a time, switching to customer B while customer A is waiting for change (I/O-bound). When CPU-intensive work (like counting all the cash) is needed, the cashier gets stuck and everyone waits.",
+      "relates_to": "Event loop CPU saturation"
+    },
+    {
+      "analogy": "SIGTERM is like a polite knock on the door asking someone to leave. SIGKILL is like removing the door entirely—there's no way to ignore it or clean up.",
+      "relates_to": "OS signal handling for graceful shutdown"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Process creation overhead",
+      "value": "1-10ms",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "context": "Total time to allocate virtual address space, set up page tables, and create process metadata"
+    },
+    {
+      "metric": "Thread creation overhead",
+      "value": "10-100 microseconds",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "context": "Time to allocate stack and register with scheduler; 10-100x faster than process creation"
+    },
+    {
+      "metric": "Context switch overhead (process)",
+      "value": "1000-2000 CPU cycles",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "context": "TLB flush cost due to virtual memory space change"
+    },
+    {
+      "metric": "Context switch overhead (measured)",
+      "value": "2.7-5.48 microseconds",
+      "source": "https://blog.codingconfessions.com/p/context-switching-and-performance",
+      "context": "Measured overhead including cache miss penalties"
+    },
+    {
+      "metric": "TLB hit latency",
+      "value": "~1 nanosecond",
+      "source": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "context": "Address translation from cache"
+    },
+    {
+      "metric": "TLB miss latency",
+      "value": "~50 nanoseconds",
+      "source": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "context": "Address translation requiring page table walk; 50x slower than hit"
+    },
+    {
+      "metric": "TLB MPKI increase after context switch",
+      "value": "6X average increase",
+      "source": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "context": "Misses per thousand instructions in multi-threaded workloads"
+    },
+    {
+      "metric": "Thread stack size",
+      "value": "1-8 MB",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "context": "Per-thread memory allocation for function calls and local variables"
+    },
+    {
+      "metric": "32-bit virtual address space",
+      "value": "4 GB",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "context": "Maximum virtual memory per process on 32-bit systems"
+    },
+    {
+      "metric": "64-bit virtual address space",
+      "value": "128 TB",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "context": "Maximum virtual memory per process on 64-bit systems"
+    },
+    {
+      "metric": "Event loop vs thread throughput improvement",
+      "value": "75% higher",
+      "source": "https://www.mdpi.com/2076-3417/16/1/90",
+      "context": "I/O-bound caching scenarios; converges at CPU saturation"
+    },
+    {
+      "metric": "Event loop vs thread memory reduction",
+      "value": "68% lower memory",
+      "source": "https://www.mdpi.com/2076-3417/16/1/90",
+      "context": "I/O-bound caching scenarios"
+    },
+    {
+      "metric": "V8 isolate startup time",
+      "value": "Few milliseconds",
+      "source": "https://blog.cloudflare.com/sandboxing-ai-agents-100x-faster/",
+      "context": "Cloudflare Workers; 100x faster than containers"
+    },
+    {
+      "metric": "V8 isolate memory efficiency",
+      "value": "10-100x more efficient than containers",
+      "source": "https://blog.cloudflare.com/sandboxing-ai-agents-100x-faster/",
+      "context": "Memory use compared to containerized processes"
+    },
+    {
+      "metric": "Database io_uring CPU reduction",
+      "value": "Up to 30% less CPU",
+      "source": "https://www.gocodeo.com/post/what-is-io-uring-high-performance-i-o-in-linux",
+      "context": "io_uring-enabled database engines vs epoll"
+    },
+    {
+      "metric": "Database io_uring IOPS",
+      "value": "Up to 5M+ IOPS",
+      "source": "https://www.gocodeo.com/post/what-is-io-uring-high-performance-i-o-in-linux",
+      "context": "Low queue depth workloads on io_uring"
+    },
+    {
+      "metric": "Graceful shutdown timeout (industry standard)",
+      "value": "10-30 seconds",
+      "source": "https://www.suse.com/c/observability-sigkill-vs-sigterm-a-developers-guide-to-process-termination/",
+      "context": "Wait period after SIGTERM before escalating to SIGKILL"
+    },
+    {
+      "metric": "Netflix CPU pipeline slot stall",
+      "value": "95.5% stalled",
+      "source": "https://netflixtechblog.medium.com/mount-mayhem-at-netflix-scaling-containers-on-modern-cpus-f3b09b68beac",
+      "context": "During concurrent container launches on kernel VFS locks"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Async/await means the code after it runs in parallel.",
+      "reality": "Await simply resumes on the same event loop thread. The awaited work must be non-blocking. Parallel execution requires actual multi-threading or multi-processing.",
+      "source": "https://medium.com/@sonampatel_97163/the-event-loop-lie-why-your-async-code-still-blocks-dbc19a71af1e"
+    },
+    {
+      "misconception": "The event loop automatically scales smoothly as load increases.",
+      "reality": "A single-threaded event loop can still become overwhelmed under heavy load. Any big synchronous task will stall the entire queue.",
+      "source": "https://medium.com/@vasanthancomrads/node-js-event-loop-behavior-under-heavy-load-32ddc6eabd73"
+    },
+    {
+      "misconception": "A single thread can saturate modern hardware like a PCIe 5.0 SSD.",
+      "reality": "The CPU time of a single thread is insufficient to saturate contemporary hardware. Significant parallelism via multi-threading is strictly required.",
+      "source": "https://medium.com/@sonampatel_97163/the-event-loop-lie-why-your-async-code-still-blocks-dbc19a71af1e"
+    },
+    {
+      "misconception": "Threads in the same process are as isolated as separate processes.",
+      "reality": "Threads share the same heap and file descriptors. One thread corrupting memory corrupts it for all threads. One thread crashing crashes the entire process.",
+      "source": "https://www.backblaze.com/blog/whats-the-diff-programs-processes-and-threads/"
+    },
+    {
+      "misconception": "Process creation is inherently slow.",
+      "reality": "Modern Linux uses Copy-on-Write fork, making process creation fast (1-10ms). The fork-exec pattern avoids copying altogether in many cases.",
+      "source": "https://dev.to/farhadrahimiklie/understanding-fork-in-linux-how-process-creation-really-works-13id"
+    },
+    {
+      "misconception": "Context switching between threads has the same overhead as between processes.",
+      "reality": "Thread context switching preserves the TLB and CPU cache. Process context switching requires a TLB flush, adding 1000-2000 CPU cycles of overhead.",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation"
+    },
+    {
+      "misconception": "io_uring always outperforms epoll.",
+      "reality": "Performance depends on workload: io_uring wins on ping-pong (low-depth) workloads, epoll wins on streaming (high-depth) workloads.",
+      "source": "https://github.com/axboe/liburing/issues/536"
+    },
+    {
+      "misconception": "setTimeout(fn, 0) makes code non-blocking.",
+      "reality": "setTimeout only schedules later. The function can still block the event loop.",
+      "source": "https://medium.com/@sonampatel_97163/the-event-loop-lie-why-your-async-code-still-blocks-dbc19a71af1e"
+    },
+    {
+      "misconception": "Event loops eliminate the need for threads entirely.",
+      "reality": "Event loops excel at I/O-bound workloads but struggle with CPU-intensive tasks. Hybrid approaches (thread pools for CPU work, event loop for I/O) are often optimal.",
+      "source": "https://dzone.com/articles/spring-webflux-eventloop-vs-thread-per-request-mod"
+    },
+    {
+      "misconception": "Virtual addresses are the same across all processes for the same value.",
+      "reality": "The same virtual address in different processes maps to different physical pages via separate page tables.",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/memory-management/virtual-memory-fundamentals-address-translation-process-isolation"
+    },
+    {
+      "misconception": "SIGKILL is the standard way to terminate a process gracefully.",
+      "reality": "SIGKILL cannot be caught or handled. SIGTERM is the standard graceful termination signal; the process can clean up before exiting.",
+      "source": "https://www.suse.com/c/observability-sigkill-vs-sigterm-a-developers-guide-to-process-termination/"
+    },
+    {
+      "misconception": "ULIMIT changes with 'ulimit -n' persist across reboots.",
+      "reality": "Temporary ulimit changes are session-specific. Permanent fixes require modifying /etc/security/limits.conf on Linux.",
+      "source": "https://learn.microsoft.com/en-us/answers/questions/4164551/too-many-open-files-error-ulimit-alternative"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "title": "Process vs Thread: Core Architecture and Isolation",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://medium.com/@Ibraheemcisse/copy-on-write-why-linux-process-creation-is-lightning-fast-90cf08644504",
+      "title": "Copy-on-Write: Why Linux Process Creation is Lightning Fast",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "title": "A Guide to Operating Systems - Translation Lookaside Buffer",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://blog.codingconfessions.com/p/context-switching-and-performance",
+      "title": "Context Switching and Performance: What Every Developer Should Know",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.shayon.dev/post/2026/65/linux-page-faults-mmap-and-userfaultfd/",
+      "title": "Linux Page Faults, mmap, and userfaultfd",
+      "date": "2026",
+      "recency": "Current"
+    },
+    {
+      "url": "https://tuhuynh.com/en/posts/nio-under-the-hood/",
+      "title": "Asynchronous Non-blocking I/O under the hood: poll, select, epoll/kqueue",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://redixhumayun.github.io/async/2024/09/18/async-runtimes-part-ii.html",
+      "title": "Async Runtimes Part II",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.mdpi.com/2076-3417/16/1/90",
+      "title": "Extending the Migration from Asynchronous to Reactive Programming in Java",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.alibabacloud.com/blog/io-uring-vs--epoll-which-is-better-in-network-programming_599544",
+      "title": "io_uring vs. epoll – Which Is Better in Network Programming?",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://netflixtechblog.medium.com/mount-mayhem-at-netflix-scaling-containers-on-modern-cpus-f3b09b68beac",
+      "title": "Mount Mayhem at Netflix: Scaling Containers on Modern CPUs",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://netflixtechblog.com/predictive-cpu-isolation-of-containers-at-netflix-91f014d856c7",
+      "title": "Predictive CPU isolation of containers at Netflix",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://netflixtechblog.com/java-21-virtual-threads-dude-wheres-my-lock-3052540e231d",
+      "title": "Java 21 Virtual Threads - Dude, Where's My Lock?",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/sandboxing-ai-agents-100x-faster/",
+      "title": "Sandboxing AI agents, 100x faster",
+      "date": "2026",
+      "recency": "Current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/safe-in-the-sandbox-security-hardening-for-cloudflare-workers/",
+      "title": "Safe in the sandbox: security hardening for Cloudflare Workers",
+      "date": "2025",
+      "recency": "Current"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/reference/security-model/",
+      "title": "Security model · Cloudflare Workers docs",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.suse.com/c/observability-sigkill-vs-sigterm-a-developers-guide-to-process-termination/",
+      "title": "SIGKILL vs SIGTERM: Master Process Termination in Linux and Kubernetes",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-shutdown/",
+      "title": "SIGTERM : Linux Graceful Termination",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://support.circleci.com/hc/en-us/articles/30553108286107-Handling-EMFILE-Too-Many-Open-Files-Error",
+      "title": "Handling EMFILE: Too Many Open Files Error",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/answers/questions/4164551/too-many-open-files-error-ulimit-alternative",
+      "title": "Too many open files error -ulimit alternative",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-22-nodejs-emfile-too-many-open-files/view",
+      "title": "How to Fix Error: EMFILE: too many open files in Node.js",
+      "date": "2026",
+      "recency": "Current"
+    },
+    {
+      "url": "https://medium.com/@sonampatel_97163/the-event-loop-lie-why-your-async-code-still-blocks-dbc19a71af1e",
+      "title": "The Event Loop Lie: Why Your Async Code Still Blocks",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://medium.com/@vasanthancomrads/node-js-event-loop-behavior-under-heavy-load-32ddc6eabd73",
+      "title": "Node.js Event Loop Behavior Under Heavy Load",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://dzone.com/articles/spring-webflux-eventloop-vs-thread-per-request-mod",
+      "title": "Spring Webflux: EventLoop vs Thread Per Request Model",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://github.com/axboe/liburing/issues/536",
+      "title": "Yet another comparison between io_uring and epoll on network performance",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.gocodeo.com/post/what-is-io-uring-high-performance-i-o-in-linux",
+      "title": "What Is io_uring? High-Performance I/O in Linux",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.backblaze.com/blog/whats-the-diff-programs-processes-and-threads/",
+      "title": "Threads vs. Processes: How They Work Within Your Program",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://dev.to/farhadrahimiklie/understanding-fork-in-linux-how-process-creation-really-works-13id",
+      "title": "Understanding `fork()` in Linux: How Process Creation Really Works",
+      "date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.site24x7.com/learn/linux/page-faults-memory-swapping.html",
+      "title": "Understanding and troubleshooting page faults and memory swapping",
+      "date": "2024",
+      "recency": "Current"
+    }
+  ]
+}

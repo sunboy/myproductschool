@@ -1,0 +1,22 @@
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { NextResponse } from 'next/server'
+
+export async function GET() {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const admin = createAdminClient()
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - 84)
+
+  const { data } = await admin
+    .from('user_streaks')
+    .select('date')
+    .eq('user_id', user.id)
+    .gte('date', cutoff.toISOString().split('T')[0])
+    .order('date')
+
+  return NextResponse.json({ dates: (data ?? []).map(r => r.date) })
+}

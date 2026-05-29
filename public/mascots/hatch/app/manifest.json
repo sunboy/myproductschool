@@ -1,0 +1,73 @@
+{
+  "id": "hackproduct-hatch-app",
+  "displayName": "HackProduct Hatch",
+  "description": "Official Hatch mascot state atlas for HackProduct app surfaces.",
+  "sourceImage": "/Users/sandeep/Documents/hackproduct-marketing/mascot.png",
+  "spritesheetPath": "/mascots/hatch/app/spritesheet.webp",
+  "cellWidth": 192,
+  "cellHeight": 208,
+  "columns": 8,
+  "rows": 10,
+  "states": {
+    "idle": {
+      "row": 0,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "listening": {
+      "row": 1,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "thinking": {
+      "row": 2,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "speaking": {
+      "row": 3,
+      "frames": 8,
+      "fps": 13,
+      "loop": true
+    },
+    "celebrating": {
+      "row": 4,
+      "frames": 8,
+      "fps": 11,
+      "loop": true
+    },
+    "waiting": {
+      "row": 5,
+      "frames": 8,
+      "fps": 7,
+      "loop": true
+    },
+    "failed": {
+      "row": 6,
+      "frames": 8,
+      "fps": 7,
+      "loop": true
+    },
+    "clapping": {
+      "row": 7,
+      "frames": 8,
+      "fps": 13,
+      "loop": true
+    },
+    "interview-listening": {
+      "row": 8,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "interview-speaking": {
+      "row": 9,
+      "frames": 8,
+      "fps": 13,
+      "loop": true
+    }
+  }
+}

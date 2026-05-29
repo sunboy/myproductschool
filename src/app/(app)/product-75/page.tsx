@@ -64,12 +64,12 @@ export default async function Product75Page() {
   const progressPct = Math.round((masteredCount / 75) * 100)
 
   return (
-    <div className="flex max-w-[1440px] mx-auto px-8 py-10 gap-10">
+    <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:gap-10 lg:px-8 lg:py-10">
       {/* Main Content */}
       <main className="flex-1 min-w-0">
         {/* Header Section */}
         <section className="mb-10">
-          <div className="flex items-end justify-between mb-4">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="font-headline text-[36px] font-[800] leading-none text-on-surface">
                 Product{' '}
@@ -81,11 +81,11 @@ export default async function Product75Page() {
                 The essential product vocabulary
               </p>
             </div>
-            <div className="text-right">
+            <div className="w-full sm:w-auto sm:text-right">
               <span className="font-label text-xs uppercase tracking-widest font-bold text-primary mb-2 block">
                 {masteredCount} of 75 mastered
               </span>
-              <div className="w-64 h-2 bg-surface-container rounded-full overflow-hidden">
+              <div className="h-2 w-full max-w-64 overflow-hidden rounded-full bg-surface-container sm:w-64">
                 <div
                   className="h-full bg-primary-container"
                   style={{ width: `${progressPct}%` }}
@@ -97,9 +97,9 @@ export default async function Product75Page() {
 
         {/* Filter Row */}
         <section className="flex flex-wrap items-center gap-4 mb-8">
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <input
-              className="bg-surface-container-lowest border-none rounded-full pl-10 pr-6 py-2.5 text-sm ghost-border focus:ring-2 focus:ring-primary/20 w-72 transition-all editorial-shadow"
+              className="w-full rounded-full border-none bg-surface-container-lowest py-2.5 pl-10 pr-6 text-sm transition-all ghost-border editorial-shadow focus:ring-2 focus:ring-primary/20 sm:w-72"
               placeholder="Search concept..."
               type="text"
               readOnly
@@ -270,7 +270,7 @@ export default async function Product75Page() {
             <p className="font-body text-sm leading-relaxed text-on-secondary-container/80">
               Focus on{' '}
               <span className="font-bold text-on-secondary-container">Engagement</span>{' '}
-              next &mdash; it will help with your challenge scores.
+              next - it will help with your challenge scores.
             </p>
             <button className="mt-4 w-full bg-on-secondary-container text-secondary-container font-bold py-2 rounded-md text-xs uppercase tracking-widest hover:bg-on-secondary-container/90 transition-colors">
               View Engagement

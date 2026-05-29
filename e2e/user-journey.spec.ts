@@ -40,12 +40,12 @@ test('Full user journey', async ({ page }) => {
   await page.screenshot({ path: ss('04-explore-hub'), fullPage: true })
 
   // ── 4. Product Autopsies (Showcase) ──────────────────────────────────
-  await page.goto(`${BASE_URL}/explore/showcase`)
+  await page.goto(`${BASE_URL}/explore/autopsies`)
   await page.waitForLoadState('networkidle')
   await page.screenshot({ path: ss('05-showcase-grid'), fullPage: true })
 
   // Click first product card
-  const firstCard = page.locator('a[href*="/explore/showcase/"]').first()
+  const firstCard = page.locator('a[href*="/explore/autopsies/"]').first()
   const productHref = await firstCard.getAttribute('href')
   await firstCard.click()
   await page.waitForLoadState('networkidle')
@@ -125,7 +125,7 @@ test('Full user journey', async ({ page }) => {
   await page.waitForTimeout(1000)
   await page.screenshot({ path: ss('16-dashboard-mobile'), fullPage: true })
 
-  await page.goto(`${BASE_URL}/explore/showcase`)
+  await page.goto(`${BASE_URL}/explore/autopsies`)
   await page.waitForLoadState('networkidle')
   await page.screenshot({ path: ss('17-showcase-mobile'), fullPage: true })
 

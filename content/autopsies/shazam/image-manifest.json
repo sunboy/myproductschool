@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "shazam",
+  "story_slug": "shazam",
+  "story_title": "Shazam",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/shazam/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/shazam/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a phone up to a speaker with a song title appearing above it, representing Shazam's core gesture.",
+      "caption": "Hatch holding a phone up to a speaker with a song title appearing above it, representing Shazam's core gesture.",
+      "prompt": "Shazam | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) holding up a phone to an oversized speaker, with a musical note and song title appearing magically above the phone. Expression is delighted and curious. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/shazam/hero.png",
+      "generated_image_sha256": "23c379d87fddd9f28d71b7d087fd3ddc4d52fa653cbf258b5e4c8d2833d7f1ff",
+      "final_image_sha256": "863d7ed297d72742840e7de99a439a780f0c60a42f757ec789f22dd7fb117630",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/shazam/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/shazam/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/shazam/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a crowd where everyone holds up a phone toward a speaker, highlighting the universal Shazam gesture.",
+      "caption": "Hatch in a crowd where everyone holds up a phone toward a speaker, highlighting the universal Shazam gesture.",
+      "prompt": "Shazam | hatch-narrator: Hatch in narrator pose, standing in a crowd scene (a bar or a party) where everyone is holding up their phone toward a speaker. Hatch is pointing at the gesture as if saying \"this is the moment.\" Cream background version of the scene, simplified crowd silhouettes. No speech. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/shazam/hatch-narrator.png",
+      "generated_image_sha256": "8bdcd04364e29b227106a1fa4015c4189ebf30381773caa2a9a2c60b4577f906",
+      "final_image_sha256": "973eaef1f8d509573f4a9a0b59ef04e726575c121fc6e22aeaa965612be6d4bc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/shazam/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/shazam/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/shazam/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a diagram of Shazam's audio fingerprinting pipeline from waveform to song title.",
+      "caption": "Hatch examining a diagram of Shazam's audio fingerprinting pipeline from waveform to song title.",
+      "prompt": "Shazam | failure-mechanism: Hatch in thinking pose, looking at a diagram showing: audio waveform → spectrogram → peak coordinates → database match → song title. Each step is a simple visual node connected by arrows. Clean technical diagram style. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/shazam/failure-mechanism.png",
+      "generated_image_sha256": "9da24c9d87936e7693da89b053814df92653911b6db3fafc0e3c4deeca457e5f",
+      "final_image_sha256": "0b17af8a5eaf72f7f30bdbf3cfb11609a10f4387deca024f61b43e3fac500142",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/shazam/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/shazam/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/shazam/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a timeline showing Shazam's journey from SMS in 2002 to Apple acquisition in 2018.",
+      "caption": "Hatch pointing at a timeline showing Shazam's journey from SMS in 2002 to Apple acquisition in 2018.",
+      "prompt": "Shazam | evidence-card: Hatch pointing at a simple timeline bar showing Shazam across three eras: \"2002 (SMS)\" → \"2008 (App Store)\" → \"2018 (Apple)\" with a download count growing alongside. Cream background, minimal style. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/shazam/evidence-card.png",
+      "generated_image_sha256": "e7019815e7f30a409a790431496d4c738809584f4e688a00b722e2c2b994a0fc",
+      "final_image_sha256": "f6f72e1fe6c91c1b2ab56d6a74cc05401db3c9db5d9f85776629fee71475387b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/shazam/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/shazam/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/shazam/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a multi-directional signpost, facing the simple Song ID arrow among many expanded-product options.",
+      "caption": "Hatch beside a multi-directional signpost, facing the simple Song ID arrow among many expanded-product options.",
+      "prompt": "Shazam | lesson-frame: Hatch in calm coaching pose, standing beside a signpost with many arrows pointing in different directions (social, music player, playlist, radio) — and one arrow pointing straight ahead labeled simply \"song ID.\" Hatch is facing the straight-ahead arrow. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/shazam/lesson-frame.png",
+      "generated_image_sha256": "6b79ad28c3655b21f35d7fec47e4be11f898ce77d0625e8a6f3a19f78f85effc",
+      "final_image_sha256": "403bf3096c3cc74f402a8a5f954c5894f505ac21a7b41a3a796c108ccff902db",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/shazam/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/shazam/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/shazam/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small phone up to a small speaker, thumbnail version.",
+      "caption": "Hatch holding a small phone up to a small speaker, thumbnail version.",
+      "prompt": "Hatch mascot small and recognizable, holding a tiny phone up to a tiny speaker. Cream background, no text. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/shazam/hero.png",
+      "generated_image_sha256": "23c379d87fddd9f28d71b7d087fd3ddc4d52fa653cbf258b5e4c8d2833d7f1ff",
+      "final_image_sha256": "7f7c778563746b86c03ce0d3dcea01a6c5b262b447f8faf0d626acec50420f27",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/shazam/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/shazam/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/shazam/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding phone up to speaker with song title appearing, for social sharing card.",
+      "caption": "Hatch holding phone up to speaker with song title appearing, for social sharing card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG card: holding the phone up toward the speaker with the song title appearing above. Title text area below Hatch. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/shazam/hero.png",
+      "generated_image_sha256": "23c379d87fddd9f28d71b7d087fd3ddc4d52fa653cbf258b5e4c8d2833d7f1ff",
+      "final_image_sha256": "4fc8b8053acfdf20fb56e5065dc97a9672bd3197219ad6d4e6cb0db57848d3de",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/shazam/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/shazam/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/shazam/v1"
+}

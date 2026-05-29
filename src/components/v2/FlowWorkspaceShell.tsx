@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { ChallengePaywallGate } from '@/components/paywalls/ChallengePaywallGate'
 import { useUpgrade } from '@/hooks/useUpgrade'
 
-interface FlowWorkspaceShellProps {
+export interface FlowWorkspaceShellProps {
   challengeId: string
   challengeSlug?: string
   initialRoleId: UserRoleV2

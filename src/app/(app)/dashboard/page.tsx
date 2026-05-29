@@ -8,10 +8,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import {
   getHotChallenges,
   getLeaderboardPeek,
-  getMoveLevel,
   getLatestInterview,
 } from '@/lib/data/dashboard'
+import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
+import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
 import { HeroGreeterCard } from '@/components/dashboard/cards/HeroGreeterCard'
@@ -19,6 +20,7 @@ import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsC
 import { LatestInterviewCard } from '@/components/dashboard/cards/LatestInterviewCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
+import { CommunityActivityCard } from '@/components/dashboard/cards/CommunityActivityCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
 import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
@@ -27,6 +29,8 @@ import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarC
 import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
 import { DisciplineExplorer } from '@/components/flow-disciplines'
 import { BillingDashboardNudge } from '@/components/billing/BillingDashboardNudge'
+import { FeaturedAutopsyCard } from '@/components/dashboard/cards/FeaturedAutopsyCard'
+import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
@@ -41,15 +45,19 @@ function getGreeting(): string {
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
 function moveHatchInsight(move: string, level: number): string {
-  if (level <= 2) return `You're building your ${move} foundation — this challenge is the right next rep.`
-  if (level <= 5) return `Your ${move} move needs reps at this difficulty — push through it.`
+  if (level <= 2) return `You're building your ${move} foundation. This challenge is the right next rep.`
+  if (level <= 5) return `Your ${move} move needs reps at this difficulty. Push through it.`
   return `Strong overall. This sharpens your ${move} edge.`
 }
 
+// Returns DB values used by `.in('difficulty', ...)` queries. Expands to the
+// union of legacy and canonical strings so the query works pre- and post-R2.
 function targetDifficulties(avgXp: number): string[] {
-  if (avgXp < 100) return ['warmup', 'standard']
-  if (avgXp < 300) return ['standard', 'advanced']
-  return ['advanced', 'staff_plus']
+  let buckets: PracticeDifficulty[]
+  if (avgXp < 100) buckets = ['easy', 'medium']
+  else if (avgXp < 300) buckets = ['medium', 'hard']
+  else buckets = ['hard']
+  return expandDifficultiesForQuery(buckets)
 }
 
 type RawChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domain?: { title: string }[] | { title: string } | null }
@@ -67,19 +75,12 @@ function getPersonalizedGreeting(displayName: string, streakDays: number, lastAt
   if (!isCalibrated) return `Welcome, ${displayName}!`
   const today = new Date().toISOString().split('T')[0]
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-  if (streakDays >= 7) return `${base}, ${displayName} — ${streakDays} days strong.`
+  if (streakDays >= 7) return `${base}, ${displayName}: ${streakDays} days strong.`
   if (lastAttemptDate === today) return `${base}, ${displayName}! You're already on a roll today.`
-  if (lastAttemptDate === yesterday && streakDays > 1) return `${base}, ${displayName} — don't break your ${streakDays}-day streak.`
+  if (lastAttemptDate === yesterday && streakDays > 1) return `${base}, ${displayName}: don't break your ${streakDays}-day streak.`
   if (!lastAttemptDate || streakDays === 0) return `Welcome back, ${displayName}! Ready to get back into it?`
   return `${base}, ${displayName}!`
 }
-
-function getDailyGoalMessage(dailyDone: number): string {
-  if (dailyDone === 0) return 'Try a challenge — hit your daily goal of 5.'
-  if (dailyDone >= 5) return 'Daily goal hit! You\'re ahead of most learners today.'
-  return `${dailyDone} done today, ${5 - dailyDone} to go for your daily goal.`
-}
-
 
 function LockedMoveLevels() {
   const moves = ['Frame', 'List', 'Optimize', 'Win']
@@ -133,7 +134,7 @@ function HatchOperatingSystemCard() {
     {
       label: 'Autopsies',
       sub: 'Read the decision trees behind real products.',
-      href: '/explore/showcase',
+      href: '/explore/autopsies',
       icon: 'biotech',
       tone: '#c9933a',
     },
@@ -143,6 +144,7 @@ function HatchOperatingSystemCard() {
     <section
       className="rounded-[24px] border border-outline-variant/50 bg-surface-container-low p-4 sm:p-5"
       aria-label="Hatch operating system"
+      data-hatch-target="dashboard-hatch-os"
     >
       <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
         <div>
@@ -240,20 +242,31 @@ export default async function DashboardPage() {
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  const [hotChallenges, leaderboard, moveLevels, enrolledPlans, latestInterview] = await Promise.all([
+  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, featuredAutopsy, activePlanResult] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
-    userId ? getMoveLevel(userId) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
+    userId ? getCommunityActivityFeed(6) : [],
+    getFeaturedAutopsyForDashboard(),
+    userId
+      ? adminClient
+          .from('user_study_plans')
+          .select('study_plans(slug)')
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
+
+  const activePlanSlug = (activePlanResult?.data?.study_plans as unknown as { slug: string } | null)?.slug ?? null
 
   // Fetch paused loops for PausedLoopCard
   let pausedLoopData: { loop: Record<string, unknown>; rounds: Record<string, unknown>[] } | null = null
   try {
     const { data: pausedLoops } = await adminClient
       .from('interview_loops' as string)
-      .select('*')
+      .select('id, user_id, status, created_at, updated_at, scenario_id, company_id, round_count, config')
       .eq('user_id', userId)
       .eq('status', 'paused')
       .order('created_at', { ascending: false })
@@ -262,7 +275,7 @@ export default async function DashboardPage() {
     if (pausedLoops?.length) {
       const { data: rounds } = await adminClient
         .from('loop_rounds' as string)
-        .select('*')
+        .select('id, loop_id, round_index, status, score, feedback_json, created_at, updated_at')
         .eq('loop_id', (pausedLoops[0] as { id: string }).id)
         .order('round_index', { ascending: true })
       pausedLoopData = { loop: pausedLoops[0] as Record<string, unknown>, rounds: rounds ?? [] }
@@ -279,7 +292,10 @@ export default async function DashboardPage() {
 
   if (userId && isCalibrated) {
     const now = new Date()
-    const todayStr = now.toISOString().split('T')[0]
+    // Use local date parts to avoid UTC offset shifting dates
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const localDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    const todayStr = localDate(now)
     const dayOfWeek = now.getDay()
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
     const weekStart = new Date(now)
@@ -290,7 +306,7 @@ export default async function DashboardPage() {
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart)
       d.setDate(weekStart.getDate() + i)
-      weekDateStrings.push(d.toISOString().split('T')[0])
+      weekDateStrings.push(localDate(d))
     }
 
     const [achievementsResult, streakResult, todayAttemptsResult, userAchievements] = await Promise.all([
@@ -420,7 +436,7 @@ export default async function DashboardPage() {
     nextChallenge = normalizeChallenge(fallbackChallenge ?? null)
   }
 
-  // Attach rule-based insight from move level data — no AI call
+  // Attach rule-based insight from move level data; no AI call.
   if (nextChallenge && allMoveLevels.length > 0) {
     const weakestLevel = allMoveLevels[0].level ?? 1
     nextChallenge = { ...nextChallenge, hatch_insight: moveHatchInsight(weakestMove, weakestLevel) }
@@ -441,7 +457,10 @@ export default async function DashboardPage() {
         icon: 'bolt',
         done: doneQuickTake,
         active: !doneQuickTake,
-        href: quickTakePrompt ? `/workspace/challenges/${quickTakePrompt.slug ?? quickTakePrompt.id}` : undefined,
+        // Quick-takes are answered inline on the dashboard card below, not in
+        // the workspace (that route redirects quick_take → /challenges). Anchor
+        // to the card so the step lands on something usable.
+        href: '/dashboard#quick-take',
       },
       {
         label: 'Core challenge',
@@ -471,6 +490,8 @@ export default async function DashboardPage() {
   const interviews: UserInterview[] = interviewDate
     ? [{ id: '0', user_id: userId, company: null, role: null, round: null, interview_date: interviewDate, notes: null, created_at: interviewDate }]
     : []
+  const hasFollowUpCards = Boolean(latestInterview || enrolledPlans.length > 0)
+  const showSplitFollowUps = Boolean(latestInterview && enrolledPlans.length > 0)
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7">
@@ -479,17 +500,17 @@ export default async function DashboardPage() {
         <UpgradedBanner />
       </Suspense>
 
-      {/* State A — Calibrated */}
+      {/* State A: Calibrated */}
       {isCalibrated && (
-        <div className="grid gap-7 grid-cols-1 lg:grid-cols-[1fr_340px]">
+        <div className="grid min-w-0 grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_340px]">
           {/* Main column */}
           <div className="flex flex-col gap-6 min-w-0">
             <HeroGreeterCard
               displayName={displayName}
               streakDays={streakDays}
               xpTotal={xpTotal}
-              nextMilestoneMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
-              nextMilestoneLevel={(allMoveLevels[0]?.level ?? 1) + 1}
+              focusMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
+              focusLevel={allMoveLevels[0]?.level ?? 1}
               dailyDone={dailyDone}
               sessionHref={
                 nextChallenge
@@ -503,39 +524,61 @@ export default async function DashboardPage() {
 
             <HatchOperatingSystemCard />
 
+            {featuredAutopsy && (
+              <FeaturedAutopsyCard story={featuredAutopsy.story} company={featuredAutopsy.company} />
+            )}
+
             {/* FLOW Disciplines explorer card */}
             <DisciplineExplorer />
 
             {/* Resume / Quick Take row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <QuickTakeCard
-                prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
-                challengeId={quickTakePrompt?.id ?? 'orientation'}
-                hatchContext={null}
-              />
-              <NextChallengeCard
-                title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
-                domain={nextChallenge?.domainName ?? 'Product Strategy'}
-                difficulty={nextChallenge?.difficulty ?? 'standard'}
-                challengeId={nextChallenge?.slug ?? nextChallenge?.id ?? 'orientation'}
-                hatchInsight={nextChallenge?.hatch_insight ?? null}
-              />
+              {/* scroll-mt offsets the fixed top bar when linked via #quick-take */}
+              <div id="quick-take" className="scroll-mt-24">
+                <QuickTakeCard
+                  prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
+                  challengeId={quickTakePrompt?.id ?? 'orientation'}
+                  hatchContext={null}
+                />
+              </div>
+              {nextChallenge?.domainName ? (
+                <NextChallengeCard
+                  title={nextChallenge.title}
+                  domain={nextChallenge.domainName}
+                  difficulty={nextChallenge.difficulty ?? 'standard'}
+                  challengeId={nextChallenge.slug ?? nextChallenge.id}
+                  hatchInsight={nextChallenge.hatch_insight ?? null}
+                  activePlanSlug={activePlanSlug}
+                />
+              ) : (
+                <NextChallengeCard
+                  title="Designing a Metric Dashboard for a B2B SaaS Tool"
+                  domain="Product Sense"
+                  difficulty="standard"
+                  challengeId="orientation"
+                  hatchInsight={null}
+                  activePlanSlug={activePlanSlug}
+                />
+              )}
             </div>
 
             {/* FLOW Move Levels */}
             <FlowMoveLevelsCard levels={allMoveLevels} />
 
-            {/* Latest Interview — conditional on having a completed debrief */}
-            {latestInterview && <LatestInterviewCard data={latestInterview} />}
-
-            {/* Enrolled Study Plans */}
-            {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
+            {hasFollowUpCards && (
+              <div className={`grid grid-cols-1 gap-4 ${showSplitFollowUps ? 'xl:grid-cols-2' : 'xl:max-w-[640px]'}`}>
+                {latestInterview && <LatestInterviewCard data={latestInterview} />}
+                {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
+              </div>
+            )}
 
             {/* Secondary row */}
             <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
               <HotChallengesCard challenges={hotChallenges} />
               <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
             </div>
+
+            <CommunityActivityCard events={communityActivity} />
 
             {/* Interview Countdown — conditional */}
             {interviewDate && (
@@ -544,7 +587,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Right rail */}
-          <aside className="hidden lg:flex flex-col gap-5">
+          <aside className="hidden min-w-0 flex-col gap-5 lg:flex">
             {todaysPathSteps.length > 0 && (
               <TodaysPathCard steps={todaysPathSteps} completedCount={todaysPathCompleted} />
             )}
@@ -568,7 +611,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* State B — Uncalibrated */}
+      {/* State B: Uncalibrated */}
       {!isCalibrated && (
         <div className="space-y-4">
           {/* Hatch Greeting Bar */}
@@ -585,6 +628,9 @@ export default async function DashboardPage() {
             </div>
           </div>
           <CalibrationHero />
+          {featuredAutopsy && (
+            <FeaturedAutopsyCard story={featuredAutopsy.story} company={featuredAutopsy.company} />
+          )}
           <LockedMoveLevels />
           <HotChallengesCard challenges={hotChallenges} />
         </div>

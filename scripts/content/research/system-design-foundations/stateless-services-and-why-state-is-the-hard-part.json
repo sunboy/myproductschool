@@ -1,0 +1,325 @@
+{
+  "facts": [
+    {
+      "fact": "A typical read-write ratio across most databases is 70% reads / 30% writes, though this varies significantly by application type (100% read for backups, 100% write for logging, 60/40 for transaction mixes)",
+      "source": "https://benchant.com/blog/workload-read-write-ratio",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Netflix's original monolith forced all new microservices to be stateless by design — any instance can handle any request, using EVCache (memcached-based) for session data and JWT tokens for secure stateless sessions",
+      "source": "https://www.confluent.io/blog/how-kafka-is-used-by-netflix/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "MongoDB throughput on 90% read workload is over 50% higher than on 90% write workload; read-heavy vs write-heavy databases show differences up to 50% in throughput at the same load",
+      "source": "https://benchant.com/blog/workload-read-write-ratio",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Organizations using hybrid stateless-stateful architectures (mixed patterns) cut operational costs by 30% and boost application performance by 25%, per Gartner",
+      "source": "https://aerospike.com/blog/stateful-vs-stateless-architecture-guide/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "YouTube's architecture relies on 3 pillars: stateless web servers, replication via sharding (Vitess), and partitioning via Bigtable; this design handled 2.5 billion users with 3,000+ edge locations globally",
+      "source": "https://www.vdocipher.com/blog/youtube-tech-stack-architecture/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Average QPS formula: (DAU × actions per user per day) / 86,400 seconds. Peak QPS typically multiplies average by 2-3x using Pareto principle (80% of traffic in 20% of time)",
+      "source": "https://designgurus.substack.com/p/the-5-step-capacity-estimation-worksheet",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "A typical web server handles 1,000–2,000 QPS; for high availability, provision N+1 or 2N servers for redundancy and failover coverage",
+      "source": "https://dev.to/carrie_luo1/qps-for-beginners-4n8",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "AWS RDS Proxy connection pooling prevents connection exhaustion; any statement >16 KB causes session pinning to the current connection, which affects stateless service design",
+      "source": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Default MySQL max_connections is 151; each connection consumes memory. PostgreSQL's max_connections affects shared memory usage and must be balanced against OS capabilities",
+      "source": "https://releem.com/docs/mysql-performance-tuning/max_connections",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Redis holds 82% market share in in-memory data stores (up from 75% in 2024); Memcached offers zero persistence while Redis offers RDB snapshots and AOF durability for session stores",
+      "source": "https://tech-insider.org/redis-vs-memcached-2026/",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "CAP theorem states in distributed systems you must choose two of three: Consistency, Availability, or Partition Tolerance. In practice, partition tolerance is mandatory, so you choose CP (banking) or AP (e-commerce)",
+      "source": "https://www.bmc.com/blogs/cap-theorem/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Stripe's Payment Intents API uses idempotency keys and distributed state machines with 'pending' → 'processing' → 'succeeded'/'failed' transitions across multiple services; idempotent retries prevent duplicate charges",
+      "source": "https://dev.to/sgchris/building-a-payment-system-like-stripe-or-rapyd-architecture-challenges-and-key-components-3mlf",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "DynamoDB eventual consistency reads cost 50% less than strongly consistent reads; eventually consistent reads may return stale data, while strongly consistent reads guarantee latest data",
+      "source": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "High cardinality in time-series databases (Prometheus, InfluxDB, Elasticsearch) causes index explosion: 10,000+ unique combinations overwhelm metadata indices and degrade query performance by 30–50%",
+      "source": "https://db-news.com/influxdbs-high-cardinality-challenge-a-deep-dive-into-the-tsm-storage-engine",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Bridge tables in data modeling solve many-to-many relationships but increase cardinality, storage size, and index complexity; should only be used when business value justifies the cost",
+      "source": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Netflix global architecture",
+      "detail": "Netflix replaced sticky-session server state with EVCache (distributed memcached) for user watches, preferences, and ratings. Any API instance can serve any user. JWT tokens eliminate session lookups entirely for auth. Handles 300+ million concurrent viewers.",
+      "source": "https://rockybhatia.substack.com/p/inside-netflixs-architecture-how"
+    },
+    {
+      "scenario": "YouTube video transcoding pipeline",
+      "detail": "Stateless transcoding workers pick up jobs from a queue (Google Pub/Sub). After transcoding to 6+ formats (144p–4K), results are stored in Google Cloud Storage with a metadata reference in Bigtable. Thousands of workers scale horizontally with no affinity.",
+      "source": "https://www.vdocipher.com/blog/youtube-tech-stack-architecture/"
+    },
+    {
+      "scenario": "Stripe payment processing",
+      "detail": "PaymentMethod objects are stateless; PaymentIntent tracks the state machine across microservices. A single charge flows through: pending → processing → succeeded. Idempotency keys prevent duplicate charges on network retry. Each state is owned by a distributed service.",
+      "source": "https://dev.to/sgchris/building-a-payment-system-like-stripe-or-rapyd-architecture-challenges-and-key-components-3mlf"
+    },
+    {
+      "scenario": "Social media feed system (read-heavy)",
+      "detail": "500M users × 10 pageviews/user/day = 5B feed requests/day = ~57,800 QPS. Optimized with multi-tier caching (Redis in-memory, CDN at edge), read replicas, and columnar storage for analytics. Write pattern is lightweight (1 post per user per week on average).",
+      "source": "https://designgurus.substack.com/p/the-5-step-capacity-estimation-worksheet"
+    },
+    {
+      "scenario": "E-commerce checkout system (eventually consistent)",
+      "detail": "Inventory checks use eventual consistency reads from DynamoDB (half-price) accepting 1-2 second staleness. Order confirmations use strong consistency to prevent overselling. Checkout session state stored in Redis with 15-minute TTL, no server affinity.",
+      "source": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html"
+    },
+    {
+      "scenario": "Kubernetes stateless pod autoscaling",
+      "detail": "Horizontal Pod Autoscaler watches CPU/memory metrics and adds new stateless pods. Each pod is a clean instance with no pre-warmed state. Session data flows from external Redis. Pod failure loses zero state; replacement pod fetches state from Redis on first request.",
+      "source": "https://blog.bytebytego.com/p/stateless-architecture-the-key-to"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Stateless services are like a fast-food counter with 10 identical workers and one order queue. Any worker can take any order. If a worker quits mid-shift, a new hire arrives and picks up the next order. The system scales effortlessly. Sticky sessions are like assigning each customer to one worker — when that worker takes a break, the customer must wait.",
+      "concept": "Horizontal scaling and load balancing"
+    },
+    {
+      "analogy": "A session store (Redis) is like a coat check at a restaurant. Customers (clients) get a ticket (session ID). The coat (state) is stored centrally. Any server (waiter) can look up the ticket and retrieve the right coat. If the coat-check burns down, customers can provide a new ticket number.",
+      "concept": "Externalized state management"
+    },
+    {
+      "analogy": "CAP theorem is like a 3-legged stool: consistency, availability, partition tolerance. In a distributed system, the network will break (partition). When it does, you must choose: either lock down for consistency (CP, like a bank vault) or stay open with stale data (AP, like a grocery store on a snowy day).",
+      "concept": "CAP tradeoffs"
+    },
+    {
+      "analogy": "Read/write ratio is like a library. A 90% read library has 9 people browsing for every 1 person checking out a book. You'd optimize for fast lookups (caching, indexing) and few shelves for checkout. A 90% write library (high school homework submission system) does the opposite.",
+      "concept": "Database optimization strategies"
+    },
+    {
+      "analogy": "Connection pooling (like RDS Proxy) is like a valet parking system. Instead of 100 guests each driving to the garage (100 DB connections), one valet reuses 20 parking spots and shuttles guests. Fewer connection slots, same capacity, lower overhead.",
+      "concept": "Connection management in stateless services"
+    },
+    {
+      "analogy": "Cardinality explosion is like a hotel reservation system where every room, guest name, date, and booking agent combination creates a separate index entry. With 100 rooms, 1M guests, and 10 agents, you have 1B combinations. Index lookups slow to a crawl.",
+      "concept": "High cardinality in data modeling"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Typical read-write ratio",
+      "value": "70% reads, 30% writes",
+      "context": "Baseline for most transactional systems; varies by type (90:10 for social feeds, 50:50 for collaborative apps)"
+    },
+    {
+      "metric": "Average QPS calculation",
+      "formula": "(DAU × actions/user/day) / 86,400",
+      "example": "1M DAU × 100 actions/day ÷ 86,400 = ~1,157 QPS average"
+    },
+    {
+      "metric": "Peak QPS multiplier",
+      "value": "2–3x average QPS",
+      "context": "Accounts for Pareto distribution (80% traffic in 20% of day)"
+    },
+    {
+      "metric": "Web server capacity",
+      "value": "1,000–2,000 QPS per instance",
+      "context": "Depends on response time SLA; typical p99 latency <100ms"
+    },
+    {
+      "metric": "MySQL max_connections default",
+      "value": "151 connections",
+      "context": "Each connection consumes ~1 MB RAM; scales with server memory"
+    },
+    {
+      "metric": "DynamoDB cost ratio",
+      "value": "Eventual consistency reads cost 0.5× strongly consistent reads",
+      "context": "Strong consistency = 2 read units; eventual = 0.5 read units"
+    },
+    {
+      "metric": "Connection pooling efficiency",
+      "value": "20–50 pooled connections serve 1,000+ concurrent users",
+      "context": "RDS Proxy example: 1,000 app connections reuse 50 DB connections"
+    },
+    {
+      "metric": "Netflix EVCache response time",
+      "value": "<5 ms 99th percentile",
+      "context": "Distributed session store serving 300M concurrent users"
+    },
+    {
+      "metric": "YouTube edge locations",
+      "value": "3,000+ global CDN nodes",
+      "context": "Serves 2.5B users; 1ms–50ms latency depending on region"
+    },
+    {
+      "metric": "Cardinality threshold (time-series)",
+      "value": "10,000–100,000 unique series before index overhead becomes prohibitive",
+      "context": "Beyond this, metadata index sizes balloon; ingest latency increases 30–50%"
+    },
+    {
+      "metric": "Session affinity cost",
+      "value": "30–50% uneven load distribution",
+      "context": "Sticky sessions cause active sessions to accumulate on certain servers"
+    },
+    {
+      "metric": "Hybrid architecture cost savings",
+      "value": "30% ops cost reduction, 25% performance improvement",
+      "context": "Gartner data on mixed stateless-stateful systems"
+    },
+    {
+      "metric": "Performance difference by read-write ratio",
+      "value": "Up to 50% throughput variance",
+      "context": "Same load, different read-write split (MongoDB benchmark)"
+    },
+    {
+      "metric": "Redis vs Memcached market share",
+      "value": "Redis 82%, Memcached 18%",
+      "context": "2026 data; Redis up from 75% in 2024"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Stateless services don't require state management",
+      "reality": "Stateless means state is stored outside the service (Redis, database, client), not that state doesn't exist. Systems relying on sticky sessions while claiming statelessness are common in production and violate twelve-factor principles.",
+      "source": "https://dzone.com/articles/why-your-stateless-services-are-lying-to-you"
+    },
+    {
+      "misconception": "You can use sticky sessions in stateless architectures",
+      "reality": "Sticky sessions eliminate the value of statelessness: uneven load distribution, session loss on server failure, and breaking horizontal scaling. Once you have multiple servers, sticky sessions require either session replication or externalized state.",
+      "source": "https://traefik.io/glossary/what-are-sticky-sessions/"
+    },
+    {
+      "misconception": "Raising max_connections solves 'too many connections' errors",
+      "reality": "Raising max_connections is a band-aid. The real issue is missing connection pooling (PgBouncer, RDS Proxy). Without pooling, adding more connections just increases memory usage and delays the inevitable failure.",
+      "source": "https://opvizor.com/blog/understanding-database-connection-limits-and-how-to-handle-them"
+    },
+    {
+      "misconception": "Eventual consistency is always cheaper",
+      "reality": "Eventual consistency is cheaper per read (DynamoDB: 0.5x), but only if staleness is acceptable. For financial transactions, inventory checks require strong consistency even if it costs 2x. The answer depends on the use case, not the price tag.",
+      "source": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html"
+    },
+    {
+      "misconception": "CAP theorem means pick any two",
+      "reality": "In a distributed system, network partitions will happen. Partition tolerance is non-negotiable. The real choice is Consistency vs. Availability during a partition: CP (block writes, consistent) or AP (serve stale data, available).",
+      "source": "https://www.bmc.com/blogs/cap-theorem/"
+    },
+    {
+      "misconception": "High cardinality (lots of dimensions) is always good for analytics",
+      "reality": "High cardinality causes exponential index explosion. A monitoring system with 100 metrics × 1,000 servers × 100 tag values = 10B index entries, causing 50%+ query latency degradation. Cardinality must be managed, not just accumulated.",
+      "source": "https://db-news.com/influxdbs-high-cardinality-challenge-a-deep-dive-into-the-tsm-storage-engine"
+    },
+    {
+      "misconception": "Bridge tables are always the solution to many-to-many relationships",
+      "reality": "Bridge tables increase storage, index size, and query complexity. Use only when the business value of the many-to-many relationship justifies the cost. Denormalization or a NoSQL document model may be better.",
+      "source": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/"
+    },
+    {
+      "misconception": "Horizontal scaling with stateless services is free",
+      "reality": "Scaling stateless services is operationally cheap (add pods), but not cost-free: network load balancing, distributed state store (Redis), and cross-region coordination add latency and cost. Vertical scaling up to a limit is often cheaper.",
+      "source": "https://blog.bytebytego.com/p/stateless-architecture-the-key-to"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://benchant.com/blog/workload-read-write-ratio",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.confluent.io/blog/how-kafka-is-used-by-netflix/",
+      "recency": "Current (2023–2024)"
+    },
+    {
+      "url": "https://aerospike.com/blog/stateful-vs-stateless-architecture-guide/",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.vdocipher.com/blog/youtube-tech-stack-architecture/",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://designgurus.substack.com/p/the-5-step-capacity-estimation-worksheet",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy.html",
+      "recency": "Official AWS docs (updated 2025)"
+    },
+    {
+      "url": "https://releem.com/docs/mysql-performance-tuning/max_connections",
+      "recency": "Current (2024–2025)"
+    },
+    {
+      "url": "https://tech-insider.org/redis-vs-memcached-2026/",
+      "recency": "Current (2026)"
+    },
+    {
+      "url": "https://www.bmc.com/blogs/cap-theorem/",
+      "recency": "Evergreen (foundational, updated 2024)"
+    },
+    {
+      "url": "https://dev.to/sgchris/building-a-payment-system-like-stripe-or-rapyd-architecture-challenges-and-key-components-3mlf",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html",
+      "recency": "Official AWS docs (updated 2025)"
+    },
+    {
+      "url": "https://db-news.com/influxdbs-high-cardinality-challenge-a-deep-dive-into-the-tsm-storage-engine",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/",
+      "recency": "Foundational (2012, still authoritative 2024)"
+    },
+    {
+      "url": "https://rockybhatia.substack.com/p/inside-netflixs-architecture-how",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://dzone.com/articles/why-your-stateless-services-are-lying-to-you",
+      "recency": "Current (2023–2024)"
+    },
+    {
+      "url": "https://traefik.io/glossary/what-are-sticky-sessions/",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://opvizor.com/blog/understanding-database-connection-limits-and-how-to-handle-them",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://blog.bytebytego.com/p/stateless-architecture-the-key-to",
+      "recency": "Current (2024)"
+    }
+  ]
+}

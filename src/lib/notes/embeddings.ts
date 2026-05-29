@@ -27,8 +27,8 @@ export async function searchSimilarNotes(
 
   const { data, error } = await supabaseAdmin.rpc('match_user_notes', {
     p_user_id: userId,
-    query_embedding: queryEmbedding,
-    match_count: limit,
+    p_query_embedding: queryEmbedding,
+    p_match_count: limit,
   })
 
   if (error) {

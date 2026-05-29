@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "signal",
+  "story_slug": "signal",
+  "story_title": "Signal",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/signal/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/signal/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing before a structural padlock that is bolted into the architecture — representing privacy as structural design",
+      "caption": "Hatch standing before a structural padlock that is bolted into the architecture — representing privacy as structural design",
+      "prompt": "Signal | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) standing in front of a large padlock icon that is locked closed. The padlock is architectural — bolted into the wall, not decorative. Hatch's expression is calm and confident. Cream background, no text overlays. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/signal/hero.png",
+      "generated_image_sha256": "ffeb4ec5f0cfa2af1488e268e878f04d7a22a5d8ac6960b9d34fde777340cf58",
+      "final_image_sha256": "46dc528100fe9ae99ed8fefe57fb11f0850275ecdb48e417fdd43bf448796e13",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/signal/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/signal/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/signal/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between a data-collecting server room and a direct encrypted channel representing Signal's architectural choice",
+      "caption": "Hatch gesturing between a data-collecting server room and a direct encrypted channel representing Signal's architectural choice",
+      "prompt": "Signal | hatch-narrator: Hatch in narrator pose, gesturing toward a split scene: on one side, a large server room with data flowing into advertising dashboards; on the other side, an encrypted channel with no server in the middle — just a direct connection between two phones. The contrast is architectural, not dramatic. Cream background, no speech bubble. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/signal/hatch-narrator.png",
+      "generated_image_sha256": "864a7f2bb77a8ccce290c4d5c9fff37646cc7e811a120b59d3c85da125a9f6e5",
+      "final_image_sha256": "74894d14833b4b18c0bb27bed9c496d979997746a9ec508bd049443d3cef609d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/signal/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/signal/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/signal/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch observing a diagram of end-to-end encrypted messages passing through Signal's servers without being readable",
+      "caption": "Hatch observing a diagram of end-to-end encrypted messages passing through Signal's servers without being readable",
+      "prompt": "Signal | failure-mechanism: Hatch in a thinking pose, observing a diagram of end-to-end encryption: two phones with a locked channel between them, and Signal's servers in the middle with no ability to read the messages passing through. The server is a relay, not a reader. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/signal/failure-mechanism.png",
+      "generated_image_sha256": "dccac07338ac239ec2d0ecbb1fda18c217c8205159b6f39fad56dd6de57617e9",
+      "final_image_sha256": "d7fa72b7a3d8e0602f8d6ed03fc938f642af905c0ba3c0d5a908fa3851bf7af4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/signal/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/signal/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/signal/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a download spike graph showing 7.5 million Signal downloads in January 2021",
+      "caption": "Hatch pointing at a download spike graph showing 7.5 million Signal downloads in January 2021",
+      "prompt": "Signal | evidence-card: Hatch pointing at a simple line graph showing a dramatic spike in January 2021 — a nearly vertical line representing 7.5M downloads in one week. The x-axis shows time, the y-axis shows downloads, and the spike is labeled with a small calendar icon indicating January 2021. Cream background. Watermark same. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/signal/evidence-card.png",
+      "generated_image_sha256": "35da3c36def165ae6a151146e5608ca358d641006dfec1c633bb9937fc5b7e43",
+      "final_image_sha256": "0a69ab414a9499abc00e5cd2774084b1148c9c8e1b829f41d5679d749d49e33f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/signal/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/signal/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/signal/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching pose beside a padlock labeled as a moat — representing how a structural constraint becomes a competitive advantage",
+      "caption": "Hatch in coaching pose beside a padlock labeled as a moat — representing how a structural constraint becomes a competitive advantage",
+      "prompt": "Signal | lesson-frame: Hatch in a coaching pose, calm, standing beside a simple diagram: a constraint (the locked padlock from the hero image) labeled as a moat. The visual argument is that what looks like a limitation from one angle is a competitive advantage from another. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/signal/lesson-frame.png",
+      "generated_image_sha256": "7a4b838915a27e868569b5714fa201907a1fe89992d9439f340f0b98e2289610",
+      "final_image_sha256": "64bb39da8c4c862a31854ef3eb589c5164d59c3081d9b9297d13c6a4c5eb0943",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/signal/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/signal/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/signal/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Small Hatch holding a locked padlock that represents Signal's structural privacy guarantee",
+      "caption": "Small Hatch holding a locked padlock that represents Signal's structural privacy guarantee",
+      "prompt": "Small, recognisable Hatch holding a miniature padlock that is locked closed and structurally bolted to something solid. High-contrast, readable at small size. Cream background. Watermark same. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/signal/hero.png",
+      "generated_image_sha256": "ffeb4ec5f0cfa2af1488e268e878f04d7a22a5d8ac6960b9d34fde777340cf58",
+      "final_image_sha256": "36dab1379aa22379679f37cb9e258951d013674045d95ef1df31a11c1072dc63",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/signal/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/signal/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/signal/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a large architectural padlock representing Signal's structural approach to privacy",
+      "caption": "Hatch beside a large architectural padlock representing Signal's structural approach to privacy",
+      "prompt": "Hatch in hero pose to the left of a large architectural padlock. Wide OG card format. No text. Cream background, HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/signal/hero.png",
+      "generated_image_sha256": "ffeb4ec5f0cfa2af1488e268e878f04d7a22a5d8ac6960b9d34fde777340cf58",
+      "final_image_sha256": "5be8e31534cda80ad0028ff47d40ebeca5600c1f088d68065f2a382e2085a716",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/signal/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/signal/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/signal/v1"
+}

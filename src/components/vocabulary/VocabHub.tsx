@@ -53,7 +53,7 @@ export function VocabHub({ concepts }: VocabHubProps) {
     })
   }
 
-  // Mock "Due for Review" concepts — pick first 3 that need practice (level 1 or 2)
+  // Mock "Due for Review" concepts - pick first 3 that need practice (level 1 or 2)
   const dueForReview = concepts
     .map((c, i) => ({ concept: c, mastery: getMockMastery(i) }))
     .filter(({ mastery }) => mastery.level === 1 || mastery.level === 2)

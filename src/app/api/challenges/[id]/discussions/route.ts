@@ -1,18 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { getChallengeDiscussions, postDiscussion } from '@/lib/data/analytics'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { apiError } from '@/lib/api/error'
+import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
+import { discussionModerationError } from '@/lib/discussions/moderation'
+
+const RequestSchema = z.object({
+  content: z.string().trim().min(1).max(10000),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   try {
-    const discussions = await getChallengeDiscussions(id)
+    const identity = await resolveChallengeIdentity(id, createAdminClient())
+    if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
+
+    const discussions = await getChallengeDiscussions(identity.id, user?.id ?? null)
     return NextResponse.json(discussions)
   } catch (err) {
     console.error('Discussions fetch error:', err)
-    return NextResponse.json({ error: 'Failed to fetch discussions' }, { status: 500 })
+    return apiError(500, 'discussion_fetch_failed', 'Failed to fetch discussions')
   }
 }
 
@@ -21,22 +42,34 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const body = await request.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
+    }
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
+  }
   const { content } = body
 
-  if (!content?.trim()) {
-    return NextResponse.json({ error: 'Content required' }, { status: 400 })
-  }
-
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const resolvedUserId = user?.id ?? 'mock-user'
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
+
+  const moderationError = await discussionModerationError(content)
+  if (moderationError) return moderationError
 
   try {
-    const discussion = await postDiscussion(id, resolvedUserId, content.trim())
+    const identity = await resolveChallengeIdentity(id, createAdminClient())
+    if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
+
+    const discussion = await postDiscussion(identity.id, user.id, content.trim())
     return NextResponse.json(discussion, { status: 201 })
   } catch (err) {
     console.error('Discussion post error:', err)
-    return NextResponse.json({ error: 'Failed to post discussion' }, { status: 500 })
+    return apiError(500, 'discussion_post_failed', 'Failed to post discussion')
   }
 }

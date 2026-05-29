@@ -1,0 +1,346 @@
+{
+  "facts": [
+    {
+      "fact": "Index-only scans require pages to be marked 'all-visible' in the visibility map for PostgreSQL to skip heap access; if the visibility map bit is not set, the heap entry must be visited to determine visibility, negating performance gains.",
+      "source": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html",
+      "date": "2025-01-15"
+    },
+    {
+      "fact": "Cardinality estimation errors in multi-join queries can be one order of magnitude or more, and errors propagate and amplify from the leaves to the root of the query plan.",
+      "source": "http://www.vldb.org/pvldb/vol18/p5531-viktor.pdf",
+      "date": "2024-08-01"
+    },
+    {
+      "fact": "PostgreSQL v12 introduced TID as part of the index key and truncation of redundant index attributes from internal pages, reducing index size while improving fan-out and page fitting.",
+      "source": "https://www.cybertec-postgresql.com/en/b-tree-index-improvements-in-postgresql-v12/",
+      "date": "2024-06-15"
+    },
+    {
+      "fact": "PostgreSQL v13 introduced index deduplication by default, storing repeated values once per page and maintaining a compact structure that tracks all matching heap pointers.",
+      "source": "https://pganalyze.com/blog/postgresql-vs-sql-server-btree-index-deduplication",
+      "date": "2024-09-20"
+    },
+    {
+      "fact": "CERT (Cardinality Estimation Restriction Testing) found 13 unique and previously unknown bugs in MySQL, CockroachDB, and TiDB by detecting inconsistent estimated cardinalities in query plans.",
+      "source": "https://arxiv.org/html/2306.00355v3",
+      "date": "2024-06-10"
+    },
+    {
+      "fact": "In EXPLAIN ANALYZE output, the first number in cost (e.g., 0.00 in 0.00..19.00) is startup cost, and the second is total cost; these are arbitrary units conventionally thought of as disk page fetches.",
+      "source": "https://supabase.com/docs/guides/troubleshooting/understanding-postgresql-explain-output-Un9dqX",
+      "date": "2024-11-20"
+    },
+    {
+      "fact": "Window functions optimized with CTEs and PARTITION BY indexes can achieve single-pass efficiency, reducing query time by two orders of magnitude (e.g., 8 seconds to 10ms) when properly indexed.",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82",
+      "date": "2024-07-15"
+    },
+    {
+      "fact": "PostgreSQL 18 introduces B-tree skip scan capability to overcome the long-standing left-most index limitation, improving performance for queries with non-leading column predicates.",
+      "source": "https://www.pgedge.com/blog/postgres-18-skip-scan-breaking-free-from-the-left-most-index-limitation",
+      "date": "2025-01-10"
+    },
+    {
+      "fact": "Heap fetches during an index-only scan indicate that some data wasn't in the index and had to be fetched from the table; a high number suggests the index is not covering all columns needed.",
+      "source": "https://www.pgmustard.com/docs/explain/heap-fetches",
+      "date": "2024-10-05"
+    },
+    {
+      "fact": "PostgreSQL covering indexes can be created using the INCLUDE clause to add non-key columns, enabling index-only scans without heap fetches for those columns.",
+      "source": "https://dev.to/philip_mcclarence_2ef9475/postgresql-covering-indexes-eliminate-heap-fetches-with-include-3lcl",
+      "date": "2024-03-20"
+    },
+    {
+      "fact": "SQL Server 2025 introduces Cardinality Estimation Feedback for Expressions, which learns from repeated executions to adjust cardinality estimates for subexpressions across queries.",
+      "source": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/intelligent-query-processing-ce-feedback-for-expressions?view=sql-server-ver17",
+      "date": "2024-12-01"
+    },
+    {
+      "fact": "pg_hint_plan allows embedding optimizer hints as comments (/*+ hint */) without altering SQL structure, enabling specification of join methods, scan methods, and planner parameters.",
+      "source": "https://pganalyze.com/blog/migrating-from-oracle-hints-to-pg-hint-plan-on-postgresql",
+      "date": "2024-05-15"
+    },
+    {
+      "fact": "Uber's architecture separates the stateless query engine layer (query planning, routing, sharding) from the storage engine layer (consensus, replication, transactions), with CacheFront integrated caching reducing query latency.",
+      "source": "https://www.uber.com/us/en/blog/how-uber-serves-over-40-million-reads-per-second-using-an-integrated-cache/",
+      "date": "2024-08-20"
+    },
+    {
+      "fact": "PostgreSQL from v14 onward sometimes skips index cleanup when only a small percentage of pages contain dead rows, preventing those pages from becoming all-visible even after VACUUM.",
+      "source": "https://www.cybertec-postgresql.com/en/making-the-postgresql-visibility-map-visible/",
+      "date": "2024-07-10"
+    },
+    {
+      "fact": "Modern main-memory databases like DuckDB and HEAVY.AI operate with limited or even no cardinality estimation yet achieve competitive performance, suggesting evolving perspectives on traditional cardinality estimation necessity.",
+      "source": "https://escholarship.org/uc/item/8vm8z76v",
+      "date": "2024-02-15"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Netflix uses Cassandra, CockroachDB, and EV Cache for different data access patterns, with Apache Kafka and Flink for real-time analytics, demonstrating the trade-off between query optimization and polyglot persistence.",
+      "company": "Netflix",
+      "context": "Database selection for analytics and transaction handling"
+    },
+    {
+      "example": "Uber's Docstore reported that more than 50% of queries were ReadRows requests, which became the primary target for CacheFront caching integration to optimize repeated read patterns.",
+      "company": "Uber",
+      "metric": "50% of queries as read operations",
+      "impact": "Reduced latency by integrated caching at query engine layer"
+    },
+    {
+      "example": "A query with an improper window function without PARTITION BY index caused 8-second response times; adding index on PARTITION BY field and refactoring with CTEs reduced time to 10ms—200x improvement.",
+      "context": "Top-N query optimization",
+      "improvement_factor": "800x (8 seconds to 10ms)"
+    },
+    {
+      "example": "CERT discovered 13 bugs in MySQL, CockroachDB, and TiDB by analyzing cardinality estimate inconsistencies—e.g., a LEFT JOIN had a higher estimated cardinality than the equivalent INNER JOIN, violating logical constraints.",
+      "companies_affected": [
+        "MySQL",
+        "CockroachDB",
+        "TiDB"
+      ],
+      "bugs_found": 13
+    },
+    {
+      "example": "PostgreSQL 17 skip-scan optimization on IN(...) lists showed 20-30% improvement in CPU-bound cases where previously the optimizer had to start at the left-most index value.",
+      "feature": "PostgreSQL 17 skip scan",
+      "improvement_percentage": "20-30%"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "The visibility map is like a sticky note on each page of a book that says 'all readers have seen this page'—the database only needs to check the note, not re-read the entire page.",
+      "concept": "Visibility map in index-only scans",
+      "memorability": "high"
+    },
+    {
+      "analogy": "Cardinality estimation is like a census prediction before the census is taken—if your estimate is off by an order of magnitude, your budget planning (query plan) will be wildly wrong.",
+      "concept": "Cardinality estimation impact on query planning",
+      "memorability": "high"
+    },
+    {
+      "analogy": "A covering index is like having a one-page summary of a book instead of needing to walk to the library to fetch the full book—if the summary has all the info you need, you never leave your desk.",
+      "concept": "Covering indexes vs heap fetches",
+      "memorability": "high"
+    },
+    {
+      "analogy": "The B-tree skip scan is like being able to jump to page 47 in a book using the index instead of having to start from the bookmark on page 1 and flip forward.",
+      "concept": "PostgreSQL 18 skip scan capability",
+      "memorability": "high"
+    },
+    {
+      "analogy": "Heap fetches during an index-only scan are like finding the address in a phone book but still having to visit the house—the optimization partially failed.",
+      "concept": "Heap fetches in index-only scans",
+      "memorability": "high"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Cardinality estimation error magnitude",
+      "value": "1+ order of magnitude",
+      "context": "Multi-join queries routinely produce errors of 10-100x between estimated and actual cardinality",
+      "source": "http://www.vldb.org/pvldb/vol18/p5531-viktor.pdf"
+    },
+    {
+      "metric": "Query time improvement with window function optimization",
+      "value": "800x (8 seconds → 10ms)",
+      "context": "Adding PARTITION BY index and refactoring with CTEs",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82"
+    },
+    {
+      "metric": "PostgreSQL 17 skip-scan improvement",
+      "value": "20-30%",
+      "context": "Performance gains for CPU-bound IN(...) list queries",
+      "source": "https://pganalyze.com/blog/5mins-postgres-17-faster-btree-index-scans"
+    },
+    {
+      "metric": "Uber reads per second from online storage",
+      "value": "40+ million",
+      "context": "Served through integrated cache (CacheFront)",
+      "source": "https://www.uber.com/us/en/blog/how-uber-serves-over-40-million-reads-per-second-using-an-integrated-cache/"
+    },
+    {
+      "metric": "CERT bugs found in major databases",
+      "value": 13,
+      "context": "Previously unknown bugs in MySQL, CockroachDB, TiDB discovered through cardinality estimation analysis",
+      "source": "https://arxiv.org/html/2306.00355v3"
+    },
+    {
+      "metric": "Percentage of Uber Docstore queries as ReadRows",
+      "value": "50%+",
+      "context": "Primary target for query optimization via caching",
+      "source": "https://www.uber.com/us/en/blog/how-uber-serves-over-40-million-reads-per-second-using-an-integrated-cache/"
+    },
+    {
+      "metric": "Index deduplication storage reduction",
+      "value": "Variable per workload",
+      "context": "PostgreSQL 13+ deduplicates repeated values within single index page by default",
+      "source": "https://pganalyze.com/blog/postgresql-vs-sql-server-btree-index-deduplication"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "An index-only scan always avoids heap access and is therefore always faster than an index scan.",
+      "reality": "Index-only scans still require heap fetches if visibility map pages are not marked all-visible, making them no faster than regular index scans in stale visibility maps.",
+      "source": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html"
+    },
+    {
+      "misconception": "Higher query plan costs always mean longer execution time.",
+      "reality": "Cost is an arbitrary unit conventionally thought of as disk page fetches; actual execution time depends on many factors including CPU, I/O, cache behavior, and system load.",
+      "source": "https://supabase.com/docs/guides/troubleshooting/understanding-postgresql-explain-output-Un9dqX"
+    },
+    {
+      "misconception": "Window functions always cause full-table scans and should be avoided.",
+      "reality": "Window functions with proper PARTITION BY indexes and CTEs can achieve single-pass efficiency; the problem is incorrect use, not the feature itself.",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82"
+    },
+    {
+      "misconception": "All cardinality estimation errors impact query performance equally.",
+      "reality": "Errors are most damaging in multi-join queries where they propagate and amplify from leaves to root; errors in single-table scans have minimal impact.",
+      "source": "http://www.vldb.org/pvldb/vol18/p5531-viktor.pdf"
+    },
+    {
+      "misconception": "Query hints should be used to override optimizer decisions whenever the optimizer is wrong.",
+      "reality": "Hints should only be used as temporary stopgaps while root causes are resolved; PostgreSQL philosophy favors query rewrites, statistics updates, and index design.",
+      "source": "https://pganalyze.com/blog/migrating-from-oracle-hints-to-pg-hint-plan-on-postgresql"
+    },
+    {
+      "misconception": "VACUUM is a maintenance task that doesn't need to be tuned—just run it periodically.",
+      "reality": "Autovacuum frequency directly impacts the visibility map freshness; insufficient vacuuming leaves pages unmarked as all-visible, causing index-only scans to perform heap fetches.",
+      "source": "https://www.cybertec-postgresql.com/en/making-the-postgresql-visibility-map-visible/"
+    },
+    {
+      "misconception": "All databases need sophisticated cardinality estimation to perform well.",
+      "reality": "Modern main-memory databases like DuckDB achieve competitive performance with minimal or no cardinality estimation due to different execution strategies (vectorization, JIT compilation).",
+      "source": "https://escholarship.org/uc/item/8vm8z76v"
+    },
+    {
+      "misconception": "Covering indexes are always better than regular indexes for queries that need multiple columns.",
+      "reality": "Covering indexes trade write performance (larger indexes, more maintenance overhead) for read optimization; the tradeoff is worthwhile only for frequently-executed read-heavy queries.",
+      "source": "https://dev.to/philip_mcclarence_2ef9475/postgresql-covering-indexes-eliminate-heap-fetches-with-include-3lcl"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html",
+      "title": "PostgreSQL Documentation: Index-Only Scans and Covering Indexes",
+      "recency": "current",
+      "category": "official_docs"
+    },
+    {
+      "url": "http://www.vldb.org/pvldb/vol18/p5531-viktor.pdf",
+      "title": "Still Asking: How Good Are Query Optimizers, Really? (Viktor Leis)",
+      "recency": "2024",
+      "category": "academic"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/b-tree-index-improvements-in-postgresql-v12/",
+      "title": "B-tree Index Improvements in PostgreSQL v12",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://pganalyze.com/blog/postgresql-vs-sql-server-btree-index-deduplication",
+      "title": "PostgreSQL vs. SQL Server: B-Tree Index Differences & Deduplication",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://arxiv.org/html/2306.00355v3",
+      "title": "CERT: Finding Performance Issues in Database Systems Through Cardinality Estimation",
+      "recency": "2024",
+      "category": "academic"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/troubleshooting/understanding-postgresql-explain-output-Un9dqX",
+      "title": "Supabase: Understanding PostgreSQL EXPLAIN Output",
+      "recency": "2024",
+      "category": "official_docs"
+    },
+    {
+      "url": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82",
+      "title": "Optimizing MySQL Top-N Queries: Window Function Performance Comparison",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://www.pgedge.com/blog/postgres-18-skip-scan-breaking-free-from-the-left-most-index-limitation",
+      "title": "PostgreSQL 18: Skip Scan Breaking Free from Left-Most Index Limitation",
+      "recency": "2025",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://www.pgmustard.com/docs/explain/heap-fetches",
+      "title": "pgMustard: Heap Fetches Documentation",
+      "recency": "2024",
+      "category": "tool_documentation"
+    },
+    {
+      "url": "https://dev.to/philip_mcclarence_2ef9475/postgresql-covering-indexes-eliminate-heap-fetches-with-include-3lcl",
+      "title": "PostgreSQL Covering Indexes: Eliminate Heap Fetches with INCLUDE",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/intelligent-query-processing-ce-feedback-for-expressions?view=sql-server-ver17",
+      "title": "SQL Server 2025: Cardinality Estimation Feedback for Expressions",
+      "recency": "2024",
+      "category": "official_docs"
+    },
+    {
+      "url": "https://pganalyze.com/blog/migrating-from-oracle-hints-to-pg-hint-plan-on-postgresql",
+      "title": "Migrating from Oracle Hints to pg_hint_plan on PostgreSQL",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://www.uber.com/us/en/blog/how-uber-serves-over-40-million-reads-per-second-using-an-integrated-cache/",
+      "title": "Uber: How Uber Serves Over 40 Million Reads Per Second from Online Storage",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/making-the-postgresql-visibility-map-visible/",
+      "title": "Making the PostgreSQL Visibility Map Visible",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://escholarship.org/uc/item/8vm8z76v",
+      "title": "Impact of Cardinality Estimation on Query Optimization",
+      "recency": "2024",
+      "category": "academic"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-17-faster-btree-index-scans",
+      "title": "PostgreSQL 17: Faster B-Tree Index Scans for IN(...) Lists",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "title": "Reading a Postgres EXPLAIN ANALYZE Query Plan",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/how-to-interpret-postgresql-explain-analyze-output/",
+      "title": "How to Interpret PostgreSQL EXPLAIN ANALYZE Output",
+      "recency": "2024",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://medium.com/@jramcloud1/15-postgresql-17-performance-tuning-index-scans-vs-index-only-scans-f85bcf0a715c",
+      "title": "PostgreSQL 17 Performance Tuning: Index Scans vs. Index-Only Scans",
+      "recency": "2025",
+      "category": "engineering_blog"
+    },
+    {
+      "url": "https://kenwagatsuma.com/blog/postgresql-visibility-map",
+      "title": "Why Understanding Visibility Map in PostgreSQL is Crucial for Index Only Scans",
+      "recency": "2024",
+      "category": "engineering_blog"
+    }
+  ]
+}

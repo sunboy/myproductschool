@@ -1,6 +1,13 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+function scoreOutOfTen(row: { total_score: number | string | null; max_score: number | string | null }) {
+  const total = Number(row.total_score)
+  const max = Number(row.max_score)
+  if (!Number.isFinite(total) || !Number.isFinite(max) || max <= 0) return null
+  return (total / max) * 10
+}
+
 async function getAdminStats() {
   const admin = createAdminClient()
 
@@ -14,7 +21,11 @@ async function getAdminStats() {
   ] = await Promise.all([
     admin.from('profiles').select('*', { count: 'exact', head: true }),
     admin.from('challenge_attempts').select('*', { count: 'exact', head: true }),
-    admin.from('challenge_attempts').select('score').not('score', 'is', null),
+    admin
+      .from('challenge_attempts')
+      .select('total_score, max_score')
+      .eq('status', 'completed')
+      .not('total_score', 'is', null),
     admin
       .from('challenges')
       .select('id, title, paradigm, difficulty, is_published')
@@ -22,9 +33,10 @@ async function getAdminStats() {
       .limit(50),
     admin
       .from('challenge_attempts')
-      .select('id, user_id, challenge_id, score, submitted_at, challenges(title)')
-      .not('submitted_at', 'is', null)
-      .order('submitted_at', { ascending: false })
+      .select('id, user_id, challenge_id, total_score, max_score, completed_at, challenges(title)')
+      .eq('status', 'completed')
+      .not('completed_at', 'is', null)
+      .order('completed_at', { ascending: false })
       .limit(20),
     admin
       .from('admin_content_queue')
@@ -33,10 +45,10 @@ async function getAdminStats() {
       .limit(1),
   ])
 
-  const scores = (avgScoreRow ?? []).map((r: { score: number }) => r.score).filter(Boolean)
+  const scores = (avgScoreRow ?? []).map(scoreOutOfTen).filter((score): score is number => score != null)
   const avgScore = scores.length > 0
     ? (scores.reduce((a: number, b: number) => a + b, 0) / scores.length).toFixed(1)
-    : '—'
+    : '-'
 
   // Count active streaks: profiles with streak_days > 0
   const { count: activeStreaks } = await admin
@@ -76,14 +88,14 @@ export default async function AdminPage() {
   ]
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="space-y-6 p-4 sm:space-y-8 sm:p-6">
       <div>
         <h1 className="font-headline text-2xl font-bold text-on-surface">Overview</h1>
         <p className="text-on-surface-variant text-sm mt-1">Live platform metrics</p>
       </div>
 
       {/* KPI grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
         {kpis.map(kpi => (
           <div key={kpi.label} className="p-4 bg-surface-container rounded-xl border border-outline-variant">
             <div className="flex items-center gap-2 mb-2">
@@ -100,8 +112,9 @@ export default async function AdminPage() {
         <h2 className="font-headline text-lg font-bold text-on-surface mb-3">
           Challenges <span className="text-on-surface-variant font-normal text-sm">({stats.challenges.length})</span>
         </h2>
-        <div className="bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container">
+          <div className="overflow-x-auto">
+          <table className="min-w-[680px] w-full text-sm">
             <thead className="bg-surface-container-high">
               <tr>
                 <th className="text-left px-4 py-3 text-on-surface-variant font-medium">Title</th>
@@ -122,7 +135,7 @@ export default async function AdminPage() {
               }) => (
                 <tr key={c.id} className="hover:bg-surface-container-high transition-colors">
                   <td className="px-4 py-3 text-on-surface font-medium max-w-xs truncate">{c.title}</td>
-                  <td className="px-4 py-3 text-on-surface-variant">{c.paradigm ?? '—'}</td>
+                  <td className="px-4 py-3 text-on-surface-variant">{c.paradigm ?? '-'}</td>
                   <td className="px-4 py-3">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant capitalize">
                       {c.difficulty}
@@ -138,14 +151,16 @@ export default async function AdminPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
       {/* Recent attempts */}
       <div>
         <h2 className="font-headline text-lg font-bold text-on-surface mb-3">Recent Attempts</h2>
-        <div className="bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container">
+          <div className="overflow-x-auto">
+          <table className="min-w-[620px] w-full text-sm">
             <thead className="bg-surface-container-high">
               <tr>
                 <th className="text-left px-4 py-3 text-on-surface-variant font-medium">User</th>
@@ -158,24 +173,25 @@ export default async function AdminPage() {
               {stats.recentAttempts.map((a: {
                 id: string
                 user_id: string
-                score: number | null
-                submitted_at: string | null
+                total_score: number | string | null
+                max_score: number | string | null
+                completed_at: string | null
                 challenges: { title: string }[] | null
               }) => (
                 <tr key={a.id} className="hover:bg-surface-container-high transition-colors">
                   <td className="px-4 py-3 text-on-surface-variant font-mono text-xs">{a.user_id.slice(0, 8)}…</td>
                   <td className="px-4 py-3 text-on-surface max-w-xs truncate">
-                    {Array.isArray(a.challenges) ? a.challenges[0]?.title : (a.challenges as { title: string } | null)?.title ?? '—'}
+                    {Array.isArray(a.challenges) ? a.challenges[0]?.title : (a.challenges as { title: string } | null)?.title ?? '-'}
                   </td>
                   <td className="px-4 py-3">
-                    {a.score != null ? (
-                      <span className="font-medium text-on-surface">{a.score}/10</span>
+                    {scoreOutOfTen(a) != null ? (
+                      <span className="font-medium text-on-surface">{scoreOutOfTen(a)?.toFixed(1)}/10</span>
                     ) : (
-                      <span className="text-on-surface-variant">—</span>
+                      <span className="text-on-surface-variant">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-on-surface-variant text-xs">
-                    {a.submitted_at ? new Date(a.submitted_at).toLocaleString() : '—'}
+                    {a.completed_at ? new Date(a.completed_at).toLocaleString() : '-'}
                   </td>
                 </tr>
               ))}
@@ -186,6 +202,7 @@ export default async function AdminPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

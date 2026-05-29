@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect, Suspense } from 'react'
+import { use, useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLearnModule } from '@/hooks/useLearnModule'
@@ -8,22 +8,14 @@ import { useLearnChapter } from '@/hooks/useLearnChapter'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import { ChapterBody } from '@/components/learning/ChapterBody'
-import type { LearnModule, LearnChapterWithProgress, LearnDifficulty } from '@/lib/types'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { motion, useScrollCollapse } from '@/components/motion'
+import type { LearnModule, LearnChapterWithProgress } from '@/lib/types'
+import { DIFFICULTY_LABELS as PRACTICE_DIFFICULTY_LABELS, coerceDifficulty } from '@/lib/practice/difficulty'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type ModuleData = { module: LearnModule; chapters: LearnChapterWithProgress[] }
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const DIFFICULTY_LABELS: Record<LearnDifficulty, string> = {
-  foundation: 'Foundation',
-  beginner: 'Beginner',
-  intermediate: 'Intermediate',
-  advanced: 'Advanced',
-  'new-era': 'New Era',
-  'entry-point': 'Entry Point',
-}
 
 // Chapter body rendering moved to `src/components/learning/ChapterBody.tsx`.
 // Figures are typed React components (src/components/learning/figures/*).
@@ -37,7 +29,7 @@ function ModuleMiniHeader({ module }: { module: LearnModule }) {
       <div className="font-headline text-sm font-bold text-on-surface leading-tight mb-1.5">{module.name}</div>
       <div className="flex items-center gap-2 flex-wrap">
         <span className="bg-primary-fixed text-primary font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-          {DIFFICULTY_LABELS[module.difficulty]}
+          {PRACTICE_DIFFICULTY_LABELS[coerceDifficulty(module.difficulty) ?? 'easy']}
         </span>
         <span className="text-[10px] text-on-surface-variant">{module.chapter_count} chapters · ~{module.est_minutes} min</span>
       </div>
@@ -89,6 +81,9 @@ function ChapterList({
                 {ch.title}
               </div>
               <div className="text-[10px] text-on-surface-variant truncate">{ch.subtitle}</div>
+              {ch.hook_text && (
+                <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-2 font-body">{ch.hook_text}</p>
+              )}
             </div>
             {ch.is_completed && !isActive && (
               <span className="material-symbols-outlined text-primary text-sm flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -130,12 +125,21 @@ function ChapterPane({
 }) {
   const { data, isLoading, markComplete, isMarkingComplete } = useLearnChapter(moduleSlug, chapterSlug)
   const [markedDone, setMarkedDone] = useState(false)
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const { isCollapsed: isTitleCollapsed } = useScrollCollapse(bodyRef, {
+    threshold: 88,
+    revealOffset: 10,
+    resetKey: data?.id ?? chapterSlug,
+  })
 
   const chapters = moduleData?.chapters ?? []
   const currentIdx = chapters.findIndex(c => c.slug === chapterSlug)
   const nextChapter = chapters[currentIdx + 1]
 
-  useEffect(() => { setMarkedDone(false) }, [chapterSlug])
+  useEffect(() => {
+    setMarkedDone(false)
+    bodyRef.current?.scrollTo({ top: 0 })
+  }, [chapterSlug])
 
   if (isLoading) {
     return (
@@ -151,22 +155,64 @@ function ChapterPane({
   if (!data) return null
 
   const coverColor = moduleData?.module.cover_color ?? '#1a3a2a'
+  const moduleName = moduleData?.module.name ?? 'Learning module'
 
   return (
-    <div className="flex flex-col h-[calc(100vh-52px)] overflow-hidden">
+    <div
+      className="flex flex-col h-[calc(100vh-52px)] overflow-hidden"
+      data-hatch-context-root
+      data-hatch-page-type="learning_module"
+      data-hatch-entity-id={moduleSlug}
+      data-hatch-active-chapter={chapterSlug}
+    >
       {/* Hook card */}
-      <div className="px-6 py-5 flex-shrink-0" style={{ background: coverColor }}>
+      <motion.div
+        data-hatch-context="Active chapter header"
+        layout
+        initial={false}
+        animate={isTitleCollapsed ? 'collapsed' : 'visible'}
+        variants={{
+          visible: {
+            opacity: 1,
+            y: 0,
+            maxHeight: 240,
+            paddingTop: 20,
+            paddingBottom: 20,
+          },
+          collapsed: {
+            opacity: 0,
+            y: -14,
+            maxHeight: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+          },
+        }}
+        transition={{ type: 'spring', stiffness: 320, damping: 34, mass: 0.8 }}
+        className="overflow-hidden px-6 flex-shrink-0"
+        style={{ background: coverColor }}
+        aria-hidden={isTitleCollapsed}
+      >
         <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-1.5">
           Chapter {data.sort_order} · {data.subtitle}
         </p>
-        <h1 className="font-headline text-xl font-bold text-white leading-snug mb-2">{data.title}</h1>
+        <h1
+          className="font-headline text-xl font-bold text-white leading-snug mb-2"
+          data-hatch-page-title
+        >
+          {moduleName}: {data.title}
+        </h1>
         {data.hook_text && (
           <p className="text-sm leading-relaxed italic text-white/75">{data.hook_text}</p>
         )}
-      </div>
+      </motion.div>
 
-      {/* Body — scrollable */}
-      <ChapterBody body_mdx={data.body_mdx} figures={data.figures ?? []} />
+      {/* Body - scrollable */}
+      <ChapterBody
+        ref={bodyRef}
+        body_mdx={data.body_mdx}
+        figures={data.figures ?? []}
+        hatchContextLabel="Active chapter body"
+      />
 
       {/* Footer */}
       <div className="px-5 py-3 border-t border-outline-variant bg-surface-container-low flex items-center justify-between flex-shrink-0">
@@ -238,7 +284,7 @@ function AfterThisModule({ currentSlug }: { currentSlug: string }) {
       {nextModules.map(nm => (
         <Link
           key={nm.slug}
-          href={`/learn/${nm.slug}`}
+          href={`/explore/modules/${nm.slug}`}
           className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-surface-container-high transition-colors"
         >
           <div className="w-6 h-6 rounded-md flex-shrink-0" style={{ background: nm.cover_color }} />
@@ -278,7 +324,7 @@ function ModulePageInner({ slug }: { slug: string }) {
 
   const handleSelectChapter = (chSlug: string) => {
     setActiveChapterSlug(chSlug)
-    router.replace(`/learn/${slug}?chapter=${chSlug}`, { scroll: false })
+    router.replace(`/explore/modules/${slug}?chapter=${chSlug}`, { scroll: false })
   }
 
   const handleNext = (chSlug: string) => {
@@ -306,7 +352,7 @@ function ModulePageInner({ slug }: { slug: string }) {
     return (
       <div className="p-8">
         <p className="text-error text-sm">{error ?? 'Module not found'}</p>
-        <Link href="/learn" className="text-primary text-sm mt-2 inline-block">← Back to Learn</Link>
+        <Link href="/explore/modules" className="text-primary text-sm mt-2 inline-block">← Back to Guides</Link>
       </div>
     )
   }
@@ -317,16 +363,14 @@ function ModulePageInner({ slug }: { slug: string }) {
   return (
     <div className="flex flex-col h-[calc(100vh-52px)] overflow-hidden">
       {/* Top breadcrumb bar */}
-      <div className="h-11 flex items-center gap-2 px-4 border-b border-outline-variant flex-shrink-0 bg-background">
-        <Link
-          href="/learn"
-          className="inline-flex items-center gap-1 text-xs font-bold font-label text-on-surface-variant hover:text-on-surface transition-colors"
-        >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>
-          All guides
-        </Link>
-        <span className="text-on-surface-variant text-xs opacity-40">/</span>
-        <span className="text-xs font-bold text-on-surface truncate">{module.name}</span>
+      <div className="h-11 flex items-center px-4 border-b border-outline-variant flex-shrink-0 bg-background">
+        <AppBreadcrumbs
+          items={[
+            { label: 'Explore', href: '/explore' },
+            { label: 'Guides', href: '/explore/modules' },
+            { label: module.name },
+          ]}
+        />
       </div>
 
       {/* Three-column body */}
@@ -359,7 +403,7 @@ function ModulePageInner({ slug }: { slug: string }) {
           <div className="flex items-start gap-2.5 bg-primary-fixed rounded-xl p-3">
             <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
             <p className="text-[11px] text-on-surface leading-relaxed">
-              <span className="font-bold">Hatch tip:</span> Complete chapters in order — each builds on the last.
+              <span className="font-bold">Hatch tip:</span> Complete chapters in order - each builds on the last.
             </p>
           </div>
 

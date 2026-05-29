@@ -5,12 +5,17 @@ import type { TestStatus } from '../coding/types'
 
 const JUDGE0_HOST = 'judge0-ce.p.rapidapi.com'
 
+export class Judge0UnconfiguredError extends Error {
+  readonly isUnconfigured = true
+  constructor() {
+    super('Code runner not configured. Please contact support.')
+  }
+}
+
 function getKey(): string {
   const key = process.env.JUDGE0_RAPIDAPI_KEY
   if (!key) {
-    throw new Error(
-      'JUDGE0_RAPIDAPI_KEY is not set. Add it to .env.local (dev) or the production secrets manager.'
-    )
+    throw new Judge0UnconfiguredError()
   }
   return key
 }

@@ -5,6 +5,17 @@ export const dataModeling: Discipline = {
   name: 'Data Modeling',
   tagline: 'How data answers questions',
   tabLabel: 'Data Modeling',
+  learnerExplanation: {
+    plainPurpose: 'Use FLOW to turn data questions into a model with clear grain, entities, relationships, and query trade-offs.',
+    examplePrompt: 'Model orders, refunds, and subscriptions so analysts can report revenue by cohort.',
+    stepMeanings: {
+      F: 'Name the question, the grain, the query pattern, and what the model should not answer.',
+      L: 'Identify entities, relationships, natural keys, and edge cases.',
+      O: 'Choose normalization, indexes, partitions, and denormalization based on reads and writes.',
+      W: 'Defend the schema, its trade-offs, query implications, and evolution path.',
+    },
+    practiceOutcome: 'Practice builds schema judgment that connects business questions to durable, queryable data structures.',
+  },
   traditions: [
     {
       id: 't1',

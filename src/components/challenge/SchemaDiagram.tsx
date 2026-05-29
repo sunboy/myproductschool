@@ -6,9 +6,19 @@ interface Column {
   constraints?: string[]
 }
 
+// Authoring sometimes produces columns as bare strings ("user_id") instead of
+// {name, type, constraints} objects. Normalize both shapes at the boundary so
+// the component renders the column name unconditionally.
+type ColumnInput = Column | string
+
+function normalizeColumn(input: ColumnInput): Column {
+  if (typeof input === 'string') return { name: input, type: '' }
+  return { name: input.name, type: input.type ?? '', constraints: input.constraints }
+}
+
 interface TableDef {
   name: string
-  columns: Column[]
+  columns: ColumnInput[]
 }
 
 interface Relationship {
@@ -61,7 +71,8 @@ function TableCard({ table }: { table: TableDef }) {
 
       {/* Column rows */}
       <div className="divide-y divide-outline-variant/30">
-        {table.columns.map((col, colIdx) => {
+        {table.columns.map((rawCol, colIdx) => {
+          const col = normalizeColumn(rawCol)
           const hasPK = col.constraints?.includes('PK')
           return (
             <div
@@ -80,8 +91,10 @@ function TableCard({ table }: { table: TableDef }) {
               <span className={`text-xs font-label flex-1 ${hasPK ? 'font-semibold text-on-surface' : 'text-on-surface-variant'}`}>
                 {col.name}
               </span>
-              {/* Type */}
-              <span className="text-[10px] text-on-surface-variant/70 font-mono">{col.type}</span>
+              {/* Type — only render when present */}
+              {col.type && (
+                <span className="text-[10px] text-on-surface-variant/70 font-mono">{col.type}</span>
+              )}
               {/* Constraints */}
               {col.constraints && col.constraints.length > 0 && (
                 <div className="flex gap-0.5 flex-wrap justify-end">

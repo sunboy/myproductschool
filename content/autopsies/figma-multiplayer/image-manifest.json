@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "figma",
+  "story_slug": "figma-multiplayer",
+  "story_title": "Figma Multiplayer",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/figma-multiplayer/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/figma-multiplayer/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream-and-forest editorial illustration showing a shared design canvas with three differently coloured cursors and name labels, with Hatch in the upper right pointing at the cursors.",
+      "caption": "Three cursors, one file, no save button.",
+      "prompt": "Figma Multiplayer | hero: Create a flat geometric HackProduct autopsy hero illustration for Figma's September 2016 multiplayer launch. Canvas role: hero, aspect 2400x1350. Compose a single warm cream #faf6f0 canvas in the centre that fills two-thirds of the frame, rendered as a forest-green #4a7c59 rectangular artboard with three small abstract shapes inside, a rounded square, a triangle, and a circle. Over the artboard, draw three distinct arrow-shaped cursors in soft amber #c9ad68, deep forest #244232, and charcoal #1e211c, each one tilted at a different angle, each one trailing a small name label as a mist #dfe6dc pill. Above the artboard, draw a thin mist band labelled SHARED FILE and a small soft amber pulse marker. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right, pointing one mitten hand at the three cursors. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no recreated Figma or Sketch screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/figma-multiplayer/hero.png",
+      "generated_image_sha256": "6ecb198a25d8ff477d7149f466b3f498c56a6a463ff493e75e4142f528f4ac14",
+      "final_image_sha256": "074856e46809e09473c25e02da23da580615f2c72b80c21b7e7622c9a67840f6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/figma-multiplayer/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a workbench in a quiet lab, gesturing toward a laptop showing an abstract triangle-based WebGL render.",
+      "caption": "Hatch standing beside a workbench in a quiet lab, gesturing toward a laptop showing an abstract triangle-based WebGL render.",
+      "prompt": "Figma Multiplayer | hatch-narrator: Flat geometric scene illustration for the Brown CS lab moment in April 2011, aspect 1600x1600. Show a warm cream #faf6f0 university lab interior with a low forest-green #4a7c59 workbench, a single laptop screen showing an abstract WebGL render as overlapping translucent triangles in soft amber #c9ad68 and deep forest #244232, a small stack of CS textbooks on the bench, and a mist #dfe6dc window suggesting late afternoon. Add a charcoal #1e211c lab clock on the wall reading roughly four. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator, standing beside the workbench in a narrator pose, gesturing toward the laptop screen with one mitten hand. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no photorealism, no real screenshots, no logos, no university crests. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/figma-multiplayer/hatch-narrator.png",
+      "generated_image_sha256": "ca4adb15b44d0a8a63dce59e43fa52a34c230bc77b80a8a9406eae9b567e7950",
+      "final_image_sha256": "05dc46104d924a9f102ab0647a398cb5bf65e414ac8d2a0ad37d86849fed6dff",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/figma-multiplayer/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A diagram with three client cubes feeding a central server cube and three downstream canvases, with Hatch pointing at the server to mark the central authority.",
+      "caption": "A diagram with three client cubes feeding a central server cube and three downstream canvases, with Hatch pointing at the server to mark the central authority.",
+      "prompt": "Figma Multiplayer | failure-mechanism: Flat geometric mechanism diagram for Figma's multiplayer sync engine, aspect 1800x1200. On warm cream #faf6f0, lay out three small forest-green #4a7c59 client cubes on the left, each labelled USER A, USER B, USER C, each emitting a thin charcoal #1e211c line carrying a tiny soft amber #c9ad68 property packet. The three lines converge into a single deep forest #244232 server cube in the centre labelled DOCUMENT, with a mist #dfe6dc grid suggesting the tree of objects inside. From the server cube, three matching lines fan back out to three faint mist canvases on the right, each showing the same artboard with the same three abstract shapes but with three different cursor positions in the cursor colours soft amber, deep forest, and charcoal. Label the central server cube quietly with the words LAST WRITER WINS PER PROPERTY. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, pointing one mitten hand at the central server cube to mark the seam. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI recreations, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/figma-multiplayer/failure-mechanism.png",
+      "generated_image_sha256": "eaf3cf50f4512289e737989a0fa38feff175e35ab7510d48946cc74acff2d248",
+      "final_image_sha256": "c98cfb8f4d39654d75f6342bd28c50c0e57da1dfa1613a8ac199116aa8f11e98",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/figma-multiplayer/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A small forest square labelled with the 2016 team size and a tall forest column labelled with the 2025 IPO valuation, with Hatch pointing at the multiplayer launch marker on the connecting line.",
+      "caption": "A small forest square labelled with the 2016 team size and a tall forest column labelled with the 2025 IPO valuation, with Hatch pointing at the multiplayer launch marker on the connecting line.",
+      "prompt": "Figma Multiplayer | evidence-card: Flat geometric evidence card showing the gap between Figma's 2016 launch and its eventual scale, aspect 1600x1000. On warm cream #faf6f0, draw a small forest-green #4a7c59 square on the left labelled 2016 TEAM OF 20, $18M RAISED, with a thin mist #dfe6dc grid inside suggesting twenty tiny seats. On the right, draw a tall deep forest #244232 column labelled 2025 NYSE $56.3B, with a soft amber #c9ad68 candle marker at the top. Connect the two with a single thin charcoal #1e211c line that rises from left to right, with a small soft amber dot marking SEPT 28 2016 MULTIPLAYER SHIPS on the line. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing between the two artifacts in a pointing pose, with one mitten hand on the soft amber dot. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use one short label per artifact and one visible artifact shape only. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/figma-multiplayer/evidence-card.png",
+      "generated_image_sha256": "7c85d04900e3baf1f328a9f7a4630fb61fb6059a93865df7d079f63e003921fa",
+      "final_image_sha256": "c6ebf6ba8528e1054249d5d83572fb0f6a314b1925104b4e6b9e029642960782",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/figma-multiplayer/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central server cylinder labelled shared state with three translucent client panes above it and a soft amber ribbon forming a cursor, with Hatch coaching from the left in a calm stance.",
+      "caption": "A central server cylinder labelled shared state with three translucent client panes above it and a soft amber ribbon forming a cursor, with Hatch coaching from the left in a calm stance.",
+      "prompt": "Figma Multiplayer | lesson-frame: Flat geometric lesson illustration for the takeaway that the shared state was already there, aspect 1800x1200. Background is warm cream #faf6f0. Draw a single deep forest #244232 server cylinder in the centre labelled SHARED STATE. Above it, layered like translucent panes, draw three faint mist #dfe6dc rectangles each labelled CLIENT, with subtle charcoal #1e211c outlines, suggesting that the multiple clients are views into the same cylinder. From the cylinder, draw a soft amber #c9ad68 ribbon that exits to the right and forms a small forest-green #4a7c59 cursor shape, suggesting the seam being exposed to the user. Above the panes, draw a thin charcoal label reading EXPOSE OR HIDE in small caps. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left of the cylinder, one mitten hand resting on the cylinder edge, facing the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no recreated screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/figma-multiplayer/lesson-frame.png",
+      "generated_image_sha256": "109dfb64ec2744e67f4ae454733f3a31bea6b2a25c35f177bc9ab19ac34b54d6",
+      "final_image_sha256": "7f2dab88c9e0f33917940daa806e38ecb4a7647b901baf6283dbed1667b68c43",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/figma-multiplayer/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A single forest-green artboard with three differently coloured cursors hovering above it, with a tiny Hatch mark in the corner.",
+      "caption": "A single forest-green artboard with three differently coloured cursors hovering above it, with a tiny Hatch mark in the corner.",
+      "prompt": "Flat geometric thumbnail composition for Figma multiplayer, aspect 1200x900. On warm cream #faf6f0, render one bold focal scene: a single forest-green #4a7c59 rectangular artboard in the centre with three differently coloured arrow cursors hovering over it, one in soft amber #c9ad68, one in deep forest #244232, one in charcoal #1e211c. Add a small mist #dfe6dc shadow under the artboard for elevation. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny watermark-adjacent mark in the bottom-left, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the decision readable at small size with one strong focal shape. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/figma-multiplayer/hero.png",
+      "generated_image_sha256": "6ecb198a25d8ff477d7149f466b3f498c56a6a463ff493e75e4142f528f4ac14",
+      "final_image_sha256": "4a13f96dff7b9e0beb81016755047bbbf7041f0fdffd3b66ef6ae56f5a94314c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/figma-multiplayer/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image showing a shared artboard with three cursors and a small charcoal label reading cursors on by default, with a small Hatch narrator in the upper right.",
+      "caption": "A wide cover image showing a shared artboard with three cursors and a small charcoal label reading cursors on by default, with a small Hatch narrator in the upper right.",
+      "prompt": "Flat geometric social cover image for the Figma multiplayer story, aspect 2400x1260. On warm cream #faf6f0, place a central composition that occupies the centre 70 percent of the canvas: a forest-green #4a7c59 rectangular artboard with three small abstract shapes inside, a rounded square, a triangle, and a circle, and three arrow cursors in soft amber #c9ad68, deep forest #244232, and charcoal #1e211c hovering over it at different angles. Above the artboard, draw one short charcoal label reading CURSORS ON BY DEFAULT in small caps. Keep the centre 70 percent clear of edge-critical details. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand at the artboard. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/figma-multiplayer/hero.png",
+      "generated_image_sha256": "6ecb198a25d8ff477d7149f466b3f498c56a6a463ff493e75e4142f528f4ac14",
+      "final_image_sha256": "26fe3164db2459730cf7254f8812e58f1dc495c4151d37cc14c5e324d68d3900",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/figma-multiplayer/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/figma-multiplayer/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/figma-multiplayer/v1"
+}

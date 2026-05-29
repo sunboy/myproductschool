@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserPlan } from '@/lib/billing/entitlements'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 
 type AnthropicUsageLike = {
@@ -100,14 +101,7 @@ export function estimateAnthropicPreflightCents(model: string, maxTokens: number
 
 export async function getUserPlanForBudget(userId: string): Promise<string> {
   const admin = createAdminClient()
-  const { data } = await admin
-    .from('profiles')
-    .select('plan, role')
-    .eq('id', userId)
-    .maybeSingle()
-
-  if (data?.role === 'admin') return 'pro'
-  return data?.plan ?? 'free'
+  return (await getEffectiveUserPlan(admin, userId)).plan
 }
 
 export async function assertAiBudget(
@@ -124,6 +118,18 @@ export async function assertAiBudget(
       limit: result.limit,
       windowDays: result.windowDays,
     })
+  }
+}
+
+/**
+ * Returns a structured 402 payload when the AI spend cap is hit.
+ * Use this in API routes that call checkUsageLimit directly for hatch_ai_cents.
+ */
+export function aiCapHitPayload(message?: string) {
+  return {
+    error: message ?? 'You have reached your AI usage limit for this period.',
+    reason: 'ai_cap_hit',
+    upgrade_url: '/pricing',
   }
 }
 

@@ -3,14 +3,18 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
 import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
+import { AnimatedProgress, MotionSection } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { Md } from '@/components/ui/Md'
+import { FeedbackText } from '@/components/ui/FeedbackText'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { HatchFeedbackItem } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 import { appendReturnTo, sanitizeReturnTo } from '@/lib/navigation/return-to'
+import { CanvasSnapshotViewer } from '@/components/v2/CanvasSnapshotViewer'
 
 const dimensionConfig: Record<string, { label: string; icon: string }> = {
   diagnostic_accuracy: { label: 'Diagnostic Accuracy', icon: 'manage_search' },
@@ -21,6 +25,18 @@ const dimensionConfig: Record<string, { label: string; icon: string }> = {
 
 function prettifyDimension(key: string): string {
   return dimensionConfig[key]?.label ?? key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
+function scorePercent(totalValue: unknown, maxValue: unknown): number | null {
+  const total = toFiniteNumber(totalValue)
+  const max = toFiniteNumber(maxValue)
+  if (total == null || max == null || max <= 0) return null
+  return Math.round((total / max) * 100)
 }
 
 interface FeedbackPageProps {
@@ -43,8 +59,24 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   let rawOverallScore: number | null = null
   let submissionDate: string | null = null
   let responseText: string | null = null
-  type MentalModelStep = { step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }
+  type MentalModelStep = {
+    step: string
+    competency: string
+    reasoning_move: string
+    demonstrated: string
+    missed: string
+    framework_hint?: string | null
+    score?: number | null
+  }
+  type NextChallenge = { id: string; slug: string | null; title: string }
   let mentalModelsBreakdown: MentalModelStep[] | null = null
+  let weakestCompetency: string | null = null
+  let nextChallenge: NextChallenge | null = null
+  let canvasSnapshot: Record<string, unknown> | null = null
+  type CanvasAnnotation = { target_label: string; text: string; severity?: string | null }
+  let canvasAnnotations: CanvasAnnotation[] | null = null
+
+  const isCanvasChallenge = challenge.challenge_type === 'system_design' || challenge.challenge_type === 'data_modeling'
 
   if (!isMock && attempt) {
     try {
@@ -55,44 +87,59 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         const adminClient = createAdminClient()
         const { data: attemptData } = await adminClient
           .from('challenge_attempts')
-          .select('feedback_json, score_json, submitted_at, response_text')
+          .select('feedback_json, completed_at, response_text, mental_models_breakdown, weakest_competency, total_score, max_score, grade_label, canvas_final_snapshot')
           .eq('id', attempt)
           .eq('user_id', user.id)
           .single()
 
         if (attemptData) {
-          if (attemptData.feedback_json) {
-            feedback = attemptData.feedback_json as HatchFeedbackItem[]
+          const feedbackJson = attemptData.feedback_json && typeof attemptData.feedback_json === 'object'
+            ? attemptData.feedback_json as Record<string, unknown>
+            : null
+          const feedbackDimensions = Array.isArray(attemptData.feedback_json)
+            ? attemptData.feedback_json
+            : Array.isArray(feedbackJson?.dimensions)
+              ? feedbackJson.dimensions
+              : []
+          if (feedbackDimensions.length > 0) {
+            feedback = feedbackDimensions as HatchFeedbackItem[]
           }
-          if (attemptData.submitted_at) {
-            submissionDate = attemptData.submitted_at
+          if (attemptData.completed_at) {
+            submissionDate = attemptData.completed_at
           }
           if (attemptData.response_text) {
             responseText = attemptData.response_text as string
           }
+          if (attemptData.mental_models_breakdown) {
+            mentalModelsBreakdown = attemptData.mental_models_breakdown as MentalModelStep[]
+          }
+          if (typeof attemptData.weakest_competency === 'string') {
+            weakestCompetency = attemptData.weakest_competency
+          }
 
-          const scoreJson = attemptData.score_json as Record<string, unknown> | null
-          if (scoreJson) {
-            rawOverallScore = typeof scoreJson.overall_score === 'number'
-              ? scoreJson.overall_score
-              : typeof scoreJson.overall === 'number'
-                ? (scoreJson.overall as number) * 10
-                : null
+          if (feedbackJson) {
+            rawOverallScore = typeof feedbackJson.overall_score === 'number'
+              ? feedbackJson.overall_score
+              : typeof feedbackJson.overall === 'number'
+                ? (feedbackJson.overall as number) * 10
+                : scorePercent(attemptData.total_score, attemptData.max_score)
 
-            const detectedPatterns = Array.isArray(scoreJson.detected_patterns)
-              ? (scoreJson.detected_patterns as Array<Record<string, unknown>>)
+            const detectedPatterns = Array.isArray(feedbackJson.detected_patterns)
+              ? (feedbackJson.detected_patterns as Array<Record<string, unknown>>)
               : []
 
-            const strengths = Array.isArray(scoreJson.strengths)
-              ? (scoreJson.strengths as string[])
+            const strengths = Array.isArray(feedbackJson.strengths)
+              ? (feedbackJson.strengths as string[])
               : []
-            const improvements = Array.isArray(scoreJson.improvements)
-              ? (scoreJson.improvements as string[])
+            const improvements = Array.isArray(feedbackJson.improvements)
+              ? (feedbackJson.improvements as string[])
               : []
 
             feedbackFull = {
-              overall: typeof scoreJson.overall_summary === 'string'
-                ? scoreJson.overall_summary
+              overall: typeof feedbackJson.overall_summary === 'string'
+                ? feedbackJson.overall_summary
+                : typeof feedbackJson.overall === 'string'
+                  ? feedbackJson.overall
                 : (MOCK_FEEDBACK_FULL.overall),
               what_worked: strengths.length > 0 ? strengths : MOCK_FEEDBACK_FULL.what_worked,
               what_to_fix: improvements.length > 0 ? improvements : MOCK_FEEDBACK_FULL.what_to_fix,
@@ -102,11 +149,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                 commentary: f.commentary,
                 suggestions: f.suggestions,
               })),
-              key_insight: typeof scoreJson.key_insight === 'string'
-                ? scoreJson.key_insight
+              key_insight: typeof feedbackJson.key_insight === 'string'
+                ? feedbackJson.key_insight
                 : MOCK_FEEDBACK_FULL.key_insight,
-              percentile: typeof scoreJson.percentile === 'number'
-                ? scoreJson.percentile
+              percentile: typeof feedbackJson.percentile === 'number'
+                ? feedbackJson.percentile
                 : MOCK_FEEDBACK_FULL.percentile,
               detected_patterns: detectedPatterns.map(p => ({
                 pattern_id: String(p.pattern_id ?? ''),
@@ -116,19 +163,42 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                 question: typeof p.question === 'string' ? p.question : 'q1',
               })),
             }
+          } else {
+            rawOverallScore = scorePercent(attemptData.total_score, attemptData.max_score)
+          }
+
+          if (!weakestCompetency && typeof feedbackJson?.weakest_competency === 'string') {
+            weakestCompetency = feedbackJson.weakest_competency
+          }
+          if (!mentalModelsBreakdown && Array.isArray(feedbackJson?.mental_models_breakdown)) {
+            mentalModelsBreakdown = feedbackJson.mental_models_breakdown as MentalModelStep[]
+          }
+
+          if (isCanvasChallenge && attemptData.canvas_final_snapshot && typeof attemptData.canvas_final_snapshot === 'object') {
+            canvasSnapshot = attemptData.canvas_final_snapshot as Record<string, unknown>
           }
         }
 
-        // Also check for v2 attempt with mental_models_breakdown
-        const { data: v2Attempt } = await adminClient
-          .from('challenge_attempts')
-          .select('mental_models_breakdown')
-          .eq('id', attempt)
-          .eq('user_id', user.id)
-          .single()
+        const [gradeResult, recommendationResult] = await Promise.all([
+          isCanvasChallenge && canvasSnapshot
+            ? adminClient.from('interview_grades').select('canvas_annotations').eq('attempt_id', attempt).maybeSingle()
+            : Promise.resolve({ data: null }),
+          weakestCompetency
+            ? adminClient.rpc('next_user_challenge', { p_user_id: user.id, p_competency: weakestCompetency }).maybeSingle()
+            : Promise.resolve({ data: null }),
+        ])
 
-        if (v2Attempt?.mental_models_breakdown) {
-          mentalModelsBreakdown = v2Attempt.mental_models_breakdown as MentalModelStep[]
+        if (gradeResult.data?.canvas_annotations && Array.isArray(gradeResult.data.canvas_annotations)) {
+          canvasAnnotations = gradeResult.data.canvas_annotations as CanvasAnnotation[]
+        }
+
+        if (recommendationResult.data) {
+          const recommendedChallenge = recommendationResult.data as Record<string, unknown>
+          nextChallenge = {
+            id: String(recommendedChallenge.id),
+            slug: typeof recommendedChallenge.slug === 'string' ? recommendedChallenge.slug : null,
+            title: String(recommendedChallenge.title),
+          }
         }
       }
     } catch {
@@ -153,8 +223,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     : overallScoreNum >= 75
       ? 'Strong performance with room to grow'
       : overallScoreNum >= 60
-        ? 'Good foundation — focus on the areas below'
-        : 'Keep practicing — review the suggestions below'
+        ? 'Good foundation, focus on the areas below'
+        : 'Keep practicing, review the suggestions below'
 
   // Format submission date
   const formattedDate = submissionDate
@@ -193,6 +263,10 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     `/workspace/challenges/${id}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
     returnTo,
   )
+  const nextChallengeHref = nextChallenge
+    ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}`
+    : undefined
+  const shareHref = `/workspace/challenges/${id}/share${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
@@ -224,19 +298,22 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </span>
           </div>
 
-          {/* Challenge card — sticky on desktop */}
+          {/* Challenge card - sticky on desktop */}
           <div className="bg-surface-container p-5 rounded-xl editorial-shadow space-y-4 lg:sticky lg:top-24">
             {/* Challenge title */}
             <h3 className="font-headline text-xl font-bold text-primary">{challenge.title}</h3>
 
             {/* Prompt text */}
-            <p className="text-sm text-on-surface-variant leading-relaxed whitespace-pre-line">
-              {challenge.prompt_text}
-            </p>
+            <div className="text-sm text-on-surface-variant leading-relaxed">
+              <Md variant="compact" tone="inherit">{challenge.prompt_text ?? ''}</Md>
+            </div>
 
             {/* Tag chips */}
             <div className="flex flex-wrap gap-2 pt-2">
-              {challenge.tags.map(tag => (
+              {Array.from(new Set([
+                ...((challenge as unknown as { topic_tags?: string[] }).topic_tags ?? []),
+                ...((challenge as unknown as { technique_tags?: string[] }).technique_tags ?? challenge.tags ?? []),
+              ])).map(tag => (
                 <span
                   key={tag}
                   className="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30"
@@ -290,7 +367,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
 
           {/* Score Summary Card */}
-          <div className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
+          <MotionSection className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <HatchGlyph size={40} className="text-primary flex-shrink-0" />
@@ -298,7 +375,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   <h3 className="font-headline text-lg font-bold text-on-surface">
                     Hatch&apos;s Analysis
                   </h3>
-                  <p className="text-sm text-on-surface-variant">AI-Assisted Evaluation</p>
+                  <p className="text-sm text-on-surface-variant">Hatch review</p>
                 </div>
               </div>
               <div className="text-right">
@@ -311,7 +388,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <p className="text-sm text-on-surface-variant mb-4">{scoreDescriptor}</p>
 
             {/* Overall assessment */}
-            <p className="text-sm text-on-surface leading-relaxed mb-6">{full.overall}</p>
+            <FeedbackText className="mb-6 text-on-surface">{full.overall}</FeedbackText>
 
             {/* Progress Bars for each dimension (summary) */}
             <div className="space-y-2">
@@ -322,19 +399,30 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   <div key={item.dimension} className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 flex items-center justify-between shadow-sm">
                     <div className="flex flex-col gap-2 w-full mr-4">
                       <span className="text-sm font-bold text-on-surface">{prettifyDimension(item.dimension)}</span>
-                      <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${barColor} rounded-full transition-all duration-700`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+                      <AnimatedProgress
+                        value={percentage}
+                        state={item.score >= 7 ? 'complete' : 'active'}
+                        trackClassName="h-1.5 bg-background"
+                        barClassName={barColor}
+                      />
                     </div>
                     <span className="font-headline font-extrabold text-primary">{item.score.toFixed(1)}</span>
                   </div>
                 )
               })}
             </div>
-          </div>
+          </MotionSection>
+
+          {/* Canvas Snapshot Viewer (system_design / data_modeling only) */}
+          {isCanvasChallenge && canvasSnapshot && (
+            <div className="bg-surface-container rounded-xl p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-xl">schema</span>
+                <h3 className="font-headline text-base font-semibold text-on-surface">Your diagram</h3>
+              </div>
+              <CanvasSnapshotViewer snapshot={canvasSnapshot} annotations={canvasAnnotations} />
+            </div>
+          )}
 
           {/* What Worked / What to Fix */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -347,7 +435,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                 {full.what_worked.map((item, i) => (
                   <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
                     <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
-                    <span>{item}</span>
+                    <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
                   </li>
                 ))}
               </ul>
@@ -361,7 +449,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                 {full.what_to_fix.map((item, i) => (
                   <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
                     <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
-                    <span>{item}</span>
+                    <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
                   </li>
                 ))}
               </ul>
@@ -376,7 +464,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
           {/* Mental Models Breakdown (v2 challenges) */}
           {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
-            <MentalModelsBreakdown breakdown={mentalModelsBreakdown} />
+            <MentalModelsBreakdown
+              breakdown={mentalModelsBreakdown}
+              weakestCompetency={weakestCompetency ?? undefined}
+              nextChallengeHref={nextChallengeHref}
+              nextChallengeTitle={nextChallenge?.title}
+            />
           )}
 
           {/* Key Insight */}
@@ -384,7 +477,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
             <div>
               <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
-              <p className="text-sm text-on-tertiary-fixed-variant">{full.key_insight}</p>
+              <FeedbackText className="text-on-tertiary-fixed-variant">{full.key_insight}</FeedbackText>
             </div>
           </div>
 
@@ -403,6 +496,13 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             >
               <span className="material-symbols-outlined">edit_note</span>
               Try Again
+            </Link>
+            <Link
+              href={shareHref}
+              className="flex-1 py-3 border border-outline-variant text-on-surface rounded-full font-bold hover:bg-surface-container transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
+            >
+              <span className="material-symbols-outlined">ios_share</span>
+              Share scorecard
             </Link>
           </div>
 

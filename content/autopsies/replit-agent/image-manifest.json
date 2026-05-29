@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "replit",
+  "story_slug": "replit-agent",
+  "story_title": "Replit Agent",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/replit-agent/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/replit-agent/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot standing in front of a browser window showing a plain-language prompt transforming into a deployed web application",
+      "caption": "Hatch mascot standing in front of a browser window showing a plain-language prompt transforming into a deployed web application",
+      "prompt": "Replit Agent | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) standing confidently in front of a large floating browser window showing a simple text prompt field and, below it, a fully rendered web application. The browser has no installation dialogs, no terminal, no configuration screens — just the prompt and the finished product. Cream background, no text overlays. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/replit-agent/hero.png",
+      "generated_image_sha256": "19dfc03019a09f446d5e5ab264354c2750b2602746791bbe0c20fd690b712e97",
+      "final_image_sha256": "95e2c3d3bbbe4638eb0cc2f2de7f5f47d502fb3170267cd495cb633139c72803",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/replit-agent/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/replit-agent/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/replit-agent/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a terminal full of setup errors representing the barrier between idea and first line of code",
+      "caption": "Hatch gesturing toward a terminal full of setup errors representing the barrier between idea and first line of code",
+      "prompt": "Replit Agent | hatch-narrator: Hatch in narrator pose, gesturing toward a developer's typical local setup: a terminal window filled with npm error messages, a package.json file open, and a frustrated figure at a laptop who has not yet written any application code. The scene captures the \"thirty minutes before you can start\" moment. Cream background, no speech bubble. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/replit-agent/hatch-narrator.png",
+      "generated_image_sha256": "6d670a3d6195a41fdaaa084b222ab4b21dacc9bacc17ac8c9932b1d173876786",
+      "final_image_sha256": "89197db07410e4a95a9bd8ec66b0c3185ac2785c655bad65851f2f3feeec1fab",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/replit-agent/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/replit-agent/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/replit-agent/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch observing a three-step flow from natural language description to autonomous agent work to deployed live application",
+      "caption": "Hatch observing a three-step flow from natural language description to autonomous agent work to deployed live application",
+      "prompt": "Replit Agent | failure-mechanism: Hatch in a thinking pose, looking at a three-panel flow: panel one shows a plain-English description (\"build me a task tracker for my restaurant\"), panel two shows the agent working autonomously (code appearing, tests running, errors resolving), panel three shows a live URL and a working application. No IDE panes visible — the environment has disappeared. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/replit-agent/failure-mechanism.png",
+      "generated_image_sha256": "cfe2a588b6a0506a5fa75d515618ab110a3ddaa1714bf852d1f30a12e07efe32",
+      "final_image_sha256": "431c5303245907508a2cb15957a0f74976fee34b02c4d01ef46018ffb809f5b9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/replit-agent/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/replit-agent/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/replit-agent/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a profile gallery showing the new non-technical audience building applications with Replit Agent",
+      "caption": "Hatch pointing at a profile gallery showing the new non-technical audience building applications with Replit Agent",
+      "prompt": "Replit Agent | evidence-card: Hatch pointing at a simple chart or user profile gallery showing the shift in who is building: icons or silhouettes representing a restaurant owner, a teacher, a researcher, a nonprofit director — people who are building functional apps for the first time. The contrast with a traditional \"developer\" silhouette is visible but not heavy-handed. Cream background. Watermark same. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/replit-agent/evidence-card.png",
+      "generated_image_sha256": "c96fd5c64c6286870cf8751936d8538987ff7ac49a4b0242717709588736bd19",
+      "final_image_sha256": "2de16bc1e7aef0d414567491210b42c4a763957d85ed8f645689e2d9d2952959",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/replit-agent/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/replit-agent/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/replit-agent/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching pose beside a deployed application in a browser with no local development environment visible",
+      "caption": "Hatch in coaching pose beside a deployed application in a browser with no local development environment visible",
+      "prompt": "Replit Agent | lesson-frame: Hatch in a coaching pose, calm and assured, standing beside a single open browser tab showing a deployed application. No terminal, no local setup visible anywhere. The message is that the environment is now invisible. Cream background, no copy beyond the watermark. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/replit-agent/lesson-frame.png",
+      "generated_image_sha256": "f6616e1874cd3dc152611a4d46395dd18bb26e27849a77ab4ca7132d0a2b44e4",
+      "final_image_sha256": "6e77abb6c13d45049a3a48598c410c4e8d027d86e9955588645c933742e6f52a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/replit-agent/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/replit-agent/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/replit-agent/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Small Hatch holding a browser with a plain-language prompt and deployed application",
+      "caption": "Small Hatch holding a browser with a plain-language prompt and deployed application",
+      "prompt": "Hatch small and recognisable, holding a miniature browser window showing a plain text prompt on one side and a tiny deployed app on the other. Clean, high-contrast, immediately readable at small size. Cream background. Watermark same. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/replit-agent/hero.png",
+      "generated_image_sha256": "19dfc03019a09f446d5e5ab264354c2750b2602746791bbe0c20fd690b712e97",
+      "final_image_sha256": "d8ec219d9695306639fbbc33f7d4c00d94eb11975ac6f7ee34a8d9aa88fdbf07",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/replit-agent/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/replit-agent/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/replit-agent/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a browser window showing a plain-English prompt becoming a working web application",
+      "caption": "Hatch beside a browser window showing a plain-English prompt becoming a working web application",
+      "prompt": "Hatch hero pose adapted for wide OG card format: mascot standing to the left of a large browser window showing a natural language prompt transforming into a web application in real time. The browser environment is prominent. No text. Cream background, HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/replit-agent/hero.png",
+      "generated_image_sha256": "19dfc03019a09f446d5e5ab264354c2750b2602746791bbe0c20fd690b712e97",
+      "final_image_sha256": "6e690b0f3be92ad7b9daed1d4e3d3b952ab4c4a95860a0f93cc9a2d90e3539e4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/replit-agent/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/replit-agent/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/replit-agent/v1"
+}

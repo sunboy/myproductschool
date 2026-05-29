@@ -1,0 +1,301 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "buffer",
+  "story_slug": "buffer-fake-landing-page-mvp",
+  "story_title": "Buffer Landing Page MVP",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/buffer-fake-landing-page-mvp/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth. Do not redraw Hatch from prompt-only instructions or change his required traits.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "Told by Hatch · HackProduct",
+      "HackProduct Autopsy"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/buffer-fake-landing-page-mvp/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into three-page validation scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three page-shaped panels show a product description, a pricing test, and an email capture while Hatch points to the pricing step.",
+      "caption": "Three pages. No scheduling code. One demand question at a time.",
+      "prompt": "Flat geometric HackProduct hero illustration for Buffer landing page validation. Official Hatch mascot used as strict character reference and integrated as a narrator pointing at the pricing step. Three page panels show product description, pricing test, and email capture. No logos, fake screenshots, endorsement, dense text, photorealism, or watermark in generated source.",
+      "crop_notes": "Title-safe empty space remains upper left. Core three-page mechanism stays centered in 16:9 and mobile crops.",
+      "qa": [
+        "Image-model generated scene uses official Hatch as character reference.",
+        "Hatch is integrated into the story composition, not pasted as a foreground sticker.",
+        "Watermark applied in post-processing.",
+        "No fake screenshots, exact logos, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-hero",
+      "generated_image_source": "/Users/sandeep/.codex/generated_images/019e2f34-ad85-7d61-9ef4-84bf61cb940f/ig_00501ed4b2144c22016a0a5afd5f8081a0906813711871898d.png",
+      "generated_image_sha256": "fde7a4af407bbf719bde19032f283d87e32629356882fabd895773ebde155eb8",
+      "final_image_sha256": "fd9f37a09e0817713e819807ad549521af7f13eac71ef085d66a400092fb1a04",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer-fake-landing-page-mvp/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer-fake-landing-page-mvp/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/buffer-fake-landing-page-mvp/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "desk-side narrator beside laptop wireframe",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch stands beside a small desk with a laptop showing a code editor next to a landing page wireframe.",
+      "caption": "The first decision was to stop coding and make the question visible.",
+      "prompt": "Square flat geometric story scene for Buffer validation. Official Hatch mascot used as strict character reference and integrated beside a desk with laptop panes for code editor and landing page wireframe, plus a notepad with tweet queue, emails, and users. No humans, logos, fake screenshots, photorealism, dense text, or watermark in generated source.",
+      "crop_notes": "Hatch stays fully visible in square crop. Laptop and notepad remain secondary story objects.",
+      "qa": [
+        "Image-model generated scene uses official Hatch as character reference.",
+        "Hatch is integrated into the story composition, not pasted as a foreground sticker.",
+        "Watermark applied in post-processing.",
+        "No fake screenshots, exact logos, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-setup",
+      "generated_image_source": "/Users/sandeep/.codex/generated_images/019e2f34-ad85-7d61-9ef4-84bf61cb940f/ig_00501ed4b2144c22016a0a5b329c0481a094726e8402b5e16c.png",
+      "generated_image_sha256": "f8beb4f3b94a743bcdc3887c32a9c255a4ab8d5218faa24cedf33605ef45bcf5",
+      "final_image_sha256": "be0acd4568cfdefc8b04f20efef33a9b9bc08bac5a786d3c73e8e30efcd2c7ab",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer-fake-landing-page-mvp/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer-fake-landing-page-mvp/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/buffer-fake-landing-page-mvp/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small coach pointing at pricing gate",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage diagram runs from tweet to product page to pricing tiers to email capture, with a conversation loop below.",
+      "caption": "The mechanism filtered curiosity into pricing intent, then turned that intent into conversations.",
+      "prompt": "Flat geometric mechanism diagram for Buffer three-stage landing page validation. Official Hatch mascot used as strict reference and integrated as a coach near the pricing gate. Stages: tweet, describe page, pricing, email capture, with conversation loop. No logos, fake screenshots, endorsement, photorealism, dense text, or watermark in generated source.",
+      "crop_notes": "Pricing pressure point remains central. Arrows and conversation loop stay inside the 3:2 safe zone.",
+      "qa": [
+        "Image-model generated scene uses official Hatch as character reference.",
+        "Hatch is integrated into the story composition, not pasted as a foreground sticker.",
+        "Watermark applied in post-processing.",
+        "No fake screenshots, exact logos, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-mechanism",
+      "generated_image_source": "/Users/sandeep/.codex/generated_images/019e2f34-ad85-7d61-9ef4-84bf61cb940f/ig_00501ed4b2144c22016a0a5b70449481a0b141ae14a4a23285.png",
+      "generated_image_sha256": "00383507e6a3893c96dcd4e9635f9a39d6155c173f7059483f711923f5ce5b08",
+      "final_image_sha256": "8a626559fa2f1e7b46b62f1231bfcbfc862004d72dcd7431d4871d777b7b4ca4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer-fake-landing-page-mvp/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer-fake-landing-page-mvp/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/buffer-fake-landing-page-mvp/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A validation chart shows 120 signups, 50 launch-day users, and a first five-dollar payment within four days.",
+      "caption": "The public evidence is modest by design: 120 signups, 50 launch-day users, and a first paid customer.",
+      "prompt": "Flat geometric evidence card for Buffer validation metrics. Official Hatch mascot used as strict character reference and integrated pointing at the first paid-customer signal. Three bars show 120 signups, 50 launch users, first $5 payment, and 4 days. No date axis, logos, fake screenshots, photorealism, dense text, or watermark in generated source.",
+      "crop_notes": "Bar labels remain legible. Hatch remains secondary but visible in 8:5 and square center crops.",
+      "qa": [
+        "Image-model generated scene uses official Hatch as character reference.",
+        "Hatch is integrated into the story composition, not pasted as a foreground sticker.",
+        "Watermark applied in post-processing.",
+        "No fake screenshots, exact logos, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-evidence",
+      "generated_image_source": "/Users/sandeep/.codex/generated_images/019e2f34-ad85-7d61-9ef4-84bf61cb940f/ig_00501ed4b2144c22016a0a5cce416c81a0a0bf51c2a4bc1769.png",
+      "generated_image_sha256": "839877b6e1ca785c1b4ee43af1af1244f22007f0f00bc1d893eb393616b5a5f2",
+      "final_image_sha256": "3baaff1f5dbe674e1b38dac94aa0e5f8637b950bf22c6416d496db39d17ea25e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer-fake-landing-page-mvp/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer-fake-landing-page-mvp/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/buffer-fake-landing-page-mvp/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside code-first versus test-first model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch coaches beside a split illustration comparing a code editor with a landing page and conversation loop.",
+      "caption": "The lesson frame keeps the reusable move separate from the company myth.",
+      "prompt": "Flat geometric lesson illustration for replacing early code with a demand-testing artifact. Official Hatch mascot used as strict reference and integrated as a coach beside a split model: code first versus test first. No logos, fake screenshots, real people, photorealism, dense text, or watermark in generated source.",
+      "crop_notes": "Split model remains central. Hatch stays visible but secondary in 3:2 and 4:3 crops.",
+      "qa": [
+        "Image-model generated scene uses official Hatch as character reference.",
+        "Hatch is integrated into the story composition, not pasted as a foreground sticker.",
+        "Watermark applied in post-processing.",
+        "No fake screenshots, exact logos, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution-and-editorial-support",
+      "generated_image_source": "/Users/sandeep/.codex/generated_images/019e2f34-ad85-7d61-9ef4-84bf61cb940f/ig_00501ed4b2144c22016a0a5bd2fe7881a0abd89089f65d076e.png",
+      "generated_image_sha256": "7808c041a2c5040bd4c1e6e27c875781f9ac50b90ec50f937e98d9d4fbda5f3f",
+      "final_image_sha256": "4d157e6d542250fcb2bc4fb2c8ecca912b7f8c1dacf4d4cb54ff8a9604015e07",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer-fake-landing-page-mvp/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer-fake-landing-page-mvp/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/buffer-fake-landing-page-mvp/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator mark near landing page card",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A compact landing page card with a pricing chip and submit button represents the Buffer validation story.",
+      "caption": "The thumbnail keeps the Buffer autopsy recognizable in the library.",
+      "prompt": "Compact flat geometric thumbnail for Buffer landing page validation. Official Hatch mascot used as strict reference and integrated as a tiny narrator beside one bold landing page card with pricing chips and submit button. No logos, fake screenshots, humans, photorealism, dense text, or watermark in generated source.",
+      "crop_notes": "Single card remains readable at 320 px wide. Hatch is visible but does not crowd the focal card.",
+      "qa": [
+        "Image-model generated scene uses official Hatch as character reference.",
+        "Hatch is integrated into the story composition, not pasted as a foreground sticker.",
+        "Watermark applied in post-processing.",
+        "No fake screenshots, exact logos, real person likenesses, or implied endorsement."
+      ],
+      "usage": "listing-card-and-dashboard",
+      "generated_image_source": "/Users/sandeep/.codex/generated_images/019e2f34-ad85-7d61-9ef4-84bf61cb940f/ig_00501ed4b2144c22016a0a5c075a6081a0bfe77d3cfc855ff7.png",
+      "generated_image_sha256": "37b2496dc739b027e391e775d2eec299407bc52be433b123def8863ffcd32b28",
+      "final_image_sha256": "98a349c74e392ed89d9f413fdba4d74140d5b7e2e7200431075ceda123e23f2b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer-fake-landing-page-mvp/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer-fake-landing-page-mvp/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/buffer-fake-landing-page-mvp/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small right-edge narrator pointing to pricing card",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three sequential landing page shapes connected by arrows show validation without code.",
+      "caption": "The social cover frames Buffer as a demand test, not a company endorsement.",
+      "prompt": "Wide social cover for Buffer validation without code. Official Hatch mascot used as strict character reference and integrated as a small narrator at the right edge. Three page shapes show product description, pricing, and email capture. No logos, fake screenshots, real people, photorealism, dense text, or watermark in generated source.",
+      "crop_notes": "The three-page sequence stays inside the center 70 percent for link preview crops.",
+      "qa": [
+        "Image-model generated scene uses official Hatch as character reference.",
+        "Hatch is integrated into the story composition, not pasted as a foreground sticker.",
+        "Watermark applied in post-processing.",
+        "No fake screenshots, exact logos, real person likenesses, or implied endorsement."
+      ],
+      "usage": "social-cover-and-og",
+      "generated_image_source": "/Users/sandeep/.codex/generated_images/019e2f34-ad85-7d61-9ef4-84bf61cb940f/ig_00501ed4b2144c22016a0a5c3b617081a09ba367c125fce922.png",
+      "generated_image_sha256": "d16581428466bfa36bee945c62616a58debd73eafa00ed630677ed829d47076c",
+      "final_image_sha256": "288f0a0c7b39c2b2ea2af0df39e080d5d525d49ba6e61ed957e29d354d0e8ed4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/buffer-fake-landing-page-mvp/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/buffer-fake-landing-page-mvp/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/buffer-fake-landing-page-mvp/v1"
+}

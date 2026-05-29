@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "nyt",
+  "story_slug": "wordle",
+  "story_title": "Wordle",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/wordle/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/wordle/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A single calendar page in the centre shows one Wordle grid with green and amber tiles, while Hatch stands at the lower left pointing at it.",
+      "caption": "One puzzle. Same word for everyone. Once a day.",
+      "prompt": "Wordle | hero: Flat geometric HackProduct autopsy illustration for Wordle. A single oversized cream calendar page sits in the centre of a warm cream `#faf6f0` background, with one five-by-six grid of square tiles printed on it. Two rows of tiles are filled in: forest green `#4a7c59` correct letters, soft amber `#c9ad68` near-misses, mist `#dfe6dc` blanks. A small charcoal `#1e211c` \"today\" pin sits in the top corner of the calendar page. Hatch stands at lower left at about 15 percent of canvas height, pointing at the single calendar page with one mitten hand. Keep Hatch's rounded forest green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, and friendly coach expression intact. Leave clean negative space in the upper left for a title overlay. Aspect 2400x1350. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/wordle/hero.png",
+      "generated_image_sha256": "92254e8f6f4ff1fcba1ffa3114801e456887a5aeaa1508d90064162bc44a020b",
+      "final_image_sha256": "edadbd3f169a0b0b8fe7d7176904c5b47f5d79b59e3dd3ceca127c3dda094da6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/wordle/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in narrator pose gestures at a small apartment window scene with two coffee mugs on a sill, holding a notepad sketch of a Wordle grid.",
+      "caption": "Hatch in narrator pose gestures at a small apartment window scene with two coffee mugs on a sill, holding a notepad sketch of a Wordle grid.",
+      "prompt": "Wordle | hatch-narrator: Hatch in narrator pose at the centre of the frame on a warm cream `#faf6f0` background, gesturing toward a small flat illustration of a Brooklyn apartment window with two stylised coffee mugs on a windowsill and a soft amber `#c9ad68` morning glow behind it. Hatch holds a forest green `#4a7c59` notepad with a small five-by-six tile sketch on it. Keep Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures in the window scene, only objects. Charcoal `#1e211c` linework, mist `#dfe6dc` shadows. Aspect 1600x1600. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/wordle/hatch-narrator.png",
+      "generated_image_sha256": "513b0ff0f98eba80ee008f24b2cedb923f195e6f32cee9bc82035ea8321c2fad",
+      "final_image_sha256": "10a029ce56a095ab746b638758786e66a6772630961ae0c6b8fb359719b6689f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/wordle/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three panels show an empty Wordle grid, a played grid, and a spoiler-free share card, with Hatch in the lower right pointing at the share card.",
+      "caption": "Three panels show an empty Wordle grid, a played grid, and a spoiler-free share card, with Hatch in the lower right pointing at the share card.",
+      "prompt": "Wordle | failure-mechanism: Step-by-step visualisation of how Wordle works on a warm cream `#faf6f0` background. Three labelled panels from left to right. Panel one: a single five-by-six tile grid, empty, with a small \"one a day\" sun glyph above it in soft amber `#c9ad68`. Panel two: the same grid after three guesses, with forest green `#4a7c59` correct tiles, soft amber near-miss tiles, and mist `#dfe6dc` blanks. Panel three: a small share card showing only the coloured emoji squares with letters hidden, no app icon, no notification badge. A faint charcoal `#1e211c` arrow runs across the bottom of the three panels. Hatch sits in the lower right at about 15 percent of canvas height in thinking pose, pointing at panel three. Keep Hatch's rounded green head, cream face and body, cap, growth arrow, green H chest mark, bright eyes, and friendly coach expression. Aspect 1800x1200. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/wordle/failure-mechanism.png",
+      "generated_image_sha256": "9c101a70ac2cd23246b744575481d738916e3726787ae5558fd7902099e90ae8",
+      "final_image_sha256": "f613f54da6caa1ac2d53b755bd5e043fd410fede95ccbbfe2aac5a678dae5182",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/wordle/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A line chart climbs from 90 in November 2021 to two million by mid-January 2022, with Hatch at the right pointing at the top of the curve.",
+      "caption": "A line chart climbs from 90 in November 2021 to two million by mid-January 2022, with Hatch at the right pointing at the top of the curve.",
+      "prompt": "Wordle | evidence-card: A clean evidence chart on a warm cream `#faf6f0` background. A single forest green `#4a7c59` line climbs sharply from left to right with three labelled dots: \"Nov 1, 2021 — 90\", \"Jan 2, 2022 — 300,000\", \"Mid-Jan 2022 — 2,000,000\". The horizontal axis uses small charcoal `#1e211c` tick marks. Below the chart, a single row of soft amber `#c9ad68` and mist `#dfe6dc` emoji-style squares forms a thin band representing share grids. Hatch sits at the far right at about 14 percent of canvas height in pointing pose, one mitten hand aimed at the rightmost dot. Keep Hatch's rounded green head, cream face and body, cap, growth arrow, green H chest mark, bright eyes, and friendly coach expression. No app screenshots, no logos, no decorative gradients. Aspect 1600x1000. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/wordle/evidence-card.png",
+      "generated_image_sha256": "bc9ee7fd117b6044948a539effb654a29bef23235881ccb192777f481da86f51",
+      "final_image_sha256": "25721bb3c2e46d1e81bd619ea03bb6f163d5218e677faac68377543489ffd5ba",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/wordle/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch stands in coaching pose with crossed-out icons for notifications, infinite play, coins, and accounts around it, while a single sun glyph for one puzzle a day is checked.",
+      "caption": "Hatch stands in coaching pose with crossed-out icons for notifications, infinite play, coins, and accounts around it, while a single sun glyph for one puzzle a day is checked.",
+      "prompt": "Wordle | lesson-frame: Hatch in coaching pose centred on a warm cream `#faf6f0` background, calm posture with both mitten hands open. Behind Hatch, a soft deep forest `#244232` panel holds a single line of cream text-shaped blocks (no actual letters) that suggest a short sentence. Around the panel, small icons in soft amber `#c9ad68` are crossed out with thin charcoal `#1e211c` strokes: a push notification bell, an infinity loop, a coin stack, a profile avatar. A small forest green `#4a7c59` checkmark sits next to a single sun glyph representing one puzzle per day. Keep Hatch's rounded green head, cream face and body, graduation cap, growth arrow, green H chest mark, bright eyes, and friendly coach expression. Aspect 1800x1200. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/wordle/lesson-frame.png",
+      "generated_image_sha256": "05ad7199fab5e12444677be60e510b4fe1111bce4df4aa133e6f4d006a75bd81",
+      "final_image_sha256": "1f027f6cfbdae5679644b2398cd9b6ea46ae3576cc011551c4f5fe4f00a60e3d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/wordle/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A bold Wordle grid with one green row and one amber row sits centred, with a tiny Hatch head mark in the lower left and a small sun glyph in the upper right.",
+      "caption": "A bold Wordle grid with one green row and one amber row sits centred, with a tiny Hatch head mark in the lower left and a small sun glyph in the upper right.",
+      "prompt": "Compact thumbnail composition on a warm cream `#faf6f0` background. One bold five-by-six tile grid centred in the frame, with the top row in forest green `#4a7c59`, the second row in soft amber `#c9ad68`, the remaining rows in mist `#dfe6dc`. A small charcoal `#1e211c` sun glyph in the upper right corner suggests \"one a day.\" A tiny Hatch mark in the lower left at about 10 percent of canvas height, just the head and cap visible, no body, in cream and forest green only, preserving the rounded green head frame, cap, growth arrow, and friendly eyes. No text inside the tiles. Keep the focal grid readable at 320 pixels wide. Aspect 1200x900. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/wordle/hero.png",
+      "generated_image_sha256": "92254e8f6f4ff1fcba1ffa3114801e456887a5aeaa1508d90064162bc44a020b",
+      "final_image_sha256": "8df02fa308a43200450ce74fafcd58afc4867717a695c629a57a1c15ba54e73b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/wordle/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A Wordle grid sits left of centre with a blank share card silhouette to its right, and Hatch in narrator pose at the lower left, on a cream background.",
+      "caption": "A Wordle grid sits left of centre with a blank share card silhouette to its right, and Hatch in narrator pose at the lower left, on a cream background.",
+      "prompt": "Social share cover for the Wordle autopsy on a warm cream `#faf6f0` background. A single five-by-six tile grid sits at left-of-centre, with two rows of forest green `#4a7c59` and soft amber `#c9ad68` tiles and four rows of mist `#dfe6dc` tiles. To the right, a small share card silhouette in deep forest `#244232` shows only blank coloured squares. Hatch stands at the lower left at about 13 percent of canvas height in narrator pose, gesturing at the grid. Keep Hatch's rounded green head, cream face and body, cap, growth arrow, green H chest mark, bright eyes, and friendly coach expression. Keep the centre 70 percent clear of edge-critical details so social previews crop cleanly. No headlines baked into the artwork. Aspect 2400x1260. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/wordle/hero.png",
+      "generated_image_sha256": "92254e8f6f4ff1fcba1ffa3114801e456887a5aeaa1508d90064162bc44a020b",
+      "final_image_sha256": "51723653966dc0eeede164856fdacc6c34216cb5edf4a52d1fd3f8dac362f8e3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/wordle/v1"
+}

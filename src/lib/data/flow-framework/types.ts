@@ -41,11 +41,19 @@ export interface FlowStep {
 
 export type DisciplineEdges = Record<string, string[]>
 
+export interface LearnerExplanation {
+  plainPurpose: string
+  examplePrompt: string
+  stepMeanings: Record<FlowStepId, string>
+  practiceOutcome: string
+}
+
 export interface Discipline {
   id: DisciplineId
   name: string
   tagline: string
   tabLabel: string
+  learnerExplanation: LearnerExplanation
   traditions: Tradition[]
   competencies: Competency[]
   steps: FlowStep[]

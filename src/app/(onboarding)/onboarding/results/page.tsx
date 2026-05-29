@@ -126,7 +126,7 @@ export default function ResultsPage() {
         <div>
           <span className="text-xs font-label font-bold text-primary uppercase tracking-wide">Hatch</span>
           <p className="text-sm text-on-surface font-body mt-1">
-            Sharp instincts — you&apos;ve got a strong analytical foundation. Let&apos;s sharpen your <strong>Win</strong> move.
+            Sharp instincts. You&apos;ve got a strong analytical foundation. Let&apos;s sharpen your <strong>Win</strong> move.
           </p>
         </div>
       </div>

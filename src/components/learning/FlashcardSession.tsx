@@ -111,7 +111,7 @@ export function FlashcardSession({ domain, domainSlug, allDomains = [] }: Flashc
     )
   }
 
-  /* ── Active Session — Two-Pane Layout ──────────────────── */
+  /* ── Active Session - Two-Pane Layout ──────────────────── */
   return (
     <>
       {/* Slim Top Bar */}

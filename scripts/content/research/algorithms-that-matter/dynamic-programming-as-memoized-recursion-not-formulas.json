@@ -1,0 +1,378 @@
+{
+  "facts": [
+    {
+      "fact": "Memoization maintains O(n) space due to both the cache dictionary and the recursive call stack depth, even though it improves time complexity from exponential to O(n)",
+      "source": "https://www.geeksforgeeks.org/dsa/what-is-memoization-a-complete-tutorial/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Tabulation (bottom-up DP) eliminates call stack overhead by using iterative approach, reducing space from O(n) to O(1) for problems like Fibonacci while keeping time at O(n)",
+      "source": "https://programming.guide/dynamic-programming-vs-memoization-vs-tabulation.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Python's dict implementation maintains a load factor of approximately 2/3 (≈0.66), resizing when entries exceed this threshold, typically doubling the array size",
+      "source": "https://medium.com/@erikbatista42/an-introduction-to-hash-tables-with-python-817772cad688",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Hash tables with load factor threshold of 0.75 trigger rehashing to maintain O(1) average-case lookup performance",
+      "source": "https://blog.faangshui.com/p/how-hash-tables-achieve-o1-time-complexity",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Quadratic probing can fail to find insertion slots when load factor α > 0.5, unlike linear probing which guarantees to try every entry in the table",
+      "source": "https://www.cs.umd.edu/class/fall2020/cmsc420-0201/Lects/lect14-hashing.pdf",
+      "publication_date": "2020"
+    },
+    {
+      "fact": "Separate chaining collision resolution achieves expected lookup time of 1 + λ/2 where λ is the load factor, providing more stable performance than open addressing at high load factors",
+      "source": "https://www.cs.rice.edu/~as143/COMP480_580_Fall24/scribe/chaining_probing_Analysis.pdf",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Heap has O(1) average case insertion and O(log n) worst case, with superior cache locality due to array-based storage compared to BST's pointer-based structure",
+      "source": "https://www.baeldung.com/cs/heap-vs-binary-search-tree",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Tries occupy 20-35% less space than binary search trees for large collections of short strings, and enable O(L) operations where L is string length independent of dictionary size",
+      "source": "https://www.codecademy.com/article/trie-data-structure-complete-guide-to-prefix-trees",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Balanced BST provides O(log n + k) range queries where k is number of items in range, superior to heaps for sorted iteration",
+      "source": "https://www.baeldung.com/cs/heap-vs-binary-search-tree",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Dynamic array append has O(n) worst-case complexity per operation, but amortized O(1) because expensive resizing (doubling array size) only occurs at positions 1, 2, 4, 8, ..., 2^k",
+      "source": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "With dynamic arrays using geometric growth (doubling), n consecutive append operations starting with size 1 accumulate total time of O(n): at most 2n-1 element copies",
+      "source": "https://courses.cs.duke.edu/spring19/compsci330/lecture21scribe.pdf",
+      "publication_date": "2019"
+    },
+    {
+      "fact": "Array elements achieve contiguous memory layout with single 64-byte cache line containing multiple adjacent elements, enabling hardware prefetching; linked lists require pointer chasing",
+      "source": "https://www.geeksforgeeks.org/dsa/why-arrays-have-better-cache-locality-than-linked-list/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Linked list iteration can be 230% slower than array iteration on modern CPUs due to unpredictable pointer chasing preventing hardware prefetch and causing cache misses",
+      "source": "https://dzone.com/articles/performance-of-array-vs-linked-list-on-modern-comp",
+      "publication_date": "2017"
+    },
+    {
+      "fact": "Binary search generalizes to any monotonic function over integers, not just sorted arrays; requires property that predicate changes from true to false or vice versa at most once",
+      "source": "https://cp-algorithms.com/num_methods/binary_search.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "lower_bound returns iterator to first element >= x; upper_bound returns iterator to first element > x; together they bracket all equal elements",
+      "source": "https://www.geeksforgeeks.org/c/implementing-upper_bound-and-lower_bound-in-c/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Longest Increasing Subsequence memoization approach has O(n²) time and O(n) space; bottom-up DP also O(n²) time but can be optimized further with segment trees to O(n log n)",
+      "source": "https://www.baeldung.com/cs/longest-increasing-subsequence-dynamic-programming",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "0/1 Knapsack can be space-optimized from O(n×W) to O(W) by iterating capacity backwards (W down to w[i]) to prevent overwriting values still needed in current iteration",
+      "source": "https://codeforces.com/blog/entry/63323",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Hash table resize cost is amortized by doubling array size: inserting n elements incurs 1 + 2 + 4 + ... + 2^k = 2·2^k - 1 ≤ 2n copy operations total",
+      "source": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Trie nodes for lowercase letters require 26 children pointers per node, enabling O(L) insertion/search/deletion where L is string length regardless of dictionary size",
+      "source": "https://www.geeksforgeeks.org/dsa/trie-insert-and-search/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Binary search in competitive programming applies to Fenwick trees (finding k-th non-zero element), lowest common ancestor queries in trees, and any monotonically ordered solution space",
+      "source": "https://usaco.guide/silver/binary-search",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Fibonacci: memoized recursion maintains O(n) stack depth plus O(n) cache, while bottom-up tabulation needs only two variables (prev, curr) for O(1) space",
+      "context": "Space optimization demonstration"
+    },
+    {
+      "example": "Python dict at load factor 0.66 triggers automatic resize: a dict with 66 items and 100 buckets will expand to 200 buckets and rehash all entries",
+      "context": "Load factor threshold in practice"
+    },
+    {
+      "example": "0/1 Knapsack with N=100 items and capacity W=1000: 2D DP uses 100×1000=100K integers; 1D optimized uses 1000 integers by iterating capacity backward",
+      "context": "Space optimization in DP"
+    },
+    {
+      "example": "Trie for autocomplete: storing 10,000 words with average length 8 in trie shares common prefixes (e.g., 'the', 'there', 'then') reducing storage vs 10,000 separate strings",
+      "context": "Trie space efficiency"
+    },
+    {
+      "example": "Array vs linked list: iterating 1 million integers takes ~100ms in array (cache-friendly), ~300ms in linked list due to pointer chasing and cache misses",
+      "context": "Cache locality impact on real performance"
+    },
+    {
+      "example": "Longest Increasing Subsequence [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15] yields LIS [0, 2, 6, 9, 11, 15] with O(n²) DP or O(n log n) with segment trees",
+      "context": "Classic DP problem with optimization path"
+    },
+    {
+      "example": "Hash collision: inserting into table with load factor 0.8 (80 items, 100 buckets) triggers resize to 200 buckets before insertion completes, rehashing all 80 items",
+      "context": "Amortized cost of rehashing"
+    },
+    {
+      "example": "Binary search on predicate 'find minimum x where cost(x) <= budget': applies to answer-space search in scheduling, capacity planning, or parameter tuning",
+      "context": "Binary search beyond arrays"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Memoization is like writing down answers to exam questions so you don't recalculate them, but you still maintain a stack of partially-solved problems (call stack). Tabulation is like solving from the simplest problems first, bottom-up, needing no stack.",
+      "concept": "Memoization vs tabulation tradeoff"
+    },
+    {
+      "analogy": "Load factor is like occupancy in a parking lot: at 0.66 occupancy, you can still park easily and find spaces fast; at 0.95 occupancy, finding an open spot requires searching many rows (collisions).",
+      "concept": "Hash table load factor and collision rate"
+    },
+    {
+      "analogy": "Quadratic probing in a full hash table is like bouncing a ball (1, 4, 9, 16, ... steps away) and getting stuck in a corner; chaining is like having each parking spot lead to an overflow parking area.",
+      "concept": "Collision resolution strategies"
+    },
+    {
+      "analogy": "Heap is like a stack of boxes in a warehouse (contiguous, fast to access the top); BST is like a filing cabinet with pointers (flexible but requires following pointers through drawers).",
+      "concept": "Memory layout and cache locality"
+    },
+    {
+      "analogy": "A trie is like a dictionary organized by first letter, then second letter, then third (prefix-based); a BST is like a dictionary where words are ordered but searched by full comparison.",
+      "concept": "Trie vs BST organization"
+    },
+    {
+      "analogy": "Dynamic array doubling is like doubling your apartment size when full: you move everything once, then get twice as much room to accumulate stuff before moving again.",
+      "concept": "Amortized complexity of dynamic growth"
+    },
+    {
+      "analogy": "Hardware prefetch in arrays is like a librarian who, when you ask for book #5, pre-fetches books #6 and #7 because they're on the same shelf. With linked lists, the next 'book' (node) is in a random location, so no prefetch possible.",
+      "concept": "Cache locality and prefetching"
+    },
+    {
+      "analogy": "Binary search on a monotonic function is like debugging: start in the middle, if the bug is in the left half, search left; if right half, search right; eliminates half the space each iteration.",
+      "concept": "Binary search generalization"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Hash table load factor threshold",
+      "value": "0.75",
+      "significance": "Standard threshold at which hash tables resize to maintain O(1) average lookup",
+      "source": "https://www.geeksforgeeks.org/dsa/load-factor-and-rehashing/"
+    },
+    {
+      "metric": "Python dict load factor",
+      "value": "≈0.66 (2/3)",
+      "significance": "Python's default threshold before automatic resizing",
+      "source": "https://medium.com/@erikbatista42/an-introduction-to-hash-tables-with-python-817772cad688"
+    },
+    {
+      "metric": "Quadratic probing failure threshold",
+      "value": "α > 0.5",
+      "significance": "Load factor above 0.5 can cause insertion failures due to probe sequences not covering all table slots",
+      "source": "https://www.cs.umd.edu/class/fall2020/cmsc420-0201/Lects/lect14-hashing.pdf"
+    },
+    {
+      "metric": "Cache line size",
+      "value": "64 bytes",
+      "significance": "Typical CPU cache line; arrays pack multiple elements per line, enabling single prefetch to load many elements",
+      "source": "https://www.geeksforgeeks.org/dsa/why-arrays-have-better-cache-locality-than-linked-list/"
+    },
+    {
+      "metric": "Linked list performance penalty",
+      "value": "230% slower",
+      "significance": "Observed slowdown for iteration due to pointer chasing and cache misses vs contiguous arrays",
+      "source": "https://dzone.com/articles/performance-of-array-vs-linked-list-on-modern-comp"
+    },
+    {
+      "metric": "Heap vs BST cache win",
+      "value": "20-35% speed improvement",
+      "significance": "Performance gain from contiguous memory layout in heap-based structure over pointer-scattered BST",
+      "source": "https://www.baeldung.com/cs/heap-vs-binary-search-tree"
+    },
+    {
+      "metric": "Trie space savings",
+      "value": "20-35% less storage",
+      "significance": "Tries use less space than BSTs for large collections of short strings due to prefix sharing",
+      "source": "https://www.codecademy.com/article/trie-data-structure-complete-guide-to-prefix-trees"
+    },
+    {
+      "metric": "Memoization cache lookup",
+      "value": "O(1) average",
+      "significance": "Hash map cache provides constant-time lookup of previously computed subproblem results",
+      "source": "https://www.geeksforgeeks.org/dsa/what-is-memoization-a-complete-tutorial/"
+    },
+    {
+      "metric": "LIS memoization complexity",
+      "value": "O(n²) time, O(n) space",
+      "significance": "Longest Increasing Subsequence with DP memoization requires O(n) space for recursion stack and cache",
+      "source": "https://www.baeldung.com/cs/longest-increasing-subsequence-dynamic-programming"
+    },
+    {
+      "metric": "Knapsack 0/1 space optimization ratio",
+      "value": "O(n×W) → O(W)",
+      "significance": "Space reduction achieved by backward iteration and reusing single 1D array instead of 2D table",
+      "source": "https://codeforces.com/blog/entry/63323"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Memoization solves both time and space complexity issues",
+      "reality": "Memoization reduces time complexity but maintains O(n) space due to call stack depth; only tabulation with iteration can achieve true space optimization",
+      "source": "https://launchschool.com/books/advanced_dsa/read/time_and_space_complexity_recursive"
+    },
+    {
+      "misconception": "Hash tables always have O(1) lookup regardless of load factor",
+      "reality": "O(1) is average case and depends on keeping load factor below thresholds (0.66-0.75); at high load factors collision chains grow and performance degrades",
+      "source": "https://blog.faangshui.com/p/how-hash-tables-achieve-o1-time-complexity"
+    },
+    {
+      "misconception": "Open addressing (probing) is always better than chaining for space efficiency",
+      "reality": "Open addressing fails when load factor exceeds 0.5 (quadratic probing) and causes clustering; chaining remains efficient up to much higher load factors",
+      "source": "https://www.cs.umd.edu/class/fall2020/cmsc420-0201/Lects/lect14-hashing.pdf"
+    },
+    {
+      "misconception": "Heaps and BSTs have similar performance characteristics",
+      "reality": "Heaps are 20-35% faster due to contiguous array storage enabling CPU prefetch and cache efficiency; BSTs suffer cache misses from pointer chasing",
+      "source": "https://www.baeldung.com/cs/heap-vs-binary-search-tree"
+    },
+    {
+      "misconception": "Binary search only works on sorted arrays",
+      "reality": "Binary search applies to any monotonic function over integers; can search on answer spaces, tree structures, and computed domains",
+      "source": "https://cp-algorithms.com/num_methods/binary_search.html"
+    },
+    {
+      "misconception": "Tries are only useful for string prefix matching",
+      "reality": "Tries excel for autocomplete, spell-checking, IP routing, DNA sequence analysis, and any domain where prefix sharing reduces storage",
+      "source": "https://www.codecademy.com/article/trie-data-structure-complete-guide-to-prefix-trees"
+    },
+    {
+      "misconception": "Dynamic array append is O(1) time always",
+      "reality": "Append is O(1) amortized, but individual append during resize can be O(n); amortized analysis spreads the O(n) resize cost over many cheap appends",
+      "source": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis"
+    },
+    {
+      "misconception": "You can optimize 2D DP to 1D by simply iterating capacity forward",
+      "reality": "Forward iteration causes value overwriting: you must iterate backward to preserve previous row values before they're needed",
+      "source": "https://codeforces.com/blog/entry/63323"
+    },
+    {
+      "misconception": "Hash table collisions are rare and not worth considering in practice",
+      "reality": "Collisions follow birthday paradox: with just √n items in n buckets, collision probability exceeds 50%; load factor management is critical",
+      "source": "https://www.cs.rice.edu/~as143/COMP480_580_Fall24/scribe/chaining_probing_Analysis.pdf"
+    },
+    {
+      "misconception": "All DP problems can be solved equally efficiently with memoization or tabulation",
+      "reality": "Tabulation enables space optimization (e.g., Fibonacci O(n) → O(1)) that memoization cannot achieve due to call stack requirements",
+      "source": "https://programming.guide/dynamic-programming-vs-memoization-vs-tabulation.html"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://programming.guide/dynamic-programming-vs-memoization-vs-tabulation.html",
+      "recency": "2024",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/what-is-memoization-a-complete-tutorial/",
+      "recency": "2024",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis",
+      "recency": "2024",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://blog.faangshui.com/p/how-hash-tables-achieve-o1-time-complexity",
+      "recency": "2025",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/heap-vs-binary-search-tree",
+      "recency": "2023",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://www.codecademy.com/article/trie-data-structure-complete-guide-to-prefix-trees",
+      "recency": "2024",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://cp-algorithms.com/num_methods/binary_search.html",
+      "recency": "2024",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://www.cs.umd.edu/class/fall2020/cmsc420-0201/Lects/lect14-hashing.pdf",
+      "recency": "2020",
+      "reliability": "academic"
+    },
+    {
+      "url": "https://www.cs.rice.edu/~as143/COMP480_580_Fall24/scribe/chaining_probing_Analysis.pdf",
+      "recency": "2024",
+      "reliability": "academic"
+    },
+    {
+      "url": "https://dzone.com/articles/performance-of-array-vs-linked-list-on-modern-comp",
+      "recency": "2017",
+      "reliability": "practitioner"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/why-arrays-have-better-cache-locality-than-linked-list/",
+      "recency": "2024",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/longest-increasing-subsequence-dynamic-programming",
+      "recency": "2024",
+      "reliability": "authoritative"
+    },
+    {
+      "url": "https://codeforces.com/blog/entry/63323",
+      "recency": "2024",
+      "reliability": "community-expert"
+    },
+    {
+      "url": "https://launchschool.com/books/advanced_dsa/read/time_and_space_complexity_recursive",
+      "recency": "2024",
+      "reliability": "educational"
+    },
+    {
+      "url": "https://medium.com/@erikbatista42/an-introduction-to-hash-tables-with-python-817772cad688",
+      "recency": "2024",
+      "reliability": "practitioner"
+    },
+    {
+      "url": "https://courses.cs.duke.edu/spring19/compsci330/lecture21scribe.pdf",
+      "recency": "2019",
+      "reliability": "academic"
+    },
+    {
+      "url": "https://usaco.guide/silver/binary-search",
+      "recency": "2024",
+      "reliability": "educational"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/load-factor-and-rehashing/",
+      "recency": "2024",
+      "reliability": "authoritative"
+    }
+  ]
+}

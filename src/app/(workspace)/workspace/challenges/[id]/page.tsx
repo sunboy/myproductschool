@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { FlowWorkspaceShell } from '@/components/v2/FlowWorkspaceShell'
 import type { UserRoleV2 } from '@/lib/types'
+import { FlowWorkspaceShellClient } from './FlowWorkspaceShellClient'
 import { IS_MOCK } from '@/lib/mock'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
@@ -134,7 +134,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
     if (ch?.id) {
       challengeId = ch.id
       challengeSlug = ch.slug
-      // Quick takes don't have FLOW steps — send to challenges hub
+      // Quick takes don't have FLOW steps - send to challenges hub
       if (ch.challenge_type === 'quick_take') redirect('/challenges')
     } else {
       // Try by UUID
@@ -158,7 +158,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
 
   const roleId = (role as UserRoleV2) ?? 'swe'
   return (
-    <FlowWorkspaceShell
+    <FlowWorkspaceShellClient
       challengeId={challengeId}
       challengeSlug={challengeSlug}
       initialRoleId={roleId}

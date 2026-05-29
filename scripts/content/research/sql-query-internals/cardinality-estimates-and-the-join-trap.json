@@ -1,0 +1,461 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL cost model uses seq_page_cost=1.0 (sequential page read), random_page_cost=4.0 (non-sequential), and cpu_tuple_cost=0.01 per row processed by default",
+      "source": "https://morningcoffee.io/the-postgresql-query-cost-model",
+      "published": "2024"
+    },
+    {
+      "fact": "Cardinality estimation in cost-based optimizers uses three components: cardinality estimation (CE), cost model (CM), and plan enumeration (PE)",
+      "source": "https://arxiv.org/pdf/2101.01507",
+      "published": "2021"
+    },
+    {
+      "fact": "PostgreSQL's MCV (Most Common Values) list is queried separately from histogram bounds, making equality estimates more accurate than histogram-based estimates",
+      "source": "https://github.com/postgres/postgres/blob/master/src/backend/statistics/README.mcv",
+      "published": "2024"
+    },
+    {
+      "fact": "Covering index lookups in MySQL reduce logical reads from 367 to 3 and execution time from 15ms to 1ms (98% improvement) for I/O-bound queries",
+      "source": "https://www.red-gate.com/simple-talk/databases/sql-server/learn/using-covering-indexes-to-improve-query-performance/",
+      "published": "2024"
+    },
+    {
+      "fact": "Window functions in CTEs can force full-table sorting and materialization before filtering is applied, increasing CPU and memory usage unnecessarily",
+      "source": "https://www.sqlskills.com/blogs/jonathan/ctes-window-functions-and-views/",
+      "published": "2024"
+    },
+    {
+      "fact": "Spark SQL cost-based optimizer uses dynamic programming (Selinger 1979) for m-way join reordering, keeping only the lowest-cost plan per table set",
+      "source": "https://www.databricks.com/blog/2017/08/31/cost-based-optimizer-in-apache-spark-2-2.html",
+      "published": "2017"
+    },
+    {
+      "fact": "PostgreSQL cardinality estimation fails predictably when: predicates use comparison operators between different columns of the same table, != operators, or non-constant expressions",
+      "source": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/cardinality-estimation-sql-server?view=sql-server-ver16",
+      "published": "2024"
+    },
+    {
+      "fact": "Stale statistics trigger execution plan changes in SQL Server when insertion/deletion crosses the threshold: changes to ≥20% of rows in small tables or ≥500+20% in large tables",
+      "source": "https://dbplus.tech/en/2024/07/04/execution-plan-changes-in-sql-server-reasons-and-solutions/",
+      "published": "2024"
+    },
+    {
+      "fact": "PostgreSQL extended statistics (CREATE STATISTICS with dependencies option) capture cross-column functional dependency, solving cardinality misestimates in correlated-column queries",
+      "source": "https://www.postgresql.org/docs/current/sql-createstatistics.html",
+      "published": "2024"
+    },
+    {
+      "fact": "PostgreSQL visibility map is 10,000x smaller than the heap it describes; index-only scans avoid heap access entirely when visibility map confirms all rows are visible",
+      "source": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Join cardinality explosion occurs when output rows > input rows; e.g., 1 ProductGroup × 1,000 Products × 10 Sellers = 10,000 rows from 1,011 records",
+      "source": "https://medium.com/@Rohan_Dutt/how-to-write-sql-queries-that-prevent-cardinality-explosions-in-multi-way-joins-b41ba236acac",
+      "published": "2024"
+    },
+    {
+      "fact": "B-tree indexes are balanced search trees where depth is equal at all leaf positions; accessing any element requires the same number of steps (logarithmic growth)",
+      "source": "https://planetscale.com/blog/btrees-and-database-indexes",
+      "published": "2024"
+    },
+    {
+      "fact": "MySQL EXPLAIN notation 'Using index' in Extra field indicates a covering index is being used; PostgreSQL shows 'Index Only Scan' and MongoDB shows IXSCAN with totalDocsExamined=0",
+      "source": "https://www.datacamp.com/doc/mysql/mysql-b-tree",
+      "published": "2024"
+    },
+    {
+      "fact": "Spark SQL Adaptive Query Execution (AQE) dynamically adjusts join strategies at runtime based on intermediate cardinality estimates, reducing plan misestimates",
+      "source": "https://www.databricks.com/blog/2020/05/29/adaptive-query-execution-speeding-up-spark-sql-at-runtime.html",
+      "published": "2020"
+    },
+    {
+      "fact": "Netflix edge cardinality optimization splits real-time recommendations into two phases: prefetching (offline) and real-time broadcasting (online) to minimize compute cardinality",
+      "source": "https://netflixtechblog.medium.com/high-throughput-graph-abstraction-at-netflix-part-i-e88063e6f6d5",
+      "published": "2026"
+    },
+    {
+      "fact": "EXPLAIN ANALYZE in TiDB outputs both estRows (estimated) and actRows (actual); cardinality estimation error is the ratio of actRows to estRows",
+      "source": "https://arxiv.org/html/2512.14358",
+      "published": "2024"
+    },
+    {
+      "fact": "PostgreSQL default_statistics_target is 100 entries per column; MCV and histogram_bounds sizes are set per-column via ALTER TABLE SET STATISTICS",
+      "source": "https://www.postgresql.org/docs/current/planner-stats.html",
+      "published": "2024"
+    },
+    {
+      "fact": "SQL Server query hints for cardinality diagnosis include RECOMPILE, QUERYTRACEON 3604, and QUERYTRACEON 9204 to surface statistics used in CE",
+      "source": "https://kindatechnical.com/sql-server/query-optimizer-statistics-cardinality-and-hints.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Window function optimization: pre-fetch and post-processing with CTE LIMIT reduces query response time from 8 seconds to 10ms (800x improvement)",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82",
+      "published": "2024"
+    },
+    {
+      "fact": "Lyft processes 700,000 drivers and nearly 1 million rides per day using DynamoDB and AWS infrastructure optimized for low-latency GPS coordinate storage",
+      "source": "https://aws.amazon.com/solutions/case-studies/lyft/",
+      "published": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "example": "PostgreSQL query with predicates WHERE status='active' AND created_date > '2024-01-01' on a users table with 10M rows. Cardinality estimation fails if status and created_date are correlated (e.g., most 'active' users are recent). The planner assumes independence and underestimates rows, choosing a fast index scan that actually retrieves 500K rows instead of 5K.",
+      "company": "PostgreSQL documentation",
+      "metric": "500K actual rows vs 5K estimated = 100x error"
+    },
+    {
+      "example": "Join cardinality explosion in e-commerce: orders (100K) INNER JOIN line_items (avg 5 per order = 500K) INNER JOIN inventory (avg 10 per SKU = 5M). Query plan estimates 100K output rows but actual output is 5M (50x explosion). Full table sort fails due to memory overflow.",
+      "company": "Medium case study by Rohan Dutt",
+      "metric": "50x cardinality explosion"
+    },
+    {
+      "example": "Netflix edge cardinality optimization: real-time recommendation queries initially broadcast to all edge nodes (high fanout). Split into prefetch phase (offline aggregation) and real-time phase (targeted queries). Reduces edge node cardinality from thousands of simultaneous update requests to hundreds.",
+      "company": "Netflix",
+      "metric": "Fanout reduced by ~66% via phase splitting"
+    },
+    {
+      "example": "Covering index optimization at financial firm: SELECT account_id, balance, last_updated FROM accounts WHERE status='verified'. Index (status, account_id, balance, last_updated) removes heap lookups. EXPLAIN shows 'Using index' in MySQL. Logical reads drop 367→3, execution time 15ms→1ms.",
+      "company": "Red Gate case study",
+      "metric": "367→3 logical reads (99% reduction); 15ms→1ms execution (93% speedup)"
+    },
+    {
+      "example": "PostgreSQL histogram issue with skewed distribution: SELECT * FROM logs WHERE user_id IN (SELECT id FROM power_users). Power_users has 100 total rows, but user_id in logs follows Zipfian distribution (10 power_users produce 70% of traffic). Histogram assumes uniform distribution, underestimates selectivity, chooses sequential scan instead of index.",
+      "company": "Zalando Engineering Blog",
+      "metric": "Histogram-based estimate: 0.5%; actual: 7% (14x underestimate)"
+    },
+    {
+      "example": "Window function anti-pattern at SaaS company: SELECT user_id, rank() OVER (PARTITION BY team_id ORDER BY score DESC) AS rank FROM scores. CTE materializes all 50M rows, sorts globally, then filters. Rewrite with subquery + LIMIT: pre-filter to top 1000 per team, then rank. Response time 12s→200ms.",
+      "company": "Medium optimization guide",
+      "metric": "12s→200ms (60x speedup) via early filtering before window function"
+    },
+    {
+      "example": "Spark SQL join reordering with CBO enabled: SELECT * FROM fact_table (1B rows) JOIN dim_a (10K) JOIN dim_b (5M). CBO uses dynamic programming to find optimal order: fact→dim_a (10K output) then dim_b (5M output). Default left-to-right: fact→dim_b (5B intermediate), then dim_a (5B). CBO saves 1000x intermediate cardinality.",
+      "company": "Databricks",
+      "metric": "1000x intermediate cardinality reduction via join reordering"
+    },
+    {
+      "example": "Stale statistics trigger in e-commerce platform: orders table grows 2M→3M rows overnight (50% increase). SQL Server marks statistics stale. Query planner, still using old histogram, chooses hash join. Actual plan becomes nested loop. Query time 100ms→8s. ANALYZE or index rebuild restores statistics, query returns to 100ms.",
+      "company": "SQL Server case study",
+      "metric": "Plan change from hash→nested loop; 100ms→8s (80x slowdown)"
+    },
+    {
+      "example": "PostgreSQL extended statistics for correlated columns: address and city_id are functionally dependent (all addresses in a city_id are in that city). Query WHERE address='123 Main St' AND city_id=5 normally assumes independence; planner estimates 1000 rows. CREATE STATISTICS (dependencies) reveals the dependency; planner now estimates 1 row. Eliminates unnecessary index merge.",
+      "company": "pganalyze",
+      "metric": "1000 rows → 1 row estimated; eliminates unnecessary multi-index merge"
+    },
+    {
+      "example": "Index-only scan optimization in financial reporting: SELECT account_id, balance, last_updated FROM accounts WHERE status='active'. B-tree index (status, account_id, balance, last_updated) covers all columns. Visibility map confirms all indexed heap pages are visible to current transaction. Query avoids heap access entirely. Reduces I/O from 50 logical reads to 5.",
+      "company": "PostgreSQL documentation",
+      "metric": "50→5 logical reads (90% reduction) via index-only scan"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Cardinality estimation is like forecasting traffic volume before building a highway. Underestimate and you build a narrow road that gets congested (nested-loop join). Overestimate and you overbuild (expensive hash join).",
+      "concept": "Cost-based optimization"
+    },
+    {
+      "analogy": "A histogram is like dividing a city into equal-area districts to estimate population. Works fine for uniform distribution but fails for Zipfian (Manhattan has 10x more people than same-area rural district). MCV lists solve this by naming the dense districts explicitly.",
+      "concept": "Distribution assumptions in cardinality"
+    },
+    {
+      "analogy": "Join cardinality explosion is like multiplying rabbit populations: 2 pairs × 5 offspring each = 50 total, not 10. Each join multiplies rows; without filtering, you get 1M × 1M = 1T combinations.",
+      "concept": "Many-to-many joins"
+    },
+    {
+      "analogy": "A covering index is like a library catalog that includes the book's title, author, year, and page count right in the card catalog. You never need to walk to the shelf (heap) because the catalog (index) has everything you need.",
+      "concept": "Index-only scans"
+    },
+    {
+      "analogy": "Query plan regression from stale statistics is like driving with a 5-year-old map. The map still looks fine, but the highway was widened, the route was reversed, and a bridge collapsed. You make terrible routing decisions based on outdated info.",
+      "concept": "Statistics maintenance"
+    },
+    {
+      "analogy": "Extended statistics for correlated columns is like discovering that 'zipcode' and 'state' are not independent—every 90210 is in CA. Single-column stats miss this; extended stats capture the dependency and prevent overestimation.",
+      "concept": "Multi-column dependencies"
+    },
+    {
+      "analogy": "Window function anti-patterns are like trying to rank all students globally before filtering to your school. Sort 1B students, *then* filter to 100 in your school. Better: filter to your 100 students first, then rank them locally.",
+      "concept": "Execution order optimization"
+    },
+    {
+      "analogy": "B-tree index balance is like a perfectly balanced organizational chart: every leaf (employee) is equidistant from the root (CEO). Finding any leaf requires the same number of steps; no one is buried 10 levels deep.",
+      "concept": "Index structure and balance"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "PostgreSQL seq_page_cost default",
+      "value": "1.0",
+      "unit": "cost units",
+      "context": "Baseline cost for sequential page read"
+    },
+    {
+      "metric": "PostgreSQL random_page_cost default",
+      "value": "4.0",
+      "unit": "cost units",
+      "context": "Cost multiplier for non-sequential page access; 4x more expensive than seq"
+    },
+    {
+      "metric": "PostgreSQL cpu_tuple_cost default",
+      "value": "0.01",
+      "unit": "cost units per row",
+      "context": "Cost to process each row in memory"
+    },
+    {
+      "metric": "SQL Server statistics threshold for stale flag",
+      "value": "500 + 20% of rows",
+      "unit": "rows changed",
+      "context": "Trigger point for marking statistics out-of-date on large tables"
+    },
+    {
+      "metric": "Covering index logical reads improvement",
+      "value": "367 → 3",
+      "unit": "logical reads",
+      "context": "Real-world case: financial query with covering index"
+    },
+    {
+      "metric": "Covering index execution time improvement",
+      "value": "15 → 1",
+      "unit": "milliseconds",
+      "context": "Real-world speedup: 93% reduction with covering index"
+    },
+    {
+      "metric": "Window function optimization speedup",
+      "value": "8000 → 10",
+      "unit": "milliseconds",
+      "context": "Pre-fetch + post-process optimization; 800x improvement"
+    },
+    {
+      "metric": "Join cardinality explosion factor",
+      "value": "1 × 1000 × 10",
+      "unit": "output rows vs 1011 input records",
+      "context": "ProductGroup × Products × Sellers example"
+    },
+    {
+      "metric": "Spark join intermediate cardinality reduction",
+      "value": "5B → 10M",
+      "unit": "rows",
+      "context": "Cost-based join reordering for 1B×10K×5M join"
+    },
+    {
+      "metric": "PostgreSQL visibility map compression",
+      "value": "1 : 10000",
+      "unit": "map size vs heap",
+      "context": "Visibility map is 10,000x smaller than heap; enables index-only scans"
+    },
+    {
+      "metric": "PostgreSQL default_statistics_target",
+      "value": "100",
+      "unit": "entries",
+      "context": "Default histogram_bounds and MCV list size per column"
+    },
+    {
+      "metric": "Cardinality estimation error in skewed data",
+      "value": "0.5% → 7%",
+      "unit": "percentage error",
+      "context": "Histogram assumption vs Zipfian actual distribution"
+    },
+    {
+      "metric": "Netflix edge cardinality reduction",
+      "value": "66%",
+      "unit": "fanout reduction",
+      "context": "Prefetch + real-time phase split vs monolithic broadcast"
+    },
+    {
+      "metric": "Lyft daily ride volume",
+      "value": "1,000,000",
+      "unit": "rides per day",
+      "context": "Scale at which cardinality estimation becomes critical"
+    },
+    {
+      "metric": "Stale statistics plan regression impact",
+      "value": "100 → 8000",
+      "unit": "milliseconds",
+      "context": "Hash join → nested loop due to outdated histogram"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Higher default_statistics_target (e.g., 1000 instead of 100) always improves query plans",
+      "reality": "Higher targets increase ANALYZE time and planning overhead without guaranteeing better estimates. Set per-column only for columns with skewed distributions (Zipfian, high cardinality). Most columns benefit little from 1000 vs 100 entries."
+    },
+    {
+      "misconception": "Covering indexes are a universal optimization—add all columns to every index",
+      "reality": "Covering indexes improve index-only scans but increase index size, insert/update cost, and memory usage. Use only for queries that access the same columns repeatedly. Don't add columns 'just in case'."
+    },
+    {
+      "misconception": "Window functions should always replace self-joins and subqueries",
+      "reality": "Window functions without early filtering force full-table operations. PARTITION BY and ORDER BY apply after the full dataset is loaded. Use them only after pre-filtering; otherwise they're slower than correlated subqueries with LIMIT."
+    },
+    {
+      "misconception": "Stale statistics only matter when you add new data",
+      "reality": "Statistics become stale on any INSERT, UPDATE, or DELETE. A single bulk delete of 50% of rows invalidates all histograms. SQL Server uses percentage-based thresholds (500 + 20%), not time-based. Frequent deletes need frequent re-analysis."
+    },
+    {
+      "misconception": "Cardinality estimation errors are always the optimizer's fault",
+      "reality": "Estimation fails predictably when: columns are correlated (zipcode + state), predicates use functions (WHERE date_trunc(created_at) = ...), or comparisons are between two columns (WHERE a < b). Query hints and CREATE STATISTICS can fix these cases without blaming the optimizer."
+    },
+    {
+      "misconception": "Query hints (FORCE INDEX, USE HINT) are a best practice",
+      "reality": "Hints are a last resort. They lock in a plan even when data distribution changes, causing future regressions. Use them only when you have evidence the optimizer is wrong AND the hint solves the problem for months, not days. Prefer fixing statistics or query structure."
+    },
+    {
+      "misconception": "Extended statistics (CREATE STATISTICS) help with all multi-column predicates",
+      "reality": "Extended statistics only help when columns are functionally dependent (e.g., zipcode→state) or share MCV distribution. Random column combinations add ANALYZE overhead with zero planning benefit. Create statistics only for strongly correlated columns in actual query filters."
+    },
+    {
+      "misconception": "Index-only scans always avoid heap access",
+      "reality": "Index-only scans require the visibility map to confirm all indexed heap pages are visible to the current transaction. If any rows are mid-transaction or require MVCC visibility checking, the planner falls back to heap access. Visibility map misses cost proportionally to heap size."
+    },
+    {
+      "misconception": "Optimizer always chooses the cheapest plan",
+      "reality": "Optimizers use *estimated* costs based on statistics. With bad statistics, the cheapest estimated plan is often the most expensive actual plan. Stale or missing histograms cause systematic underestimates or overestimates, biasing all downstream decisions."
+    },
+    {
+      "misconception": "Join cardinality explosions can be fixed by adding indexes",
+      "reality": "Join explosions occur because the logical structure is many-to-many, not because indexes are missing. 1M × 1M = 1T combinations regardless of indexes. Solution: normalize schema (bridge tables), filter early, or split the query into multiple statements. Indexes can't reduce logical rows."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/cardinality-estimation-sql-server?view=sql-server-ver16",
+      "title": "Cardinality Estimation (SQL Server) - Microsoft Learn",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://github.com/postgrespro/aqo",
+      "title": "PostgreSQL Adaptive Query Optimization - GitHub",
+      "recency": "Active; 2024"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2101.01507",
+      "title": "A Survey on Advancing the DBMS Query Optimizer - Springer",
+      "recency": "2021; foundational"
+    },
+    {
+      "url": "https://morningcoffee.io/the-postgresql-query-cost-model",
+      "title": "The PostgreSQL Query Cost Model - Igor Šarčević",
+      "recency": "2024"
+    },
+    {
+      "url": "https://scalegrid.io/blog/postgres-explain-cost/",
+      "title": "What Is The Cost In PostgreSQL EXPLAIN Query - ScaleGrid",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/using-explain.html",
+      "title": "PostgreSQL 18 Official Documentation: EXPLAIN",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://medium.com/@Rohan_Dutt/how-to-write-sql-queries-that-prevent-cardinality-explosions-in-multi-way-joins-b41ba236acac",
+      "title": "How to Write SQL Queries That Prevent Cardinality Explosions - Medium",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.red-gate.com/simple-talk/databases/sql-server/learn/using-covering-indexes-to-improve-query-performance/",
+      "title": "Using Covering Indexes to Improve Query Performance - Red Gate",
+      "recency": "2024"
+    },
+    {
+      "url": "https://planetscale.com/learn/courses/mysql-for-developers/indexes/covering-indexes",
+      "title": "Covering Indexes - MySQL for Developers - PlanetScale",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.sqlskills.com/blogs/jonathan/ctes-window-functions-and-views/",
+      "title": "SQL Server CTEs, Window Functions, and Views - Jonathan Kehayias",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82",
+      "title": "SQL Optimization Practices Episode 1: Window Function Performance - Medium",
+      "recency": "2024"
+    },
+    {
+      "url": "https://kindatechnical.com/sql-server/query-optimizer-statistics-cardinality-and-hints.html",
+      "title": "Query Optimizer: Statistics, Cardinality, and Hints - kindatechnical",
+      "recency": "2024"
+    },
+    {
+      "url": "https://github.com/postgres/postgres/blob/master/src/backend/statistics/README.mcv",
+      "title": "PostgreSQL MCV Statistics Implementation - GitHub",
+      "recency": "2024"
+    },
+    {
+      "url": "https://engineering.zalando.com/posts/2015/07/analyzing-extreme-distributions-in-postgresql.html",
+      "title": "Analyzing Extreme Distributions in PostgreSQL - Zalando Engineering",
+      "recency": "2015; classic reference on skewed distributions"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/planner-stats.html",
+      "title": "PostgreSQL 18 Documentation: Statistics Used by the Planner",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.databricks.com/blog/2017/08/31/cost-based-optimizer-in-apache-spark-2-2.html",
+      "title": "Cost Based Optimizer in Apache Spark 2.2 - Databricks Blog",
+      "recency": "2017; foundational for Spark CBO"
+    },
+    {
+      "url": "https://www.databricks.com/blog/2020/05/29/adaptive-query-execution-speeding-up-spark-sql-at-runtime.html",
+      "title": "Adaptive Query Execution: Speeding Up Spark SQL - Databricks Blog",
+      "recency": "2020"
+    },
+    {
+      "url": "https://planetscale.com/blog/btrees-and-database-indexes",
+      "title": "B-trees and Database Indexes - PlanetScale",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/indexes-index-only-scans.html",
+      "title": "PostgreSQL 18 Documentation: Index-Only Scans and Covering Indexes",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://dbplus.tech/en/2024/07/04/execution-plan-changes-in-sql-server-reasons-and-solutions/",
+      "title": "Change of Execution Plan in SQL Server: Causes and Solutions - DBPLUS",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/sql-createstatistics.html",
+      "title": "PostgreSQL 18 Documentation: CREATE STATISTICS",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-create-statistics",
+      "title": "How to Use CREATE STATISTICS to Improve a Plan Rows Estimate - pganalyze",
+      "recency": "2024"
+    },
+    {
+      "url": "https://arxiv.org/html/2512.14358",
+      "title": "TiCard: Deployable EXPLAIN-only Residual Learning for Cardinality Estimation - arXiv",
+      "recency": "2024"
+    },
+    {
+      "url": "https://netflixtechblog.medium.com/high-throughput-graph-abstraction-at-netflix-part-i-e88063e6f6d5",
+      "title": "High-Throughput Graph Abstraction at Netflix: Part I - Netflix Tech Blog",
+      "recency": "2026"
+    },
+    {
+      "url": "https://aws.amazon.com/solutions/case-studies/lyft/",
+      "title": "Lyft Case Study - AWS",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.singlestore.com/blog/case-study-scalable-sql-database-uber/",
+      "title": "Case Study: A Scalable SQL Database Powers Real-Time Analytics at Uber - SingleStore",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dev.to/moh_moh701/-query-store-part-2-regression-detection-and-execution-plan-analysis-a-guide-e9d",
+      "title": "Query Store Part 2: Regression Detection and Execution Plan Analysis - DEV Community",
+      "recency": "2024"
+    }
+  ]
+}

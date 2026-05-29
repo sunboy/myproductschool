@@ -1,0 +1,373 @@
+{
+  "facts": [
+    {
+      "text": "Five core clarifying questions in system design: (1) How many users/DAU? (2) Read-to-write ratio? (3) What data are we storing and average object size? (4) Expected growth rate? (5) Consistency vs availability requirements?",
+      "source": "https://www.designgurus.io/blog/estimation-in-system-design-interviews",
+      "published": "2024"
+    },
+    {
+      "text": "QPS estimation formula: (Daily Active Users × Average Requests Per User) / 86400 seconds. Always design for peak load at 2-5× average QPS.",
+      "source": "https://bytebytego.com/courses/system-design-interview/back-of-the-envelope-estimation",
+      "published": "2024"
+    },
+    {
+      "text": "Rule of thumb: DAU is typically 10-30% of total registered users. For example, 1M registered users = ~200K-300K DAU.",
+      "source": "https://blog.bytebytego.com/p/capacity-planning",
+      "published": "2024"
+    },
+    {
+      "text": "Storage estimation must account for replication factor (typically 3x for durability). Example: 1M users × 100KB data/day = 100GB/day = ~36.5TB/year before replication.",
+      "source": "https://www.designgurus.io/blog/estimation-in-system-design-interviews",
+      "published": "2024"
+    },
+    {
+      "text": "CAP theorem: In partition (which always happens), you choose between Consistency (CP) or Availability (AP). Partition Tolerance is non-negotiable in distributed systems.",
+      "source": "https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem",
+      "published": "2024"
+    },
+    {
+      "text": "CP databases (e.g., MongoDB) sacrifice availability—during network partitions, the system halts writes on minority partitions to maintain consistency. AP databases (e.g., Cassandra) sacrifice consistency—all nodes remain available but may serve stale data.",
+      "source": "https://www.geeksforgeeks.org/system-design/cap-theorem-in-system-design/",
+      "published": "2024"
+    },
+    {
+      "text": "Read-heavy workloads benefit from SSDs optimized for read performance; write-heavy workloads require fast write speeds. 2025 enterprise strategy: NVMe for hot data, SATA for archival.",
+      "source": "https://www.oscoo.com/news/enterprise-ssd-buying-guide-2025/",
+      "published": "2025"
+    },
+    {
+      "text": "Stateless services require no session affinity—any load balancer can route to any server. Stateful services need 'sticky sessions' (session affinity) or external session store (Redis).",
+      "source": "https://www.designgurus.io/course-play/grokking-scalable-systems-for-interviews/doc/what-are-sticky-sessions-session-affinity-and-when-should-i-avoid-them",
+      "published": "2024"
+    },
+    {
+      "text": "Horizontal scaling for stateless services: straightforward—add servers and load balance. For stateful services: requires data partitioning, session replication, backup mechanisms.",
+      "source": "https://blog.dreamfactory.com/scaling-stateless-vs-stateful-services",
+      "published": "2024"
+    },
+    {
+      "text": "B+ trees (not binary trees) are the standard database index structure. Each node stores multiple keys, reducing tree height and disk I/O. PostgreSQL's index-only scans fetch data directly from indexes without heap access.",
+      "source": "https://www.postgresql.org/docs/current/using-explain.html",
+      "published": "2024"
+    },
+    {
+      "text": "PostgreSQL EXPLAIN ANALYZE shows startup cost (time to fetch first row) and total cost. Cost units are arbitrary (default: 1.0 = one sequential page read, 4.0 = one random page read, 0.01 per row processed).",
+      "source": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "published": "2024"
+    },
+    {
+      "text": "Cardinality in shard key selection must satisfy three requirements: high cardinality (many unique values), even distribution (no hot shards), alignment with dominant query patterns.",
+      "source": "https://engineering.fb.com/2020/08/24/production-engineering/scaling-services-with-shard-manager/",
+      "published": "2020"
+    },
+    {
+      "text": "Meta uses HyperLogLog (HLL) approximation for cardinality estimation: same distinct-count calculation that would take 12 hours with traditional methods now runs in 12 hours using less than 1MB memory via APPROX_DISTINCT.",
+      "source": "https://engineering.fb.com/2018/12/13/data-infrastructure/hyperloglog/",
+      "published": "2018"
+    },
+    {
+      "text": "Slowly Changing Dimension Type 2 (SCD-2) requires surrogate keys: when a customer's address changes, insert a new row with new surrogate key but same natural key, marking old row with end_date.",
+      "source": "https://www.thoughtspot.com/data-trends/data-modeling/slowly-changing-dimensions-in-data-warehouse",
+      "published": "2024"
+    },
+    {
+      "text": "Surrogate keys vs natural keys: Surrogate (system-generated, e.g., AUTO_INCREMENT) are independent of source systems and support schema evolution. Natural keys (e.g., email, SSN) are business-meaningful but less flexible.",
+      "source": "https://www.geeksforgeeks.org/data-engineering/why-to-use-surrogate-keys-and-slowly-changing-dimensions-in-star-schema/",
+      "published": "2024"
+    },
+    {
+      "text": "Stripe's API v2 namespace requires Stripe-Version header on all requests. Every API change undergoes formal review by cross-functional board; design docs can be 20+ pages.",
+      "source": "https://docs.stripe.com/api-v2-overview",
+      "published": "2024"
+    },
+    {
+      "text": "Cloudflare's DNS TTL default: 300 seconds (5 minutes) for proxied records (non-editable). For DNS-only records: 30-60s minimum (Enterprise vs non-Enterprise), up to 1 day maximum.",
+      "source": "https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/",
+      "published": "2024"
+    },
+    {
+      "text": "Netflix's microservices stack: MySQL for ACID-compliant data (billing, user accounts), Cassandra for high-volume denormalized data (viewing history). Open Connect CDN achieves ~98% cache hit rate (2% origin traffic).",
+      "source": "https://engineering.fb.com/2020/08/24/production-engineering/scaling-services-with-shard-manager/",
+      "published": "2024"
+    },
+    {
+      "text": "CMU Database Systems (Fall 2024) teaches B-tree optimization: index-only scans eliminate heap lookups. Index maintenance cost is O(log n) vs full-table scan cost O(n).",
+      "source": "https://15445.courses.cs.cmu.edu/fall2024/slides/15-optimization.pdf",
+      "published": "2024"
+    },
+    {
+      "text": "Row estimate discrepancy >10x between planner and actual usually indicates root cause of bad performance (not the long execution time downstream). Key to query optimization: find lowest node with bad estimate.",
+      "source": "https://www.cybertec-postgresql.com/en/how-to-interpret-postgresql-explain-analyze-output/",
+      "published": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Netflix",
+      "metric": "98% Open Connect CDN cache hit rate, ~2% origin traffic",
+      "context": "Massive video streaming platform with hundreds of millions of users. Demonstrates importance of geographic cache distribution.",
+      "source": "https://www.techaheadcorp.com/blog/netflix-system-design/"
+    },
+    {
+      "company": "Meta",
+      "metric": "Shard Manager handles billions of users across multiple database instances, each instance = one shard",
+      "context": "Facebook's user database is sharded by user ID with high cardinality to prevent hot shards and enable even distribution.",
+      "source": "https://engineering.fb.com/2020/08/24/production-engineering/scaling-services-with-shard-manager/"
+    },
+    {
+      "company": "Stripe",
+      "metric": "Publishes API updates multiple times per day; all changes pass formal API review board",
+      "context": "Payment processor with strict backward-compatibility requirements. 20+ page design docs for significant changes.",
+      "source": "https://stripe.dev/blog/payment-api-design"
+    },
+    {
+      "company": "Cloudflare",
+      "metric": "DNS TTL of 300 seconds (5 min) default to ensure failover propagation speed",
+      "context": "Global DNS provider balancing update latency vs resolver cache efficiency. 5-min update window is a deliberate tradeoff.",
+      "source": "https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/"
+    },
+    {
+      "company": "Social media platform (generic 100M DAU example)",
+      "metric": "100M DAU × 10 posts/user/day = 1B posts/day = ~11.6K peak QPS (at 2× average)",
+      "context": "Illustrates scaling from 100M to millions of users. Peak QPS multiplier (2-5×) is critical for capacity planning.",
+      "source": "https://blog.bytebytego.com/p/capacity-planning"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "CAP theorem = restaurant ordering. Consistency (C): all waiters see same menu. Availability (A): always take orders. Partition (P): network failure (storm blocks communication). During storm, either refuse orders (consistency) or risk conflicting orders (availability). Partition always happens; you choose C or A.",
+      "explains": "CAP theorem tradeoff in distributed systems"
+    },
+    {
+      "analogy": "Stateless vs Stateful = hotel room assignment vs barber chair. Stateless (hotel): guest can check into ANY room—no server affinity needed. Stateful (barber): customer stays with SAME barber—need sticky session or external notes (Redis) so any barber can resume.",
+      "explains": "Horizontal scaling implications of service state"
+    },
+    {
+      "analogy": "B-tree indexing = phonebook. Root node = first letter. Internal nodes = page ranges. Leaf nodes = names + phone numbers. Each lookup traverses 3-4 levels (log N), not scanning all names (N). Without index: sequential scan = slow.",
+      "explains": "How indexes reduce disk I/O and query cost"
+    },
+    {
+      "analogy": "Natural keys vs Surrogate keys = SSN vs employee ID. SSN (natural) is immutable but can break (immigration, privacy changes). Employee ID (surrogate) is stable and independent. In slowly changing dimensions: both needed—surrogate key for joins, natural key for historical tracking.",
+      "explains": "Data modeling for schema evolution"
+    },
+    {
+      "analogy": "QPS estimation = highway capacity planning. DAU = total drivers/day. Requests/user = trips per driver. Peak QPS = rush hour traffic (2-5× average). Design for rush hour, not idle hours.",
+      "explains": "Why peak load matters in capacity planning"
+    },
+    {
+      "analogy": "TTL (DNS caching) = newspaper delivery frequency. Short TTL (30s) = daily delivery—updates fast but costs more. Long TTL (24h) = weekly delivery—cheaper but stale news for a week. Cloudflare's 300s = balance between freshness and cache efficiency.",
+      "explains": "Consistency vs efficiency tradeoff in distributed caching"
+    }
+  ],
+  "key_numbers": [
+    {
+      "number": "86,400",
+      "unit": "seconds per day",
+      "context": "Denominator in QPS calculation: QPS = (DAU × requests/user) / 86400"
+    },
+    {
+      "number": "2-5×",
+      "unit": "multiplier for peak vs average",
+      "context": "Standard assumption: design capacity for peak traffic at 2-5× average QPS"
+    },
+    {
+      "number": "10-30%",
+      "unit": "percentage of registered users",
+      "context": "Typical DAU ratio. Example: 1M users = 100K-300K daily active users"
+    },
+    {
+      "number": "300",
+      "unit": "seconds (5 minutes)",
+      "context": "Cloudflare default DNS TTL for proxied records (non-editable for failover speed)"
+    },
+    {
+      "number": "98%",
+      "unit": "cache hit rate",
+      "context": "Netflix Open Connect CDN performance benchmark—only 2% origin traffic"
+    },
+    {
+      "number": "1.0",
+      "unit": "cost unit (PostgreSQL EXPLAIN)",
+      "context": "Sequential page read cost. Random page read = 4.0 units. CPU per row = 0.01 units"
+    },
+    {
+      "number": "10×",
+      "unit": "cardinality estimation discrepancy threshold",
+      "context": "In PostgreSQL EXPLAIN ANALYZE, row estimate errors >10× usually indicate root cause of poor performance"
+    },
+    {
+      "number": "3",
+      "unit": "replication factor",
+      "context": "Standard durability requirement. Example: 36.5TB raw = ~110TB with 3× replication"
+    },
+    {
+      "number": "100GB",
+      "unit": "per day",
+      "context": "Example storage growth: 1M users × 100KB/user/day"
+    },
+    {
+      "number": "11.6K",
+      "unit": "QPS at peak",
+      "context": "100M DAU × 10 posts/user/day ÷ 86400s × 2× peak multiplier = ~11.6K QPS"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Horizontal scaling is always better than vertical scaling",
+      "reality": "Both have tradeoffs. Vertical scaling (bigger machines) is easier for stateful components (databases). Horizontal (more machines) works for stateless services. Many systems use both.",
+      "source": "https://dzone.com/articles/the-myth-of-horizontal-scalability"
+    },
+    {
+      "misconception": "Stateless services automatically scale infinitely",
+      "reality": "Stateless services still externalize state to shared storage (Redis, database) which becomes the bottleneck. The bottleneck moves, not disappears.",
+      "source": "https://dzone.com/articles/the-myth-of-horizontal-scalability"
+    },
+    {
+      "misconception": "Consistency means ACID properties",
+      "reality": "In CAP theorem, Consistency = all nodes see same data. In ACID, Consistency = valid state transitions. Different meanings—easy to conflate.",
+      "source": "https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem"
+    },
+    {
+      "misconception": "You can shard any database to scale horizontally",
+      "reality": "Sharding requires high-cardinality shard key with even distribution. Choosing wrong key creates hot shards. Joins across shards are expensive. Not every database is a good candidate.",
+      "source": "https://engineering.fb.com/2020/08/24/production-engineering/scaling-services-with-shard-manager/"
+    },
+    {
+      "misconception": "B-tree indexes have no maintenance cost",
+      "reality": "Index inserts/updates are O(log N) plus write-ahead logging overhead. Very write-heavy workloads may not benefit from many indexes.",
+      "source": "https://15445.courses.cs.cmu.edu/fall2024/slides/15-optimization.pdf"
+    },
+    {
+      "misconception": "EXPLAIN cost numbers are in milliseconds",
+      "reality": "Cost units are arbitrary (default: 1.0 = one sequential page read). Not directly comparable across different hardware or PostgreSQL versions.",
+      "source": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan"
+    },
+    {
+      "misconception": "Longer DNS TTLs improve performance",
+      "reality": "Longer TTLs reduce resolver queries but increase stale data and failover latency. Cloudflare chose 300s (5 min) as optimal tradeoff.",
+      "source": "https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/"
+    },
+    {
+      "misconception": "Natural keys are always better—no need for surrogate keys",
+      "reality": "Natural keys break with schema changes (e.g., email as PK when user changes email). Surrogate keys enable slowly changing dimensions and schema evolution.",
+      "source": "https://www.geeksforGeeksforgeeks/data-engineering/why-to-use-surrogate-keys-and-slowly-changing-dimensions-in-star-schema/"
+    },
+    {
+      "misconception": "All users are equally active at all times",
+      "reality": "Peak traffic is 2-5× average. Designing for average capacity leads to outages during peaks. Must provision for peak load.",
+      "source": "https://blog.bytebytego.com/p/capacity-planning"
+    },
+    {
+      "misconception": "Estimating storage is simple: multiply data size by replication",
+      "reality": "Must also account for indexes (~50% of table size), write-ahead logs (WAL), compression ratios, growth over time, and operational overhead.",
+      "source": "https://www.designgurus.io/blog/estimation-in-system-design-interviews"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.designgurus.io/blog/estimation-in-system-design-interviews",
+      "title": "Mastering Estimation in System Design Interviews",
+      "recency": "2024"
+    },
+    {
+      "url": "https://bytebytego.com/courses/system-design-interview/back-of-the-envelope-estimation",
+      "title": "Back-of-the-envelope Estimation - System Design",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.bytebytego.com/p/capacity-planning",
+      "title": "Capacity Planning",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem",
+      "title": "CAP Theorem for System Design Interviews",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/system-design/cap-theorem-in-system-design/",
+      "title": "CAP Theorem in System Design",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.dreamfactory.com/scaling-stateless-vs-stateful-services",
+      "title": "Scaling Stateless vs Stateful Services",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.designgurus.io/course-play/grokking-scalable-systems-for-interviews/doc/what-are-sticky-sessions-session-affinity-and-when-should-i-avoid-them",
+      "title": "What Are Sticky Sessions (Session Affinity) and When Should I Avoid Them?",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/using-explain.html",
+      "title": "PostgreSQL: Using EXPLAIN",
+      "recency": "2024"
+    },
+    {
+      "url": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "title": "Reading a Postgres EXPLAIN ANALYZE Query Plan",
+      "recency": "2024"
+    },
+    {
+      "url": "https://engineering.fb.com/2020/08/24/production-engineering/scaling-services-with-shard-manager/",
+      "title": "Scaling services with Shard Manager",
+      "recency": "2020 (authoritative but 4 years old)"
+    },
+    {
+      "url": "https://engineering.fb.com/2018/12/13/data-infrastructure/hyperloglog/",
+      "title": "HyperLogLog in Presto: Faster cardinality estimation",
+      "recency": "2018 (authoritative but 6 years old)"
+    },
+    {
+      "url": "https://www.thoughtspot.com/data-trends/data-modeling/slowly-changing-dimensions-in-data-warehouse",
+      "title": "Slowly Changing Dimensions (SCD): 4 Types & How to Implement",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/data-engineering/why-to-use-surrogate-keys-and-slowly-changing-dimensions-in-star-schema/",
+      "title": "Why to Use Surrogate Keys and Slowly Changing Dimensions in Star Schema?",
+      "recency": "2024"
+    },
+    {
+      "url": "https://docs.stripe.com/api-v2-overview",
+      "title": "Stripe API v2 overview",
+      "recency": "2024"
+    },
+    {
+      "url": "https://stripe.dev/blog/payment-api-design",
+      "title": "Stripe's payments APIs: The first 10 years",
+      "recency": "2024"
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/",
+      "title": "Cloudflare: Time to Live (TTL)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.techaheadcorp.com/blog/netflix-system-design/",
+      "title": "Let's Decode Netflix System Design and Backend Architecture",
+      "recency": "2024"
+    },
+    {
+      "url": "https://15445.courses.cs.cmu.edu/fall2024/slides/15-optimization.pdf",
+      "title": "CMU Database Systems 15-445/645 FALL 2024 — Query Optimization",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/how-to-interpret-postgresql-explain-analyze-output/",
+      "title": "How to interpret PostgreSQL EXPLAIN ANALYZE output",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.oscoo.com/news/enterprise-ssd-buying-guide-2025/",
+      "title": "Enterprise SSD Buying Guide 2025",
+      "recency": "2025"
+    },
+    {
+      "url": "https://dzone.com/articles/the-myth-of-horizontal-scalability",
+      "title": "The Myth of Horizontal Scalability",
+      "recency": "2024"
+    }
+  ]
+}

@@ -20,6 +20,20 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Auth Configuration
+
+In the Supabase dashboard, enable email confirmation for password signups:
+
+1. Open `Authentication` > `Providers` > `Email`.
+2. Enable `Confirm email`.
+3. Ensure the Site URL and Redirect URLs include the deployed app URL and local development URL.
+
+The app routes new password signups to `/verify-email?email=...` and uses `/api/auth/resend-verification` to resend signup confirmations with a 60-second IP+email rate limit.
+
+For Google sign-in, enable the Google provider and add `/auth/callback` to the allowed redirect URLs. Supabase stores linked sign-in methods in Auth identities; keep automatic same-email identity linking enabled, and enable manual identity linking when the Settings page exposes "Connect Google".
+
+For in-app email changes, keep email confirmation enabled so `supabase.auth.updateUser({ email })` sends a confirmation link before the new address becomes active.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

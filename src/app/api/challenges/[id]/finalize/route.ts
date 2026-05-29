@@ -1,7 +1,84 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { gradeCodingAttempt } from '@/lib/coding-grading/grader'
+import { gradeCodingAttempt, shouldUseDeterministicCodingGrade } from '@/lib/coding-grading/grader'
 import type { ChatMessage, SessionEvent } from '@/lib/coding-grading/grader'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
+
+const RequestSchema = z.object({
+  attemptId: z.string().uuid(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
+function aiLimitResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  if (error instanceof AiBudgetExceededError) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  return null
+}
+
+function codingNotReadyResponse({
+  reason,
+  language,
+  challengeType,
+}: {
+  reason: 'missing_code' | 'missing_test_signal'
+  language: string
+  challengeType: string
+}) {
+  const isSql = language === 'sql' || challengeType === 'sql'
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: isSql ? 'data' : 'software',
+    challengeType: isSql ? 'sql' : 'algorithm',
+  })
+  const summary = reason === 'missing_test_signal'
+    ? (isSql
+      ? 'I need a runnable query result before I can give useful feedback.'
+      : 'I need a runnable test result before I can give useful feedback.')
+    : emptyState.summary
+  const nextActions = reason === 'missing_test_signal'
+    ? ['Run the visible tests once so feedback can point to a real failure or passing path.']
+    : emptyState.next_actions
+
+  return NextResponse.json({
+    status: 'not_ready',
+    ready_to_grade: false,
+    reason,
+    empty_state: {
+      ...emptyState,
+      summary,
+      next_actions: nextActions,
+    },
+    summary,
+    next_actions: nextActions,
+  }, { status: 422 })
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,7 +116,7 @@ interface PartBreakdown {
 }
 
 // ---------------------------------------------------------------------------
-// Event log parsing helper — mirrors coding-submit route pattern
+// Event log parsing helper - mirrors coding-submit route pattern
 // ---------------------------------------------------------------------------
 
 function parseEventLog(raw: unknown): SessionEvent[] {
@@ -50,7 +127,7 @@ function parseEventLog(raw: unknown): SessionEvent[] {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed as SessionEvent[]
     } catch {
-      // Not a JSON array (e.g. canvas text summary) — return empty
+      // Not a JSON array (e.g. canvas text summary) - return empty
     }
   }
   return []
@@ -71,17 +148,20 @@ export async function POST(
   const { id } = await params
 
   // Parse body
-  let body: { attemptId?: string }
+  let body: z.infer<typeof RequestSchema>
   try {
-    body = await req.json()
-  } catch {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const { attemptId } = body
-  if (!attemptId) {
-    return NextResponse.json({ error: 'Missing attemptId' }, { status: 400 })
-  }
 
   // ---------------------------------------------------------------------------
   // Idempotency: if a grade already exists for this attempt, return it as-is
@@ -207,7 +287,7 @@ export async function POST(
   const weightedTotal = totalWeight > 0 ? totalWeightedScore / totalWeight : 0
 
   // ---------------------------------------------------------------------------
-  // Build grader input — pass parts[] so the skill can weight evidence
+  // Build grader input - pass parts[] so the skill can weight evidence
   // ---------------------------------------------------------------------------
 
   const metadata = (challenge.metadata ?? {}) as Record<string, unknown>
@@ -275,8 +355,21 @@ export async function POST(
     chatHistory: [] as ChatMessage[],
     sessionEvents,
     sessionStartedAt: attempt.started_at as string | undefined,
-    // Parts-aware field — T8 will extend the skill to use this
+    // Parts-aware field - T8 will extend the skill to use this
     parts: gradingParts,
+    budget: {
+      userId: user.id,
+      userPlan: await getUserPlanForBudget(user.id),
+      route: 'coding_finalize_grade',
+    },
+  }
+
+  if (shouldUseDeterministicCodingGrade(gradingInput)) {
+    return codingNotReadyResponse({
+      reason: representativeCode.trim() ? 'missing_test_signal' : 'missing_code',
+      language: representativeLanguage,
+      challengeType: challenge.challenge_type ?? '',
+    })
   }
 
   // ---------------------------------------------------------------------------
@@ -285,8 +378,11 @@ export async function POST(
 
   let grade
   try {
+    await assertPlanLimit(user.id, gradingInput.budget.userPlan, 'ai_grading_runs')
     grade = await gradeCodingAttempt(gradingInput)
   } catch (err) {
+    const response = aiLimitResponse(err)
+    if (response) return response
     console.error('Coding grader failed in finalize:', err)
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
@@ -318,7 +414,11 @@ export async function POST(
       rubric_scores: grade.dimensions,
       top_strength: grade.top_strength,
       top_improvement: grade.top_improvement,
-      canvas_annotations: { parts_breakdown: partsBreakdown } as unknown as never[],
+      canvas_annotations: {
+        parts_breakdown: partsBreakdown,
+        score_breakdown: grade.score_breakdown,
+        what_a_5_would_look_like: grade.what_a_5_would_look_like,
+      } as unknown as never[],
     })
     .select()
     .single()
@@ -347,6 +447,9 @@ export async function POST(
   return NextResponse.json({
     grade: insertedGrade,
     weighted_total: weightedTotal,
+    score_breakdown: grade.score_breakdown,
+    summary: grade.summary,
+    next_actions: grade.next_actions,
     parts: partsBreakdown.map((p) => ({
       id: p.id,
       title: p.title,

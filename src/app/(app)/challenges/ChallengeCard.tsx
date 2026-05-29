@@ -2,9 +2,13 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { motion, motionTokens } from '@/components/motion'
 import { appendReturnTo } from '@/lib/navigation/return-to'
+import { cleanDisplayCopy } from '@/lib/copy/display'
+import { challengeTaskSummary } from '@/lib/challenges/presentation'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
+import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 const PARADIGM_STYLE: Record<string, {
   bg: string
@@ -38,7 +42,7 @@ const PARADIGM_STYLE: Record<string, {
 function TraditionalArt({ color }: { color: string }) {
   return (
     <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Concentric compass arcs — foundation / craft */}
+      {/* Concentric compass arcs - foundation / craft */}
       <g opacity="0.18" stroke={color} fill="none" strokeWidth="1.2">
         <circle cx="240" cy="20" r="40" />
         <circle cx="240" cy="20" r="65" />
@@ -81,7 +85,7 @@ function AIAssistedArt({ color }: { color: string }) {
   const edges = [[0,1],[0,4],[0,5],[1,2],[1,3],[1,5],[2,3],[4,5]]
   return (
     <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Node graph — human+model collaboration */}
+      {/* Node graph - human+model collaboration */}
       <g opacity="0.15" stroke={color} strokeWidth="1">
         {edges.map(([a, b], i) => (
           <line key={i} x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y} />
@@ -104,7 +108,7 @@ function AIAssistedArt({ color }: { color: string }) {
 function AgenticArt({ color }: { color: string }) {
   return (
     <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Recursive spiral — autonomous loops */}
+      {/* Recursive spiral - autonomous loops */}
       <g opacity="0.16" stroke={color} fill="none" strokeWidth="1.2">
         <path d="M 250 50 C 280 50 280 90 250 90 C 220 90 200 70 210 50 C 220 30 260 20 270 40 C 280 60 265 95 240 100 C 210 105 190 80 198 55 C 206 30 240 10 258 28" />
       </g>
@@ -135,7 +139,7 @@ function AINativeArt({ color }: { color: string }) {
   })
   return (
     <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Radial burst — emergence / generative */}
+      {/* Radial burst - emergence / generative */}
       <g stroke={color} fill="none">
         {sparks.map((s, i) => (
           <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
@@ -162,14 +166,12 @@ const PARADIGM_ART: Record<string, React.FC<{ color: string }>> = {
   'AI-Native': AINativeArt,
 }
 
-const DIFFICULTY_CONFIG: Record<string, { label: string; dot: string }> = {
-  warmup:       { label: 'Warm-up',  dot: '#10b981' },
-  standard:     { label: 'Standard', dot: '#f59e0b' },
-  advanced:     { label: 'Advanced', dot: '#ef4444' },
-  staff_plus:   { label: 'Staff+',   dot: '#8b5cf6' },
-  beginner:     { label: 'Easy',     dot: '#10b981' },
-  intermediate: { label: 'Medium',   dot: '#f59e0b' },
-  hard:         { label: 'Hard',     dot: '#ef4444' },
+// Canonical labels + dot colors per PracticeDifficulty bucket. Legacy values
+// arriving from a bookmarked URL or pre-R2 cache go through coerceDifficulty.
+const DIFFICULTY_DOT: Record<PracticeDifficulty, string> = {
+  easy:   '#10b981', // green
+  medium: '#f59e0b', // amber
+  hard:   '#ef4444', // red
 }
 
 export function ChallengeCard({
@@ -178,16 +180,28 @@ export function ChallengeCard({
   listView = false,
   locked = false,
   returnHref,
+  layoutId,
 }: {
   challenge: ChallengeWithDomain
   paradigm: string
   listView?: boolean
   locked?: boolean
   returnHref?: string
+  layoutId?: string
 }) {
   const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
-  const diff = DIFFICULTY_CONFIG[challenge.difficulty] ?? { label: challenge.difficulty, dot: '#74796e' }
+  const bucket = coerceDifficulty(challenge.difficulty)
+  const diff = bucket
+    ? { label: DIFFICULTY_LABELS[bucket], dot: DIFFICULTY_DOT[bucket] }
+    : { label: challenge.difficulty, dot: '#74796e' }
   const attempts = challenge.attempt_count ?? 0
+  const title = cleanDisplayCopy(challenge.title) || challenge.title
+  const promptText = challengeTaskSummary(challenge as ChallengeWithDomain & {
+    scenario_context?: string | null
+    scenario_trigger?: string | null
+    scenario_question?: string | null
+    metadata?: Record<string, unknown> | null
+  })
   const challengePath = `/workspace/challenges/${challenge.slug ?? challenge.id}`
   const challengeHref = appendReturnTo(challengePath, returnHref)
   const discussionHref = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
@@ -199,9 +213,18 @@ export function ChallengeCard({
 
   if (listView) {
     return (
-      <div
-        className="flex items-center gap-4 px-4 py-3 group transition-all duration-200 hover:bg-surface-container/50"
-        style={{ backgroundColor: '#f5f1ea' }}
+      <motion.div
+        layout
+        layoutId={layoutId}
+        layoutDependency={listView}
+        initial={false}
+        transition={motionTokens.spring.layout}
+        className="group flex items-center gap-4 overflow-hidden border border-transparent px-4 py-3 transition-colors duration-150 hover:bg-surface-container/50"
+        style={{
+          backgroundColor: '#f5f1ea',
+          borderRadius: 14,
+          transformOrigin: 'center left',
+        }}
       >
         {/* Difficulty dot */}
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: diff.dot }} />
@@ -210,12 +233,12 @@ export function ChallengeCard({
         <div className="flex-1 min-w-0">
           <Link href={challengeHref} data-hatch-sound="open" className="block">
             <p className="font-headline font-bold text-[14px] text-on-surface leading-snug truncate group-hover:text-primary transition-colors">
-              {challenge.title}
+              {title}
             </p>
           </Link>
-          {challenge.prompt_text && (
+          {promptText && (
             <p className="text-[11px] text-on-surface-variant font-body font-semibold truncate mt-0.5">
-              {challenge.prompt_text}
+              {promptText}
             </p>
           )}
         </div>
@@ -291,7 +314,7 @@ export function ChallengeCard({
                 : 'circle'}
           </span>
           <span className="text-[11px] text-on-surface-variant font-label">
-            {attempts > 0 ? attempts : '—'}
+            {attempts > 0 ? attempts : '-'}
           </span>
         </span>
 
@@ -312,19 +335,27 @@ export function ChallengeCard({
             <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
           </Link>
         )}
-      </div>
+      </motion.div>
     )
   }
 
   const Art = PARADIGM_ART[paradigm] ?? PARADIGM_ART.Traditional
 
   return (
-    <div
-      className="rounded-2xl p-4 flex flex-col gap-2 group relative overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_6px_20px_-8px_rgba(30,27,20,0.22)]"
+    <motion.div
+      layout
+      layoutId={layoutId}
+      layoutDependency={listView}
+      initial={false}
+      transition={motionTokens.spring.layout}
+      whileHover={{ y: -3 }}
+      className="group relative flex flex-col gap-2 overflow-hidden p-4 transition-shadow duration-200 hover:shadow-[0_6px_20px_-8px_rgba(30,27,20,0.22)]"
       style={{
         backgroundColor: style.bg,
         border: '1px solid rgba(0,0,0,0.04)',
+        borderRadius: 16,
         minHeight: 140,
+        transformOrigin: 'center',
       }}
     >
       {/* SVG art background */}
@@ -372,9 +403,24 @@ export function ChallengeCard({
           className="font-headline font-[600] text-[16px] tracking-[-0.01em] leading-snug transition-colors"
           style={{ color: style.fg, textWrap: 'balance' } as React.CSSProperties}
         >
-          {challenge.title}
+          {title}
         </h3>
       </Link>
+
+      {promptText && (
+        <p
+          className="font-body text-[12px] leading-snug font-semibold"
+          style={{
+            color: `${style.fg}d0`,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {promptText}
+        </p>
+      )}
 
       {/* Tag chips + real interview badge */}
       {(() => {
@@ -411,7 +457,7 @@ export function ChallengeCard({
         <span className="text-[11px] font-label flex items-center gap-2" style={{ color: `${style.fg}a0` }}>
           <span className="inline-flex items-center gap-1">
             <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 0" }}>group</span>
-            {attempts > 0 ? attempts : '—'}
+            {attempts > 0 ? attempts : '-'}
           </span>
         </span>
 
@@ -443,6 +489,6 @@ export function ChallengeCard({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

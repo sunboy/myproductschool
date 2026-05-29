@@ -6,9 +6,14 @@ import { type Discipline } from '@/components/challenges/DisciplineTabStrip'
 import { FilterDropdownBar, type FilterState } from '@/components/challenges/FilterDropdownBar'
 import { ActiveFilterPills } from '@/components/challenges/ActiveFilterPills'
 import { FilterBottomSheet } from '@/components/challenges/FilterBottomSheet'
+import { MotionList } from '@/components/motion'
 import { AppTooltip } from '@/components/ui/AppTooltip'
+import { TopicChipCloud } from '@/components/challenges/TopicChipCloud'
+import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
+import { getTopicLabelAny } from '@/lib/data/taxonomy'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
 import type { ChallengeWithDomain } from '@/lib/types'
+import { coerceDifficulty, expandDifficultyForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 interface Props {
   challenges: ChallengeWithDomain[]
@@ -101,12 +106,13 @@ const ROLE_VALUE_MAP: Record<string, string> = {
   'Data Scientist': 'data_scientist',
 }
 
-const DIFFICULTY_VALUE_MAP: Record<string, string> = {
-  Staff: 'staff_plus',
-  'Staff+': 'staff_plus',
-  Warmup: 'warmup',
-  Standard: 'standard',
-  Advanced: 'advanced',
+// Map UI label → canonical PracticeDifficulty bucket. The actual row match
+// happens via expandDifficultyForQuery() so legacy DB strings still filter
+// correctly until R2 rewrites the column.
+const DIFFICULTY_LABEL_TO_BUCKET: Record<string, PracticeDifficulty> = {
+  Easy: 'easy',
+  Medium: 'medium',
+  Hard: 'hard',
 }
 
 const SCOPE_VALUE_MAP: Record<string, string> = {
@@ -153,7 +159,7 @@ function getDiscipline(searchParams: SearchParamGetter): Discipline {
 
 function matchesDiscipline(challenge: ChallengeWithDomain, discipline: Discipline) {
   if (discipline === 'all') return true
-  if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(challenge.challenge_type ?? '')
+  if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take', 'claude_code_analytics'].includes(challenge.challenge_type ?? '')
   return challenge.challenge_type === discipline
 }
 
@@ -165,10 +171,12 @@ function matchesSecondaryFilters(challenge: ChallengeWithDomain, filters: Filter
   }
 
   if (filters.difficulty.length > 0) {
-    const selectedDifficulties = filters.difficulty.map((difficulty) => (
-      DIFFICULTY_VALUE_MAP[difficulty] ?? normalizeValue(difficulty)
-    ))
-    if (!selectedDifficulties.includes(challenge.difficulty)) return false
+    const selectedBuckets = filters.difficulty
+      .map((label) => DIFFICULTY_LABEL_TO_BUCKET[label] ?? coerceDifficulty(label))
+      .filter((b): b is PracticeDifficulty => b != null)
+    const acceptedDbValues = new Set<string>()
+    for (const b of selectedBuckets) for (const v of expandDifficultyForQuery(b)) acceptedDbValues.add(v)
+    if (!acceptedDbValues.has(challenge.difficulty)) return false
   }
 
   if (filters.role.length > 0) {
@@ -185,7 +193,10 @@ function matchesSecondaryFilters(challenge: ChallengeWithDomain, filters: Filter
 
   if (filters.tag.length > 0) {
     const selectedTags = filters.tag.map(normalizeValue)
-    const challengeTags = (challenge.tags ?? []).map(normalizeValue)
+    const challengeTags = Array.from(new Set([
+      ...(challenge.topic_tags ?? []),
+      ...(challenge.technique_tags ?? []),
+    ])).map(normalizeValue)
     if (!selectedTags.some((tag) => challengeTags.includes(tag))) return false
   }
 
@@ -257,6 +268,11 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   function handleDisciplineChange(nextDiscipline: Discipline) {
     updateParams((params) => {
       params.delete('type')
+      // Topic and technique chip clouds are discipline-scoped (TopicChipCloud
+      // hides for `all` and switches its vocab per type). Clear them on type
+      // change so stale slugs from another discipline don't linger in the URL.
+      params.delete('topic')
+      params.delete('technique')
       if (nextDiscipline === 'all') params.delete('discipline')
       else params.set('discipline', nextDiscipline)
 
@@ -281,8 +297,9 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
 
   const disciplineCounts = useMemo(() => {
     const counts = new Map<Discipline, number>()
+    const SUB_DISCIPLINES = DISCIPLINES.filter(e => e.key !== 'all')
 
-    DISCIPLINES.forEach((entry) => {
+    SUB_DISCIPLINES.forEach((entry) => {
       counts.set(
         entry.key,
         challenges.filter((challenge) => (
@@ -291,8 +308,38 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
       )
     })
 
+    // "All practice" total = sum of categorised sub-disciplines (avoids orphaned types inflating count)
+    const subTotal = SUB_DISCIPLINES.reduce((sum, e) => sum + (counts.get(e.key) ?? 0), 0)
+    counts.set('all', subTotal)
+
     return counts
   }, [challenges, filters])
+
+  // Live chip counts: tally topic/technique tags over the discipline-scoped set
+  // (NOT the secondary-filtered set, so counts stay stable as the user toggles
+  // chips). Drives which chips render and their count badges.
+  const chipCounts = useMemo(() => {
+    const topics: Record<string, number> = {}
+    const techniques: Record<string, number> = {}
+    for (const c of challenges) {
+      if (!matchesDiscipline(c, discipline)) continue
+      for (const slug of c.topic_tags ?? []) topics[slug] = (topics[slug] ?? 0) + 1
+      for (const slug of c.technique_tags ?? []) techniques[slug] = (techniques[slug] ?? 0) + 1
+    }
+    return { topics, techniques }
+  }, [challenges, discipline])
+
+  // Resolve display labels for every topic slug present in the discipline set,
+  // so GroupedChallengeList can render real section headers (e.g. "Window Functions").
+  const topicLabels = useMemo(() => {
+    const labels: Record<string, string> = {}
+    for (const c of filteredChallenges) {
+      for (const slug of c.topic_tags ?? []) {
+        if (!labels[slug]) labels[slug] = getTopicLabelAny(slug) ?? slug
+      }
+    }
+    return labels
+  }, [filteredChallenges])
 
   function handleRemoveFilter(key: keyof FilterState, value: string) {
     if (key === 'real_interview') {
@@ -310,15 +357,21 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   }
 
   function handleToggleView() {
-    updateParams((params) => {
-      if (listView) params.set('view', 'grid')
-      else params.delete('view')
-    })
+    const params = new URLSearchParams(searchString)
+    if (listView) params.set('view', 'grid')
+    else params.delete('view')
+
+    const nextSearch = params.toString()
+    window.history.replaceState(null, '', nextSearch ? `${pathname}?${nextSearch}` : pathname)
   }
 
+  const resultsLayoutClass = listView
+    ? 'grid grid-cols-1 gap-2'
+    : 'grid grid-cols-1 sm:grid-cols-3 gap-3'
+
   return (
-    <div className="flex flex-col -mx-6">
-      <section className="px-6 pb-4">
+    <div className="-mx-4 flex min-w-0 flex-col sm:-mx-6">
+      <section className="px-4 pb-4 sm:px-6">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
           {DISCIPLINES.map((entry) => {
             const active = discipline === entry.key
@@ -377,7 +430,16 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         </div>
       </section>
 
-      {/* Filter dropdown bar */}
+      {/* Topic chip cloud — discipline-scoped topic/technique quick filters */}
+      <TopicChipCloud
+        discipline={discipline}
+        filters={filters}
+        onChange={handleFilterChange}
+        topicCounts={chipCounts.topics}
+        techniqueCounts={chipCounts.techniques}
+      />
+
+      {/* Secondary filter bar */}
       <FilterDropdownBar
         discipline={discipline}
         filters={filters}
@@ -386,6 +448,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         onOpenMobileSheet={() => setMobileSheetOpen(true)}
         listView={listView}
         onToggleView={handleToggleView}
+        showViewToggle={discipline === 'all'}
       />
 
       {/* Active filter pills */}
@@ -404,10 +467,29 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         onChange={handleFilterChange}
         onClose={() => setMobileSheetOpen(false)}
         onClearAll={handleClearAll}
+        onDisciplineChange={handleDisciplineChange}
       />
 
       {/* Results */}
-      <div className="px-6 pt-4">
+      <div className="px-4 pt-4 sm:px-6">
+        {listView && filteredChallenges.length > 0 && discipline !== 'all' && (
+          <p className="mb-2 text-[11px] font-label text-on-surface-variant">
+            <span className="inline-flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 0" }}>radio_button_unchecked</span>
+              Not started
+            </span>
+            {' · '}
+            <span className="inline-flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 0" }}>change_history</span>
+              Attempted
+            </span>
+            {' · '}
+            <span className="inline-flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              Completed
+            </span>
+          </p>
+        )}
         {filteredChallenges.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <p className="font-headline text-base font-bold text-on-surface">No challenges match those filters</p>
@@ -436,7 +518,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
                 algorithm: 'text-[#3a5a7c]',
               }
               const discChallenges = filteredChallenges.filter((c) => {
-                if (disc === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(c.challenge_type ?? '')
+                if (disc === 'product_sense') return ['flow', 'freeform', 'quick_take', 'claude_code_analytics'].includes(c.challenge_type ?? '')
                 return c.challenge_type === disc
               })
               if (discChallenges.length === 0) return null
@@ -457,27 +539,28 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
                       see all {discChallenges.length} →
                     </button>
                   </div>
-                  <div className={listView ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'}>
+                  <MotionList
+                    layoutKey={`practice-${disc}`}
+                    className={resultsLayoutClass}
+                  >
                     <LockedChallengeGrid
                       challenges={preview}
                       paradigms={previewParadigms}
                       listView={listView}
                       returnHref={returnHref}
                     />
-                  </div>
+                  </MotionList>
                 </section>
               )
             })}
           </div>
         ) : (
-          <div className={listView ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'}>
-            <LockedChallengeGrid
-              challenges={filteredChallenges}
-              paradigms={paradigms}
-              listView={listView}
-              returnHref={returnHref}
-            />
-          </div>
+          <GroupedChallengeList
+            challenges={filteredChallenges}
+            groupBy={filters.topic.length > 0 ? 'none' : 'primaryTopic'}
+            topicLabels={topicLabels}
+            returnHref={returnHref}
+          />
         )}
       </div>
     </div>

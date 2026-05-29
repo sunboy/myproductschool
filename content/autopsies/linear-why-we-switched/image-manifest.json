@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "linear",
+  "story_slug": "linear-why-we-switched",
+  "story_title": "Linear — Why We Switched",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/linear-why-we-switched/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/linear-why-we-switched/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding an essay document with a slow interface crossed out behind it, representing the complaint-first launch strategy.",
+      "caption": "Linear — when the complaint becomes the distribution strategy.",
+      "prompt": "Linear — Why We Switched | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) holding an open laptop showing an essay document titled \"Why We Build This Way\" with red X marks crossing out a slow, bloated interface in the background. Cap tilted, serious expression, no speech. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/linear-why-we-switched/hero.png",
+      "generated_image_sha256": "3a0f01da9fcd6766b6f92993bf5524db310d066ae77c2ac990e186de6ddcc702",
+      "final_image_sha256": "f20f60bca1d938940c32387c459432bd9b12d9179947ff7315d6017ecb327c06",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear-why-we-switched/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear-why-we-switched/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/linear-why-we-switched/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between a cluttered slow interface and a clean fast one, illustrating Linear's design philosophy contrast.",
+      "caption": "Hatch gesturing between a cluttered slow interface and a clean fast one, illustrating Linear's design philosophy contrast.",
+      "prompt": "Linear — Why We Switched | hatch-narrator: Hatch in narrator pose, gesturing at two screens side by side: on the left, a dense, cluttered project management interface with loading spinners; on the right, a clean, minimal interface with keyboard shortcuts visible. The contrast is the scene. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/linear-why-we-switched/hatch-narrator.png",
+      "generated_image_sha256": "6b53b4e17acdec0d7c37fb3a3491be563652be811e17b42593a0fada320a1290",
+      "final_image_sha256": "461b934e22f891f4bc8dc13c0c17de49b454e99a730f9e3d8f26d890f6438077",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear-why-we-switched/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear-why-we-switched/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/linear-why-we-switched/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a keyboard with highlighted shortcut keys and a speed gauge showing instant response.",
+      "caption": "Hatch examining a keyboard with highlighted shortcut keys and a speed gauge showing instant response.",
+      "prompt": "Linear — Why We Switched | failure-mechanism: Hatch in thinking pose looking at a keyboard with certain keys lit up (shortcut keys), with a speed gauge in the background pointing to \"instant.\" The image communicates keyboard-first design as a form of respect for users' time. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/linear-why-we-switched/failure-mechanism.png",
+      "generated_image_sha256": "6153abbe8d6e4b4bffbc4ca12260bd677a29d9c1459fc5164f00f532db6db883",
+      "final_image_sha256": "01ce0db93804f79aed9b3f7df345cdd57af95405d24beecfd8d9a74f7c8454c1",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear-why-we-switched/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear-why-we-switched/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/linear-why-we-switched/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a two-step fundraising chart showing Linear's seed and Series A milestones.",
+      "caption": "Hatch pointing at a two-step fundraising chart showing Linear's seed and Series A milestones.",
+      "prompt": "Linear — Why We Switched | evidence-card: Hatch pointing at a funding milestone chart: $4.2M seed in February 2020 and $35M Series A in August 2021, shown as two upward steps. The chart is minimal and clean, communicating validation through fundraising sequence. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/linear-why-we-switched/evidence-card.png",
+      "generated_image_sha256": "b6e28ac97e92d634c82640775b4b59baceed4b375f5ad88a2eb268aabbfd8c68",
+      "final_image_sha256": "a77f3c5795c285ed1cd884bc62db0aa1c98edffa4f2593f96b00d3baa22e0456",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear-why-we-switched/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear-why-we-switched/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/linear-why-we-switched/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a sign reading The Complaint Is The Positioning, representing the core lesson.",
+      "caption": "Hatch holding a sign reading The Complaint Is The Positioning, representing the core lesson.",
+      "prompt": "Linear — Why We Switched | lesson-frame: Hatch in calm coaching pose holding a sign that reads \"The Complaint Is The Positioning\" in clean type. The background is minimal cream. The image should feel like the moral of the story being stated plainly. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/linear-why-we-switched/lesson-frame.png",
+      "generated_image_sha256": "25ff89ecd33f54e0713f7a201c69a736e9512605fc4ca0b1bf0f28f7e408cdf0",
+      "final_image_sha256": "d73bf6a06c2cc0c45f1ccea0950544020b6ee8e733b2004dcd0652834074a3af",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear-why-we-switched/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear-why-we-switched/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/linear-why-we-switched/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a laptop with an essay document, representing Linear's complaint-first launch.",
+      "caption": "Hatch holding a laptop with an essay document, representing Linear's complaint-first launch.",
+      "prompt": "Small, recognisable Hatch mascot holding a tiny open laptop with an essay document visible. Clean cream background, no text, no speech. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/linear-why-we-switched/hero.png",
+      "generated_image_sha256": "3a0f01da9fcd6766b6f92993bf5524db310d066ae77c2ac990e186de6ddcc702",
+      "final_image_sha256": "d82cf454bcaacf32986f74f4c3400f586a26f759e005915dac6077d094b26284",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear-why-we-switched/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear-why-we-switched/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/linear-why-we-switched/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch before a split-screen interface contrast for Linear social sharing.",
+      "caption": "Hatch before a split-screen interface contrast for Linear social sharing.",
+      "prompt": "Hero Hatch mascot adapted for OG share: Hatch standing confidently in front of a split screen showing a cluttered interface versus a clean one, with \"LINEAR\" as a visual backdrop. Cream background, HackProduct watermark bottom-right 60% opacity JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/linear-why-we-switched/hero.png",
+      "generated_image_sha256": "3a0f01da9fcd6766b6f92993bf5524db310d066ae77c2ac990e186de6ddcc702",
+      "final_image_sha256": "26202e713e3fe3d0895e5f99c4fd5c8ecad58024172c3ac84234a0a9d4576b1c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/linear-why-we-switched/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/linear-why-we-switched/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/linear-why-we-switched/v1"
+}

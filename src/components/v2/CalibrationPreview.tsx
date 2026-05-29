@@ -51,7 +51,7 @@ function StatusMark({ status }: { status: MarkStatus }) {
 export function CalibrationPreview({ steps }: CalibrationPreviewProps) {
   const markRefs = useRef<(HTMLDivElement | null)[]>([])
   const prevStatuses = useRef<MarkStatus[]>(steps.map((s) => s.status))
-  // displayStatuses drives what icon renders — only swapped at the flip midpoint
+  // displayStatuses drives what icon renders - only swapped at the flip midpoint
   // so the old icon remains visible during the rotate-out phase
   const [displayStatuses, setDisplayStatuses] = useState<MarkStatus[]>(
     steps.map((s) => s.status)
@@ -81,7 +81,7 @@ export function CalibrationPreview({ steps }: CalibrationPreviewProps) {
           duration: 0.15,
           ease: 'power2.in',
           onComplete: () => {
-            // Element is edge-on (invisible) — safe to swap icon now
+            // Element is edge-on (invisible) - safe to swap icon now
             setDisplayStatuses((prev) => {
               const next = [...prev]
               next[idx] = curr

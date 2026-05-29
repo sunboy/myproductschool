@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { FeedbackText } from '@/components/ui/FeedbackText'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import CompetencyRadar from '@/components/live-interview/CompetencyRadar'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -24,17 +26,25 @@ const FLOW_LABELS: Record<FlowStep, string> = {
 }
 
 function getScoreDescriptor(score: number): string {
-  if (score >= 80) return 'Strong'
-  if (score >= 60) return 'Good'
-  if (score > 0) return 'Developing'
+  const percent = scoreToPercent(score)
+  if (percent >= 80) return 'Strong'
+  if (percent >= 60) return 'Good'
+  if (percent > 0) return 'Developing'
   return 'Not reached'
 }
 
 function getGradeDescriptor(score: number): string {
-  if (score >= 90) return 'Excellent performance'
-  if (score >= 75) return 'Strong performance with room to grow'
-  if (score >= 60) return 'Good foundation — focus on the areas below'
-  return 'Keep practicing — review the suggestions below'
+  const percent = scoreToPercent(score)
+  if (percent >= 90) return 'Excellent performance'
+  if (percent >= 75) return 'Strong performance with room to grow'
+  if (percent >= 60) return 'Good foundation - focus on the areas below'
+  return 'Keep practicing - review the suggestions below'
+}
+
+function scoreToPercent(score: number) {
+  if (!Number.isFinite(score)) return 0
+  const percent = score <= 5 ? (score / 5) * 100 : score
+  return Math.max(0, Math.min(100, Math.round(percent)))
 }
 
 const COMPETENCY_LABELS: Record<string, string> = {
@@ -137,15 +147,14 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-6">
       {/* Back navigation */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/live-interviews"
-          className="p-2 rounded-lg hover:bg-surface-container transition-colors"
-        >
-          <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-        </Link>
-        <span className="text-sm text-on-surface-variant font-label">Back to interviews</span>
-      </div>
+      <AppBreadcrumbs
+        className="mb-6"
+        items={[
+          { label: 'Live Interviews', href: '/live-interviews' },
+          ...(companyName ? [{ label: companyName }] : []),
+          { label: 'Debrief' },
+        ]}
+      />
 
       {/* Page title */}
       <h1 className="font-headline text-2xl font-bold text-on-surface mb-1">
@@ -158,14 +167,18 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
 
       <div className="space-y-5">
         {/* Score card */}
+        {(() => {
+          const overallPercent = scoreToPercent(debrief.overallScore)
+          return (
         <div className="bg-surface-container rounded-xl p-6 border-t-4 border-primary">
           <div className="flex items-center gap-4 mb-4">
             <HatchGlyph size={64} state="celebrating" className="text-primary shrink-0" />
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <span className="text-5xl font-headline font-extrabold text-primary">
-                  {debrief.overallScore}
+                  {overallPercent}
                 </span>
+                <span className="-ml-2 mt-5 font-label text-sm font-bold text-on-surface-variant">/100</span>
                 <span className="bg-primary-container text-on-primary-container rounded-full px-4 py-1 font-label font-semibold text-sm">
                   {debrief.grade}
                 </span>
@@ -176,6 +189,8 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
             </div>
           </div>
         </div>
+          )
+        })()}
 
         {/* FLOW Scores */}
         <div className="bg-surface-container rounded-xl p-6">
@@ -183,6 +198,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
           <div className="space-y-3">
             {FLOW_STEPS.map(step => {
               const score = debrief.flowScores[step] ?? 0
+              const percent = scoreToPercent(score)
               const descriptor = getScoreDescriptor(score)
               return (
                 <div key={step} className="flex items-center gap-4">
@@ -192,11 +208,11 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                   <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary rounded-full transition-all duration-700"
-                      style={{ width: `${score}%` }}
+                      style={{ width: `${percent}%` }}
                     />
                   </div>
                   <span className="w-10 text-right text-sm font-label font-bold text-primary">
-                    {score}%
+                    {percent}%
                   </span>
                   <span className="w-24 text-right text-xs font-label text-on-surface-variant">
                     {descriptor}
@@ -246,7 +262,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <p className="text-[11px] text-on-surface-variant leading-tight">{dim.evidence}</p>
+                    <FeedbackText className="text-[11px] text-on-surface-variant">{dim.evidence}</FeedbackText>
                   </div>
                 )
               })}
@@ -273,7 +289,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                   <span className="material-symbols-outlined text-primary text-lg shrink-0">
                     check_circle
                   </span>
-                  <span>{item}</span>
+                  <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
                 </li>
               ))}
             </ul>
@@ -296,7 +312,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                   <span className="material-symbols-outlined text-secondary text-lg shrink-0">
                     arrow_forward
                   </span>
-                  <span>{item}</span>
+                  <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
                 </li>
               ))}
             </ul>
@@ -323,7 +339,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                       Detected in {FLOW_LABELS[signal.stepDetected as FlowStep] ?? signal.stepDetected}
                     </span>
                   </div>
-                  <p className="text-sm text-on-surface-variant">{signal.signal}</p>
+                  <FeedbackText className="text-on-surface-variant">{signal.signal}</FeedbackText>
                 </div>
               ))}
             </div>
@@ -346,9 +362,47 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                   <p className="font-label font-semibold text-on-surface text-sm mb-1">
                     {pattern.patternName}
                   </p>
-                  <p className="text-sm text-on-surface-variant">{pattern.evidence}</p>
+                  <FeedbackText className="text-on-surface-variant">{pattern.evidence}</FeedbackText>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Next Actions */}
+        {debrief.nextActions && debrief.nextActions.length > 0 && (
+          <div className="bg-surface-container rounded-xl p-6" data-testid="live-interview-debrief-next-actions">
+            <h2 className="font-headline text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary">checklist</span>
+              Next Actions
+            </h2>
+            <div className="grid gap-3 md:grid-cols-3">
+              {debrief.nextActions.slice(0, 3).map((action, index) => {
+                const card = (
+                  <div className="h-full rounded-lg bg-surface-container-high p-4 transition-colors hover:bg-surface-container-highest">
+                    <p className="font-label text-sm font-bold text-on-surface mb-1">
+                      {action.title}
+                    </p>
+                    <FeedbackText className="text-sm text-on-surface-variant">
+                      {action.description}
+                    </FeedbackText>
+                    {action.href && (
+                      <span className="mt-3 inline-flex items-center gap-1 font-label text-xs font-bold text-primary">
+                        Open practice
+                        <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                      </span>
+                    )}
+                  </div>
+                )
+
+                return action.href ? (
+                  <Link key={`${action.title}-${index}`} href={action.href} className="block no-underline">
+                    {card}
+                  </Link>
+                ) : (
+                  <div key={`${action.title}-${index}`}>{card}</div>
+                )
+              })}
             </div>
           </div>
         )}
@@ -363,9 +417,9 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
               <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">
                 Recommended Next
               </p>
-              <p className="text-sm text-on-tertiary-fixed-variant">
+              <FeedbackText className="text-on-tertiary-fixed-variant">
                 {debrief.nextChallengeRecommendation}
-              </p>
+              </FeedbackText>
             </div>
           </div>
         )}

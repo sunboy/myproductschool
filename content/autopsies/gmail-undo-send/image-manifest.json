@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "google",
+  "story_slug": "gmail-undo-send",
+  "story_title": "How Gmail Made Send Reversible Without Promising Recall",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/gmail-undo-send/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/gmail-undo-send/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A paused message envelope suspended inside a countdown ring with Hatch pointing at the return path, the image of a held send.",
+      "caption": "Send becomes a countdown, not a commitment.",
+      "prompt": "How Gmail Made Send Reversible Without Promising Recall | hero: A flat geometric HackProduct autopsy illustration for Gmail Undo Send. Canvas role hero, aspect 2400x1350. The scene shows a single cream message envelope hovering in the centre of a warm cream `#faf6f0` field, paused mid-flight inside a soft amber `#c9ad68` countdown ring marked with thin charcoal `#1e211c` tick marks at 5, 10, 20, and 30. A forest `#4a7c59` arrow leads from the envelope back toward a small return-to-compose tray rendered as a notched deep forest `#244232` slot. Hatch the HackProduct mascot stands in the lower left at about 14 percent of canvas height, in narrator pose, mitten hand pointing up at the ring, graduation cap and growth arrow intact, green `H` chest mark visible. Leave the upper left quiet for the article title overlay. No Gmail logo, no Google logo, no real screenshot. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/gmail-undo-send/hero.png",
+      "generated_image_sha256": "f58b77ac245114b238ac3cab9c0e26bff41867fee0fb35cdf8c3378e3667df3a",
+      "final_image_sha256": "da30a99c22b95dfe45d1c4d2e192e441bd3d916b1cc1efb2dc9859bbbecabf58",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gmail-undo-send/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gmail-undo-send/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/gmail-undo-send/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at a stylised 2009 designer desk pointing at a single regret marker on a screen, conveying the origin moment of the feature.",
+      "caption": "Hatch at a stylised 2009 designer desk pointing at a single regret marker on a screen, conveying the origin moment of the feature.",
+      "prompt": "How Gmail Made Send Reversible Without Promising Recall | hatch-narrator: A flat geometric HackProduct autopsy illustration for Gmail Undo Send. Canvas role scene, aspect 1600x1600 square. The scene depicts a quiet 2009 designer desk rendered in clean shapes, no photoreal detail: a beige notebook, a small monitor showing only a generic message thread block in mist `#dfe6dc` and cream `#faf6f0`, and one half-filled coffee mug. The monitor displays a single sent-message card with a tiny red dot indicating regret, plus a fading speech-bubble carrying the words wrong Larry. Hatch stands at the right of the desk in narrator pose, about 18 percent of canvas height, mitten hand gesturing toward the regret dot, friendly coach expression, graduation cap and growth arrow intact, green `H` chest mark, all official mascot traits preserved. Palette: cream background, forest `#4a7c59` desk edge, amber `#705c30` mug, charcoal `#1e211c` linework. No human faces, no real product logos, no real screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/gmail-undo-send/hatch-narrator.png",
+      "generated_image_sha256": "6612e069b38f40f62eb44805fdeaf9da0a884f44bc626280fdcd00ecea455d07",
+      "final_image_sha256": "4559e5a9c2529a05e6de8159c2bd57438390146230791e32dcba5169c7cb83dd",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gmail-undo-send/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gmail-undo-send/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/gmail-undo-send/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A three-stage message timeline with a labelled holding zone and a return loop, showing how a delivery delay creates a recoverable window.",
+      "caption": "A three-stage message timeline with a labelled holding zone and a return loop, showing how a delivery delay creates a recoverable window.",
+      "prompt": "How Gmail Made Send Reversible Without Promising Recall | failure-mechanism: A flat geometric HackProduct autopsy illustration for Gmail Undo Send. Canvas role mechanism, aspect 1800x1200. The composition is a left-to-right horizontal timeline rendered on cream `#faf6f0`. From left, three message cards labelled draft, sent, delivered, in mist `#dfe6dc` outlined in charcoal `#1e211c`. Between sent and delivered, a forest `#4a7c59` holding zone shaped like a soft rectangle is labelled with four small chips reading 5s, 10s, 20s, 30s in soft amber `#c9ad68`. A loop arrow curves from the holding zone back toward the draft card, marked with the word Undo in deep forest `#244232`. Hatch sits at the lower right at about 15 percent of canvas height in thinking pose, mitten finger raised toward the holding zone, graduation cap and growth arrow intact, green `H` chest mark visible, friendly coach expression, all official mascot traits preserved. No real Gmail UI, no logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/gmail-undo-send/failure-mechanism.png",
+      "generated_image_sha256": "a104f4e3e78c6e3aa3997e9bc99cb692d8342264a0ef8831af92e254c6cbf18f",
+      "final_image_sha256": "b40e215e16f383e12aa7d4ea6ee12459687d5d7eafa17ee136dc050662a1d8b5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gmail-undo-send/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gmail-undo-send/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/gmail-undo-send/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A six-year ledger band marking the journey from Labs experiment to formal Gmail setting, with Hatch pointing at the graduation badge.",
+      "caption": "A six-year ledger band marking the journey from Labs experiment to formal Gmail setting, with Hatch pointing at the graduation badge.",
+      "prompt": "How Gmail Made Send Reversible Without Promising Recall | evidence-card: A flat geometric HackProduct autopsy illustration for Gmail Undo Send. Canvas role evidence, aspect 1600x1000. The image is a clean six-year ledger band on cream `#faf6f0`. Two vertical markers anchor the band: one on the left labelled 2009 in deep forest `#244232`, one on the right labelled 2015. Between them, a horizontal mist `#dfe6dc` track holds a small flask icon at the start representing Labs and a small badge icon at the end representing the formal Gmail setting. A forest `#4a7c59` arrow flows from flask to badge, with a single soft amber `#c9ad68` chip on the arrow reading six years. Hatch stands at the right in pointing pose, about 16 percent of canvas height, mitten hand directed at the badge end of the ledger, graduation cap and growth arrow intact, green `H` chest mark visible. No charts beyond the ledger, no fake screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/gmail-undo-send/evidence-card.png",
+      "generated_image_sha256": "95b0f3a162be52d0802c0c97e24eb01e003c675873f5216adbe3cb8ad60da756",
+      "final_image_sha256": "0c36fb2dd11d32c1775bc60c0346606d2873c6a749dff0de921515671619ee8d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gmail-undo-send/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gmail-undo-send/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/gmail-undo-send/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A mitten hand holding an envelope under a short time arc with Hatch coaching beside it, showing the contract on the moment of the action.",
+      "caption": "A mitten hand holding an envelope under a short time arc with Hatch coaching beside it, showing the contract on the moment of the action.",
+      "prompt": "How Gmail Made Send Reversible Without Promising Recall | lesson-frame: A flat geometric HackProduct autopsy illustration for Gmail Undo Send. Canvas role lesson, aspect 1800x1200. The composition centres on a clean cream `#faf6f0` field with one strong visual metaphor: an open hand-shaped mitten outline rendered in forest `#4a7c59`, holding a single cream envelope just before release. Above the hand, a soft amber `#c9ad68` arc traces a small window of time. Below the hand, a charcoal `#1e211c` horizon line separates the controlled space inside the product from a faintly drawn mist `#dfe6dc` field labelled the world. Hatch stands beside the hand in coaching pose, calm posture, about 18 percent of canvas height, mitten arm extended in a teaching gesture, graduation cap and growth arrow intact, green `H` chest mark visible, friendly coach expression, all official mascot traits preserved. No corporate marks. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/gmail-undo-send/lesson-frame.png",
+      "generated_image_sha256": "76e4782119a98486a2820f52ac9ea608e222616a6b1b2f35876986f58b9f56a1",
+      "final_image_sha256": "42fd5d1ce44eab6a3b56ca18deb1e6ffa3c5492aa3024defcd04469fa1652f61",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gmail-undo-send/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gmail-undo-send/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/gmail-undo-send/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A single envelope held inside a 30-second ring with a back-arrow, readable at small thumbnail sizes.",
+      "caption": "A single envelope held inside a 30-second ring with a back-arrow, readable at small thumbnail sizes.",
+      "prompt": "A flat geometric HackProduct autopsy illustration for Gmail Undo Send. Canvas role thumbnail, aspect 1200x900. One strong focal shape: a single cream `#faf6f0` envelope at the centre, suspended inside a soft amber `#c9ad68` ring that reads 30 in deep forest `#244232` at the top. A small forest `#4a7c59` curved back-arrow wraps the bottom of the ring. Background is warm cream with a single mist `#dfe6dc` ground band. Hatch appears only as a tiny mark in the lower right corner, about 7 percent of canvas height, simple pointing pose, graduation cap and growth arrow intact, green `H` chest mark visible, official mascot traits preserved. The composition must remain legible at 320 pixels wide and survive a 4:3 listing crop. No text inside the envelope, no logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/gmail-undo-send/thumbnail.png",
+      "generated_image_sha256": "f58b77ac245114b238ac3cab9c0e26bff41867fee0fb35cdf8c3378e3667df3a",
+      "final_image_sha256": "1d6cecf105ce0e807d1590aa1146900414c2426fb31914a901e43d16a8f95633",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gmail-undo-send/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gmail-undo-send/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/gmail-undo-send/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A centred envelope above a forest-green return arc with four amber time markers, designed for social share previews.",
+      "caption": "A centred envelope above a forest-green return arc with four amber time markers, designed for social share previews.",
+      "prompt": "A flat geometric HackProduct autopsy illustration for Gmail Undo Send. Canvas role social cover, aspect 2400x1260. The composition keeps the centre 70 percent clear of edge-critical details so it survives 1.91:1 share crops. A single cream `#faf6f0` envelope floats in the centre, suspended above a forest `#4a7c59` curved timeline arc that bends back on itself. Soft amber `#c9ad68` tick marks at four positions along the arc represent the 5, 10, 20, and 30-second windows. Background is warm cream with one deep forest `#244232` horizontal band along the lower edge to anchor the watermark. Hatch sits at the lower right corner in small narrator pose, about 12 percent of canvas height, mitten hand pointing toward the envelope, graduation cap and growth arrow intact, green `H` chest mark visible, friendly coach expression. No logos, no real screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/gmail-undo-send/social-cover.png",
+      "generated_image_sha256": "f58b77ac245114b238ac3cab9c0e26bff41867fee0fb35cdf8c3378e3667df3a",
+      "final_image_sha256": "6cca97ddfa3c45aac665e801930ec69a36268db6434501323a640cd4d24acf3b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gmail-undo-send/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gmail-undo-send/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/gmail-undo-send/v1"
+}

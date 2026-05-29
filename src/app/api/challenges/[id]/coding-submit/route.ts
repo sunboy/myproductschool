@@ -1,8 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { gradeCodingAttempt } from '@/lib/coding-grading/grader'
+import { gradeCodingAttempt, shouldUseDeterministicCodingGrade } from '@/lib/coding-grading/grader'
 import type { RunResult } from '@/lib/coding/types'
-import type { ChatMessage, SessionEvent } from '@/lib/coding-grading/grader'
+import type { SessionEvent } from '@/lib/coding-grading/grader'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
+
+const TestResultSchema = z.object({
+  id: z.string().min(1).max(200),
+  label: z.string().min(1).max(500),
+  status: z.enum(['passed', 'failed', 'error', 'timeout', 'no_solution']),
+  hidden: z.boolean(),
+  input: z.unknown().optional(),
+  output: z.unknown().optional(),
+  expected: z.unknown().optional(),
+  actual: z.unknown().optional(),
+  matchMode: z.string().max(80).optional(),
+  errorMessage: z.string().max(4000).optional(),
+  durationMs: z.number().finite().nonnegative().optional(),
+})
+
+const RunResultSchema = z.object({
+  runId: z.string().min(1).max(200),
+  testsPassed: z.number().int().min(0),
+  testsTotal: z.number().int().min(0),
+  results: z.array(TestResultSchema).max(1000),
+}).superRefine((payload, ctx) => {
+  if (payload.testsPassed > payload.testsTotal) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['testsPassed'],
+      message: 'testsPassed cannot exceed testsTotal',
+    })
+  }
+})
+
+const ChatMessageSchema = z.object({
+  role: z.enum(['user', 'hatch']),
+  content: z.string().max(20000),
+  timestamp: z.number().finite().nonnegative().optional(),
+})
+
+const RequestSchema = z.object({
+  attemptId: z.string().uuid(),
+  finalCode: z.string().max(200000),
+  language: z.string().trim().min(1).max(40),
+  correctnessPayload: RunResultSchema,
+  chatHistory: z.array(ChatMessageSchema).max(200).optional(),
+  partId: z.string().uuid().optional(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
+function aiLimitResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  if (error instanceof AiBudgetExceededError) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  return null
+}
 
 // ---------------------------------------------------------------------------
 // step_questions row shape (subset used for partId path)
@@ -15,7 +94,7 @@ interface StepQuestionRow {
 }
 
 // ---------------------------------------------------------------------------
-// Event log parsing helpers — mirrors /api/code/run route pattern
+// Event log parsing helpers - mirrors /api/code/run route pattern
 // ---------------------------------------------------------------------------
 
 function parseEventLog(raw: unknown): SessionEvent[] {
@@ -26,7 +105,7 @@ function parseEventLog(raw: unknown): SessionEvent[] {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed as SessionEvent[]
     } catch {
-      // Not a JSON array (e.g. canvas text summary) — return empty
+      // Not a JSON array (e.g. canvas text summary) - return empty
     }
   }
   return []
@@ -47,6 +126,43 @@ function getGradeLabel(score: number): string {
   if (score >= 4.5) return 'best'
   if (score >= 3) return 'good'
   return 'surface'
+}
+
+function codingNotReadyResponse({
+  reason,
+  language,
+  challengeType,
+}: {
+  reason: 'missing_code' | 'missing_test_signal'
+  language: string
+  challengeType: 'sql' | 'algorithm'
+}) {
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: language === 'sql' || challengeType === 'sql' ? 'data' : 'software',
+    challengeType,
+  })
+  const summary = reason === 'missing_test_signal'
+    ? (language === 'sql' || challengeType === 'sql'
+      ? 'I need a runnable query result before I can give useful feedback.'
+      : 'I need a runnable test result before I can give useful feedback.')
+    : emptyState.summary
+  const nextActions = reason === 'missing_test_signal'
+    ? ['Run the visible tests once so feedback can point to a real failure or passing path.']
+    : emptyState.next_actions
+
+  return NextResponse.json({
+    status: 'not_ready',
+    ready_to_grade: false,
+    reason,
+    empty_state: {
+      ...emptyState,
+      summary,
+      next_actions: nextActions,
+    },
+    summary,
+    next_actions: nextActions,
+  }, { status: 422 })
 }
 
 function serializeTestResults(correctnessPayload: RunResult) {
@@ -89,7 +205,19 @@ export async function POST(
 
   const { id } = await params
 
-  const body = await req.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
   const {
     attemptId,
     finalCode,
@@ -97,22 +225,9 @@ export async function POST(
     correctnessPayload,
     chatHistory,
     partId,
-  } = body as {
-    attemptId: string
-    finalCode: string
-    language: string
-    correctnessPayload: RunResult
-    chatHistory?: ChatMessage[]
-    partId?: string
-  }
+  } = body
 
-  // Validate required fields
-  if (!attemptId) return NextResponse.json({ error: 'Missing attemptId' }, { status: 400 })
-  if (!finalCode && finalCode !== '') return NextResponse.json({ error: 'Missing finalCode' }, { status: 400 })
-  if (!language) return NextResponse.json({ error: 'Missing language' }, { status: 400 })
-  if (!correctnessPayload) return NextResponse.json({ error: 'Missing correctnessPayload' }, { status: 400 })
-
-  // Verify ownership — user must own this attempt
+  // Verify ownership - user must own this attempt
   const { data: attempt } = await supabase
     .from('challenge_attempts')
     .select('user_id, challenge_id, status, conversation_summary, started_at')
@@ -134,7 +249,7 @@ export async function POST(
     if (existingGrade) {
       return NextResponse.json({ error: 'Already submitted' }, { status: 409 })
     }
-    // Fall through — re-grade an orphan attempt
+    // Fall through - re-grade an orphan attempt
   }
 
   // Verify this is a coding challenge
@@ -149,7 +264,7 @@ export async function POST(
   }
 
   // ---------------------------------------------------------------------------
-  // partId path — per-subquestion submit (no rubric grader, deterministic only)
+  // partId path - per-subquestion submit (no rubric grader, deterministic only)
   // ---------------------------------------------------------------------------
 
   if (partId) {
@@ -191,7 +306,7 @@ export async function POST(
     const score = testsTotal > 0 ? (testsPassed / testsTotal) * 5 : 0
     const weightedScore = score * (partRow.grading_weight_within_step ?? 1.0)
 
-    // Upsert into step_attempts — idempotent via (attempt_id, question_id) unique key
+    // Upsert into step_attempts - idempotent via (attempt_id, question_id) unique key
     const { error: upsertError } = await supabase
       .from('step_attempts')
       .upsert(
@@ -221,8 +336,17 @@ export async function POST(
     return NextResponse.json({ partId, score, weighted_score: weightedScore, testsPassed, testsTotal })
   }
 
+  const challengeType = challenge.challenge_type as 'sql' | 'algorithm'
+  if (!finalCode.trim()) {
+    return codingNotReadyResponse({ reason: 'missing_code', language, challengeType })
+  }
+  if (correctnessPayload.testsTotal === 0) {
+    return codingNotReadyResponse({ reason: 'missing_test_signal', language, challengeType })
+  }
+
   // Pull session events (paste events, run events) from conversation_summary
   const sessionEvents = parseEventLog(attempt.conversation_summary)
+  const userPlan = await getUserPlanForBudget(user.id)
 
   // Persist final code + test results to challenge_attempts before grading
   // (so attempt is recoverable even if grading fails)
@@ -255,18 +379,24 @@ export async function POST(
     chatHistory: chatHistory ?? [],
     sessionEvents,
     sessionStartedAt: attempt.started_at as string | undefined,
+    budget: { userId: user.id, userPlan, route: 'coding_submit_grade' },
   }
 
   // Grade the attempt
   let grade
   try {
+    if (!shouldUseDeterministicCodingGrade(gradingInput)) {
+      await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+    }
     grade = await gradeCodingAttempt(gradingInput)
   } catch (err) {
+    const response = aiLimitResponse(err)
+    if (response) return response
     console.error('Coding grading failed:', err)
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Grading succeeded — mark attempt completed
+  // Grading succeeded - mark attempt completed
   await supabase
     .from('challenge_attempts')
     .update({
@@ -287,11 +417,26 @@ export async function POST(
     rubric_scores: grade.dimensions,
     top_strength: grade.top_strength,
     top_improvement: grade.top_improvement,
-    canvas_annotations: grade.what_a_5_would_look_like ? [{
-      target_label: '5.0 bar',
-      text: grade.what_a_5_would_look_like,
-      severity: 'info',
-    }] : null,
+    canvas_annotations: [
+      ...(grade.what_a_5_would_look_like ? [{
+        target_label: '5.0 bar',
+        text: grade.what_a_5_would_look_like,
+        severity: 'info',
+      }] : []),
+      ...(grade.score_breakdown ? [
+        {
+          target_label: 'Correctness',
+          text: grade.score_breakdown.correctness.summary,
+          severity: 'info',
+          score_breakdown: grade.score_breakdown,
+        },
+        {
+          target_label: 'Process',
+          text: grade.score_breakdown.process.summary,
+          severity: 'info',
+        },
+      ] : []),
+    ],
   })
 
   return NextResponse.json({ grade })

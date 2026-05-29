@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "notion",
+  "story_slug": "notion-template-gallery",
+  "story_title": "Notion Template Gallery",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/notion-template-gallery/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/notion-template-gallery/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing before a grid of Notion template cards representing multiple use cases.",
+      "caption": "Notion Template Gallery — when the community builds the onboarding.",
+      "prompt": "Notion Template Gallery | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) standing in front of a grid of colorful template cards representing different use cases — project tracker, reading list, habit tracker, CRM. Cap tilted, welcoming expression, no speech. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-template-gallery/hero.png",
+      "generated_image_sha256": "0fc629b4e7f2650bdcf6d52b1642932eb5a15195ba9985ff98cf2484e35c6712",
+      "final_image_sha256": "58abbc8db766877b725f746fee250a028c9cf672001ae10f4df808eafef3d4f9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-template-gallery/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-template-gallery/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/notion-template-gallery/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing between a blank workspace and a gallery of templates, illustrating the blank-page problem.",
+      "caption": "Hatch gesturing between a blank workspace and a gallery of templates, illustrating the blank-page problem.",
+      "prompt": "Notion Template Gallery | hatch-narrator: Hatch in narrator pose, gesturing at a blank white workspace on a screen — empty, intimidating, with a blinking cursor. The blank page represents the new-user problem. To the right, a gallery of filled-in templates waiting. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-template-gallery/hatch-narrator.png",
+      "generated_image_sha256": "65d7bc427b5cbea0d4a564f3c251911cd181d51f3903f2a70e0c94f3e1e92722",
+      "final_image_sha256": "9ec6ba4a1db129490d2081bdb49709aaed9d04ca7e5a2c27b77384c7e40b1ee0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-template-gallery/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-template-gallery/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/notion-template-gallery/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch watching a one-click template duplication that installs a complete working workspace.",
+      "caption": "Hatch watching a one-click template duplication that installs a complete working workspace.",
+      "prompt": "Notion Template Gallery | failure-mechanism: Hatch in thinking pose looking at a \"Duplicate\" button being clicked on a template, with a visual showing the complete workspace appearing instantly in the user's account. The mechanism is one-click installation of a working system. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-template-gallery/failure-mechanism.png",
+      "generated_image_sha256": "a1d6806bd6b708f6797d8e5c83a8a88aef148ca7a761e5ccf3e3525f9eaf770d",
+      "final_image_sha256": "2756ed7a1d9e71036d249808dcf8ccb2358607316e17e932ccbbe1f8bc4e9c2b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-template-gallery/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-template-gallery/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/notion-template-gallery/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Notion's valuation growth from $2B to $10B with template gallery noted.",
+      "caption": "Hatch pointing at Notion's valuation growth from $2B to $10B with template gallery noted.",
+      "prompt": "Notion Template Gallery | evidence-card: Hatch pointing at a chart showing Notion's valuation curve: $2B in April 2020 and $10B in October 2021, with template gallery growth as an annotation. The chart is minimal and clean. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-template-gallery/evidence-card.png",
+      "generated_image_sha256": "198724f895be25d83a5bd5607f1822a37e7648449c0ca07ecda5104a4d72b152",
+      "final_image_sha256": "684499d283d5944dbd2413cb0bd454dc03467da86c29ac8d3a96cfae08d5a6ec",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-template-gallery/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-template-gallery/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/notion-template-gallery/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a staircase of community-built templates leading to a successful user workspace.",
+      "caption": "Hatch beside a staircase of community-built templates leading to a successful user workspace.",
+      "prompt": "Notion Template Gallery | lesson-frame: Hatch in calm coaching pose beside a visual of many hands (community members) building template cards that form a staircase up to a new user's first successful workspace. The composition communicates community-scaled onboarding. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-template-gallery/lesson-frame.png",
+      "generated_image_sha256": "626c190b2e5fcee6b65df510a120a98e820fe64625629297523f545723e6993c",
+      "final_image_sha256": "4382226526eb2aa7bd6e7a7f45c5ae49b038c0cbfe5e394480a878808efdcd4a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-template-gallery/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-template-gallery/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/notion-template-gallery/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a template card representing Notion's template gallery.",
+      "caption": "Hatch holding a template card representing Notion's template gallery.",
+      "prompt": "Small, recognisable Hatch mascot holding a miniature template card with a recognizable workspace layout. Clean cream background, no text, no speech. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-template-gallery/hero.png",
+      "generated_image_sha256": "0fc629b4e7f2650bdcf6d52b1642932eb5a15195ba9985ff98cf2484e35c6712",
+      "final_image_sha256": "b4b4f8b3f04eee56cfb51c97ede1f0929ac98084ebb5dd7eaf1fe2cd28253936",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-template-gallery/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-template-gallery/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/notion-template-gallery/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch before a grid of Notion templates for social sharing.",
+      "caption": "Hatch before a grid of Notion templates for social sharing.",
+      "prompt": "Hero Hatch mascot adapted for OG share: Hatch standing in front of a colorful grid of template cards representing every Notion use case, with \"NOTION TEMPLATE GALLERY\" as a visual backdrop. Cream background, HackProduct watermark bottom-right 60% opacity JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/notion-template-gallery/hero.png",
+      "generated_image_sha256": "0fc629b4e7f2650bdcf6d52b1642932eb5a15195ba9985ff98cf2484e35c6712",
+      "final_image_sha256": "66118151763ea2b7542f8801fa0c58a9ee31ba6619e0dfee804af2768658d659",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-template-gallery/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-template-gallery/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/notion-template-gallery/v1"
+}

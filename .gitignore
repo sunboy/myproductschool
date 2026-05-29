@@ -30,8 +30,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local dev runtime artifacts
+.next-dev.log
+.next-dev.pid
+.stripe-listen.log
+.stripe-listen.pid
+tmp/
+
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -45,11 +53,18 @@ next-env.d.ts
 
 # local tooling (Claude Code, Playwright MCP, Superpowers)
 .codex/
+.claire/
 .claude/
 .playwright-mcp/
 .superpowers/
+__pycache__/
+*.pyc
+
+# local credentials
+hackproduct-*.json
 
 # enrichment intermediates / backups (never commit)
+.autopsy-image-batches/
 seeds/staged-interview-challenges.backup-*.json
 seeds/reenrich-shard-*.json
 seeds/reenrich-sonnet-shard-*.json
@@ -62,3 +77,12 @@ supabase/.temp/
 
 # personal notes
 v2 plannin.md
+.worktrees/
+.agents/
+
+# playwright test artifacts
+/test-results/
+/playwright-report/
+
+# bmad agent framework scaffolding
+/_bmad/

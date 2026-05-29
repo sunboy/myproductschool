@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "superhuman",
+  "story_slug": "superhuman-onboarding",
+  "story_title": "Superhuman's Invitation Gauntlet",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/superhuman-onboarding/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/superhuman-onboarding/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot standing at a velvet rope entrance, representing Superhuman's invitation-only access model.",
+      "caption": "Hatch mascot standing at a velvet rope entrance, representing Superhuman's invitation-only access model.",
+      "prompt": "Superhuman's Invitation Gauntlet | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing at an oversized velvet rope outside a glowing doorway labeled \"Inbox.\" Hatch holds a clipboard, expression politely firm. A small crowd visible behind, one person with a golden ticket walking through. Cream background, no speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/superhuman-onboarding/hero.png",
+      "generated_image_sha256": "e9a4728115dcede232e931e4a9db7ebb1330273502b8e18a916620aa70c11d94",
+      "final_image_sha256": "6b09a9a0f45b693ead6749c1a02935ce4e78aa78c05f8207bb78db95d61d7bdd",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/superhuman-onboarding/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/superhuman-onboarding/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/superhuman-onboarding/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward the contrast between a chaotic standard inbox and Superhuman's organized view.",
+      "caption": "Hatch gesturing toward the contrast between a chaotic standard inbox and Superhuman's organized view.",
+      "prompt": "Superhuman's Invitation Gauntlet | hatch-narrator: Hatch in narrator pose, gesturing toward a split scene: on the left, a mountain of emails in a standard inbox; on the right, the same inbox looking calm and organized with keyboard shortcuts floating as translucent labels. The contrast is dramatic but not frantic. Cream background. HackProduct wordmark watermark same position. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/superhuman-onboarding/hatch-narrator.png",
+      "generated_image_sha256": "ce7ccff0bf8f5a6856f47c6f56d8232f11d6487c606fd61bf83618276f76d448",
+      "final_image_sha256": "40e60127f141e76b4b43ab0b63706edd8917b5c31ba6fc3913734c9cca768a1f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/superhuman-onboarding/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/superhuman-onboarding/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/superhuman-onboarding/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch conducting a live onboarding session, representing Superhuman's mandatory call before first login.",
+      "caption": "Hatch conducting a live onboarding session, representing Superhuman's mandatory call before first login.",
+      "prompt": "Superhuman's Invitation Gauntlet | failure-mechanism: Hatch in thinking pose, seated at a small table across from a stylized \"new user\" figure. Between them, a calendar icon shows \"30 min.\" and floating above the table are keyboard shortcut cards being handed over. The scene reads as a live onboarding conversation. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/superhuman-onboarding/failure-mechanism.png",
+      "generated_image_sha256": "2aba217e144574803931cfb062da520a7a4815d92fd877a2e1669febf7bd34d7",
+      "final_image_sha256": "ca9d53665f62b39787349565b99694473278d0b4f54a7e4560d8334ad1662233",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/superhuman-onboarding/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/superhuman-onboarding/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/superhuman-onboarding/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at NPS gauge showing 58 and the 40% \"very disappointed\" threshold for product-market fit.",
+      "caption": "Hatch pointing at NPS gauge showing 58 and the 40% \"very disappointed\" threshold for product-market fit.",
+      "prompt": "Superhuman's Invitation Gauntlet | evidence-card: Hatch pointing at a large gauge dial showing a needle at 58 labeled \"NPS,\" with a secondary dial nearby showing 40% labeled \"Very Disappointed.\" Both dials are styled like analog instruments. Expression: impressed but analytical. Cream background. HackProduct wordmark watermark. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/superhuman-onboarding/evidence-card.png",
+      "generated_image_sha256": "e66f2ef478c0aca95c3851b3cc724392eb85fa99be01f4721c2a49de6ee4cd29",
+      "final_image_sha256": "c355725230bf073cebf026f7fd9eff8872273be5f3c79b4672ca6597ea81bd70",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/superhuman-onboarding/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/superhuman-onboarding/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/superhuman-onboarding/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching pose with a gate behind representing selective access as product strategy.",
+      "caption": "Hatch in coaching pose with a gate behind representing selective access as product strategy.",
+      "prompt": "Superhuman's Invitation Gauntlet | lesson-frame: Hatch in calm coaching pose, one hand extended forward as if presenting a truth. Behind Hatch, a simple visual of a gate with a sign reading \"Right Users Only.\" Expression: patient, warm. Cream background. HackProduct wordmark watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/superhuman-onboarding/lesson-frame.png",
+      "generated_image_sha256": "c6311f43f6a18c880dced54c805506fa37b1ed76efd482c5f587f1e45ae9bb14",
+      "final_image_sha256": "756e4ad65812ae0e6df62daa5ed1d58224cb27ceedb912145f7e6617e98709c7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/superhuman-onboarding/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/superhuman-onboarding/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/superhuman-onboarding/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a locked golden envelope representing Superhuman's exclusive invitation model.",
+      "caption": "Hatch holding a locked golden envelope representing Superhuman's exclusive invitation model.",
+      "prompt": "Hatch mascot holding a small golden envelope with a subtle lock icon on it, expression curious and inviting. Cream background, square composition. HackProduct wordmark watermark. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/superhuman-onboarding/hero.png",
+      "generated_image_sha256": "e9a4728115dcede232e931e4a9db7ebb1330273502b8e18a916620aa70c11d94",
+      "final_image_sha256": "03d8eb5f41271910f1eb08bd7acc2c40da356d65cc0d3cc76d6dc744526ff5c0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/superhuman-onboarding/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/superhuman-onboarding/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/superhuman-onboarding/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at velvet rope outside Superhuman's inbox, social share cover image.",
+      "caption": "Hatch at velvet rope outside Superhuman's inbox, social share cover image.",
+      "prompt": "Hatch at the velvet rope, adapted for wide OG card format. The glowing doorway behind Hatch reads \"Superhuman.\" Title text area at left: \"The Email App That Made You Apply.\" Cream background. HackProduct wordmark watermark. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/superhuman-onboarding/hero.png",
+      "generated_image_sha256": "e9a4728115dcede232e931e4a9db7ebb1330273502b8e18a916620aa70c11d94",
+      "final_image_sha256": "02e208822961dd9ca444061dd18204c6103de11e4a8e3c6ceb620f397d216308",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/superhuman-onboarding/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/superhuman-onboarding/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/superhuman-onboarding/v1"
+}

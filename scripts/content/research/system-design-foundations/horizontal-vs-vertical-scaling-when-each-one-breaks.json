@@ -1,0 +1,479 @@
+{
+  "facts": [
+    {
+      "statement": "Typical observed database workloads reflect a 70/30 read-write ratio, meaning 70% reads and 30% writes on average",
+      "source": "https://benchant.com/blog/workload-read-write-ratio",
+      "published": "2024"
+    },
+    {
+      "statement": "Stripe processes over 500 million API requests every day (5,787 requests per second, 347,000 per minute) as of 2025",
+      "source": "https://redstagfulfillment.com/how-many-payments-stripe-process-per-day/",
+      "published": "2025"
+    },
+    {
+      "statement": "Netflix scales using stateless microservices deployed across thousands of EC2 instances with horizontal scaling and Chaos Monkey testing for fault injection",
+      "source": "https://www.techaheadcorp.com/blog/design-of-microservices-architecture-at-netflix/",
+      "published": "2024"
+    },
+    {
+      "statement": "Google AlloyDB managed connection pooling boosts client connections by 3x and transactional throughput by up to 5x compared to unmanaged pooling",
+      "source": "https://cloud.google.com/blog/products/databases/alloydb-managed-connection-pooling",
+      "published": "2026"
+    },
+    {
+      "statement": "CAP theorem states that in practice, partition tolerance is mandatory, leaving a choice between consistency and availability when network partitions occur",
+      "source": "https://www.pingcap.com/article/understanding-cap-theorem-basics-in-distributed-systems/",
+      "published": "2024"
+    },
+    {
+      "statement": "Vertical scaling has a hard ceiling: you cannot exceed the maximum RAM, CPU, or storage capacity of a single machine",
+      "source": "https://www.cockroachlabs.com/blog/vertical-scaling-vs-horizontal-scaling/",
+      "published": "2024"
+    },
+    {
+      "statement": "Sharding key cardinality (number of possible values) determines the maximum number of possible shards; a binary field allows only 2 shards",
+      "source": "https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding",
+      "published": "2024"
+    },
+    {
+      "statement": "AWS Lambda can scale at over 1,000 concurrent executions per second, adding capacity in milliseconds during traffic spikes",
+      "source": "https://serverlesssavants.org/lambda-scaling",
+      "published": "2024"
+    },
+    {
+      "statement": "Cold start latency for Lambda functions ranges from 100ms to 2 seconds depending on runtime, code size, and initialization complexity",
+      "source": "https://zircon.tech/blog/aws-lambda-cold-start-optimization-in-2025-what-actually-works/",
+      "published": "2025"
+    },
+    {
+      "statement": "Consistent hashing reduces key remapping to a subset when nodes are added or removed, unlike traditional hashing which remaps all keys",
+      "source": "https://dev.to/sgchris/designing-a-distributed-cache-redis-and-memcached-at-scale-1if3",
+      "published": "2024"
+    },
+    {
+      "statement": "Cassandra write throughput remains near-constant even under massive concurrency due to its append-only storage engine and distributed commit log",
+      "source": "https://blog.panoply.io/cassandra-vs-mongodb",
+      "published": "2024"
+    },
+    {
+      "statement": "Basic QPS estimation formula: Total Actions per Day ÷ 86,400 seconds (1 day); Peak QPS is typically 2-3x average QPS",
+      "source": "https://blog.bytebytego.com/p/capacity-planning",
+      "published": "2024"
+    },
+    {
+      "statement": "PostgreSQL emphasizes full ACID compliance with strong data integrity guarantees, but write overhead limits scale-out capabilities compared to NoSQL systems",
+      "source": "https://www.yugabyte.com/blog/data-modeling-basics-postgresql-vs-cassandra-vs-mongodb/",
+      "published": "2024"
+    },
+    {
+      "statement": "Least Connections load balancing outperforms round-robin for long-lived connections (WebSockets, gRPC streams, database sessions lasting seconds or minutes)",
+      "source": "https://singh-sanjay.com/2026/03/02/load-balancing-algorithms.html",
+      "published": "2026"
+    },
+    {
+      "statement": "IP hash sticky sessions can create hotspots when a single client IP (CDN egress, corporate NAT) represents many users and sends disproportionate traffic",
+      "source": "https://www.designgurus.io/course-play/grokking-scalable-systems-for-interviews/doc/what-are-sticky-sessions-session-affinity-and-when-should-i-avoid-them",
+      "published": "2024"
+    },
+    {
+      "statement": "Write-Ahead Log (WAL) buffer tuning reduces disk flushes and improves write performance in ACID databases",
+      "source": "https://www.crunchydata.com/blog/is-postgres-read-heavy-or-write-heavy-and-why-you-should-care",
+      "published": "2024"
+    },
+    {
+      "statement": "Range-based sharding can result in hotspots if data distribution is skewed (e.g., monotonically increasing keys like timestamps)",
+      "source": "https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding",
+      "published": "2024"
+    },
+    {
+      "statement": "Redis Pub/Sub enables cache invalidation across distributed nodes without centralized coordination, combining local cache performance with consistency",
+      "source": "https://www.milanjovanovic.tech/blog/solving-the-distributed-cache-invalidation-problem-with-redis-and-hybridcache",
+      "published": "2024"
+    },
+    {
+      "statement": "Serverless functions in Lambda cannot maintain persistent connection pools across invocations; each execution may spin up its own pool, overwhelming databases",
+      "source": "https://www.prisma.io/dataguide/database-tools/connection-pooling",
+      "published": "2024"
+    },
+    {
+      "statement": "Cassandra is designed for horizontal scalability with peer-to-peer architecture; any node can handle requests with automatic sharding and replication across regions",
+      "source": "https://www.knowi.com/blog/postgresql-vs-cassandra-key-differences-use-cases-performance/",
+      "published": "2026"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Netflix",
+      "scenario": "Millions of simultaneous play requests during peak hours (e.g., Friday evening)",
+      "approach": "Stateless microservices deployed horizontally across AWS EC2, traffic routed via Zuul API Gateway to healthy instances, Eureka service registry for discovery",
+      "outcome": "Handles massive concurrent load without single points of failure; Chaos Monkey verifies resilience"
+    },
+    {
+      "company": "Stripe",
+      "scenario": "Processing 500M+ API requests daily (5,787 QPS sustained, higher peaks during holiday shopping)",
+      "approach": "Stateless payment processing service, connection pooling, distributed database replicas, circuit breakers and bulkheading for isolation",
+      "outcome": "99.99%+ availability across global payment infrastructure"
+    },
+    {
+      "company": "Twitter (now X)",
+      "scenario": "Tweet volume spikes during major events (New Year, sports finals) causing 10x normal traffic in seconds",
+      "approach": "Horizontal scaling with load balancers, cache-aside pattern for timeline reads, write-heavy database architecture with sharding by user_id",
+      "outcome": "Service remains responsive; stale reads acceptable during peak load, eventual consistency model"
+    },
+    {
+      "company": "WhatsApp",
+      "scenario": "Billions of daily messages, extremely write-heavy workload",
+      "approach": "Cassandra for message storage (handles write throughput), Redis for online presence, stateless application servers",
+      "outcome": "Handles 100+ billion messages/day with <1 second latency"
+    },
+    {
+      "company": "Amazon",
+      "scenario": "Vertical scaling ceiling hit: single RDS instance at max r6i.16xlarge (24 CPU, 512 GB RAM) hitting 100% utilization during holiday season",
+      "approach": "Transitioned to Aurora with read replicas, then to Aurora Serverless, finally Aurora with sharding at application layer",
+      "outcome": "Unbounded write scaling, but introduced application-level join complexity"
+    },
+    {
+      "company": "Uber",
+      "scenario": "Geographic sharding required: Uber Eats order volume by city varies wildly (NYC 10x San Francisco)",
+      "approach": "Sharding by city_id to avoid hotspots; separate databases for NYC, SF, LA, etc.; read replicas in each region",
+      "outcome": "Prevents single database from becoming bottleneck; enables per-region optimization"
+    },
+    {
+      "company": "Lyft",
+      "scenario": "Real-time driver location updates: extremely high write rate, time-series data, eventual consistency acceptable",
+      "approach": "Custom time-series database on Cassandra (write-optimized), Redis for driver-to-rider matching cache",
+      "outcome": "Handles millions of location updates/second with 100ms+ acceptable staleness"
+    },
+    {
+      "company": "Lambda-based startup",
+      "scenario": "Cold starts causing 500ms+ latency for user-facing APIs during scale-outs",
+      "approach": "Initially used Provisioned Concurrency ($400/month for 100 concurrent capacity), then migrated to containers on ECS",
+      "outcome": "Cut latency by 80%, reduced cost by 60%; containers scale faster for this use case"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Vertical scaling is like upgrading a single checkout lane in a grocery store with a faster cashier. There's a limit to how fast one person can scan items; horizontal scaling is adding more lanes.",
+      "concept": "Single machine scaling limits vs. distributed load distribution"
+    },
+    {
+      "analogy": "Stateless services are like ATMs: each transaction is independent, no machine needs to 'remember' previous interactions. Stateful services are like talking to a bank teller who keeps notes on your account.",
+      "concept": "Why stateless services enable true horizontal scaling without session affinity"
+    },
+    {
+      "analogy": "Connection pooling is like a taxi dispatch system reusing cabs instead of calling a new car for every passenger. Serverless functions are like ordering an Uber: a new 'vehicle' spins up for each request.",
+      "concept": "Connection overhead in stateless vs. persistent connection management"
+    },
+    {
+      "analogy": "Database sharding is like dividing a library's catalog by first letter: you have separate card catalogs for A-D, E-H, I-L, etc. A bad shard key (like name first letter) creates unbalanced load if 'S' names are common.",
+      "concept": "Shard key selection and avoiding hotspots"
+    },
+    {
+      "analogy": "CAP theorem is like a contract: you can have fast delivery or guaranteed accuracy, but not both during a postal strike (network partition). You choose which one to sacrifice.",
+      "concept": "Consistency vs. availability tradeoffs under network failures"
+    },
+    {
+      "analogy": "Cache invalidation is like updating a wiki: you need to notify all mirrors when the source changes, or they'll serve stale content. TTL-based expiration is like 'refresh every 5 minutes automatically.'",
+      "concept": "Keeping distributed caches consistent at scale"
+    },
+    {
+      "analogy": "A read-heavy database (70% reads) is like a library: most queries are 'what book do you have?' A write-heavy database (70% writes) is like a ledger: most operations record new transactions.",
+      "concept": "Database design patterns differ based on read/write ratio"
+    },
+    {
+      "analogy": "Least Connections load balancing is like a smart receptionist who directs incoming calls to whichever colleague has fewest calls on hold, not just round-robin to the next person.",
+      "concept": "Why simple algorithms fail for long-lived connections"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Typical database read-write ratio",
+      "value": "70:30",
+      "context": "Most web applications are read-heavy; this ratio influences caching and replication strategy"
+    },
+    {
+      "metric": "Stripe requests per second (sustained)",
+      "value": "5,787 QPS",
+      "context": "500M daily requests ÷ 86,400 seconds; real company, real load"
+    },
+    {
+      "metric": "QPS calculation: Peak QPS multiplier",
+      "value": "2x to 3x average",
+      "context": "Peak load typically 2-3x average; use for capacity planning to avoid being understaffed during spikes"
+    },
+    {
+      "metric": "AWS Lambda concurrent scaling rate",
+      "value": "1,000+ executions per second",
+      "context": "Lambda scales in milliseconds; traditional autoscaling scales in minutes"
+    },
+    {
+      "metric": "Lambda cold start latency",
+      "value": "100ms to 2 seconds",
+      "context": "Varies by runtime (Go ~100ms, Python ~500ms), code size, and initialization; impacts user experience"
+    },
+    {
+      "metric": "Google AlloyDB connection pooling throughput gain",
+      "value": "5x improvement",
+      "context": "Transaction-mode pooling increases throughput by up to 5x by reusing connections efficiently"
+    },
+    {
+      "metric": "Cassandra write throughput sustainability",
+      "value": "Near-constant even at massive concurrency",
+      "context": "Append-only architecture; PostgreSQL write throughput degrades as concurrency increases due to ACID locking"
+    },
+    {
+      "metric": "Maximum Shard Key Cardinality",
+      "value": "Binary field = 2 shards max",
+      "context": "A yes/no shard key limits you to 2 database partitions; poor choice for scaling"
+    },
+    {
+      "metric": "Serverless vs. Container scaling latency",
+      "value": "Lambda ~100-500ms (cold start); containers ~30-60s (node boot)",
+      "context": "Lambda scales faster but with per-request overhead; containers scale slower but amortize startup cost"
+    },
+    {
+      "metric": "Session affinity impact on distribution",
+      "value": "Can create 10:1 load imbalance with CDN egress",
+      "context": "If sticky sessions route by IP hash, a CDN egress node (1 IP, 1000s of users) overloads one backend"
+    },
+    {
+      "metric": "Hash ring key remapping on node addition",
+      "value": "Only ~1/N of keys remapped",
+      "context": "Consistent hashing; traditional hashing remaps all keys when adding a node"
+    },
+    {
+      "metric": "Typical Daily Active Users to QPS",
+      "value": "1M DAU × 10 actions/day ≈ 116 QPS average",
+      "context": "Back-of-envelope: 10M actions ÷ 86,400 seconds; actual peak will be 2-3x higher"
+    },
+    {
+      "metric": "PostgreSQL effective_cache_size tuning (read-heavy)",
+      "value": "25% of available RAM",
+      "context": "Guides query planner; buffer_cache should be ~25% of RAM to keep frequently accessed data in memory"
+    },
+    {
+      "metric": "Redis Pub/Sub invalidation broadcast latency",
+      "value": "<5ms across local cluster",
+      "context": "Near-instant cache invalidation without central coordinator; acceptable for eventual consistency"
+    },
+    {
+      "metric": "WhatsApp write volume",
+      "value": "100+ billion messages per day",
+      "context": "Write-heavy workload; requires Cassandra-style append-only architecture, not PostgreSQL"
+    },
+    {
+      "metric": "Average laptop specs (2025)",
+      "value": "16 GB RAM, 8 cores, 512 GB SSD",
+      "context": "Vertical scaling ceiling for a developer's laptop; can't upgrade beyond built-in limits"
+    },
+    {
+      "metric": "Largest AWS RDS instance (r6i.16xlarge)",
+      "value": "24 cores, 512 GB RAM",
+      "context": "Hard ceiling for single-instance relational databases; anything beyond requires sharding or distributed systems"
+    },
+    {
+      "metric": "TCP connection limit per server",
+      "value": "~65,000 (65535 ports)",
+      "context": "Each connection uses a source port; stateful servers hit this limit with <1M concurrent users"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Horizontal scaling solves all performance problems",
+      "reality": "Adding servers helps with CPU and memory bottlenecks, but not database write throughput. A single-instance database bottleneck cannot be solved by adding application servers; you need sharding.",
+      "why_matters": "Engineers add 10 application servers expecting 10x throughput, but database latency remains unchanged, wasting infrastructure budget"
+    },
+    {
+      "misconception": "Vertical scaling is always cheaper than horizontal scaling",
+      "reality": "Pricing curves differ. A 16-core server costs 3x a 4-core server, not 4x. Distributed systems have coordination overhead. Hybrid approaches often minimize cost.",
+      "why_matters": "Decisions made purely on unit cost ($/GB RAM) ignore licensing, licensing concurrency caps, and complexity cost"
+    },
+    {
+      "misconception": "Round-robin load balancing works for all workloads",
+      "reality": "Round-robin assumes all requests take equal time. For long-lived connections (WebSockets, database sessions), some servers accumulate hundreds of connections while others are idle. Use Least Connections instead.",
+      "why_matters": "Uneven load distribution causes timeouts and latency spikes on overloaded servers while other servers sit idle"
+    },
+    {
+      "misconception": "Sticky sessions are always necessary for user experience",
+      "reality": "Sticky sessions hurt scalability. Best practice: move session state to Redis, make services stateless. Session affinity is a last resort.",
+      "why_matters": "Sticky sessions prevent even load distribution, block instance shutdown during deploys, and fail if the user's server crashes"
+    },
+    {
+      "misconception": "Caching solves everything; use Redis for all data",
+      "reality": "Caching helps reads, not writes. Cache invalidation is hard; stale data risks consistency issues. For heavy writes, you need a write-optimized database, not just cache.",
+      "why_matters": "Engineers over-invest in caching while leaving database writes unoptimized, causing write-throughput bottlenecks"
+    },
+    {
+      "misconception": "NoSQL databases don't need schema",
+      "reality": "Schema still exists; it's just implicit in application code instead of explicit in the database. You must reason about your data model or face inconsistencies.",
+      "why_matters": "Schema-less sounds flexible until application code has to handle 5 different formats of the same field"
+    },
+    {
+      "misconception": "CAP theorem means you pick one of three; you always have all three",
+      "reality": "You always have partition tolerance (network partitions happen). You choose consistency OR availability when a partition occurs. You can't have both.",
+      "why_matters": "Misunderstanding CAP leads to designs that claim to offer all three, then fail at consistency OR availability under network faults"
+    },
+    {
+      "misconception": "Connection pooling is a free optimization",
+      "reality": "Connection pooling adds complexity (configuration, lifecycle management). In serverless, connection pools create new overhead per invocation. Sometimes it's the wrong tool.",
+      "why_matters": "Serverless users adding connection pooling accidentally create database connection explosions (1000x increase in connections)"
+    },
+    {
+      "misconception": "Sharding by user_id prevents all hotspots",
+      "reality": "Sharding key determines load distribution, but some users/entities are inherently hotter (celebrities, VIP accounts). Sharding helps, but doesn't eliminate hotspots.",
+      "why_matters": "A celebrity with 1M followers can cause one shard to handle 100x traffic of others"
+    },
+    {
+      "misconception": "Serverless is cheaper because you only pay for what you use",
+      "reality": "Serverless has per-request cost and cold start overhead. For sustained load, containers or servers are often cheaper. Cost depends on traffic pattern.",
+      "why_matters": "Migrating a sustained-load workload to Lambda can triple costs despite paying 'per-request'"
+    },
+    {
+      "misconception": "ACID guarantees are free",
+      "reality": "Strong consistency (ACID) requires locking and consensus, reducing write throughput. Eventually-consistent systems (like Cassandra) trade guarantees for throughput.",
+      "why_matters": "Choosing PostgreSQL for a write-heavy workload expecting high throughput leads to lock contention"
+    },
+    {
+      "misconception": "Read replicas solve scaling problems",
+      "reality": "Read replicas scale reads, not writes. Write bottleneck remains on the primary. If your workload is write-heavy, read replicas won't help.",
+      "why_matters": "Adding read replicas without sharding writes leaves write throughput unchanged"
+    },
+    {
+      "misconception": "Capacity estimation is a one-time calculation",
+      "reality": "Capacity needs grow non-linearly (traffic spikes, holiday seasons, viral features). You must continuously re-estimate and over-provision by 30-50%.",
+      "why_matters": "Estimating once and deploying exact capacity results in cascading failures during the first traffic spike"
+    },
+    {
+      "misconception": "A database can handle any data type efficiently",
+      "reality": "Different databases optimize for different access patterns. Time-series workloads, graphs, blobs, vectors require specialized storage.",
+      "why_matters": "Storing time-series data in a relational database (one row per metric per timestamp) causes billion-row tables and query timeouts"
+    },
+    {
+      "misconception": "If you deploy more instances, your system automatically scales",
+      "reality": "Scaling requires stateless services, external session storage, and no shared bottlenecks. Without these, adding instances does nothing.",
+      "why_matters": "Adding instances to a monolith that stores session state in local RAM doesn't scale because each instance is independent"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.geeksforgeeks.org/system-design/system-design-horizontal-and-vertical-scaling/",
+      "title": "GeeksforGeeks: Horizontal and Vertical Scaling",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.systemdesignhandbook.com/blog/horizontal-scaling-vs-vertical-scaling/",
+      "title": "System Design Handbook: Horizontal vs Vertical Scaling",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.digitalocean.com/resources/articles/horizontal-scaling-vs-vertical-scaling",
+      "title": "DigitalOcean: Horizontal vs Vertical Scaling",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.clustox.com/blog/netflix-case-study/",
+      "title": "Netflix Architecture Case Study",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.techaheadcorp.com/blog/design-of-microservices-architecture-at-netflix/",
+      "title": "TechAhead: Netflix Microservices Architecture",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.dreamfactory.com/scaling-stateless-vs-stateful-services",
+      "title": "DreamFactory: Scaling Stateless vs Stateful Services",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.designgurus.io/course-play/grokking-scalable-systems-for-interviews/doc/what-are-sticky-sessions-session-affinity-and-when-should-i-avoid-them",
+      "title": "DesignGurus: Sticky Sessions and Session Affinity",
+      "recency": "2024"
+    },
+    {
+      "url": "https://benchant.com/blog/workload-read-write-ratio",
+      "title": "Benchant: Database Workload Read-Write Ratio",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.crunchydata.com/blog/is-postgres-read-heavy-or-write-heavy-and-why-you-should-care",
+      "title": "Crunchy Data: PostgreSQL Read-Heavy vs Write-Heavy",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.pingcap.com/article/understanding-cap-theorem-basics-in-distributed-systems/",
+      "title": "PingCAP: Understanding CAP Theorem",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.bytebytego.com/p/capacity-planning",
+      "title": "ByteByteGo: Capacity Planning",
+      "recency": "2024"
+    },
+    {
+      "url": "https://redstagfulfillment.com/how-many-payments-stripe-process-per-day/",
+      "title": "Red Stage Fulfillment: Stripe Daily Transaction Volume",
+      "recency": "2025"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding",
+      "title": "Microsoft Azure: Sharding Pattern",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.yugabyte.com/blog/data-modeling-basics-postgresql-vs-cassandra-vs-mongodb/",
+      "title": "YugabyteDB: Data Modeling PostgreSQL vs Cassandra vs MongoDB",
+      "recency": "2024"
+    },
+    {
+      "url": "https://singh-sanjay.com/2026/03/02/load-balancing-algorithms.html",
+      "title": "Sanjay Singh: Load Balancing Algorithms",
+      "recency": "2026"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/blog/vertical-scaling-vs-horizontal-scaling/",
+      "title": "CockroachDB: Vertical vs Horizontal Scaling",
+      "recency": "2024"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/databases/alloydb-managed-connection-pooling",
+      "title": "Google Cloud: AlloyDB Managed Connection Pooling",
+      "recency": "2026"
+    },
+    {
+      "url": "https://zircon.tech/blog/aws-lambda-cold-start-optimization-in-2025-what-actually-works/",
+      "title": "Zircon: AWS Lambda Cold Start Optimization 2025",
+      "recency": "2025"
+    },
+    {
+      "url": "https://serverlesssavants.org/lambda-scaling",
+      "title": "Serverless Savants: AWS Lambda Scaling",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dev.to/sgchris/designing-a-distributed-cache-redis-and-memcached-at-scale-1if3",
+      "title": "DEV Community: Designing Distributed Cache at Scale",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.milanjovanovic.tech/blog/solving-the-distributed-cache-invalidation-problem-with-redis-and-hybridcache",
+      "title": "Milan Jovanović: Distributed Cache Invalidation",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.panoply.io/cassandra-vs-mongodb",
+      "title": "Panoply: Cassandra vs MongoDB",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.knowi.com/blog/postgresql-vs-cassandra-key-differences-use-cases-performance/",
+      "title": "Knowi: PostgreSQL vs Cassandra 2026",
+      "recency": "2026"
+    },
+    {
+      "url": "https://www.prisma.io/dataguide/database-tools/connection-pooling",
+      "title": "Prisma: What is Connection Pooling",
+      "recency": "2024"
+    }
+  ]
+}

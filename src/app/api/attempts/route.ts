@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const admin = createAdminClient()
   let query = admin
     .from('challenge_attempts')
-    .select('id, challenge_id, grade_label, total_score, max_score, completed_at, feedback_json, challenges(title, challenge_type)')
+    .select('id, challenge_id, grade_label, total_score, max_score, completed_at, feedback_json, canvas_png_url, challenges(title, challenge_type)')
     .eq('user_id', user.id)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
@@ -122,6 +122,7 @@ export async function GET(req: NextRequest) {
       submitted_at: row.completed_at as string | null,
       pattern_name: patternMap.get(row.challenge_id as string) ?? null,
       feedback_json: feedbackJson,
+      canvas_png_url: (row.canvas_png_url as string | null) ?? null,
     }
   })
 

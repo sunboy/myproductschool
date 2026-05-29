@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "tinder",
+  "story_slug": "tinder-swipe",
+  "story_title": "Tinder's Swipe",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/tinder-swipe/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/tinder-swipe/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A forest-green profile card flies to the right past two unused buttons while small Hatch points at the motion.",
+      "caption": "From a button you aim at to a card you toss.",
+      "prompt": "Tinder's Swipe | hero: Flat geometric HackProduct autopsy hero illustration for Tinder about the moment buttons became a gesture. Canvas role hero, 2400x1350. Centre composition shows a single forest-green profile card mid-flight to the right against warm cream `#faf6f0`, with a faint trailing arc in soft amber `#c9ad68` and a stack of two more cards in mist `#dfe6dc` waiting underneath. On the left, two greyed-out rectangles labelled X and Contact sit unused. Hatch stands small in the lower-left, in narrator pose, one mitten pointing at the moving card. Preserve Hatch's rounded forest-green head frame, cream face and body, graduation cap, growth arrow near the cap, green H chest mark, bright friendly eyes, mitten hands, friendly coach expression, flat illustration texture. Charcoal `#1e211c` linework. Leave quiet space in the upper left for a title overlay. No human faces, no photorealism, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tinder-swipe/hero.png",
+      "generated_image_sha256": "fb3da9bd6f5a45a666e03269c0b87b7a1a44ce8c38e9dec70e8042bd9196cc6e",
+      "final_image_sha256": "2f844c2cd7ce9a488657ebd073a84a5d4e8e3aa8c5d01e78d9707c05ebc33a2c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tinder-swipe/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tinder-swipe/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/tinder-swipe/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A bathroom mirror with a single diagonal swipe through fog and small Hatch narrating beside it.",
+      "caption": "A bathroom mirror with a single diagonal swipe through fog and small Hatch narrating beside it.",
+      "prompt": "Tinder's Swipe | hatch-narrator: Flat geometric HackProduct autopsy scene illustration. Canvas role scene, 1600x1600. Compose a calm bathroom mirror in deep forest `#244232` frame against cream `#faf6f0` wall, with a wide diagonal swipe of clear glass cut through fog in soft amber `#c9ad68`. Inside the cleared sliver, draw a faint stylised playing-card outline to suggest the moment of recognition. Steam wisps rendered as three thin mist `#dfe6dc` curves. Hatch stands large in narrator pose to the right of the mirror, one mitten raised toward the wiped streak, head turned to the reader as the storyteller. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow near the cap, H chest mark, bright eyes, mitten hands, friendly coach expression, flat texture. Charcoal `#1e211c` linework. No human face in the mirror. No photorealism, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tinder-swipe/hatch-narrator.png",
+      "generated_image_sha256": "8877d88c3c16247b401c85e8922791e8591fe461b592b27de03bf37a2a877701",
+      "final_image_sha256": "8b224d0f53b7f099e3a0c7444e475c3302213883922f906b4b7305112a56aa0d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tinder-swipe/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tinder-swipe/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/tinder-swipe/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central card fans into three labelled piles, Yes Maybe No, with arrows and small Hatch pointing.",
+      "caption": "A central card fans into three labelled piles, Yes Maybe No, with arrows and small Hatch pointing.",
+      "prompt": "Tinder's Swipe | failure-mechanism: Flat geometric HackProduct autopsy mechanism illustration of the Tinder card-stack gesture. Canvas role mechanism, 1800x1200. Centre shows a single forest-green card. Three labelled receiving piles fan out from it: a soft amber `#c9ad68` Yes pile on the right, a mist `#dfe6dc` No pile on the left, a thin charcoal `#1e211c` Maybe pile below. Curved arrows from the centre card to each pile use forest green `#4a7c59` and amber `#705c30`. Step numerals one to three sit beside the arrows. Hatch stands medium-sized at the lower right in thinking-pointing pose, one mitten extended toward the Yes arc, head tilted in observation. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression, flat texture. Background warm cream `#faf6f0`. No human faces, no photorealism, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tinder-swipe/failure-mechanism.png",
+      "generated_image_sha256": "537d0ecf3f682b64e58ccaca1d3f90233ab3a3dd958108ea83ee3098f5378e3a",
+      "final_image_sha256": "d1c190e2a7561efcd8c1bf2777d03f717127dae9c70e4ce71663326db778d7b7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tinder-swipe/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tinder-swipe/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/tinder-swipe/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A small bar chart showing daily Tinder swipes growing from 350 million to 1.6 billion with Hatch pointing at the one-billion bar.",
+      "caption": "A small bar chart showing daily Tinder swipes growing from 350 million to 1.6 billion with Hatch pointing at the one-billion bar.",
+      "prompt": "Tinder's Swipe | evidence-card: Flat geometric HackProduct autopsy evidence illustration. Canvas role evidence, 1600x1000. Render a single chart artifact, four horizontal bars stacked, labelled 350M, 1B, 1.6B, with a thin charcoal `#1e211c` baseline and forest green `#4a7c59` fills. The label reads \"daily swipes\" in small charcoal type. A single soft amber `#c9ad68` dot marks the 1B bar with the note \"Oct 2014\". Background warm cream `#faf6f0`. Hatch stands small in the lower right in pointing-at-artifact pose, one mitten extended toward the 1B bar, body angled toward the chart. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression, flat texture. Use one short label and one visible artifact shape only. No human faces, no photorealism, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tinder-swipe/evidence-card.png",
+      "generated_image_sha256": "a1beaa4907fad607f4e8b2139c20ef5009a5694c52c5b796f194880990171942",
+      "final_image_sha256": "c391d8094273eac9630caf5a5c792e87da3f53cee145cec85cecaa6677c44919",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tinder-swipe/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tinder-swipe/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/tinder-swipe/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A speech bubble holding the phrases swipe right and swipe left, with Hatch in coaching pose beside it.",
+      "caption": "A speech bubble holding the phrases swipe right and swipe left, with Hatch in coaching pose beside it.",
+      "prompt": "Tinder's Swipe | lesson-frame: Flat geometric HackProduct autopsy lesson illustration for the takeaway that a product can hand the user a public verb. Canvas role lesson, 1800x1200. Centre shows a deep forest `#244232` speech bubble shape with two short word-marks inside, \"swipe right\" and \"swipe left\", set in clean charcoal `#1e211c` lettering on cream `#faf6f0`. A soft amber `#c9ad68` underline crosses both phrases to bind them. Hatch stands medium-large at the right edge in calm coaching pose, one mitten resting open as if presenting, the other relaxed by the side. A backdrop of three small repeating card silhouettes in mist `#dfe6dc` sits behind the bubble as quiet pattern. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression, flat texture. No human faces, no photorealism, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tinder-swipe/lesson-frame.png",
+      "generated_image_sha256": "5d31e109e459165740d06055a0ca37bee4b1000b52717f905c9ccdb62c0b54ed",
+      "final_image_sha256": "ebaa635c216331b443fdca9fbfb1ef6bd45c0d6195619e9ee679e1ada951bf23",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tinder-swipe/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tinder-swipe/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/tinder-swipe/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A tilted forest-green card mid-swipe to the right with a tiny Hatch mark in the corner.",
+      "caption": "A tilted forest-green card mid-swipe to the right with a tiny Hatch mark in the corner.",
+      "prompt": "Flat geometric HackProduct autopsy thumbnail. Canvas role thumbnail, 1200x900. Compose one strong focal shape, a single forest-green `#4a7c59` profile card tilted twelve degrees to the right with a short soft amber `#c9ad68` motion arc tracing its movement. Background warm cream `#faf6f0`. Charcoal `#1e211c` linework on the card edge. A tiny Hatch mark sits in the lower right corner, no larger than ten percent of canvas height, in narrator pose with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression. Make the decision readable at small size with one strong focal shape. No human faces, no photorealism, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tinder-swipe/hero.png",
+      "generated_image_sha256": "fb3da9bd6f5a45a666e03269c0b87b7a1a44ce8c38e9dec70e8042bd9196cc6e",
+      "final_image_sha256": "d349eb2af8d007fdc514f2058b501d43a017c24364a0cfd449dc5e63a02ef1ae",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tinder-swipe/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tinder-swipe/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/tinder-swipe/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image showing a card tossed right with smaller cards stacked behind and small Hatch narrating at the far right.",
+      "caption": "A wide cover image showing a card tossed right with smaller cards stacked behind and small Hatch narrating at the far right.",
+      "prompt": "Flat geometric HackProduct autopsy social cover. Canvas role social-cover, 2400x1260. Compose a wide centre band with one forest-green `#4a7c59` profile card mid-flight to the right, a faint soft amber `#c9ad68` motion arc behind it, and the title space lower-left clear for an overlay. Stack two paler mist `#dfe6dc` cards underneath to hint at the deck. Hatch stands small in narrator pose at the far right, one mitten extended toward the flying card. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression, flat texture. Charcoal `#1e211c` linework. Keep the centre seventy percent clear of edge-critical details. Background warm cream `#faf6f0`. No human faces, no photorealism, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tinder-swipe/hero.png",
+      "generated_image_sha256": "fb3da9bd6f5a45a666e03269c0b87b7a1a44ce8c38e9dec70e8042bd9196cc6e",
+      "final_image_sha256": "fda5baed17eba3e24b3b0d6466b2156c33ba6017a41ee8ef187fe95148918f9e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tinder-swipe/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tinder-swipe/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/tinder-swipe/v1"
+}

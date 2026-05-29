@@ -9,9 +9,11 @@ interface MentalModelsBreakdownProps {
     reasoning_move: string
     demonstrated: string
     missed: string
+    framework_hint?: string | null
+    score?: number | null
   }>
   weakestCompetency?: string
-  nextChallengeId?: string
+  nextChallengeHref?: string
   nextChallengeTitle?: string
 }
 
@@ -45,7 +47,7 @@ function formatCompetency(key: string): string {
 export function MentalModelsBreakdown({
   breakdown,
   weakestCompetency,
-  nextChallengeId,
+  nextChallengeHref,
   nextChallengeTitle,
 }: MentalModelsBreakdownProps) {
   if (!breakdown || breakdown.length === 0) return null
@@ -98,6 +100,14 @@ export function MentalModelsBreakdown({
                   <p className="text-xs font-body text-on-surface-variant">{item.missed}</p>
                 </div>
               )}
+
+              {/* Framework hint */}
+              {item.framework_hint && (
+                <div className="flex items-start gap-2">
+                  <span className="material-symbols-outlined text-tertiary text-base mt-0.5 shrink-0">psychology</span>
+                  <p className="text-xs font-body text-on-surface-variant">{item.framework_hint}</p>
+                </div>
+              )}
             </div>
           )
         })}
@@ -112,12 +122,12 @@ export function MentalModelsBreakdown({
               Weakest competency this challenge: <span className="text-tertiary">{formatCompetency(weakestCompetency)}</span>
             </p>
           </div>
-          {nextChallengeId && nextChallengeTitle && (
+          {nextChallengeHref && nextChallengeTitle && (
             <Link
-              href={`/workspace/challenges/${nextChallengeId}`}
+              href={nextChallengeHref}
               className="inline-flex items-center gap-1.5 text-sm font-label font-semibold text-primary hover:underline"
             >
-              Next challenge to develop this
+              Next: {nextChallengeTitle}
               <span className="material-symbols-outlined text-base">arrow_forward</span>
             </Link>
           )}

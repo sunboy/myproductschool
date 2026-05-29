@@ -3,6 +3,32 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateLoopDebrief } from '@/lib/interview-loops/loop-debrief-generator'
 import type { CrossRoundMemoryItem, LoopRound } from '@/lib/interview-loops/types'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+
+function aiLimitResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return Response.json({
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  if (error instanceof AiBudgetExceededError) {
+    return Response.json({
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  return null
+}
 
 export async function POST(
   _request: Request,
@@ -32,17 +58,27 @@ export async function POST(
 
   const rounds = (roundsResult.data ?? []) as LoopRound[]
   const memory = (loop.cross_round_memory ?? []) as CrossRoundMemoryItem[]
+  const userPlan = await getUserPlanForBudget(user.id)
 
-  const debrief = await generateLoopDebrief({
-    rounds,
-    crossRoundMemory: memory,
-    targetCompany: loop.target_company,
-    targetRole: loop.target_role,
-    calibrationSnapshot: {
-      archetype: profileResult.data?.archetype ?? 'Analyst',
-      archetypeDescription: profileResult.data?.archetype_description ?? '',
-    },
-  })
+  let debrief
+  try {
+    await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+    debrief = await generateLoopDebrief({
+      rounds,
+      crossRoundMemory: memory,
+      targetCompany: loop.target_company,
+      targetRole: loop.target_role,
+      calibrationSnapshot: {
+        archetype: profileResult.data?.archetype ?? 'Analyst',
+        archetypeDescription: profileResult.data?.archetype_description ?? '',
+      },
+      budget: { userId: user.id, userPlan, route: 'interview_loop_debrief_manual' },
+    })
+  } catch (error) {
+    const response = aiLimitResponse(error)
+    if (response) return response
+    throw error
+  }
 
   await adminClient
     .from('interview_loops' as string)

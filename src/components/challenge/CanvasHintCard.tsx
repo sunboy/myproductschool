@@ -16,7 +16,7 @@ const CONTENT = {
       <ul className="mt-2 space-y-1.5 list-none">
         <li className="flex items-start gap-1">
           <span className="material-symbols-outlined text-base text-primary mr-1 shrink-0 mt-0.5">library_add</span>
-          <span>Drag shapes from Library (top-left toolbar) — common components like API, DB, cache</span>
+          <span>Drag shapes from Library (top-left toolbar) - common components like API, DB, cache</span>
         </li>
         <li className="flex items-start gap-1">
           <span className="material-symbols-outlined text-base text-primary mr-1 shrink-0 mt-0.5">arrow_forward</span>
@@ -57,13 +57,15 @@ const CONTENT = {
 }
 
 export function CanvasHintCard({ challengeType, forceOpen, onDismiss }: CanvasHintCardProps) {
-  const [visible, setVisible] = useState(Boolean(forceOpen))
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    setVisible(Boolean(forceOpen))
-  }, [forceOpen])
+    const dismissed = window.localStorage.getItem(`hatch_canvas_hint_dismissed_${challengeType}`) === '1'
+    setVisible(forceOpen ? true : !dismissed)
+  }, [challengeType, forceOpen])
 
   const dismiss = () => {
+    window.localStorage.setItem(`hatch_canvas_hint_dismissed_${challengeType}`, '1')
     setVisible(false)
     onDismiss?.()
   }

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "google",
+  "story_slug": "youtube-autoplay",
+  "story_title": "How YouTube Made Watching the Default",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/youtube-autoplay/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/youtube-autoplay/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream video card connected by a forest ribbon and a 10-second amber countdown ring to a thread of smaller cards, with Hatch narrating from the lower left.",
+      "caption": "A countdown replaces a decision.",
+      "prompt": "How YouTube Made Watching the Default | hero: Create a flat geometric HackProduct autopsy hero illustration for YouTube's 2015 autoplay default. Canvas role: hero, aspect 2400x1350. On a warm cream `#faf6f0` field, draw a single cream video card on the left bordered in charcoal `#1e211c` with one mist `#dfe6dc` thumbnail block inside it. To the right of the card, draw a forest `#4a7c59` ribbon flowing into a second smaller cream card. On the ribbon, place a soft amber `#c9ad68` circular countdown ring labelled with a deep forest `#244232` numeral 10. Around the countdown, draw three smaller cards trailing off into the upper right, each progressively smaller and lighter, to suggest a thread that continues. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower left at about 14 percent of canvas height, in narrator pose, one mitten hand pointing up toward the countdown ring. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No YouTube logo, no real screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/youtube-autoplay/hero.png",
+      "generated_image_sha256": "cfe50910d80e69a9eaa1e0f2277d58d927feac2d959bb5f39a7ae3fbd39abadc",
+      "final_image_sha256": "73461bf788e7e15316bc5ecf19259989bf23e655d702e1e268d2b7f67010ecdd",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-autoplay/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-autoplay/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/youtube-autoplay/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a monitor displaying an abstract grid of thumbnails and a rising watch-time line, with a whiteboard marked SESSION GRAPH.",
+      "caption": "Hatch beside a monitor displaying an abstract grid of thumbnails and a rising watch-time line, with a whiteboard marked SESSION GRAPH.",
+      "prompt": "How YouTube Made Watching the Default | hatch-narrator: Flat geometric scene illustration of YouTube's mid-2010s recommendation room, aspect 1600x1600. Show a warm cream `#faf6f0` open workspace with a low forest `#4a7c59` desk, a single monitor displaying an abstract grid of nine mist `#dfe6dc` thumbnail tiles, and a small soft amber `#c9ad68` line graph rising along the wall behind labelled WATCH TIME with charcoal `#1e211c` linework. To one side, place a low deep forest `#244232` whiteboard with a single circled phrase, SESSION GRAPH, no other text. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator at about 18 percent of canvas height, standing beside the monitor in narrator pose, one mitten hand gesturing toward the rising graph. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no real screenshots, no YouTube logo. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/youtube-autoplay/hatch-narrator.png",
+      "generated_image_sha256": "2203733e16bcf953e0e08ca555077fa461c958ac4132d708315b48ddc4116d4b",
+      "final_image_sha256": "215e4d1d23efde1c6ee2ab653be2b0e35c7fb3768e1b75a16b06d1dba6d41a69",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-autoplay/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-autoplay/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/youtube-autoplay/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-panel mechanism showing video end, countdown, history-fed pick, and next video, with Hatch pointing at the countdown.",
+      "caption": "A four-panel mechanism showing video end, countdown, history-fed pick, and next video, with Hatch pointing at the countdown.",
+      "prompt": "How YouTube Made Watching the Default | failure-mechanism: Flat geometric mechanism diagram of YouTube's autoplay loop, aspect 1800x1200. On warm cream `#faf6f0`, lay out a left-to-right sequence in four panels. Panel one: a single cream video card outlined in charcoal `#1e211c` with a small soft amber `#c9ad68` END marker in the lower right corner. Panel two: a forest `#4a7c59` countdown ring labelled 10 in deep forest `#244232` with a tiny cancel chip in mist `#dfe6dc`. Panel three: a forest ribbon labelled HISTORY SIGNAL flowing into a small cream card. Panel four: a second video card playing, with a tiny watermark-style chip in the corner reading AUTOPLAY ON, and a faint mist trail leading to a third card at the very edge of the frame. Connect panels with thin charcoal arrows. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right at about 14 percent of canvas height, one mitten hand pointing at the countdown ring. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No real screenshots, no YouTube logo, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/youtube-autoplay/failure-mechanism.png",
+      "generated_image_sha256": "d172d90c22b842bc00b0bc311a5f394bc8181e6d7e09f76a7bb75d822433f968",
+      "final_image_sha256": "a88c67a746e911f2a259c5d6cefba985f47207a3168979c3be60e1305081b71a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-autoplay/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-autoplay/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/youtube-autoplay/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two cylinders showing the twenty percent fall in views beside the watch-time era, with a rising session-length line and Hatch pointing.",
+      "caption": "Two cylinders showing the twenty percent fall in views beside the watch-time era, with a rising session-length line and Hatch pointing.",
+      "prompt": "How YouTube Made Watching the Default | evidence-card: Flat geometric evidence card showing the trade YouTube accepted in 2012 to favour watch-time over views, aspect 1600x1000. On warm cream `#faf6f0`, draw two cylinders side by side, both labelled below. Left cylinder, in mist `#dfe6dc`, taller, labelled VIEWS 2011. Right cylinder, in forest `#4a7c59`, shorter by about twenty percent, labelled WATCH-TIME ERA 2012. Above the right cylinder, draw a soft amber `#c9ad68` rising line that climbs back up and continues above the original height of the left cylinder, labelled SESSION LENGTH at its peak. Use one short charcoal `#1e211c` annotation between the cylinders, MINUS 20 PERCENT. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png between the cylinders at about 16 percent of canvas height, in pointing pose, one mitten hand on the smaller right cylinder, gaze toward the rising line. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. One short label per cylinder. No fake charts beyond this, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/youtube-autoplay/evidence-card.png",
+      "generated_image_sha256": "623938bbfa9e27f5e3627cca9c77dbd771e8df12c02458a4c25d94d22a6bb21f",
+      "final_image_sha256": "e1a05aebff9e4f376c9137e2742027039cfc4b59361130e14cd1aeb9d89a11a8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-autoplay/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-autoplay/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/youtube-autoplay/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central rectangle with a small ON toggle and a thread leading to outcome tiles, with Hatch coaching beside it.",
+      "caption": "A central rectangle with a small ON toggle and a thread leading to outcome tiles, with Hatch coaching beside it.",
+      "prompt": "How YouTube Made Watching the Default | lesson-frame: Flat geometric lesson illustration for the principle that defaults are the product, aspect 1800x1200. On warm cream `#faf6f0`, draw a single large cream rectangle in the centre with a small forest `#4a7c59` toggle in the lower right corner, set to the ON position. Around the rectangle, draw a faint mist `#dfe6dc` halo extending across most of the canvas. Above the toggle, place a short charcoal `#1e211c` label reading WHAT HAPPENS WHEN THE USER DOES NOTHING. Below the rectangle, draw a soft amber `#c9ad68` thread leading out to a small cluster of deep forest `#244232` outcome tiles, each unlabelled, representing the downstream behaviours a default produces. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png to the left of the rectangle in a calm coaching pose at about 18 percent of canvas height, one mitten hand resting on the rectangle edge, facing the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no real screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/youtube-autoplay/lesson-frame.png",
+      "generated_image_sha256": "c859a35a28323b2910d2129d3e070113ca2c229f6bb0d8f713ff032cbd09769c",
+      "final_image_sha256": "0c9640df09bbdd051a1175f0b8faa4e924d45a8daccaccfc59098a1b5983d486",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-autoplay/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-autoplay/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/youtube-autoplay/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A countdown ring labelled 10 between two video card outlines connected by a forest ribbon, with a tiny Hatch mark.",
+      "caption": "A countdown ring labelled 10 between two video card outlines connected by a forest ribbon, with a tiny Hatch mark.",
+      "prompt": "Flat geometric thumbnail for the YouTube autoplay autopsy, aspect 1200x900. On warm cream `#faf6f0`, render one strong focal shape, a soft amber `#c9ad68` circular countdown ring at the centre marked with a deep forest `#244232` numeral 10, bisected by a thin forest `#4a7c59` ribbon connecting two cream video card outlines on either side. Background remains warm cream with a single mist `#dfe6dc` ground band along the lower edge. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower left at no more than 10 percent of canvas height, simple pointing pose. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. The decision must read at 320 pixels wide. No real screenshots, no YouTube logo, no labels inside the cards. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/youtube-autoplay/hero.png",
+      "generated_image_sha256": "cfe50910d80e69a9eaa1e0f2277d58d927feac2d959bb5f39a7ae3fbd39abadc",
+      "final_image_sha256": "c1c0b2881639d6eec4cd59638763cc4f8e3369cd795ac5c68c4962204787d9f2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-autoplay/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-autoplay/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/youtube-autoplay/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image with a central countdown ring threaded by a forest ribbon between two cards, labelled DEFAULTS ARE THE PRODUCT, with a small Hatch in the lower right.",
+      "caption": "A wide cover image with a central countdown ring threaded by a forest ribbon between two cards, labelled DEFAULTS ARE THE PRODUCT, with a small Hatch in the lower right.",
+      "prompt": "Flat geometric social cover for the YouTube autoplay autopsy, aspect 2400x1260. On warm cream `#faf6f0`, place the central composition inside the centre 70 percent of the canvas. Draw a single soft amber `#c9ad68` countdown ring at the centre labelled with a deep forest `#244232` numeral 10. To the left and right of the ring, place two cream video card outlines connected by a forest `#4a7c59` ribbon that threads through the ring. Below the ring, place a single short charcoal `#1e211c` label reading DEFAULTS ARE THE PRODUCT. Keep the centre 70 percent clear of edge-critical details. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower right at about 12 percent of canvas height, in narrator pose, one mitten hand pointing toward the ring. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No real screenshots, no YouTube logo, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/youtube-autoplay/hero.png",
+      "generated_image_sha256": "cfe50910d80e69a9eaa1e0f2277d58d927feac2d959bb5f39a7ae3fbd39abadc",
+      "final_image_sha256": "d2f007abe18437515ddcece45dda5f33775b5d994e75762241a33dd1cee28fed",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-autoplay/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-autoplay/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/youtube-autoplay/v1"
+}

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "flux",
+  "story_slug": "flux",
+  "story_title": "f.lux",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/flux/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/flux/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two monitor outlines side by side, one glowing blue-white and one glowing warm amber, connected by a clock-hand arc, with small Hatch narrator in the upper right.",
+      "caption": "The same screen, seven hours apart.",
+      "prompt": "f.lux | hero: Create a flat geometric HackProduct autopsy hero illustration for f.lux, the 2009 screen-warming utility. Canvas role: hero, aspect 2400x1350. Background is warm cream #faf6f0. On the left, render a simple monitor outline in charcoal #1e211c, its screen filled with cool blue #6ba3c4 light. On the right, render the same monitor with its screen glowing in soft amber #c9ad68, warm and low. Between them, draw a single deep forest #244232 clock-hand arc sweeping from the blue monitor to the amber one, marking the passage from day to night. In the lower centre, place a small glowing sun and crescent moon pair in amber #705c30 and mist #dfe6dc, to show the geolocation-time-of-day concept. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in the upper right as a small narrator, pointing one mitten hand at the arc. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no recreated OS screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/flux/hero.png",
+      "generated_image_sha256": "891f719cd88b26f13c70881c6f5b537665eef1c979436c2813a23c23623f5bb3",
+      "final_image_sha256": "7644bb51bcc62a8e058594912c8694a488fc2e6db98cdb7ce9e2f5c5ff073fd0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/flux/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/flux/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/flux/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A split room with a warm painting studio on the left and a cold blue computer monitor on the right, Hatch standing in the doorway gesturing at the screen.",
+      "caption": "A split room with a warm painting studio on the left and a cold blue computer monitor on the right, Hatch standing in the doorway gesturing at the screen.",
+      "prompt": "f.lux | hatch-narrator: Flat geometric scene illustration for the Herf painting-studio moment, circa 2005, aspect 1600x1600. Show a warm cream #faf6f0 room divided into two zones by a thin charcoal #1e211c doorway line. On the left, a painting studio with a tall window flooding soft amber #c9ad68 daylight-bulb light onto a canvas easel silhouette, everything in warm forest #4a7c59 and amber tones. On the right, the rest of the house in mist #dfe6dc evening light, with a small desk holding a single monitor glowing cold blue #6ba3c4. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the narrator, standing in the doorway between the two zones, one mitten hand gesturing toward the cold blue monitor. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/flux/hatch-narrator.png",
+      "generated_image_sha256": "8bbc07eb6dc6eb491e3d45864740c8c9f70a0b44979fd78dfaca8cb3be0be9b4",
+      "final_image_sha256": "e944cbd5c0b3711dc682245a43ef4d291ca8152388446796a4a30d6f1404cd2a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/flux/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/flux/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/flux/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Four-stage pipeline showing set-location-once feeding into sunrise lookup, OS gamma hook, and a zero-decisions monitor, with Hatch pointing at stage one.",
+      "caption": "Four-stage pipeline showing set-location-once feeding into sunrise lookup, OS gamma hook, and a zero-decisions monitor, with Hatch pointing at stage one.",
+      "prompt": "f.lux | failure-mechanism: Flat geometric mechanism diagram for f.lux's zero-touch loop, aspect 1800x1200. Lay out four horizontal stages on cream #faf6f0. Stage one: a small forest-green #4a7c59 pin-drop icon above a ZIP-code field box labelled SET LOCATION ONCE. Stage two: a charcoal #1e211c sunrise/sunset table grid with a soft amber #c9ad68 highlight on the current day row, labelled LOOKUP TWILIGHT. Stage three: a deep forest #244232 curved arrow labelled OS GAMMA HOOK, showing a smooth gradient from cool blue on the left to warm amber on the right. Stage four: a cream monitor outline with a fully amber-lit screen labelled ZERO DECISIONS. Connect the stages with thin charcoal lines. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose in the lower right, pointing one mitten hand at stage one to mark the single user input. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/flux/failure-mechanism.png",
+      "generated_image_sha256": "607b4144a0225629d0444d56c0909eb485dac639c21c506134214209270bc50b",
+      "final_image_sha256": "69b89da842d9e2f65c250097f6f2820d9184de7289f8f31c3c6e63cffc114fd6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/flux/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/flux/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/flux/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A horizontal timeline with three cubes labelled f.lux 2009, Apple Night Shift 2016, and Windows Night Light 2017, with Hatch beside the first cube pointing right.",
+      "caption": "A horizontal timeline with three cubes labelled f.lux 2009, Apple Night Shift 2016, and Windows Night Light 2017, with Hatch beside the first cube pointing right.",
+      "prompt": "f.lux | evidence-card: Flat geometric evidence card showing the OS imitation timeline, aspect 1600x1000. Background is warm cream #faf6f0. Draw a horizontal timeline bar in deep forest #244232 running left to right. At the far left, place a small forest-green #4a7c59 cube labelled F.LUX 2009. At the centre, place a mid-size soft amber #c9ad68 cube labelled APPLE NIGHT SHIFT 2016. At the right, place a slightly larger mist #dfe6dc cube labelled WINDOWS NIGHT LIGHT 2017. Connect them with the timeline bar, with a thin amber pulse between the f.lux cube and the Apple cube. Below the Apple cube, draw a small charcoal lock icon to represent the blocked sideload. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing beside the f.lux cube in a pointing pose, gaze tracking right toward the Apple and Windows cubes. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/flux/evidence-card.png",
+      "generated_image_sha256": "d5e0192e403fe0ac12795bf4c01e554a2a8b4d71b12d9bb9e071192accf8128a",
+      "final_image_sha256": "e80c1741ddfbd96b17fca8e5b77a1f2f149adecdde3b7afd81c40494df8345ed",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/flux/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/flux/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/flux/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two columns side by side, a tall stack of decision diamonds on the left and a single set-once circle on the right, with Hatch coaching from beside the circle.",
+      "caption": "Two columns side by side, a tall stack of decision diamonds on the left and a single set-once circle on the right, with Hatch coaching from beside the circle.",
+      "prompt": "f.lux | lesson-frame: Flat geometric lesson illustration for the principle that zero-touch beats manual control, aspect 1800x1200. Background is warm cream #faf6f0. In the centre, draw two columns side by side. Left column: a tall stack of five charcoal #1e211c decision-point diamonds labelled REMEMBER / ADJUST / UNDO / FORGET / REPEAT, representing manual control. Right column: a single large forest-green #4a7c59 circle labelled SET ONCE, with a soft amber #c9ad68 clock-hand arc around it. Draw a thin deep forest #244232 arrow from the left column's top diamond pointing to the right column's circle, suggesting the move. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the right of the circle, one mitten hand resting on the circle edge, facing toward the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/flux/lesson-frame.png",
+      "generated_image_sha256": "9e5099da8da247294ad85c111a18c155c1462f9c82356bfef86193a3c7098664",
+      "final_image_sha256": "c79eecb0c65b58484ca2ace89b839e24007df591931cd9a73db0984054a4ebf8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/flux/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/flux/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/flux/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A monitor outline with a screen split diagonally between cool blue and warm amber, a tiny Hatch mark in the corner, and a sun at the boundary.",
+      "caption": "A monitor outline with a screen split diagonally between cool blue and warm amber, a tiny Hatch mark in the corner, and a sun at the boundary.",
+      "prompt": "Flat geometric thumbnail composition for f.lux, aspect 1200x900. On warm cream #faf6f0, render one bold focal shape: a single monitor outline in charcoal #1e211c whose screen is split diagonally, with cool blue #6ba3c4 in the upper-left half and warm soft amber #c9ad68 in the lower-right half. Add a tiny sun shape in amber #705c30 at the cool-to-warm boundary. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small mark in the bottom-left corner, no larger than 12 percent of canvas height, facing the monitor. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep readable at small size. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/flux/hero.png",
+      "generated_image_sha256": "891f719cd88b26f13c70881c6f5b537665eef1c979436c2813a23c23623f5bb3",
+      "final_image_sha256": "a443c92178e33798b0ef487cd1f5669809489068e76ec2b922d10e84020d0ca5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/flux/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/flux/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/flux/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover showing a monitor split between cold blue and warm amber, a clock-hand divider, a sun and moon, and a small Hatch narrator in the lower left.",
+      "caption": "A wide cover showing a monitor split between cold blue and warm amber, a clock-hand divider, a sun and moon, and a small Hatch narrator in the lower left.",
+      "prompt": "Flat geometric social cover image for f.lux, aspect 2400x1260. Background is warm cream #faf6f0. In the centre 70 percent of the canvas, place a large monitor outline in charcoal #1e211c with its screen split vertically: the left half in cold blue #6ba3c4, the right half in warm soft amber #c9ad68. Between the two halves, draw a thin deep forest #244232 clock-hand divider. Below the monitor, place a short charcoal label reading SET ONCE. In the upper right, place a small sun above and to the right and a crescent moon below and to the left, in amber #705c30 and mist #dfe6dc. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower-left quadrant, one mitten hand pointing up at the monitor. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no recreated OS screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/flux/hero.png",
+      "generated_image_sha256": "891f719cd88b26f13c70881c6f5b537665eef1c979436c2813a23c23623f5bb3",
+      "final_image_sha256": "772a69d1a205c8237b085018d779097ab58a34a5d1fe29c7ecce0bbbca3eed4c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/flux/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/flux/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/flux/v1"
+}

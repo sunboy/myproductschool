@@ -1,31 +1,89 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { generateDebrief } from '@/lib/live-interview/debrief-generator'
+import {
+  buildLowSignalDebrief,
+  generateDebrief,
+  type DebriefNextAction,
+} from '@/lib/live-interview/debrief-generator'
+import { IS_MOCK } from '@/lib/mock'
 import { gradeArtifact } from '@/lib/live-interview/artifact-grader'
+import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
+import { normalizeDiscipline, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
+import {
+  buildLiveWorkspaceSignal,
+  isSubstantiveWorkspaceSignal,
+} from '@/lib/live-interview/workspace-adapters'
+import { buildSkillContextPack } from '@/lib/hatch/skill-context'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
+import { z, ZodError } from 'zod'
+import { checkAndGrantAchievements } from '@/lib/achievements/check'
+import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
-const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
-  beginner: 60,
-  intermediate: 90,
-  advanced: 120,
+const ROUTE_KEY = 'live_interview_debrief'
+
+// Base XP by canonical bucket. Legacy DB values are coerced before lookup so
+// medium/hard rows score correctly both pre- and post-R2.
+const INTERVIEW_DIFFICULTY_BASE_XP: Record<PracticeDifficulty, number> = {
+  easy: 60,
+  medium: 90,
+  hard: 120,
 }
 
 const DEFAULT_INTERVIEW_BASE_XP = 80
 
-function aiBudgetResponse(error: unknown) {
-  if (!(error instanceof AiBudgetExceededError)) return null
+const RequestSchema = z.object({
+  abandoned: z.boolean().optional().default(false),
+})
 
-  return Response.json(
-    {
-      error: 'limit_reached',
-      feature: 'hatch_ai_cents',
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function aiBudgetResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return apiError(402, 'limit_reached', 'limit_reached', {
+      feature: error.feature,
       used: error.used,
       limit: error.limit,
       windowDays: error.windowDays,
-    },
-    { status: 402 }
-  )
+    })
+  }
+
+  if (!(error instanceof AiBudgetExceededError)) return null
+
+  return apiError(402, 'limit_reached', 'limit_reached', {
+    feature: 'hatch_ai_cents',
+    used: error.used,
+    limit: error.limit,
+    windowDays: error.windowDays,
+  })
+}
+
+function disciplineToChallengeType(discipline: LiveInterviewDiscipline | null) {
+  if (discipline === 'system_design') return 'system_design'
+  if (discipline === 'data_modeling') return 'data_modeling'
+  if (discipline === 'coding') return 'algorithm'
+  if (discipline === 'sql') return 'sql'
+  return 'flow'
+}
+
+function substantiveUserTurns(turns: Array<{ role: 'hatch' | 'user'; content: string }>) {
+  return turns.filter((turn) => {
+    if (turn.role !== 'user') return false
+    const words = turn.content.trim().split(/\s+/).filter(Boolean)
+    return words.length >= 6 && turn.content.trim().length >= 32
+  }).length
 }
 
 export async function POST(
@@ -34,7 +92,7 @@ export async function POST(
 ) {
   const { id } = await params
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const { MOCK_LIVE_DEBRIEF } = await import('@/lib/mock-live-interviews')
     return Response.json({ debriefJson: MOCK_LIVE_DEBRIEF, sessionId: id })
   }
@@ -42,11 +100,22 @@ export async function POST(
   // Handle abandoned sessions (sent via sendBeacon on tab close)
   let abandoned = false
   try {
-    const body = await request.json()
-    abandoned = body?.abandoned === true
-  } catch {
-    // No body or invalid JSON — normal end
+    const text = await request.text()
+    const rawBody = text.trim() ? JSON.parse(text) : {}
+    const body = RequestSchema.parse(rawBody)
+    abandoned = body.abandoned
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
+    }
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
 
   const adminClient = createAdminClient()
 
@@ -55,12 +124,9 @@ export async function POST(
       .from('live_interview_sessions')
       .update({ status: 'abandoned', ended_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('user_id', user.id)
     return Response.json({ ok: true, abandoned: true })
   }
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return new Response('Unauthorized', { status: 401 })
 
   // Load session + turns in parallel
   const [sessionResult, turnsResult] = await Promise.all([
@@ -73,12 +139,12 @@ export async function POST(
   ])
 
   if (!sessionResult.data) {
-    return new Response('Session not found', { status: 404 })
+    return apiError(404, 'session_not_found', 'Session not found')
   }
 
   const session = sessionResult.data
   if (session.user_id !== user.id) {
-    return new Response('Session not found', { status: 404 })
+    return apiError(404, 'session_not_found', 'Session not found')
   }
 
   if (session.status === 'completed') {
@@ -94,24 +160,71 @@ export async function POST(
     content: t.content,
     turnIndex: t.turn_index,
   }))
-  const userPlan = await getUserPlanForBudget(user.id)
-  const budget = { userId: user.id, userPlan, route: 'live_interview_debrief' }
-
   // Grade artifact if one was captured during the session
   const calibrationSnap = (session.calibration_snapshot ?? {}) as Record<string, unknown>
-  const artifactSnapshot = calibrationSnap._artifactSnapshot as {
-    type: 'canvas' | 'editor'
-    elementCount?: number
-    code?: string
-    language?: string
-    runResult?: unknown
-    discipline?: string
-  } | undefined
+  const artifactSnapshot = calibrationSnap._artifactSnapshot as LiveInterviewArtifactSnapshot | undefined
+  const discipline = normalizeDiscipline(
+    artifactSnapshot?.discipline ??
+    (calibrationSnap.effectiveDiscipline as string | undefined) ??
+    null
+  )
+  const workspaceSignal = buildLiveWorkspaceSignal(artifactSnapshot, discipline)
+  let practiceLink: DebriefNextAction | null = null
+
+  try {
+    const contextPack = await buildSkillContextPack({
+      userId: user.id,
+      surface: 'interview_debrief',
+      challengeType: disciplineToChallengeType(discipline),
+      submissionText: turns.filter((turn) => turn.role === 'user').map((turn) => turn.content).join('\n'),
+      includePracticeLink: true,
+      includeRetrieval: false,
+    })
+    if (contextPack.practiceLink) {
+      practiceLink = {
+        title: contextPack.practiceLink.title,
+        description: contextPack.practiceLink.reason,
+        href: contextPack.practiceLink.href,
+        type: contextPack.practiceLink.type,
+      }
+    }
+  } catch {
+    practiceLink = null
+  }
+
+  const noSubstance = substantiveUserTurns(turns) === 0 && !isSubstantiveWorkspaceSignal(workspaceSignal)
+
+  let budget: { userId: string; userPlan: string; route: string } | undefined
+  if (!noSubstance) {
+    const userPlan = await getUserPlanForBudget(user.id)
+    const throttle = await rateLimit({
+      key: `ai:${user.id}:${ROUTE_KEY}`,
+      limit: userPlan === 'pro' ? 15 : 5,
+      windowSec: 60,
+    })
+
+    if (!throttle.allowed) {
+      const retryAfter = retryAfterSeconds(throttle.resetAt)
+      const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+      response.headers.set('Retry-After', String(retryAfter))
+      return response
+    }
+
+    try {
+      await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+    } catch (err) {
+      const response = aiBudgetResponse(err)
+      if (response) return response
+      throw err
+    }
+
+    budget = { userId: user.id, userPlan, route: ROUTE_KEY }
+  }
 
   let artifactGrading: Awaited<ReturnType<typeof gradeArtifact>> | null = null
-  if (artifactSnapshot && process.env.ANTHROPIC_API_KEY) {
+  if (artifactSnapshot && !noSubstance) {
     try {
-      artifactGrading = await gradeArtifact(artifactSnapshot, { ...budget, route: 'live_interview_artifact_grade' })
+      artifactGrading = await gradeArtifact(artifactSnapshot, { ...budget!, route: 'live_interview_artifact_grade' })
     } catch (err) {
       const response = aiBudgetResponse(err)
       if (response) return response
@@ -138,19 +251,30 @@ export async function POST(
   }
 
   let debriefResult
-  try {
-    debriefResult = await generateDebrief({
-      sessionId: id,
-      turns,
-      calibrationSnapshot: session.calibration_snapshot ?? { archetype: 'Analyst', moveLevels: {} },
-      scenarioRubric: session.scenario_rubric ?? null,
-      challengeId: session.challenge_id ?? null,
-      budget,
-    })
-  } catch (err) {
-    const response = aiBudgetResponse(err)
-    if (response) return response
-    throw err
+  if (noSubstance) {
+    debriefResult = buildLowSignalDebrief({ discipline, workspaceSignal, practiceLink })
+  } else {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
+    }
+
+    try {
+      debriefResult = await generateDebrief({
+        sessionId: id,
+        turns,
+        calibrationSnapshot: session.calibration_snapshot ?? { archetype: 'Analyst', moveLevels: {} },
+        scenarioRubric: session.scenario_rubric ?? null,
+        challengeId: session.challenge_id ?? null,
+        discipline,
+        workspaceSignal,
+        practiceLink,
+        budget,
+      })
+    } catch (err) {
+      const response = aiBudgetResponse(err)
+      if (response) return response
+      throw err
+    }
   }
 
   const duration = Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000)
@@ -181,7 +305,8 @@ export async function POST(
   ])
 
   if (profileRow) {
-    const difficultyBase = INTERVIEW_DIFFICULTY_BASE_XP[challengeRow?.difficulty ?? ''] ?? DEFAULT_INTERVIEW_BASE_XP
+    const bucket = coerceDifficulty(challengeRow?.difficulty)
+    const difficultyBase = bucket ? INTERVIEW_DIFFICULTY_BASE_XP[bucket] : DEFAULT_INTERVIEW_BASE_XP
     const scoreFactor = Math.max(0, Math.min(1, debriefResult.overallScore / FLOW_MAX_SCORE))
     const baseXp = Math.round(difficultyBase * scoreFactor)
     const streakMultiplier = Math.min(1 + (profileRow.streak_days ?? 0) * 0.05, 1.5)
@@ -193,13 +318,17 @@ export async function POST(
       .eq('id', user.id)
 
     await adminClient.rpc('update_user_streak', { p_user_id: user.id })
+
+    checkAndGrantAchievements(user.id, adminClient).catch(err =>
+      console.error('[live-interview] achievements check failed:', err)
+    )
   }
 
   // If this session is part of a loop, run post-processing
   const sessionLoopId = (session as unknown as { loop_id?: string | null }).loop_id
   const sessionRoundIndex = (session as unknown as { round_index?: number | null }).round_index
 
-  if (sessionLoopId && sessionRoundIndex !== null && sessionRoundIndex !== undefined && !abandoned) {
+  if (sessionLoopId && sessionRoundIndex !== null && sessionRoundIndex !== undefined && !abandoned && budget) {
     try {
       const { distillRoundContext } = await import('@/lib/interview-loops/loop-context-distiller')
       const { generateLoopDebrief } = await import('@/lib/interview-loops/loop-debrief-generator')
@@ -291,7 +420,7 @@ export async function POST(
     }
   }
 
-  // Upsert learner_competencies — fetch current scores first
+  // Upsert learner_competencies - fetch current scores first
   if (debriefResult.competencySignals?.length > 0) {
     const competencies = [...new Set(debriefResult.competencySignals.map((s) => s.competency))]
 

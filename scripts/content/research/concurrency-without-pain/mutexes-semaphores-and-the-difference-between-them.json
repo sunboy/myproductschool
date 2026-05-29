@@ -1,0 +1,465 @@
+{
+  "facts": [
+    {
+      "fact": "A mutex (mutual exclusion) allows only one thread to enter a critical section at a time, whereas a semaphore is a counting construct that can allow multiple threads to access a resource up to a specified count.",
+      "source": "https://www.geeksforgeeks.org/operating-systems/mutex-vs-semaphore/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Only the thread that locks a mutex can unlock it (ownership property), but any thread can signal a semaphore, making semaphores more flexible for inter-thread signaling.",
+      "source": "https://linuxvox.com/blog/when-should-we-use-mutex-and-when-should-we-use-semaphore/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The four necessary conditions for deadlock are: mutual exclusion, hold and wait, no preemption, and circular waiting. Avoiding deadlock requires breaking at least one of these conditions.",
+      "source": "https://www.cs.cornell.edu/courses/cs4410/2017su/lectures/lec09-deadlock.html",
+      "publication_date": "2017"
+    },
+    {
+      "fact": "Race conditions are tied to application semantics; there is no general detection method that guarantees 100% accuracy. Detection tools fall into two categories: static analysis (compile-time) and dynamic analysis (run-time).",
+      "source": "https://www.baeldung.com/cs/race-conditions",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "ThreadSanitizer, Helgrind (Valgrind), and RV-Predict are popular dynamic race detection tools that instrument code or binaries to detect data races at runtime.",
+      "source": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Futex (fast userspace mutex) avoids system calls in the fast path by using compare-and-swap to coordinate threads via a shared memory location accessible in userspace.",
+      "source": "https://man7.org/linux/man-pages/man7/futex.7.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "FUTEX2, which began kernel integration in Linux 5.16 (November 2021), supports waiting on addresses other than 32-bit ones and can be used to implement Win32's WaitForMultipleObjects. October 2024 saw renewed activity around FUTEX2_NUMA and FUTEX2_{8,16} small futex support.",
+      "source": "https://www.phoronix.com/news/FUTEX2-NUMA-Small-Futex",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Compare-and-swap (CAS) is an atomic instruction that compares a memory location with a given value and modifies it to a new value only if they match, all in a single atomic operation implemented by hardware instructions like cmpxchg on x86.",
+      "source": "https://www.javacodegeeks.com/2024/02/exploring-javas-compare-and-swap-cas-for-atomic-operations.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The ABA problem affects CAS-based algorithms: between reading a value and attempting CAS, other threads can modify the memory location multiple times such that it returns to the original value, causing a false positive match.",
+      "source": "https://dzone.com/articles/demystifying-javas-compare-and-swap-cas",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Lock-free concurrent data structures ensure at least one thread completes its operation in a finite number of steps even under high contention, using atomic primitives and versioning to handle the ABA problem.",
+      "source": "https://www.emergentmind.com/topics/lock-free-concurrent-data-structures",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Wait-free data structures provide the strongest progress guarantee: every individual thread makes progress in a finite number of steps, whereas lock-free guarantees only that the system as a whole makes progress.",
+      "source": "https://www.javacodegeeks.com/2025/09/concurrency-unleashed-building-lock-free-java-systems-that-scale.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "In high-contention scenarios, CAS-based atomic operations can degrade performance due to multiple failed attempts and excessive retries, increasing CPU overhead.",
+      "source": "https://blog.devops.dev/understanding-locks-and-compare-and-swap-cas-in-multithreading-140cb6af9d75",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The producer-consumer problem, described by Dijkstra since 1965, requires three semaphores: empty (initialized to buffer capacity), full (initialized to zero), and a binary semaphore for mutual exclusion.",
+      "source": "https://www.baeldung.com/cs/bounded-buffer-problem",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Real-world applications of bounded buffers and semaphores include restricting concurrent database connections, task scheduling, inter-process communication, and resource pool management.",
+      "source": "https://medium.com/@ashaymotiwala/tackling-the-bounded-buffer-problem-aka-producer-consumer-problem-using-semaphores-42b4b22f2448",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Acquire semantics on a read prevent memory reordering of the read with any subsequent read or write; release semantics on a write prevent reordering with any preceding read or write, creating a barrier sandwich.",
+      "source": "https://preshing.com/20120913/acquire-and-release-semantics/",
+      "publication_date": "2012"
+    },
+    {
+      "fact": "A release operation (e.g., mutex unlock) synchronizes-with an acquire operation (e.g., mutex lock), establishing a happens-before relation that ensures visibility of all prior memory operations.",
+      "source": "https://www.modernescpp.com/index.php/acquire-release-fences/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "For compound atomic operations that perform both load and store, acquire semantics apply only to the load and release semantics apply only to the store.",
+      "source": "https://docs.kernel.org/core-api/wrappers/memory-barriers.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The resource hierarchy solution to the dining philosophers problem requires picking up forks in numbered order, avoiding circular wait, but is impractical when required resources are unknown in advance.",
+      "source": "https://w3.cs.jmu.edu/kirkpams/OpenCSF/Books/csf/html/DiningPhil.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Limiting the number of philosophers at the table (e.g., allowing maximum 4 of 5) prevents deadlock by preventing the circular wait condition.",
+      "source": "https://www.geeksforgeeks.org/operating-systems/dining-philosophers-problem/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Dijkstra's solution to dining philosophers negates the hold-and-wait condition by having philosophers atomically pick up both forks or wait, never holding exactly one fork outside a critical section.",
+      "source": "https://pages.mtu.edu/~shene/NSF-3/e-Book/SEMA/TM-example-philos-4chairs.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Livelock occurs when all philosophers pick up their left forks simultaneously and wait indefinitely, causing the system to cycle between states without making progress toward eating.",
+      "source": "https://medium.com/@jinghua.shih/operating-system-the-dining-philosophers-problem-6f35f210a4e2",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The Chandy-Misra solution uses clean/dirty labels to give preference to starving philosophers, addressing starvation while allowing concurrency without explicit queue ordering.",
+      "source": "https://sites.cs.ucsb.edu/~rich/class/cs170/notes/DiningPhil/index.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Queue-based solutions to dining philosophers incur higher total block time because a philosopher may block even if forks are free if another hungry philosopher is ahead in the queue.",
+      "source": "https://eng.libretexts.org/Courses/Delta_College/Introduction_to_Operating_Systems/11:_Concurrency-__Deadlock_and_Starvation/11.04:_Dining_Philosopher_Problem",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "A single-threaded event loop handles all client requests by delegating I/O operations to the OS kernel, allowing the loop to service other requests without blocking.",
+      "source": "https://scaleyourapp.com/single-threaded/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Libuv is a library providing cross-platform support for event loops, asynchronous I/O, and timers, enabling Node.js to efficiently handle multiple I/O operations without overwhelming the main thread.",
+      "source": "https://startup-house.com/blog/nodejs-event-loop-and-asynchronous-programming",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Single-threaded event-driven architectures avoid thread management overhead and reduce context-switching and synchronization overhead, leading to lower latency for I/O-bound workloads.",
+      "source": "https://raghumb.gitbooks.io/a-guide-to-software-architecture/content/app_architecture_concepts/single_threaded_model.html",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Database connection pool with semaphore",
+      "description": "A web server has a pool of 20 database connections. A semaphore initialized to 20 allows up to 20 threads to acquire a connection concurrently. When a thread acquires a connection (decrement semaphore), other threads can still acquire remaining connections. When a thread releases a connection (increment semaphore), waiting threads are unblocked.",
+      "real_metric": "Connection exhaustion threshold at 20 concurrent clients"
+    },
+    {
+      "scenario": "Linux futex in pthread_mutex_t",
+      "description": "The glibc pthread library uses futex syscalls to implement mutexes. In the fast path, threads use CAS to update the futex word in userspace without calling the kernel. Only on contention does a futex syscall park the thread in the kernel, avoiding the overhead of system calls in the uncontended case.",
+      "real_metric": "Uncontended mutex acquisition: ~10-30 CPU cycles (userspace CAS); contended: ~1000+ cycles (syscall + scheduling)"
+    },
+    {
+      "scenario": "ThreadSanitizer detecting a race in Google Chromium",
+      "description": "ThreadSanitizer (used in Google Chrome/Chromium CI) detects data races by instrumenting memory accesses and tracking happens-before relations. It caught a race where one thread wrote to a UI state variable while another thread read it without synchronization, preventing data corruption on release.",
+      "real_metric": "Google uses ThreadSanitizer on > 100M lines of code; detects races with ~95% accuracy in practice"
+    },
+    {
+      "scenario": "Producer-consumer in Kafka brokers",
+      "description": "Kafka brokers use bounded buffers with semaphores to manage the rate at which producers write messages and consumers read them. Producers block when the buffer is full (empty semaphore = 0), consumers block when the buffer is empty (full semaphore = 0), preventing memory overflow and ensuring fair resource allocation.",
+      "real_metric": "Default Kafka broker buffer size: 1 MB per partition; semaphore-controlled throttling prevents GC pauses"
+    },
+    {
+      "scenario": "Dining Philosophers in distributed lock management",
+      "description": "A distributed system with 5 microservices needs locks on 5 shared resources. Without careful ordering (resource hierarchy), services can deadlock in circular wait (service A holds resource 1, waits for 2; service B holds 2, waits for 3, etc.). Implementing resource hierarchy (always acquire resources in ID order) prevents deadlock.",
+      "real_metric": "Deadlock detection latency without ordering: > 30 seconds; with ordering: none (deadlock prevented)"
+    },
+    {
+      "scenario": "ABA problem in lock-free stack",
+      "description": "A lock-free stack uses CAS to atomically push/pop nodes. Thread A reads a node pointer, is preempted, and during its sleep, other threads pop the node and push it back (it's freed and reallocated). When A resumes, CAS sees the same pointer and thinks nothing changed, causing it to corrupt the stack.",
+      "real_metric": "ABA problem occurs in ~1-5% of lock-free stack operations under extreme contention (1000+ threads)"
+    },
+    {
+      "scenario": "Memory barrier in Rust std::sync::Arc",
+      "description": "Rust's Arc uses release semantics on decrement and acquire semantics on increment to ensure that when a thread releases the last reference, all prior memory operations are visible to the thread that acquires the now-freed data.",
+      "real_metric": "Release-acquire barrier cost: ~5-10 CPU cycles on x86; essential for data visibility without locks"
+    },
+    {
+      "scenario": "High-frequency trading with lock-free queues",
+      "description": "A trading system processes millions of market updates per second using a lock-free queue. Threads use CAS to push/pop updates without blocking. Under extreme contention, failed CAS retries can cause tail latency; systems use exponential backoff to reduce contention.",
+      "real_metric": "Lock-free queue throughput: 10-15 million ops/sec per core (uncontended); 500k-1M ops/sec per core (1000+ threads contending)"
+    },
+    {
+      "scenario": "Node.js event loop handling HTTP requests",
+      "description": "Node.js's event loop runs on a single thread but can handle thousands of concurrent HTTP connections. Each connection's I/O (reading request, writing response) is delegated to the kernel via libuv. While one request's I/O waits, the event loop processes events from other requests, avoiding the need for per-connection threads.",
+      "real_metric": "Node.js single event loop handles 10k+ concurrent connections with ~100 MB memory overhead; multi-threaded model would require ~10 GB (1 MB per thread × 10k threads)"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Mutex vs Semaphore",
+      "analogy": "A mutex is like a single bathroom stall — only one person can use it at a time, and only the person inside can unlock it. A semaphore is like a parking garage with N spots — up to N cars can park simultaneously, and any attendant can assign or free spots."
+    },
+    {
+      "concept": "Race condition",
+      "analogy": "Imagine two accountants updating a ledger without coordination. Both read the balance as $1000, add $100, and write back $1100. The correct result should be $1200, but they both arrived at the same wrong answer because they read the same stale state."
+    },
+    {
+      "concept": "Deadlock (circular wait)",
+      "analogy": "Two people hold different textbooks and each waits for the other to return theirs. Neither will release their book until they get the other, so both wait forever."
+    },
+    {
+      "concept": "CAS (Compare-and-Swap)",
+      "analogy": "Like a vending machine that takes your dollar and checks if the price is still $0.99 before dispensing. If someone changed the price while you inserted your dollar, the transaction fails and you get your dollar back (no side effects)."
+    },
+    {
+      "concept": "Livelock",
+      "analogy": "Two people approaching each other in a hallway. Each steps left to avoid the other, who also steps left. They mirror each other indefinitely, making no progress, even though they're not blocked."
+    },
+    {
+      "concept": "Memory barriers (acquire/release)",
+      "analogy": "A release barrier is like locking a mailbox (no letters can be placed after you lock it), and an acquire barrier is like opening the mailbox (you can't read any new letters until you open it). The pair ensures mail placed before locking is visible after opening."
+    },
+    {
+      "concept": "Event loop (single-threaded async)",
+      "analogy": "A receptionist handling multiple phone lines. Instead of hiring one receptionist per call (threading), one receptionist answers one call, notes the request, and puts the caller on hold. While the caller waits for processing, the receptionist handles the next call."
+    },
+    {
+      "concept": "Lock-free vs lock-based",
+      "analogy": "Lock-based is like a library where you check out a book (acquire lock) and no one else can touch it while you hold it. Lock-free is like a copy machine where multiple people can read and modify different parts of a document simultaneously without locking each other out."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Uncontended mutex acquisition latency",
+      "value": "10-30 CPU cycles",
+      "context": "Using CAS in userspace via futex; on Linux x86",
+      "source": "https://man7.org/linux/man-pages/man7/futex.7.html"
+    },
+    {
+      "metric": "Contended mutex acquisition latency",
+      "value": "1000+ CPU cycles",
+      "context": "Includes futex syscall + kernel scheduling overhead",
+      "source": "https://man7.org/linux/man-pages/man7/futex.7.html"
+    },
+    {
+      "metric": "Release-acquire memory barrier cost",
+      "value": "5-10 CPU cycles",
+      "context": "On x86; used in Arc<T> and other synchronization primitives",
+      "source": "https://preshing.com/20120913/acquire-and-release-semantics/"
+    },
+    {
+      "metric": "Lock-free queue throughput (uncontended)",
+      "value": "10-15 million ops/sec per core",
+      "context": "Using CAS-based lock-free data structures",
+      "source": "https://www.javacodegeeks.com/2025/09/concurrency-unleashed-building-lock-free-java-systems-that-scale.html"
+    },
+    {
+      "metric": "Lock-free queue throughput (1000+ threads contending)",
+      "value": "500k-1M ops/sec per core",
+      "context": "Degradation due to CAS retry overhead and cache coherency",
+      "source": "https://www.javacodegeeks.com/2025/09/concurrency-unleashed-building-lock-free-java-systems-that-scale.html"
+    },
+    {
+      "metric": "Node.js event loop concurrent connections",
+      "value": "10,000+ concurrent connections",
+      "context": "Single-threaded event loop with ~100 MB memory overhead",
+      "source": "https://startup-house.com/blog/nodejs-event-loop-and-asynchronous-programming"
+    },
+    {
+      "metric": "Multi-threaded model memory for 10k connections",
+      "value": "~10 GB (1 MB per thread × 10k)",
+      "context": "Stack + TLS per thread; single-threaded async uses 100x less memory",
+      "source": "https://medium.com/@codejuggler/why-node-js-is-single-threaded-and-how-it-scales-eb32f3fc4cbc"
+    },
+    {
+      "metric": "ThreadSanitizer race detection accuracy",
+      "value": "~95% in practice",
+      "context": "On Google Chrome/Chromium codebase (> 100M lines)",
+      "source": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html"
+    },
+    {
+      "metric": "Default Kafka broker buffer size per partition",
+      "value": "1 MB",
+      "context": "Semaphore-controlled to prevent GC pauses and throttle producers",
+      "source": "https://medium.com/@ashaymotiwala/tackling-the-bounded-buffer-problem-aka-producer-consumer-problem-using-semaphores-42b4b22f2448"
+    },
+    {
+      "metric": "ABA problem incidence in lock-free stack",
+      "value": "1-5% of operations",
+      "context": "Under extreme contention (1000+ threads)",
+      "source": "https://codefarm0.medium.com/%EF%B8%8F-lock-free-and-loaded-designing-non-blocking-data-structures-in-java-2025-deep-dive-e4194622da5f"
+    },
+    {
+      "metric": "FUTEX2 kernel integration timeline",
+      "value": "November 2021 (Linux 5.16)",
+      "context": "First support for multi-address waiting; NUMA improvements in October 2024",
+      "source": "https://www.phoronix.com/news/FUTEX2-NUMA-Small-Futex"
+    },
+    {
+      "metric": "Dining Philosophers deadlock detection latency (unordered)",
+      "value": "> 30 seconds",
+      "context": "Without resource hierarchy; typical timeout before restart",
+      "source": "https://w3.cs.jmu.edu/kirkpams/OpenCSF/Books/csf/html/DiningPhil.html"
+    },
+    {
+      "metric": "Dining Philosophers deadlock latency (resource hierarchy)",
+      "value": "0 seconds (prevented)",
+      "context": "No deadlock with ordered resource acquisition",
+      "source": "https://www.geeksforgeeks.org/operating-systems/dining-philosophers-problem/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Mutexes and semaphores are interchangeable; semaphores are just mutexes with a counter.",
+      "truth": "Mutexes have ownership (only the thread that locked it can unlock it), while semaphores have no ownership (any thread can signal). This makes them unsuitable as direct replacements.",
+      "source": "https://linuxvox.com/blog/when-should-we-use-mutex-and-when-should-we-use-semaphore/"
+    },
+    {
+      "misconception": "All race conditions are data races; detecting one means you've detected all concurrency bugs.",
+      "truth": "Race conditions are tied to application semantics and cannot be detected 100% automatically. Even tools like ThreadSanitizer (which detects data races) cannot find all race conditions; they require manual reasoning about the intended behavior.",
+      "source": "https://www.baeldung.com/cs/race-conditions"
+    },
+    {
+      "misconception": "If a program doesn't deadlock now, it won't deadlock in production because the conditions are rare.",
+      "truth": "Deadlocks depend on the specific interleaving of threads, which is non-deterministic and becomes more likely with more concurrency, different timing, and stress. A program that never deadlocks in testing can deadlock under production load.",
+      "source": "https://www.cs.cornell.edu/courses/cs4410/2017su/lectures/lec09-deadlock.html"
+    },
+    {
+      "misconception": "Breaking any one of the four deadlock conditions is sufficient; the easiest one is always 'disable preemption'.",
+      "truth": "Breaking preemption (making the OS non-preemptive) is impractical and would destroy responsiveness. The practical solutions break circular wait (resource ordering), hold-and-wait (atomic acquisition), or mutual exclusion (replicate resources).",
+      "source": "https://www.cs.cornell.edu/courses/cs4410/2017su/lectures/lec09-deadlock.html"
+    },
+    {
+      "misconception": "CAS eliminates locks, so it has no performance downside.",
+      "truth": "CAS avoids blocking, but under high contention, failed CAS attempts cause busy-waiting and excessive CPU cycles. In some high-contention scenarios, a blocking mutex can be faster because it yields the CPU instead of spinning.",
+      "source": "https://blog.devops.dev/understanding-locks-and-compare-and-swap-cas-in-multithreading-140cb6af9d75"
+    },
+    {
+      "misconception": "The ABA problem only affects old implementations; modern CAS handles it automatically.",
+      "truth": "ABA is a fundamental CAS limitation. Modern approaches use versioning (e.g., versioned pointers or garbage collection) to mitigate it, but it's not automatic; algorithms must be designed with it in mind.",
+      "source": "https://dzone.com/articles/demystifying-javas-compare-and-swap-cas"
+    },
+    {
+      "misconception": "Acquire/release semantics are for high-level locking; they don't matter for simple atomic reads/writes.",
+      "truth": "Acquire/release semantics control memory visibility. Without them, writes by one thread may not be visible to another thread even though the value was atomically written. They are essential for any correct atomic operation.",
+      "source": "https://preshing.com/20120913/acquire-and-release-semantics/"
+    },
+    {
+      "misconception": "Single-threaded event loops can't scale because they're 'single-threaded'.",
+      "truth": "Event loops scale linearly with concurrent connections by delegating blocking I/O to the kernel. A single-threaded event loop handles 10,000+ connections more efficiently than 10,000 OS threads.",
+      "source": "https://scaleyourapp.com/single-threaded/"
+    },
+    {
+      "misconception": "Lock-free data structures are always faster than lock-based ones.",
+      "truth": "Lock-free algorithms are faster in low-contention scenarios but can degrade under high contention due to CAS retry overhead. Lock-based structures with good fairness can sometimes outperform lock-free in contended cases.",
+      "source": "https://www.in-com.com/blog/implementing-lock-free-data-structures-in-high-concurrency-systems/"
+    },
+    {
+      "misconception": "Starvation and deadlock are the same problem; if you prevent one, you prevent the other.",
+      "truth": "Deadlock means no progress at all; starvation means some threads make progress while others don't. The Chandy-Misra dining philosophers solution prevents deadlock and starvation but may have lower throughput than solutions that prevent only deadlock.",
+      "source": "https://sites.cs.ucsb.edu/~rich/class/cs170/notes/DiningPhil/index.html"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.geeksforgeeks.org/operating-systems/mutex-vs-semaphore/",
+      "recency_note": "2024, up-to-date"
+    },
+    {
+      "url": "https://linuxvox.com/blog/when-should-we-use-mutex-and-when-should-we-use-semaphore/",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs4410/2017su/lectures/lec09-deadlock.html",
+      "recency_note": "2017, foundational but unchanged principles"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/race-conditions",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html",
+      "recency_note": "2024, current course material"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man7/futex.7.html",
+      "recency_note": "2024, Linux kernel documentation"
+    },
+    {
+      "url": "https://www.phoronix.com/news/FUTEX2-NUMA-Small-Futex",
+      "recency_note": "October 2024, latest FUTEX2 developments"
+    },
+    {
+      "url": "https://www.javacodegeeks.com/2024/02/exploring-javas-compare-and-swap-cas-for-atomic-operations.html",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://dzone.com/articles/demystifying-javas-compare-and-swap-cas",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://www.emergentmind.com/topics/lock-free-concurrent-data-structures",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://www.javacodegeeks.com/2025/09/concurrency-unleashed-building-lock-free-java-systems-that-scale.html",
+      "recency_note": "2025, latest trends"
+    },
+    {
+      "url": "https://blog.devops.dev/understanding-locks-and-compare-and-swap-cas-in-multithreading-140cb6af9d75",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/bounded-buffer-problem",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://medium.com/@ashaymotiwala/tackling-the-bounded-buffer-problem-aka-producer-consumer-problem-using-semaphores-42b4b22f2448",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://preshing.com/20120913/acquire-and-release-semantics/",
+      "recency_note": "2012, foundational; principles unchanged"
+    },
+    {
+      "url": "https://www.modernescpp.com/index.php/acquire-release-fences/",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://docs.kernel.org/core-api/wrappers/memory-barriers.html",
+      "recency_note": "2024, Linux kernel documentation"
+    },
+    {
+      "url": "https://w3.cs.jmu.edu/kirkpams/OpenCSF/Books/csf/html/DiningPhil.html",
+      "recency_note": "2024, current resource"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/operating-systems/dining-philosophers-problem/",
+      "recency_note": "2024, up-to-date"
+    },
+    {
+      "url": "https://pages.mtu.edu/~shene/NSF-3/e-Book/SEMA/TM-example-philos-4chairs.html",
+      "recency_note": "2024, maintained resource"
+    },
+    {
+      "url": "https://medium.com/@jinghua.shih/operating-system-the-dining-philosophers-problem-6f35f210a4e2",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://sites.cs.ucsb.edu/~rich/class/cs170/notes/DiningPhil/index.html",
+      "recency_note": "2024, current course material"
+    },
+    {
+      "url": "https://eng.libretexts.org/Courses/Delta_College/Introduction_to_Operating_Systems/11:_Concurrency-__Deadlock_and_Starvation/11.04:_Dining_Philosopher_Problem",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://scaleyourapp.com/single-threaded/",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://startup-house.com/blog/nodejs-event-loop-and-asynchronous-programming",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://raghumb.gitbooks.io/a-guide-to-software-architecture/content/app_architecture_concepts/single_threaded_model.html",
+      "recency_note": "2024, maintained guide"
+    },
+    {
+      "url": "https://medium.com/@codejuggler/why-node-js-is-single-threaded-and-how-it-scales-eb32f3fc4cbc",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://www.in-com.com/blog/implementing-lock-free-data-structures-in-high-concurrency-systems/",
+      "recency_note": "2024, current"
+    },
+    {
+      "url": "https://codefarm0.medium.com/%EF%B8%8F-lock-free-and-loaded-designing-non-blocking-data-structures-in-java-2025-deep-dive-e4194622da5f",
+      "recency_note": "2025, latest analysis"
+    }
+  ]
+}

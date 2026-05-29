@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "duolingo",
+  "story_slug": "duolingo-streak",
+  "story_title": "Duolingo Streak",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/duolingo-streak/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/duolingo-streak/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "An oversized amber flame holding a streak number, six green day chips and one empty day chip, with a small Hatch narrator gesturing up at the flame.",
+      "caption": "One counter, one rule, one loseable number.",
+      "prompt": "Duolingo Streak | hero: Create a flat geometric HackProduct autopsy hero illustration for Duolingo's streak feature about how a single home-screen counter became a retention loop. Canvas role: hero, 2400x1350. Show a tall warm-cream surface dominated by an oversized amber flame icon with the number \"847\" inside it in clean charcoal type, ringed by a soft mist halo. Beside the flame, render seven small calendar-day chips in forest green and deep forest, six filled solid and one empty with a thin charcoal outline labelled \"today\". A small Hatch in narrator pose stands lower-right at fifteen percent canvas height with cap, growth arrow, green H chest mark, mitten hands, gesturing up at the flame. Use cream #faf6f0 background, forest #4a7c59 calendar chips, deep forest #244232 flame outline, soft amber #c9ad68 flame fill, charcoal #1e211c linework, mist #dfe6dc halo. Leave the upper-left quadrant quiet for a title overlay. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/duolingo-streak/hero.png",
+      "generated_image_sha256": "450b9c2268e6a95d2a239d0fdd98d75de8f747855aeafd4833fc4dd158c3d561",
+      "final_image_sha256": "de0830f5511a9dace4b94bbea31ff763b9ce4aab8fb79af022ee8829913b7368",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/duolingo-streak/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/duolingo-streak/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/duolingo-streak/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A retention curve falling from a high Day 1 to nearly zero by Day 7, with a phone icon dimming across the week, and Hatch pointing at the drop.",
+      "caption": "A retention curve falling from a high Day 1 to nearly zero by Day 7, with a phone icon dimming across the week, and Hatch pointing at the drop.",
+      "prompt": "Duolingo Streak | hatch-narrator: Create a flat geometric HackProduct autopsy scene illustration showing the early Duolingo retention problem. Canvas role: scene, 1600x1600. Show a stylised drop-off curve climbing on Day 1 and crashing toward zero by Day 7, drawn in deep forest line over a cream background, with seven labelled days along the x-axis in charcoal. Above the curve, render a small phone silhouette in forest green with a tiny lesson card icon glowing on Day 1 and going dim by Day 7. A medium Hatch in narrator pose stands centre-right at twenty percent canvas height, cap and growth arrow visible, mitten hand pointing at the cliff in the curve, friendly coach expression. Use cream #faf6f0 background, forest #4a7c59 phone, deep forest #244232 curve and arrow, charcoal #1e211c day labels, soft amber #c9ad68 glow on the lesson card, mist #dfe6dc grid lines. Keep the outer ten percent edge quiet. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/duolingo-streak/hatch-narrator.png",
+      "generated_image_sha256": "5e0fc157bbcb6ea708f187e99e09efdcf1dda4bef1746be9c38ab5bdd9417928",
+      "final_image_sha256": "90db360a239a147fa32209c123d3787ebbab41f8b8b7c21e06ed3690f8423b95",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/duolingo-streak/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/duolingo-streak/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/duolingo-streak/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two stacked panels contrasting a tangled XP-based streak rule with a clean one-lesson-per-day rule, with Hatch thinking between them.",
+      "caption": "Two stacked panels contrasting a tangled XP-based streak rule with a clean one-lesson-per-day rule, with Hatch thinking between them.",
+      "prompt": "Duolingo Streak | failure-mechanism: Create a flat geometric HackProduct autopsy mechanism illustration showing how the streak rule was simplified at Duolingo. Canvas role: mechanism, 1800x1200. Show two stacked panels on cream. The top panel labels itself \"XP-based streak\" and shows a confused tangle of point tokens, multipliers, badges, and a clock, with a charcoal question mark above. The bottom panel labels itself \"One lesson per day\" and shows a single forest-green lesson card with a clean white check mark, an arrow rising right into a counter that ticks from 7 to 8. A small Hatch in thinking pose sits between the two panels at fourteen percent canvas height, cap and growth arrow intact, mitten hand on chin, looking down at the second panel approvingly. Use cream #faf6f0 background, forest #4a7c59 lesson card, deep forest #244232 counter and arrow, soft amber #c9ad68 multiplier tokens in the top panel, charcoal #1e211c outlines, mist #dfe6dc panel separators. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/duolingo-streak/failure-mechanism.png",
+      "generated_image_sha256": "755ad18a02f68cedbcec39b5df988ce6997491be184feff9d89d5d5041bb8c8a",
+      "final_image_sha256": "94ff92efbcfe607282672b2b194de266169163d1ad3411f7b674633fbb573fab",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/duolingo-streak/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/duolingo-streak/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/duolingo-streak/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two bars comparing control and Streak Wager conditions with a \"+14% Day-7\" delta tag, and Hatch pointing at the winning bar.",
+      "caption": "Two bars comparing control and Streak Wager conditions with a \"+14% Day-7\" delta tag, and Hatch pointing at the winning bar.",
+      "prompt": "Duolingo Streak | evidence-card: Create a flat geometric HackProduct autopsy evidence illustration showing the Day-7 retention lift from the Streak Wager test. Canvas role: evidence, 1600x1000. Show two short vertical bars on cream over a horizontal charcoal baseline. The left bar is mist with a forest outline, labelled \"Control\" in clean label type. The right bar is solid forest green, taller by a visible delta, labelled \"Streak Wager\" with a small amber tag reading \"+14% Day-7\" floating above its top. A small Hatch in pointing pose stands centre-right at sixteen percent canvas height, cap and growth arrow visible, mitten hand pointing at the taller bar's amber tag. Use cream #faf6f0 background, forest #4a7c59 winning bar, mist #dfe6dc control bar, deep forest #244232 outlines, soft amber #c9ad68 delta tag, charcoal #1e211c baseline and labels. Keep the centre 70 percent clear for the bars and label. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/duolingo-streak/evidence-card.png",
+      "generated_image_sha256": "a784f22bcd96641be4cc0d445784d5bde8b120bea70387736979984b29267828",
+      "final_image_sha256": "654f10d88d41e71848783db6a0b3a7c995dea7baaf186c608edcff23f084c4c5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/duolingo-streak/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/duolingo-streak/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/duolingo-streak/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A circular streak counter showing 365, ringed by four small chips labelled rule, loss, loop, habit, with Hatch in coaching pose beside it.",
+      "caption": "A circular streak counter showing 365, ringed by four small chips labelled rule, loss, loop, habit, with Hatch in coaching pose beside it.",
+      "prompt": "Duolingo Streak | lesson-frame: Create a flat geometric HackProduct autopsy lesson illustration. Canvas role: lesson, 1800x1200. Centre composition on a single circular counter rendered as a forest-green ring around a clean cream face with the number \"365\" in deep forest type, an amber flame icon sitting just above. Around the counter, render four small evidence chips at the cardinal points labelled \"rule\", \"loss\", \"loop\", \"habit\" in charcoal label type, each a small mist square with a forest outline. A medium Hatch in coaching pose stands lower-left at twenty percent canvas height, cap and growth arrow visible, mitten hands open in a calm explanatory gesture, friendly coach face. Use cream #faf6f0 background, forest #4a7c59 ring, deep forest #244232 number, soft amber #c9ad68 flame, charcoal #1e211c chip labels, mist #dfe6dc chip backgrounds. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/duolingo-streak/lesson-frame.png",
+      "generated_image_sha256": "533f9d671ddaa928a50232fa3c403e9a2438b68558729b4d5ef1a362bcfd698c",
+      "final_image_sha256": "b48c97ad5e70e182bb8b65e16b592109efc510264a0b463d9e7fe4c0b0dcb46e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/duolingo-streak/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/duolingo-streak/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/duolingo-streak/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A simple amber flame holding the number 12 on a cream square, readable as a streak icon at small sizes.",
+      "caption": "A simple amber flame holding the number 12 on a cream square, readable as a streak icon at small sizes.",
+      "prompt": "Create a flat geometric HackProduct autopsy thumbnail illustration for Duolingo's streak. Canvas role: thumbnail, 1200x900. Show one strong focal shape, an amber flame at the centre of a cream square, with the number \"12\" in deep forest type sitting inside the flame. Below the flame, a thin forest-green underline. No Hatch character in the frame, only a tiny green H mark in the bottom-left corner as a watermark-style brand cue. Use cream #faf6f0 background, soft amber #c9ad68 flame fill, deep forest #244232 number and underline, charcoal #1e211c flame outline. Keep the composition readable at 320 pixels wide. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/duolingo-streak/hero.png",
+      "generated_image_sha256": "450b9c2268e6a95d2a239d0fdd98d75de8f747855aeafd4833fc4dd158c3d561",
+      "final_image_sha256": "841c211c551969910b6b6c19586f5bfa4402f685a0ce694355666dcf2885325a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/duolingo-streak/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/duolingo-streak/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/duolingo-streak/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "An amber flame holding a streak number, ringed by a mist halo with seven day chips beneath, with Hatch gesturing up at it, sized for social sharing.",
+      "caption": "An amber flame holding a streak number, ringed by a mist halo with seven day chips beneath, with Hatch gesturing up at it, sized for social sharing.",
+      "prompt": "Create a flat geometric HackProduct autopsy social-cover illustration adapted from the hero. Canvas role: social-cover, 2400x1260. Show the oversized amber flame with the number \"847\" centred but shifted slightly right, ringed by a soft mist halo, with a row of seven calendar-day chips running below it in forest green and deep forest, six filled and one empty. A small Hatch in narrator pose stands lower-right at fourteen percent canvas height, cap and growth arrow visible, gesturing up at the flame. Keep the centre seventy percent clear of edge-critical details so OG crops do not lose key elements. Use cream #faf6f0 background, forest #4a7c59 chips, deep forest #244232 outlines, soft amber #c9ad68 flame, charcoal #1e211c linework, mist #dfe6dc halo. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/next-five/generated-sources/duolingo-streak/hero.png",
+      "generated_image_sha256": "450b9c2268e6a95d2a239d0fdd98d75de8f747855aeafd4833fc4dd158c3d561",
+      "final_image_sha256": "9322affe5652c0f9f44831e7e449e01e15b6765dfa7d5f58a4fc804a5a335383",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/duolingo-streak/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/duolingo-streak/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/duolingo-streak/v1"
+}

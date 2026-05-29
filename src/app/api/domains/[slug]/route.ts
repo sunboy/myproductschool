@@ -35,20 +35,20 @@ export async function GET(
   const [challengesResult, attemptsResult] = await Promise.all([
     adminClient
       .from('challenges')
-      .select('id, title, prompt_text, difficulty, tags, estimated_minutes, is_published, move_tags, paradigm, relevant_roles')
+      .select('id, title, prompt_text, difficulty, topic_tags, technique_tags, industry_tags, estimated_minutes, is_published, move_tags, paradigm, relevant_roles')
       .eq('domain_id', domain.id)
       .eq('is_published', true)
       .neq('challenge_type', 'freeform')
       .order('created_at'),
     adminClient
       .from('challenge_attempts')
-      .select('challenge_id, score')
+      .select('challenge_id, total_score')
       .eq('user_id', user.id)
-      .not('submitted_at', 'is', null),
+      .eq('status', 'completed'),
   ])
 
   const completedMap = new Map<string, number | null>(
-    (attemptsResult.data ?? []).map((a: { challenge_id: string; score: number | null }) => [a.challenge_id, a.score])
+    (attemptsResult.data ?? []).map((a: { challenge_id: string; total_score: number | null }) => [a.challenge_id, a.total_score])
   )
 
   const challenges = (challengesResult.data ?? []).map((c: { id: string; [key: string]: unknown }) => ({

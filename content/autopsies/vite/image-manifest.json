@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "vite",
+  "story_slug": "vite",
+  "story_title": "Vite's Build Philosophy",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/vite/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/vite/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch illustrating the difference between bundled and unbundled development server approaches.",
+      "caption": "Hatch illustrating the difference between bundled and unbundled development server approaches.",
+      "prompt": "Vite's Build Philosophy | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing beside two visualization: one side shows a large box labeled \"BUNDLE\" with dozens of files being fed into it (slow), the other side shows files going directly from server to browser with a lightning bolt (instant). Hatch gestures toward the direct path. Cream background, no speech bubbles. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400×1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/vite/hero.png",
+      "generated_image_sha256": "dc242818f709f9a8b8aebf179edc4b73848b881d12ab04402cc585ef43160c68",
+      "final_image_sha256": "bdb4bdef9d32987eb787852741765d7df385515dabe66ba2ab8f1f96ede2a6ec",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/vite/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/vite/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/vite/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch observing a developer frustrated by a slow webpack cold start.",
+      "caption": "Hatch observing a developer frustrated by a slow webpack cold start.",
+      "prompt": "Vite's Build Philosophy | hatch-narrator: Hatch in narrator pose beside a progress bar that's stuck at 23% — representing a slow webpack cold start. Developer figure (faceless silhouette) looking frustrated at a clock. Cream background, Hatch looking sympathetically at the scene. Aspect 1600×1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/vite/hatch-narrator.png",
+      "generated_image_sha256": "59c2707f6dcda0ab560c53d213b035da4b46494147c75177716d1f4d86a85325",
+      "final_image_sha256": "a69e29de5db61fc1d6cda7a43ba2243f7d901bd4cab0f8f90ecb488abb7dcff0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/vite/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/vite/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/vite/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining the native ESM request flow where the browser requests individual modules from Vite.",
+      "caption": "Hatch examining the native ESM request flow where the browser requests individual modules from Vite.",
+      "prompt": "Vite's Build Philosophy | failure-mechanism: Hatch in thinking pose looking at a diagram: browser on the right, Vite server in the center, individual module files on the left. Arrows show browser requesting specific modules, Vite transforming them individually and returning them — no bundle box in the middle. Clean, technical diagram style. Cream background. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/vite/failure-mechanism.png",
+      "generated_image_sha256": "c1369718375e02630a839dde1f058ecc62986d6e5e3dfeae7aa9e33cc358c1da",
+      "final_image_sha256": "d2e88ffc78ea698c2c4ec2064b55c490e0a0de2eaa06e896690b86253b8c66c2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/vite/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/vite/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/vite/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch presenting Vite's npm download growth and State of JS satisfaction ranking.",
+      "caption": "Hatch presenting Vite's npm download growth and State of JS satisfaction ranking.",
+      "prompt": "Vite's Build Philosophy | evidence-card: Hatch pointing at a bar chart showing weekly npm downloads growing steeply from 2021 to 2023, ending at \"5M+\". A secondary badge shows \"97% satisfaction.\" Clean data presentation, calm expression. Cream background. Aspect 1600×1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/vite/evidence-card.png",
+      "generated_image_sha256": "dc90a5d2dcb88ee9e0b7bca241074ce220b77f49025ab743a1ecdb1d21ad27f2",
+      "final_image_sha256": "e346e9469308a5a8eddc1de963cc010e370228a4e929001f329ed1a8823f1b89",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/vite/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/vite/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/vite/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch coaching on the insight that development and production environments need different optimizations.",
+      "caption": "Hatch coaching on the insight that development and production environments need different optimizations.",
+      "prompt": "Vite's Build Philosophy | lesson-frame: Hatch in coaching pose with a simple visual behind it: two environments — \"DEV\" (open, fast, loose) and \"PROD\" (compact, optimized, bundled) — each with their own appropriate tool. The insight that different contexts need different approaches. Cream background. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/vite/lesson-frame.png",
+      "generated_image_sha256": "95d4cd952acfe121a6fc99036bcad07adb6c997d638a7f6b536a10d2d756ec98",
+      "final_image_sha256": "cfdae70c27f0aa81b9a057744daad845600511daa1c36dea972a8cc30e226386",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/vite/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/vite/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/vite/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a lightning bolt representing Vite's instant development server start.",
+      "caption": "Hatch holding a lightning bolt representing Vite's instant development server start.",
+      "prompt": "Hatch holding a lightning bolt — representing Vite's instant cold start. Compact, recognizable at small sizes. Cream background. Aspect 1200×900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/vite/hero.png",
+      "generated_image_sha256": "dc242818f709f9a8b8aebf179edc4b73848b881d12ab04402cc585ef43160c68",
+      "final_image_sha256": "a59110b7884009eaa83e25219badd99bea2cffac66cd8e4333cef1cd445ad669",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/vite/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/vite/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/vite/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside the contrast between slow bundling and instant native ESM serving.",
+      "caption": "Hatch beside the contrast between slow bundling and instant native ESM serving.",
+      "prompt": "Hatch in hero pose adapted for wide share card: the split visual of \"BUNDLE (slow)\" versus \"ESM (instant)\" behind it, with a dramatic lightning bolt separating the two. Title text area reserved at left third. Cream background, HackProduct wordmark bottom-right. Aspect 2400×1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/vite/hero.png",
+      "generated_image_sha256": "dc242818f709f9a8b8aebf179edc4b73848b881d12ab04402cc585ef43160c68",
+      "final_image_sha256": "34f360069b87d6ceedc260c3867425700e5389d4ee83468cc97a41d2e14c40a5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/vite/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/vite/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/vite/v1"
+}

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "pikalabs",
+  "story_slug": "pika-labs-discord-launch",
+  "story_title": "Pika Labs and the Discord Launch Playbook",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/pika-labs-discord-launch/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/pika-labs-discord-launch/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch watching users generate and share AI videos in a Discord server on a cream background.",
+      "caption": "Hatch watching users generate and share AI videos in a Discord server on a cream background.",
+      "prompt": "Pika Labs and the Discord Launch Playbook | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) standing in front of a Discord-style chat interface filled with small video thumbnails. Users are posting prompts and receiving video results. The scene reads as: a live, unfiltered quality demonstration. Cream background. Hatch expression excited. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/pika-labs-discord-launch/hero.png",
+      "generated_image_sha256": "8abb7aa57e73ab3c4ffd4d9504100d54278caeafe37306e37eff5df68d204ab2",
+      "final_image_sha256": "14a0846023c339d62f3922b2f224056642e1136e3a9a36fc470657ba5aa66574",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pika-labs-discord-launch/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pika-labs-discord-launch/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/pika-labs-discord-launch/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch comparing a curated demo reel to a real Discord community feed of AI-generated videos.",
+      "caption": "Hatch comparing a curated demo reel to a real Discord community feed of AI-generated videos.",
+      "prompt": "Pika Labs and the Discord Launch Playbook | hatch-narrator: Hatch in narrator pose, gesturing at two side-by-side panels. Left panel: a polished curated demo reel labeled \"What an investor sees.\" Right panel: a messy Discord feed of video thumbnails from real users labeled \"What the community sees.\" Hatch clearly prefers the right. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/pika-labs-discord-launch/hatch-narrator.png",
+      "generated_image_sha256": "6d35af9e32d388993b56438f59cfe6e654cd95d764f80085d0edb252fcb27ee7",
+      "final_image_sha256": "b84551e73f0bcdff856e630c51a0a27fac35987327ba1e4b3542e747228186b8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pika-labs-discord-launch/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pika-labs-discord-launch/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/pika-labs-discord-launch/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining Pika Labs' Discord community flywheel from prompt to viral Twitter share.",
+      "caption": "Hatch examining Pika Labs' Discord community flywheel from prompt to viral Twitter share.",
+      "prompt": "Pika Labs and the Discord Launch Playbook | failure-mechanism: Hatch in thinking pose, looking at a flow diagram. Step 1: \"User types prompt in Discord.\" Step 2: \"Video generated — visible to all 500K members.\" Step 3: \"Good outputs shared to Twitter.\" Step 4: \"New users join to try it.\" Arrow from Step 4 back to Step 1, forming a flywheel. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/pika-labs-discord-launch/failure-mechanism.png",
+      "generated_image_sha256": "dbc4e61a8cdf48fada7eb0a2af1d3962d2262123de33698c864b78819eb37f64",
+      "final_image_sha256": "27432226b3b6ef2803b8e04fe8a5e2cd9fc0dbc2ac773b4e88058374369788ed",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pika-labs-discord-launch/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pika-labs-discord-launch/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/pika-labs-discord-launch/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Pika Labs' Discord member growth chart reaching 500K before the Series A.",
+      "caption": "Hatch pointing at Pika Labs' Discord member growth chart reaching 500K before the Series A.",
+      "prompt": "Pika Labs and the Discord Launch Playbook | evidence-card: Hatch pointing at a simple bar chart showing Discord member count growing from 0 to 500K over six months (May-November 2023), with a \"$55M Series A\" marker at the end. The growth curve is steep. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/pika-labs-discord-launch/evidence-card.png",
+      "generated_image_sha256": "6bbd335d96a4ec62eb689614e59af88f796d10532ceb938ce77a4a5ee7707e3b",
+      "final_image_sha256": "687fba5f727e5bb1a981e573a318b1e09345372a864f07d594c8d261f9da1f68",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pika-labs-discord-launch/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pika-labs-discord-launch/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/pika-labs-discord-launch/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding two signs comparing a curated demo to 500K community members generating videos.",
+      "caption": "Hatch holding two signs comparing a curated demo to 500K community members generating videos.",
+      "prompt": "Pika Labs and the Discord Launch Playbook | lesson-frame: Hatch in coaching pose, calm, holding two signs. Left sign: \"Curated demo reel\" with a small, polished frame. Right sign: \"500K users generating videos\" with a sprawling, messy, vibrant collage. Hatch's expression says the right sign is more convincing. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/pika-labs-discord-launch/lesson-frame.png",
+      "generated_image_sha256": "8f57f5aa0065ffa105c81bd3e5a78b0b54c7d26f945690b21b984cc32864c76f",
+      "final_image_sha256": "8df5012b612fc74bbe7a180ff502367b0f872d9b7fd1c45839db0837aef1a25a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pika-labs-discord-launch/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pika-labs-discord-launch/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/pika-labs-discord-launch/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a tiny film clapperboard on a cream background.",
+      "caption": "Hatch holding a tiny film clapperboard on a cream background.",
+      "prompt": "Hatch small and recognisable, holding a tiny film clapperboard. Expression enthusiastic. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/pika-labs-discord-launch/hero.png",
+      "generated_image_sha256": "8abb7aa57e73ab3c4ffd4d9504100d54278caeafe37306e37eff5df68d204ab2",
+      "final_image_sha256": "6724005df12ebe7cf2735d9ab7534ac3e962d88433fa512a1ca9ecce4664ec92",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pika-labs-discord-launch/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pika-labs-discord-launch/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/pika-labs-discord-launch/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch surrounded by a collage of user-generated AI video thumbnails for Pika Labs social share.",
+      "caption": "Hatch surrounded by a collage of user-generated AI video thumbnails for Pika Labs social share.",
+      "prompt": "Hatch hero pose adapted for OG share card. Hatch in center, surrounded by a collage of small video frame thumbnails radiating outward. Text area left clear for title overlay. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/pika-labs-discord-launch/hero.png",
+      "generated_image_sha256": "8abb7aa57e73ab3c4ffd4d9504100d54278caeafe37306e37eff5df68d204ab2",
+      "final_image_sha256": "9a35dcddd5a967a9738da6b1e445122e88d1c5423fe1691770916fcedc6c94d9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pika-labs-discord-launch/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pika-labs-discord-launch/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/pika-labs-discord-launch/v1"
+}

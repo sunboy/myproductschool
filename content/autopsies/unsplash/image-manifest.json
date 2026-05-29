@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "unsplash",
+  "story_slug": "unsplash",
+  "story_title": "Unsplash",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/unsplash/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/unsplash/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream-and-forest editorial illustration showing a small ten-image Tumblr blog on the left connected by a wide zero-friction arrow to a vast expanding grid of images on the right, with Hatch narrating from the upper right.",
+      "caption": "Ten photos, a $28 blog, and a constraint the whole industry shared.",
+      "prompt": "Unsplash | hero: Create a flat geometric HackProduct autopsy hero illustration for Unsplash's 2013 founding. Canvas role: hero, aspect 2400x1350. Compose a cream #faf6f0 background. On the left, show a small forest-green #4a7c59 Tumblr-style blog frame holding ten small photographic rectangles in mist #dfe6dc, arranged in two rows of five, each with a soft amber #c9ad68 download arrow below it. On the right, show a much larger deep forest #244232 grid of photographic tiles expanding outward, representing millions of images, with thin charcoal #1e211c grid lines. Between them, draw a single wide forest-green arrow labelled ZERO FRICTION in JetBrains Mono, connecting the small blog frame to the large grid. Place Hatch (from public/images/hatch/hatch-official-mascot.png) in the upper right corner in narrator pose: rounded green head frame, cream face and body, graduation cap with growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression. Hatch points one mitten hand at the arrow. Leave the upper left quarter clear for title overlay. No human faces, no photorealistic photography, no recreated Tumblr UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/unsplash/hero.png",
+      "generated_image_sha256": "4983fddbdf6e6ac02c588c4a17e1dde43b60dd3101c85e8df5185b9644a3e188",
+      "final_image_sha256": "4b4dfed741d4ae506768377431289ab61429d0029d8f1abc396736c20307ace5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/unsplash/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/unsplash/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/unsplash/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a small desk in the Crew Montreal office, gesturing at a laptop displaying a simple Tumblr window with ten image thumbnails.",
+      "caption": "Hatch standing beside a small desk in the Crew Montreal office, gesturing at a laptop displaying a simple Tumblr window with ten image thumbnails.",
+      "prompt": "Unsplash | hatch-narrator: Flat geometric scene illustration for the Montreal Crew office in May 2013, aspect 1600x1600. Show a warm cream #faf6f0 room with a low desk in forest green #4a7c59. On the desk: a laptop screen showing a simple Tumblr window with ten small photographic rectangles, a notepad with a list in soft amber #c9ad68 ink, and a small external hard drive in mist #dfe6dc. On a wall shelf in the background, stack a few design books with charcoal #1e211c spines and amber #705c30 bookmarks. A single window in deep forest #244232 lets in diffuse mist-coloured light. Place Hatch (from public/images/hatch/hatch-official-mascot.png) standing beside the desk in narrator pose: rounded green head frame, cream face and body, graduation cap with growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression. Hatch gestures toward the laptop with one mitten hand. No human figures, no photorealism, no branded logos, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/unsplash/hatch-narrator.png",
+      "generated_image_sha256": "6137ce94a4ba4f2f1a9fdc8f08ea3a736e80af3e407220a56755cfe236ae8860",
+      "final_image_sha256": "18daedf5b35e79c0a0450989298b5f768f2b82c4e675d5ef7705f5a07590989e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/unsplash/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/unsplash/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/unsplash/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-node circular flywheel diagram labelled with zero-friction download, broad web distribution, photographer portfolio reach, and more photographers submit, with Hatch pointing at the reach node.",
+      "caption": "A four-node circular flywheel diagram labelled with zero-friction download, broad web distribution, photographer portfolio reach, and more photographers submit, with Hatch pointing at the reach node.",
+      "prompt": "Unsplash | failure-mechanism: Flat geometric mechanism diagram for the Unsplash photographer supply flywheel, aspect 1800x1200. On cream #faf6f0, draw a circular flywheel with four nodes connected by forest-green #4a7c59 arc arrows moving clockwise. Node 1 (deep forest #244232 circle): ZERO FRICTION DOWNLOAD. Node 2 (forest green circle): BROAD WEB DISTRIBUTION. Node 3 (soft amber #c9ad68 circle): PHOTOGRAPHER PORTFOLIO REACH. Node 4 (mist #dfe6dc circle with charcoal #1e211c text): MORE PHOTOGRAPHERS SUBMIT. Between nodes 1 and 4, show a thin charcoal note reading NO CASH REQUIRED in JetBrains Mono at 8pt. In the centre of the flywheel, place a single deep forest #244232 label: SUPPLY SELF-FILLS. Place Hatch (from public/images/hatch/hatch-official-mascot.png) at the lower right in a thinking pose: rounded green head frame, cream face and body, graduation cap with growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression. Hatch points one mitten hand at node 3, the photographer reach node. No screenshots, no real UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/unsplash/failure-mechanism.png",
+      "generated_image_sha256": "3454e9198766525e7ca1268e4d1ec6fab700c798b1c1a8c0122acbcd22db7253",
+      "final_image_sha256": "d6da5a8600a99b6e9d807cddd6611b24024d22de236525db19e74705efbfca19",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/unsplash/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/unsplash/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/unsplash/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three vertical bars of increasing height labelled Day One 30K downloads, Year One 1M, and 2017 30M per month, with Hatch pointing at the tallest bar.",
+      "caption": "Three vertical bars of increasing height labelled Day One 30K downloads, Year One 1M, and 2017 30M per month, with Hatch pointing at the tallest bar.",
+      "prompt": "Unsplash | evidence-card: Flat geometric evidence illustration for Unsplash's scale contrast, aspect 1600x1000. On cream #faf6f0, show three vertical bar columns side by side. Left column in mist #dfe6dc labelled DAY ONE: 30K DOWNLOADS. Middle column in forest green #4a7c59, about four times taller, labelled YEAR ONE: 1M DOWNLOADS. Right column in deep forest #244232, towering above both, labelled 2017: 30M / MONTH, with a soft amber #c9ad68 cap on top. Below each column, show a thin charcoal #1e211c baseline. Between the middle and right columns, place a small forest-green arrow pointing right labelled SPIN-OUT. Place Hatch (from public/images/hatch/hatch-official-mascot.png) at the left edge in a pointing pose: rounded green head frame, cream face and body, graduation cap with growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression. Hatch's gaze and one mitten hand gesture toward the towering right column. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/unsplash/evidence-card.png",
+      "generated_image_sha256": "5e454a7b43cfaabaf07a16d3096a8f87871feefa0503767369aadd1e53510d9e",
+      "final_image_sha256": "6f43a65999720f608c2c46beb66950070cca67ab7f2f64ef7b6ae2f48afb60e6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/unsplash/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/unsplash/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/unsplash/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A mist-coloured wall of padlock icons labelled Rights Friction with a single open door glowing soft amber, and a wide ribbon flowing from the door to a cluster of supply tiles, with Hatch coaching from the left.",
+      "caption": "A mist-coloured wall of padlock icons labelled Rights Friction with a single open door glowing soft amber, and a wide ribbon flowing from the door to a cluster of supply tiles, with Hatch coaching from the left.",
+      "prompt": "Unsplash | lesson-frame: Flat geometric lesson illustration for the takeaway that removing friction is the product when incumbents monetise it, aspect 1800x1200. On cream #faf6f0, show a single large horizontal wall in mist #dfe6dc with deep forest #244232 padlock icons arranged along it, labelled RIGHTS FRICTION in charcoal JetBrains Mono at the top. To the left of the wall, show a small figure-absent forest-green #4a7c59 door opening outward with a soft amber #c9ad68 glow at the threshold and a label ZERO FRICTION below. From the door, draw a wide cream ribbon flowing to the right side of the frame where a deep forest #244232 cluster of small rectangles labelled SUPPLY fills the space. Place Hatch (from public/images/hatch/hatch-official-mascot.png) at the left of the scene in a calm coaching pose: rounded green head frame, cream face and body, graduation cap with growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression. Hatch faces the reader with one mitten hand open toward the door. No human figures, no photorealism, no branded assets, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/unsplash/lesson-frame.png",
+      "generated_image_sha256": "af5cda7b34f9a9a361a7e541424d1a58bcbb354e520445301cde549e55d46dc1",
+      "final_image_sha256": "5b62364d2422d9ed72ec4cf80e0ea2c3bd0b10fb6bbea7c8ad18a1750d7124a4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/unsplash/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/unsplash/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/unsplash/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Ten small image tiles on the left connected by a soft amber arrow to a large expanding grid on the right, with a small Hatch mark in the bottom-left corner.",
+      "caption": "Ten small image tiles on the left connected by a soft amber arrow to a large expanding grid on the right, with a small Hatch mark in the bottom-left corner.",
+      "prompt": "Flat geometric thumbnail for the Unsplash autopsy, aspect 1200x900. On warm cream #faf6f0, show one bold focal shape: ten small mist #dfe6dc photographic rectangles arranged in two rows on the left, and a single large deep forest #244232 grid of tiles expanding to fill the right two-thirds of the canvas, with a single soft amber #c9ad68 arrow connecting the small row of ten to the large grid. Keep the composition readable at small size with high contrast. Place Hatch (from public/images/hatch/hatch-official-mascot.png) as a small mark in the bottom-left corner, no taller than 12 percent of canvas height, in its standard upright form: rounded green head frame, cream face and body, graduation cap with growth arrow, H chest mark, bright eyes, mitten hands. No labels, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/unsplash/hero.png",
+      "generated_image_sha256": "4983fddbdf6e6ac02c588c4a17e1dde43b60dd3101c85e8df5185b9644a3e188",
+      "final_image_sha256": "0be5b76fe0e56b654fe2afef3bf3541530be68417e279a5262f2036d211bcaf7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/unsplash/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/unsplash/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/unsplash/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide social cover showing a small Tumblr blog frame on the left and a large expanding image grid on the right connected by a zero-friction arrow, with Hatch narrating in the upper right and a two-line headline above.",
+      "caption": "A wide social cover showing a small Tumblr blog frame on the left and a large expanding image grid on the right connected by a zero-friction arrow, with Hatch narrating in the upper right and a two-line headline above.",
+      "prompt": "Flat geometric social cover for the Unsplash autopsy, aspect 2400x1260. On warm cream #faf6f0, centre a composition occupying the centre 70 percent of the canvas. Left of centre: a small forest-green #4a7c59 Tumblr blog frame holding ten mist #dfe6dc image tiles in two rows of five. Right of centre: a large deep forest #244232 expanding grid of image tiles representing global scale. Between them: a wide soft amber #c9ad68 arrow labelled ZERO FRICTION in JetBrains Mono charcoal #1e211c at small scale. Above the composition in charcoal, set two short lines: UNSPLASH / FROM TUMBLR SIDE PROJECT TO GETTY ACQUISITION in JetBrains Mono. Place Hatch (from public/images/hatch/hatch-official-mascot.png) in the upper right corner in narrator pose: rounded green head frame, cream face and body, graduation cap with growth arrow, H chest mark, bright eyes, mitten hands, friendly coach expression. No recreated UI, no human faces, no photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/unsplash/hero.png",
+      "generated_image_sha256": "4983fddbdf6e6ac02c588c4a17e1dde43b60dd3101c85e8df5185b9644a3e188",
+      "final_image_sha256": "2b928486143832967f9c055ededdbb3b94721421fcb2b0bdc25c522f0d37402a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/unsplash/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/unsplash/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/unsplash/v1"
+}

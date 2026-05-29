@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "typeform",
+  "story_slug": "typeform",
+  "story_title": "Typeform",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/typeform/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/typeform/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch comparing a traditional form wall to Typeform's single-question screen in a warm Barcelona office.",
+      "caption": "The same questions. A different decision about how many to show at once.",
+      "prompt": "Typeform | hero: Hatch, the HackProduct mascot, stands at a sleek Barcelona-style desk in a warm cream (#faf6f0) room. Hatch wears a graduation cap tilted at an angle, with a small growth arrow on the top-right of the cap rendered in forest green (#4a7c59). Hatch is looking at two screens side by side: the left screen shows a cluttered wall of form fields in muted grey, the right screen shows a single large question centred on a clean white background. Hatch points toward the right screen with a curious, engaged expression. Ambient light is warm, soft amber (#c9ad68) from a window behind. The desktop surface is deep forest wood (#244232) with soft reflections. Aspect ratio 2400x1350. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/typeform/hero.png",
+      "generated_image_sha256": "fa5cd48207ab96ab2c45a13abccbfc433addc7013ca6b3ce675812aadbdf6bfe",
+      "final_image_sha256": "7d49d3500bb1c0d6e0939f578511019fd04d2b2d2fd379f236b3b98302e9a462",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/typeform/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/typeform/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/typeform/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a Barcelona co-working space, sketchbook open to a single-question wireframe, two designers visible in the background.",
+      "caption": "The idea that became Typeform started as a client project for a Barcelona bathroom company.",
+      "prompt": "Typeform | hatch-narrator: Hatch, the HackProduct mascot with graduation cap and growth arrow, stands in a Barcelona co-working space in 2012, bathed in warm cream (#faf6f0) and soft amber (#c9ad68) tones. Two designers are visible at adjacent workstations behind Hatch, looking at early browser windows showing cluttered form builders. Hatch holds a sketchbook open to a rough wireframe: one large question box centred on a blank page, with an arrow pointing down to a second page. The sketchbook is slightly worn. Walls show Spanish architectural details in charcoal (#1e211c) outline. Aspect ratio 1600x1600. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/typeform/hatch-narrator.png",
+      "generated_image_sha256": "7afaa82c0a2be2836f392ff9ecce059233c641250afaf263486978d3a9fd0927",
+      "final_image_sha256": "f984e7f08d935ab0391a61530b6dad20e0363032f2da9c8ee301ed2305d5fd26",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/typeform/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/typeform/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/typeform/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a diagram comparing the multi-field form layout to Typeform's single-question animated sequence.",
+      "caption": "The transition animation is not decoration. It is what makes the next question feel like an answer deserved, not a demand made.",
+      "prompt": "Typeform | failure-mechanism: Hatch, the HackProduct mascot with graduation cap and growth arrow, stands beside a large transparent diagram showing the Typeform interaction loop. On the left side of the diagram, a stack of form fields crowds together in muted grey, labelled \"traditional form.\" On the right, a single centred question slides into frame with a smooth green (#4a7c59) animation arrow, followed by another single question below it. Hatch points at the animation arrow with an analytical expression, tracing the path a user takes one step at a time. Background is warm cream (#faf6f0) with deep forest (#244232) accent lines for the diagram borders. Aspect ratio 1800x1200. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/typeform/failure-mechanism.png",
+      "generated_image_sha256": "34194a0b6d2fcd171f3497a9d6458049c68689182c2206f3f2d56fc21b81ca4d",
+      "final_image_sha256": "6050b144105f551d67a063ce89fa56813a981e7b25bb408077be256430ada19e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/typeform/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/typeform/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/typeform/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a bar chart showing 14% traditional form completion rate versus 57% Typeform completion rate.",
+      "caption": "The gap is real. Whether Typeform causes it or the one-question format does is a harder question.",
+      "prompt": "Typeform | evidence-card: Hatch, the HackProduct mascot with graduation cap and growth arrow, stands in front of a bar chart rendered in forest green (#4a7c59) and soft amber (#c9ad68). The chart shows two bars: the left labelled \"Traditional forms\" at roughly 14%, the right labelled \"Typeform\" at 57%, in a muted cream (#faf6f0) space. Hatch holds a pointer toward the gap between the two bars, expression analytical and curious. Small data labels float in charcoal (#1e211c) above each bar. The chart background is surface-container styled in mist (#dfe6dc). Aspect ratio 1600x1000. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/typeform/evidence-card.png",
+      "generated_image_sha256": "2e7d08069ed12fed6c767a511de468af6b82acb5a7805ce8b49e329a02652cc8",
+      "final_image_sha256": "87271ebc0238e051f48e37d14b73f33f7c4b480cfb2cff58cfb3e772993406bc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/typeform/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/typeform/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/typeform/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a coaching stance in front of a chalkboard comparing the cost-calculation effect of showing all fields versus one field at a time.",
+      "caption": "The lesson transfers to any product where revealing the full scope of a task deters the user from beginning it.",
+      "prompt": "Typeform | lesson-frame: Hatch, the HackProduct mascot with graduation cap and growth arrow, stands in a coaching pose on a warm cream (#faf6f0) platform, arm extended toward the viewer, growth arrow on the cap glowing softly in forest green (#4a7c59). Behind Hatch, a large chalkboard shows a simple equation: \"Show everything = users calculate cost = users leave\" with an arrow crossed out, replaced by \"Show one thing = users begin = users finish.\" The chalkboard background is deep forest (#244232) with chalk-white text. Soft amber (#c9ad68) light pools on the platform surface. Aspect ratio 1800x1200. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/typeform/lesson-frame.png",
+      "generated_image_sha256": "f9c71400106c7e09b879a5f3c676aa7d6a9d8d30664790c72fcb9d58d9fb29c8",
+      "final_image_sha256": "46c8389eff8edd97ac249b69ab51c8c45260ee6c32e622425fbee6055db8ae19",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/typeform/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/typeform/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/typeform/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch peeking around a single-question card that hides the full form behind it.",
+      "caption": "Hatch peeking around a single-question card that hides the full form behind it.",
+      "prompt": "A compact, square-format scene showing Hatch, the HackProduct mascot with graduation cap and growth arrow, peeking around the left edge of a large white card that shows a single centred question: \"What is your name?\" in forest green (#4a7c59) type. Behind the card, barely visible, are rows of greyed-out form fields representing what the user is not being shown. Background is warm cream (#faf6f0). The overall mood is playful and knowing. Aspect ratio 1200x900. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/typeform/hero.png",
+      "generated_image_sha256": "fa5cd48207ab96ab2c45a13abccbfc433addc7013ca6b3ce675812aadbdf6bfe",
+      "final_image_sha256": "b5be221bcf5fd62d8bade8dcf3d9a2e9edac291d06444e249d59569bee9aa65c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/typeform/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/typeform/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/typeform/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Social-cover card showing Hatch beside three screens illustrating the single-question format and its completion payoff.",
+      "caption": "Social-cover card showing Hatch beside three screens illustrating the single-question format and its completion payoff.",
+      "prompt": "Wide-format social card in warm cream (#faf6f0) with Hatch, the HackProduct mascot with graduation cap and growth arrow, centred and slightly left of frame. To Hatch's right, a vertical stack of three card-sized screens: the top card shows \"Question 1 of 1\" in large forest green (#4a7c59) type (the hidden truth), the middle card shows just one question with smooth animated line, the bottom card shows a green completion checkmark. Title text at the bottom in charcoal (#1e211c) Literata font: \"Hiding the length was the product decision.\" Hatch holds a small growth arrow pointer. Aspect ratio 2400x1260. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/typeform/hero.png",
+      "generated_image_sha256": "fa5cd48207ab96ab2c45a13abccbfc433addc7013ca6b3ce675812aadbdf6bfe",
+      "final_image_sha256": "f41314ac80a87ab7d8ee59e7f7d4c2a5e8fe06dc50c04bf7b6257d1620dbec68",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/typeform/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/typeform/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/typeform/v1"
+}

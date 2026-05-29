@@ -20,7 +20,7 @@ export function DisciplineExplorer() {
 
   return (
     <>
-      <DisciplineCard onClick={handleOpen} />
+      <DisciplineCard onClick={handleOpen} autoRotate={false} />
       <DisciplineExplorerModal
         isOpen={isOpen}
         initialDisciplineId={selectedDisciplineId}

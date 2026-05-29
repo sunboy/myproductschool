@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "google",
+  "story_slug": "google-did-you-mean",
+  "story_title": "How Google Learned to Spell Without a Dictionary",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/google-did-you-mean/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/google-did-you-mean/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream search box with a garbled query, a forest DID YOU MEAN ribbon, a corrected query box, and a tall column of stacked query logs, with Hatch narrating from the lower left.",
+      "caption": "The dictionary is in the log.",
+      "prompt": "How Google Learned to Spell Without a Dictionary | hero: Create a flat geometric HackProduct autopsy hero illustration for Google's 2001 Did You Mean spelling correction. Canvas role: hero, aspect 2400x1350. On a warm cream `#faf6f0` field, draw a single long search-box rectangle in cream outlined in charcoal `#1e211c` running across the centre of the canvas, with a slightly garbled string inside rendered as five soft amber `#c9ad68` letterforms suggesting BRITNY rather than Britney, no real text. Below the box, draw a quiet forest `#4a7c59` ribbon labelled DID YOU MEAN in deep forest `#244232`, leading to a second smaller cream rectangle containing five corrected mist `#dfe6dc` letterforms. To the side of the second box, draw a tall mist column rendered as horizontal bands of stacked query logs, each band a different soft amber tone, suggesting the query log as the source of the dictionary. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower left at about 14 percent of canvas height, in narrator pose, one mitten hand pointing toward the ribbon. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No Google logo, no real screenshots, no readable English words inside the boxes. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/google-did-you-mean/hero.png",
+      "generated_image_sha256": "b27491a27fef6878c9da0adc4a6342ccdaf109b03e11e4ced0616f937f364f7a",
+      "final_image_sha256": "1b75f2fb42ee3c60fc39b63af48366f4286d0340b09e47ef6367690ded553271",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/google-did-you-mean/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/google-did-you-mean/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/google-did-you-mean/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside two monitors, one showing abstract query rows and one showing a suggested correction, with a whiteboard reading USERS HAVE ALREADY VOTED.",
+      "caption": "Hatch beside two monitors, one showing abstract query rows and one showing a suggested correction, with a whiteboard reading USERS HAVE ALREADY VOTED.",
+      "prompt": "How Google Learned to Spell Without a Dictionary | hatch-narrator: Flat geometric scene illustration of Google's early 2001 search engineering room, aspect 1600x1600. Show a warm cream `#faf6f0` shared office with a low forest `#4a7c59` desk, two side-by-side monitors rendered as cream rectangles with charcoal `#1e211c` linework, the left monitor showing an abstract block of query rows in soft amber `#c9ad68` suggesting raw query data, the right monitor showing a single suggested correction floating above a search-box outline. To one side, draw a low deep forest `#244232` whiteboard with one phrase only, USERS HAVE ALREADY VOTED, in mist `#dfe6dc`. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator at about 18 percent of canvas height, standing beside the left monitor in narrator pose, one mitten hand gesturing toward the query rows. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no Google logo, no real screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/google-did-you-mean/hatch-narrator.png",
+      "generated_image_sha256": "e343f8fa0b663cc0e4ab6a5b942a1d4a3c51def5b106378a24f101ce9c1cd280",
+      "final_image_sha256": "efc59c33e66bf3030dd59f8454753b363d484cc06ce71a1745ed8787ceb05cb5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/google-did-you-mean/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/google-did-you-mean/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/google-did-you-mean/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A five-stage diagram of a garbled query, a query-log cloud, a co-occurrence cluster, a keyboard-walk panel, and a corrected query, with Hatch pointing at the log.",
+      "caption": "A five-stage diagram of a garbled query, a query-log cloud, a co-occurrence cluster, a keyboard-walk panel, and a corrected query, with Hatch pointing at the log.",
+      "prompt": "How Google Learned to Spell Without a Dictionary | failure-mechanism: Flat geometric mechanism diagram of the Did You Mean correction flow, aspect 1800x1200. On warm cream `#faf6f0`, lay out a five-stage horizontal sequence. Stage one: a small cream search-box outlined in charcoal `#1e211c` with a garbled soft amber `#c9ad68` string inside. Stage two: a mist `#dfe6dc` cloud labelled QUERY LOG, drawn as a stack of thin horizontal bars. Stage three: a forest `#4a7c59` cluster of bars labelled CO-OCCURRENCE, with arrows linking misspelled bars to correctly spelled neighbours. Stage four: a small soft amber keyboard rectangle labelled KEYBOARD WALK, showing one letter cell glowing on each of two adjacent keys. Stage five: a deep forest `#244232` ribbon labelled DID YOU MEAN, leading to a corrected cream search-box outline. Connect stages with thin charcoal lines. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right at about 14 percent of canvas height, one mitten hand pointing at the QUERY LOG cloud. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No real screenshots, no Google logo, no readable English text inside the boxes. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/google-did-you-mean/failure-mechanism.png",
+      "generated_image_sha256": "cb276cedc6af4ecdcbbd35740af5eff44af1e3f3e0ed2ae695dc6239590c6f7f",
+      "final_image_sha256": "140bd09930610f5c19bf32594676486c262863e350b90fb763b816aaced170ea",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/google-did-you-mean/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/google-did-you-mean/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/google-did-you-mean/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A locked book labelled DICTIONARY on one side and a tall column of stacked query bars labelled QUERY LOG on the other, with Hatch pointing between them.",
+      "caption": "A locked book labelled DICTIONARY on one side and a tall column of stacked query bars labelled QUERY LOG on the other, with Hatch pointing between them.",
+      "prompt": "How Google Learned to Spell Without a Dictionary | evidence-card: Flat geometric evidence card contrasting Microsoft Word's dictionary-based spellcheck with Google's query-log approach, aspect 1600x1000. On warm cream `#faf6f0`, split the canvas into two halves. Left half: a small closed cream book outlined in charcoal `#1e211c`, labelled DICTIONARY below in soft amber `#c9ad68`, with a deep forest `#244232` lock icon on its cover suggesting fixity. Right half: a tall open column of stacked query bars in forest `#4a7c59` and mist `#dfe6dc`, each bar a different length, labelled QUERY LOG below in soft amber. Between the two halves, draw a single thin charcoal arrow pointing from the book toward the column, labelled with a short charcoal annotation, ONE GREW. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png between the two columns at about 16 percent of canvas height, in pointing pose, one mitten hand on the book and gaze toward the query column. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. One short label per side. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/google-did-you-mean/evidence-card.png",
+      "generated_image_sha256": "ab77f8818c882aa813e6e5dca4e63944a9f39c6835a26d61f26959008f7bd288",
+      "final_image_sha256": "7dd5e9e32fdc7dda319184d05a87fc78ea45ddf55a18160cac7c46fb55fa5e36",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/google-did-you-mean/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/google-did-you-mean/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/google-did-you-mean/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A funnel from USER QUERIES to MODEL with a feedback loop, under a horizon line labelled DATA YOU ALREADY HAVE, with Hatch coaching beside it.",
+      "caption": "A funnel from USER QUERIES to MODEL with a feedback loop, under a horizon line labelled DATA YOU ALREADY HAVE, with Hatch coaching beside it.",
+      "prompt": "How Google Learned to Spell Without a Dictionary | lesson-frame: Flat geometric lesson illustration for the principle that a product's own usage is its cheapest dictionary, aspect 1800x1200. On warm cream `#faf6f0`, draw a single forest `#4a7c59` funnel shape in the centre, with mist `#dfe6dc` rows flowing into the top labelled USER QUERIES and a single deep forest `#244232` rectangle emerging from the bottom labelled MODEL. To the right of the funnel, draw a small soft amber `#c9ad68` arrow loop returning from MODEL back into USER QUERIES, suggesting feedback. Above the funnel, draw a thin charcoal `#1e211c` horizon line labelled DATA YOU ALREADY HAVE. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png to the left of the funnel in a calm coaching pose at about 18 percent of canvas height, one mitten hand resting on the funnel edge, facing the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no real screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/google-did-you-mean/lesson-frame.png",
+      "generated_image_sha256": "b26cd1d98a82123fe3b0944fc6907e7891391de1757f398fbad3b6cf4f50b180",
+      "final_image_sha256": "e929f37b66339b3ca3c4c12f7171f2a412491258f59d7924928f33b21abb4bb4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/google-did-you-mean/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/google-did-you-mean/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/google-did-you-mean/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A search-box with a garbled string and a corrected shape below it, plus a small DID YOU MEAN chip and a tiny Hatch mark.",
+      "caption": "A search-box with a garbled string and a corrected shape below it, plus a small DID YOU MEAN chip and a tiny Hatch mark.",
+      "prompt": "Flat geometric thumbnail for the Did You Mean autopsy, aspect 1200x900. On warm cream `#faf6f0`, draw a single cream search-box outline in charcoal `#1e211c` with a short garbled soft amber `#c9ad68` string inside, and a forest `#4a7c59` underline curving below the string into a corrected mist `#dfe6dc` shape. Place a small deep forest `#244232` chip in the lower right reading DID YOU MEAN. Background remains warm cream with a single mist ground band along the lower edge. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny mark in the lower left at no more than 10 percent of canvas height, simple pointing pose. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. The decision must read at 320 pixels wide. No real screenshots, no Google logo. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/google-did-you-mean/hero.png",
+      "generated_image_sha256": "b27491a27fef6878c9da0adc4a6342ccdaf109b03e11e4ced0616f937f364f7a",
+      "final_image_sha256": "4a618485fa3da56ab3bc16f42cc5d8852f219b0ff06b5eb3eb4f20cda3fbfe4c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/google-did-you-mean/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/google-did-you-mean/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/google-did-you-mean/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image with a long search-box, a DID YOU MEAN ribbon flowing into a tall column of stacked query bars, labelled THE LOG IS THE DICTIONARY, with a small Hatch in the lower right.",
+      "caption": "A wide cover image with a long search-box, a DID YOU MEAN ribbon flowing into a tall column of stacked query bars, labelled THE LOG IS THE DICTIONARY, with a small Hatch in the lower right.",
+      "prompt": "Flat geometric social cover for the Did You Mean autopsy, aspect 2400x1260. On warm cream `#faf6f0`, place the central composition inside the centre 70 percent of the canvas. Draw a single long cream search-box outline in charcoal `#1e211c` across the centre, with a garbled soft amber `#c9ad68` string inside. Below the box, draw a forest `#4a7c59` ribbon labelled DID YOU MEAN in deep forest `#244232`, flowing into a tall mist `#dfe6dc` column drawn as stacked query bars. Place a single short charcoal `#1e211c` label below reading THE LOG IS THE DICTIONARY. Keep the centre 70 percent clear of edge-critical details. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower right at about 12 percent of canvas height, in narrator pose, one mitten hand pointing toward the ribbon. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No real screenshots, no Google logo, no readable English text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/google-did-you-mean/hero.png",
+      "generated_image_sha256": "b27491a27fef6878c9da0adc4a6342ccdaf109b03e11e4ced0616f937f364f7a",
+      "final_image_sha256": "fb24a7ad5f2f1b5048e9507344c98a85f408510c74d215fe47dc318b1ce8754d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/google-did-you-mean/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/google-did-you-mean/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/google-did-you-mean/v1"
+}

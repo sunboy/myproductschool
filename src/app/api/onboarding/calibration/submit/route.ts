@@ -1,11 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
-import type { FlowMove } from '@/lib/types'
 import type { OptionQuality } from '@/lib/types'
 import { QUESTIONS } from '@/lib/calibration/questions'
 import { ARCHETYPE_OBSERVATIONS } from '@/lib/calibration/archetypes'
 import { IS_MOCK } from '@/lib/mock'
+import {
+  CalibrationSubmitSchema,
+  buildCalibrationPersistencePayload,
+  type CalibrationMove,
+  type CalibrationScores,
+} from '@/lib/onboarding/calibration-submit'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = CalibrationSubmitSchema
 
 const TIER_CAPS: Record<OptionQuality, number> = {
   best: 3.0,
@@ -15,16 +23,15 @@ const TIER_CAPS: Record<OptionQuality, number> = {
 }
 
 // 4 questions: index 0=Frame, 1=List, 2=Optimize, 3=Win
-const MOVE_QUESTION_INDEX: Record<string, number> = {
+const MOVE_QUESTION_INDEX: Record<CalibrationMove, number> = {
   frame: 0,
   list: 1,
   optimize: 2,
   win: 3,
 }
 
-function scoreMove(move: string, selectedId: string): number {
+function scoreMove(move: CalibrationMove, selectedId: string): number {
   const idx = MOVE_QUESTION_INDEX[move]
-  if (idx === undefined) return 0
   const question = QUESTIONS[idx]
   if (!question) return 0
   const option = question.options.find(o => o.id === selectedId)
@@ -54,12 +61,12 @@ async function computeRealPercentile(adminClient: ReturnType<typeof createAdminC
 const ARCHETYPES: Record<string, { name: string; description: string }> = {
   strategist:       { name: 'The Strategist',         description: 'You frame problems sharply and land recommendations with conviction. Your instinct is to define the question before answering it.' },
   systematic:       { name: 'The Systematic Builder', description: 'You construct solutions methodically with strong framing and a bias for structured execution. Narrative communication is your next edge.' },
-  analyst:          { name: 'The Analyst',            description: 'You thrive in data and options — breaking problems into clean, testable segments. Converting that rigour into crisp recommendations is your growth area.' },
+  analyst:          { name: 'The Analyst',            description: 'You thrive in data and options - breaking problems into clean, testable segments. Converting that rigour into crisp recommendations is your growth area.' },
   communicator:     { name: 'The Communicator',       description: 'You land ideas clearly and handle rooms well. Building the structured diagnostic beneath your narrative will make your recommendations unassailable.' },
   problem_framer:   { name: 'The Problem Framer',     description: 'You ask the right questions before jumping to answers. Developing your ability to deliver those insights with executive presence is your next move.' },
   operator:         { name: 'The Operator',           description: 'You excel at scoping, prioritising, and shipping under constraints. Strengthening your problem framing will make your solutions harder to second-guess.' },
   well_rounded:     { name: 'The Well-Rounded',       description: 'You show solid instincts across all four FLOW moves. The path forward is deepening each one from competent to exceptional.' },
-  emerging_thinker: { name: 'The Emerging Thinker',  description: 'You have the raw instincts — Hatch will help you build the frameworks to sharpen them into consistent, high-impact product thinking.' },
+  emerging_thinker: { name: 'The Emerging Thinker',  description: 'You have the raw instincts - Hatch will help you build the frameworks to sharpen them into consistent, high-impact product thinking.' },
 }
 
 function deriveArchetype(s: { frame: number; list: number; optimize: number; win: number }) {
@@ -81,8 +88,25 @@ function scoreToLevel(score: number): number {
   return 1
 }
 
-function weakestMove(scores: Record<string, number>): FlowMove {
-  return (Object.entries(scores).sort(([, a], [, b]) => a - b)[0][0]) as FlowMove
+function weakestMove(scores: CalibrationScores): CalibrationMove {
+  return (Object.entries(scores).sort(([, a], [, b]) => a - b)[0][0]) as CalibrationMove
+}
+
+function firstSupabaseError(results: unknown[]) {
+  for (const result of results) {
+    if (!result || typeof result !== 'object' || !('error' in result)) continue
+    const error = (result as { error?: { message: string } | null }).error
+    if (error) return error
+  }
+
+  return null
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 // answers: { frame: 'A', list: 'C', optimize: 'B', win: 'A' }
@@ -94,9 +118,15 @@ export async function POST(request: Request) {
       percentile: 78,
       archetype: 'The Strategist',
       archetype_description: 'You frame problems sharply and land recommendations with conviction.',
+      weakness_move: 'optimize',
+      onboarding_completed_at: new Date().toISOString(),
       starting_levels: { frame: 3, list: 2, optimize: 2, win: 3 },
       hatch_observation: "You think in narratives and outcomes first. That's rare.",
-      personalised_plan_slug: 'optimize-under-pressure',
+      // personalised_plan_slug retired in Phase 5 — the 4 move-shells were
+      // unpublished in R2.E. Routing now lands on /dashboard which uses
+      // profiles.interview_meta.preferred_move to bias the "next challenge"
+      // suggestion. Field kept as null for backward compat with the client.
+      personalised_plan_slug: null as string | null,
     })
   }
 
@@ -104,14 +134,24 @@ export async function POST(request: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
-  const { answers } = body as { answers: Record<string, string> }
-
-  if (!answers || !answers.frame) {
-    return NextResponse.json({ error: 'answers object with frame/list/optimize/win is required' }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          error: 'answers object with frame/list/optimize/win is required',
+          issues: validationIssues(error),
+        },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
+  const { answers, role } = body
 
-  const scores = {
+  const scores: CalibrationScores = {
     frame:    scoreMove('frame',    answers.frame    ?? ''),
     list:     scoreMove('list',     answers.list     ?? ''),
     optimize: scoreMove('optimize', answers.optimize ?? ''),
@@ -122,6 +162,7 @@ export async function POST(request: Request) {
   const archetypeResult = deriveArchetype(scores)
   const observation = ARCHETYPE_OBSERVATIONS[archetypeResult.name] ?? ''
   const weak = weakestMove(scores)
+  const now = new Date().toISOString()
 
   const adminClient = createAdminClient()
 
@@ -141,17 +182,31 @@ export async function POST(request: Request) {
     computeRealPercentile(adminClient, avg),
   ])
 
-  // Find personalised plan for weakest move + update percentile in parallel with remaining writes
-  const [personalisedPlanResult] = await Promise.all([
-    adminClient
-      .from('study_plans')
-      .select('id, slug')
-      .eq('move_tag', weak)
-      .eq('is_published', true)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle(),
+  if (attemptRes.error) {
+    return NextResponse.json({ error: attemptRes.error.message }, { status: 500 })
+  }
 
+  const persistencePayload = buildCalibrationPersistencePayload({
+    userId: user.id,
+    role,
+    answers,
+    archetype: archetypeResult.name,
+    archetypeDescription: archetypeResult.description,
+    weaknessMove: weak,
+    scores,
+    now,
+  })
+
+  // Update percentile + remaining writes in parallel
+  const [
+    percentileUpdateResult,
+    profileUpdateResult,
+    onboardingResponseResult,
+    onboardingStateDeleteResult,
+    moveLevelsResult,
+    learnerCompetenciesResult,
+    hatchContextResult,
+  ] = await Promise.all([
     // Update the attempt with real percentile
     attemptRes.data?.id
       ? adminClient.from('calibration_attempts').update({ percentile }).eq('id', attemptRes.data.id)
@@ -159,15 +214,24 @@ export async function POST(request: Request) {
 
     adminClient
       .from('profiles')
-      .update({ archetype: archetypeResult.name, archetype_description: archetypeResult.description })
+      .update(persistencePayload.profileUpdate)
       .eq('id', user.id),
+
+    adminClient
+      .from('onboarding_responses')
+      .upsert(persistencePayload.onboardingResponseUpsert, { onConflict: 'user_id' }),
+
+    adminClient
+      .from('onboarding_state')
+      .delete()
+      .eq('user_id', user.id),
 
     adminClient
       .from('move_levels')
       .upsert(
         (['frame', 'list', 'optimize', 'win'] as const).map(m => ({
           user_id: user.id,
-          move: m as FlowMove,
+          move: m,
           level: scoreToLevel(scores[m]),
           progress_pct: 0,
           xp: 0,
@@ -185,7 +249,7 @@ export async function POST(request: Request) {
           total_attempts: 0,
           trend: 'steady',
           trend_slope: 0,
-          last_updated: new Date().toISOString(),
+          last_updated: now,
         })),
         { onConflict: 'user_id,competency' }
       ),
@@ -196,20 +260,40 @@ export async function POST(request: Request) {
           context_type: 'calibration',
           content: observation,
           is_active: true,
-          created_at: new Date().toISOString(),
+          created_at: now,
         })
       : Promise.resolve(),
   ])
 
-  // Enroll user in their personalised plan
-  const personalisedPlan = personalisedPlanResult.data
-  if (personalisedPlan) {
-    await adminClient
-      .from('user_study_plan_enrollments')
-      .upsert(
-        { user_id: user.id, plan_id: personalisedPlan.id },
-        { onConflict: 'user_id,plan_id' }
-      )
+  const writeError = firstSupabaseError([
+    percentileUpdateResult,
+    profileUpdateResult,
+    onboardingResponseResult,
+    onboardingStateDeleteResult,
+    moveLevelsResult,
+    learnerCompetenciesResult,
+    hatchContextResult,
+  ])
+  if (writeError) return NextResponse.json({ error: writeError.message }, { status: 500 })
+
+  // Durable write of preferred_move into profiles.interview_meta. The
+  // dashboard's "next challenge" card reads this to bias suggestions toward
+  // the user's weakest FLOW move. Failure here doesn't fail the calibration
+  // response (the user already passed onboarding), but we log it.
+  try {
+    const { data: profileRow } = await adminClient
+      .from('profiles')
+      .select('interview_meta')
+      .eq('id', user.id)
+      .single()
+    const current = (profileRow?.interview_meta as Record<string, unknown>) ?? {}
+    const { error: metaErr } = await adminClient
+      .from('profiles')
+      .update({ interview_meta: { ...current, preferred_move: weak } })
+      .eq('id', user.id)
+    if (metaErr) console.error('[calibration] preferred_move write failed:', metaErr.message)
+  } catch (e) {
+    console.error('[calibration] preferred_move write threw:', e)
   }
 
   return NextResponse.json({
@@ -218,6 +302,8 @@ export async function POST(request: Request) {
     percentile,
     archetype: archetypeResult.name,
     archetype_description: archetypeResult.description,
+    weakness_move: weak,
+    onboarding_completed_at: persistencePayload.onboardingCompletedAt,
     starting_levels: {
       frame: scoreToLevel(scores.frame),
       list: scoreToLevel(scores.list),
@@ -225,6 +311,8 @@ export async function POST(request: Request) {
       win: scoreToLevel(scores.win),
     },
     hatch_observation: observation,
-    personalised_plan_slug: personalisedPlan?.slug ?? null,
+    // Retired in Phase 5 (move-shells unpublished). Kept as null so the client
+    // type contract holds; client now routes to /dashboard when slug is null.
+    personalised_plan_slug: null as string | null,
   })
 }

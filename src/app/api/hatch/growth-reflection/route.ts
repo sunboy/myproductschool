@@ -1,24 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
+import { buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 import { HATCH_VOICE } from '@/lib/hatch/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 
 const MOCK_REFLECTION =
-  "You've been showing strong diagnostic precision — your frame move is your biggest strength right now. Keep pushing your weigh move next: that's where your next level unlock is hiding."
+  "You've been showing strong diagnostic precision, your frame move is your biggest strength right now. Keep pushing your weigh move next, that's where your next level is hiding."
 
-const MOCK_USER_ID = 'mock-user-id'
+const ROUTE_KEY = 'hatch_growth_reflection'
 
-export async function POST(_req: NextRequest) {
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+export async function POST() {
   // ── Auth ──────────────────────────────────────────────────────
-  let userId: string
-
   if (IS_MOCK) {
     return NextResponse.json({ reflection: MOCK_REFLECTION })
   }
 
+  let userId: string
   try {
     const supabase = await createClient()
     const {
@@ -27,12 +35,11 @@ export async function POST(_req: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      userId = MOCK_USER_ID
-    } else {
-      userId = user.id
+      return apiError(401, 'auth_required', 'Unauthorized')
     }
+    userId = user.id
   } catch {
-    userId = MOCK_USER_ID
+    return apiError(401, 'auth_required', 'Unauthorized')
   }
 
   // ── Hatch context ─────────────────────────────────────────────
@@ -65,34 +72,71 @@ export async function POST(_req: NextRequest) {
 
   if (!process.env.ANTHROPIC_API_KEY) {
     const weakest = hatchCtx.weakestCompetency ?? 'your product thinking'
-    reflection = `You're making steady progress. Focus on ${weakest} as your next growth area — it's where consistent practice will pay off most.`
+    reflection = `You're making steady progress. Focus on ${weakest} as your next growth area, it's where consistent practice will pay off most.`
   } else {
     try {
-      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+      const userPlan = await getUserPlanForBudget(userId)
+      const throttle = await rateLimit({
+        key: `ai:${userId}:${ROUTE_KEY}`,
+        limit: userPlan === 'pro' ? 15 : 5,
+        windowSec: 60,
+      })
 
-      const contextString = buildHatchContextString(hatchCtx, 'coaching')
+      if (!throttle.allowed) {
+        const retryAfter = retryAfterSeconds(throttle.resetAt)
+        const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+        response.headers.set('Retry-After', String(retryAfter))
+        return response
+      }
+
+      await assertPlanLimit(userId, userPlan, 'hatch_chat_msgs')
+
+      const contextString = await buildSkillContextPrompt(userId, {
+        surface: 'reflection',
+        challengeType: null,
+        includePracticeLink: true,
+      }).catch(() => buildHatchContextString(hatchCtx, 'coaching'))
       const userPrompt =
         contextString +
         '\n\nWrite a growth reflection for this learner. Use 2 short paragraphs: one naming a specific strength, one naming the specific growth area and what to do next. Keep each paragraph to 2 sentences. Use the learner\'s first name if known. Be direct and specific. No filler. Return JSON: {"reflection": "..."}'
 
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 300,
-        system:
-          `You are Hatch, a product thinking coach at HackProduct.\n\n${HATCH_VOICE}\n\nRespond only with a JSON object like: {"reflection": "..."} — no markdown, no extra text. The reflection value must use "\\n\\n" between the two paragraphs.`,
-        messages: [{ role: 'user', content: userPrompt }],
-      })
+      const message = await guardedCachedMessage(
+        `You are Hatch, a product thinking coach at HackProduct.\n\n${HATCH_VOICE}\n\nRespond only with a JSON object like: {"reflection": "..."}, no markdown, no extra text. The reflection value must use "\\n\\n" between the two paragraphs.`,
+        userPrompt,
+        {
+          model: 'claude-sonnet-4-6',
+          max_tokens: 300,
+          budget: { userId, userPlan, route: ROUTE_KEY },
+        }
+      )
 
-      const rawText =
-        message.content[0].type === 'text' ? message.content[0].text : ''
+      const rawText = message.sanitized
       const parsed = JSON.parse(rawText)
       if (typeof parsed.reflection !== 'string' || !parsed.reflection.trim()) {
-        throw new Error('Missing reflection in Claude response')
+        throw new Error('Missing reflection in Hatch response')
       }
       reflection = parsed.reflection
-    } catch {
+    } catch (error) {
+      if (error instanceof PlanLimitExceeded) {
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
+      }
+
+      if (error instanceof AiBudgetExceededError) {
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
+      }
+
       const weakest = hatchCtx.weakestCompetency ?? 'your product thinking'
-      reflection = `You're making steady progress. Focus on ${weakest} as your next growth area — it's where consistent practice will pay off most.`
+      reflection = `You're making steady progress. Focus on ${weakest} as your next growth area, it's where consistent practice will pay off most.`
     }
   }
 

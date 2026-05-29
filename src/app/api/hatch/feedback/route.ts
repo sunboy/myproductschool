@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import {
   HATCH_FEEDBACK_SYSTEM_PROMPT,
   HATCH_FEEDBACK_SYSTEM_PROMPT_V2,
@@ -7,44 +8,218 @@ import {
   buildFeedbackUserPrompt
 } from '@/lib/hatch/system-prompt'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
+import { IS_MOCK } from '@/lib/mock'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { HatchFeedbackSchema, clampFeedbackScores, V2FeedbackSchema, clampV2FeedbackScores } from '@/lib/hatch/feedback-schema'
 import { logEvent } from '@/lib/data/events'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+import {
+  buildCompetencySignal,
+  computeChallengeCompetencyRollup,
+  type CompetencySignalInput,
+  type MentalModelBreakdownItem,
+} from '@/lib/scoring/competency-rollup'
+import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
+import { apiError } from '@/lib/api/error'
+import { buildEmptyStateResponse, buildSkillContextPrompt, detectSubmissionQuality } from '@/lib/hatch/skill-context'
+
+const ROUTE_KEY = 'hatch_feedback'
+const V2_ROUTE_KEY = 'hatch_feedback_v2'
+
+const RequestSchema = z.object({
+  challengeId: z.string().max(200).nullable().optional(),
+  challengeTitle: z.string().max(1000).nullable().optional(),
+  challengePrompt: z.string().max(50000).nullable().optional(),
+  response: z.string().max(100000).nullable().optional(),
+  attemptId: z.string().uuid().nullable().optional(),
+  attempt_id: z.string().uuid().nullable().optional(),
+}).superRefine((body, ctx) => {
+  if (!body.attempt_id && body.response == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['response'],
+      message: 'response is required unless attempt_id is provided',
+    })
+  }
+})
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
+async function getAuthenticatedUserId() {
+  const supabase = await createClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) return null
+  return user.id
+}
+
+async function throttleFeedback(userId: string, userPlan: string) {
+  const throttle = await rateLimit({
+    key: `ai:${userId}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (throttle.allowed) return null
+
+  const retryAfter = retryAfterSeconds(throttle.resetAt)
+  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+  response.headers.set('Retry-After', String(retryAfter))
+  return response
+}
+
+function planLimitResponse(error: PlanLimitExceeded) {
+  return apiError(402, 'limit_reached', 'limit_reached', {
+    feature: error.feature,
+    used: error.used,
+    limit: error.limit,
+    windowDays: error.windowDays,
+  })
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function mergeModelBreakdown(
+  rollupBreakdown: MentalModelBreakdownItem[],
+  modelBreakdown: Array<{ competency?: string; demonstrated?: string; missed?: string; score?: number }> | undefined
+) {
+  return rollupBreakdown.map((item, index) => {
+    const modelItem = modelBreakdown?.[index]
+    if (!modelItem) return item
+    return {
+      ...item,
+      competency: modelItem.competency ?? item.competency,
+      demonstrated: modelItem.demonstrated?.trim() || item.demonstrated,
+      missed: modelItem.missed?.trim() || item.missed,
+      score: typeof modelItem.score === 'number' ? Math.round(modelItem.score) : item.score,
+    }
+  })
+}
+
+function emptyFeedbackResponse(challengeType: string | null | undefined) {
+  const emptyState = buildEmptyStateResponse({
+    surface: 'grading',
+    discipline: 'product',
+    challengeType,
+  })
+  const dimension = (name: 'diagnostic_accuracy' | 'metric_fluency' | 'framing_precision' | 'recommendation_strength') => ({
+    dimension: name,
+    score: 0,
+    commentary: emptyState.summary,
+    suggestions: emptyState.next_actions,
+  })
+  return {
+    overall_score: 0,
+    overall: emptyState.summary,
+    dimensions: [
+      dimension('diagnostic_accuracy'),
+      dimension('metric_fluency'),
+      dimension('framing_precision'),
+      dimension('recommendation_strength'),
+    ],
+    strengths: ['No substantive response yet.'],
+    improvements: emptyState.next_actions,
+    detected_patterns: [],
+    summary: emptyState.summary,
+    next_actions: emptyState.next_actions,
+  }
+}
 
 export async function POST(req: NextRequest) {
-  const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, userId, attemptId, attempt_id } = await req.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
+    }
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
+  }
+  const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, attemptId, attempt_id } = body
 
   // V2 path: activated when attempt_id is provided (FLOW-based attempts)
-  const v2AttemptId = attempt_id as string | undefined
+  const v2AttemptId = attempt_id ?? undefined
   if (v2AttemptId) {
-    return handleV2Feedback(v2AttemptId, userId, _challengeId)
+    return handleV2Feedback(v2AttemptId, _challengeId ?? undefined)
   }
 
   // ── V1 path (legacy) ──────────────────────────────────────
 
-  if (!userResponse?.trim()) {
-    return NextResponse.json({ error: 'No response provided' }, { status: 400 })
-  }
-
   // Mock mode: return fixture feedback as a stream
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(MOCK_FEEDBACK_FULL)
   }
 
+  const authenticatedUserId = await getAuthenticatedUserId()
+  if (!authenticatedUserId) {
+    return apiError(401, 'auth_required', 'Unauthorized')
+  }
+
+  const userPlan = await getUserPlanForBudget(authenticatedUserId)
+  const throttleResponse = await throttleFeedback(authenticatedUserId, userPlan)
+  if (throttleResponse) return throttleResponse
+
   try {
-    const budget = typeof userId === 'string'
-      ? { userId, userPlan: await getUserPlanForBudget(userId), route: 'hatch_feedback' }
-      : undefined
+    const supabaseAdmin = createAdminClient()
+    const ownedAttemptId = typeof attemptId === 'string' ? attemptId : null
+    if (ownedAttemptId) {
+      const { data: ownedAttempt } = await supabaseAdmin
+        .from('challenge_attempts')
+        .select('id')
+        .eq('id', ownedAttemptId)
+        .eq('user_id', authenticatedUserId)
+        .maybeSingle()
 
-    const userContent = buildFeedbackUserPrompt(
-      challengeTitle ?? 'Product Challenge',
-      challengePrompt ?? '',
-      userResponse
-    )
+      if (!ownedAttempt) {
+        return apiError(404, 'attempt_not_found', 'Attempt not found')
+      }
+    }
 
-    const message = await createCachedMessage(HATCH_FEEDBACK_SYSTEM_PROMPT, userContent, {
+    if (detectSubmissionQuality(userResponse) !== 'substantive') {
+      return NextResponse.json(emptyFeedbackResponse('freeform'))
+    }
+
+    await assertPlanLimit(authenticatedUserId, userPlan, 'ai_grading_runs')
+
+    const budget = { userId: authenticatedUserId, userPlan, route: ROUTE_KEY }
+
+    const contextBlock = await buildSkillContextPrompt(authenticatedUserId, {
+      surface: 'grading',
+      challengeType: 'freeform',
+      challengeTitle,
+      challengePrompt,
+      submissionText: userResponse,
+      includePracticeLink: true,
+    }).catch(() => '')
+
+    const userContent = [
+      contextBlock,
+      buildFeedbackUserPrompt(
+        challengeTitle ?? 'Product Challenge',
+        challengePrompt ?? '',
+        userResponse ?? ''
+      ),
+    ].filter(Boolean).join('\n\n')
+
+    const message = await guardedCachedMessage(HATCH_FEEDBACK_SYSTEM_PROMPT, userContent, {
       model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       budget,
@@ -52,7 +227,7 @@ export async function POST(req: NextRequest) {
 
     // Attempt 1: parse and validate
     let parsedFeedback
-    const rawText = message.content[0].type === 'text' ? message.content[0].text : '{}'
+    const rawText = message.sanitized || '{}'
 
     try {
       const parsed = JSON.parse(rawText)
@@ -62,28 +237,27 @@ export async function POST(req: NextRequest) {
         parsedFeedback = clampFeedbackScores(validated.data)
       } else {
         // Retry once with stricter prompt
-        const retryResponse = await createCachedMessage(
+        const retryResponse = await guardedCachedMessage(
           HATCH_FEEDBACK_SYSTEM_PROMPT + '\n\nCRITICAL: Return ONLY a valid JSON object. No markdown, no explanation, no code blocks. Raw JSON only.',
           'The JSON was invalid. Return only the raw JSON object with no surrounding text.\n\nOriginal response:\n' + rawText,
           { model: 'claude-sonnet-4-6', max_tokens: 1500, budget }
         )
-        const retryText = retryResponse.content[0].type === 'text' ? retryResponse.content[0].text : '{}'
+        const retryText = retryResponse.sanitized || '{}'
         const retryParsed = JSON.parse(retryText)
         const retryValidated = HatchFeedbackSchema.safeParse(retryParsed)
         parsedFeedback = retryValidated.success ? clampFeedbackScores(retryValidated.data) : retryParsed
       }
     } catch {
-      return NextResponse.json({ error: 'Failed to parse Hatch feedback' }, { status: 500 })
+      return apiError(500, 'hatch_feedback_parse_failed', 'Failed to parse Hatch feedback')
     }
 
     // Persist detected patterns to DB
-    if (parsedFeedback.detected_patterns?.length && userId) {
+    if (parsedFeedback.detected_patterns?.length) {
       try {
-        const supabaseAdmin = createAdminClient()
         await supabaseAdmin.from('user_failure_patterns').insert(
           parsedFeedback.detected_patterns.map((p: { pattern_id: string; pattern_name: string; confidence: number; evidence: string; question?: string }) => ({
-            user_id: userId,
-            attempt_id: attemptId ?? null,
+            user_id: authenticatedUserId,
+            attempt_id: ownedAttemptId,
             pattern_id: p.pattern_id,
             pattern_name: p.pattern_name,
             confidence: p.confidence,
@@ -98,23 +272,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Log feedback generated event
-    if (userId) {
-      logEvent(userId, 'session.feedback_generated', { attempt_id: attemptId ?? null, challenge_id: _challengeId ?? null })
-    }
+    logEvent(authenticatedUserId, 'session.feedback_generated', { attempt_id: ownedAttemptId, challenge_id: _challengeId ?? null })
 
     return NextResponse.json(parsedFeedback)
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return planLimitResponse(error)
+    }
+
     if (error instanceof AiBudgetExceededError) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     console.error('Hatch feedback error:', error)
@@ -125,39 +297,70 @@ export async function POST(req: NextRequest) {
 
 // ── V2 Feedback Handler (FLOW-based) ──────────────────────────
 
-async function handleV2Feedback(attemptId: string, userId: string | undefined, challengeId: string | undefined) {
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+async function handleV2Feedback(attemptId: string, challengeId: string | undefined) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(MOCK_FEEDBACK_FULL)
   }
+
+  const authenticatedUserId = await getAuthenticatedUserId()
+  if (!authenticatedUserId) {
+    return apiError(401, 'auth_required', 'Unauthorized')
+  }
+
+  const userPlan = await getUserPlanForBudget(authenticatedUserId)
+  const throttleResponse = await throttleFeedback(authenticatedUserId, userPlan)
+  if (throttleResponse) return throttleResponse
 
   const admin = createAdminClient()
 
   // Fetch attempt with challenge info
   const { data: attempt, error: attemptError } = await admin
     .from('challenge_attempts')
-    .select('id, challenge_id, user_id, role_id')
+    .select('id, challenge_id, user_id, role_id, feedback_json')
     .eq('id', attemptId)
+    .eq('user_id', authenticatedUserId)
     .single()
 
   if (attemptError || !attempt) {
-    return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+    return apiError(404, 'attempt_not_found', 'Attempt not found')
   }
   const budget = {
-    userId: attempt.user_id as string,
-    userPlan: await getUserPlanForBudget(attempt.user_id as string),
-    route: 'hatch_feedback_v2',
+    userId: authenticatedUserId,
+    userPlan,
+    route: V2_ROUTE_KEY,
   }
 
   // Fetch all step_attempts for this attempt
   const { data: stepAttempts, error: stepsError } = await admin
     .from('step_attempts')
-    .select('step, question_id, selected_option_id, user_text, competency_signal')
+    .select('step, question_id, selected_option_id, user_text, score, competencies_demonstrated, quality_label, grading_explanation, competency_signal')
     .eq('attempt_id', attemptId)
     .order('created_at', { ascending: true })
 
   if (stepsError || !stepAttempts?.length) {
-    return NextResponse.json({ error: 'No step attempts found' }, { status: 404 })
+    return apiError(404, 'step_attempts_not_found', 'No step attempts found')
   }
+
+  const questionIds = stepAttempts
+    .map((attempt) => attempt.question_id)
+    .filter((questionId): questionId is string => typeof questionId === 'string' && questionId.length > 0)
+
+  const { data: questionRows } = questionIds.length > 0
+    ? await admin
+        .from('step_questions')
+        .select('id, grading_weight_within_step, target_competencies')
+        .in('id', questionIds)
+    : { data: [] }
+
+  const questionMetaMap = new Map<string, { weight: number; targetCompetencies: string[] }>(
+    (questionRows ?? []).map((question: { id: string; grading_weight_within_step?: number | null; target_competencies?: string[] | null }) => [
+      question.id,
+      {
+        weight: question.grading_weight_within_step ?? 1,
+        targetCompetencies: question.target_competencies ?? [],
+      },
+    ])
+  )
 
   // Fetch challenge context
   const { data: challenge } = await admin
@@ -188,7 +391,15 @@ async function handleV2Feedback(attemptId: string, userId: string | undefined, c
     return `### ${step.toUpperCase()} step\n${answers}${signals ? '\n' + signals : ''}`
   }).join('\n\n')
 
-  const userContent = `Challenge: ${challenge?.title ?? 'Unknown'}
+  const contextBlock = await buildSkillContextPrompt(authenticatedUserId, {
+    surface: 'grading',
+    challengeType: 'flow',
+    challengeTitle: challenge?.title,
+    challengePrompt: `${challenge?.scenario_context ?? ''} ${challenge?.scenario_trigger ?? ''}`,
+    includePracticeLink: true,
+  }).catch(() => '')
+
+  const userContent = `${contextBlock ? `${contextBlock}\n\n` : ''}Challenge: ${challenge?.title ?? 'Unknown'}
 Context: ${challenge?.scenario_context ?? ''} ${challenge?.scenario_trigger ?? ''}
 
 ## Learner's FLOW Responses
@@ -201,26 +412,109 @@ Return valid JSON only.`
   const systemPrompt = HATCH_CORE_IDENTITY + '\n\n' + MENTAL_MODELS_CONTEXT + '\n\n' + HATCH_FEEDBACK_SYSTEM_PROMPT_V2
 
   try {
-    const message = await createCachedMessage(systemPrompt, userContent, {
+    await assertPlanLimit(authenticatedUserId, userPlan, 'ai_grading_runs')
+
+    const message = await guardedCachedMessage(systemPrompt, userContent, {
       model: 'claude-sonnet-4-6',
       max_tokens: 3000,
       budget,
     })
 
-    const rawText = message.content[0].type === 'text' ? message.content[0].text : '{}'
+    const rawText = message.sanitized || '{}'
 
     try {
       const parsed = JSON.parse(rawText)
       const validated = V2FeedbackSchema.safeParse(parsed)
 
       const feedback = validated.success ? clampV2FeedbackScores(validated.data) : parsed
+      const feedbackSteps = Array.isArray(feedback.steps) ? feedback.steps : []
+      const signalByStep = new Map<string, CompetencySignalInput['competency_signal']>()
+
+      for (const stepFeedback of feedbackSteps) {
+        if (!stepFeedback || typeof stepFeedback !== 'object') continue
+        const step = String(stepFeedback.step ?? '')
+        const weightedScore = typeof stepFeedback.weighted_score === 'number'
+          ? stepFeedback.weighted_score * FLOW_MAX_SCORE
+          : undefined
+        const stepSummary = typeof stepFeedback.step_summary === 'string' ? stepFeedback.step_summary : null
+        const signalRaw = stepFeedback.competency_signal && typeof stepFeedback.competency_signal === 'object'
+          ? stepFeedback.competency_signal as { primary?: string; competency?: string; signal?: string; framework_hint?: string }
+          : null
+        const signal = buildCompetencySignal({
+          step,
+          score: weightedScore,
+          grading_explanation: stepSummary,
+          competency_signal: signalRaw
+            ? {
+                competency: signalRaw.competency ?? signalRaw.primary,
+                primary: signalRaw.primary,
+                signal: signalRaw.signal,
+                framework_hint: signalRaw.framework_hint,
+              }
+            : null,
+        })
+        signalByStep.set(step, signal)
+      }
+
+      for (const [step, signal] of signalByStep.entries()) {
+        await admin
+          .from('step_attempts')
+          .update({ competency_signal: signal })
+          .eq('attempt_id', attemptId)
+          .eq('step', step)
+          .is('competency_signal', null)
+      }
+
+      const rollupRows: CompetencySignalInput[] = stepAttempts.map((row: {
+        step: string
+        question_id: string
+        score: number | null
+        competencies_demonstrated?: string[] | null
+        quality_label?: string | null
+        grading_explanation?: string | null
+        competency_signal?: CompetencySignalInput['competency_signal']
+      }) => {
+        const questionMeta = questionMetaMap.get(row.question_id)
+        return {
+          step: row.step,
+          score: row.score ?? 0,
+          weight: questionMeta?.weight ?? 1,
+          target_competencies: questionMeta?.targetCompetencies ?? [],
+          competencies_demonstrated: row.competencies_demonstrated ?? [],
+          grading_explanation: row.grading_explanation ?? null,
+          quality_label: row.quality_label ?? null,
+          competency_signal: signalByStep.get(row.step) ?? row.competency_signal ?? null,
+        }
+      })
+      const rollup = computeChallengeCompetencyRollup(rollupRows)
+      const mentalModelsBreakdown = mergeModelBreakdown(
+        rollup.mentalModelsBreakdown,
+        Array.isArray(feedback.mental_models_breakdown) ? feedback.mental_models_breakdown : undefined
+      )
+
+      await admin
+        .from('challenge_attempts')
+        .update({
+          mental_models_breakdown: mentalModelsBreakdown,
+          primary_competency: rollup.primaryCompetency,
+          weakest_competency: rollup.weakestCompetency,
+          feedback_json: {
+            ...asRecord(attempt.feedback_json),
+            hatch_feedback: feedback,
+            mental_models_breakdown: mentalModelsBreakdown,
+            primary_competency: rollup.primaryCompetency,
+            weakest_competency: rollup.weakestCompetency,
+            competency_scores: rollup.competencyScores,
+          },
+        })
+        .eq('id', attemptId)
 
       // Persist detected patterns
-      if (feedback.detected_patterns?.length && userId) {
+      if (feedback.detected_patterns?.length) {
         try {
           await admin.from('user_failure_patterns').insert(
             feedback.detected_patterns.map((p: { pattern_id: string; pattern_name: string; confidence: number; evidence: string; question?: string }) => ({
-              user_id: userId,
+              user_id: authenticatedUserId,
               attempt_id: attemptId,
               pattern_id: p.pattern_id,
               pattern_name: p.pattern_name,
@@ -234,26 +528,30 @@ Return valid JSON only.`
         }
       }
 
-      if (userId) {
-        logEvent(userId, 'session.feedback_generated', { attempt_id: attemptId, challenge_id: challengeId ?? null, version: 'v2' })
-      }
+      logEvent(authenticatedUserId, 'session.feedback_generated', { attempt_id: attemptId, challenge_id: challengeId ?? attempt.challenge_id, version: 'v2' })
 
-      return NextResponse.json({ ...feedback, version: 'v2' })
+      return NextResponse.json({
+        ...feedback,
+        mental_models_breakdown: mentalModelsBreakdown,
+        primary_competency: rollup.primaryCompetency,
+        weakest_competency: rollup.weakestCompetency,
+        version: 'v2',
+      })
     } catch {
-      return NextResponse.json({ error: 'Failed to parse v2 feedback' }, { status: 500 })
+      return apiError(500, 'hatch_feedback_v2_parse_failed', 'Failed to parse v2 feedback')
     }
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return planLimitResponse(error)
+    }
+
     if (error instanceof AiBudgetExceededError) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     console.error('Hatch v2 feedback error:', error)
