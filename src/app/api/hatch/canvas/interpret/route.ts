@@ -172,7 +172,6 @@ When creating a table, use the \`create\` action with \`columns: string[]\` on t
     "action": "create",
     "elements": [{
       "type": "rectangle",
-      "x": 200, "y": 200, "width": 180, "height": 110,
       "label": { "text": "users" },
       "columns": ["id PK", "email UNIQUE", "tenant_id FK→tenants.id"]
     }]
@@ -207,16 +206,19 @@ Wrong: "the email field", "your post user_id", "consider indexing post_id"
 Every coach-mode response that discusses columns MUST include AT LEAST ONE \`entity.column_name\` reference. If you can't form one, you're not being specific enough.`
 
 const ACTION_SCHEMA = `Output schema (return ONLY this JSON, no markdown fences, no prose outside JSON):
+
+Do not emit x or y coordinates. The canvas positions and arranges elements automatically. Focus on which entities exist, their columns, and which entity connects to which.
+
 {
   "intent": "build" | "coach" | "build_and_coach",
   "message": "What you say to the user. 1-3 sentences. Direct, specific, references canvas elements by label when relevant.",
   "actions": [
     // Empty array unless intent is "build" or "build_and_coach".
     // Action types:
-    { "action": "create_from_library", "library_item": "Postgres", "x": 200, "y": 100, "label_override": "users" },
-    { "action": "create", "elements": [{ "type": "rectangle", "x": 400, "y": 100, "width": 140, "height": 60, "label": { "text": "Custom Service" } }] },
+    { "action": "create_from_library", "library_item": "Postgres", "label_override": "users" },
+    { "action": "create", "elements": [{ "type": "rectangle", "label": { "text": "Custom Service" } }] },
     { "action": "connect", "fromLabel": "users", "toLabel": "orders", "label": "1:N" },
-    { "action": "annotate", "text": "Cache placement risks consistency", "x": 500, "y": 200 },
+    { "action": "annotate", "text": "Cache placement risks consistency" },
     { "action": "remove", "targetLabel": "OLD_SERVICE" },
     { "action": "rename", "fromLabel": "Service A", "toLabel_rename": "Notification Service" }
   ],

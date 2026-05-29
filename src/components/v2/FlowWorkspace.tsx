@@ -787,9 +787,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     void executeActions(
       response.actions as CanvasAction[],
       excalidrawApiRef.current,
-      libraryItemsRef.current
+      libraryItemsRef.current,
+      apiChallengeType ?? undefined
     )
-  }, [])
+  }, [apiChallengeType])
 
   const queueHatchPrompt = useCallback((text: string, autoSend = true) => {
     setChatPanelOpen(true)

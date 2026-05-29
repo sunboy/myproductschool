@@ -21,14 +21,14 @@ interface HeroGreeterCardProps {
   displayName: string
   streakDays: number
   xpTotal: number
-  nextMilestoneMove: string
-  nextMilestoneLevel: number
+  focusMove: string
+  focusLevel: number
   dailyDone: number
   sessionHref?: string
   studyPlanHref?: string
 }
 
-export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMilestoneMove, nextMilestoneLevel, dailyDone, sessionHref = '/challenges', studyPlanHref = '/explore/plans' }: HeroGreeterCardProps) {
+export function HeroGreeterCard({ displayName, streakDays, xpTotal, focusMove, focusLevel, dailyDone, sessionHref = '/challenges', studyPlanHref = '/explore/plans' }: HeroGreeterCardProps) {
   const [idx, setIdx] = useState(0)
 
   useEffect(() => {
@@ -165,24 +165,53 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
       {/* Stat strip */}
       <div
         className="relative mx-5 mt-4 mb-5 grid grid-cols-1 gap-x-3 gap-y-3 border-t border-white/10 pt-4 sm:mx-7 sm:grid-cols-2 md:grid-cols-[1.35fr_0.8fr_1fr_1fr] md:gap-4"
-        style={{}}
       >
         {[
-          { text: `${streakDays}d - ${streakDays === 1 ? 'keep it alive' : "you're on fire"}`, icon: 'local_fire_department' },
-          { text: `${xpTotal.toLocaleString()} XP`, icon: 'bolt' },
-          { text: `Lv ${nextMilestoneLevel} - ${nextMilestoneMove}`, icon: 'flag' },
-          { text: `${dailyDone}/5 this week`, icon: 'event' },
+          {
+            value: `${streakDays}`,
+            unit: 'day streak',
+            sublabel: streakDays === 0 ? 'start today' : streakDays === 1 ? 'keep it going' : 'stay consistent',
+            icon: 'local_fire_department',
+          },
+          {
+            value: `${xpTotal.toLocaleString()}`,
+            unit: 'total XP',
+            sublabel: 'across all moves',
+            icon: 'bolt',
+          },
+          {
+            value: `${focusMove}`,
+            unit: `focus · Lv ${focusLevel}`,
+            sublabel: 'your weakest move',
+            icon: 'center_focus_strong',
+          },
+          {
+            value: `${dailyDone}`,
+            unit: 'done today',
+            sublabel: 'reps logged',
+            icon: 'event',
+          },
         ].map((s, i) => (
-          <div key={i} className="flex min-w-0 items-center gap-2">
+          <div key={i} className="flex min-w-0 items-center gap-2.5">
             <span
               className="material-symbols-outlined shrink-0 text-[17px]"
               style={{ color: 'rgba(243,237,224,0.6)' }}
             >
               {s.icon}
             </span>
-            <span className="min-w-0 truncate whitespace-nowrap font-headline text-lg font-medium leading-none sm:text-xl">
-              {s.text}
-            </span>
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-baseline gap-1.5">
+                <span className="font-headline text-lg font-medium leading-none sm:text-xl truncate" style={{ color: '#f3ede0' }}>
+                  {s.value}
+                </span>
+                <span className="font-label text-[10px] font-semibold uppercase tracking-wider truncate" style={{ color: 'rgba(243,237,224,0.55)' }}>
+                  {s.unit}
+                </span>
+              </div>
+              <p className="font-body text-[11px] mt-0.5 truncate" style={{ color: 'rgba(243,237,224,0.42)' }}>
+                {s.sublabel}
+              </p>
+            </div>
           </div>
         ))}
       </div>

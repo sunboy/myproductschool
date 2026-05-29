@@ -1521,7 +1521,7 @@ export default function SessionPage({
       : ''
 
   const captionIsItalic = hatchState !== 'speaking'
-  const showTranscriptPanel = isTranscriptOpen && !isFocusMode
+  const showTranscriptPanel = isTranscriptOpen && !isFocusMode && !isChatOpen
   const showFlowPanel = isFlowPanelOpen && !isFocusMode
 
   return (
@@ -2092,7 +2092,7 @@ export default function SessionPage({
           <CtrlBtn
             icon="notes"
             label="Transcript"
-            active={showTranscriptPanel}
+            active={isTranscriptOpen && !isFocusMode}
             onClick={() => {
               setIsFocusMode(false)
               setIsTranscriptOpen((open) => !open)

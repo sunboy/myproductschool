@@ -266,6 +266,20 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
 
       try {
         const data = await postAuthAction<{ onboardingCompleted: boolean }>('/api/auth/login', validation.data)
+        // The server route validated credentials + rate-limits + returned onboardingCompleted.
+        // Now sign in with the BROWSER client so the chunked sb-*-auth-token cookies are
+        // written locally and onAuthStateChange fires (V3AuthGate updates) — this guarantees
+        // a committed session before the hard navigation so the proxy never bounces to /login.
+        const { error: clientError } = await supabase.auth.signInWithPassword({
+          email: validation.data.email,
+          password: validation.data.password,
+        })
+        if (clientError) {
+          setError('Something went wrong. Try again.')
+          play('error')
+          setLoading(false)
+          return
+        }
         play('success')
         const dest = data.onboardingCompleted ? resolvedRedirectTo('/dashboard') : '/onboarding/welcome'
         window.location.href = dest

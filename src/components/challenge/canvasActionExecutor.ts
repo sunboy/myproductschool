@@ -2,6 +2,9 @@
 type ExcalidrawAPI = any
 
 import type { CanvasAction } from '@/lib/types'
+import { summarizeScene } from '@/lib/hatch/canvas-scene'
+import { computeLayout } from '@/lib/hatch/canvas-layout'
+import type { LayoutBox, LayoutEdge } from '@/lib/hatch/canvas-layout'
 
 type LibraryItem = { id: string; name?: string; elements: unknown[] }
 
@@ -257,7 +260,7 @@ async function applyAction(
         const libW = Math.max(...itemEls.map((e) => (e.x ?? 0) + (e.width ?? 140)), 140)
         const libH = Math.max(...itemEls.map((e) => (e.y ?? 0) + (e.height ?? 70)), 70)
         const occupied = getOccupied(api.getSceneElements() as readonly unknown[])
-        const slot = findFreeSlot(occupied, libW, libH, action.x, action.y)
+        const slot = findFreeSlot(occupied, libW, libH, undefined, undefined)
         const offsetX = slot.x
         const offsetY = slot.y
         const cloned = (item.elements as Array<{ id?: string; x?: number; y?: number; text?: string }>).map((el, i) => ({
@@ -279,7 +282,7 @@ async function applyAction(
         const width = 140
         const height = 70
         const occupied = getOccupied(api.getSceneElements() as readonly unknown[])
-        const slot = findFreeSlot(occupied, width, height, action.x, action.y)
+        const slot = findFreeSlot(occupied, width, height, undefined, undefined)
         const x = slot.x
         const y = slot.y
         const labelText = action.label_override ?? action.library_item ?? ''
@@ -334,7 +337,7 @@ async function applyAction(
           // Compute height: 32 header + 22 per column row + 16 padding
           const height = 32 + columns.length * 22 + 16
 
-          const slot = findFreeSlot(occupied, width, height, el.x, el.y)
+          const slot = findFreeSlot(occupied, width, height, undefined, undefined)
           const x = slot.x
           const y = slot.y
           occupied.push({ x, y, w: width, h: height })
@@ -367,7 +370,7 @@ async function applyAction(
           // Single-label shape (existing behavior)
           const width = el.width ?? 140
           const height = el.height ?? 60
-          const slot = findFreeSlot(occupied, width, height, el.x, el.y)
+          const slot = findFreeSlot(occupied, width, height, undefined, undefined)
           const x = slot.x
           const y = slot.y
           occupied.push({ x, y, w: width, h: height })
@@ -395,7 +398,7 @@ async function applyAction(
         } else {
           const width = el.width ?? (isShape ? 140 : 80)
           const height = el.height ?? (isShape ? 60 : 40)
-          const slot = findFreeSlot(occupied, width, height, el.x, el.y)
+          const slot = findFreeSlot(occupied, width, height, undefined, undefined)
           const x = slot.x
           const y = slot.y
           occupied.push({ x, y, w: width, h: height })
@@ -550,13 +553,267 @@ async function applyAction(
   }
 }
 
+// ---------------------------------------------------------------------------
+// Relayout — run AFTER all creates, BEFORE tweens
+// ---------------------------------------------------------------------------
+
+/**
+ * Re-positions every shape element in the scene using canvas-layout.ts.
+ *
+ * Steps:
+ *  1. summarizeScene to get entities (labels) + connections + foreignKeys
+ *  2. Build LayoutBox[] from RAW element positions (not summarizeScene's center-coords)
+ *  3. Build LayoutEdge[] via label→id map; skip unresolved endpoints
+ *  4. computeLayout
+ *  5. Apply new positions; move bound-text children (containerId===shape) by same dx/dy
+ *  6. Recompute arrow geometry for arrows whose both endpoints moved
+ *  7. Move arrow-bound label text by arrow delta
+ *  8. api.updateScene with all mutated elements
+ *
+ * Returns a Map of shapeId→newY (for tween targets).
+ */
+async function relayoutScene(
+  api: ExcalidrawAPI,
+  discipline: string | undefined
+): Promise<Map<string, number>> {
+  type AnyEl = Record<string, unknown>
+
+  const rawElements = api.getSceneElements() as AnyEl[]
+
+  // Gather visible shape elements (rectangle / ellipse / diamond, not deleted)
+  const shapeEls = rawElements.filter(
+    (el) =>
+      !el.isDeleted &&
+      (el.type === 'rectangle' || el.type === 'ellipse' || el.type === 'diamond')
+  )
+
+  if (shapeEls.length === 0) return new Map()
+
+  // summarizeScene to get entity labels
+  const scene = summarizeScene(rawElements as unknown[])
+
+  // Build label→elementId map from the scene entities
+  const labelToId = new Map<string, string>()
+  for (const entity of scene.entities) {
+    labelToId.set(entity.label, entity.id)
+  }
+
+  // Build LayoutBox[] from RAW shape element positions
+  const boxes: LayoutBox[] = shapeEls
+    .map((el) => ({
+      id: el.id as string,
+      label: (() => {
+        // Find matching entity label from summarizeScene for this element id
+        const entity = scene.entities.find((e) => e.id === (el.id as string))
+        return entity?.label
+      })(),
+      x: (el.x as number) ?? 0,
+      y: (el.y as number) ?? 0,
+      width: (el.width as number) ?? 140,
+      height: (el.height as number) ?? 60,
+    }))
+    .filter((b) => typeof b.x === 'number' && typeof b.y === 'number')
+
+  // Build LayoutEdge[] from connections
+  const edges: LayoutEdge[] = []
+
+  for (const conn of scene.connections) {
+    const fromId = labelToId.get(conn.from)
+    const toId = labelToId.get(conn.to)
+    if (fromId && toId) {
+      edges.push({ fromId, toId })
+    }
+  }
+
+  // Also add edges from foreignKeys
+  for (const fk of scene.foreignKeys) {
+    const fromId = labelToId.get(fk.from)
+    const toId = labelToId.get(fk.toTable)
+    if (fromId && toId && fromId !== toId) {
+      edges.push({ fromId, toId })
+    }
+  }
+
+  const layoutResult = computeLayout({ boxes, edges, discipline })
+  const { positions } = layoutResult
+
+  if (positions.size === 0) return new Map()
+
+  // Build old position map for delta computation
+  const oldPositions = new Map<string, { x: number; y: number }>()
+  for (const el of shapeEls) {
+    oldPositions.set(el.id as string, { x: (el.x as number) ?? 0, y: (el.y as number) ?? 0 })
+  }
+
+  // Compute deltas
+  const deltas = new Map<string, { dx: number; dy: number }>()
+  for (const [id, newPos] of positions.entries()) {
+    const old = oldPositions.get(id)
+    if (old) {
+      deltas.set(id, { dx: newPos.x - old.x, dy: newPos.y - old.y })
+    }
+  }
+
+  // Mutate elements
+  const mutated = rawElements.map((el): AnyEl => {
+    const id = el.id as string
+
+    // Shape element — apply new position
+    if (positions.has(id)) {
+      const newPos = positions.get(id)!
+      return {
+        ...el,
+        x: newPos.x,
+        y: newPos.y,
+        version: ((el.version as number) ?? 1) + 1,
+        versionNonce: Math.floor(Math.random() * 1e9),
+      }
+    }
+
+    // Bound text — containerId points to a moved shape → apply same delta
+    if (el.type === 'text' && el.containerId) {
+      const delta = deltas.get(el.containerId as string)
+      if (delta) {
+        return {
+          ...el,
+          x: ((el.x as number) ?? 0) + delta.dx,
+          y: ((el.y as number) ?? 0) + delta.dy,
+          version: ((el.version as number) ?? 1) + 1,
+          versionNonce: Math.floor(Math.random() * 1e9),
+        }
+      }
+    }
+
+    return el
+  })
+
+  // Recompute arrow geometry for arrows whose both endpoints moved
+  // Also move arrow-bound label text by arrow delta
+  const arrowDeltas = new Map<string, { dx: number; dy: number }>()
+
+  const reMutated = mutated.map((el): AnyEl => {
+    if (el.isDeleted) return el
+    if (el.type !== 'arrow' && el.type !== 'line') return el
+
+    const startBinding = el.startBinding as { elementId?: string } | null | undefined
+    const endBinding = el.endBinding as { elementId?: string } | null | undefined
+    const fromId = startBinding?.elementId
+    const toId = endBinding?.elementId
+
+    if (!fromId || !toId) return el
+
+    // Find the (already mutated) from/to shapes
+    const fromEl = mutated.find((e) => e.id === fromId)
+    const toEl = mutated.find((e) => e.id === toId)
+
+    // Only recompute if BOTH endpoints moved (i.e. have deltas)
+    if (!fromEl || !toEl) return el
+    if (!deltas.has(fromId) && !deltas.has(toId)) return el
+
+    const fromRight = ((fromEl.x as number) ?? 0) + ((fromEl.width as number) ?? 0)
+    const fromMidY = ((fromEl.y as number) ?? 0) + ((fromEl.height as number) ?? 0) / 2
+    const toLeft = (toEl.x as number) ?? 0
+    const toMidY = ((toEl.y as number) ?? 0) + ((toEl.height as number) ?? 0) / 2
+
+    const oldArrowX = (el.x as number) ?? 0
+    const oldArrowY = (el.y as number) ?? 0
+    const newArrowX = fromRight
+    const newArrowY = fromMidY
+
+    arrowDeltas.set(el.id as string, {
+      dx: newArrowX - oldArrowX,
+      dy: newArrowY - oldArrowY,
+    })
+
+    return {
+      ...el,
+      x: newArrowX,
+      y: newArrowY,
+      width: Math.abs(toLeft - fromRight),
+      height: toMidY - fromMidY,
+      points: [[0, 0], [toLeft - fromRight, toMidY - fromMidY]],
+      version: ((el.version as number) ?? 1) + 1,
+      versionNonce: Math.floor(Math.random() * 1e9),
+    }
+  })
+
+  // Move arrow-bound label text by arrow delta
+  const finalElements = reMutated.map((el): AnyEl => {
+    if (el.type !== 'text' || !el.containerId) return el
+    const arrowDelta = arrowDeltas.get(el.containerId as string)
+    if (!arrowDelta) return el
+    return {
+      ...el,
+      x: ((el.x as number) ?? 0) + arrowDelta.dx,
+      y: ((el.y as number) ?? 0) + arrowDelta.dy,
+      version: ((el.version as number) ?? 1) + 1,
+      versionNonce: Math.floor(Math.random() * 1e9),
+    }
+  })
+
+  api.updateScene({ elements: finalElements })
+
+  // Return new Y positions for tween targets
+  const newYMap = new Map<string, number>()
+  for (const [id, pos] of positions.entries()) {
+    newYMap.set(id, pos.y)
+  }
+  return newYMap
+}
+
+// ---------------------------------------------------------------------------
+// Action executor — with discipline-aware relayout
+// ---------------------------------------------------------------------------
+
 export async function executeActions(
   actions: CanvasAction[],
   api: ExcalidrawAPI,
-  libraryItems: LibraryItem[]
+  libraryItems: LibraryItem[],
+  discipline?: string
 ): Promise<void> {
   const stagger = actions.length >= 5 ? Math.min(2000 / actions.length, 200) : 0
+
+  // Track which element ids were NEW shapes created in this batch (for tween)
+  const createdShapeIds: string[] = []
+
+  // Instrument create/create_from_library actions to track new shape ids
+  // by snapshot before and after each create action
+  const createActions = actions.filter(
+    (a) => a.action === 'create' || a.action === 'create_from_library'
+  )
+  const hasCreates = createActions.length > 0
+
   for (let i = 0; i < actions.length; i++) {
-    await applyAction(actions[i], api, libraryItems, i === 0 ? 0 : stagger)
+    const action = actions[i]
+
+    if (action.action === 'create' || action.action === 'create_from_library') {
+      // Snapshot before
+      const before = new Set(
+        (api.getSceneElements() as Array<{ id: string }>).map((e) => e.id)
+      )
+      await applyAction(action, api, libraryItems, i === 0 ? 0 : stagger)
+      // Collect new shape ids (not text bound children)
+      const after = api.getSceneElements() as Array<{ id: string; type: string; containerId?: string | null }>
+      for (const el of after) {
+        if (!before.has(el.id) && !el.containerId) {
+          createdShapeIds.push(el.id)
+        }
+      }
+    } else {
+      await applyAction(action, api, libraryItems, i === 0 ? 0 : stagger)
+    }
+  }
+
+  // Run relayout after all creates but before tweens
+  if (hasCreates && createdShapeIds.length > 0) {
+    const newYMap = await relayoutScene(api, discipline)
+
+    // Tween newly created shapes from (finalY - 40, opacity 0) to (finalY, opacity 100)
+    for (const id of createdShapeIds) {
+      const finalY = newYMap.get(id)
+      if (finalY !== undefined) {
+        tweenElement(api, id, { opacity: 0, y: finalY - 40 }, { opacity: 100, y: finalY }, 250)
+      }
+    }
   }
 }

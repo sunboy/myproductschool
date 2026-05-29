@@ -509,8 +509,8 @@ export default async function DashboardPage() {
               displayName={displayName}
               streakDays={streakDays}
               xpTotal={xpTotal}
-              nextMilestoneMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
-              nextMilestoneLevel={(allMoveLevels[0]?.level ?? 1) + 1}
+              focusMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
+              focusLevel={allMoveLevels[0]?.level ?? 1}
               dailyDone={dailyDone}
               sessionHref={
                 nextChallenge
