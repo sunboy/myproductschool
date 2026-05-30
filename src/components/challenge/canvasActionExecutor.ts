@@ -3,8 +3,8 @@ type ExcalidrawAPI = any
 
 import type { CanvasAction } from '@/lib/types'
 import { summarizeScene } from '@/lib/hatch/canvas-scene'
-import { computeLayout } from '@/lib/hatch/canvas-layout'
-import type { LayoutBox, LayoutEdge } from '@/lib/hatch/canvas-layout'
+import { computeLayout, chooseAnchors, routeOrthogonal, pointsBounds } from '@/lib/hatch/canvas-layout'
+import type { LayoutBox, LayoutEdge, AnchorRect } from '@/lib/hatch/canvas-layout'
 
 type LibraryItem = { id: string; name?: string; elements: unknown[] }
 
@@ -26,6 +26,50 @@ function findElementByLabel(elements: readonly unknown[], label: string): SceneE
 
 function uniqueId(): string {
   return `el-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
+}
+
+function finiteOr(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+/**
+ * Coerce an element's geometry to finite numbers so a malformed (NaN/Infinity)
+ * coordinate never reaches Excalidraw, where it throws during render and trips
+ * the React error boundary. Defensive only - well-formed elements pass through
+ * with identical values.
+ */
+function sanitizeElementGeometry<T extends Record<string, unknown>>(el: T): T {
+  const next: Record<string, unknown> = { ...el }
+  next.x = finiteOr(el.x, 0)
+  next.y = finiteOr(el.y, 0)
+  if ('width' in el) next.width = Math.max(0, finiteOr(el.width, 0))
+  if ('height' in el) next.height = finiteOr(el.height, 0)
+  if (Array.isArray(el.points)) {
+    next.points = (el.points as unknown[]).map((p) => {
+      if (Array.isArray(p)) return [finiteOr(p[0], 0), finiteOr(p[1], 0)]
+      return [0, 0]
+    })
+  }
+  return next as T
+}
+
+/**
+ * The single choke point for writing to the canvas. Excalidraw throws
+ * synchronously during its NEXT render if any element carries a non-finite
+ * x/y/width/height or a points array with NaN/Infinity, and that throw lands in
+ * the React error boundary ("something went wrong") - outside any try/catch we
+ * hold here, because React renders on its own tick. Sanitizing at every write
+ * (creates, connects, annotations, tween frames, relayout) guarantees no
+ * malformed geometry ever reaches the renderer. Every updateScene call in this
+ * module MUST go through here.
+ */
+function safeUpdateScene(api: ExcalidrawAPI, elements: unknown[]): void {
+  const safe = (Array.isArray(elements) ? elements : []).map((el) =>
+    el && typeof el === 'object'
+      ? sanitizeElementGeometry(el as Record<string, unknown>)
+      : el
+  )
+  api.updateScene({ elements: safe })
 }
 
 function baseFields() {
@@ -191,24 +235,32 @@ async function runTween(task: TweenTask): Promise<void> {
     const start = performance.now()
     const duration = Math.min(task.durationMs, 300)
     const tick = () => {
-      const now = performance.now()
-      const t = Math.min((now - start) / duration, 1)
-      // ease-out cubic for natural deceleration
-      const eased = 1 - Math.pow(1 - t, 3)
-      const elements = task.api.getSceneElements() as Array<Record<string, unknown>>
-      const updated = elements.map((el) => {
-        if ((el as { id?: string }).id !== task.elementId) return el
-        const next = { ...el }
-        for (const key of Object.keys(task.toProps) as Array<keyof typeof task.toProps>) {
-          const from = task.fromProps[key] ?? 0
-          const to = task.toProps[key] ?? from
-          ;(next as Record<string, number>)[key as string] = from + (to - from) * eased
-        }
-        return next
-      })
-      task.api.updateScene({ elements: updated })
-      if (t < 1) requestAnimationFrame(tick)
-      else resolve()
+      // A throw inside requestAnimationFrame escapes the surrounding try/catch
+      // in executeActions and would surface to the React error boundary. Guard
+      // the whole tick and always resolve so the queue keeps draining.
+      try {
+        const now = performance.now()
+        const t = Math.min((now - start) / duration, 1)
+        // ease-out cubic for natural deceleration
+        const eased = 1 - Math.pow(1 - t, 3)
+        const raw = task.api.getSceneElements() as Array<Record<string, unknown>>
+        const elements = Array.isArray(raw) ? raw : []
+        const updated = elements.map((el) => {
+          if ((el as { id?: string }).id !== task.elementId) return el
+          const next = { ...el }
+          for (const key of Object.keys(task.toProps) as Array<keyof typeof task.toProps>) {
+            const from = task.fromProps[key] ?? 0
+            const to = task.toProps[key] ?? from
+            ;(next as Record<string, number>)[key as string] = from + (to - from) * eased
+          }
+          return next
+        })
+        safeUpdateScene(task.api, updated)
+        if (t < 1) requestAnimationFrame(tick)
+        else resolve()
+      } catch {
+        resolve()
+      }
     }
     requestAnimationFrame(tick)
   })
@@ -271,7 +323,7 @@ async function applyAction(
           ...(action.label_override && i === 0 ? { text: action.label_override, label: { text: action.label_override } } : {}),
           ...baseFields(),
         }))
-        api.updateScene({ elements: [...elements, ...cloned] })
+        safeUpdateScene(api, [...elements, ...cloned])
         // Tween the first (container) element
         const firstId = (cloned[0] as { id: string }).id
         const targetY = (cloned[0] as { y?: number }).y ?? 0
@@ -288,28 +340,26 @@ async function applyAction(
         const labelText = action.label_override ?? action.library_item ?? ''
         const textEl = makeBoundLabel(shapeId, labelText, x, y, width, height)
         const textId = (textEl as { id: string }).id
-        api.updateScene({
-          elements: [
-            ...elements,
-            {
-              id: shapeId,
-              type: 'rectangle',
-              x,
-              y,
-              width,
-              height,
-              strokeColor: '#4a7c59',
-              backgroundColor: '#c8e8d0',
-              fillStyle: 'solid',
-              strokeWidth: 2,
-              roughness: 0,
-              opacity: 100,
-              ...baseFields(),
-              boundElements: [{ id: textId, type: 'text' }],
-            },
-            textEl,
-          ],
-        })
+        safeUpdateScene(api, [
+          ...elements,
+          {
+            id: shapeId,
+            type: 'rectangle',
+            x,
+            y,
+            width,
+            height,
+            strokeColor: '#4a7c59',
+            backgroundColor: '#c8e8d0',
+            fillStyle: 'solid',
+            strokeWidth: 2,
+            roughness: 0,
+            opacity: 100,
+            ...baseFields(),
+            boundElements: [{ id: textId, type: 'text' }],
+          },
+          textEl,
+        ])
         tweenElement(api, shapeId, { opacity: 0, y: y - 40 }, { opacity: 100, y }, 250)
       }
       break
@@ -422,7 +472,7 @@ async function applyAction(
         }
       }
 
-      api.updateScene({ elements: [...elements, ...newEls] })
+      safeUpdateScene(api, [...elements, ...newEls])
 
       // Tween each new shape (not bound text - it follows containerId automatically)
       for (const { id, targetY } of tweenTargets) {
@@ -438,23 +488,45 @@ async function applyAction(
         | (SceneElement & { id?: string; boundElements?: Array<{ id: string; type: string }> | null })
         | undefined
       if (!from || !to) break
-      const fromRight = (from.x ?? 0) + (from.width ?? 0)
-      const fromMidY = (from.y ?? 0) + (from.height ?? 0) / 2
-      const toLeft = to.x ?? 0
-      const toMidY = (to.y ?? 0) + (to.height ?? 0) / 2
+
+      // Choose facing anchor sides based on relative position, then route an
+      // orthogonal elbow through the gutter. Straight diagonal lines (the old
+      // behavior) sliced through neighbouring boxes whenever the target was
+      // left of / above / below the source.
+      const fromRect: AnchorRect = {
+        x: from.x ?? 0,
+        y: from.y ?? 0,
+        width: from.width ?? 0,
+        height: from.height ?? 0,
+      }
+      const toRect: AnchorRect = {
+        x: to.x ?? 0,
+        y: to.y ?? 0,
+        width: to.width ?? 0,
+        height: to.height ?? 0,
+      }
+      const { start, end } = chooseAnchors(fromRect, toRect)
+      const points = routeOrthogonal(start, end)
+      const bounds = pointsBounds(start.x, start.y, points)
       const arrowId = uniqueId()
       const newScene: unknown[] = [...elements]
 
-      // Build arrow with explicit start/end bindings to the entities - the
-      // scene parser uses these to reliably resolve "from"/"to" later.
+      // Build a PURELY GEOMETRIC arrow. We deliberately do NOT set
+      // startBinding/endBinding: a bound non-elbow arrow has only its first and
+      // last points re-projected toward the bound element's centre via focus/gap,
+      // while our intermediate elbow vertices are left untouched - which drags the
+      // visible line through the box interior, across the table text. With null
+      // bindings Excalidraw renders our exact edge-anchored elbow and never moves
+      // an endpoint. The from/to linkage the bindings used to carry for scene
+      // readback + relayout now travels in customData (preserved across updates).
       const arrow: Record<string, unknown> = {
         id: arrowId,
         type: 'arrow',
-        x: fromRight,
-        y: fromMidY,
-        width: Math.abs(toLeft - fromRight),
-        height: toMidY - fromMidY,
-        points: [[0, 0], [toLeft - fromRight, toMidY - fromMidY]],
+        x: start.x,
+        y: start.y,
+        width: bounds.width,
+        height: bounds.height,
+        points,
         strokeColor: '#4a4e4a',
         backgroundColor: 'transparent',
         fillStyle: 'solid',
@@ -463,8 +535,9 @@ async function applyAction(
         opacity: 100,
         ...baseFields(),
         roundness: { type: 2 },
-        startBinding: from.id ? { elementId: from.id, focus: 0, gap: 4 } : null,
-        endBinding: to.id ? { elementId: to.id, focus: 0, gap: 4 } : null,
+        startBinding: null,
+        endBinding: null,
+        customData: { hatchFrom: from.id ?? null, hatchTo: to.id ?? null },
         lastCommittedPoint: null,
         startArrowhead: null,
         endArrowhead: 'arrow',
@@ -473,11 +546,14 @@ async function applyAction(
 
       if (action.label) {
         // Arrow labels are also bound text elements (containerId = arrow id).
+        // Place the label at the connector midpoint.
+        const midX = start.x + (end.x - start.x) / 2
+        const midY = start.y + (end.y - start.y) / 2
         const labelEl = makeBoundLabel(
           arrowId,
           action.label,
-          fromRight + (toLeft - fromRight) / 2 - 30,
-          fromMidY + (toMidY - fromMidY) / 2 - 10,
+          midX - 30,
+          midY - 10,
           60,
           20
         )
@@ -488,48 +564,35 @@ async function applyAction(
         newScene.push(arrow)
       }
 
-      // Also link the arrow back into each entity's boundElements so the
-      // bindings round-trip through Excalidraw's resize/move handlers.
-      const updated = newScene.map((el) => {
-        const e = el as { id?: string; boundElements?: Array<{ id: string; type: string }> | null }
-        if (e.id === from.id || e.id === to.id) {
-          return {
-            ...e,
-            boundElements: [
-              ...(e.boundElements ?? []),
-              { id: arrowId, type: 'arrow' as const },
-            ],
-          }
-        }
-        return el
-      })
-      api.updateScene({ elements: updated })
+      // No box back-link: the arrow is unbound, so injecting it into each box's
+      // boundElements would make Excalidraw treat the boxes as bound and
+      // re-synthesize phantom bindings on the next interaction. Connection
+      // linkage lives in arrow.customData instead (see scene readback).
+      safeUpdateScene(api, newScene)
       break
     }
     case 'annotate': {
-      api.updateScene({
-        elements: [
-          ...elements,
-          {
-            id: uniqueId(),
-            type: 'text',
-            x: action.x ?? 50,
-            y: action.y ?? 50,
-            width: 200,
-            height: 40,
-            text: `⚠ ${action.text ?? ''}`,
-            fontSize: 13,
-            fontFamily: 6, // 6 = Nunito (Excalidraw built-in, matches our app font)
-            strokeColor: '#92400e',
-            backgroundColor: 'transparent',
-            fillStyle: 'solid',
-            strokeWidth: 1,
-            roughness: 0,
-            opacity: 100,
-            ...baseFields(),
-          },
-        ],
-      })
+      safeUpdateScene(api, [
+        ...elements,
+        {
+          id: uniqueId(),
+          type: 'text',
+          x: action.x ?? 50,
+          y: action.y ?? 50,
+          width: 200,
+          height: 40,
+          text: `⚠ ${action.text ?? ''}`,
+          fontSize: 13,
+          fontFamily: 6, // 6 = Nunito (Excalidraw built-in, matches our app font)
+          strokeColor: '#92400e',
+          backgroundColor: 'transparent',
+          fillStyle: 'solid',
+          strokeWidth: 1,
+          roughness: 0,
+          opacity: 100,
+          ...baseFields(),
+        },
+      ])
       break
     }
     case 'remove': {
@@ -538,7 +601,7 @@ async function applyAction(
           ? { ...el, isDeleted: true }
           : el
       )
-      api.updateScene({ elements: updated })
+      safeUpdateScene(api, updated)
       break
     }
     case 'rename': {
@@ -547,7 +610,7 @@ async function applyAction(
           ? { ...el, text: action.toLabel_rename ?? '', label: { text: action.toLabel_rename ?? '' } }
           : el
       )
-      api.updateScene({ elements: updated })
+      safeUpdateScene(api, updated)
       break
     }
   }
@@ -687,18 +750,21 @@ async function relayoutScene(
     return el
   })
 
-  // Recompute arrow geometry for arrows whose both endpoints moved
-  // Also move arrow-bound label text by arrow delta
-  const arrowDeltas = new Map<string, { dx: number; dy: number }>()
+  // Recompute arrow geometry for arrows whose endpoints moved, then re-center
+  // any bound label on the new connector midpoint.
+  const arrowMidpoints = new Map<string, { x: number; y: number }>()
 
   const reMutated = mutated.map((el): AnyEl => {
     if (el.isDeleted) return el
     if (el.type !== 'arrow' && el.type !== 'line') return el
 
+    // Resolve endpoints from customData (our unbound arrows) first, falling
+    // back to legacy startBinding/endBinding for any older bound arrows.
+    const custom = el.customData as { hatchFrom?: string | null; hatchTo?: string | null } | null | undefined
     const startBinding = el.startBinding as { elementId?: string } | null | undefined
     const endBinding = el.endBinding as { elementId?: string } | null | undefined
-    const fromId = startBinding?.elementId
-    const toId = endBinding?.elementId
+    const fromId = custom?.hatchFrom ?? startBinding?.elementId
+    const toId = custom?.hatchTo ?? endBinding?.elementId
 
     if (!fromId || !toId) return el
 
@@ -706,57 +772,73 @@ async function relayoutScene(
     const fromEl = mutated.find((e) => e.id === fromId)
     const toEl = mutated.find((e) => e.id === toId)
 
-    // Only recompute if BOTH endpoints moved (i.e. have deltas)
+    // Recompute if either endpoint moved.
     if (!fromEl || !toEl) return el
     if (!deltas.has(fromId) && !deltas.has(toId)) return el
 
-    const fromRight = ((fromEl.x as number) ?? 0) + ((fromEl.width as number) ?? 0)
-    const fromMidY = ((fromEl.y as number) ?? 0) + ((fromEl.height as number) ?? 0) / 2
-    const toLeft = (toEl.x as number) ?? 0
-    const toMidY = ((toEl.y as number) ?? 0) + ((toEl.height as number) ?? 0) / 2
+    // Re-derive facing anchors + orthogonal route from the new box positions.
+    // Must mirror the create-time routing or relayout would flatten elbows
+    // back into diagonal straight lines.
+    const fromRect: AnchorRect = {
+      x: (fromEl.x as number) ?? 0,
+      y: (fromEl.y as number) ?? 0,
+      width: (fromEl.width as number) ?? 0,
+      height: (fromEl.height as number) ?? 0,
+    }
+    const toRect: AnchorRect = {
+      x: (toEl.x as number) ?? 0,
+      y: (toEl.y as number) ?? 0,
+      width: (toEl.width as number) ?? 0,
+      height: (toEl.height as number) ?? 0,
+    }
+    const { start, end } = chooseAnchors(fromRect, toRect)
+    const points = routeOrthogonal(start, end)
+    const bounds = pointsBounds(start.x, start.y, points)
 
-    const oldArrowX = (el.x as number) ?? 0
-    const oldArrowY = (el.y as number) ?? 0
-    const newArrowX = fromRight
-    const newArrowY = fromMidY
-
-    arrowDeltas.set(el.id as string, {
-      dx: newArrowX - oldArrowX,
-      dy: newArrowY - oldArrowY,
+    // Record the connector midpoint so any bound label can be re-centered on
+    // the new route rather than dragged by a start-point delta (which would
+    // drift off an elbow connector).
+    arrowMidpoints.set(el.id as string, {
+      x: start.x + (end.x - start.x) / 2,
+      y: start.y + (end.y - start.y) / 2,
     })
 
     return {
       ...el,
-      x: newArrowX,
-      y: newArrowY,
-      width: Math.abs(toLeft - fromRight),
-      height: toMidY - fromMidY,
-      points: [[0, 0], [toLeft - fromRight, toMidY - fromMidY]],
+      x: start.x,
+      y: start.y,
+      width: bounds.width,
+      height: bounds.height,
+      points,
       version: ((el.version as number) ?? 1) + 1,
       versionNonce: Math.floor(Math.random() * 1e9),
     }
   })
 
-  // Move arrow-bound label text by arrow delta
+  // Re-center arrow-bound label text on the new connector midpoint
   const finalElements = reMutated.map((el): AnyEl => {
     if (el.type !== 'text' || !el.containerId) return el
-    const arrowDelta = arrowDeltas.get(el.containerId as string)
-    if (!arrowDelta) return el
+    const mid = arrowMidpoints.get(el.containerId as string)
+    if (!mid) return el
+    const w = (el.width as number) ?? 60
+    const h = (el.height as number) ?? 20
     return {
       ...el,
-      x: ((el.x as number) ?? 0) + arrowDelta.dx,
-      y: ((el.y as number) ?? 0) + arrowDelta.dy,
+      x: mid.x - w / 2,
+      y: mid.y - h / 2,
       version: ((el.version as number) ?? 1) + 1,
       versionNonce: Math.floor(Math.random() * 1e9),
     }
   })
 
-  api.updateScene({ elements: finalElements })
+  // safeUpdateScene sanitizes every element (final safety net against the
+  // non-finite geometry that trips Excalidraw's render-time validation).
+  safeUpdateScene(api, finalElements)
 
   // Return new Y positions for tween targets
   const newYMap = new Map<string, number>()
   for (const [id, pos] of positions.entries()) {
-    newYMap.set(id, pos.y)
+    newYMap.set(id, Number.isFinite(pos.y) ? pos.y : 0)
   }
   return newYMap
 }
@@ -765,55 +847,143 @@ async function relayoutScene(
 // Action executor — with discipline-aware relayout
 // ---------------------------------------------------------------------------
 
+/**
+ * Result of a draw batch. Callers use this to surface a graceful Hatch message
+ * when a diagram could not be fully applied instead of letting a throw bubble
+ * up to the React error boundary ("something went wrong").
+ */
+export interface ExecuteActionsResult {
+  ok: boolean
+  applied: number
+  skipped: number
+  failed: number
+}
+
+/**
+ * Validate a single action before applying it. Pure and defensive: a truncated
+ * or malformed model response (e.g. when interpret hits max_tokens) can leave
+ * actions with missing/typeless elements or unresolvable labels. We drop those
+ * here so the rest of the batch still draws ("draw what's valid").
+ *
+ * Returns a possibly-narrowed action to apply, or null to skip it entirely.
+ */
+export function validateAction(action: unknown): CanvasAction | null {
+  if (!action || typeof action !== 'object') return null
+  const a = action as Record<string, unknown>
+  const kind = a.action
+
+  switch (kind) {
+    case 'create': {
+      const els = Array.isArray(a.elements) ? a.elements : []
+      const validEls = els.filter(
+        (e) => e && typeof e === 'object' && typeof (e as Record<string, unknown>).type === 'string'
+      )
+      if (validEls.length === 0) return null
+      return { ...(a as object), elements: validEls } as unknown as CanvasAction
+    }
+    case 'create_from_library': {
+      if (typeof a.library_item !== 'string' || !a.library_item.trim()) return null
+      return a as unknown as CanvasAction
+    }
+    case 'connect': {
+      if (typeof a.fromLabel !== 'string' || typeof a.toLabel !== 'string') return null
+      if (!a.fromLabel.trim() || !a.toLabel.trim()) return null
+      return a as unknown as CanvasAction
+    }
+    case 'annotate': {
+      if (typeof a.text !== 'string' || !a.text.trim()) return null
+      return a as unknown as CanvasAction
+    }
+    case 'remove': {
+      if (typeof a.targetLabel !== 'string' || !a.targetLabel.trim()) return null
+      return a as unknown as CanvasAction
+    }
+    case 'rename': {
+      if (typeof a.fromLabel !== 'string' || !a.fromLabel.trim()) return null
+      if (typeof a.toLabel_rename !== 'string' || !a.toLabel_rename.trim()) return null
+      return a as unknown as CanvasAction
+    }
+    default:
+      return null
+  }
+}
+
 export async function executeActions(
   actions: CanvasAction[],
   api: ExcalidrawAPI,
   libraryItems: LibraryItem[],
   discipline?: string
-): Promise<void> {
-  const stagger = actions.length >= 5 ? Math.min(2000 / actions.length, 200) : 0
+): Promise<ExecuteActionsResult> {
+  const result: ExecuteActionsResult = { ok: true, applied: 0, skipped: 0, failed: 0 }
+
+  // Defensive: callers cast loosely-typed model output to CanvasAction[].
+  const rawActions = Array.isArray(actions) ? actions : []
+  const validActions: CanvasAction[] = []
+  for (const raw of rawActions) {
+    const v = validateAction(raw)
+    if (v) validActions.push(v)
+    else result.skipped++
+  }
+  if (validActions.length === 0) {
+    result.ok = result.failed === 0 && result.skipped === 0
+    return result
+  }
+
+  const stagger = validActions.length >= 5 ? Math.min(2000 / validActions.length, 200) : 0
 
   // Track which element ids were NEW shapes created in this batch (for tween)
   const createdShapeIds: string[] = []
 
-  // Instrument create/create_from_library actions to track new shape ids
-  // by snapshot before and after each create action
-  const createActions = actions.filter(
+  const hasCreates = validActions.some(
     (a) => a.action === 'create' || a.action === 'create_from_library'
   )
-  const hasCreates = createActions.length > 0
 
-  for (let i = 0; i < actions.length; i++) {
-    const action = actions[i]
+  for (let i = 0; i < validActions.length; i++) {
+    const action = validActions[i]
 
-    if (action.action === 'create' || action.action === 'create_from_library') {
-      // Snapshot before
-      const before = new Set(
-        (api.getSceneElements() as Array<{ id: string }>).map((e) => e.id)
-      )
-      await applyAction(action, api, libraryItems, i === 0 ? 0 : stagger)
-      // Collect new shape ids (not text bound children)
-      const after = api.getSceneElements() as Array<{ id: string; type: string; containerId?: string | null }>
-      for (const el of after) {
-        if (!before.has(el.id) && !el.containerId) {
-          createdShapeIds.push(el.id)
+    // One bad action must not abort the batch or crash the app.
+    try {
+      if (action.action === 'create' || action.action === 'create_from_library') {
+        // Snapshot before
+        const beforeRaw = api.getSceneElements() as Array<{ id: string }>
+        const before = new Set((Array.isArray(beforeRaw) ? beforeRaw : []).map((e) => e.id))
+        await applyAction(action, api, libraryItems, i === 0 ? 0 : stagger)
+        // Collect new shape ids (not text bound children)
+        const afterRaw = api.getSceneElements() as Array<{ id: string; type: string; containerId?: string | null }>
+        for (const el of Array.isArray(afterRaw) ? afterRaw : []) {
+          if (!before.has(el.id) && !el.containerId) {
+            createdShapeIds.push(el.id)
+          }
+        }
+      } else {
+        await applyAction(action, api, libraryItems, i === 0 ? 0 : stagger)
+      }
+      result.applied++
+    } catch (err) {
+      result.failed++
+      result.ok = false
+      console.error('canvas action failed, skipping:', action.action, err)
+    }
+  }
+
+  // Run relayout after all creates but before tweens. A relayout throw must not
+  // crash the app - the shapes are already on the canvas, just unarranged.
+  if (hasCreates && createdShapeIds.length > 0) {
+    try {
+      const newYMap = await relayoutScene(api, discipline)
+
+      // Tween newly created shapes from (finalY - 40, opacity 0) to (finalY, opacity 100)
+      for (const id of createdShapeIds) {
+        const finalY = newYMap.get(id)
+        if (finalY !== undefined) {
+          tweenElement(api, id, { opacity: 0, y: finalY - 40 }, { opacity: 100, y: finalY }, 250)
         }
       }
-    } else {
-      await applyAction(action, api, libraryItems, i === 0 ? 0 : stagger)
+    } catch (err) {
+      result.ok = false
+      console.error('canvas relayout failed (shapes left as drawn):', err)
     }
   }
 
-  // Run relayout after all creates but before tweens
-  if (hasCreates && createdShapeIds.length > 0) {
-    const newYMap = await relayoutScene(api, discipline)
-
-    // Tween newly created shapes from (finalY - 40, opacity 0) to (finalY, opacity 100)
-    for (const id of createdShapeIds) {
-      const finalY = newYMap.get(id)
-      if (finalY !== undefined) {
-        tweenElement(api, id, { opacity: 0, y: finalY - 40 }, { opacity: 100, y: finalY }, 250)
-      }
-    }
-  }
+  return result
 }

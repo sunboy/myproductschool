@@ -60,7 +60,7 @@ const PUBLIC_SCORECARD_ROUTE =
   /^\/workspace\/challenges\/[^/]+\/share(?:\/[^/]+(?:\/(?:opengraph-image|twitter-image)[^/]*)?)?$/
 
 // Routes that can be reached before signing in.
-const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration', '/results', '/baseline']
+const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration', '/results', '/baseline', '/canvas-harness']
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -101,10 +101,12 @@ export async function proxy(request: NextRequest) {
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
   const isPureMarketing = (isMarketing && !isRoot && !isWaitlist) || isExactMarketing
-  if (isRoot || isWaitlist || isAuthRoute) {
-    return NextResponse.next()
-  }
 
+  // NOTE: /, waitlist, and auth routes intentionally do NOT short-circuit here.
+  // They need an auth-aware client so a logged-in visitor is redirected to
+  // /dashboard (the redirect blocks below are otherwise dead code). The no-user
+  // path in each of those blocks still serves the page, so an auth-service
+  // hiccup degrades to "show the public page", never a hard block.
   if (isPureMarketing || isAuthCallback || isPublicScorecard || (isApi && !isAdminApi)) {
     return NextResponse.next()
   }

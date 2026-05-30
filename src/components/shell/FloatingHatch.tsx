@@ -304,17 +304,19 @@ export function FloatingHatch() {
   const currentGlyphState = open ? 'listening' : activeCue?.state ?? glyphState
   const currentPageType = parseHatchPageContext(pathname).pageType
 
-  if (isInWorkspace && !activeCue) return null
-
   // Target resolved at emit time but vanished mid-step. For a tour, advance so the
   // director re-validates the next target (and applies its own fallback); for other
   // cues, clear so the marker never lingers on a dead target. Memoized so it doesn't
   // refire on unrelated parent rerenders while `missing` stays true.
+  // MUST be declared before any early return so hook order stays stable across
+  // renders (the workspace early-return below would otherwise drop this hook).
   const handleMissing = useCallback(() => {
     if (!activeCue) return
     if (activeCue.source === 'tour') hatchCtx?.nextTourStep()
     else hatchCtx?.clearCue()
   }, [activeCue, hatchCtx])
+
+  if (isInWorkspace && !activeCue) return null
 
   return (
     <>

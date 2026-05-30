@@ -437,6 +437,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('python')
   // 2-level draft map: 'default' key for single-prompt, or partId key for multi-part
   const [codingDrafts, setCodingDrafts] = useState<Record<string, Partial<Record<SupportedLanguage, string>>>>({})
+  // Ref mirror of codingDrafts so language/part switch handlers can read the
+  // freshest drafts synchronously. Reading the codingDrafts state variable in
+  // the same tick as a setCodingDrafts call sees the stale value, which silently
+  // dropped the buffer the user just wrote when switching language or part.
+  const codingDraftsRef = useRef(codingDrafts)
+  useEffect(() => { codingDraftsRef.current = codingDrafts }, [codingDrafts])
   const [outputPanelStatus, setOutputPanelStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle')
   const [outputPanelError, setOutputPanelError] = useState<string | undefined>(undefined)
   const [lastRunResult, setLastRunResult] = useState<RunResult | null>(null)
@@ -569,6 +575,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [discussionsLoaded, setDiscussionsLoaded] = useState(false)
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  // True once the Supabase session can no longer be refreshed (refresh token
+  // expired / signed out). Drives an inline "session timed out" prompt instead
+  // of letting the next 401 bubble into the app error boundary.
+  const [sessionExpired, setSessionExpired] = useState(false)
 
   const deriveDiscussionUpvotes = useCallback((items: ChallengeDiscussion[], userId: string | null) => {
     if (!userId) return new Set<string>()
@@ -782,14 +792,31 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const canvasExportRef = useRef<(() => Promise<Blob | null>) | null>(null)
   const libraryItemsRef = useRef<Array<{ id: string; name?: string; elements: unknown[] }>>([])
 
-  const handleCanvasActions = useCallback((response: { message: string; actions: unknown[] }) => {
+  const handleCanvasActions = useCallback(async (response: { message: string; actions: unknown[] }) => {
     if (!excalidrawApiRef.current) return
-    void executeActions(
-      response.actions as CanvasAction[],
-      excalidrawApiRef.current,
-      libraryItemsRef.current,
-      apiChallengeType ?? undefined
-    )
+    const actions = Array.isArray(response.actions) ? response.actions : []
+    if (actions.length === 0) return
+    try {
+      const result = await executeActions(
+        actions as CanvasAction[],
+        excalidrawApiRef.current,
+        libraryItemsRef.current,
+        apiChallengeType ?? undefined
+      )
+      if (!result.ok || result.failed > 0) {
+        setCanvasDrawFailure({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          text: "I couldn't finish that diagram cleanly. Want me to try again, or break it into smaller pieces?",
+        })
+      }
+    } catch {
+      // executeActions is internally hardened and shouldn't throw, but never
+      // let a canvas draw take down the workspace.
+      setCanvasDrawFailure({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        text: "I couldn't finish that diagram cleanly. Want me to try again, or break it into smaller pieces?",
+      })
+    }
   }, [apiChallengeType])
 
   const queueHatchPrompt = useCallback((text: string, autoSend = true) => {
@@ -832,6 +859,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Proactive nudge state
   const [proactiveNudge, setProactiveNudge] = useState<{ id: string; text: string } | null>(null)
   const lastNudgeAtRef = useRef<number>(0)
+
+  // Surfaces a graceful Hatch chat message when a canvas draw could not be
+  // fully applied (instead of crashing to the error boundary).
+  const [canvasDrawFailure, setCanvasDrawFailure] = useState<{ id: string; text: string } | null>(null)
   const nudgeCountRef = useRef<number>(0)
   const pendingDeltaRef = useRef<number>(0)
   const nudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -1508,15 +1539,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Per-language draft preservation: on language change, save current code and load draft/starter
   const handleLanguageChange = useCallback((newLang: SupportedLanguage) => {
+    if (newLang === currentLanguage) return
     // Determine which draft bucket we're in (part-specific or 'default')
     const partKey = activePartId ?? 'default'
-    // Save current code to drafts under old language in this bucket
-    setCodingDrafts((prev) => ({
-      ...prev,
-      [partKey]: { ...(prev[partKey] ?? {}), [currentLanguage]: currentCode },
-    }))
+    // Save current code to drafts under the OLD language in this bucket. Update
+    // the ref first (synchronous source of truth) then schedule the state update,
+    // so the read below never sees a stale codingDrafts value.
+    const nextDrafts = {
+      ...codingDraftsRef.current,
+      [partKey]: { ...(codingDraftsRef.current[partKey] ?? {}), [currentLanguage]: currentCode },
+    }
+    codingDraftsRef.current = nextDrafts
+    setCodingDrafts(nextDrafts)
     // Load draft for new language in this bucket, or fall back to part starter / challenge starter
-    const bucketDraft = codingDrafts[partKey]?.[newLang]
+    const bucketDraft = nextDrafts[partKey]?.[newLang]
     const metadata = detail?.challenge?.metadata as { starter_code?: Record<string, string> } | null | undefined
     const activePart = detail?.codingParts?.find(p => p.id === activePartId)
     const partStarter = activePart?.coding_starter_code?.[newLang] ?? null
@@ -1526,7 +1562,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setLastRunResult(null)
     setOutputPanelStatus('idle')
     setCodingGradingError(undefined)
-  }, [activePartId, currentLanguage, currentCode, codingDrafts, detail?.challenge?.metadata, detail?.codingParts])
+  }, [activePartId, currentLanguage, currentCode, detail?.challenge?.metadata, detail?.codingParts])
 
   // Paste handler: log paste event to challenge_attempts.conversation_summary via autosave
   const handleCodePaste = useCallback(async (event: { length: number; percentOfBuffer: number; timestamp: number }) => {
@@ -1770,6 +1806,30 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     return () => { cancelled = true }
   }, [])
 
+  // Keep a live Supabase browser client mounted for the whole workspace session.
+  // @supabase/ssr's autoRefreshToken only ticks while a client instance is alive,
+  // so a coding/SQL session left idle for a few minutes would otherwise let the
+  // access token expire, 401 the autosave + refetches, and crash into the app
+  // error boundary. Holding the client open keeps the token fresh; subscribing to
+  // onAuthStateChange lets us catch the case where the refresh token itself has
+  // finally expired and show an inline prompt instead of a hard crash.
+  useEffect(() => {
+    const supabase = createClient()
+    let mounted = true
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+      if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
+        setSessionExpired(true)
+      } else if (session) {
+        setSessionExpired(false)
+      }
+    })
+    return () => {
+      mounted = false
+      sub.subscription.unsubscribe()
+    }
+  }, [])
+
   useEffect(() => {
     setUpvoted(deriveDiscussionUpvotes(discussions, currentUserId))
   }, [currentUserId, deriveDiscussionUpvotes, discussions])
@@ -1836,6 +1896,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }
 
   // ── Render states ──────────────────────────────────────────────
+
+  // Session timed out (token could not be refreshed). Recoverable prompt instead
+  // of a generic error or the app-level error boundary. Latest draft is autosaved.
+  if (sessionExpired || challengeError === 'session_expired') {
+    const returnTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : ''
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
+        <HatchGlyph size={48} state="idle" className="text-primary" />
+        <h2 className="font-headline text-2xl font-bold text-on-surface">Your session timed out</h2>
+        <p className="text-on-surface-variant max-w-md">Sign back in and you will land right back here. Your latest draft was autosaved.</p>
+        <div className="flex gap-3">
+          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-surface-container border border-outline-variant text-on-surface rounded-full text-sm font-medium hover:bg-surface-container-high transition-colors">Try again</button>
+          <a href={`/login?returnTo=${encodeURIComponent(returnTo)}`} className="px-4 py-2 bg-primary text-on-primary rounded-full text-sm font-medium hover:opacity-90 transition-opacity">Sign back in</a>
+        </div>
+      </div>
+    )
+  }
 
   if (isApiMode && challengeError) {
     return (
@@ -2295,17 +2372,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   <button
                     data-testid={`part-toggle-${part.id}`}
                     onClick={() => {
-                      // Save current code to previous part's draft before switching
+                      // Save current code to previous part's draft before switching.
+                      // Mutate the ref first so the load-read below is never stale.
                       if (activePartId && activePartId !== part.id) {
-                        setCodingDrafts(prev => ({
-                          ...prev,
-                          [activePartId]: { ...(prev[activePartId] ?? {}), [currentLanguage]: currentCode },
-                        }))
+                        const nextDrafts = {
+                          ...codingDraftsRef.current,
+                          [activePartId]: { ...(codingDraftsRef.current[activePartId] ?? {}), [currentLanguage]: currentCode },
+                        }
+                        codingDraftsRef.current = nextDrafts
+                        setCodingDrafts(nextDrafts)
                       }
                       setActivePartId(isActive ? null : part.id)
                       if (!isActive) {
-                        // Load part draft or starter code
-                        const partDraft = codingDrafts[part.id]?.[currentLanguage]
+                        // Load part draft or starter code (read from the fresh ref)
+                        const partDraft = codingDraftsRef.current[part.id]?.[currentLanguage]
                         const partStarter = part.coding_starter_code?.[currentLanguage]
                         const meta = detail?.challenge?.metadata as { starter_code?: Record<string, string> } | null | undefined
                         const globalStarter = meta?.starter_code?.[currentLanguage] ?? ''
@@ -3381,6 +3461,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 onCanvasActions={handleCanvasActions}
                 proactiveNudge={proactiveNudge}
                 onDismissNudge={() => setProactiveNudge(null)}
+                canvasDrawFailure={canvasDrawFailure}
               />
             </div>
           )}

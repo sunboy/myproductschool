@@ -5,6 +5,13 @@ import { buildSkillContextPack, type SkillDiscipline } from '@/lib/hatch/skill-c
 import type { FlowMove } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
+// Only recommend challenge types the FLOW workspace can actually render.
+// quick_take has its own single-question surface (the workspace redirects it
+// back to /challenges), freeform is unpublished, and claude_code_analytics is
+// not in the workspace's rendered set. An allowlist (not a chain of .neq)
+// keeps any future non-workspace type out of Hatch's Pick by default.
+const WORKSPACE_TYPES = ['flow', 'system_design', 'data_modeling', 'sql', 'algorithm']
+
 const MOCK_NEXT = {
   challenge: {
     id: 'mock-c1',
@@ -117,7 +124,7 @@ export async function GET() {
     .from('challenges')
     .select('id, slug, title, prompt_text, difficulty, domain_id, move_tags, relevant_roles, paradigm')
     .eq('is_published', true)
-    .neq('challenge_type', 'freeform')
+    .in('challenge_type', WORKSPACE_TYPES)
     .contains('move_tags', [weakestMove])
 
   if (completedIds.length > 0) {
@@ -135,7 +142,7 @@ export async function GET() {
       .from('challenges')
       .select('id, slug, title, prompt_text, difficulty, domain_id, move_tags, relevant_roles')
       .eq('is_published', true)
-      .neq('challenge_type', 'freeform')
+      .in('challenge_type', WORKSPACE_TYPES)
 
     const { data: fallback } = completedIds.length > 0
       ? await fallbackQuery.not('id', 'in', `(${completedIds.join(',')})`).limit(1).maybeSingle()
