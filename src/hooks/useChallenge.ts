@@ -36,6 +36,13 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
     setError(null)
     try {
       const res = await fetch(`/api/challenges/${challengeId}`)
+      if (res.status === 401) {
+        // Session expired mid-session — signal recoverable auth state rather than
+        // throwing a generic error that trips the app error boundary. The live
+        // Supabase client in the workspace will refresh and the caller can retry.
+        setError('session_expired')
+        return
+      }
       if (!res.ok) throw new Error(`Failed to load challenge: ${res.status}`)
       const data = await res.json()
       // Ensure codingParts is always an array even if the server omits it (e.g. cached older response)

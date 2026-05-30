@@ -62,7 +62,7 @@ function ChallengeDiscussionContent() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [sort, setSort] = useState<DiscussionSort>('top')
   const [page, setPage] = useState(1)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const fetchDiscussions = useCallback(async () => {
     try {

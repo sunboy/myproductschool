@@ -275,6 +275,12 @@ export function useCodeRunner({
         body: JSON.stringify(body),
       })
 
+      if (res.status === 401) {
+        // Recoverable: the access token lapsed. Surface a friendly message; the
+        // workspace's live Supabase client refreshes in the background, so a
+        // re-run usually succeeds. Don't crash the workspace.
+        throw new Error('Your session timed out. Refreshing — run again in a moment.')
+      }
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: res.statusText }))
         throw new Error(err?.error ?? `HTTP ${res.status}`)
