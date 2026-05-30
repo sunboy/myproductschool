@@ -511,8 +511,14 @@ async function applyAction(
       const arrowId = uniqueId()
       const newScene: unknown[] = [...elements]
 
-      // Build arrow with explicit start/end bindings to the entities - the
-      // scene parser uses these to reliably resolve "from"/"to" later.
+      // Build a PURELY GEOMETRIC arrow. We deliberately do NOT set
+      // startBinding/endBinding: a bound non-elbow arrow has only its first and
+      // last points re-projected toward the bound element's centre via focus/gap,
+      // while our intermediate elbow vertices are left untouched - which drags the
+      // visible line through the box interior, across the table text. With null
+      // bindings Excalidraw renders our exact edge-anchored elbow and never moves
+      // an endpoint. The from/to linkage the bindings used to carry for scene
+      // readback + relayout now travels in customData (preserved across updates).
       const arrow: Record<string, unknown> = {
         id: arrowId,
         type: 'arrow',
@@ -529,8 +535,9 @@ async function applyAction(
         opacity: 100,
         ...baseFields(),
         roundness: { type: 2 },
-        startBinding: from.id ? { elementId: from.id, focus: 0, gap: 4 } : null,
-        endBinding: to.id ? { elementId: to.id, focus: 0, gap: 4 } : null,
+        startBinding: null,
+        endBinding: null,
+        customData: { hatchFrom: from.id ?? null, hatchTo: to.id ?? null },
         lastCommittedPoint: null,
         startArrowhead: null,
         endArrowhead: 'arrow',
@@ -557,22 +564,11 @@ async function applyAction(
         newScene.push(arrow)
       }
 
-      // Also link the arrow back into each entity's boundElements so the
-      // bindings round-trip through Excalidraw's resize/move handlers.
-      const updated = newScene.map((el) => {
-        const e = el as { id?: string; boundElements?: Array<{ id: string; type: string }> | null }
-        if (e.id === from.id || e.id === to.id) {
-          return {
-            ...e,
-            boundElements: [
-              ...(e.boundElements ?? []),
-              { id: arrowId, type: 'arrow' as const },
-            ],
-          }
-        }
-        return el
-      })
-      safeUpdateScene(api, updated)
+      // No box back-link: the arrow is unbound, so injecting it into each box's
+      // boundElements would make Excalidraw treat the boxes as bound and
+      // re-synthesize phantom bindings on the next interaction. Connection
+      // linkage lives in arrow.customData instead (see scene readback).
+      safeUpdateScene(api, newScene)
       break
     }
     case 'annotate': {
@@ -762,10 +758,13 @@ async function relayoutScene(
     if (el.isDeleted) return el
     if (el.type !== 'arrow' && el.type !== 'line') return el
 
+    // Resolve endpoints from customData (our unbound arrows) first, falling
+    // back to legacy startBinding/endBinding for any older bound arrows.
+    const custom = el.customData as { hatchFrom?: string | null; hatchTo?: string | null } | null | undefined
     const startBinding = el.startBinding as { elementId?: string } | null | undefined
     const endBinding = el.endBinding as { elementId?: string } | null | undefined
-    const fromId = startBinding?.elementId
-    const toId = endBinding?.elementId
+    const fromId = custom?.hatchFrom ?? startBinding?.elementId
+    const toId = custom?.hatchTo ?? endBinding?.elementId
 
     if (!fromId || !toId) return el
 

@@ -28,6 +28,22 @@ describe('chooseAnchors', () => {
     assert.equal(end.x, to.x) // enters left edge
   })
 
+  it('anchors horizontal connectors in the header band, not the column-text center', () => {
+    // A tall ER table: a center-anchored connector would slice through the
+    // dense column rows. Horizontal anchors must sit near the top (header band),
+    // 16px below the top edge, clamped to half-height for short boxes.
+    const from = rect(0, 0, 200, 240) // tall table
+    const to = rect(500, 0, 200, 240)
+    const { start, end } = chooseAnchors(from, to)
+    assert.equal(start.y, from.y + 16) // header band, not centerY (=120)
+    assert.equal(end.y, to.y + 16)
+    assert.notEqual(start.y, from.y + from.height / 2)
+
+    // Short box: offset clamps to half-height so the anchor stays inside.
+    const short = chooseAnchors(rect(0, 0, 160, 20), rect(400, 0, 160, 20))
+    assert.equal(short.start.y, 0 + 10) // min(16, 20/2) = 10
+  })
+
   it('reverses sides when the target is to the left', () => {
     const from = rect(400, 0)
     const to = rect(0, 0)

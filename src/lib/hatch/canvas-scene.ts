@@ -65,6 +65,7 @@ type RawElement = {
   isDeleted?: boolean
   startBinding?: { elementId?: string } | null
   endBinding?: { elementId?: string } | null
+  customData?: { hatchFrom?: string | null; hatchTo?: string | null } | null
   points?: number[][]
   boundElements?: Array<{ id: string; type: string }>
   containerId?: string | null
@@ -362,13 +363,14 @@ export function summarizeScene(elements: unknown[]): CanvasScene {
   }
 
   // Resolve arrows to entity-to-entity connections via:
-  // 1. explicit startBinding/endBinding (Excalidraw's preferred linkage)
-  // 2. nearest-entity heuristic for unbound arrows
+  // 1. customData.hatchFrom/hatchTo (our unbound arrows carry linkage here)
+  // 2. legacy startBinding/endBinding (older bound arrows)
+  // 3. nearest-entity heuristic for arrows with neither
   const entitiesById = new Map(entities.map((e) => [e.id, e]))
   const connections: SceneConnection[] = []
   for (const arrow of arrows) {
-    const startId = arrow.startBinding?.elementId
-    const endId = arrow.endBinding?.elementId
+    const startId = arrow.startBinding?.elementId ?? arrow.customData?.hatchFrom ?? undefined
+    const endId = arrow.endBinding?.elementId ?? arrow.customData?.hatchTo ?? undefined
     let from = startId ? entitiesById.get(startId)?.label : undefined
     let to = endId ? entitiesById.get(endId)?.label : undefined
     if (!from) from = findNearestEntity(arrow, entities, 'start')

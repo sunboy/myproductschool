@@ -43,8 +43,9 @@ export const LAYOUT = {
   START_X: 80,
   START_Y: 80,
   // Horizontal gutter between boxes in a row. Wide enough to fit a routed
-  // connector plus its cardinality label without crossing into a neighbour.
-  COL_GAP: 160,
+  // connector plus its cardinality label (e.g. "1:N") without the label
+  // crowding either table's text.
+  COL_GAP: 220,
   // Minimum vertical gap between wrapped rows.
   ROW_GAP: 80,
   // Larger vertical gap when a component has edges that cross rows, so an
@@ -52,6 +53,11 @@ export const LAYOUT = {
   ROW_GAP_CONNECTED: 120,
   MAX_PER_ROW: 4,
 } as const;
+
+// Vertical offset from a box's top edge for horizontal connector anchors. Keeps
+// a same-row connector (and its cardinality label) in the table header band,
+// above the dense column rows, instead of slicing through the column text.
+const HEADER_BAND_OFFSET = 16;
 
 // ─── Connector anchoring + orthogonal routing ─────────────────────────────────
 
@@ -97,16 +103,22 @@ export function chooseAnchors(from: AnchorRect, to: AnchorRect): ChosenAnchors {
   const dy = centerY(to) - centerY(from);
 
   if (Math.abs(dx) >= Math.abs(dy)) {
-    // Horizontal dominant
+    // Horizontal dominant. For an ER table the vertical center sits in the middle
+    // of the column list, so a center-anchored connector (and its cardinality
+    // label) draws straight across the dense column text. Anchor horizontal
+    // connectors in the header band near the top of each box instead, so the
+    // line travels above the columns. Clamp to the box so short boxes still
+    // anchor sanely.
+    const headerY = (r: AnchorRect) => r.y + Math.min(HEADER_BAND_OFFSET, r.height / 2);
     if (dx >= 0) {
       return {
-        start: { x: from.x + from.width, y: centerY(from), side: 'right' },
-        end: { x: to.x, y: centerY(to), side: 'left' },
+        start: { x: from.x + from.width, y: headerY(from), side: 'right' },
+        end: { x: to.x, y: headerY(to), side: 'left' },
       };
     }
     return {
-      start: { x: from.x, y: centerY(from), side: 'left' },
-      end: { x: to.x + to.width, y: centerY(to), side: 'right' },
+      start: { x: from.x, y: headerY(from), side: 'left' },
+      end: { x: to.x + to.width, y: headerY(to), side: 'right' },
     };
   }
   // Vertical dominant
