@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000013",
+  "title": "The Competitor Cloned Your Core Feature",
+  "scenario_role": null,
+  "scenario_context": "An async video feedback tool built for design teams has grown to 80,000 MAU at 15% month-over-month. The product fills the gap between static Figma comments and synchronous calls: designers record walkthroughs, annotate frames, and leave timestamped video notes for each other and for stakeholders. Teams that adopt it reduce design-review cycles by an average of two rounds. Then Figma announces native async video comments, nearly identical in scope, shipping to all plans at no additional cost.",
+  "scenario_trigger": "Investors ask what the moat is. The feature that drove initial adoption is now a checkbox in the dominant design platform's release notes. Retention data from the last 30 days shows no movement yet, but the sales team is already fielding questions from prospects who want to wait and see.",
+  "scenario_question": "Diagnose what the Figma announcement actually reveals about the business, and recommend a path forward.",
+  "engineer_standout": "A strong answer recognizes that Figma cloning the feature is not the problem. It is a signal that the feature was never the moat. The real question is whether a compounding advantage exists or can be built: workflow depth Figma won't prioritize because it's a checkbox for them, collaboration data and AI on review patterns, integration with tools design teams use outside Figma, or switching costs accumulated in the existing 80,000-user base. The trap is racing to out-feature Figma on the commodity or treating the announcement as a crisis rather than a clarification. The move is to identify where you can be demonstrably deeper for the specific user than a general-purpose platform for whom async video is a 1% priority.",
+  "paradigm": "traditional",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["strategic_thinking", "creative_execution"],
+  "secondary_competencies": ["motivation_theory", "taste"],
+  "topic_tags": ["moat", "competition", "differentiation", "strategy", "network-effects", "retention"],
+  "technique_tags": ["taste-frame", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Figma cloning the feature is a data point about the feature, not a verdict on the business. What does it actually tell you about where the value was, and where it wasn't?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What does the Figma announcement most accurately reveal about the async video feedback tool's position?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Figma replicating the feature in its native product is evidence that the feature itself was a wedge, not a moat. A moat is durable by definition: something a well-resourced platform cannot or will not replicate. The 80,000 MAU and 15% MoM growth were real, but they measured adoption of a capability that Figma had the resources to build in a quarter. The actual strategic question the announcement surfaces is whether the business has built anything in that growth period that Figma cannot acquire by adding a checkbox: workflow depth specific to design-review processes, collaboration data that trains better AI on review patterns, integrations with tools design teams use outside Figma, or switching costs embedded in how teams have structured their review workflows.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "motivation_theory"],
+              "explanation": "This framing does the upstream move correctly: it treats the Figma announcement as a diagnostic, not a threat to respond to directly. The 80,000 MAU and 15% MoM figures matter because they represent a real base of teams who restructured their review workflows around this product. The question is whether that restructuring created switching costs and data assets, or whether it was entirely attributable to the async video capability Figma now ships natively. Getting this framing right determines whether the correct response is to go deeper on the niche or to compete with Figma on features.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Frame is identifying the problem behind the problem. The surface problem is 'Figma copied us.' The upstream problem is 'our feature was a wedge and the moat question was never resolved.' Motivation Theory: the friction being removed for design teams was the gap between static comments and synchronous calls; Figma removing that friction for free changes what motivates adoption of the standalone product."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The Figma announcement is primarily a distribution threat. Figma ships to millions of designers and can bundle async video at zero marginal cost, making it impossible to compete on price or acquisition. The problem is that the standalone product lacks Figma's distribution, not that the feature itself is undifferentiated. The response should focus on building distribution advantages the product has that Figma doesn't, such as enterprise sales relationships and cross-functional adoption beyond design teams.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Distribution disadvantage is a real constraint and worth naming, but this framing misses the upstream question. If the product's value was primarily in the async video capability, then distribution is the only thing to compete on and that is a losing position against Figma. The stronger framing interrogates whether the product has built anything in 80,000 MAU and 15 months of growth that constitutes a durable advantage, before concluding that distribution is the main battleground.",
+              "framework_hint": "Strategic Thinking: this identifies a real constraint but starts with the competitive response rather than the diagnostic. The reasoning move at Frame is to first establish what the announcement reveals about the business's actual position, then determine what to compete on."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The Figma announcement means the market is validating the async video feedback category. Big platforms entering a space confirms there is real demand. The product should use this moment to raise a marketing push emphasizing that it was the original, purpose-built solution while Figma's version is a generic feature bolt-on.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Market validation is a common post-hoc framing used to recast competitive pressure as a positive signal. While Figma's entry does confirm demand exists, the framing sidesteps the question of what actually differentiates the product from Figma's native offering. 'We were first' and 'we are purpose-built' are marketing claims, not competitive moats. The problem this answer avoids is specifying what a purpose-built advantage actually is in concrete product terms.",
+              "framework_hint": "Strategic Thinking failure: treating a competitive threat as category validation without identifying what makes the challenger defensible is not framing, it is reframing to avoid the hard question. The reasoning move at Frame is to characterize the problem accurately, not favorably."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The Figma announcement is a short-term distraction. Native platform features are usually underpowered compared to dedicated tools. The product should continue its current roadmap and let Figma's limitation become apparent to users over 12-18 months, at which point the quality gap will win back any customers who tried the native version.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Betting on platform feature quality gaps is a historically poor strategy against well-resourced incumbents who iterate on the same surface over time. Figma built the leading design tool in the world by iterating relentlessly. The assumption that their async video implementation will remain underpowered is not grounded in the evidence presented. The 80,000 MAU base offers a window to build durable advantages, but that window closes faster than an 18-month wait-and-see approach assumes.",
+              "framework_hint": "Strategic Thinking failure: waiting for a competitor's feature to prove inferior is a passive bet that requires the competitor to stop improving. The reasoning move at Frame is to characterize the actual competitive dynamic, which here is a capability now available for free at Figma's scale, not a temporary quality gap."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "There are at least four structurally different responses here, and they have different moat implications. Feature competition with Figma is one. It is probably not the strongest. What else is on the table?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of strategic options most completely maps the paths available after Figma's announcement?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct paths: (1) deepen the design-review workflow specifically, building integrations, handoff tooling, annotation depth, and AI on review patterns that Figma won't prioritize because it is a niche workflow for a platform serving all of design; (2) expand the user base beyond design teams to include engineering and product stakeholders who participate in design reviews but are not primarily Figma users, where Figma has no native reach; (3) reposition toward the workflow layer rather than the video layer, making async video the substrate and building a structured review process product on top, with templates, approval gates, and compliance tracking that a feature checkbox cannot replicate; (4) use the 80,000-user base and 15% MoM growth to accelerate toward an acquisition conversation with a platform that competes with Figma and needs async collaboration capabilities.",
+              "quality": "best",
+              "competencies": ["creative_execution", "strategic_thinking"],
+              "explanation": "This set covers the decision space without conflating options that have different moat implications. Options 1 and 3 both involve the design-review niche, but through different product bets: depth on the existing surface versus a new product layer on top of the video substrate. Option 2 is the non-obvious expansion move: Figma's native async video is only for Figma users, meaning the 80,000-user product can serve cross-functional teams in a way Figma structurally cannot. Option 4 names the exit path, which is a real option at 80,000 MAU and strong growth, and pretending it is not on the table produces an incomplete list.",
+              "framework_hint": "Creative Execution: the reasoning move at List is generating structurally distinct options, not variations on the same axis. Options 1 and 3 both say 'go deeper' but they mean different things in product terms and have different defensibility profiles. Option 2 breaks the Figma-centric frame entirely. A strong list makes the differences legible before choosing."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two paths: compete with Figma by out-executing on async video features, or pivot away from design teams entirely and find a new market where Figma is not a competitor. The Figma announcement makes the design-review space a losing battleground, so the real question is whether to fight or flee.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Fight-or-flee is a common strategic binary that understates the option space. It treats the design-review workflow as a monolith owned by Figma, when in practice Figma's native async video solves only the video annotation layer. Cross-functional review workflows, compliance-driven approval processes, and stakeholder groups outside Figma's user base are not in Figma's remit. A binary list forces a false choice and misses the paths that exploit what Figma cannot or will not build.",
+              "framework_hint": "Creative Execution: a two-option list at the List step almost always compresses the option space by anchoring on the most visible tension. The reasoning move is to find the third and fourth options that the binary framing obscures."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The product should survey its existing 80,000 users to find out which features they value most beyond async video, then use that data to build a roadmap focused on those features. User research will identify the true differentiation before any strategic bets are made.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "User research on feature preferences is a useful input to product prioritization, but it is not a strategic option. The List step requires enumerating what to do in response to the competitive situation, not what to learn first. The 80,000-user base is an asset that can generate data, but the strategic options are independent of what a user survey returns. This answer replaces option generation with research deferral.",
+              "framework_hint": "Creative Execution failure: listing 'do user research' as a strategic option is not generating options, it is generating a pre-step. The reasoning move at List is to enumerate structurally distinct responses to the situation, not to identify what additional information might be useful."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The product should immediately add a feature that directly copies something Figma does not have in its async video implementation, such as real-time collaborative watching or AI-generated review summaries, and use the launch as a press moment to position ahead of Figma's rollout. Speed of execution is the only moat available now.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Feature racing against Figma is a path, but presenting it as the only viable option and naming 'speed of execution' as a moat misunderstands what moats are. Figma has hundreds of engineers. A feature gap this product opens today can be closed in Figma's next sprint. Speed is not durable. More importantly, listing only one option when four structurally different paths exist fails the List step entirely.",
+              "framework_hint": "Strategic Thinking failure: speed of execution is a tactical advantage, not a moat. A moat is something a well-resourced competitor cannot replicate regardless of speed. Listing only one option, and that option being a feature race against a platform with greater engineering resources, does not enumerate the decision space."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before picking a path. What is the business actually optimizing for: feature depth in the niche, user base expansion, or durable differentiation Figma will not prioritize? The answer determines which option wins.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which path should the business pursue, and what is the explicit criterion and sacrifice that justifies the choice?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Go deep on the design-review workflow layer rather than the video layer, building structured review processes, approval gates, integration with handoff tools, and AI on accumulated review data from the 80,000-user base. The criterion is durable differentiation: the target is a product surface Figma will not prioritize because it serves a niche workflow that represents a small fraction of Figma's total user intent. The sacrifice is breadth. This path means explicitly not competing for generic async video use cases and potentially shrinking the addressable market to the subset of teams with structured design-review processes. That sacrifice is acceptable because the 80,000 MAU and 15% MoM growth are themselves a data asset: the review history, annotation patterns, and approval chains in that base are training data for AI features a generalist platform cannot replicate without the same base.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This answer names the criterion (durable differentiation Figma won't replicate), names the sacrifice (addressable market breadth), and explains why the sacrifice is acceptable (the existing user base is a data asset that compounds over time). It distinguishes between competing on the video layer (where Figma has structural advantages) and competing on the workflow layer (where specialization produces defensibility). The tradeoff is explicit and real, not assumed away.",
+              "framework_hint": "Taste: the reasoning move at Optimize is feeling the difference between a tradeoff and a preference. Choosing workflow depth over addressable breadth is a real tradeoff because the two are in genuine tension: going deeper on the niche means fewer generic use cases, not more. Strategic Thinking: naming the criterion explicitly (durable differentiation Figma won't prioritize) is what makes the choice defensible, not just directionally correct."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Expand beyond design teams to serve cross-functional review workflows including engineering, product, and executive stakeholders. Figma's native async video only reaches Figma users, so the addressable market is actually larger after the announcement than before it. The criterion is total user base growth, measured by MAU outside the design-team segment. The sacrifice is product focus: serving cross-functional teams requires different integrations, different UX, and different onboarding than design-first teams.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking", "creative_execution"],
+              "explanation": "Cross-functional expansion is a real option and naming the sacrifice (product focus) is correct. But this answer sidesteps the harder question of whether the existing 80,000-user base and its accumulated data are being used as a compounding asset. Expanding to a new user segment without leveraging the review data and workflow depth from the existing segment means building a new product rather than extending a moat. The criterion is also vague: 'total user base growth' is a lagging metric, not a differentiation criterion.",
+              "framework_hint": "Taste: this answer names a sacrifice but not the criterion clearly enough to distinguish it from a preference for growth. The criterion should specify what makes the new segment defensible, not just larger. A named criterion answers 'what are we optimizing for that Figma cannot match' rather than 'what makes us bigger.'"
+            },
+            {
+              "option_label": "C",
+              "option_text": "The product should simultaneously deepen workflow features for design teams and expand to cross-functional use cases. Both paths are important and neither should be deprioritized. A strong roadmap can pursue both objectives over a 12-month horizon.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Pursuing both paths simultaneously at a company with 80,000 MAU and no Figma-scale engineering resources is not a strategy, it is resource dilution. The Optimize step requires naming a criterion and a sacrifice. 'Do both' answers fail the taste criterion because they refuse to name what gets given up. With finite engineering capacity, choosing everything means choosing nothing in particular.",
+              "framework_hint": "Taste failure: the signal that an Optimize answer is surface-level is when it refuses to name what gets given up. 'Do both' is a preference statement masquerading as a strategy. The reasoning move is to feel the difference between a real tradeoff and an aspiration that avoids the tension."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The only correct response to Figma's announcement is to accelerate feature output on async video specifically, shipping faster than Figma can iterate on a side feature. Users who need professional-grade async video review will pay for a dedicated tool that ships improvements weekly. Speed and quality are the criterion; the sacrifice is anything that slows the core roadmap.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Feature racing on the same surface Figma now owns as a native capability is not a defensible strategy. Figma will iterate on its async video implementation as part of normal product development; the dedicated tool does not need to slow down for Figma to match weekly improvements. More importantly, this answer names 'speed' as the criterion without identifying what makes speed on this surface durable. A speed advantage that disappears when Figma assigns more engineers is not a criterion, it is a temporary operational state.",
+              "framework_hint": "Strategic Thinking failure: a criterion must identify what the strategy produces that cannot be replicated by a well-resourced competitor in a normal product cycle. 'Ship faster' is a tempo advantage, not a moat. The reasoning move at Optimize is to name what is being built that compounds over time, not what is being executed faster today."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What specific metric, at what threshold, by when would confirm the workflow-depth bet is building a moat rather than just holding the existing base? Name the failure signal too.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define a falsifiable winning condition for the workflow-depth strategy over a 12-month horizon after Figma's launch?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success: 30-day retention among teams that adopted structured review workflows (approval gates, multi-round annotation, AI summary features) holds at or above pre-announcement levels six months after Figma's launch, while retention among teams using only the basic async video layer declines by more than 10 percentage points relative to the structured-workflow cohort. This gap proves the workflow-depth bet is creating switching costs Figma's checkbox cannot capture. Failure: if the retention gap between the two cohorts does not materialize, or if the structured-workflow cohort itself churns at the same rate as the basic cohort, the depth strategy is not building the moat assumed and a pivot toward cross-functional expansion or an acquisition conversation should be initiated.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions. The success condition measures the specific claim the strategy makes: that workflow depth creates switching costs that survive Figma's launch. The failure condition names the signal that would prove the claim false: no retention gap between the depth cohort and the basic cohort, meaning depth is not producing differentiated stickiness. Both conditions use metrics anchored in the scenario (30-day retention, the pre-announcement 80,000 MAU base as the measurement population).",
+              "framework_hint": "Strategic Thinking: the reasoning move at Win is writing a hypothesis with a falsification condition, not just a success target. The failure signal (no retention gap between cohorts) is what distinguishes a testable strategy from an aspiration. Domain Expertise: segmenting retention by product adoption depth (structured-workflow cohort vs. basic-use cohort) is the instrumentation that makes the winning condition observable rather than theoretical."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success is maintaining 80,000 MAU six months after Figma's launch with less than 5% churn in the existing base. If the user base holds, the strategy is working. If churn exceeds 10%, revisit the roadmap.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Maintaining the existing base is a reasonable floor metric, but it is too coarse to confirm the workflow-depth strategy specifically. The base could hold because switching costs exist, or because teams have not yet evaluated Figma's native feature, or because the migration cost is high regardless of product differentiation. A flat MAU number six months out cannot distinguish between 'the depth bet is working' and 'teams have not gotten around to switching yet.' The winning condition needs to measure what the strategy is specifically claiming to build.",
+              "framework_hint": "Strategic Thinking: a winning condition that cannot distinguish between 'the strategy is producing moat' and 'inertia is delaying churn' is not falsifiable in the relevant sense. The reasoning move at Win is to name the metric that the strategy specifically moves, not the broadest metric that would look bad if the strategy failed."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is growing MAU from 80,000 to 100,000 within 12 months of Figma's launch, demonstrating that the product can acquire new users despite the competitive pressure. Growth in the face of competition proves market confidence in the product.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Top-line MAU growth during a period when the closest competitor is shipping at scale measures acquisition effectiveness, not moat building. The strategy being evaluated is workflow depth as a retention driver and switching cost, not a growth marketing bet. Growing to 100,000 MAU while churning existing users who adopt Figma's native feature would show a passing MAU number but a failing strategy. The winning condition measures the wrong variable.",
+              "framework_hint": "Domain Expertise failure: the winning condition must measure the outcome the strategy was designed to produce. The workflow-depth strategy is a retention and switching-cost bet, not an acquisition bet. Measuring MAU growth assesses acquisition, not the question the strategy is trying to answer."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is if Figma does not add structured review workflow features (approval gates, multi-round annotation) to its native async video within 12 months of launch, confirming that the niche is too small for Figma to prioritize and therefore defensible. Failure is Figma shipping those features.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A winning condition defined by a competitor's product decision is not measurable, not under the business's control, and does not confirm that the strategy is working even if Figma does not ship those features. Figma could deprioritize structured review workflows for reasons entirely unrelated to whether the business's depth bet is producing switching costs. This also inverts the strategic logic: the depth bet should produce retention advantages observable in the user base, not contingent on Figma's roadmap decisions.",
+              "framework_hint": "Strategic Thinking failure: winning conditions must be defined by metrics the team can observe and influence. Competitor roadmap decisions are neither. The reasoning move at Win is naming what the business can measure about its own users, not predicting what another company will or will not build."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

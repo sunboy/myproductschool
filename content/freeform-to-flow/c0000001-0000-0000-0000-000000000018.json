@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000018",
+  "title": "The CEO Wants an AI Chatbot by Friday",
+  "scenario_role": null,
+  "scenario_context": "Monday morning. The CEO returned from a conference fired up about AI and wants a customer-facing chatbot live by Friday. The stated reason: a competitor just shipped one. The chatbot would answer product questions and handle basic support. The support team currently handles 2,000 tickets a month.",
+  "scenario_trigger": "The 2pm meeting is in two hours. The CEO is expecting a plan, not a debate. A customer-facing bot that gives wrong answers is worse than no bot at all, but Friday is the deadline on the table.",
+  "scenario_question": "Frame what the CEO actually wants versus what the Friday deadline implies, identify the real options, decide what to optimize for, and define what a fast, safe first win looks like.",
+  "engineer_standout": "A strong answer recognizes that the Friday deadline is a proxy for competitive responsiveness, not a literal product requirement. The CEO saw a competitor ship a chatbot and wants to be seen moving fast. The actual goals are support efficiency and looking competitive. A customer-facing open-ended bot that hallucinates product details or makes false promises about pricing creates brand and legal risk that outweighs any short-term optics gain. The engineering move is to agree with the intent (move fast, look responsive, reduce support load) while proposing a first step that ships fast AND de-risks: an internal agent-assist tool that helps support agents respond faster, or a narrow FAQ deflection bot that only answers questions the team has pre-approved answers for, with a hard fallback to human handoff. Both are shippable by Friday in a stripped-down form. The key distinction is between scoping the first ship to the safe subset (confident answers only, narrow domain, human-in-the-loop) versus shipping an open-ended bot that covers the full support surface with AI-generated answers.",
+  "paradigm": "ai_assisted",
+  "difficulty": "easy",
+  "estimated_minutes": 20,
+  "primary_competencies": ["cognitive_empathy", "strategic_thinking"],
+  "secondary_competencies": ["motivation_theory", "taste"],
+  "topic_tags": ["ai-strategy", "scoping", "support-automation", "stakeholder-management"],
+  "technique_tags": ["taste-frame", "jobs-mapping"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The CEO said 'chatbot by Friday.' The competitor shipped one. Support handles 2,000 tickets a month. What is the CEO actually asking for, and what would a wrong answer to a customer cost?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the CEO's request?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The CEO is not asking for a chatbot. The CEO is asking to look competitive and reduce support cost. The Friday deadline and the competitor reference are the real signals: this is a competitive anxiety response, not a product decision. A customer-facing bot that hallucinates answers to product questions or misrepresents pricing is worse than no bot for a company handling 2,000 support tickets a month, because a single wrong answer at scale compounds into a brand and legal risk the CEO did not intend to create. The frame that matters is: what is the fastest path to demonstrating AI-driven support improvement without exposing customers to unvetted AI output?",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "motivation_theory"],
+              "explanation": "The competitor reference and the Friday deadline are proxies for what the CEO actually wants: competitive signal and visible progress on support efficiency. Framing the request as 'build a chatbot' misses that the real job is 'respond to competitive pressure without creating new risk.' A customer-facing bot handling open-ended product questions from a 2,000-ticket-a-month support queue is a meaningful risk surface. The correct frame separates the CEO's goal (look fast, reduce support load) from the proposed means (full open-ended chatbot by Friday).",
+              "framework_hint": "Cognitive Empathy: the CEO's success metric is 'we moved fast and look competitive,' not 'a chatbot exists.' Motivation Theory: the friction the CEO feels is competitive anxiety after the conference, not a product gap. Finding the actual job to be done before designing the solution is the upstream move."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The CEO wants a support chatbot because the competitor shipped one and the team is behind. The right response is to scope the chatbot to the most common support categories, use an existing AI API, and ship a limited version by Friday that covers the top five question types from the 2,000-monthly-ticket queue. A limited scope is more achievable than a full chatbot.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Scoping to the top question types is a reasonable execution instinct and points in the right direction. The gap is that this answer accepts the premise (customer-facing bot by Friday) without asking what the CEO actually needs. A scoped bot that still gives AI-generated answers to customer questions retains the brand and legal risk of wrong answers, just on a smaller question surface. The framing move is to interrogate whether customer-facing is the only form the first step can take, not just to narrow the domain.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly models the CEO's desire to move fast. Strategic Thinking gap: does not name the criterion that distinguishes a scoped-but-still-risky first ship from a scoped-and-safe one. The reasoning move is to ask what the CEO's goal requires, not just to narrow the implementation."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team is being asked to build a chatbot by Friday. The right approach is to evaluate which chatbot framework is fastest to deploy, pick one, and start immediately. Speed is the constraint.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "This treats the request as a specification rather than a signal. Jumping to framework selection before asking what problem the chatbot is meant to solve skips the framing step entirely. Speed is a real constraint, but optimizing for deployment speed without asking what kind of bot is appropriate for a customer-facing support queue at 2,000 tickets a month produces the wrong artifact fast.",
+              "framework_hint": "Motivation Theory failure: identifying the task (deploy a chatbot) without identifying the friction the CEO is actually trying to remove. The job is not 'chatbot exists.' The job is 'look competitive and improve support.' Skipping to solutions before framing the problem correctly sends the team in the wrong direction at full speed."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The CEO is making a technically uninformed request driven by conference excitement. The engineering team should push back clearly in the 2pm meeting, explain that AI chatbots require safety testing and cannot be shipped in four days, and propose a proper six-week roadmap for a responsible deployment.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The technical concerns are valid. A production-grade customer-facing AI support bot does take more than four days to build safely. But framing the 2pm meeting as a moment to say no misses the real job, which is to find the fastest safe path that satisfies what the CEO actually wants. A six-week roadmap for a responsible deployment is correct on the merits but lands as the team blocking rather than moving. The framing step should produce a better proposal, not a refusal.",
+              "framework_hint": "Cognitive Empathy failure: models the CEO as uninformed rather than as someone with a real competitive anxiety that deserves a real answer. The move is to simulate the CEO's goal and propose a path that satisfies it, not to correct the request and defer action."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The goal is competitive responsiveness and support efficiency, not 'a chatbot.' What are the structurally distinct options, and which stakeholders does each one expose to risk?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of options best covers the real solution space for the CEO's underlying goal?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three structurally distinct options exist. First: an internal agent-assist tool that surfaces relevant knowledge-base articles for support agents as they respond, reducing handle time on the 2,000 monthly tickets without exposing customers to AI-generated answers. Second: a narrow FAQ deflection bot that only answers questions with pre-approved, human-reviewed answers and hard-routes everything else to a human, covering the top 10 to 15 question types that account for the majority of ticket volume. Third: a full open-ended customer-facing chatbot trained on product documentation that attempts to handle any support question. These three are mechanistically distinct: the first never touches the customer conversation, the second limits AI output to a pre-validated answer set, the third exposes customers to AI-generated responses with no prior review. Each has a different risk profile and a different time-to-ship.",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "The three options are structurally distinct because they differ in where the AI output appears (internal only vs. narrow customer-facing vs. open-ended customer-facing) and therefore in who bears the risk of a wrong answer. The internal assist tool has near-zero customer risk. The narrow FAQ bot has low risk if the pre-approved answer set is well-controlled. The full chatbot carries the highest risk for the fastest visible competitive signal. Listing them separately matters because they require different evaluation criteria and different stakeholder sign-offs.",
+              "framework_hint": "Creative Execution: generating options that are mechanistically distinct rather than variations on one approach. Each option here routes risk differently, which is the relevant structural difference. A list of three phrasings of 'build a chatbot' would score as one option. Cognitive Empathy: the enumeration also maps which stakeholder bears the risk of a wrong answer in each case, which is the question the CEO has not yet considered."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The main options are a full chatbot, a partial chatbot limited to FAQ topics, and a human-plus-AI hybrid where agents use AI drafts before sending. The hybrid is the safest starting point because it keeps humans in the loop while demonstrating AI capability to the CEO.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "The hybrid agent-assist direction is correct, and naming it as the safest starting point is good judgment. The gap is that the three options described are not fully distinct: a full chatbot and a partial chatbot differ only in scope, not in the fundamental architecture of who reviews AI output before it reaches customers. A complete enumeration would distinguish between AI output that is internal, AI output that is pre-validated, and AI output that is live and customer-facing, because each requires a different risk conversation with the CEO.",
+              "framework_hint": "Creative Execution partial credit: correctly identifies the agent-assist direction and names a safety criterion. Gap: the three options are not structurally distinct enough to surface the key decision, which is whether any customer ever sees unreviewed AI output in the first ship."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The options are to build the chatbot fast using GPT-4 or Claude, or to use a no-code tool like Intercom or Zendesk AI that can be configured in hours. The no-code route is the fastest path to Friday.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Evaluating build versus buy is a valid tactical decision but it is not the list of options the framing requires. The question of which AI platform to use is downstream of the decision about what kind of bot to build and for whom. Listing implementation paths before deciding on the scope and risk profile of the first ship skips the step that matters most.",
+              "framework_hint": "Creative Execution failure: the list step requires enumerating structurally distinct approaches to the problem, not implementation options for a single approach. Listing GPT-4 versus Intercom evaluates tools before deciding what the tool is supposed to do and for whom."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The only real option is a customer-facing chatbot, since that is what the competitor shipped. The decision is how fast to ship it and how to manage the risk afterward. The team should ship fast and add safety guardrails in the next iteration.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Constraining the option set to a single option because the competitor chose it collapses the list step before it starts. The competitor's choice is evidence about one path, not a constraint that rules out all others. A customer-facing chatbot that gives wrong answers about a product to customers who then make purchasing decisions based on those answers carries legal and brand risk that 'add guardrails later' does not adequately address. The list step exists precisely to surface alternatives the Friday deadline pressure is suppressing.",
+              "framework_hint": "Strategic Thinking failure: anchoring the option set on the competitor's visible output rather than on the CEO's underlying goal. The competitor shipping a chatbot is a signal about their priorities and capabilities, not a specification for your first step. Creative Execution failure: treating 'ship fast and fix later' as a strategy rather than a risk transfer."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "A wrong answer to a customer is worse than no answer. A Friday ship that looks competitive is better than a six-week roadmap that looks slow. Name the criterion that resolves that tension.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What criterion should govern the choice of first step, and what are you explicitly trading away?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The governing criterion is deflection value net of error risk: choose the option that reduces the support load from the 2,000-monthly-ticket queue fastest without creating a class of AI-generated wrong answers that reach customers. The narrow FAQ deflection bot with a hard human fallback satisfies this criterion. It can be scoped to the 10 to 15 question types with stable, pre-approved answers, shipped by Friday, and demonstrated to the CEO as a live product. The explicit sacrifice is open-ended coverage: the bot will not handle novel questions, edge cases, or anything outside the pre-approved set. That sacrifice is acceptable because the CEO's actual goal is competitive responsiveness and visible progress, not universal support automation. A bot that handles 30% of tickets perfectly and routes the rest to humans is a better first ship than a bot that attempts all tickets and introduces hallucination risk on the 2,000-ticket-a-month surface.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "Naming the criterion as deflection value net of error risk converts the speed-versus-safety tension into a decision rule: the correct choice is the option that maximizes the speed signal to the CEO while keeping customer-facing AI output within a pre-validated scope. The sacrifice is named explicitly (no open-ended coverage in the first ship), and the reason the sacrifice is acceptable is grounded in what the CEO actually wants. This is the taste move: distinguishing between a preference (move fast) and a real tradeoff (deflection value at acceptable error rate).",
+              "framework_hint": "Taste: the tradeoff is not 'fast versus safe' but 'deflection value at acceptable error rate versus maximum coverage at unacceptable error rate.' Naming the criterion turns a preference into a decision rule. Strategic Thinking: the because-Z framing is 'narrow FAQ bot by Friday because it satisfies the CEO's competitive responsiveness goal while keeping customer-facing AI output within a safe boundary.'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "Optimize for what can actually ship by Friday without a major technical risk. An internal agent-assist tool is safer and more achievable, and it still demonstrates AI capability to the CEO. The sacrifice is that it is not customer-facing, which is what the CEO asked for.",
+              "quality": "good_but_incomplete",
+              "competencies": ["taste"],
+              "explanation": "The internal agent-assist recommendation is sound and the safety reasoning is correct. The gap is that the answer does not name the criterion that governs the tradeoff. 'What can ship by Friday without major technical risk' is a constraint, not a criterion. A criterion would explain why agent-assist is preferable to the narrow FAQ bot on the customer-facing dimension, or acknowledge that if competitive visibility is the CEO's primary goal, an internal tool may not fully satisfy it.",
+              "framework_hint": "Taste partial credit: correctly identifies the safety tradeoff and proposes a lower-risk option. Strategic Thinking gap: does not name the criterion. Without a criterion, the recommendation is a judgment call that a different engineer might reasonably make differently. A criterion makes the decision legible and repeatable."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Ship the full chatbot as fast as possible and add a disclaimer that the bot is in beta and answers may not be accurate. The disclaimer manages expectations and gives the team legal cover while still meeting the Friday deadline.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A disclaimer does not change the cost of a wrong answer to a customer. A customer who makes a purchasing decision based on a hallucinated answer about pricing or feature availability is not protected by a beta label in the chat window. The disclaimer is a preference for risk transfer, not a real tradeoff analysis. The cost of a wrong answer on a 2,000-ticket-a-month support surface is a real business risk that a disclaimer does not reduce.",
+              "framework_hint": "Taste failure: a disclaimer is a preference masquerading as a tradeoff. It names the action (add a disclaimer) without naming what it gives up or why the sacrifice is acceptable. Real taste is knowing which quality signal (correct answers at scale) actually predicts user trust, and recognizing that a beta label does not substitute for that quality signal."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Optimize for competitive parity. The competitor shipped a customer-facing chatbot and the CEO saw it. The criterion that matters is 'does this look as capable as theirs in a demo?' Ship the most visible version of the chatbot possible by Friday and fix accuracy issues based on real customer feedback after launch.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Competitive parity in a demo is a real stakeholder need and worth acknowledging. The problem is treating it as the governing criterion for the first customer-facing AI product in a domain where wrong answers have direct business consequences. A support bot that looks capable in a demo but gives wrong answers to real customers about pricing, features, or support timelines generates the kind of customer trust damage that takes months to repair. The fix-based-on-feedback approach is appropriate for UI decisions, not for AI-generated factual claims about the product.",
+              "framework_hint": "Strategic Thinking failure: the criterion should be durable (deflection value net of error risk) rather than demo-relative (looks as capable as theirs). A criterion anchored on a competitor's demo appearance is not falsifiable and does not prevent the team from shipping something that looks good and performs badly. Taste failure: confusing the optics of the first ship with its success conditions."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The CEO wants to see movement by Friday. What does success look like in week one, and how do you know the first ship actually worked?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define a falsifiable near-term win for the first AI support step?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The near-term win is falsifiable on two metrics: deflection rate and escalation-to-human error rate. Within the first two weeks of the narrow FAQ bot going live, target 20 to 30% deflection on the covered question types, meaning customers who interact with the bot get a complete answer without opening a ticket. The guardrail metric is escalation accuracy: fewer than 5% of bot interactions should result in a customer receiving a confident wrong answer before being routed to a human. If the bot is deflecting at target rate and escalating correctly, the support team is handling a smaller slice of the 2,000 monthly tickets on those question types. If the escalation error rate exceeds 5%, the pre-approved answer set needs tightening before scope expands. Both metrics are measurable from day one and give the CEO a real number to report.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "Naming two specific metrics, a deflection rate target and an escalation error rate ceiling, gives the CEO a reportable number and gives the team a falsifiable success condition. The 20 to 30% deflection target is achievable on a narrow FAQ scope and is specific enough to evaluate against the 2,000-monthly-ticket baseline. The 5% escalation error ceiling defines the quality threshold that determines whether the scope can expand. Together they create a win condition that is confirmable by observation, not just by intent.",
+              "framework_hint": "Domain Expertise: real support automation metrics require two signals (deflection rate and error rate) because deflection alone incentivizes overconfident answers. Strategic Thinking: the falsifiability condition (if escalation error exceeds 5%, scope does not expand) closes the feedback loop and prevents the team from declaring success on deflection volume while ignoring answer quality."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Show the CEO a working bot by Friday that handles the most common support questions. Track how many customers use it in the first week and share the number as evidence of adoption. If usage is high, expand the scope in the following sprint.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Delivering a working demo by Friday and tracking usage is the right operational move. The gap is that usage volume is not a success condition. High usage of a bot that gives wrong answers is a worse outcome than low usage of a bot that gives correct ones. A falsifiable win requires a quality metric alongside a volume metric, so the team can distinguish between 'customers are using it' and 'customers are getting correct answers and not opening tickets afterward.'",
+              "framework_hint": "Cognitive Empathy partial credit: correctly models what will satisfy the CEO in the short term (a visible working product). Domain Expertise gap: usage volume alone does not confirm that the support automation is working. A winning definition requires a deflection metric (tickets avoided) and a quality metric (answers correct) rather than a proxy for interest."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is the CEO's positive reaction after the Friday demo. If the CEO is satisfied, the first step worked. Follow-up metrics can be defined in the next sprint planning session.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "CEO satisfaction after a demo is a real short-term goal but it is not a success condition for the product. A bot that performs well in a Friday demo can still generate wrong answers at scale when real customers interact with it over the following week. Deferring the definition of success metrics to the next sprint means the team has no agreed threshold for deciding whether to expand the scope or pull back, which makes the second decision harder rather than easier.",
+              "framework_hint": "Strategic Thinking failure: a win defined by stakeholder reaction rather than by an observable outcome in the product is not falsifiable. If the CEO likes the demo, the team does not know whether the product is working; they only know that the demo was convincing. A real win condition requires a metric that can prove the hypothesis wrong."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Track CSAT scores from customers who interact with the bot versus those who go to a human agent. If bot-assisted CSAT is equal to or higher than human-assisted CSAT after 30 days, the bot is working and the scope can expand.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "CSAT comparison is a legitimate long-term evaluation metric and should be tracked. The problem is using it as the near-term win condition. CSAT data takes 30 days to accumulate at meaningful volume and is not available at the Friday demo or the end of week one. More importantly, CSAT measures perceived satisfaction, which can be high even when the bot gave technically wrong information, if the customer did not notice. A near-term falsifiable win needs a metric that is available quickly (deflection rate) and a guardrail that catches wrong answers before customers are harmed by them (escalation error rate), not a lagging satisfaction proxy.",
+              "framework_hint": "Domain Expertise failure: CSAT is a lagging indicator that takes weeks to accumulate and does not distinguish between correct deflection and confident wrong answers. A falsifiable near-term win requires leading indicators (deflection rate, escalation error rate) that give the team feedback within days, not a satisfaction proxy that arrives too late to inform the next decision."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

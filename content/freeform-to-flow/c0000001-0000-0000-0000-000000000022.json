@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000022",
+  "title": "AI Copilot Causing Code Review Shortcuts",
+  "scenario_role": null,
+  "scenario_context": "A 120-engineer organization rolled out GitHub Copilot across all squads three months ago. The stated goal was to speed up development velocity and reduce time spent on boilerplate. PR review time dropped 40% within the first quarter, which leadership celebrated as a clear productivity win.",
+  "scenario_trigger": "Over the same three months, production incidents rose 28%. Post-incident analysis on three of those incidents traced the root cause to AI-generated code that reviewers approved without scrutiny. Engineers self-report that they trust Copilot suggestions 'a lot' and review AI-generated diffs less carefully than code written by colleagues. The faster reviews and the rising incidents are not separate problems: they are the same phenomenon playing out on two different metrics.",
+  "scenario_question": "Name the real friction the org needs to solve, identify what interventions are worth comparing, name the criterion for choosing among them, and define a falsifiable success bar that proves the intervention worked without sacrificing the velocity gain.",
+  "engineer_standout": "A strong answer refuses to treat the 28% incident rise as a reason to distrust Copilot or slow down reviews uniformly. The real problem is automation complacency: reviewers are applying less scrutiny to AI-generated code precisely because it looks clean and confident. The intervention that wins is one that restores targeted scrutiny on the diffs most likely to carry silent bugs, not one that adds blanket friction. The 40% review-time drop is worth protecting; the 28% incident rise is what needs changing.",
+  "paradigm": "ai_assisted",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["motivation_theory", "strategic_thinking"],
+  "secondary_competencies": ["cognitive_empathy", "taste"],
+  "topic_tags": ["ai-tooling", "code-review", "engineering-process", "quality", "automation"],
+  "technique_tags": ["root-cause-framing", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Faster reviews and more incidents arrived together. The surface reading is that speed caused the incidents, but that framing leads to the wrong fix. What is actually breaking beneath the metrics?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the problem facing the organization after three months of GitHub Copilot rollout?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["motivation_theory", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 40% drop in review time and the 28% rise in incidents are the same phenomenon: automation complacency. Engineers are applying less scrutiny to AI-generated code because it arrives formatted, confident, and plausible-looking, which reduces the cognitive signal that normally triggers careful review. The problem is not that Copilot produces bad code — three incidents out of a 120-engineer org using the tool heavily is not a catastrophic defect rate. The problem is that the review process has lost its ability to catch the subset of AI-generated code that is subtly wrong. The friction to remove is not the speed of reviews; it is the absence of targeted scrutiny on high-risk diffs. Slowing all reviews down would recover the scrutiny at the cost of the entire velocity gain, which is the wrong tradeoff.",
+              "quality": "best",
+              "competencies": ["motivation_theory", "strategic_thinking"],
+              "explanation": "This framing correctly identifies that the speed drop and the incident rise share a single root cause: reviewers have recalibrated their attention in response to AI-generated code, and that recalibration removed the scrutiny that would have caught the three incidents. Naming the friction as 'absence of targeted scrutiny on high-risk diffs' rather than 'reviews are too fast' puts the team in a position to design interventions that restore the right scrutiny without reverting the productivity gain. Treating the 40% speed improvement as worth preserving is not optimism; it is the correct strategic constraint.",
+              "framework_hint": "Motivation Theory: the engineers' friction here is not deliberate negligence but a rational response to a new signal environment — AI-generated code looks authoritative, so the cognitive trigger for deep review does not fire. Strategic Thinking: the 28% incident rise is the cost of removing scrutiny; the intervention must restore scrutiny on the right diffs, not uniformly on all diffs."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The problem is that GitHub Copilot is generating low-quality code that passes review because reviewers lack the time to catch its errors. The 40% faster review time reflects insufficient effort being applied to each PR, and the 28% incident rise is the consequence. The org needs to set a minimum review time per PR or require a second reviewer for any PR containing Copilot-generated code.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This framing correctly identifies that scrutiny is the missing variable, and requiring a second reviewer for Copilot-heavy diffs is actually a reasonable intervention. The gap is the characterization of the root cause: the data does not show that Copilot generates low-quality code at a high rate. Three incidents from a 120-engineer org over three months is a narrow signal. The problem is not Copilot's output quality; it is that reviewers have stopped scrutinizing that output. A minimum review time rule treats the symptom (reviews are fast) rather than the friction (reviewers do not know which Copilot suggestions need deep scrutiny).",
+              "framework_hint": "Motivation Theory partial credit: correctly identifies that the review process is failing to catch errors. The framing gap: attributing the failures to Copilot output quality rather than to reviewer behavior changes the intervention design significantly. If the tool is blamed, the response is to restrict the tool. If the reviewer behavior is the friction, the response is to change what reviewers see and do."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is a cultural one. Engineers have become over-reliant on AI tools and need to be reminded that code review is a professional responsibility. A company-wide memo setting expectations for review thoroughness, paired with engineering manager check-ins, would address the root cause.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Culture and professional norms are real, but naming the problem as cultural treats a behavioral pattern as a character flaw rather than a rational response to a changed environment. Engineers are not reviewing AI-generated code less carefully because they became lazier in three months; they are doing so because the tool produces output that looks authoritative and surfaces fewer obvious red flags than human-written code. A memo cannot override the cognitive dynamics that drive automation complacency. The intervention needs to change what reviewers see and do, not what they believe about their responsibilities.",
+              "framework_hint": "Cognitive Empathy failure: simulating the reviewer's actual experience reveals that Copilot output looks clean and confident, which is precisely why it reduces scrutiny signals. A behavioral intervention that assumes reviewers know the risk but are choosing to ignore it will not work if they are not aware they are taking a shortcut at all."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is that the organization moved too fast with the rollout. Three months is not enough time to assess an AI tool's safety profile, and the 28% incident rise proves that the rollout needed more guardrails from the start. The right move is to pause Copilot usage, conduct a full audit of all AI-generated code merged in the past quarter, and restart the rollout with stricter controls.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Pausing the rollout and auditing all AI-generated code treats the 40% review-time improvement as irrelevant and the 28% incident rise as evidence that the tool itself is unsafe. Neither conclusion is warranted by the data. Three incidents in a 120-engineer org using an AI tool heavily for three months is a narrow signal about code quality; it is a clearer signal about review behavior. Pausing Copilot eliminates the speed gain without fixing the underlying friction: if reviewers were applying insufficient scrutiny to AI-generated code, the behavioral pattern that caused that is worth addressing directly rather than by removing the tool.",
+              "framework_hint": "Strategic Thinking failure: treating the 28% incident rise as a tool-safety verdict rather than a process-behavior signal inverts the causal chain. The incidents were approved through a review process that should have caught them; the tool produced the code but the process failed to scrutinize it. Removing the tool does not fix the process."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The intervention needs to restore scrutiny on the diffs most likely to carry silent bugs without adding blanket friction to every review. What options are actually worth comparing?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of interventions most completely covers the options worth evaluating for restoring code review quality in an org that has seen 28% more production incidents after a Copilot rollout?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct interventions are worth comparing. First, AI-diff flagging in the PR interface: surface a visible marker on hunks that were Copilot-generated so reviewers know which sections to scrutinize more carefully, without changing review time on the rest of the diff. Second, mandatory second reviewer for Copilot-heavy PRs: require two approvals for PRs where more than a defined threshold of lines are AI-generated, targeting scrutiny at the diffs that carry the most risk. Third, automated static analysis tuned to Copilot failure patterns: run checks specifically for the classes of errors that Copilot generates frequently (off-by-one in generated loops, incorrect API usage, missing edge-case handling), surfacing warnings before human review begins. Fourth, post-merge incident attribution: tag every production incident with whether the affected code was AI-generated, creating a data feedback loop that tells the org which categories of Copilot output are generating most of the incidents. Fifth, reviewer behavior training targeted at automation complacency: short structured sessions on what Copilot gets wrong and what patterns are worth double-checking, so reviewers have a mental model for where to focus scrutiny rather than defaulting to uniform fast approval.",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "These five options are structurally distinct: AI-diff flagging changes what reviewers see, mandatory second reviewer changes the process gate, automated static analysis moves a check upstream of human review, incident attribution creates a data feedback loop, and reviewer training changes the mental model reviewers bring to the diff. Each intervention targets automation complacency differently, and each has different costs, timelines, and tradeoffs. Listing them separately makes the optimize step tractable: the team can score each against a criterion rather than collapsing them into 'add more review friction.'",
+              "framework_hint": "Creative Execution: generating options that are mechanistically different, not variations of 'slow down reviews.' AI-diff flagging and mandatory second review look similar but operate through different mechanisms — one changes the information available to the existing reviewer, the other adds a structural check. Cognitive Empathy: simulating the reviewer's experience shows that a mental model for Copilot failure patterns is a different kind of intervention than a process rule — it changes what the reviewer looks for, not how long they spend looking."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The main options are requiring a second reviewer for AI-heavy PRs, mandating a minimum review time, and running automated linting on Copilot output. These three cover the main categories: process gates, time investment, and tooling checks. The team should pick whichever combination has the least overhead.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Second reviewer, minimum review time, and automated linting are all legitimate interventions, but this list omits two options that are qualitatively different in mechanism: AI-diff visibility flagging (which targets reviewer attention rather than adding time or process gates) and post-merge incident attribution (which creates a feedback loop to learn which Copilot outputs are actually risky). The 'pick whichever has the least overhead' framing also skips the optimize step work of naming the criterion — least overhead is a preference, not a tradeoff.",
+              "framework_hint": "Creative Execution partial credit: correctly identifies three of the five load-bearing options. The gap is collapsing minimum review time and second reviewer into the same category (time investment) when they operate through different mechanisms and carry different implementation costs. Minimum review time adds friction to every review uniformly; a second reviewer requirement can be scoped to AI-heavy diffs specifically."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The interventions to consider are: pause Copilot, restrict Copilot to non-critical paths, or revert to pre-Copilot review norms. These represent a spectrum from full removal to partial restriction, and the team should evaluate each against the incident rate improvement they expect to produce.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "All three options in this list treat Copilot's existence as the variable to manipulate, which skips the framing insight that the review behavior, not the tool, is the source of the incidents. Pausing Copilot, restricting it, and reverting review norms all sacrifice the 40% review-time gain to address a friction that is rooted in how reviewers respond to AI output. None of these options address automation complacency directly, which means they would not prevent similar dynamics from emerging if any other AI tool were introduced.",
+              "framework_hint": "Motivation Theory failure: all three interventions try to remove the stimulus (Copilot) rather than restore the behavior (careful scrutiny of AI-generated diffs). Removing the stimulus works but discards the velocity gain. The list step should surface options that address the friction without requiring the org to give up what it has already gained."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The organization should evaluate two broad levers: people (training and accountability) and process (review checklists and sign-offs). A combination of both is likely the answer. The team should survey engineers to understand which interventions they find least disruptive and prioritize based on survey results.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "People and process are abstract categories, not a list of interventions. Organizing the options this way produces a framework slide rather than a set of options the optimize step can score against a criterion. Survey-based prioritization selects interventions based on what engineers find least disruptive rather than on which options are most likely to reduce the incident rate while preserving the velocity gain. Engineers may find 'no change' least disruptive, which is not a useful decision signal.",
+              "framework_hint": "Strategic Thinking failure: using abstract category labels (people, process) instead of specific interventions makes it impossible to evaluate tradeoffs. A list that says 'training or checklists' has not broken down the option space enough to surface the real structural differences between, for example, AI-diff visibility flags (which change information) and mandatory second reviewers (which change process gates)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Several interventions would reduce incidents. The question is which one does it without trading away the 40% review-time improvement. Name the criterion that makes this tradeoff explicit.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for choosing among the interventions available to the organization — given that the 40% review-time drop is worth preserving and the 28% incident rise needs to be reversed?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is scrutiny precision: which intervention adds the most targeted scrutiny to the diffs most likely to carry silent bugs, while adding the least undifferentiated friction to reviews that do not need it? This forces a distinction between interventions that slow all reviews down uniformly (minimum review time, blanket checklists) and interventions that redirect attention specifically toward AI-generated code (diff flagging, scoped second-reviewer requirements). The sacrifice this criterion names explicitly: the org accepts that some AI-generated code in low-risk paths will still receive fast, light review, because the goal is not zero automation complacency but recoverable complacency — the ability to catch the incidents that actually make it to production. The counter-signal would be an intervention that reduces incidents but raises review time back to pre-Copilot levels, which means the velocity gain was surrendered rather than preserved.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names a real tradeoff rather than a preference. Scrutiny precision forces the team to score interventions on two axes simultaneously: how much targeted scrutiny does it add to high-risk diffs, and how much undifferentiated friction does it add to reviews that are fine to process quickly. Minimum review time scores poorly on both: it adds friction uniformly and does not direct reviewer attention toward the specific code patterns that produced the three incidents. AI-diff flagging scores well: it adds zero friction to low-risk diffs and changes the information available to reviewers on high-risk hunks. Naming the sacrifice (some low-risk AI code still gets fast reviews) prevents the team from demanding a zero-complacency standard that would require reverting the entire velocity gain.",
+              "framework_hint": "Taste: distinguishing between 'this intervention reduces incidents' (true of many options) and 'this intervention reduces incidents without adding undifferentiated friction' (true of fewer). The 40% review-time drop is a specific constraint; any criterion that does not name what it is acceptable to sacrifice in order to preserve that constraint is not a criterion but a preference. Strategic Thinking: naming the counter-signal (incident reduction paired with full review-time reversion) prevents the org from calling the intervention a success if the velocity gain was the actual cost."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be incident rate reduction. The intervention that produces the largest drop in production incidents within 60 days should be selected. Speed of impact matters because every week with elevated incidents carries real operational cost. The velocity gain is a secondary concern that can be re-optimized once the incident rate is stabilized.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Incident rate reduction is a real and measurable outcome, and prioritizing speed of impact on incidents is a defensible position when the org is in an elevated-risk state. The gap is treating the velocity gain as secondary: the 40% review-time improvement was the entire stated justification for the Copilot rollout, and an intervention that reverses it fully would be difficult to sustain organizationally. More practically, treating incident rate as the sole criterion would favor pausing Copilot entirely, which solves the symptom by removing the tool rather than by addressing the review behavior that failed.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies incident rate as the primary success metric and values speed of impact. Taste gap: 'secondary concern to be re-optimized later' is not the same as naming the sacrifice. If the velocity gain is worth preserving, the criterion must name it as a constraint, not defer it. An optimization that treats one variable as primary and defers the other rarely returns to the deferred variable."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be engineer satisfaction. The best intervention is the one that engineers find least disruptive to their workflow, because disruption reduces adoption. An intervention that engineers resist will not change behavior and will not reduce incidents. Survey engineers before selecting among the options.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Engineer satisfaction is a real adoption consideration but it is not the criterion for choosing among interventions designed to fix a safety problem. The optimize step requires naming a criterion that makes the tradeoff between incident reduction and velocity preservation explicit. Engineer satisfaction does not force that tradeoff: engineers might prefer no intervention at all, which scores perfectly on satisfaction and fails entirely on incident reduction. Satisfaction is a constraint on implementation, not a decision criterion.",
+              "framework_hint": "Taste failure: using a preference (least disruptive) as a criterion instead of naming a tradeoff. The tradeoff is between scrutiny precision (incident reduction) and friction cost (velocity impact). A criterion that only measures one side of this pair will optimize for that side and ignore the other, producing a recommendation that is easy to adopt but does not solve the problem."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is legal and compliance risk minimization. Three incidents tied to AI-generated code create potential liability exposure. The intervention that most clearly demonstrates the org took responsible action to prevent AI-related defects should be prioritized, because it creates an audit trail if future incidents lead to customer claims.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Legal risk minimization is a plausible-sounding framing because AI in production code is a real liability concern in some domains, but the scenario gives no indication this org operates in a regulated industry where the three incidents created legal exposure. Selecting an intervention based on audit-trail defensibility rather than on whether it actually changes reviewer behavior produces safety theater: a paper record that the org acted, without a behavioral mechanism that would prevent the next incident.",
+              "framework_hint": "Strategic Thinking failure: choosing a criterion based on how the decision looks to external auditors rather than on whether the intervention fixes the friction. A criterion should connect to the cause of the problem named in the frame step. Automation complacency is a behavioral phenomenon; legal risk minimization is an organizational positioning concern. The two are not the same and the criterion should address the cause."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the intervention worked for the wrong reason.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the intervention chosen to address automation complacency in code review after the Copilot rollout?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: production incidents attributable to AI-generated code fall below pre-Copilot baseline levels within 90 days of intervention rollout, while review cycle time on PRs without Copilot-heavy diffs remains within 10% of the 40% improvement already achieved. The 90-day window is enough time for the intervention to affect the merge-to-incident pipeline without requiring an extended observation period. The 10% review-time tolerance on non-AI-heavy diffs tests whether the intervention preserved velocity on the diffs that do not need additional scrutiny. The counter-signal is: overall incident rate drops but review cycle time returns to pre-Copilot levels across all PRs, which means the intervention restored safety by reverting the velocity gain rather than by adding targeted scrutiny. That outcome means the org traded the productivity improvement for the incident improvement, and the intervention did not solve the actual friction.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names two metrics with specific thresholds and timelines, each connected to a distinct part of the strategic hypothesis. The 90-day incident reduction threshold tests whether the intervention changed reviewer behavior on AI-generated code. The 10% review-time tolerance on non-AI-heavy diffs tests whether the velocity gain was preserved where it matters. The counter-signal (incident drop paired with full review-time reversion) is non-obvious and important: it means the intervention worked by accident, not by design, and the org learned nothing about managing automation complacency that it can apply as AI tooling expands.",
+              "framework_hint": "Domain Expertise: a 90-day window is appropriate for measuring incident attribution because the merge-to-production-incident pipeline for most PRs completes within days, and a 90-day window captures several release cycles without requiring a year-long observation period. Strategic Thinking: the counter-signal distinguishes between an intervention that fixed the problem and one that accidentally reverted the conditions that caused it, which is critical for a 120-engineer org that will face similar complacency dynamics as AI tooling expands."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means zero production incidents attributable to AI-generated code for three consecutive months. Any incident in AI-generated code within that window resets the clock. This is the clearest possible signal that the intervention worked.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A zero-incidents target for AI-generated code is a high bar that is measurable and unambiguous. The gap is that three months of zero incidents could mean the intervention worked, the org got lucky, or engineers avoided Copilot on risky code out of self-preservation after the incidents became visible. The win condition needs a second metric that tests the mechanism: did reviewers actually change their scrutiny behavior, or did the incident count drop for a reason unrelated to the intervention? It also does not measure whether the velocity gain survived.",
+              "framework_hint": "Strategic Thinking partial credit: names a specific threshold (zero incidents) and an unambiguous measurement window (three consecutive months). Domain Expertise gap: zero incidents is a lagging indicator that cannot distinguish between the intervention working and engineers simply becoming more conservative with Copilot usage in the short term. A win condition should test the mechanism, not just the output."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means engineers report in a post-intervention survey that they feel more confident in the quality of AI-generated code passing review. An average confidence score above 7 out of 10 within 60 days signals that the intervention changed behavior and rebuilt trust in the review process.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Engineer confidence in AI-generated code is a sentiment metric that does not test whether production incidents actually declined or whether review behavior changed in a way that would prevent future incidents. A reviewer could feel highly confident in AI-generated code and still be applying insufficient scrutiny — which is precisely the definition of automation complacency. Measuring the feeling of confidence rather than the behavior change misses the point of the intervention.",
+              "framework_hint": "Motivation Theory failure: the intervention targets a behavioral pattern (insufficient scrutiny) not a feeling (low confidence). A win condition that measures the feeling rather than the behavior cannot determine whether the intervention worked. If reviewers feel more confident while applying the same level of scrutiny as before, the survey would show success while the incident rate remains elevated."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the team completes a full retrospective on the three incidents and documents lessons learned within 30 days. If the retrospective produces an agreed-upon review checklist for AI-generated code that all engineers sign off on, the org has demonstrated institutional learning and the intervention is complete.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A retrospective and a signed checklist are process artifacts, not success metrics. Completing a retrospective within 30 days measures whether the org held a meeting; it does not measure whether the behavioral friction causing the incidents was addressed. Engineers can sign off on a checklist and continue applying the same fast, shallow reviews to AI-generated code the next day. The win condition should be connected to the outcome the intervention is designed to produce — fewer incidents, preserved velocity — not to the existence of a document.",
+              "framework_hint": "Strategic Thinking failure: defining success as an output artifact (checklist, retrospective completion) rather than as a behavioral or business outcome. The win step requires a metric that is falsifiable: a state of the world that would tell the org whether the bet paid off. A signed checklist cannot be falsified — it either exists or it does not, and its existence tells you nothing about whether reviewer behavior changed."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

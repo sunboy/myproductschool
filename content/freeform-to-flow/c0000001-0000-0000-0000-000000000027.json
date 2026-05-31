@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000027",
+  "title": "Eval Suite Says 91% But Users Still Complain",
+  "scenario_role": null,
+  "scenario_context": "An AI coding assistant has a curated eval suite of 500 hand-selected tasks. Last month the model scored 83% on that suite. This month, after a major model update, it scores 91%. The team shipped with confidence: the numbers moved in the right direction, the eval suite was designed by senior engineers, and the delta is large enough to be unambiguous.",
+  "scenario_trigger": "Within a week of shipping, the in-product feedback widget shows user-reported error rate climbing 15%. On Discord, power users who complete 20 or more sessions a week are saying the model 'feels worse.' The eval score went up eight points. Satisfaction went down. Both cannot be right about quality.",
+  "scenario_question": "Diagnose the eval-to-production gap and redesign the evaluation strategy so that eval scores predict what users actually experience.",
+  "engineer_standout": "A strong answer treats the 91% score and the +15% reported error rate as jointly informative, not contradictory. The eval score measures performance on a static, curated 500-task proxy. The feedback widget measures performance on the live, shifting distribution of real user tasks. When both move in opposite directions, the most likely explanation is not that users are wrong. It is that the eval suite has drifted from the production distribution, or that the model has been optimized against the eval to a degree that improves proxy-task performance without improving, or while degrading, real-task performance. This is Goodhart's Law operating at the evaluation layer: the 500-task suite became a target, and optimizing for it stopped being equivalent to optimizing for quality. The 83 to 91 jump is a signal that something was optimized, but the feedback widget says it was the wrong thing. Power users hitting the 'feels worse' signal are especially diagnostic because they encounter the long tail of real tasks that a 500-task curated suite cannot cover. The winning move is to treat the eval suite as a falsified hypothesis, sample production failures directly from the feedback widget and session logs, and rebuild evaluation around the dimensions users actually care about: instruction-following fidelity, style consistency, and correct handling of the edge cases power users hit.",
+  "paradigm": "ai_assisted",
+  "difficulty": "hard",
+  "estimated_minutes": 45,
+  "primary_competencies": ["domain_expertise", "strategic_thinking", "taste"],
+  "secondary_competencies": ["creative_execution"],
+  "topic_tags": ["evals", "ai-quality", "goodharts-law", "eval-production-gap"],
+  "technique_tags": ["eval-harness", "llm-as-judge"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The eval score went up and user satisfaction went down. Before deciding what to fix, name what the divergence actually means. Two numbers moving in opposite directions is a diagnostic, not a paradox.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why the 91% eval score and the +15% user-reported error rate can both be true at the same time?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 91% score and the +15% error rate are measuring two different distributions. The 500-task eval suite is a static, curated proxy for production quality. When the model was updated, it may have been optimized against that proxy directly or indirectly, improving its score on the fixed task set without improving, or while degrading, performance on the live distribution of real user tasks. The 83-to-91 jump is the signal that something was optimized. The feedback widget says the wrong thing was optimized. This is Goodhart's Law operating at the evaluation layer: the eval suite became a target, and the measure stopped being a reliable proxy for the thing it was meant to track. Power users reporting the model 'feels worse' are especially diagnostic because they generate the long-tail tasks the 500-task suite does not cover.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This framing correctly identifies the structural cause of the divergence: two numbers measuring two different distributions, with the proxy distribution having drifted from, or been overfit to, relative to production. It names Goodhart's Law as the operative mechanism without treating the divergence as a mystery. The power-user signal is correctly read as a diagnostic: they hit the distributional tail the eval suite misses, making their 'feels worse' report more informative than the aggregate error rate. The Frame move here is naming the problem behind the paradox, which is that the eval suite is no longer measuring what matters.",
+              "framework_hint": "Domain Expertise: knowing that a static 500-task curated suite can be overfit to, intentionally or not, and that Goodhart's Law applies to eval proxies as readily as to any other metric, is the domain fact that resolves the apparent contradiction. Strategic Thinking: the Frame move requires naming the upstream problem (the eval is measuring the wrong distribution) rather than treating the gap as a QA failure or a user-perception problem."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The eval suite is measuring aggregate accuracy but missing qualitative dimensions users care about. Things like code style, explanation clarity, and instruction-following fidelity are not captured in a pass/fail task score. The model improved on correctness but may have regressed on those softer dimensions, which power users notice because they run more sessions and have stronger expectations about consistency.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise", "cognitive_empathy"],
+              "explanation": "This framing correctly identifies a real gap: qualitative dimensions like style and instruction-following are not captured in a binary pass/fail accuracy metric. And it correctly reads the power-user signal as a sensitivity indicator. But it frames the problem as missing eval dimensions rather than as a distribution mismatch. The deeper issue is not just that the 500 tasks omit style rubrics; it is that the 500 tasks may not represent the tasks users actually run. Adding style rubrics to the existing 500 tasks would improve the eval without fixing the core problem if the task distribution remains misrepresentative.",
+              "framework_hint": "Domain Expertise: qualitative dimension gaps in evals are real and worth naming, but framing the problem as rubric coverage rather than distribution mismatch misses the more fundamental issue. The 500-task suite can be enriched indefinitely and still fail to track production quality if the task set itself is not refreshed from real user sessions."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The feedback widget captures noise. Users submit negative feedback when they are frustrated, and the 15% uptick may reflect a novelty-effect dip where users are adjusting to a different model behavior rather than a genuine quality regression. The eval score is the more reliable signal because it is controlled and reproducible.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Dismissing the feedback widget as noise without evidence is a framing error at the Frame step. The widget captures a consistent behavioral signal across the full user base, including power users with high session counts who are the least susceptible to novelty-effect frustration. A 15% uptick in reported errors one week after a ship, coinciding with a specific model update, is not statistical noise. Preferring the eval score because it is controlled and reproducible is circular: the question is precisely whether the controlled eval is measuring the right thing.",
+              "framework_hint": "Taste failure: preferring a controlled metric over a behavioral one because it feels more rigorous is a preference, not a tradeoff. The Frame move requires asking what each signal is actually measuring, not which one is methodologically cleaner. A reproducible eval measuring the wrong distribution is less useful than a noisy signal measuring the right one."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The model update introduced a regression in a specific capability area that the eval suite happens to cover well on aggregate but poorly at the tail. The fix is to expand the eval suite from 500 to 1000 tasks to improve coverage, then re-run the model and check whether the score holds at scale before shipping again.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Expanding the suite from 500 to 1000 tasks does not address the framing problem. If the tasks are still curated by the same process that produced the original 500, the new suite will share the same distributional bias. Doubling a misrepresentative sample produces a larger misrepresentative sample. The issue is not suite size; it is suite composition and freshness. This answer treats the problem as a coverage gap solvable by adding more tasks of the same type, which avoids the diagnosis that the suite's task distribution has diverged from production.",
+              "framework_hint": "Strategic Thinking failure: scaling a flawed measurement instrument does not fix the flaw. The Frame move requires identifying the structural cause of the divergence, which is distribution mismatch, not task count. Doubling the suite size addresses a surface symptom (coverage) while leaving the root problem (representativeness) untouched."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "There are several structurally distinct reasons a static eval suite can diverge from production quality. Enumerate them before picking a fix. Each source of gap implies a different intervention.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of explanations for the eval-to-production gap most completely maps the distinct failure modes that could produce an 83-to-91 eval jump alongside a +15% user error rate?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct failure modes cover the space: (1) distribution shift, the tasks users run today have drifted from the 500-task suite compiled at some earlier point, so the eval measures a population that no longer matches production; (2) Goodhart overfitting, the model or its training process was tuned on or near the eval tasks, inflating the score without improving generalization; (3) missing quality dimensions, the suite grades correctness but not instruction-following fidelity, style consistency, or refusal calibration, which are the dimensions power users notice; (4) power-user tail exposure, the 500-task suite underrepresents the edge cases that high-frequency users encounter because curated suites reflect median tasks, not the long tail; (5) eval contamination, the eval tasks themselves became implicit training signal through repeated fine-tuning cycles, making the suite a leakage surface rather than a held-out test set.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These five explanations are structurally distinct because each implies a different intervention. Distribution shift requires refreshing tasks from production logs. Goodhart overfitting requires holding the eval fully out of the training process and rotating tasks. Missing quality dimensions requires adding rubrics for style and instruction-following, not just pass/fail. Power-user tail exposure requires sampling specifically from high-session-count user logs. Eval contamination requires auditing the training pipeline for eval leakage. Collapsing these into 'the eval is not good enough' loses the information that determines what to fix.",
+              "framework_hint": "Creative Execution: the List move requires generating structurally distinct explanations, not variations on 'the eval is incomplete.' Each of these five implies a different intervention, which is the test of structural distinctness. Domain Expertise: eval contamination and Goodhart overfitting are specific failure modes in ML evaluation that require specific mitigations; naming them correctly signals that the reasoning is grounded in how eval pipelines actually fail."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Three explanations cover the key cases: the eval suite tasks are stale and do not reflect current user requests; the model improved on easy tasks but regressed on hard ones, and the suite has too many easy tasks; and the feedback widget is capturing complaints from a vocal minority rather than the median user, making the 15% figure misleading. Run a demographic breakdown of feedback widget submitters to test the third explanation before assuming the eval is wrong.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Task staleness and easy/hard task skew are real and correctly named. But this list misses Goodhart overfitting and eval contamination, which are the failure modes most specific to the 83-to-91 jump pattern. A jump of eight points in one month is large; that magnitude is more consistent with overfitting than with genuine quality improvement. The third explanation (vocal minority) is a deflection that would not explain why power users, who represent the most engaged segment, are reporting the regression. Power users are not a vocal minority; they are the highest-signal segment.",
+              "framework_hint": "Creative Execution: a three-explanation list that omits the failure modes most consistent with the observed eight-point jump (Goodhart, contamination) is structurally incomplete. The vocal-minority hypothesis is also a preference to protect the eval rather than an enumerated causal explanation, which is the List move's task."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The gap is explained by the fact that AI model quality is inherently subjective. Users have different expectations and preferences, and 'feels worse' is not a measurable regression. The eval suite is objective and the user feedback is not, so the right approach is to treat the eval as authoritative and gather more structured feedback through a formal user survey rather than a feedback widget.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Treating subjectivity as an explanation for the gap conflates measurement difficulty with distributional mismatch. 'Feels worse' from power users is not purely subjective; it is a behavioral signal from the segment most capable of detecting real regressions. A 15% increase in reported errors is a quantitative signal, not an opinion. The List step requires enumerating causal explanations for the gap, not resolving the gap by declaring one signal authoritative and discarding the other.",
+              "framework_hint": "Domain Expertise failure: 'AI quality is subjective' is not a causal explanation for a specific metric divergence. The List move requires naming the mechanisms that could produce the observed pattern: 91% eval, +15% error rate, power-user dissatisfaction. Invoking subjectivity avoids that enumeration."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The failure mode is straightforward: the model update changed the output format or verbosity, and users who preferred the previous style are reporting it as errors even when the code is correct. The fix is to add a style-consistency eval task and re-run. The 500-task suite did not capture style, so adding five to ten style tasks would close the gap.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Style regression is one plausible explanation but it is presented as the explanation, which forecloses the enumeration the List step requires. More critically, adding five to ten style tasks to an existing 500-task suite addresses style coverage without touching distribution shift, overfitting, or contamination. If the suite is already overfit to, adding tasks of the same composition deepens the problem rather than fixing it. This answer treats one specific failure mode as exhaustive and prescribes a narrow fix that would not detect the other four failure modes.",
+              "framework_hint": "Creative Execution failure: a single-explanation list at the List step is not a list. Naming one failure mode and immediately prescribing a narrow fix skips the enumeration that determines what the actual cause is. The List move is to map the causal space before converging on an explanation."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before committing to an evaluation redesign. The team faces a real tradeoff: a stable, comparable eval that tracks progress over time, versus a live-sampled eval that tracks production quality but makes historical comparison harder. Name what you are optimizing for before describing what to build.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which evaluation redesign strategy is most defensible, and what is the explicit criterion and sacrifice that justifies it over the alternatives?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Rebuild the eval suite as a two-layer system: a production-sampled dynamic layer that pulls real failure cases from the feedback widget and session logs on a rolling basis, and a smaller frozen anchor layer of 50 to 100 tasks that provides a stable longitudinal baseline. The criterion is that the eval must predict production satisfaction, measured by whether the feedback widget error rate moves in the same direction as the eval score. The sacrifice is comparability: the dynamic layer will change month to month, making it harder to compare scores across releases as a single number. That sacrifice is acceptable because a stable score on a misrepresentative suite is worse than a shifting score on a representative one. The historical comparison problem is solved by the anchor layer, which stays fixed and provides a narrow but consistent regression signal.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking", "domain_expertise"],
+              "explanation": "This answer names the criterion (eval must predict production satisfaction), names the sacrifice (score comparability over time), and explains why the sacrifice is acceptable (the anchor layer preserves longitudinal regression testing without requiring the dynamic layer to be frozen). It also names the measurement that would confirm the redesign is working: the feedback widget error rate and the eval score moving in the same direction. This is the Optimize move done correctly: criterion named, sacrifice named, the tradeoff explicit rather than minimized.",
+              "framework_hint": "Taste: the reasoning move at Optimize is distinguishing a tradeoff from a preference. Losing score comparability is a real cost, not a minor inconvenience, and naming the anchor layer as the mechanism for absorbing that cost makes the tradeoff legible. Strategic Thinking: naming the success criterion (eval predicts production satisfaction) before describing the architecture grounds the design decision in the outcome it is meant to produce. Domain Expertise: a two-layer eval with a frozen anchor and a rolling dynamic layer is a recognized pattern in production ML evaluation systems, and naming it specifically signals design fluency."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Add a human evaluation tier on top of the automated suite. For each model release, have five senior engineers run 20 real tasks each from their own recent work and score the outputs on a 1-to-5 rubric for correctness, style, and instruction-following. Use that score as a gate alongside the 500-task automated score. The automated suite provides speed; the human eval provides validity. The criterion is catching regressions that automated scoring misses.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "Human eval on real tasks addresses the qualitative dimension gap and the distribution gap partially, because senior engineers run tasks closer to the power-user tail than curated benchmark tasks. But this design does not fix the core problem: the 500-task automated suite remains in place and its score still drives the primary release signal. If the automated suite is overfit to or contaminated, a five-engineer human eval running in parallel does not prevent a repeat of the 83-to-91 gap. The criterion is correctly named (catching regressions automated scoring misses) but the sacrifice is not named: human eval is expensive and slow, and this answer does not acknowledge that cost or explain why it is acceptable.",
+              "framework_hint": "Taste: naming a criterion without naming the sacrifice is incomplete at the Optimize step. The human eval adds signal but the cost (time, senior engineer bandwidth per release) is real and the answer does not make that tradeoff explicit. Strategic Thinking: adding a layer on top of a broken foundation does not fix the foundation."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Freeze the 500-task suite and stop using it for release decisions. Replace it entirely with the feedback widget error rate as the primary quality signal. Ship updates, monitor the widget for 48 hours, and roll back if error rate climbs more than 10%. This makes production the eval environment and removes the proxy entirely.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Using production as the sole eval environment removes the ability to catch regressions before they reach users. A 48-hour window with a 10% rollback threshold means every model update is a live experiment on the full user base, with real user sessions absorbing the cost of regressions. The feedback widget also measures perceived error rate, not correctness, and can be gamed by behavior changes that reduce widget engagement without improving quality. The Optimize step requires naming a criterion and a sacrifice; this answer eliminates the proxy without replacing it with a sound evaluation approach.",
+              "framework_hint": "Taste failure: replacing a flawed proxy with no proxy is not a tradeoff, it is removing the evaluation layer entirely and calling production the test environment. The sacrifice (every user is a test subject for every release) is not named and is not acceptable at scale."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Keep the 500-task suite but rotate 20% of the tasks every quarter with new ones sampled from support tickets and feedback. This gives the suite freshness without discarding the existing investment. The criterion is maintaining a comparable benchmark while improving task diversity. The 91% score remains meaningful because 80% of the suite is unchanged.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Rotating 20% of tasks quarterly does not address the contamination or overfitting problem because the 80% anchor still contains tasks the model has been trained against repeatedly. It also does not address the pace of distribution shift: if user task patterns are shifting monthly, quarterly rotation is too slow. Most critically, this answer treats 'maintaining a comparable benchmark' as the criterion, which is the opposite of the correct criterion. The whole problem is that the current benchmark is comparable but not valid. Optimizing for comparability on an invalid benchmark deepens the problem.",
+              "framework_hint": "Strategic Thinking failure: naming 'maintain a comparable benchmark' as the optimization criterion when the core problem is that the benchmark is misrepresentative is a category error. The criterion must be predictive validity (does the eval predict production satisfaction?) not benchmark stability. Stability on a broken instrument is not a virtue."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name a falsifiable outcome for the redesigned eval strategy. What would you observe, at what threshold, by when, that would confirm the new eval is actually tracking production quality rather than a proxy? And what result would tell you the redesign failed?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define success and failure for the two-layer eval redesign over a 60-day horizon?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success: the next model update produces a dynamic-layer eval score that moves in the same direction as the feedback widget error rate, with both improving or both holding steady, within a 60-day window covering at least two release cycles. If the dynamic eval score rises and the feedback widget error rate falls, the eval is now tracking production quality. Failure: the dynamic eval score rises again while the feedback widget error rate stays elevated or climbs further, which would indicate that the production-sampled tasks are still not representative of what users actually run, or that the sampling process itself has been overfit to. That result would require auditing the sampling methodology and potentially switching to a stratified sample weighted by power-user session logs rather than overall feedback volume.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions. Success requires both signals to move together, which directly tests whether the eval redesign achieved its stated criterion: predictive validity. Failure is defined as a repeat of the original divergence pattern, which confirms the sampling methodology is still misrepresentative. The failure path also names the next intervention (stratified sampling by power-user logs), making the decision tree concrete rather than open-ended. The 60-day, two-release-cycle window is grounded in the rate at which model updates ship and feedback accumulates.",
+              "framework_hint": "Strategic Thinking: a winning condition must be falsifiable in both directions, not just a target for the success case. Naming the failure signal (dynamic eval up, widget still elevated) and what it confirms (sampling methodology is still misrepresentative) makes the hypothesis testable. Domain Expertise: anchoring success on co-movement between the dynamic eval score and the feedback widget error rate is the correct operationalization of 'eval predicts production satisfaction' because it uses the production signal the redesign was meant to track."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success: power users on Discord stop reporting that the model 'feels worse' within 30 days of the next release. Failure: Discord complaints continue or intensify. Track by manual monitoring of the Discord server and classify comments as positive, neutral, or negative using a keyword filter.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Discord power-user sentiment is a real and meaningful signal, and monitoring it is correct. But Discord volume is subject to participation bias: power users who are satisfied are less likely to post than those who are frustrated. A reduction in negative posts could reflect satisfaction, or it could reflect that frustrated users migrated to a different channel or simply stopped engaging. This winning condition is not falsifiable in the way the Win step requires because the absence of negative Discord posts cannot be cleanly attributed to quality improvement versus community behavior change.",
+              "framework_hint": "Domain Expertise: a winning condition must be causally connected to the change being made and observable without confounding. Discord sentiment is a downstream behavioral signal with participation bias; it is useful as a qualitative data point but not as a primary falsification signal for an eval redesign. The Win move requires a metric that directly tests whether the eval now predicts production quality."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is: the team ships the next model update without a post-launch incident. Failure is: another +10% or greater climb in the feedback widget error rate within a week of shipping. Use the incident as the gate.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Using the absence of a post-launch incident as the winning condition means the team is still running live experiments on users and treating production as the test environment. This is the same logic as the surface Optimize answer and does not test whether the eval redesign achieved its goal. The Win step requires a metric that confirms the strategy worked, not a threshold that triggers rollback if it did not. An incident-free launch is a process milestone, not a product outcome.",
+              "framework_hint": "Strategic Thinking failure: a winning condition that measures whether the team avoided a crisis is not a test of whether the evaluation strategy improved. The Win move requires naming the observable outcome that confirms the strategic bet (the two-layer eval now predicts production quality) is paying off."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success: the eval suite score reaches 95% on the dynamic layer within 60 days, demonstrating that production-sampled tasks are now achievable at a higher rate. Failure: the score stays below 85% on the dynamic tasks, indicating the model cannot generalize to real user sessions. Use 95% as the release gate going forward.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Using an absolute score threshold on the dynamic layer as the winning condition recreates the original problem. If the dynamic tasks are harder and more representative than the original 500-task suite, a 95% pass rate on them may be unachievable or may require the same kind of overfitting that produced the 83-to-91 jump. The winning condition for an eval redesign is not a higher absolute score; it is that the score now correlates with production satisfaction. Setting a new absolute threshold turns the dynamic eval into a new target and sets up the same Goodhart dynamic within one release cycle.",
+              "framework_hint": "Domain Expertise failure: an absolute accuracy threshold on an eval suite is a target, not a validation criterion. The whole lesson of the 91% failure is that hitting a score threshold does not confirm quality if the eval is not representative. A winning condition that uses a threshold on the new eval without requiring co-movement with the production signal repeats the original error with a different number."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

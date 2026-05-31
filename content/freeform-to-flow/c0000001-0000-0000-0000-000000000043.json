@@ -1,0 +1,341 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000043",
+  "title": "Context Window as Product Real Estate",
+  "scenario_role": null,
+  "scenario_context": "An AI-native CRM feeds every sales call into the AI's memory: customer history, objections raised across past calls, current deal stage, and personality notes gathered over months of relationship-building. The value proposition is that the AI never forgets a customer — it surfaces the right context at the right moment during live calls. Power users with long customer histories are hitting a problem: mid-conversation, the AI begins losing track of recent discussion. A customer mentions an objection from ten minutes ago and the AI responds as if it was not said. The forgetting is not random — the AI is running out of context window before the call ends, and older entries are being silently dropped to make room.",
+  "scenario_trigger": "The sales team reports that six of the twelve highest-value accounts have had at least one call where the AI 'forgot' a live objection. In three cases the rep noticed mid-call and had to intervene manually. In two cases the customer noticed first. The engineering team pulls the logs and confirms the pattern: calls exceeding 45 minutes regularly exceed the context budget, and the current context packing strategy treats all four memory types — customer history, objections, deal stage, and personality notes — as equally weighted. Recent live discussion is being evicted to make room for months-old history that has low decision relevance for the current call.",
+  "scenario_question": "Frame what is actually broken in the context strategy, list the components a redesigned memory system needs, name the tradeoff the team must explicitly accept, and define a falsifiable success bar for the new design.",
+  "engineer_standout": "A strong answer refuses to frame this as a 'context window is too small' problem. The window size is fixed — the real problem is that the current packing strategy treats all context as equally valuable per token, which it is not. Recent live discussion and current deal stage have higher decision relevance per token than three-year-old customer history. The fix is a prioritization and eviction policy grounded in recency and decision relevance: keep what the AI needs to reason correctly about the next 60 seconds of conversation, summarize-then-archive the rest. The second move is deciding how much of this machinery to expose to the user — showing the tradeoff creates trust but adds cognitive load; hiding it preserves simplicity but leaves reps uncertain why the AI sometimes does not remember something they said.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["domain_expertise", "taste"],
+  "secondary_competencies": ["strategic_thinking", "cognitive_empathy"],
+  "topic_tags": ["ai-native", "context-management", "memory-systems", "crm", "llm-products"],
+  "technique_tags": ["prioritization", "eviction-policy", "summarization", "user-transparency"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The AI is forgetting things mid-call — but the window size is fixed. Before proposing a fix, name what is actually broken in the system's reasoning about what belongs in that window.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why the AI forgets live objections during long calls with high-value accounts?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The context window is a fixed budget, and the current packing strategy wastes that budget by treating all four memory types — customer history, objections, deal stage, and personality notes — as equally valuable per token. During a live call, recent discussion and current deal stage have the highest decision relevance: they determine what the AI should say in the next 60 seconds. Months-old customer history has low per-token decision relevance for the current conversation, yet the system allocates space to it with the same priority as a live objection raised ten minutes ago. The forgetting is not a capacity failure — the window holds enough tokens for a full call — it is a prioritization failure: the system evicts high-relevance recent context to retain low-relevance historical context, producing AI responses that treat live conversation as if it did not happen.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This framing correctly identifies the root cause as a prioritization failure rather than a capacity failure. The context window is large enough — the problem is that the packing strategy assigns equal weight to all four memory types regardless of their relevance to the current moment in the call. Historical customer data has high relevance before the call starts and low relevance during live conversation; live objections have the opposite profile. A context strategy that does not account for this recency-and-relevance gradient will systematically evict the wrong material. Framing it this way points directly at what must change: the eviction policy, not the window size.",
+              "framework_hint": "Domain Expertise: understanding that context window management is a prioritization problem, not a capacity problem, is the core product reasoning move for AI-native systems. The four memory types have different relevance-per-token profiles at different points in a sales call — that is the fact that the eviction policy must be built around. Strategic Thinking: reframing 'context is too small' as 'eviction priority is wrong' prevents the team from pursuing a solution — larger models, chunked retrieval, or summarization of everything — without first asking what actually needs to be in the window during a live call."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The problem is that the context window is too small for long sales calls with complex customer histories. AI-native CRMs targeting high-value enterprise accounts need models with significantly larger context windows — at minimum 200K tokens — to hold the full customer history, all past objections, deal stage details, personality notes, and the live conversation simultaneously. The solution is to upgrade to a model with a larger context limit.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Upgrading to a larger context window delays the problem but does not resolve it. Sales calls with very active customers will eventually exceed any fixed window if the packing strategy treats all context as equally worth retaining. More critically, the logs already confirm the issue: calls exceeding 45 minutes exceed the budget, and old history is being retained while live discussion is dropped. That pattern is a prioritization failure, not a window-size failure. A 200K-token window with the same flat eviction policy will start forgetting live objections on calls that last 90 minutes instead of 45 — the structural problem remains.",
+              "framework_hint": "Domain Expertise failure: context window size and context prioritization are different engineering levers. Increasing window size is a scaling intervention; it does not change the relationship between eviction priority and decision relevance. The scenario confirms that old history is being kept while live objections are dropped — that is an explicit signal that the packing strategy, not the window size, is the variable to fix."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The root cause is insufficient real-time transcription quality. If the transcription service is dropping words or misattributing speaker turns during long calls, the AI may receive an incomplete or garbled version of the objection, causing it to respond as if the objection was not raised. Improving transcription accuracy and speaker diarization would eliminate the forgetting.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Transcription quality is a real dependency in voice-based AI sales tools, and degraded transcription could cause symptoms that look like forgetting. The gap is that the engineering logs rule this out: the confirmed pattern is that the system evicts live discussion from the context window to retain older history when the budget is exceeded. The forgetting is a consequence of eviction order, not of transcription error. A framing that focuses on transcription accuracy cannot explain why the AI accurately registers an objection mid-call and then loses it ten minutes later as the conversation continues.",
+              "framework_hint": "Domain Expertise gap: the scenario explicitly confirms that the context window budget is being exceeded and that eviction is producing the forgetting. Transcription quality is a valid concern in AI-native voice systems but is not the variable the logs implicate here. The distinction between 'the AI never received the input' and 'the AI received the input and then evicted it' is the diagnostic move that determines where to intervene."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is that sales reps are not summarizing key objections at the end of each call before logging them in the CRM. If the AI relies on raw call transcripts rather than structured summaries, the signal-to-noise ratio in the context is poor, making it harder for the AI to identify which information is important. Training reps to log structured objection summaries would improve context quality.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Structured data entry by reps is a legitimate improvement to data quality in any CRM, and lower-noise inputs would make per-token value higher. The gap is that this framing addresses historical data quality rather than the live call context problem. The forgetting happens during calls that are still in progress — the AI loses track of an objection raised ten minutes ago, not an objection from a previous call. No amount of structured post-call logging changes the eviction order during a live conversation. The fix for forgetting-during-calls must happen in the context packing strategy, not in the data entry workflow.",
+              "framework_hint": "Cognitive Empathy: correctly identifies that reps and AI share a data quality problem, and that structured inputs help both. Strategic Thinking gap: the framing addresses the wrong time horizon. Structured post-call summaries improve the historical memory types (customer history, past objections) but do not change what gets evicted from the context window during the live call where the forgetting actually occurs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The packing strategy needs to change. List the components a redesigned memory system needs — both the ones that determine what stays in the window and the ones that handle what gets pushed out and how it comes back.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of components most completely covers what the redesigned context management system needs to prevent live objection eviction while keeping valuable historical context accessible?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The redesigned system needs four structurally distinct components. First, a relevance-and-recency scorer: a lightweight function that assigns each context token a priority based on two signals — how recently the information entered the context and how directly it bears on the current deal stage and active discussion thread. Recent live objections and current deal stage score highest; historical customer notes from three-plus years ago score lowest. Second, a tiered eviction policy: when the context budget is approached, the system evicts the lowest-scoring tokens first — old history before recent discussion, general personality notes before live objections — rather than evicting in arrival order. Third, a summarize-then-archive mechanism: evicted context is not deleted but compressed into a dense summary and stored in a retrievable archive. Fourth, a retrieval trigger: a rule that watches for references in live conversation to archived material — a customer mentioning a competitor discussed two calls ago — and fetches the relevant archive entry back into context, displacing lower-priority material.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These four components are mechanistically distinct and together close all the failure modes. The relevance-and-recency scorer determines eviction priority without requiring human judgment on every call. The tiered eviction policy ensures that live objections and current deal stage survive the context crunch that begins around the 45-minute mark. Summarize-then-archive prevents permanent data loss when history is evicted — it just becomes denser and retrievable. The retrieval trigger allows the system to pull archived material back when the conversation makes it relevant again, handling the case where a customer circles back to something from a previous call. Each component addresses a different gap.",
+              "framework_hint": "Creative Execution: generating components that address distinct failure modes — eviction priority, data loss on eviction, and re-access to evicted material — rather than variations of the same mechanism (e.g., three different summarization techniques). Domain Expertise: the relevance-and-recency scorer reflects the standard engineering pattern for LLM context management in production agentic systems: prioritization is cheaper than retrieval augmentation at inference time, and the two complement each other when combined with a summarize-then-archive step."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The redesigned system needs a real-time summarization pipeline and a retrieval-augmented generation layer. The summarization pipeline compresses historical customer context before each call into a fixed-size summary — customer history, past objections, personality notes, and deal stage in under 2,000 tokens. The retrieval layer monitors the live conversation and fetches specific historical details on demand when the call touches a relevant topic. Together these two components free up context space for live discussion without permanently losing historical data.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Pre-call summarization and retrieval-augmented generation are the right primary mechanisms, and naming both is better than naming one. The gap is that this list does not address what happens to live discussion as the call extends beyond 45 minutes. Summarizing history before the call frees space at the start, but the forgetting pattern shows that live discussion — objections raised during the current call — gets evicted as the call continues. The retrieval trigger handles historical material referenced mid-call, but without a tiered eviction policy that explicitly protects recent live discussion, the system will still evict current-call content when the budget is exceeded mid-conversation.",
+              "framework_hint": "Domain Expertise: pre-call summarization and RAG are standard production patterns for long-context AI systems, and naming both is correct. Creative Execution gap: the two components together protect historical context and provide recall, but they do not protect live discussion from eviction during the call itself. The scenario's logs show that live objections are being dropped — a gap this list does not close."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The redesigned system needs a larger context window model and a structured data schema for customer records. The larger window eliminates the budget problem for all but the longest calls. The structured schema ensures the AI receives customer history, objections, deal stage, and personality notes in a consistent, parseable format, which reduces token overhead compared to unstructured transcript storage and frees up additional space for live conversation.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A structured data schema does reduce per-token overhead compared to unstructured transcripts, and that is a real optimization worth pursuing. The gap is that schema efficiency improvements are one-time gains — they reduce the token cost of existing content but do not change the eviction priority when the budget is still exceeded. Structured data with flat eviction priority will still drop live objections to retain old history, just slightly later in the call. A larger context window has the same limitation. Neither component addresses the prioritization failure that causes the eviction pattern.",
+              "framework_hint": "Domain Expertise failure: schema efficiency and window size are resource optimizations, not prioritization mechanisms. The eviction problem will recur on longer calls regardless of how efficiently the existing four memory types are encoded, because the system still has no rule for which type to evict first when the budget is exceeded during a live call."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The redesigned system needs a rep-facing control panel that lets sales reps manually pin or unpin context blocks during a call. Reps know which customer history is relevant to the current conversation and can pin the pieces that matter, freeing the AI to evict everything else. Manual control gives reps agency and ensures the context reflects their judgment about what the AI should remember.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Giving reps manual control over context pinning is a legitimate transparency feature and addresses the trust gap when reps are uncertain why the AI forgot something. The gap is that a rep manually pinning context blocks during a live sales call is cognitively expensive at exactly the moment when their attention should be on the customer. The forgetting problem occurs on calls with the twelve highest-value accounts — the ones where rep attention is most valuable and least available for tool management. Manual control is a useful escape hatch, not a primary mechanism for a system where automatic prioritization should handle 90% of cases.",
+              "framework_hint": "Cognitive Empathy: correctly identifies that reps want agency over what the AI remembers, especially on high-stakes calls. Creative Execution gap: the proposed primary mechanism requires the rep to solve the prioritization problem in real time, during the call, which transfers cognitive load from the system to the human at the worst possible moment. The design principle for AI-native tools is to handle the machinery invisibly so the human can focus on the conversation."
+            }
+          ]
+        },
+        {
+          "question_text": "What should the relevance-and-recency scorer weight most heavily when the context window approaches its budget limit during a live call?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["domain_expertise", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The scorer should weight current deal stage and live objections highest — both are directly decision-relevant to the next 60 seconds of the call — and weight multi-year customer history lowest. Deal stage determines what the AI should be trying to accomplish right now: a call in late negotiation has different priorities than an early discovery call. Live objections determine what the AI must address before the call ends. Customer history from years ago has already shaped the relationship and the current deal stage; it is high-value context before the call starts but its per-token decision relevance decays as the call progresses. Personality notes occupy the middle: they shape communication style throughout the call but rarely change what the AI must say in the next moment. The eviction order that follows from this scoring is: old history first, then general personality notes, then current-call discussion, with deal stage and live objections protected until no other content can be evicted.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "taste"],
+              "explanation": "This scoring correctly distinguishes between context that shapes the relationship (history, personality notes) and context that determines the next response (deal stage, live objections). The decay argument — historical context is high-value pre-call and low-value mid-call as the conversation progresses — is the reasoning move that justifies the asymmetric treatment. Protecting live objections and deal stage until all other content is exhausted maps directly to the scenario's confirmed failure: old history was retained while live objections were dropped. The eviction order makes the priority explicit and testable.",
+              "framework_hint": "Domain Expertise: the distinction between pre-call relevance and mid-call decision relevance is the key insight for context management in AI-native CRMs. Historical data has high value for priming the AI before the call and low incremental value once the conversation has replaced it as the source of truth about the current moment. Taste: the eviction order — old history first, personality notes second, current discussion third, deal stage and live objections never — is a judgment about what an AI needs to be useful in the next 60 seconds, not an average of usefulness across the whole call."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The scorer should weight all four memory types equally and apply a recency-only signal: the most recently accessed or updated content stays, regardless of content type. This is simpler to implement and avoids the need to define what 'decision relevance' means for each content type, which is difficult to specify precisely.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A pure recency scorer is simpler than a relevance-plus-recency scorer, and simplicity is a real engineering value. The gap is that recency alone does not capture the asymmetry between content types. Customer history that was reviewed at the start of the call is 'recent' by the recency scorer's logic but has low decision relevance 45 minutes into an active negotiation. A personality note last accessed an hour ago that explains why a customer responds poorly to price anchoring is more decision-relevant than the most recently accessed line of historical meeting logs. Recency is a useful signal but not a sufficient one when the four content types have structurally different relevance profiles at different call stages.",
+              "framework_hint": "Domain Expertise gap: recency is a good proxy for relevance in many systems but breaks down when different content types have different relevance-decay curves. In a sales call context, deal stage and live objections have relevance that is high and constant throughout the call; historical customer notes have relevance that is high at the start and decays as the call builds its own context. A recency-only scorer treats these two profiles as equivalent."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The scorer should weight customer history highest because it represents the deepest knowledge the CRM has about the account — relationship history, past wins and losses, churn signals, and buying patterns. Live objections are transient and can be re-raised by the customer if they are important; customer history, once evicted, represents a permanent loss of context that took years to accumulate.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The argument that historical context is hard to rebuild has merit — years of customer data do represent an accumulation that deserves respect. The gap is that the question is about scoring during a live call, where the consequence of evicting a live objection is that the AI responds incorrectly to something the customer said ten minutes ago. In that context, the 'permanence' of historical data is irrelevant: the history is not being deleted, it is being archived and can be retrieved. The live objection, once evicted from the active context window, causes an immediate, customer-visible failure. Weighting history over live content optimizes for a concern — permanent data loss — that the summarize-then-archive mechanism already addresses.",
+              "framework_hint": "Taste failure: the argument conflates 'this data took a long time to accumulate' with 'this data should have the highest priority during a live call.' The value of historical data for a sales AI peaks before the call when it is used to prime the system, not during the call when live conversation has replaced it as the most actionable context. Prioritizing history over live objections produces exactly the failure the scenario describes."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The scorer should be configured differently for each account based on the rep's judgment about which context type matters most for that relationship. Some customers care deeply about being understood historically; others want the AI to focus entirely on the current conversation. Letting reps set per-account scoring profiles makes the system adaptable to relationship type.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Per-account configurability is a real product feature that respects the diversity of sales relationships, and the observation that some customers value historical recall more than others is directionally correct. The gap is that this option describes a configuration layer rather than a scoring model. The question asks what the scorer should weight — what the default, system-level eviction priority should be when the context budget is exceeded. Per-account overrides are a useful extension of a well-designed default, but they do not substitute for a principled default that protects live objections and deal stage across all accounts.",
+              "framework_hint": "Cognitive Empathy: correctly identifies that different sales relationships have different context priorities, and that reps have knowledge about this that the system does not. Strategic Thinking gap: per-account configuration is a second-order feature that requires a sound first-order default. Without a default scoring model that handles the 45-minute context crunch correctly, per-account overrides are tuning a broken baseline."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The redesigned system has a tiered eviction policy and a summarize-then-archive mechanism. Name the tradeoff the team must explicitly accept — and identify what the decision to surface or hide this machinery costs the user experience.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "How much of the context management machinery should the AI surface to sales reps during a live call, and what does the team give up with each choice?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The right answer is minimal, intentional transparency: show reps a lightweight indicator when historical context has been archived — something like a small badge that signals 'some history is in archive' — without exposing the eviction scoring or the archive contents during the call. After the call, give reps a context audit view where they can see what was in the window at each stage of the call and what was archived. This approach preserves cognitive simplicity during the call (the rep's attention belongs to the customer) while giving reps enough information post-call to understand AI behavior and trust it over time. The sacrifice is that reps cannot intervene in real time when they want the AI to prioritize something the system has deprioritized — they can surface that need after the call but not during it. That is the right sacrifice because real-time intervention requires cognitive bandwidth that should be on the customer.",
+              "quality": "best",
+              "competencies": ["taste", "cognitive_empathy"],
+              "explanation": "This framing correctly separates the during-call and post-call use cases. During the call, reps need simplicity — a badge that signals 'some context is archived' is enough to prevent surprise without adding cognitive load. Post-call, reps need legibility — the audit view builds the trust that makes reps willing to rely on the AI for their next high-value call. The sacrifice — no real-time override — is named explicitly and defended: the cost of a real-time override is rep attention diverted from the customer, which is a higher price than the cost of occasional suboptimal AI prioritization during the call.",
+              "framework_hint": "Taste: the distinction between 'show reps everything' and 'show reps what they need when they need it' is a design judgment about the rep's available attention at each stage of the call. Cognitive Empathy: simulating the rep's experience during a high-stakes call with a key account — what a rep needs mid-call is confidence that the AI is on track, not a dashboard of eviction scores. The post-call audit view meets the deeper need: understanding AI behavior well enough to trust it next time."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The system should be fully transparent: show reps a real-time context panel during the call that displays the current window contents, the eviction queue, and a live relevance score for each context block. Reps can then override the system's priority judgments in real time. Full transparency builds trust faster than opaque systems and gives reps the control they need to prevent the AI from deprioritizing something they know is important.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Full transparency does build trust and rep agency, and those are real values. The gap is that a real-time context panel with eviction queues and relevance scores requires the rep to monitor and manage an interface during a live sales call. The highest-value accounts — the twelve accounts where the forgetting problem has already occurred — require the most rep attention, not the most tool management. Full transparency optimizes for the rep's need to understand the system over their need to perform during the call. The feature is right for a post-call or setup context; it is wrong as a primary during-call interface.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that rep trust requires visibility into system behavior. Taste gap: the during-call interface is not the right venue for full transparency. The rep's attention budget during a call is allocated to the customer — a context panel competes with that allocation. Trust built through post-call legibility is durable; trust built by requiring reps to monitor a dashboard during calls creates dependency on a feature that degrades call performance."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The context management system should be entirely invisible to reps. Any transparency about the context window creates anxiety — reps will start worrying about what the AI knows and does not know instead of focusing on the call. An invisible system that works correctly removes that anxiety entirely. If the system is good enough, reps never need to know how it works.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The premise — that a system good enough never requires explanation — does not hold for a system that sometimes archives context in ways the rep will notice. The scenario already shows that reps noticed the AI forgetting live objections, and two customers noticed before the reps did. An invisible system that fails without explanation erodes trust faster than a transparent system that occasionally archives context with a signal. Complete invisibility is only correct for systems that never fail in ways the user can observe — this one demonstrably does.",
+              "framework_hint": "Cognitive Empathy failure: 'if it works, users do not need to know how' ignores the scenario's evidence that users already noticed the failure. The trust problem is real and ongoing. Invisibility is a valid design choice for backstage machinery that never surfaces to the user; it is not a valid choice for a system whose failures are user-visible and customer-visible."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Let reps choose their transparency level in account settings: a 'focus mode' that hides all context management signals, a 'standard mode' with a simple archive badge, and an 'expert mode' with the full real-time context panel. Different reps have different working styles and different comfort levels with AI tools. Configurability respects that diversity.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Configurability is a reasonable product feature and respects rep diversity. The gap is that it defers the design decision rather than making it. The optimize step asks the team to name the tradeoff they must accept and choose a position. Offering three modes avoids the choice: reps default to whatever mode they are placed in, and the design question — how much transparency is right during a call — goes unanswered. The three-mode approach also introduces support complexity: reps in different modes will have different experiences when the AI archives context, making it harder to train, support, and debug the feature.",
+              "framework_hint": "Taste gap: configurability is a tool for accommodating genuine preference diversity; it is not a substitute for a principled default. The design team must decide what a first-time rep should see and why — that decision cannot be outsourced to user preference settings. The optimize step is about naming the tradeoff, which requires taking a position, not offering a menu."
+            }
+          ]
+        },
+        {
+          "question_text": "The tiered eviction policy will sometimes archive context that a rep later wishes the AI had kept. What is the right way to handle that cost?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Accept the cost explicitly and bound it with a retrieval trigger. The tiered eviction policy will archive material the AI and rep would have preferred to keep — that is the sacrifice the team makes in exchange for protecting live objections and current deal stage. The right response is not to prevent all eviction errors but to make archived context retrievable when it becomes relevant again. The retrieval trigger closes most of the gap: when the live conversation references something in the archive — a competitor mentioned in a previous call, a pricing term discussed earlier — the system fetches and re-injects the relevant archive entry. Reps and the AI will occasionally notice the gap between calls where retrieval did not fire because the reference was implicit rather than explicit. That residual cost is acceptable because the alternative — flat eviction priority — produces customer-visible failures on the highest-value accounts, which is a higher cost.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This answer correctly names the sacrifice — some evictions will archive material the rep would have preferred to keep — and bounds it with a mechanism (retrieval trigger) rather than pretending the cost can be eliminated. The cost asymmetry argument is the decisive reasoning move: customer-visible forgetting of live objections is a higher cost than occasional missed retrieval of archived history. Naming the residual cost and accepting it prevents the team from over-engineering the retrieval trigger to catch implicit references, which would add latency and complexity to the hot path.",
+              "framework_hint": "Taste: the key judgment is the cost asymmetry between the two error types. Missing an archived historical detail mid-call is a rep-visible gap that the rep can address manually. Forgetting a live objection mid-call is a customer-visible failure that damages the relationship and the deal. Accepting the smaller cost to prevent the larger one is the core tradeoff the optimize step requires the team to name. Strategic Thinking: bounding the accepted cost with a retrieval trigger (rather than accepting it without mitigation) is the move that makes the sacrifice manageable rather than permanent."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team should invest in making the eviction policy precise enough that it never archives content the rep would have preferred to keep. With enough data on rep behavior — which historical context blocks reps actually reference during calls, which they ignore — the scorer can be trained to make near-perfect predictions. A well-trained scorer eliminates the tradeoff.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Training the scorer on rep behavior data is a real improvement path and will reduce eviction errors over time. The gap is in the premise: the optimize step asks the team to name the tradeoff they must accept now, with the system as it can be built in the near term. A well-trained scorer based on months of behavioral data is not available at launch, and even a mature scorer will have residual error on edge cases — unusual customer references, new account relationships with sparse history. 'Train the scorer until it is near-perfect' is a long-term engineering roadmap, not an answer to the immediate cost question.",
+              "framework_hint": "Strategic Thinking partial credit: identifies behavioral data as the right training signal for improving the scorer over time. Taste gap: the optimize step is about naming what the team gives up with the design choice, not about projecting a future where the tradeoff is eliminated. A system that cannot name its accepted costs cannot make principled decisions about when the mitigation is good enough to ship."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Eviction errors should be treated as a bug category with an SLA. Every time a rep reports that the AI archived something important at the wrong time, the report should be triaged and the scorer should be patched within one sprint. The operational cost of accepting eviction errors without a fix commitment is higher than the engineering cost of fast iteration on the scorer.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A feedback loop from rep reports to scorer improvements is a reasonable operational mechanism and should exist. The gap is that treating every eviction error as a patchable bug conflates systematic policy with individual incidents. The tiered eviction policy makes deliberate tradeoffs — archiving old history to protect live objections — and some of those choices will produce rep-visible gaps that are not bugs but consequences of the policy. Treating them as bugs creates pressure to widen the 'keep everything' policy, which reintroduces the customer-visible forgetting problem the redesign was built to eliminate.",
+              "framework_hint": "Strategic Thinking gap: a bug SLA is appropriate for eviction decisions that violate the policy (e.g., live objections being evicted despite the protection rule). It is not appropriate for eviction decisions that correctly follow the policy but produce a gap the rep notices. The optimize step requires the team to distinguish between 'the policy made the wrong call' (which is a bug) and 'the policy made the right call and the rep preferred otherwise' (which is the accepted cost of the tradeoff)."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The cost of eviction errors should be covered by increasing the number of tokens allocated to the archive summary. If evicted content is compressed into richer summaries — 500 tokens per evicted block instead of 100 — the AI can use the summaries in place of the full content without needing to fetch from the archive. Richer summaries eliminate the retrieval trigger dependency and reduce the chance that the AI will respond incorrectly when archived content is relevant.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Richer summaries do preserve more information per evicted block and reduce retrieval errors. The gap is that richer summaries consume more context budget, reducing the space available for the live discussion and current deal stage the redesign was intended to protect. A 500-token summary for each evicted history block on a high-volume customer account may consume a significant fraction of the available context, reintroducing the budget competition the tiered eviction policy was designed to resolve. The optimization solves one cost (eviction information loss) by creating another (reduced budget for protected content).",
+              "framework_hint": "Domain Expertise failure: richer summaries are more informative but they are not free — every token in a richer summary is a token unavailable for live discussion. The context window is a zero-sum budget during a live call. Increasing summary token allocation reduces the buffer that protects live objections and deal stage from eviction, which trades one failure mode for another."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The redesigned system is a hypothesis: prioritize live objections and deal stage, archive history with a retrieval trigger, and show reps a lightweight signal. Define the metric, threshold, and timeline that confirm the hypothesis — and name the counter-signal that tells you something is wrong before a customer notices.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the redesigned context management system, covering both call quality and system reliability?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: within 60 days of deploying the redesigned system, the rate of rep-reported AI forgetting events on calls exceeding 45 minutes drops from the current baseline — six of twelve highest-value accounts with at least one forgetting event — to zero reported customer-visible failures and fewer than one rep-visible gap per fifty calls. The 60-day window allows enough long calls on high-value accounts to confirm the pattern. The threshold of zero customer-visible failures is non-negotiable because customer-visible forgetting is a relationship and deal risk, not just a product quality metric. The counter-signal is: the rep-visible gap rate stays below threshold but archive retrieval accuracy — the fraction of archived content fetched correctly when referenced — drops below 80% in the first 30 days. That signal means the retrieval trigger is misfiring on implicit references, and reps are compensating manually rather than reporting gaps. If retrieval accuracy is not monitored, the system can appear to work on the primary metric while silently degrading on the mechanism the design relies on.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This win condition correctly distinguishes customer-visible failures (non-negotiable threshold of zero) from rep-visible gaps (acceptable at low rates). The 60-day window is grounded in the call volume of the twelve high-value accounts — enough calls to confirm the pattern without waiting a full quarter. The counter-signal — retrieval accuracy dropping while the primary metric appears clean — is the non-obvious failure mode: reps who compensate manually rather than reporting gaps will make the primary metric look good while the retrieval system degrades. Monitoring retrieval accuracy as a secondary instrument prevents the team from declaring victory on the invoice while the mechanism is quietly failing.",
+              "framework_hint": "Domain Expertise: the distinction between customer-visible and rep-visible failure rates maps directly to the business consequence difference — customer-visible failures damage the deal and the relationship, rep-visible gaps create internal friction. Setting a zero threshold on customer-visible failures and a low but non-zero threshold on rep-visible gaps is a taste judgment grounded in consequence asymmetry. Strategic Thinking: the counter-signal (retrieval accuracy) is important because it is the leading indicator of a failure mode that lags on the primary metric. Naming it prevents the team from being fooled by rep compensation behavior."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means the context window utilization rate on calls exceeding 45 minutes stays below 90% on average. If the tiered eviction policy is working, the system should never reach its hard limit — high-priority content is protected and low-priority content is evicted before the budget is fully consumed. A consistent utilization rate below 90% confirms the policy is functioning without needing to track rep feedback.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Context window utilization rate is a useful internal diagnostic for confirming that the eviction policy is triggering as designed. It is not a win condition for the redesign because it measures mechanism activity rather than outcome quality. A system with 85% average utilization could still be evicting live objections if the scoring weights are miscalibrated — the policy fires before the hard limit, but fires on the wrong content. Without a rep-visible or customer-visible quality metric, utilization rate cannot confirm that the redesign is producing better calls.",
+              "framework_hint": "Domain Expertise gap: utilization rate measures how often the eviction policy activates, not whether it activates correctly. The win condition for a context management redesign must include a signal about call quality — whether the AI retains the right content during calls — not just a signal about whether the budget management system is operating within bounds."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success means the twelve high-value accounts renew or expand their contracts in the next renewal cycle. If the AI stops forgetting objections, call quality improves, and improved call quality drives better outcomes for the accounts that matter most. Revenue impact from the affected accounts is the ultimate measure of whether the redesign worked.",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Account renewal is the ultimate downstream outcome the redesign is intended to support, and connecting product improvements to revenue impact is the right executive framing. The gap is that renewal cycles are long (typically 12+ months), and the signal is confounded by deal complexity, competitive dynamics, and account health factors that have nothing to do with the AI's context management. Using renewal as the success bar means the team will not know whether the redesign worked for a year or more, during which time the system may be degrading in ways that are not visible in call logs. A win condition needs to be falsifiable within a timeframe that allows iteration.",
+              "framework_hint": "Strategic Thinking partial credit: correctly connects the feature improvement to the business outcome that justifies it. Domain Expertise gap: revenue impact on enterprise renewals is a 6-18 month lagging indicator with high confounding. A win condition for a product change must be falsifiable in a timeframe that enables course correction — 60 days for call quality metrics, not 12 months for renewal cycles."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success means rep satisfaction scores on AI call assistance — measured in post-call surveys — improve by at least 15 percentage points within 90 days. If reps feel the AI is more reliable during long calls, the redesign is working. Rep satisfaction is the leading indicator for adoption of AI tools in sales organizations.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Rep satisfaction is a real and important metric for AI tool adoption, and a 15-point improvement is a specific enough threshold to be falsifiable. The gap is that satisfaction surveys measure rep perception rather than call performance. A rep may report higher satisfaction because the archive badge gives them more confidence, even if the retrieval trigger is misfiring on implicit references. Conversely, a rep who has adapted to the AI's limitations may report similar satisfaction whether the redesign works or not. Satisfaction is a useful input but not a sufficient win condition for a redesign whose primary goal is reducing customer-visible failures.",
+              "framework_hint": "Cognitive Empathy: correctly identifies that rep satisfaction is the adoption lever for AI tools in sales organizations. Domain Expertise gap: satisfaction surveys measure a perception, which can diverge from the underlying quality metric in both directions. The win condition must include a direct measure of the failure mode the redesign was built to prevent — customer-visible AI forgetting during calls — not just a measure of how reps feel about the system afterward."
+            }
+          ]
+        },
+        {
+          "question_text": "How should the team decide when the eviction policy is ready to expand beyond the current four memory types to handle new context categories — for example, real-time competitor mentions or prospect research pulled mid-call?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Expansion should be gated on two simultaneous conditions: the current four-type policy has held zero customer-visible forgetting events for at least 30 days on calls exceeding 45 minutes, and the team has a clear relevance-per-token score for the proposed new category that is grounded in call behavior data — not in intuition about how useful competitor mentions feel. Both conditions must clear simultaneously. A policy that is stable on the existing four types but has not validated the scoring weight for a new type will misplace that type in the eviction order, potentially repeating the original problem with a fifth memory category. The sacrifice is that new context categories wait for stability and empirical scoring even when the product team is confident about their value.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "The two-condition gate separates policy stability (the existing design is working before adding complexity) from empirical scoring (the new category's relevance weight is grounded in data, not intuition). Adding a fifth context type without a validated relevance score risks introducing the same flat-priority problem that caused the original failure, just with a new category. The sacrifice — new categories wait even when the team is confident — is the taste judgment that keeps the eviction policy conservative enough for calls with the highest-value accounts.",
+              "framework_hint": "Taste: the instinct to add new context types as soon as they are available is a product velocity instinct; the gate converts that instinct into an evidence-gated decision. Strategic Thinking: the two conditions together ensure that expansion adds value without reintroducing the prioritization problem. A team that expands before the existing policy is stable is stacking unvalidated complexity on an unvalidated base."
+            },
+            {
+              "option_label": "B",
+              "option_text": "New context categories should be added whenever sales reps request them. Reps have the best intuition about what information would help them during calls, and their requests represent real user needs. Waiting for data-driven validation slows the product down unnecessarily when the team has direct user feedback available.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Rep feedback is the right source of signal for which context types are valuable, and rep requests do represent real needs. The gap is that 'reps want this' is a signal about value, not about eviction priority. Adding a new context type without a validated relevance score means the policy places it in the eviction order based on intuition — which is exactly how the original four types ended up with flat priority. Rep requests should inform which new types to evaluate, not whether to add them without validation.",
+              "framework_hint": "Cognitive Empathy: correctly treats rep feedback as a valid and important input for product decisions. Strategic Thinking gap: the eviction policy question is not 'is this context type valuable?' (reps can answer that) but 'where should this type sit in the eviction order relative to the existing four types?' That question requires call behavior data, not feature requests."
+            },
+            {
+              "option_label": "C",
+              "option_text": "All new context types should be assigned the same default relevance score as personality notes — the middle tier — until behavioral data supports a different placement. This keeps the expansion process simple and avoids the complexity of defining a unique score for each new type. If the default placement is wrong for a given type, rep feedback will surface it quickly.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Defaulting new types to the middle tier is better than adding them with the highest priority (which could displace live objections) and is a reasonable short-term placeholder. The gap is that the default placement is arbitrary — there is no reason to believe competitor mentions or prospect research have the same eviction priority as personality notes. The original problem was caused by arbitrary equal-weighting of all four types; defaulting new types to an arbitrary tier perpetuates the same design weakness. The team should assign relevance scores based on evidence, not convenience.",
+              "framework_hint": "Domain Expertise gap: the 'default to middle tier' approach is a heuristic that avoids the work of scoring. It will be correct for some new types and wrong for others, with no mechanism to distinguish which until reps report problems. The eviction policy's value comes from deliberate, evidence-grounded scoring — a default middle tier undermines that value for every new category added."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The team should build a self-tuning eviction policy that learns relevance scores from call behavior automatically, eliminating the need for manual scoring decisions when new context types are added. A model that observes which context blocks reps reference during calls — and updates scores accordingly — scales to any number of context types without manual intervention.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A self-tuning policy is a reasonable long-term architecture for a system with many context types and high call volume. It is not the right answer for a team that has just stabilized a four-type eviction policy and is considering its first expansion. A self-tuning model requires enough behavioral data to produce reliable scores — sparse data on a new context type will produce noisy initial scores that may place the new type incorrectly in the eviction order. More critically, a self-tuning policy makes the eviction order less auditable: when a rep reports that the AI forgot a live objection, diagnosing whether the policy misfired requires understanding which learned weights produced the eviction decision.",
+              "framework_hint": "Strategic Thinking failure: self-tuning systems are appropriate at scale with dense behavioral data. At the stage of a first expansion decision — with limited data on the new context type — a self-tuning policy will produce unreliable scores on sparse evidence and will be harder to debug than a manually set, evidence-grounded score. The win step requires a decision rule that works now, not an architecture that pays off at scale."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

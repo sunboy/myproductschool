@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000021",
+  "title": "RAG Retrieval Quality is Hurting LLM Output",
+  "scenario_role": null,
+  "scenario_context": "A B2B SaaS company shipped a RAG-based AI support assistant powered by Claude 3 Sonnet. User satisfaction scores settled at 2.8 out of 5. The team suspected the LLM was the bottleneck and began exploring prompt changes and model upgrades. Before committing to that path, an engineer ran a controlled experiment: instead of letting the retrieval pipeline select context, she manually identified and injected the single best chunk for a sample of 50 queries. Output ratings for those queries jumped to 4.6 out of 5. The LLM, given the right context, was producing excellent answers. The retrieval pipeline, measured at recall@5 of 0.61, was not finding the right chunk in the top five results roughly 40% of the time. The embedding model in production is ada-002.",
+  "scenario_trigger": "The experiment makes the bottleneck clear, but it also reveals a decision surface with several competing options: swap the embedding model, change the chunking strategy, add a reranker, introduce hybrid search, or some combination. Each option carries a different implementation cost, latency budget, and expected lift. The team needs to diagnose the retrieval failure precisely, prioritize the experiments that are most likely to close the gap, and define what winning looks like before spending engineering cycles.",
+  "scenario_question": "Diagnose why retrieval quality is low, enumerate the experiments that could improve it, name the tradeoff the team must accept, and define a falsifiable success bar.",
+  "engineer_standout": "A strong answer begins by reading the perfect-context experiment correctly: the 2.8 to 4.6 jump does not just suggest retrieval is weak, it proves generation is not the problem. That separation matters because it eliminates an entire class of interventions (prompt engineering, model upgrades, output post-processing) from the critical path. With the bottleneck localized to retrieval, the reasoning moves to recall@5 of 0.61: 40% of the time the right chunk is absent from the candidate set entirely, which means a reranker cannot fix this — a reranker reorders what retrieval returns, but if the right chunk was never retrieved, reranking has nothing to work with. The real gap is upstream: the embedding model (ada-002) or the chunking strategy is failing to represent queries and documents in a way that places the right chunk in the top five. The highest-expected-lift interventions target that upstream failure: embedding model upgrade (e.g. text-embedding-3-large), chunking strategy revision (chunk size, overlap, or structural boundaries), or hybrid search (BM25 sparse + dense vectors) to catch keyword-sensitive queries that dense embeddings miss. A reranker is valuable as a second-stage filter but cannot substitute for fixing recall.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["domain_expertise", "strategic_thinking"],
+  "secondary_competencies": ["creative_execution", "taste"],
+  "topic_tags": ["rag", "retrieval", "llm", "ai-systems", "embeddings", "search"],
+  "technique_tags": ["north-star-cascade", "bottleneck-isolation"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The experiment result is the key signal. What does the 2.8 to 4.6 jump actually prove, and what does that proof eliminate from the problem space?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why the support assistant's output quality is low?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 2.8 to 4.6 jump when perfect context is manually provided proves that the generation stage is working correctly and the retrieval stage is the bottleneck. With recall@5 at 0.61, the right document chunk is absent from the candidate set roughly 40% of the time. When that happens, the LLM is not making a reasoning error: it is producing the best answer it can from context that does not contain the relevant information. The problem is not how Claude 3 Sonnet uses context — it is that the retrieval pipeline, anchored on ada-002 embeddings, is failing to surface the right chunk in the top five results often enough. Fixing prompts or swapping models would have zero effect on that failure mode. The correct frame is: retrieval recall is insufficient, and the experiments that matter are the ones that address why ada-002 fails to rank the relevant chunk in the top five.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "The perfect-context experiment is a clean ablation: it holds the LLM constant and changes only the retrieval quality. A rating jump from 2.8 to 4.6 under that condition is not a suggestion that retrieval is weak — it is proof that generation is not the limiting factor. This framing correctly eliminates prompt engineering and model upgrades from the critical path and localizes the problem to retrieval recall, which then makes recall@5 the diagnostic metric to reason from. Naming ada-002 as the specific embedding model in production grounds the frame in the actual system rather than a generic RAG architecture.",
+              "framework_hint": "Domain Expertise: understanding that a RAG system has two separable failure modes (generation failure and retrieval failure) and that a controlled context experiment is the canonical way to distinguish between them. Strategic Thinking: localizing the bottleneck before enumerating solutions prevents the team from spending cycles on interventions that cannot move the metric that is actually failing."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The output quality is low because Claude 3 Sonnet is not a strong enough model for the complexity of B2B support queries. The 2.8 average rating suggests users are getting incomplete or inaccurate answers, which is a generation problem. Upgrading to a more capable model or adding chain-of-thought prompting would improve the quality of reasoning over retrieved context and close the satisfaction gap.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The perfect-context experiment directly falsifies this framing. When the right context chunk was provided manually, ratings jumped from 2.8 to 4.6 using the same Claude 3 Sonnet model with no prompt changes. If the model were the bottleneck, manual context injection would not produce that magnitude of improvement. Attributing the problem to generation quality ignores the most informative signal the team has collected, and pursuing model upgrades would waste engineering cycles on an intervention that cannot close a retrieval gap.",
+              "framework_hint": "Domain Expertise failure: a controlled ablation experiment (manual context vs. pipeline context, same model) is the standard diagnostic for isolating generation failure from retrieval failure in RAG systems. A 1.8-point rating jump under perfect context is strong evidence that the model is not the constraint. Ignoring this signal and attributing the problem to generation quality is a misread of the experimental design."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is that users have unreasonably high expectations for AI support. A 2.8 rating is a perception problem, not a technical one. The team should improve the assistant's framing of its own limitations, add disclaimers about AI accuracy, and set clearer expectations in the onboarding flow before investing in infrastructure changes.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "The perfect-context experiment produces a 4.6 rating from the same users evaluating the same type of queries. That result demonstrates users are capable of rating the assistant highly when retrieval works correctly, which means the 2.8 rating reflects a real quality gap rather than a calibration problem with user expectations. Framing the issue as perception management does not engage with the experimental evidence and would produce no improvement in the underlying output quality.",
+              "framework_hint": "Cognitive Empathy failure: assuming users are rating incorrectly rather than reading the experimental result as evidence that the product is failing to deliver the quality it is capable of. The 4.6 rating under perfect context conditions reveals the ceiling the assistant can reach; the 2.8 in production reveals how far below that ceiling the retrieval pipeline is holding it."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is a data quality issue. The knowledge base likely contains outdated or conflicting documents that confuse the retrieval system. The team should audit the document corpus, remove low-quality entries, and implement a content review process before spending engineering time on embedding model changes or reranking infrastructure.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Document corpus quality is a real factor in RAG system performance, and auditing for stale or conflicting content is a legitimate maintenance task. The gap in this framing is that it cannot explain the recall@5 signal: if the right chunk exists in the corpus and the manual experiment was able to find and inject it, the recall failure is not primarily a corpus quality problem but a retrieval ranking problem. Corpus cleanup is a reasonable parallel workstream but it does not address the mechanism that is causing the relevant chunk to fall outside the top five results 40% of the time.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies corpus quality as a real variable in RAG system health. Strategic Thinking gap: the perfect-context experiment tells us the right chunk exists in the corpus (the engineer was able to find and inject it), so the failure is in how the retrieval pipeline ranks it, not whether the content is present. The frame needs to account for what the ablation experiment already ruled out."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "With retrieval confirmed as the bottleneck, the question becomes: what are the distinct mechanisms that cause ada-002 to miss the right chunk, and which interventions target each mechanism?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of retrieval improvement experiments most completely covers the failure modes that could produce a recall@5 of 0.61 with ada-002 embeddings?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["domain_expertise", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct failure modes need experiments. First, embedding model quality: ada-002 may not produce vectors that place semantically similar queries and documents close together in the embedding space for this specific domain; swapping to text-embedding-3-large or a fine-tuned model tests this. Second, chunking mismatch: if chunks are too large, the relevant information is diluted by surrounding context; if too small, the answer spans chunk boundaries; testing chunk sizes from 256 to 1024 tokens with varied overlap addresses this. Third, query-document vocabulary gap: B2B support queries often use user-facing language that does not match the technical language in documentation; hybrid search (BM25 sparse retrieval plus dense embeddings) catches exact-match signals that dense-only retrieval misses. Fourth, candidate set ceiling: even with a perfect embedding model, if the top-k is set to 5 and the right chunk is ranked 6th, recall@5 will fail; testing top-k at 10 or 20 with a reranker as the second stage reveals whether the right chunk is being retrieved but cut off before the LLM sees it.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "creative_execution"],
+              "explanation": "These four failure modes are mechanistically distinct: embedding model quality determines whether the vector space correctly represents query-document similarity, chunking strategy determines whether the relevant content exists as a retrievable unit, query-document vocabulary gap determines whether the embedding model sees the query and the document as semantically similar at all, and the candidate set ceiling determines whether the right chunk is present in the retrieved set but pruned before the LLM sees it. Each experiment targets a different root cause, which matters because recall@5 of 0.61 could be produced by any of them individually or in combination. Running all four in parallel produces a diagnostic picture rather than a guess.",
+              "framework_hint": "Domain Expertise: ada-002 is a general-purpose embedding model not fine-tuned on B2B SaaS support content; domain-specific embedding drift is a known failure mode. Creative Execution: the four experiments are not variations of each other — embedding model, chunking, hybrid search, and top-k are interventions at different layers of the retrieval stack and require different engineering work to test."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team should focus on adding a cross-encoder reranker as the primary intervention. A reranker takes the top-k results from the dense retrieval step and rescores them using a more compute-intensive model that compares the query and each candidate document together, rather than separately. This typically improves precision at the top of the ranked list and would increase the probability that the best chunk is in position one or two even when dense retrieval returns imperfect results.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "A reranker is a real and valuable retrieval improvement, and the explanation of how cross-encoders work is accurate. The critical gap is that a reranker operates on the candidate set returned by initial retrieval: if recall@5 is 0.61, the right chunk is absent from the retrieved set 40% of the time. A reranker cannot rescue a chunk that was never retrieved. Adding a reranker would improve precision within the top-k but would leave the recall failure unaddressed. The list step should enumerate the experiments that address the root cause, not only the ones that optimize what retrieval already returns.",
+              "framework_hint": "Domain Expertise partial credit: correctly describes reranker mechanics and identifies a real retrieval improvement technique. Strategic Thinking gap: the recall@5 metric specifically measures whether the right chunk is present in the top five results at all, not how well those five results are ordered. A reranker improves ordering; it does not improve recall. The experiment list needs to include interventions that increase the probability the right chunk is retrieved in the first pass."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should run an A/B test comparing the current setup against a version where users can provide feedback on answer quality in real time. Using that feedback as a training signal to fine-tune the retrieval model over time would create a self-improving system. The experiment would show whether feedback-driven fine-tuning can close the gap more sustainably than one-time infrastructure changes.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Feedback-driven fine-tuning is a real technique but it is a multi-month investment that assumes the team has a labeled dataset of query-document relevance judgments, a fine-tuning pipeline, and a model that can be fine-tuned on this data. The scenario does not indicate any of those prerequisites are in place. More importantly, the list step asks for experiments the team can run to diagnose and improve retrieval quality now, not a long-horizon ML platform roadmap. The experiment list should include interventions testable against the existing 0.61 baseline.",
+              "framework_hint": "Creative Execution failure: proposing a feedback loop is not structurally distinct from the other options — it is a method of improving retrieval over time, not an experiment that diagnoses which retrieval failure mode is producing the 0.61 recall. The list step should generate options that reveal why recall is low, not only how to improve it after the cause is understood."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The team should reduce the complexity of the queries by preprocessing them before retrieval. Many user queries contain extraneous words that hurt embedding similarity. Adding a query simplification step — using a lightweight LLM to rewrite queries into shorter, more precise forms before embedding them — would reduce noise in the query vector and improve semantic matching against the document corpus.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Query rewriting is a legitimate retrieval improvement technique and the reasoning about noisy query vectors is not incorrect. The issue is scope: query rewriting addresses one specific failure mode (poor query formulation) while leaving embedding model quality, chunking strategy, and vocabulary gap unaddressed. With recall@5 at 0.61, the team does not yet know which failure mode dominates. Listing query rewriting as the primary experiment would commit to a diagnosis before the diagnostic work has been done, and if the dominant cause is chunking or embedding quality, query rewriting will produce little measurable lift.",
+              "framework_hint": "Strategic Thinking failure: selecting an intervention before diagnosing which failure mode is responsible for the recall gap. Query rewriting is a real option but not a comprehensive list. The list step should enumerate the full space of interventions covering all plausible failure modes, not commit to one based on a partially complete diagnosis."
+            }
+          ]
+        },
+        {
+          "question_text": "A reranker is proposed as a quick win. Under what condition does adding a reranker NOT improve recall@5, and why does that condition apply here?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "A reranker does not improve recall@5 when the right document chunk was never retrieved in the initial candidate set. Recall@5 measures whether the relevant chunk appears anywhere in the top five results. A reranker reorders what retrieval already returned — it cannot introduce chunks that were ranked below position k in the dense retrieval pass. With recall@5 at 0.61, the right chunk is absent from the retrieved set 40% of the time. In those cases, no reranker can help because there is nothing to reorder. The condition applies here because the failure is in recall, not precision: the problem is not that the right chunk is being retrieved and ranked poorly, it is that it is not being retrieved at all in a large fraction of queries.",
+              "quality": "best",
+              "competencies": ["domain_expertise"],
+              "explanation": "This is the precise technical constraint that makes a reranker insufficient as the primary intervention for a recall problem. Rerankers improve precision at the top of the ranked list by rescoring candidates more carefully, but they operate on a fixed candidate set defined by the initial retrieval step. If that candidate set does not contain the right chunk, reranking cannot introduce it. The 0.61 recall@5 figure tells the team the right chunk is missing from the retrieved set in 39% of queries, which is the failure mode the primary experiments must target.",
+              "framework_hint": "Domain Expertise: the distinction between recall (is the right item in the candidate set?) and precision (is the right item ranked first in the candidate set?) is fundamental to information retrieval. A reranker improves precision; recall failures require interventions earlier in the retrieval pipeline — embedding model quality, chunking, or hybrid search."
+            },
+            {
+              "option_label": "B",
+              "option_text": "A reranker does not help when the query and the document use completely different vocabulary, because the reranker model also relies on semantic similarity. If the embedding model cannot represent the relationship between a user's natural language question and the technical documentation, a reranker trained on similar data will face the same vocabulary mismatch. This condition may apply here if B2B support queries contain user-facing language that diverges significantly from documentation terminology.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Vocabulary mismatch is a real limitation for both dense embedders and rerankers, and this answer correctly identifies a scenario where reranking fails. The gap is that the question specifically asks about recall@5: the limitation named here is about precision (the right chunk is retrieved but poorly scored), not about the situation where the right chunk is absent from the candidate set entirely. The most precise answer to the question — why does adding a reranker not improve recall@5 — is that rerankers cannot surface chunks that initial retrieval never returned.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies a failure mode for rerankers (vocabulary mismatch) and connects it to a plausible property of B2B support data. The framing conflates recall failure with precision failure — vocabulary mismatch affects how the reranker scores the retrieved set, not whether the right chunk was retrieved in the first place."
+            },
+            {
+              "option_label": "C",
+              "option_text": "A reranker does not help when the LLM is the bottleneck, because the reranker only improves which context chunks are selected, not how the model reasons over them. Since the bottleneck here has not been definitively identified, the team should resolve that question before deciding whether to add a reranker.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "The perfect-context experiment has already established that generation is not the bottleneck: ratings jump from 2.8 to 4.6 when the right chunk is manually provided using the same LLM. The framing that the bottleneck has not been identified ignores the most informative signal the team collected. More critically, the question asks specifically about the condition under which a reranker fails to improve recall@5, which is a technical question about how recall is measured, not about whether the bottleneck has been located.",
+              "framework_hint": "Strategic Thinking failure: dismissing the experimental evidence by claiming the bottleneck is still unknown. The perfect-context ablation was designed precisely to separate generation failure from retrieval failure, and a 1.8-point rating jump under manual context is strong evidence. Refusing to draw the conclusion this experiment was designed to produce is not epistemically cautious — it is ignoring the data."
+            },
+            {
+              "option_label": "D",
+              "option_text": "A reranker does not help when the knowledge base is too small. With fewer than a few thousand documents, the diversity of retrievable content is limited and reranking cannot compensate for missing coverage. The team should first expand the knowledge base by adding more documentation before investing in retrieval infrastructure.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Knowledge base size is a real factor in RAG system coverage, and sparse documentation is a legitimate cause of poor answer quality. However, this framing conflates coverage failure (the right information does not exist in the corpus) with retrieval failure (the right information exists but is not being ranked in the top five). The manual experiment injected existing chunks from the knowledge base and produced a 4.6 rating, which means the relevant content exists — the retrieval pipeline is failing to surface it. Corpus expansion would not address a ranking failure where the required content is already present.",
+              "framework_hint": "Domain Expertise failure: confusing corpus coverage (the knowledge base lacks relevant content) with retrieval recall (the knowledge base has relevant content but the embedding model is not ranking it highly enough). The perfect-context experiment establishes that the relevant chunks exist in the corpus; the failure is in retrieval ranking, not in content availability."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Multiple experiments could improve recall@5. Name the criterion that tells you which one to run first, and name the tradeoff that criterion forces you to accept.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding which retrieval improvement experiment to run first when recall@5 is 0.61 and ada-002 is the current embedding model?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is expected recall lift per engineering day, constrained by latency budget. The goal is to move recall@5 from 0.61 toward 0.85 or above as fast as possible given a fixed team and a production system that has a response latency ceiling users will notice. Swapping ada-002 for text-embedding-3-large requires reindexing the corpus but can be evaluated in two to three days and historically produces recall lifts of 10 to 20 percentage points on domain-specific corpora. Chunking experiments are similarly fast to run. Hybrid search requires infrastructure for BM25 indexing but targets a different failure mode (keyword-sensitive queries) and may add latency. A reranker adds compute cost and latency but only helps after the recall gap is closed. The sacrifice this criterion demands is explicit: the team accepts that some experiments with strong theoretical justification (reranking) are deprioritized because they cannot close the recall gap, while the experiments that directly address recall (embedding model, chunking) are run first even though their exact lift is uncertain.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names what the team is optimizing for (recall lift per engineering day within a latency budget) and names the sacrifice (deferring reranking despite its theoretical appeal). It grounds both sides in the specific numbers from the scenario: recall@5 of 0.61 is the baseline, the embedding model is ada-002, and the generation quality ceiling (4.6 with perfect context) sets the target. The sacrifice is not a preference for speed over quality — it is a structural constraint: a reranker improves precision on what retrieval returns, so it cannot close a recall gap regardless of how quickly it could be shipped.",
+              "framework_hint": "Taste: distinguishing between 'reranking sounds like a comprehensive solution' (a preference for thorough-seeming infrastructure) and 'reranking does not address recall failure' (a property of how recall@5 is computed). Strategic Thinking: the criterion maps to the actual problem — recall@5 is the failing metric, so interventions that directly target recall should be sequenced before interventions that assume recall is already adequate."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be implementation risk. The team should start with the experiment that is least likely to break the production system or degrade latency for the majority of queries where retrieval is already working correctly. Changing the embedding model requires a full reindex and introduces unknown latency changes. Hybrid search adds infrastructure complexity. A reranker can be added as a post-processing step with minimal changes to the existing retrieval pipeline, making it the lowest-risk first experiment.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Implementation risk is a real factor in sequencing experiments on a production system, and the preference for minimizing disruption is reasonable engineering instinct. The gap is that this criterion produces the wrong first experiment: a reranker is the lowest-risk change precisely because it does not touch the retrieval layer, but it also cannot fix the recall gap that is causing 40% of queries to miss the right chunk entirely. Optimizing for implementation risk without connecting it to expected recall impact would direct engineering effort toward a safe change that does not address the diagnosed problem.",
+              "framework_hint": "Taste gap: 'lowest implementation risk' is a preference for operational comfort rather than a tradeoff. The optimize step requires naming a criterion that makes the sacrifice visible: what does the team give up by prioritizing implementation safety over recall impact? A criterion that selects the safest experiment without checking whether it can move the target metric is not a tradeoff — it is avoidance."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should optimize for user satisfaction score as the primary metric and run whichever experiment moves the 2.8 rating highest in an A/B test over two weeks. Run all four experiments in parallel if possible, measure the user rating change for each, and double down on the winner. This avoids premature optimization and lets empirical evidence drive the sequencing.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "User satisfaction score is the ultimate outcome metric, but it is a lagging indicator that averages across all queries and is influenced by factors outside retrieval quality. Running four infrastructure experiments in parallel on a production system in two weeks is not operationally realistic: each experiment changes the retrieval pipeline and the combinations interact in ways that make causal attribution unclear. The optimize step requires naming a criterion that sequences the experiments before running them, not delegating sequencing to a parallel empirical test that will take weeks to produce signal.",
+              "framework_hint": "Strategic Thinking failure: substituting empirical parallelism for a reasoned criterion. The team already has a diagnostic metric (recall@5) and a controlled experiment (the perfect-context ablation) that reveals the mechanism. Using user satisfaction as the selection criterion reintroduces the noise of a lagging outcome metric when a more direct signal is available."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is cost. The team should run the cheapest experiment first: chunking strategy changes require no new infrastructure and no reindexing, making them effectively free. If chunking improvements raise recall@5 to an acceptable level, the team avoids the cost of embedding model changes or hybrid search infrastructure. If chunking does not move the needle, the team has ruled out one hypothesis before spending on more expensive options.",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Cost is a real factor in experiment prioritization, and chunking is a genuinely low-cost intervention worth testing. The problem with using cost as the primary criterion is that it does not connect to expected recall lift: if the dominant failure mode is embedding model quality rather than chunking mismatch, starting with chunking will produce a small or negligible recall improvement and delay the team's diagnosis. A criterion that sequences experiments by cost without weighting by expected lift produces a sequence that is budget-efficient in the first experiment but overall slower to close the recall gap.",
+              "framework_hint": "Taste failure: cost is a constraint, not a criterion. A good optimization criterion names both what the team is maximizing (recall lift) and what it is accepting as a cost (engineering days, latency, infrastructure). Using cost alone as the primary criterion embeds an implicit assumption that all experiments have similar expected recall lift, which is not the case — embedding model upgrades have larger historical recall lifts than chunking changes on most corpora."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A bet is only real if you can say what failing looks like. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell the team the retrieval fix is not translating to user value.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the retrieval improvement program, given a current recall@5 of 0.61 and a user satisfaction rating of 2.8 out of 5?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: recall@5 reaches 0.85 or above within six weeks of the first experiment going live, and user satisfaction rises to at least 3.8 out of 5 within two weeks of the recall target being met. The 0.85 recall threshold is chosen because the perfect-context experiment showed ratings of 4.6 when retrieval is ideal: closing roughly two-thirds of the current recall gap (from 0.61 to 0.85) should produce a proportional improvement in satisfaction scores above 3.5, with 3.8 as a conservative target accounting for queries where even correct context produces partial answers. The six-week window for recall covers two or three experiment iterations with one week each for deployment and measurement. The counter-signal is: recall@5 reaches 0.85 but user satisfaction remains below 3.2 at the two-week mark. That result would mean something other than retrieval is limiting satisfaction — possibly answer formatting, response latency, or a subset of query types that require multi-document synthesis rather than single-chunk retrieval.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names two metrics (recall@5 and user satisfaction), specific thresholds (0.85 and 3.8), and timelines (six weeks for recall, two weeks after recall target for satisfaction). The connection between the 0.61 baseline and the 0.85 target is grounded in the experiment data: the perfect-context condition at 4.6 sets the ceiling, and closing two-thirds of the recall gap should produce a proportional but conservative satisfaction improvement. The counter-signal (recall improves but satisfaction does not) is non-obvious and important: it would reveal that retrieval is not the only variable limiting satisfaction, which would redirect the team to investigate other failure modes rather than continuing to optimize retrieval.",
+              "framework_hint": "Domain Expertise: the 0.85 recall@5 threshold is calibrated to the known ceiling (perfect context produces 4.6 ratings from the same user base). A recall target below 0.80 would still leave 20% of queries missing the right chunk, which is unlikely to move satisfaction above 3.5 given the current baseline. Strategic Thinking: the counter-signal (recall meets target, satisfaction does not) forces the team to treat the retrieval hypothesis as falsifiable rather than as a guaranteed fix. If the counter-signal fires, the team learns something important: satisfaction is influenced by factors beyond retrieval quality."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means user satisfaction reaches 4.0 out of 5 within three months. Track the rating weekly and treat any week where the trend is flat or negative as a signal to reassess the experiment in progress. Monthly check-ins with the support team to review qualitative feedback would provide additional signal about whether users perceive improvement.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A specific satisfaction target with a timeline is better than directional language, and weekly tracking with a flat-trend trigger is a reasonable early warning mechanism. The gap is that user satisfaction is a lagging indicator that does not tell the team whether the retrieval interventions are working at the technical level. Without recall@5 as a leading indicator in the success definition, the team cannot distinguish between 'retrieval improved but satisfaction lags' and 'retrieval did not improve at all'. A win condition that only tracks the outcome metric loses the causal chain connecting the intervention to the result.",
+              "framework_hint": "Strategic Thinking partial credit: identifies a specific target and a monitoring cadence. Domain Expertise gap: recall@5 is the mechanism metric — it measures whether the retrieval experiments are working. User satisfaction is the outcome metric — it measures whether retrieval improvement translated to user value. A win condition that omits the mechanism metric cannot detect whether the intervention is working before waiting weeks for the outcome metric to move."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means the team successfully deploys at least three retrieval experiments in production within 60 days. Deployment velocity is the right success metric for an infrastructure improvement program: if the team ships experiments fast, the empirical learning compounds and the best solution will emerge. Failure to ship three experiments in 60 days means the engineering team has a capacity or process problem that needs to be addressed before the technical improvements can take effect.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Deployment count is an activity metric, not an outcome metric. Shipping three experiments does not establish whether any of them improved recall or user satisfaction. A team could deploy three experiments that each reduce recall@5 from 0.61 to 0.58 and meet this win condition while making the problem worse. The win step requires a metric that tests the hypothesis — retrieval recall is the bottleneck — not a metric that measures whether the team was busy.",
+              "framework_hint": "Strategic Thinking failure: confusing activity (experiments deployed) with outcomes (recall improved, satisfaction improved). The win condition must be falsifiable: a counter-signal requires an outcome metric that could be observed to move in the wrong direction. Deployment count cannot move in the wrong direction — you either deploy or you do not."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the embedding model upgrade from ada-002 to text-embedding-3-large is deployed and the recall@5 metric is measured at 0.75 or above within four weeks. If recall@5 is below 0.70 after the upgrade, the team should investigate chunking strategy before proceeding. Tracking recall@5 alone is sufficient because it is the direct measure of the retrieval improvement.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Naming recall@5 as the primary metric with a specific threshold and timeline is a meaningful improvement over activity metrics or lagging satisfaction scores, and targeting 0.75 as a milestone is reasonable. The gap is that this win condition omits the user satisfaction outcome entirely: the team could reach 0.75 recall and still be at 2.8 user satisfaction if, for example, a subset of failure cases (multi-document synthesis, ambiguous queries) are responsible for disproportionate satisfaction drag. A win condition that only tracks the mechanism metric cannot confirm that the retrieval improvement is translating to the user value the program was started to deliver.",
+              "framework_hint": "Domain Expertise partial credit: correctly selects recall@5 as the mechanism metric and names a reasonable threshold. Strategic Thinking gap: the win condition needs both a mechanism metric (recall@5, leading indicator) and an outcome metric (user satisfaction, lagging indicator) to establish the full causal chain. A recall target alone tells the team whether the retrieval is improving; it does not tell them whether users are experiencing the improvement."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

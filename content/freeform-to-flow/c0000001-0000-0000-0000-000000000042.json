@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000042",
+  "title": "How Do You Know If Your AI-Native Product Is Working?",
+  "scenario_role": null,
+  "scenario_context": "An AI-native productivity tool launched six months ago with no traditional interface to speak of. There are no buttons to click, no forms to submit, no dashboards to navigate. Users describe what they want in natural language, and the product handles the rest: drafting documents, scheduling actions, retrieving information, summarizing threads, coordinating across tools. The interaction surface is conversation, and the output is work that gets done.",
+  "scenario_trigger": "A Series A pitch is two weeks out. The founding team opens their analytics dashboard and sees the standard metrics: sessions per day, messages sent per user, average session length. A seed investor who has already committed asks a pointed question during a prep call: 'How do you know the product is actually working for people?' The team realizes they cannot answer that question from the data they have. Sessions and messages sent tell you the product was used; they say nothing about whether the user's intent was fulfilled. The investor will want metrics that demonstrate the product delivers outcomes, not just activity.",
+  "scenario_question": "Propose a measurement framework that tells investors and the team whether this AI-native product is delivering real value, and explain how to instrument it.",
+  "engineer_standout": "A strong answer recognizes that 'sessions' and 'messages sent' measure input activity, not output quality. For an AI-native product where the interaction surface is conversation, the meaningful unit is a completed user intent: did the product understand what the user was trying to accomplish and accomplish it? The reasoning move is to define intent fulfillment as the unit of value, design metrics that capture success and failure of individual intents, and explain why engagement metrics are insufficient proxies for value delivery in a product that works through language rather than clicks.",
+  "paradigm": "ai_native",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["taste", "strategic_thinking"],
+  "secondary_competencies": ["domain_expertise", "cognitive_empathy"],
+  "topic_tags": ["ai-product", "metrics", "ai-native", "measurement", "product-strategy"],
+  "technique_tags": ["north-star-cascade", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The investor's question is precise: not 'are people using it?' but 'is it actually working for people?' What is the product failing to measure, and why does that gap matter more for an AI-native product than for a traditional one?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why sessions and messages sent are insufficient metrics for an AI-native productivity tool raising a Series A?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Sessions and messages sent measure whether the product was used, not whether the user's intent was fulfilled. In a traditional product, clicking a button is evidence of a feature being invoked, and form submissions are evidence of task completion. In an AI-native product with no buttons or forms, sending a message is evidence only that the user tried something. The message could have produced a useful outcome, a confused response, a partial answer, or an outright failure. All four register identically in a sessions-and-messages-sent dashboard. For a Series A pitch, the investor question is not 'how much are people using it?' but 'when people use it, does their work get done?' That question requires measuring the success or failure of individual user intents, which sessions and messages sent do not capture.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This framing names the exact structural gap: in a traditional product, interaction events (clicks, form submissions) are proxies for task completion because the interface is designed around discrete actions. In an AI-native product, the interaction event is a message, which is a proxy for intent expression, not for intent fulfillment. A message sent tells you the user made a request; it does not tell you whether the request was understood or completed. The investor's question at the Series A pitch is calibrated to this gap: engagement metrics are investable for social products where engagement is the value, but not for productivity tools where value is defined as work completed. Sessions and messages sent for an AI-native productivity tool are analogous to measuring a delivery service by how many packages were picked up, not how many arrived.",
+              "framework_hint": "Taste: distinguishing between metrics that measure activity (sessions, messages sent) and metrics that measure the thing the product is actually for (user intents fulfilled). Strategic Thinking: for a Series A pitch on a productivity tool, the relevant investor question is not whether users are engaged but whether users' work is being done. Those are different questions that require different measurement frameworks."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Sessions and messages sent are insufficient because they are volume metrics that do not normalize for quality. A product with 100 sessions where every session accomplished something valuable is better than a product with 1,000 sessions where most were frustrating. The team should add retention and DAU/MAU ratio to the existing metrics, which would reveal whether users are returning because the product is working for them.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Retention and DAU/MAU are real improvements over raw session counts because they require users to return, which implies some degree of perceived value. The gap is that retention is still a behavioral proxy for value, not a direct measure of it. A user who returns daily to an AI-native productivity tool may be returning because it occasionally works well enough to be worth trying again, not because it reliably fulfills their intents. For a product where the interaction is a conversation, return visits tell you the user gave the product another chance; they do not tell you whether the intent expressed in that visit was completed. The investor question is specifically about whether the product is working, not whether users are coming back.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that volume metrics without a quality dimension are misleading and that retention is a more demanding proxy for value than raw session count. Taste gap: retention still conflates 'user returned' with 'user's work was done.' A user who returns to an AI-native tool despite frequent failures has high retention and low intent-fulfillment, and those look identical in a DAU/MAU chart."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The metrics are insufficient because the team has not segmented by user persona. Power users who send 20 messages per session may be getting much more value than light users who send 3. Breaking down sessions and messages sent by user segment would reveal which personas the product is actually working for, and the pitch should focus on the segment where the numbers are strongest.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Segmenting by usage intensity is a legitimate analysis and identifying the personas where the product performs best is useful for positioning decisions. The gap is that this approach accepts sessions and messages sent as the primary value signals and attempts to extract insight from them by slicing the data differently. Even within the high-usage segment, 20 messages per session does not indicate whether the user's work was accomplished. A power user who sends 20 messages and abandons the session because the product kept misunderstanding the request has higher engagement metrics than a light user who sent 3 messages and finished a task in 5 minutes. The investor's question is not answered by knowing which segment engages most.",
+              "framework_hint": "Cognitive Empathy partial: recognizes that different users have different interaction patterns and that aggregate metrics can hide heterogeneous experiences. Taste gap: slicing activity metrics by user segment produces more granular activity metrics, not outcome metrics. The number of messages sent per session, even per persona, does not tell you whether the AI understood the user's intent or completed the requested task."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Sessions and messages sent are insufficient because they do not capture the business impact of the tool. The team should instrument revenue-per-user or time-saved-per-user metrics instead, because those connect product usage to business outcomes that Series A investors care about. Productivity tools are valued on the business impact they produce, so the metrics should reflect that.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Revenue-per-user and time-saved-per-user are legitimate outcome metrics and investors do care about business impact at the Series A stage. This becomes plausible-wrong because it skips the foundational measurement layer and moves directly to business-outcome proxies. Time-saved-per-user is only accurate if the tool is actually fulfilling user intents; if the tool frequently misunderstands requests and users spend time correcting or abandoning failed interactions, the time-saved figure will be inflated or inaccurate. Business-outcome metrics are downstream of intent-fulfillment metrics, not substitutes for them. Pitching time-saved numbers to a Series A investor without being able to show how the product measures whether individual intents succeeded or failed is the kind of gap that sophisticated investors probe.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that productivity tools are ultimately valued on business impact and that time-saved is a standard metric category for this space. Strategic Thinking failure: business-outcome metrics (time saved, revenue impact) are aggregations of many individual intent interactions. If the underlying intent-fulfillment rate is unknown, the business-outcome numbers cannot be validated or improved. The investor's question is precisely about this intermediate layer."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The product has no clicks and no form submissions, so conventional instrumentation does not transfer. List the categories of measurement that would tell you, at the level of individual user intents, whether the product is working.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of measurement categories most completely covers what the team needs to instrument to evaluate intent-level success for an AI-native productivity tool?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct categories are missing from the current dashboard. First, intent-completion rate: the share of user requests where the product delivered an output that the user accepted without follow-up correction, measured by tracking whether the user modified the AI's output, asked for a redo, or abandoned the thread. Second, intent clarity rate: the share of user requests where the model correctly identified the user's goal on the first turn versus requiring clarification exchanges, detectable by counting how many turns elapsed before the AI produced an output the user engaged with positively. Third, task-abandonment rate: the share of sessions where the user stopped without a clear completion signal, which indicates the product failed to fulfill the intent even if the session technically continued for multiple messages. Fourth, re-engagement rate after failure: whether users who had a failed session return within 48 hours, which distinguishes between failures the product can recover from and failures that erode long-term trust. Together these four categories capture the pipeline from intent expression to outcome that sessions and messages sent cannot see.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These four categories are mechanistically distinct and each captures a different point in the intent-fulfillment pipeline. Intent-completion rate is the headline signal: did the product do what was asked? Intent clarity rate diagnoses a failure mode upstream of completion: was the request understood? Task-abandonment rate catches the cases where users gave up without completing, which a sessions metric would count as engagement. Re-engagement after failure measures resilience: a product that users return to after a bad experience is in a different trust position than one where failures produce permanent churn. All four are absent from a sessions-and-messages-sent dashboard and all four can be instrumented from conversation-level data without requiring explicit user surveys.",
+              "framework_hint": "Creative Execution: generating four categories that each catch a distinct failure mode across the intent pipeline, rather than variations on 'measure engagement better.' Task-abandonment rate and re-engagement after failure are particularly non-obvious because they require interpreting session structure and cross-session patterns rather than counting individual events. Domain Expertise: in AI-native products where users interact through language, the turn structure of a conversation contains recoverable signals about intent success and failure that require deliberate instrumentation to extract."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team should add a thumbs-up/thumbs-down feedback button after each AI response. This is the standard way AI products measure output quality, and it gives users a direct channel to signal whether the product is working. Aggregating these signals over sessions produces a response quality score that the investor can evaluate.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Explicit feedback mechanisms are a real category of AI product measurement and thumbs-up/thumbs-down signals are widely used because they require minimal user effort. The gap is that explicit feedback has well-documented limitations: most users do not rate responses, the users who do are not representative of all users, and the users who are most frustrated are often least likely to provide feedback before leaving. For a productivity tool where users may be handling time-sensitive work tasks, stopping to rate a response is additional friction. The four-category framework in the best answer captures implicit behavioral signals (modification, abandonment, re-engagement) that do not require users to take an additional action, which makes the coverage more complete and the data more representative.",
+              "framework_hint": "Cognitive Empathy partial: correctly identifies that users need a channel to signal whether the product is working for them and that explicit feedback is a way to create that channel. Creative Execution gap: explicit feedback is a single category that covers only the cases where users voluntarily rate responses. Implicit behavioral signals from conversation structure cover the full population of intents, including the users who do not rate anything and simply leave."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should add LLM-as-a-judge evaluation: after each session, a second model reviews the conversation and scores whether the AI's response was appropriate for the user's request. This approach is used by leading AI labs and produces a systematic quality score without requiring user feedback. Running it on a sample of 10% of sessions would give the team a reliable quality signal.",
+              "quality": "surface",
+              "competencies": ["domain_expertise"],
+              "explanation": "LLM-as-a-judge evaluation is a legitimate technique for automated quality assessment and it is increasingly common in AI product development. The gap is that it evaluates whether the AI's response was technically appropriate, not whether the user's intent was fulfilled from the user's perspective. A response that a judge model rates as high quality may still fail to fulfill the user's actual goal if the model misunderstood the context, the user changed their mind mid-session, or the output required a correction that the judge did not penalize. Intent fulfillment is ultimately defined by the user's behavior after the response, not by a second model's assessment of the first model's output. Sampling 10% of sessions also introduces the same lag as post-hoc audits: the gap between failure and detection is too wide to drive real-time product improvements.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that LLM-as-a-judge is a recognized technique in AI product quality measurement and that it provides a systematic quality signal beyond raw engagement metrics. Creative Execution gap: automated evaluation of response appropriateness is one category of measurement, and it measures the AI's output quality, not the user's experience of intent fulfillment. A product can have high judge scores and low intent-completion rates if the model is technically articulate but frequently misses what users actually need."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The team should measure viral coefficient: how many new users each existing user refers to the product per month. If the product is genuinely working, users will recommend it to colleagues. A viral coefficient above 1.0 is a strong signal that the product is delivering enough value to generate organic growth, and it is more convincing to investors than internal quality metrics.",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Viral coefficient and referral behavior are meaningful growth signals and investors do weight them positively in a Series A pitch because they indicate organic demand. This becomes plausible-wrong because referral behavior is a downstream behavioral outcome that can be influenced by factors unrelated to whether the product fulfills intents: novelty, brand, FOMO in a category where AI is exciting, early-adopter enthusiasm. A product with a viral coefficient above 1.0 can still have a high intent-failure rate if users refer the product because it is interesting, not because it reliably does their work. Viral coefficient is also slow: it takes months of data to establish and it will not answer the investor's question about whether the product is working at the intent level. The team needs measurement that connects individual sessions to outcomes, not aggregate growth signals.",
+              "framework_hint": "Strategic Thinking partial: correctly identifies that referral behavior is a signal of perceived product value and that investors are interested in growth dynamics at the Series A stage. Taste failure: viral coefficient measures whether users believe the product is valuable enough to share, which is downstream of intent fulfillment. A product can spread virally before its intent-failure rate is understood and then face a trust collapse when users who adopted based on referral discover the failure rate in their own use."
+            }
+          ]
+        },
+        {
+          "question_text": "What user behavior does a high message-count per session most likely fail to distinguish between, in an AI-native product where users interact only through conversation?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["cognitive_empathy", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "A high message count per session looks identical whether the user is iterating productively toward a completed task or repeatedly re-prompting because the product keeps misunderstanding their request. Ten messages in a session could mean the user is refining a complex document through a collaborative back-and-forth where each exchange adds value. It could equally mean the user sent the same request seven times in different wordings before giving up. Both sessions show the same message count and the same session length. The metric cannot distinguish between productive iteration and frustrated repetition, which are opposite experiences from the product's perspective. For an AI-native productivity tool, distinguishing between these two patterns requires tracking whether the conversation converges on an output the user accepts or diverges into repeated reformulations without resolution.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "taste"],
+              "explanation": "This answer identifies the core ambiguity with precision: in a conversational product, high engagement can be a positive signal (deep, productive collaboration) or a negative signal (repeated failure requiring retry). Traditional products disambiguate through action completion events: a form submitted, a file saved, a task checked off. An AI-native product has no equivalent natural completion event, so message count alone is structurally ambiguous. Detecting whether a session represents productive iteration versus frustrated repetition requires reading the conversation pattern: does the AI's output evolve toward the user's goal, or does it repeat variations of the same failure? That requires intent-level instrumentation, not message counting.",
+              "framework_hint": "Cognitive Empathy: modeling the two different user experiences that produce identical message counts requires simulating what a productive session feels like versus what a frustrated one feels like from the inside. In a productive session, each AI response moves the user closer to done; in a frustrated one, each response prompts another attempt. Taste: the distinction between productive iteration and frustrated repetition is invisible in an engagement metric but is the most important signal an AI-native product can detect about its own performance."
+            },
+            {
+              "option_label": "B",
+              "option_text": "High message count per session fails to distinguish between users who are exploring the product's capabilities out of curiosity and users who are using it for urgent, time-sensitive work. Both may send many messages, but the curiosity-driven user is less affected by failures because there is no immediate cost, while the time-sensitive user experiences each failure as a productivity loss. Segmenting by urgency or use-case type would reveal whether message count correlates with satisfaction differently for different intent types.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "The distinction between exploratory and task-driven use is real and does affect how users experience failures. A user testing the product out of curiosity will tolerate more failed responses than someone trying to finish a work task before a deadline. The gap is that this answer identifies a segmentation dimension (urgency) rather than the structural ambiguity in what message count measures. Even within a single urgency tier, 10 messages can represent productive work or frustrated repetition. The core problem is not that different users have different failure tolerances; it is that message count cannot tell you whether any given session, regardless of the user's urgency level, resulted in the intent being fulfilled.",
+              "framework_hint": "Cognitive Empathy partial: correctly identifies that the same interaction pattern has different consequences for users with different levels of urgency, and that segmenting by use-case type is a meaningful analytical dimension. Taste gap: segmenting message count by urgency produces more granular message counts, not a signal that distinguishes productive sessions from failed ones. The ambiguity between iteration and frustration persists within every segment."
+            },
+            {
+              "option_label": "C",
+              "option_text": "High message count fails to distinguish between users who prefer a detailed, multi-turn conversation style and users who prefer short, direct interactions. Some users naturally write longer messages and engage in more back-and-forth; others want a single-turn request with a complete answer. The product should support both interaction styles and measure satisfaction within each style to avoid penalizing users who happen to prefer more conversational exchanges.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "User preferences for interaction style are real and a product that forces all users into a single conversation pattern will create friction for the users whose style does not match. Accommodating different interaction preferences is a relevant product design consideration. The gap is that this answer treats message count as a preference signal rather than an outcome signal. A user with a conversational style who sends 15 messages and accomplishes their goal and a user with a conversational style who sends 15 messages and does not accomplish their goal have the same message count for reasons that have nothing to do with preference. The ambiguity the question asks about is not stylistic; it is between success and failure.",
+              "framework_hint": "Cognitive Empathy partial: recognizes that different users have different interaction styles and that designing for one style at the expense of others creates inequitable experiences. The answer addresses a real product design question but misreads what the metric is failing to distinguish. Message count ambiguity is about outcomes (did the intent succeed?), not about style (how does the user prefer to interact?)."
+            },
+            {
+              "option_label": "D",
+              "option_text": "High message count fails to distinguish between users who are power users running multiple complex tasks in a single session and light users who are running a single simple task. Power users should be treated as a separate cohort and their higher message counts should not be averaged with light users, because the averages will obscure which user segment the product is actually serving best.",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Segmenting by usage intensity is a standard analytical practice and power users often have different product experiences than light users. Averaging across the two groups can obscure important differences in product performance by segment. This becomes plausible-wrong because it addresses a different analytical problem than the one in the question. The question asks what a high message count fails to distinguish within a session. The answer addresses what aggregating across user segments fails to distinguish in a metric. Even if the team segments perfectly by power versus light users, the message count within each segment still cannot distinguish between productive iteration and frustrated repetition. A power user sending 20 messages in a session could be 20 turns of excellent collaborative work or 20 turns of the same misunderstood request.",
+              "framework_hint": "Strategic Thinking partial: correctly identifies that user segmentation is a meaningful analytical step and that averages across heterogeneous user populations can hide important performance differences. The answer is addressing the between-user dimension of message count ambiguity but not the within-session dimension, which is what the question is asking about."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The team now has a list of intent-level metrics it could instrument. Picking all of them is not a strategy. Name the one metric that is the right optimization criterion for this product at the Series A stage. Name what the team gives up by centering on that criterion.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right optimization criterion for an AI-native productivity tool at the Series A stage, and what does centering on that criterion require the team to sacrifice?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The right criterion is first-turn intent-completion rate: the share of user requests where the product delivers an accepted output without the user needing to rephrase, correct, or abandon. This is the metric that answers the investor's question directly. Optimizing for it means investing in intent understanding and output quality at the cost of breadth: the product should confidently complete a narrower set of task types well rather than attempting a wide range of tasks with lower success rates. The sacrifice is task variety. Declining to handle task types the product cannot complete reliably means some users will hit a 'can't do that yet' wall. That sacrifice is acceptable at the Series A stage because a pitch that demonstrates an 80% first-turn completion rate on a defined task set is more fundable than a pitch that demonstrates a 55% completion rate across a wide range. Investors backing a Series A productivity tool want to see evidence of a reliable core, not an ambitious but inconsistent surface area.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "First-turn intent-completion rate is the right optimization criterion because it directly measures what the product is for: fulfilling user intents efficiently. It is also the metric that distinguishes productive iteration from frustrated repetition at the session level. Centering on it requires the team to accept a narrower task footprint: a product that does fewer things reliably is harder to sell on breadth but easier to defend on value. For a Series A pitch, the trade-off is strategically correct. Investors who have seen AI products struggle with the 'impressive demo, unreliable product' problem will weight a demonstrated high completion rate on a defined task set more than an ambitious but unproven broad capability. The sacrifice is real but explicitly justified by the stage of the company and the nature of the investor audience.",
+              "framework_hint": "Taste: naming the sacrifice (task variety and breadth) makes explicit that the team is choosing reliability over coverage, not trying to optimize both simultaneously. A product that attempts everything and completes 55% is a different bet than a product that does a defined set of tasks and completes 80%, and taste is knowing which bet is right at which stage. Strategic Thinking: first-turn completion rate answers the investor's question directly and is the metric the team can demonstrate improvement on most quickly, because it is measurable at the individual session level and actionable through focused model improvement on a defined task set."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The right criterion is weekly active users who complete at least three tasks in a week, sometimes called 'qualified active users.' This metric combines retention with meaningful usage and tells you that the product is attracting users who find enough value to use it multiple times across a week. Optimizing for it means investing in onboarding and activation, since reaching three tasks in a week requires users to get past initial setup and find at least three situations where the product fits. The sacrifice is that it does not directly measure whether each of those three tasks was completed successfully.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Qualified active users is a meaningful improvement over raw active users because it introduces a frequency threshold that filters out one-time visitors and low-engagement trialists. The gap is that it still measures quantity of use rather than quality of outcomes. A user who runs three tasks per week, two of which require re-prompting and one of which they abandon, qualifies as an active user under this criterion even though the product is failing them on two-thirds of their interactions. For a productivity tool at the Series A stage, the metric the team optimizes for should be able to surface product improvements when intent fulfillment improves, not just when more users try the product more times.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that combining retention with a frequency threshold produces a more meaningful engagement metric than daily or monthly active user counts alone. Taste gap: the criterion measures whether users return and use the product multiple times, not whether the product completes their work. A product that retains users through partial value delivery will score well on this metric even when its intent-completion rate is poor."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The right criterion is Net Promoter Score measured at the 30-day mark. NPS captures whether users think the product is worth recommending, which requires them to have had a positive overall experience. A 30-day NPS filters out users who gave up early and measures only those who have experienced the product long enough to form a considered opinion. Optimizing for NPS means investing in the experiences that turn satisfied users into advocates.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "NPS is a legitimate product health metric and measuring it at 30 days rather than immediately after onboarding does capture more of the user's accumulated experience. The gap is that NPS is a survey instrument with known coverage limitations: most users do not respond, the users who respond are not representative of the population, and NPS scores aggregate many different experiences into a single number that is hard to act on. For a team trying to improve an AI-native product's reliability, NPS tells you the outcome of the experience but not which part of the intent pipeline is failing. It also does not capture the users who stopped using the product before the 30-day mark, which may be where the most important failures are concentrated.",
+              "framework_hint": "Cognitive Empathy partial: recognizes that a 30-day measurement window captures accumulated experience rather than first-impression reactions, which is more informative for a productivity tool used repeatedly. Taste gap: NPS measures how users feel about the product overall, not whether individual intents were fulfilled. Optimizing for NPS can produce investments in brand, support responsiveness, and onboarding polish that raise scores without improving the fundamental intent-completion rate the product's value depends on."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The right criterion is revenue per active user, because at the Series A stage the team needs to demonstrate that usage translates to willingness to pay. Optimizing for revenue per active user means identifying the users who are getting enough value to pay for a premium tier and designing the product experience around their use cases. The sacrifice is deprioritizing users on a free tier who contribute engagement metrics but not revenue.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Revenue per active user is a relevant metric for a business and investors do want to see evidence that the market values the product enough to pay for it. This becomes plausible-wrong because it optimizes a business outcome that is downstream of product quality rather than the product quality itself. Revenue per active user is determined by whether users' intents are fulfilled reliably enough that they conclude the product is worth paying for. If the intent-completion rate is poor, revenue per active user will be low regardless of how the pricing or packaging is structured, and optimizing for revenue without understanding why users are or are not getting value produces pricing strategy experiments on a product with an unresolved quality problem. At the Series A stage, the fundable story is about demonstrated product value, and the metric that demonstrates that most directly is the one that measures whether the core product interaction succeeds.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that Series A investors are interested in revenue signals and that willingness to pay is evidence of perceived value. Strategic Thinking failure: revenue per active user is downstream of intent-completion rate, not a substitute for it. Optimizing revenue without optimizing the underlying value delivery is a strategy for capturing more money from users the product is already serving, not for building the reliable intent-completion capability that makes the product defensible."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the intent-fulfillment problem is getting worse before the pitch deck goes out.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for an AI-native productivity tool that wants to demonstrate value delivery at a Series A pitch in two weeks?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: first-turn intent-completion rate reaches 70% or above across the core task set the product explicitly supports, measured over the next 14 days using conversation-level signals (no re-prompt within the same session, no modification of the AI's output within 5 minutes, no task abandonment). Task abandonment rate stays below 20% of sessions that reach at least three turns. The 14-day window covers the period before the pitch, and the core task set is defined in advance to prevent cherry-picking. The counter-signal is: more than 30% of sessions reaching five or more turns end without a clear completion signal, which would indicate users are repeatedly re-prompting because the product is not fulfilling their intents, and that the message-count engagement looks healthy while the intent pipeline is failing. If the counter-signal fires in the first 7 days, the pitch framing should shift from 'we are demonstrating reliability' to 'we have identified the measurement gap and are closing it.'",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition is falsifiable because it names specific thresholds (70% completion rate, below 20% abandonment) on a specific time horizon (14 days) with a specific scope (core task set defined in advance). The operationalization of first-turn completion using conversation signals (no re-prompt, no quick modification, no abandonment) is precise and does not require user surveys. The counter-signal is critical: a high message count without completion signals within five-or-more-turn sessions is exactly the pattern that would indicate the engagement metrics look good while the intent pipeline is broken. Detecting that signal within 7 days gives the team time to revise the pitch narrative rather than presenting misleading numbers to Series A investors.",
+              "framework_hint": "Domain Expertise: operationalizing intent completion through conversation-level signals (no re-prompt, no modification, no abandonment) is calibrated to the specific interaction surface of an AI-native product where there are no form submissions or button clicks to use as natural completion events. The 5-minute modification window accounts for the fact that users who immediately correct an output are expressing intent failure, while users who modify after 10 minutes may be making intentional refinements. Strategic Thinking: the counter-signal (high-turn sessions without completion) is faster-moving than the primary metric and fires before the 14-day window closes, giving the team an actionable early warning."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Win means the product reaches a daily active user count of 1,000 and a DAU/MAU ratio of 0.4 or above within 30 days of the pitch. A DAU/MAU of 0.4 indicates that users are returning to the product on roughly 12 out of 30 days in a month, which is strong retention for a productivity tool. These metrics are legible to Series A investors because they are standard engagement benchmarks that investors can compare across categories.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "DAU/MAU of 0.4 is a meaningful retention benchmark and investors are familiar with it as a signal of product stickiness. The gap is that this win condition does not answer the investor's specific question about whether the product is actually working. A product with 1,000 daily active users and DAU/MAU of 0.4 could have a 40% intent-completion rate and a 60% frustration rate: users return because they occasionally succeed, not because the product reliably fulfills their intents. For a pitch two weeks out where the investor has already asked the value-delivery question explicitly, a win condition that responds with engagement benchmarks does not close the question.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that DAU/MAU is a standard investor-legible engagement benchmark and that a 0.4 ratio demonstrates meaningful retention. Taste gap: the win condition answers 'are users coming back?' rather than 'is the product working when they do?' For a Series A pitch where the investor has explicitly asked about value delivery, the win condition needs to connect usage to outcome, not just demonstrate that usage is happening."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means at least five enterprise customers have signed letters of intent within 30 days of the pitch, each with a documented use case where the tool replaced a manual workflow. Letters of intent from named enterprise customers are the strongest signal of product-market fit an investor can see at the Series A stage, because they represent real buyers making real commitments based on real value delivered.",
+              "quality": "surface",
+              "competencies": ["domain_expertise"],
+              "explanation": "Enterprise LOIs are powerful signals and investors do weight them heavily because they indicate the market is willing to make a purchasing commitment. The gap is that the scenario describes a product two weeks from a pitch that has not yet established the measurement infrastructure to know whether its core value delivery is working. Setting enterprise LOIs as the win condition does not answer the question of whether the product is fulfilling user intents; it sets a sales outcome as the proxy for that question. An enterprise LOI can be won through a strong demo, a compelling pitch, and a favorable trial agreement even if the intent-completion rate is poor. Conflating sales success with product reliability is a common early-stage mistake that creates problems when enterprise customers discover in production use that the product fails at the rate the measurement system cannot detect.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that enterprise LOIs are a meaningful and investor-legible signal of commercial validation at the Series A stage. Strategic Thinking gap: the win condition sets a sales outcome as the answer to a product quality question. For a product with no intent-level measurement infrastructure, the path to enterprise LOIs runs through demonstrating reliable value delivery on a defined task set, which is what the optimize step identified as the investment the team should be making in the next 14 days."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the LLM powering the product is replaced with a more capable model, and the team demonstrates through internal evaluation that response quality scores improve by at least 20% before the pitch. Showing investors that the team can close quality gaps quickly through model upgrades demonstrates technical execution capability, which is one of the factors Series A investors evaluate.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Demonstrating the ability to improve product quality quickly is a relevant signal of technical capability and investors do evaluate the founding team's ability to execute on product improvements. This becomes plausible-wrong because it substitutes a technical improvement action for a product outcome measurement. A 20% improvement in internal evaluation scores tells the investor that the model's outputs rated better on the team's internal rubric, not that user intents are being fulfilled at a higher rate. Internal evaluation scores and real-world intent-completion rates are related but not identical, and presenting model upgrade progress as the win condition avoids the harder question of whether the product's value delivery is measurable and improving at the user level. An investor who has already asked 'is the product actually working for people?' will not accept 'we upgraded the model and it scores better internally' as the answer.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that model quality is a meaningful input to product quality and that demonstrating rapid improvement on quality metrics signals technical capability to investors. Strategic Thinking failure: the win condition is about internal technical progress rather than user-facing outcome measurement. The investor's question is about value delivered to users, and a model upgrade with improved internal scores does not answer that question unless the improvement is also measurable at the intent-completion level."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

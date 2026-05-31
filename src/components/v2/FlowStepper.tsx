@@ -111,6 +111,7 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
           <div key={step.id} style={{ display: 'flex', alignItems: 'center' }}>
             <button
               onClick={isClickable ? () => onStepClick(step.id) : undefined}
+              title={isDone && !isClickable ? 'Locked — answers are final once a step is graded' : undefined}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 7,
                 background: 'transparent', border: 'none',
@@ -141,7 +142,8 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
                         height: 4,
                         borderRadius: 999,
                         background: step.color,
-                        opacity: i === questionIdx ? 1 : i < (questionIdx ?? 0) ? 0.5 : 0.2,
+                        // Past/future dots are dimmer so they read as progress, not tappable controls.
+                        opacity: i === questionIdx ? 1 : i < (questionIdx ?? 0) ? 0.35 : 0.18,
                         transition: 'width 200ms, opacity 200ms',
                       }} />
                     ))}

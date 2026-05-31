@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000016",
+  "title": "Your ML Model is 95% Accurate But Users Hate It",
+  "scenario_role": null,
+  "scenario_context": "A news app shipped an AI content recommendation feature three weeks ago. The model predicts click-through with 95% accuracy on the holdout set, a number the team celebrated in the launch review. Engineering, product, and ML all signed off.",
+  "scenario_trigger": "One-star reviews mentioning 'creepy recommendations' climbed from 2 per week before launch to 47 per week. User interviews surface two phrases repeatedly: people feel 'trapped in a bubble' and 'spied on.' Click-through is up. The model dashboard shows everything performing as trained.",
+  "scenario_question": "The model is technically working. Diagnose what is actually wrong and decide what to recommend.",
+  "engineer_standout": "A strong answer recognizes that 95% click-through prediction accuracy is a measure of how well the model predicts what users will click, not a measure of whether users feel good about the experience. Maximizing predicted clicks produces a filter bubble and a surveillance-feeling personalization loop. The problem is not model quality — the problem is objective misalignment. The model is excellent at optimizing the wrong thing. The 2-to-47 review spike is the real signal: user trust is collapsing even as the engagement metric the model was trained on holds steady.",
+  "paradigm": "ai_assisted",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["taste", "cognitive_empathy", "strategic_thinking"],
+  "secondary_competencies": ["motivation_theory", "domain_expertise"],
+  "topic_tags": ["recommenders", "trust", "objective-misalignment", "personalization", "north-star"],
+  "technique_tags": ["taste-frame", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The model is accurate and clicks are up. Before jumping to solutions, name precisely what is breaking and why high accuracy does not rule it out.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of what went wrong after the recommendation feature launched?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The model was trained to maximize click-through prediction accuracy, so it learned to serve whatever users are most likely to click right now. That objective function rewards over-narrow personalization, compulsive-click exploitation, and zero diversity, producing a filter bubble and a feeling of being surveilled. The 95% accuracy confirms the model is doing exactly what it was told to do. The problem is that click-through prediction is the wrong goal: it measures short-term predicted behavior, not user trust, experience quality, or willingness to keep the app.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This framing correctly identifies objective misalignment as the root cause. The 95% accuracy and the 2-to-47 creepy-review spike are not contradictions: they are the expected joint outcome of optimizing a model that is excellent at predicting clicks but never asked to preserve user trust or diversity. Framing the problem here lets all subsequent steps address the right thing.",
+              "framework_hint": "Taste: the reasoning move is feeling the difference between 'the model is accurate' and 'the model is optimizing for the right thing.' Strategic Thinking: naming the criterion the model was actually trained on (predicted CTR) versus the criterion the product actually needs (sustainable trust)."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The model is surfacing content that is individually relevant but collectively repetitive. Users are not objecting to personalization itself — they are objecting to the lack of variety within personalized sessions. The fix is to add a diversity constraint on top of the current model so that each session contains items from at least three distinct topics.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Lack of diversity is a real contributing factor and the 'bubble' language in user interviews supports it. But this framing stops one level too shallow. It treats diversity as a missing feature rather than asking why the model produces no diversity in the first place: because it was trained to maximize predicted clicks, which rewards serving the same content type that generated historical engagement. Naming the symptom without naming the cause will produce a patch, not a fix.",
+              "framework_hint": "Cognitive Empathy: correctly simulating that users are bothered by repetition. Strategic Thinking gap: the framing does not reach the objective function as the source of the pattern, so the recommended intervention will not survive the next model retrain."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The recommendation algorithm is too aggressive. Users feel overwhelmed by hyper-personalized content because the feature shipped to 100% of users at once without a gradual rollout. A slower rollout with opt-in controls would have surfaced the discomfort earlier and given users a sense of agency.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Rollout pace and opt-in controls address the feeling of being ambushed, not the feeling of being trapped or spied on. The 'bubble' and 'spied on' language from user interviews points to the model's behavior over time, not to the shock of first exposure. A slower rollout of the same model would have produced the same 47-review-per-week rate, just on a delayed schedule.",
+              "framework_hint": "Motivation Theory failure: attributing user discomfort to the pace of change rather than to what the model is actually doing to them. The friction is the experience itself, not the speed at which it was introduced."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The model is working correctly. The negative reviews reflect a vocal minority who dislike any form of personalization. Click-through is up, which means the majority of users are benefiting. The right response is to add an opt-out toggle for users who find personalization intrusive, and leave the model unchanged for everyone else.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A 23-fold increase in creepy-review volume over three weeks, from 2 to 47 per week, is not a stable vocal minority. It is an accelerating signal. Treating it as fringe dissent while click-through holds steady is motivated reasoning: it defends the metric the model was trained on while dismissing the metric the model was not trained on. An opt-out toggle does not fix the objective function.",
+              "framework_hint": "Taste failure: using a preference for the click metric as a reason to dismiss contrary evidence. The reasoning conflates 'the model is accurate at predicting clicks' with 'users are satisfied with the experience,' which are different claims about different things."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Map out the specific mechanisms by which a click-maximizing recommender produces creepiness and bubbles. Name what the model is doing, not just what users are feeling.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of mechanisms best explains why a 95% click-through prediction model produces 'bubble' and 'spied on' complaints even when clicks are up?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four mechanisms operate together. First, click-max rewards serving content that matches the user's past behavior, collapsing topical range over time and producing a filter bubble where nothing unexpected appears. Second, the model learns to exploit compulsive-click patterns, surfacing content that triggers anxiety or outrage because that content historically generates clicks, not because it serves the user. Third, because the model is highly accurate at predicting individual preferences, its output feels uncannily tailored in a way users associate with covert data collection. Fourth, with no 'why am I seeing this' explanation surface, users cannot distinguish useful personalization from surveillance, so they default to the more threatening interpretation.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "These four mechanisms are structurally distinct: diversity collapse, compulsive-click exploitation, accuracy-as-creepiness, and opacity each point to a different intervention. Listing them separately is the List move: generating options that are not variations of the same idea but independently addressable causes. The 'bubble' complaint maps to mechanism one, the 'spied on' complaint maps to mechanisms three and four.",
+              "framework_hint": "Cognitive Empathy: simulating what the model's behavior looks like from the user's perspective, not just from the model's dashboard. Creative Execution: generating structurally distinct mechanisms rather than four ways of saying 'too much personalization.'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "The primary mechanism is filter bubble formation. When the model is highly accurate at predicting clicks, it narrows recommendations to a shrinking set of topics the user has already engaged with. Over days and weeks, the feed becomes homogeneous. Users use the word 'bubble' because that is exactly what is happening: the model is walling them inside their own past behavior.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Filter bubble is the right primary mechanism and the user's own word choice confirms it. The gap is that this list has one item. It does not explain the 'spied on' language, which requires explaining the accuracy-as-creepiness and opacity mechanisms. A single-mechanism list produces a single-mechanism fix, which will not address why users feel surveilled.",
+              "framework_hint": "Cognitive Empathy: correctly naming the bubble mechanism from the user's perspective. Creative Execution gap: a complete list of mechanisms covering both 'bubble' and 'spied on' produces a richer set of interventions than one well-named mechanism alone."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The negative reviews are driven by users who have low trust in AI systems generally. They would object to any recommendation feature that felt algorithmic. The mechanism is not the model's behavior but the user segment: privacy-sensitive users who are predisposed to interpret personalization as surveillance. Segmenting these users out of the recommendation surface would resolve most of the complaints.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "If the complaint rate had been stable at 2 per week since launch and remained flat, attributing it to a fixed segment of privacy-sensitive users would be plausible. But the rate jumped from 2 to 47 per week over three weeks, which means the pool of complaining users is growing, not constant. A growing rate cannot be explained by a fixed segment.",
+              "framework_hint": "Motivation Theory failure: attributing the friction to a user attribute (privacy sensitivity) rather than to what the model is doing. The accelerating complaint rate is evidence that the model's behavior is converting previously neutral users into objectors."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The model is new and users are not yet accustomed to highly accurate personalization. The mechanisms driving complaints are novelty and unfamiliarity, not anything the model is doing incorrectly. As users spend more time with the feature and see that their clicks match the recommendations, the creepiness perception will fade. Recommendation systems typically see trust improve over the first 60 to 90 days.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The novelty hypothesis predicts a declining complaint rate as users adapt. The data shows an accelerating rate: 2 per week before launch, 47 per week three weeks in. Accelerating complaints are the opposite of the novelty pattern. Citing a general '60 to 90 days' trust improvement window is a theoretical claim applied against data that already contradicts it.",
+              "framework_hint": "Strategic Thinking failure: using a general industry pattern to override product-specific data. When the observed trend runs opposite to the predicted trend, the correct move is to update the hypothesis, not to extend the timeline."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Click-through and user trust are in tension. Name the real criterion, name the sacrifice, and name why the sacrifice is acceptable.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Given that click-through is up but creepy-review volume has grown from 2 to 47 per week in three weeks, what is the right product decision?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Redefine the recommendation objective. The model should be retrained with a combined loss that includes a diversity signal and a trust proxy alongside click prediction. Accept a regression from 95% click-through prediction accuracy to something in the 80 to 88% range if creepy-review volume returns toward the pre-launch baseline of 2 per week and a session diversity score improves. The sacrifice is a cleaner accuracy headline; the gain is a model that does not erode the trust that makes the app worth opening. Publishing both the accuracy and the diversity score in every future launch review makes the tradeoff an organizational commitment, not a single team's internal decision.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This is the correct tradeoff move. Taste is the ability to feel the difference between a preference ('95% accuracy is better than 88%') and a real tradeoff ('we accept lower CTR prediction accuracy because we preserve the trust that sustains long-term engagement'). The explicit numbers — accuracy range, review rate target — turn this into a falsifiable decision rather than a vague intent to balance things.",
+              "framework_hint": "Taste: the tradeoff names what is gained (trust and diversity) and what is given up (accuracy headline) with numbers on both sides. Strategic Thinking: the criterion shifts from 'maximize predicted CTR' to 'maximize sustainable engagement that preserves user trust,' which is a different optimization target, not a tweak."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Add a transparency layer: show users a 'why am I seeing this' explanation for each recommendation. User research on recommendation systems consistently shows that explainability reduces creepiness perception by giving users a mental model for how content is selected. This addresses the 'spied on' complaint without touching the model or reducing click-through accuracy.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Explainability is a real and well-supported intervention for reducing surveillance perception, and it directly addresses one of the two complaint themes from user interviews. The gap is that it does not address the filter bubble. A user who understands exactly how the bubble was built around them still lives inside the bubble. Explainability is a real optimization lever, but it is not the only one, and choosing it alone leaves the diversity problem unaddressed.",
+              "framework_hint": "Cognitive Empathy: correctly identifying that opacity contributes to the 'spied on' feeling and that transparency addresses it. Taste gap: selecting the intervention that preserves the accuracy headline rather than accepting the tradeoff of addressing the bubble directly."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Roll back to the previous recommendation system while the team investigates. The pre-launch state had stable, low complaint volume. Reverting reduces ongoing user harm and buys time to design a better experiment before re-shipping the model.",
+              "quality": "surface",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Rollback is a defensible risk management step and it stops the accumulating review damage. The gap is that it avoids the actual decision: what objective should the next model optimize for? Rolling back without naming the new criterion means the next training run will face the same choice and may reproduce the same outcome. Rollback is a pause, not an answer.",
+              "framework_hint": "Strategic Thinking gap: rollback restores the status quo but does not name the criterion for the next model. Without a new optimization target, the same objective misalignment will recur when the team retrains."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Run a 30-day A/B test comparing the current model against the pre-launch system. If the experimental group shows lower review volume and no significant click-through loss, that confirms the model is causing the problem and justifies a rollback. Without this test, the causal link between the model and the reviews is not proven.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The review rate has tripled over three consecutive weeks since the model launched. The correlation is strong and the timeline is tight. Running a 30-day confirmation test extends 30 more days of a known degrading trend to prove something the data already suggests strongly. The optimize step requires naming a direction, not commissioning more evidence to delay committing to one.",
+              "framework_hint": "Taste failure: treating procedural rigor as a substitute for a decision. The reasoning move here is 'we need certainty before acting,' but certainty comes after a decision is made and a hypothesis is tested, not before. Waiting 30 days to act on a signal that is already three weeks old and accelerating is a preference for process over real user outcomes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What does success look like in a way that would survive a skeptic who points at the high click-through number? Specify the metric, the threshold, and the timeline.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "Write the success criterion for a redesigned recommendation objective. What metric, threshold, and timeline would confirm that the objective misalignment has been fixed?",
+          "question_nudge": "Name a specific trust or diversity metric alongside a click or engagement metric, and give both a number and a date-anchored evaluation window.",
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "In a two-week A/B test at 20% traffic, the redesigned model ships only if three conditions hold simultaneously: creepy-review weekly volume returns to below 5 per week (from the current 47), per-session topic diversity score improves by at least 20% relative to the current model's baseline, and weekly click-through does not fall below 85% of the current model's rate. If all three conditions are met, the model ships to 100%. The test publishes all three numbers side by side in the launch review so no single metric can be used to justify shipping while another is failing.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This satisfies all three requirements of a falsifiable win criterion. The trust metric is specific (creepy-review rate below 5 per week), the diversity metric is measurable (topic diversity score up 20%), and the engagement guardrail is explicit (CTR not below 85% of current baseline). The requirement to publish all three together prevents single-metric rationalization, which is how the original 95% accuracy headline obscured the trust problem.",
+              "framework_hint": "Strategic Thinking: the hypothesis is falsifiable on two axes: we will know it failed if reviews stay above 5 per week OR if CTR drops below 85% of baseline. Domain Expertise: naming weekly review volume and per-session topic diversity as the primary success metrics reflects the actual failure modes the product experienced, not generic engagement proxies."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The new model ships when app store average rating returns to the pre-launch baseline and holds there for two consecutive weeks. App store rating is the most visible trust signal and the one most directly linked to the complaint pattern the feature created. A stable rating at or above pre-launch levels confirms users are no longer experiencing the creepiness problem.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "App store rating is a real trust signal and directly connected to the review spike that diagnosed the problem. The gap is that app store ratings aggregate all feedback, lag product changes by days or weeks as reviews accumulate, and cannot be separated from other concurrent product changes. A faster, cleaner signal is the weekly creepy-review count, which is already being tracked and which moves in days rather than weeks.",
+              "framework_hint": "Domain Expertise: choosing a real trust metric that is visible and meaningful. Strategic Thinking gap: app store rating is the right spirit but a slow and noisy instrument for a model evaluation cycle. The metric needs to move at the speed of the decision, which means the weekly review count, not the aggregate rating."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success means click-through holds above the current 95% accuracy baseline and user satisfaction survey scores, collected via an in-app prompt after 10 sessions, improve by at least 5 points on a 10-point scale. Both metrics need to be green before the model ships to 100%.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Pairing click-through with satisfaction is a better framing than click-through alone, but using the 95% accuracy baseline as the click-through floor is the same framing error that created the problem. If the new model trades some CTR for trust and diversity, the win criterion should allow for a measured CTR reduction, not require matching the model being replaced. The satisfaction survey also has low response rates and 10-session collection lag, making it slow for a model deployment cycle.",
+              "framework_hint": "Strategic Thinking failure: anchoring the win criterion to the old model's accuracy number treats the metric being replaced as the success bar for the replacement. A win criterion should reflect the new objective, not the old one."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Track both click-through and user trust metrics for 60 days after full launch. If at 60 days the trust metrics are trending positive and click-through is stable or improving, declare the objective redesign successful. Sixty days provides enough data to see behavioral trends rather than reacting to short-term noise.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A 60-day measurement window after full launch means the model runs at 100% traffic for two months before anyone confirms whether it worked. If trust metrics do not improve, 60 days of harm have accumulated on a 100% rollout. 'Trending positive' is also not a threshold: it counts as success even if the review rate falls from 47 to 30 per week, which is still fifteen times the pre-launch baseline. The criterion is too slow, too broad, and unactionable at the evaluation point.",
+              "framework_hint": "Domain Expertise failure: a 60-day full-traffic window with no numeric threshold is not a falsifiable criterion. A real win condition requires a number, a date, and a traffic percentage that limits exposure while the hypothesis is tested."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

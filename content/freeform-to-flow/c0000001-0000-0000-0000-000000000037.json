@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000037",
+  "title": "Measuring Success for an Agentic Feature",
+  "scenario_role": null,
+  "scenario_context": "A SaaS product shipped an AI agent three months ago that autonomously handles data cleanup tasks: deduplicating records, correcting formatting errors, and filling in missing fields across customer datasets. The agent runs without human initiation once triggered, chooses which records to modify, makes the changes, and marks the task complete. Current reported metrics: task completion rate is 71%, average time saved per task is 18 minutes, and user satisfaction scores sit at 4.0 out of 5.",
+  "scenario_trigger": "The VP of Product reviews the dashboard and says the numbers look fine on paper, but she does not feel confident recommending expansion to enterprise customers. She cannot articulate exactly why. A closer look at the data reveals that the 71% completion rate counts any task the agent marks done as complete, regardless of whether the output was correct. There is no metric tracking how often a user reopens a cleaned dataset to fix something the agent changed, how often a task is flagged as incorrect after the fact, or whether users have started disabling the agent for certain record types.",
+  "scenario_question": "Design a measurement framework specifically for this agentic feature. What is the agent actually being measured on, what is missing, and what should the team optimize for?",
+  "engineer_standout": "A strong answer recognizes that the three existing metrics measure activity and surface satisfaction, not the thing that actually determines whether an agentic feature survives in the market: trustworthiness at the task level. Task completion rate of 71% tells you the agent finishes tasks, but it is silent on whether those tasks were done correctly. Time saved of 18 minutes is real only if users do not spend time discovering and correcting silent errors later. A 4.0/5 satisfaction score measured right after task completion misses the users who gave up on the agent quietly rather than rating it poorly. The reasoning move is to name what success means specifically for an agent (correctness the user can rely on without checking) and then identify the failure modes the current metrics are blind to: silent errors, the intervention rate after the fact, and erosion of trust that shows up as users disabling or avoiding the agent.",
+  "paradigm": "agentic",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["taste", "strategic_thinking"],
+  "secondary_competencies": ["domain_expertise", "motivation_theory"],
+  "topic_tags": ["ai-product", "metrics", "agentic", "measurement", "product-strategy"],
+  "technique_tags": ["north-star-cascade", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The VP cannot articulate her unease, but the numbers look fine. What is the actual problem the current metrics are failing to capture about an agent that acts without human oversight?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why the VP's unease is justified despite a 71% completion rate, 18-minute time savings, and 4.0/5 satisfaction?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The three metrics measure the agent's activity, not its correctness or the trust that correctness produces. Task completion rate at 71% counts every task the agent marks done, including tasks it completed incorrectly. Time saved at 18 minutes per task does not account for time users spend later finding and fixing silent errors. Satisfaction at 4.0/5 captures how users feel immediately after the agent runs, but not whether they still trust it six weeks later or have quietly started disabling it for high-stakes record types. An agentic feature succeeds when users stop checking its work, not when it finishes tasks quickly. The VP's unease is a signal that the current metrics cannot answer the question that matters for enterprise expansion: can the agent be trusted to act without supervision on data that matters?",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This framing correctly identifies that the gap is not a measurement gap but a definition gap. The team is measuring the wrong thing: completion and speed are properties of any automation, but trustworthiness is the property specific to agents that act autonomously. The 71% completion rate is particularly misleading because the agent marks tasks complete regardless of output quality, which means it inflates the number while hiding the error rate. Satisfaction at 4.0/5 right after task completion cannot detect the trust erosion that shows up weeks later as users working around the agent rather than through it. For enterprise customers, a single silent error on a production dataset can be more damaging than no automation at all.",
+              "framework_hint": "Taste: distinguishing between metrics that measure activity (completion rate, time saved, satisfaction score) and metrics that measure the thing that actually determines product survival (correctness you can rely on without supervision). Strategic Thinking: the VP's intuition that 4.0/5 and 71% are insufficient for enterprise expansion is sound because enterprise buyers ask a different question than the current metrics answer: 'can I trust this agent to touch data I cannot afford to have corrupted?'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "The VP's concern is that a 71% completion rate means 29% of tasks are not finishing, which is a reliability problem. Before expanding to enterprise customers, the team should push completion rate above 90% and understand what is causing tasks to fail or stall. The satisfaction and time-saved metrics are adequate as secondary signals.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Improving completion rate from 71% to 90%+ is a reasonable engineering goal and investigating why tasks fail is worthwhile. The gap is that this framing accepts the existing definition of completion as its frame: it asks how to do more of what the agent is already being measured on, rather than questioning whether the thing being measured is the right thing. The scenario specifies that completion rate counts any task the agent marks done, including incorrect ones. Raising that number from 71% to 90% could mean the agent is completing more tasks correctly, or it could mean the agent is marking more incorrect completions as done. The framing needs to ask what completion means before asking how to improve its rate.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that 71% completion is below a threshold that would make enterprise buyers comfortable. Taste gap: the answer accepts 'completion rate' as the right metric and tries to improve its value, rather than questioning whether completing a task and completing it correctly are the same thing. For an agent that autonomously modifies data, they are not."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The VP's concern is that user satisfaction at 4.0/5 is decent but not exceptional. A Net Promoter Score survey should be deployed alongside the existing satisfaction rating to get a more rigorous read on whether users would recommend the agent feature to colleagues. If NPS is above 30, the feature is ready for enterprise expansion.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "NPS is a legitimate product health metric and understanding whether users would recommend the feature matters for growth planning. But adding NPS does not address what the VP's unease is pointing to: whether the agent's outputs can be trusted. A user could give an NPS of 40 and still be mentally checking every cleaned dataset before using it in a client report, which would mean the agent is not actually saving meaningful time or reducing cognitive load. The problem is not that the satisfaction measurement is insufficiently rigorous; it is that satisfaction and recommendation intent do not capture whether the agent is correct when it acts.",
+              "framework_hint": "Motivation Theory misapplication: user satisfaction and NPS measure how the feature makes users feel, which is a downstream signal of motivation and friction. But for an agentic feature, the upstream question is whether the output is trustworthy. If the agent produces silent errors, satisfaction scores will eventually collapse, but NPS will not tell you why or where to look."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The VP's concern is about the business model risk of expanding a feature that is not yet generating measurable revenue impact. Before expanding to enterprise, the team should add revenue-attributed metrics: how much time saved per task converts to billable hours recovered, and whether there is a correlation between agent usage and customer retention. Metrics like completion rate and satisfaction are fine for an early product but insufficient for a premium enterprise offering.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Revenue attribution and retention correlation are legitimate business-level metrics and enterprise buyers will eventually ask about them. This becomes plausible-wrong because it skips the foundational question: the revenue and retention metrics are downstream of whether the agent is trustworthy. If the agent completes tasks incorrectly and users discover that over time, retention will decline and revenue impact will be negative regardless of how the metrics are framed. Adding business-outcome metrics on top of a measurement system that cannot detect silent errors does not make the agent safer to expand; it makes the eventual trust collapse more expensive to reverse.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that enterprise buyers require business-outcome metrics, not just product-level metrics. Strategic Thinking failure: layering business metrics on top of a broken activity-measurement system delays the reckoning rather than preventing it. The first question is whether the agent is doing the right thing; the second question is whether doing the right thing is generating business value."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The current three metrics measure activity, speed, and immediate satisfaction. List the categories of measurement the team is missing that would tell you whether this agent can be trusted to act on data without supervision.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of missing measurement categories most completely covers what the team needs to add to evaluate the agent's trustworthiness?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct categories are missing. First, correctness rate: the share of completed tasks where the output was verified correct, either by user acceptance without modification or by a post-hoc audit sampling. This is different from completion rate, which the agent controls by marking its own work done. Second, silent error rate: the share of completed tasks where the user later modified the agent's output without flagging it as an error, detected through edit-tracking on cleaned records. Third, intervention and escalation rate: how often users manually step in to correct, undo, or rerun a task after the agent completes it, and for which task subtypes this happens most. Fourth, trust-decay indicators: whether users are disabling the agent for certain record types, reducing the frequency of agent invocations over time, or adding manual review steps that were not present when they first adopted the feature. These four categories together capture what the current three metrics are blind to: the gap between 'the agent says it is done' and 'the data is actually right.'",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These four categories are mechanistically distinct and each catches a different failure mode. Correctness rate directly measures output quality without relying on the agent's own completion signal. Silent error rate surfaces errors that users fix without reporting, which is the most dangerous failure mode for a data-cleanup agent because it means the agent is creating work while appearing to save it. Intervention rate shows where users have stopped trusting the agent even if they have not complained. Trust-decay indicators capture the long-term behavioral response: users who have lost confidence in the agent do not usually file a bug report; they just stop using it or add workarounds. All four are absent from the current dashboard of completion, time-saved, and satisfaction.",
+              "framework_hint": "Creative Execution: generating four categories that each catch a distinct failure mode, rather than variations on 'better satisfaction measurement.' Silent error rate and trust-decay indicators are particularly non-obvious because they require instrumenting user behavior after the agent acts, not at the moment of task completion. Domain Expertise: in data-cleanup automation, silent errors are the dominant risk because the agent modifies production data, and the harm from an incorrect deduplication or field fill is discovered later when the data is used in a report or export, not at the moment the agent runs."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The missing measurement is a post-task accuracy review. After the agent completes each task, a random sample of 10% should be reviewed by a human reviewer who assesses whether the output was correct. Combining this accuracy review score with the existing completion rate and satisfaction score gives a more complete picture of the agent's performance.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "A post-task accuracy review on a sampled basis is a valid approach to measuring output quality and represents a real improvement over the current measurement system. The gap is that it covers only one of the four categories needed. A 10% audit sample would catch some correctness problems but would not detect silent errors that users fix themselves without reporting, would not capture the intervention and escalation rate for specific task subtypes, and would not track trust-decay over time. A sampling program also introduces lag: the accuracy signal arrives after the errors have already been made, and for a data-cleanup agent that may have modified thousands of records between audit cycles, late detection is costly.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that human review of sampled outputs is a standard quality-assurance practice for automated data systems. Creative Execution gap: a single measurement category, even a good one, does not replace the need for categories that capture different failure modes. The most dangerous failure mode for this agent is silent errors that users fix without reporting, which a sampling program will not reliably surface unless the sample rate is extremely high."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The missing measurement is a competitive benchmark. The team should identify two or three other data-cleanup tools or agents in the market and measure the feature's completion rate and accuracy against them. If the agent performs at or above the benchmark, expansion is defensible. If it falls short, the gap shows where to invest.",
+              "quality": "surface",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Competitive benchmarking is a legitimate strategic input and knowing how the agent compares to alternatives matters for positioning and pricing decisions. But benchmarking addresses the question of how the agent compares to competitors, not whether the agent's current outputs are trustworthy enough for the users who depend on it. A competitor who also has a 70% correctness rate does not make a 70% correctness rate acceptable for enterprise customers. The list step asks what measurement categories are missing from the internal framework, not how to contextualize the agent's performance externally.",
+              "framework_hint": "Strategic Thinking partial: recognizes that positioning decisions benefit from competitive context. Creative Execution gap: benchmarking is a comparative exercise, not a measurement category. It tells you relative performance but not whether the absolute level of correctness is sufficient for the use case, and it does not surface silent errors, intervention rates, or trust-decay patterns."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The missing measurement is user session depth: how many tasks users run per session, how long sessions last, and whether session depth is increasing month over month. If users are running more tasks per session, they trust the agent more. Declining session depth would be an early warning that trust is falling.",
+              "quality": "plausible_wrong",
+              "competencies": ["motivation_theory"],
+              "explanation": "Session depth is a real engagement proxy and declining session length is often an early signal of dissatisfaction. This becomes plausible-wrong because session depth is a behavioral indicator of engagement, not of correctness. A user could run many tasks per session precisely because the agent is fast, and still be silently fixing errors on every third task. High session depth with a high silent-error rate means the agent is creating work efficiently rather than eliminating it. The metric conflates 'uses the agent frequently' with 'trusts the agent's outputs,' which are different things for a feature that modifies data autonomously.",
+              "framework_hint": "Motivation Theory partial: session depth reflects whether users are motivated to engage with the feature repeatedly, which is a signal of perceived value. Domain Expertise failure: for an agent that writes changes to data, engagement frequency is an unreliable proxy for trust. A user who runs the agent often and corrects it often is more exposed to risk than a user who runs it rarely and trusts it completely. The measurement needed is correctness of output, not frequency of use."
+            }
+          ]
+        },
+        {
+          "question_text": "Which of the following best describes the category of user behavior the current satisfaction score of 4.0/5 is most likely failing to capture?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["cognitive_empathy", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The satisfaction score captures how users feel at task completion, which is the moment of maximum perceived value: the agent just ran, the interface shows success, and the user has not yet used the cleaned data in a downstream context where errors surface. The users who gave the agent a 4.0 are rating the experience of triggering the agent and seeing it finish. The users who found silent errors in a report or export two weeks later and had to trace them back to an incorrect deduplication or field fill did not rate the agent at that moment of discovery. A 4.0/5 measured at completion systematically excludes the experience of discovering and correcting the agent's errors, which is when trust actually breaks.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "motivation_theory"],
+              "explanation": "This answer identifies the specific temporal gap: the satisfaction measurement is anchored at task completion, which is before the output is validated by use. In a data-cleanup context, the output quality is not knowable at the moment the agent finishes; it is knowable when the cleaned data appears in a report, an export, a client presentation, or a downstream process. The users who discovered errors after that point either did not report them, did not attribute them to the agent, or gave low scores that averaged into the 4.0 without changing the product team's interpretation. The measurement needs to capture the post-use experience, not just the post-completion experience.",
+              "framework_hint": "Cognitive Empathy: modeling the user experience as a sequence (trigger the agent, see it complete, use the data, discover an error, trace it back) reveals that a score measured after step two cannot capture what happens in steps four and five. Motivation Theory: at task completion, the user is in a satisfaction state (the friction of doing cleanup manually has just been removed). At error discovery, the user is in a friction state (they now have new work that the agent created). The 4.0 averages across users who stopped at step two and users who reached step four, but it weights them equally."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The satisfaction score is failing to capture whether users prefer the agent to the alternative of doing data cleanup manually. A score of 4.0/5 is above average but does not tell you whether users would give up the feature if it required them to review every output before it was applied. Adding a comparative satisfaction question would show whether the agent's value proposition is robust to a higher review burden.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "A comparative preference question is a useful research instrument and understanding whether users value the agent enough to accept a review burden is relevant to the trust-vs-autonomy design question. The gap is that this frames the measurement problem as a survey design problem rather than a timing problem. The core failure of the current satisfaction score is not that it asks the wrong question but that it asks it at the wrong moment. Even a well-designed preference question asked immediately after task completion would miss the trust damage that accumulates after users encounter silent errors in downstream use.",
+              "framework_hint": "Cognitive Empathy partial: correctly identifies that user preference under different conditions (with vs. without required review) is a useful signal for product design decisions. Motivation Theory gap: the moment of measurement matters as much as the content of the question. A preference question at task completion anchors users in the friction-removed state, not in the error-discovery state, which is where the agent's trustworthiness is actually tested."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The satisfaction score is failing to capture power users versus casual users. A 4.0 average could hide a bimodal distribution where power users who run many tasks rate the agent highly while casual users who encounter it occasionally give lower scores. Segmenting satisfaction by usage frequency would tell you whether the feature is succeeding for its core audience.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Segmenting satisfaction by user type is a standard analysis practice and it is worth knowing whether power users and casual users have different experiences. But the question asks what the satisfaction score is most likely failing to capture, and the answer is not a distributional concern about who is rating the agent. Even if the team segments by frequency and finds that power users rate the agent 4.5/5, that does not resolve the measurement timing problem. Power users could have a 4.5 satisfaction rating and still be silently correcting errors on a significant share of their tasks, which the satisfaction score would not reveal.",
+              "framework_hint": "Cognitive Empathy partial: segmenting by user type is a legitimate way to understand heterogeneous experiences. The gap is that it addresses who is rating the agent, not when they are rating it. The timing problem (rating at completion before downstream use validates the output) affects power users and casual users equally."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The satisfaction score is failing to capture the experience of users who never adopted the agent at all. The 4.0 score reflects only the users who tried the feature and completed a task. Understanding why non-adopters did not use the agent would surface friction points in the onboarding and discovery experience that are suppressing the adoption rate the team has not yet measured.",
+              "quality": "plausible_wrong",
+              "competencies": ["motivation_theory"],
+              "explanation": "Non-adopter analysis is a valuable research input for an early-stage feature and understanding onboarding friction is worth pursuing. This becomes plausible-wrong because it redirects the measurement conversation to an entirely different population and problem. The scenario asks what the current satisfaction score is failing to capture about the agent's performance for the users who are already using it. Non-adopters cannot tell you whether the agent's output is trustworthy; they can tell you why they did not try it. The VP's unease is about whether the agent can be trusted for enterprise expansion, which is a question about the quality of its outputs for current users, not about the size of the adoption funnel.",
+              "framework_hint": "Motivation Theory partial: non-adopter analysis does reveal friction in the motivation and discovery phase, which is a real category of product measurement. Strategic Thinking failure: the question asks what is missing from the measurement of an agent that is already running, not what is missing from the measurement of adoption. Mixing adoption measurement with output-quality measurement is a category error that would let the team improve onboarding metrics while the silent-error problem grows unreported."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The team needs to pick what the agent is actually optimized for. Name the criterion that distinguishes a trustworthy agent from a fast one. Name what the team gives up by optimizing for that criterion instead of the current metrics.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right optimization criterion for a data-cleanup agent whose users need to trust its output without reviewing every change?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is verified correctness rate at the task level, defined as the share of completed tasks where the output required no modification by the user after the fact. Optimizing for this means the agent should complete fewer tasks and decline or escalate ambiguous ones, rather than marking everything done and leaving errors for users to find. The sacrifice is the task completion rate: if the agent starts declining tasks it is not confident about, the 71% completion rate will fall further before it rises. That sacrifice is acceptable because a 55% completion rate where every completed task is correct produces more user trust than a 71% rate where 20% of completions contain a silent error that the user discovers later in a client export or a data pipeline. The gain is that verified correctness is the only metric that actually measures whether the agent is doing its job. Time saved and satisfaction scores are downstream of correctness; if correctness is high, those metrics will follow.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names what the team is optimizing for (verified correctness at the task level, measured after downstream use, not at the moment of agent completion) and names the sacrifice explicitly: completion rate will decline if the agent starts declining ambiguous tasks rather than completing them incorrectly. It grounds the sacrifice in the specific risk of the scenario: a data-cleanup agent that produces silent errors in 20% of its completed tasks is not saving time; it is redistributing the cleanup work from the moment of triggering the agent to the moment of discovering the error in a downstream system, which is a worse experience than doing the cleanup manually in the first place. The VP's unease about enterprise expansion is precisely calibrated to this risk: enterprise customers cannot afford silent errors in production datasets.",
+              "framework_hint": "Taste: naming the sacrifice as declining completion rate makes explicit that the team is choosing correctness over coverage, not optimizing both simultaneously. The completion rate of 71% sounds like a performance gap to improve; the insight is that improving it by having the agent complete more ambiguous tasks correctly would be progress, but improving it by having the agent mark ambiguous tasks as done incorrectly would make the trust problem worse. Strategic Thinking: verified correctness rate is the only metric that closes the loop between agent action and user outcome, because it measures whether the action was right, not whether it happened."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be total time saved per week across all users, accounting for both the time saved by agent completion and the time spent by users correcting errors. If the net time saved is positive and growing, the agent is creating value. The team should optimize for maximizing this net figure, which naturally penalizes silent errors because the cost of discovering and correcting them is subtracted from the gross time saved.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Net time saved is a more complete metric than gross time saved and it does partially account for the correction cost of errors. The gap is that this criterion measures the average across all users and all tasks, which masks the distribution of errors and trust damage. A net positive figure could coexist with a subset of task types where the agent is consistently wrong and destroying trust for the users who rely on those task types most. It also requires users to correctly attribute their correction time to the agent's errors, which they will not reliably do when errors surface weeks after the agent ran. A criterion that requires accurate self-reporting of correction time will produce an undercount of the error cost.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that gross time saved is a misleading metric if it does not subtract the cost of correction. Taste gap: net time saved is still an activity metric that aggregates a correct signal and an error signal into a single number. The criterion does not distinguish between an agent that saves 20 minutes on every task and an agent that saves 25 minutes on 80% of tasks and costs 40 minutes on 20% of tasks, even though those are profoundly different products from a trust perspective."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be user satisfaction measured 14 days after task completion rather than immediately after. A delayed satisfaction score would capture the experience of users who discovered errors in downstream use and would produce a more accurate signal of whether the agent is trustworthy. Optimizing for the 14-day score rather than the immediate score gives the product team a criterion that accounts for the full user experience.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Shifting the satisfaction measurement to 14 days post-completion is a meaningful improvement over measuring at the moment of task finish, and it would capture some of the trust damage that occurs when users discover silent errors. The gap is that delayed satisfaction is still a survey instrument that depends on users correctly attributing their post-use experience to the agent, responding to the survey, and reporting an honest score. Users who quietly worked around an error or disabled the agent for certain record types may not report a lower satisfaction score two weeks later; they simply have lower engagement. A criterion that relies on survey responses will systematically undercount the users who exit quietly rather than reporting dissatisfaction.",
+              "framework_hint": "Cognitive Empathy partial: correctly identifies that the timing of the satisfaction measurement determines what experience it captures, and that post-use satisfaction is more informative than post-completion satisfaction. Taste gap: satisfaction, even measured at the right time, is a subjective report of experience, not an objective measure of output correctness. Optimizing for satisfaction can produce an agent that users feel good about even when it is making errors they are not yet aware of."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion should be feature adoption rate: how quickly new users in a cohort reach their first 10 completed tasks. Agents live or die on whether they get used. If the adoption rate is high and users are completing 10 or more tasks, the feature has demonstrated stickiness, which is the best proxy for whether users find it trustworthy. Low adoption is a leading indicator that the agent is not earning trust.",
+              "quality": "plausible_wrong",
+              "competencies": ["motivation_theory"],
+              "explanation": "Adoption rate and time-to-first-10-tasks are legitimate product health metrics and low adoption is often a signal of poor initial trust or a confusing onboarding experience. This becomes plausible-wrong because adoption rate measures whether users try the agent, not whether the agent's output is reliable. A user who runs 10 tasks in their first week and silently corrects 3 of them has high adoption and low trust. Optimizing for adoption rate can produce a feature that users touch repeatedly while quietly building workarounds around its errors, which is the worst outcome for enterprise expansion: the feature looks adopted in the metrics while the trust problem grows in the background.",
+              "framework_hint": "Motivation Theory partial: adoption rate does reflect whether users perceive enough value to return to the feature, which is a downstream signal of satisfaction with the agent's outputs. Domain Expertise failure: in agentic data-modification tools, the user's behavior pattern after discovery of a silent error is often to continue using the agent for low-stakes tasks while avoiding it for high-stakes ones, rather than abandoning it entirely. Adoption rate cannot distinguish between 'I use this agent because I trust it' and 'I use this agent for tasks I will double-check anyway.'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the agent's trust problem is getting worse before the quarterly review reveals it.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for a data-cleanup agent that the team wants to expand to enterprise customers?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: within 60 days, verified correctness rate on completed tasks reaches 85% or above, measured by tracking whether users modify agent output within 7 days of task completion. The intervention rate for completed tasks falls below 15%, meaning fewer than 15 in every 100 completed tasks are reopened or corrected by users. The 18-minute average time-saved figure holds or improves after subtracting the time users spend on post-completion corrections. The counter-signal is: within the first 30 days, more than 25% of users who have run at least 5 tasks disable the agent for one or more record types, which would indicate that trust is deteriorating faster than correctness is improving and that the silent-error problem is worse than the current metrics show. If the counter-signal fires, the team should pause new enterprise trials and address the correctness problem before expanding.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names three metrics with specific thresholds and timelines, each connected to the trust hypothesis. The 85% verified correctness threshold directly tests whether the agent's outputs can be relied on without full review. The 15% intervention ceiling tests whether the agent's errors are low enough to be tolerable at the task level. The time-saved recalculation after subtracting correction time closes the loop on whether the 18-minute figure in the current metrics reflects real efficiency or is inflated by unaccounted correction work. The counter-signal at 30 days and 25% agent-disable rate is critical: users who disable the agent for specific record types are expressing a correctness judgment that will never appear in satisfaction scores or completion rates, and detecting that behavior early prevents the trust problem from compounding through an enterprise trial.",
+              "framework_hint": "Domain Expertise: tracking user modifications within 7 days of task completion as the correctness signal is calibrated to the scenario where cleaned data appears in downstream exports and reports, which typically happen within a week of cleanup. A 7-day window captures the majority of post-cleanup validation events without requiring indefinite tracking. Strategic Thinking: the counter-signal (agent disabled for record types) is faster and more decisive than the primary metrics because it reflects an explicit user judgment, not an implicit behavioral signal, and it fires before satisfaction scores degrade or intervention rates are measured at scale."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means the task completion rate rises from 71% to 85% within 90 days, and the average satisfaction score improves from 4.0 to 4.3. Both metrics should be tracked weekly and the team should investigate if either metric fails to show improvement in the first 30 days.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Tracking completion rate and satisfaction week over week is a reasonable operational cadence and setting improvement targets gives the team a clear direction. The gap is that these are the same two metrics that the VP identified as insufficient for her confidence in enterprise expansion. Improving them does not address the measurement gap: a completion rate of 85% still counts incorrect completions as done, and a satisfaction score of 4.3 is still measured at the moment of task completion before users validate the output in downstream use. A win condition that improves the wrong metrics does not close the strategic gap; it produces better numbers while the trust problem remains undetected.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the team needs improvement targets and a tracking cadence. Taste gap: the win condition measures the same things as the pre-existing dashboard and does not connect to the correctness and trust hypothesis that the frame step identified as the actual problem. A win condition should test the strategic hypothesis named in the optimize step, not re-run the existing measurement system with higher targets."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means the agent is generating measurable ROI for at least three enterprise pilot customers within six months, defined as a documented reduction in time spent on data cleanup that the customer's operations team has validated and signed off on. Customer sign-off acts as a correctness proxy because enterprise customers will not validate time savings they do not believe reflect real outcomes.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Customer-validated ROI documentation is a meaningful business outcome and enterprise customers' willingness to sign off on time savings is a useful external validation signal. The gap is that it is a lagging signal with a six-month horizon and a per-customer aggregation, which means individual silent errors are averaged away and the trust erosion that matters for expansion happens faster than the documentation cycle. An enterprise customer could validate a 15% reduction in cleanup time while internally directing their data team to double-check the agent's work on anything going into a client report, which would mean the validation overstates the trust the team actually has.",
+              "framework_hint": "Cognitive Empathy partial: recognizes that enterprise customers' external validation of ROI is a stronger trust signal than the product team's internal metrics. Strategic Thinking gap: the six-month timeline and customer sign-off requirement are too slow and too coarse to function as a counter-signal. A win condition needs a shorter-horizon leading indicator that fires before the trust problem becomes visible to enterprise buyers."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the agent achieves an accuracy rate above 90% on a monthly internal audit of 100 randomly sampled completed tasks, maintained for three consecutive months before enterprise expansion begins. Three months of sustained accuracy above 90% provides statistical confidence that the agent's quality is consistent, not variable.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "A 90% accuracy target on sampled tasks is a concrete, measurable threshold and running the audit for three consecutive months before expansion is a risk-conscious approach. This becomes plausible-wrong because the audit is conducted internally on samples, which means it measures accuracy on the tasks the team reviews, not the tasks users actually care about. A 100-task monthly sample cannot detect whether accuracy is systematically lower on specific record types or task subtypes that represent the highest business risk for enterprise customers. It also measures accuracy retrospectively rather than in real time, so the 30-day delay between errors occurring and appearing in an audit sample creates a window during which the trust problem compounds without a counter-signal.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that a correctness target with a statistical confidence requirement is more rigorous than the current completion-rate metric. Strategic Thinking failure: the 90% accuracy target on a sampled audit does not directly measure what enterprise buyers need to trust: that the agent's errors are recoverable and that the team can detect them before they cause harm. A win condition for enterprise expansion should include a real-time counter-signal that fires before the quarterly audit, not only a retrospective accuracy bar."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

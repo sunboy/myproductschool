@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000009",
+  "title": "Platform vs. Product: Slack's Dilemma",
+  "scenario_role": null,
+  "scenario_context": "Slack's app directory lists 2,400+ integrations built by third-party partners. Internal usage data shows teams using 5 or more integrations have 40% higher retention than teams using 0-2. But the top 10 integrations, Google Drive, Zoom, Jira, GitHub, and PagerDuty among them, account for 78% of all integration usage across the entire installed base.",
+  "scenario_trigger": "Leadership is debating two directions. One camp wants to deeply native-integrate the top 10 apps, baking their functionality into Slack's core surface and removing the need for separate installs. The other camp wants to double down on the open API and the partner ecosystem, arguing that the long tail is where competitive moat lives. Both cite the same retention number.",
+  "scenario_question": "Recommend a direction. Your answer should separate what the retention data actually proves from what it doesn't, and name the strategic criterion Slack is really optimizing for.",
+  "engineer_standout": "A strong answer notices that 5+ integrations correlating with 40% higher retention is almost certainly measuring engagement intensity, not integration causation. Teams that care enough to connect 5 tools are already more invested in Slack as infrastructure. Natively integrating the top 10 captures the head but dismantles the partner trust that makes the 2,400+ ecosystem possible. The real question is whether Slack's moat comes from owning the core experience or from being the connective tissue everything else plugs into.",
+  "paradigm": "traditional",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["strategic_thinking", "taste"],
+  "secondary_competencies": ["cognitive_empathy", "domain_expertise"],
+  "topic_tags": ["platform-strategy", "ecosystem", "retention", "network-effects"],
+  "technique_tags": ["taste-frame", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The retention number is real. The question is what it actually proves. Correlation between integration count and retention does not tell you which direction the causation runs.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the strategic problem the retention data presents?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 5+ integrations / 40% retention correlation almost certainly runs in the other direction: teams already committed to Slack as workplace infrastructure are more likely to connect additional tools, not the other way around. This means natively integrating the top 10 to capture the engagement signal could misdiagnose the cause and destroy the partner trust that makes 2,400+ integrations possible in the first place. The real problem is deciding whether Slack's defensibility comes from owning the core workflow experience or from being the connective layer that everything else integrates into.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This framing does the upstream move correctly: it questions the causal direction of the correlation before accepting it as a mandate. The 78%-from-top-10 concentration is a usage fact, but it doesn't mean natively integrating those 10 apps will reproduce the 40% retention lift. Teams that use 5+ tools are already high-intent Slack users. Treating correlation as causation leads to a strategic bet that cannibalizes the ecosystem to capture value that was never produced by the integrations themselves.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Frame is identifying the problem behind the problem. The surface problem is 'which direction should we invest?' The upstream problem is 'do integrations cause retention, or does retention cause integration adoption?' Getting this wrong makes every downstream decision incorrect. Taste: the difference between a tradeoff and a preference shows up here, Slack's choice is between two defensibility postures, not just two product features."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The top 10 integrations are driving 78% of usage and correlate with 40% higher retention. The strategic problem is that these critical integrations are controlled by partners rather than Slack, creating dependency risk. Natively integrating them removes that risk and captures the engagement value they generate.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Dependency risk is a real consideration and worth naming, but this framing accepts the correlation as causation without questioning it. If engaged teams adopt more integrations rather than integrations making teams more engaged, then natively integrating the top 10 removes ecosystem optionality without reproducing the retention effect. The framing also ignores the partner trust dimension entirely.",
+              "framework_hint": "Strategic Thinking: this is directionally right about dependency risk, but it skips the causal question that determines whether the risk actually flows the way the framing assumes. A dependency that correlates with retention is different from a dependency that produces retention."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Slack has too many integrations. The 2,400+ apps in the directory create decision fatigue for new teams trying to set up their workspace. The strategic problem is simplifying the onboarding experience by surfacing the top 10 prominently rather than overwhelming users with the full catalog.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Onboarding UX is a legitimate product concern, but it is not the strategic tension the data presents. The debate isn't about catalog discoverability, it's about whether to deeply native-integrate the head of the distribution or invest in the API that enables the tail. Surfacing the top 10 more prominently in the directory is a UI decision, not a platform strategy decision.",
+              "framework_hint": "Taste failure: this answer treats a product UX question as a strategic framing. The reasoning move at Frame is finding the problem that makes all downstream choices coherent, not the nearest visible inconvenience."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The 40% retention lift proves integrations are the primary driver of Slack stickiness. The strategic problem is that partners could build integrations on competing platforms like Microsoft Teams, taking the retention value with them. Slack must native-integrate the top 10 before a competitor does.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Competitive urgency is a real strategic consideration, but this answer treats correlation as proved causation and then builds a pre-emptive native-integration argument on top of it. If integrations don't cause retention but instead reflect it, then native-integrating the top 10 doesn't prevent competitor poaching of the retention effect because the retention effect was never coming from the integrations. The framing also ignores that natively integrating Google Drive or Zoom likely means competing directly with companies Slack depends on as partners.",
+              "framework_hint": "Strategic Thinking failure: competitive urgency is only a valid accelerant when the underlying causal model is correct. Using it before resolving the causal question converts a diagnostic error into a strategic mistake executed faster."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "There are at least three structurally different directions here, not two. One of them native-integrates categories rather than specific partners. Enumerate all three before committing.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of strategic options most completely maps the decision space Slack is actually facing?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct options: (1) deeply native-integrate the specific top 10 apps by acquiring or licensing their core functionality, accepting that this strains or severs partner relationships; (2) invest in the open API and partner program to expand the 2,400+ ecosystem, betting that the long tail is the moat; (3) native-integrate categories rather than named partners, for example building a native video-call layer without naming Zoom, so Slack owns the workflow surface without picking winners; (4) a tiered hybrid where the top 10 get deep integration hooks unavailable to others, effectively creating a preferred-partner tier within the open API.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "creative_execution"],
+              "explanation": "This set covers the decision space without conflating options that have different partner-trust implications. Option 3 is the key non-obvious move: native-integrating categories lets Slack own the core workflow surface (video, file access, alerting) without directly attacking named partners' install bases or market positions. Option 4 is the political compromise that most large platforms eventually reach. Listing all four makes the tradeoffs between them legible before choosing.",
+              "framework_hint": "Creative Execution: the reasoning move at List is generating structurally distinct options, not variations on the same theme. Options 1 and 3 both involve 'making integrations native' but through mechanisms with completely different partner-trust and competitive-moat implications. Distinguishing them is what separates a strong list from a weak one."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two options: native-integrate the top 10 to maximize retention capture, or invest in the open API to maximize ecosystem breadth. These are the two ends of the spectrum and the decision is which tradeoff Slack is willing to make.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Framing this as a binary is the most common analytical shortcut in platform strategy debates. It's not wrong that these are the poles, but presenting only the poles leaves out the category-native and tiered-partner options that most platform companies actually end up executing. Listing only two options understates the design space and may lead to a suboptimal choice.",
+              "framework_hint": "Creative Execution: a two-option list at the List step is usually incomplete. The reasoning move is to find the third option that the binary framing obscures, which here is native-integrating categories rather than specific partners."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Slack should run a user research study to ask teams which integrations they use most and why, then use that data to decide which ones to natively integrate.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "User research on integration usage is a useful tactic for UI prioritization, but it doesn't resolve the strategic question. The decision about whether to native-integrate the top 10 is not primarily a question of which apps users prefer, it's a question of partner trust, ecosystem moat, and competitive defensibility. Usage data from users already exists in the 78% concentration figure. Proposing more research instead of enumerating options skips the List step entirely.",
+              "framework_hint": "Creative Execution failure: listing 'do more research' as a strategic option is not generating options, it's deferring the move. The List step requires enumerating what to do, not what to learn first."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Slack should acquire the top 10 integration companies to gain full control over their functionality and eliminate the dependency on partners. Vertical integration is the historically proven path for platform companies that want to own the full stack.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Acquisition is not enumerated as a strategic option because the top 10 include Zoom, Google Drive, and Jira, companies worth billions that Slack cannot acquire. Presenting vertical integration as a strategic option for a company Salesforce acquired for $27 billion ignores the resource and antitrust constraints that make it impossible. This conflates the theoretical playbook with the actual decision space.",
+              "framework_hint": "Strategic Thinking failure: an option that is not actually available is not an option. The reasoning move at List is to enumerate real alternatives, not theoretical ones. Citing historical platform precedent without checking whether it applies to the specific situation is domain knowledge misapplied."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before picking a path. What is Slack actually optimizing for: workflow ownership, ecosystem breadth, or partner trust? The answer determines which option wins.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which strategic path should Slack pursue, and what is the explicit criterion and sacrifice that justifies the choice?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Invest in the open API and partner ecosystem, while building category-native primitives for the highest-frequency workflows (video, file preview, alerting) without branding them as replacements for specific partners. The criterion is ecosystem breadth as a moat: 2,400+ integrations is a switching cost that no competitor can replicate in five years. The sacrifice is near-term UX polish for the head-of-distribution integrations, where a deeply native Google Drive or Zoom experience would feel more seamless. That sacrifice is acceptable because the 78% usage concentration proves the head is already well-served, and the long tail is where the defensibility actually lives.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This answer names the criterion (ecosystem breadth as a moat), names the sacrifice (UX polish on the top 10), and explains why the sacrifice is acceptable (the head is already well-served by 78% concentration, the tail is the defensibility asset). Category-native primitives let Slack own the workflow surface without attacking specific partners' install bases. The tradeoff is real and explicitly named, not assumed away.",
+              "framework_hint": "Taste: the reasoning move at Optimize is feeling the difference between a tradeoff and a preference. Choosing ecosystem breadth over UX polish is a tradeoff because both things are genuinely valuable and you cannot fully have both. Strategic Thinking: naming the criterion explicitly (ecosystem breadth as switching cost) is what makes the choice defensible to leadership, not just directionally correct."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Deeply native-integrate the top 10 integrations. The retention data shows teams with 5+ integrations have 40% higher retention, and the top 10 account for 78% of usage, so owning those integrations natively captures most of the retention value. Partners will complain but will continue building because the platform's reach is too large to abandon.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This option names a criterion (capture retention value from the head) but doesn't name the sacrifice honestly. 'Partners will complain but continue building' is not a named sacrifice, it's a hand-wave. The real sacrifice is that natively integrating Zoom or Jira signals to all 2,390 other partners that their investment in the Slack ecosystem can be rendered obsolete at any time. That changes the calculus for new partners considering whether to build for Slack at all.",
+              "framework_hint": "Taste: the reasoning move at Optimize is naming the sacrifice clearly, not minimizing it. An answer that says 'partners will adapt' is not naming a sacrifice, it's asserting that there isn't one. That assertion is where platform strategy mistakes start."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Slack should do both: native-integrate the top 10 for the best user experience while also investing in the open API to support the long tail. A hybrid approach avoids choosing between experience and ecosystem.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Hybrid answers at the Optimize step almost always fail the taste criterion because they refuse to name a sacrifice. 'Do both' works only if the two directions don't create genuine tension. Natively integrating Zoom while asking Zoom to keep investing in their Slack integration is a genuine tension, not a design decision that can be resolved with a roadmap. The answer doesn't name the criterion either.",
+              "framework_hint": "Taste failure: the signal that an Optimize answer is surface-level is when it refuses to name what gets given up. 'Do both' is a preference statement masquerading as a strategic recommendation. The reasoning move is to feel the difference between a tradeoff and a workaround."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Slack should exit the platform strategy entirely and focus on being the best communication tool for teams, letting users connect apps through Zapier or other middleware. The complexity of managing 2,400+ integrations is a distraction from the core product.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Platform retreat is a strategic option in theory, but it directly contradicts Slack's product identity and the retention data the question presents. Teams with 5+ integrations have 40% higher retention, meaning the integration ecosystem is a retention driver not a distraction. Recommending exit from the platform strategy discards the evidence presented in the scenario without engaging with it.",
+              "framework_hint": "Strategic Thinking failure: a recommendation that ignores the primary evidence in the scenario is not a tradeoff, it's a non-answer. The reasoning move at Optimize is to engage with the tension, not to dissolve it by redefining the company's mission."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What number, at what threshold, by when, would tell you the ecosystem-first bet is working? The falsification condition matters as much as the success condition.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define a falsifiable winning condition for the ecosystem-first strategy over an 18-month horizon?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success: the 30-day retention rate for teams using 5+ integrations holds at or above its current level, and the number of active integrations in the 11-2,400 range grows by at least 15% year over year, showing that investment in the long tail is expanding the ecosystem, not just concentrating usage further in the top 10. Failure: if the top 10's share of total integration usage rises above 85% and the 11-2,400 tier's growth rate turns negative, it signals that the head is crowding out the tail and the ecosystem strategy is not producing the moat it was intended to build.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions. The success condition measures whether the long tail is actually growing (ecosystem health) while the retention floor holds. The failure condition names the specific signal (85% concentration, negative tail growth) that would say the ecosystem strategy is failing and a course correction is needed. Both conditions reference the same metrics used in the scenario, maintaining measurement coherence.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Win is writing a hypothesis with a falsification condition, not just a target. The failure signal (85% concentration, tail growth negative) is what distinguishes this from an aspiration. Domain Expertise: anchoring on integration tier growth and retention by integration-count cohort connects the winning condition back to the evidence that motivated the strategy in the first place."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success is: Slack's overall retention rate improves by 5 percentage points over 18 months, confirming that the ecosystem-first strategy is working. If retention stays flat or declines, revisit the strategy.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Overall retention is a reasonable north-star metric, but it is too coarse to attribute to the ecosystem strategy specifically. Retention can improve or decline for many reasons unrelated to the integration strategy. Without segmenting by integration adoption cohort, a 5-point overall improvement cannot confirm the ecosystem bet is responsible for it, and a flat result cannot falsify the strategy either.",
+              "framework_hint": "Strategic Thinking: a winning condition that cannot distinguish between 'the strategy worked' and 'something else moved the metric' is not falsifiable. The reasoning move at Win is to name the metric that the strategy specifically moves, not the broadest metric the company tracks."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is: the app directory grows from 2,400 to 3,000 integrations within 18 months, showing that partners are investing in the ecosystem.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Directory count is a vanity metric. Adding 600 low-usage integrations does not prove the ecosystem strategy is building retention or moat. The scenario's evidence connects retention to active integration usage (5+ integrations), not to the size of the directory. A directory count winning condition measures inputs, not outcomes.",
+              "framework_hint": "Domain Expertise failure: the winning condition must measure the outcome the strategy was designed to produce, not the activity that produces it. Directory count is an activity metric. Retention by integration cohort is the outcome metric. Using the wrong instrument makes the win condition uninterpretable."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is: Microsoft Teams fails to replicate Slack's top 10 integrations and loses enterprise accounts as a result, proving Slack's ecosystem is a real competitive moat.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A winning condition defined by a competitor's failure is not measurable, not timebound, and not under Slack's control. Competitor behavior is an input to strategic context, not a metric that Slack can track or hit. This also conflates ecosystem moat (breadth, switching cost) with a specific competitive outcome that may not materialize even if the strategy succeeds.",
+              "framework_hint": "Strategic Thinking failure: winning conditions must be defined by metrics the team can observe and influence. Competitor failure is neither. The reasoning move at Win is naming what Slack can measure, not predicting what Microsoft will or won't do."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

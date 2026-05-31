@@ -1,0 +1,299 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000036",
+  "title": "Your AI Coding Agent Introduced a Security Vulnerability",
+  "scenario_role": null,
+  "scenario_context": "A startup sells an AI coding agent that autonomously implements features from a ticket description. The agent reads the ticket, writes the code, opens a pull request, and waits for a human review. A customer's team used the agent to add a new search filter to their backend. The agent implemented the filter by constructing the SQL query with string concatenation, embedding a user-supplied parameter directly into the query string rather than using a parameterized query. The code passed CI and was merged. The customer's security scanner caught the SQL injection vulnerability in a pre-production audit before it shipped to users. A near-miss.",
+  "scenario_trigger": "The customer filed a severity-1 bug report and is now asking two questions the startup has not had to answer before: why did the agent produce insecure code in the first place, and who is liable if a vulnerability like this reaches production and is exploited? The founding team needs to redesign the agent's guardrails and articulate a liability model before the next enterprise deal can close.",
+  "scenario_question": "Frame the root problem behind the near-miss, enumerate what a comprehensive guardrail and liability redesign must cover, name the tradeoff the team has to accept, and define a falsifiable success bar for the new guardrail system.",
+  "engineer_standout": "A strong answer refuses to treat this as a quality-assurance failure to be patched with a code review checklist. The vulnerability was not caught by the agent's own pipeline at all — the customer's external scanner caught it. That is the structural problem: the agent can emit exploitable code and nothing in its own output path detects or blocks it before a human reviews the PR. The fix belongs in the agent's pipeline (static analysis, parameterized-query enforcement, SAST tooling before the PR is opened), not in the customer's own security process. On liability, the relevant insight is that disclaiming everything ('agent output is not production-ready') misaligns incentives. A shared-responsibility model with clear agent-side obligations (the agent must not emit OWASP Top 10 class vulnerabilities) and customer-side obligations (human review required before merge) is more defensible and more honest about what the product actually does.",
+  "paradigm": "agentic",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["domain_expertise", "strategic_thinking"],
+  "secondary_competencies": ["cognitive_empathy", "taste"],
+  "topic_tags": ["ai-agents", "security", "product-liability", "agentic-systems", "developer-tools"],
+  "technique_tags": ["guardrail-design", "shared-responsibility", "risk-allocation"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The customer caught a SQL injection before production. That means the customer caught it, not the agent. Ask what that gap reveals about where the real problem sits.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the problem the startup needs to solve after the SQL injection near-miss?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The agent produced a SQL injection vulnerability by concatenating a user-supplied parameter into a query string, and nothing in the agent's own output pipeline flagged it before the PR was opened. The customer's pre-production security scan caught what the agent's pipeline missed entirely. The structural problem is that the agent's output path has no security gate: no static analysis, no SAST tooling, no parameterized-query enforcement before code is committed. The framing is not 'how do we prevent insecure code reviews' but 'how do we make the agent's own pipeline responsible for catching OWASP Top 10 class vulnerabilities before a human ever sees the PR.'",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing locates the gap precisely. The agent opened a PR with a SQL injection vulnerability and no mechanism inside the agent's pipeline detected it. The customer's external scanner was the only safety net. Framing the problem as a guardrail absence in the agent's own output path — not as a review failure or a customer responsibility gap — points the team toward the correct fix: SAST or parameterized-query enforcement in the agent's pipeline before the PR is created. Any other framing produces solutions that add steps after the vulnerability has already been emitted.",
+              "framework_hint": "Domain Expertise: SQL injection via string concatenation is the textbook OWASP A03 vulnerability; the parameterized-query pattern is the well-understood fix. Strategic Thinking: the fact that the customer's scanner caught it, not the agent's pipeline, is the structural signal — it means the agent's output path has no security gate, which is the root problem to name."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The problem is that the human reviewer approved an insecure PR. The agent wrote the code and opened the PR, but a human merged it. Human review is the last line of defense, and in this case that line held because the customer ran a security scan after merge. The startup should invest in reviewer education and documentation that explicitly tells customers to treat agent-generated code with elevated scrutiny.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Human review is a legitimate safety layer, and the fact that the PR was merged without catching the string concatenation issue does point to a review gap. The framing is incomplete because it places the primary responsibility on the customer's reviewer rather than on the agent's pipeline. The agent is sold as an autonomous implementation tool. If the product's safety model depends on the customer catching every vulnerability the agent introduces, the startup is shifting the security burden to the user without disclosing it. The root problem is that the agent itself has no security output gate, and reviewer education does not fix that.",
+              "framework_hint": "Cognitive Empathy: simulating the customer's position (they bought an autonomous coding agent and expected it to produce reasonably safe code) reveals why placing the burden on reviewer education misaligns with the product's value proposition. The customer did not buy a code generator that requires expert security review of every PR."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is a quality assurance gap. The agent's test suite did not include a security test case covering SQL injection patterns. Adding security-specific test cases to the agent's evaluation benchmark would catch this class of vulnerability before it reaches customers.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Adding SQL injection test cases to the agent's evaluation benchmark is a reasonable quality improvement but it does not frame the structural problem. Evaluation benchmarks test the agent's overall output distribution — they do not block vulnerable code from being emitted on individual customer tickets. The framing step requires identifying what is systemically wrong, not proposing a QA action. The structural problem is that the agent's output pipeline has no real-time security gate that operates on each generated PR before it is opened.",
+              "framework_hint": "Strategic Thinking failure: benchmark improvement is an offline quality signal. It does not prevent the agent from concatenating user input into a SQL string on the next customer ticket. The frame must identify the gap in the live output path, not the test coverage gap in the evaluation environment."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is a liability model gap. The startup does not have a clear terms-of-service statement about who is responsible for vulnerabilities in agent-generated code. Before making any technical changes, the startup needs to define the liability split between itself and its customers so that future incidents have a clear accountability framework.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The liability model is a real problem the startup needs to address, but it is not the root problem the near-miss exposes. A well-drafted liability clause does not prevent the agent from producing SQL injection vulnerabilities. The customer filed a severity-1 bug report not because the terms of service were ambiguous but because the agent emitted exploitable code that nothing in its pipeline caught. Resolving the liability framing first without fixing the technical output gap produces a legally protected product that still generates vulnerable code.",
+              "framework_hint": "Domain Expertise failure: the near-miss is a technical output-quality failure first. The liability question is downstream of the technical question — you cannot design a defensible liability model for a product that does not yet have defined security obligations in its own pipeline. Frame the technical gap first, then price the liability split against what the pipeline does and does not guarantee."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Two problems need to be redesigned at the same time: the technical pipeline that lets vulnerable code through, and the liability model that tells customers what the agent does and does not guarantee. List what a complete redesign must cover on both sides.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of guardrail components most completely covers what the agent's output pipeline must enforce before opening a pull request?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["domain_expertise", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three structurally distinct components belong in the agent's output pipeline before a PR is opened. First, SAST (static application security testing) scanned against the generated diff: tools like Semgrep or CodeQL run in the agent's pipeline and flag OWASP Top 10 patterns including SQL injection via string concatenation. If the scanner returns a high-severity finding, the agent blocks the PR and surfaces the finding to the developer rather than opening it silently. Second, a parameterized-query enforcement pass: for any generated code touching a database, the agent checks that query construction uses the ORM's parameter binding or prepared statements, not string interpolation. This is a narrower, faster check than a full SAST scan and catches the exact class of vulnerability that occurred. Third, a security-aware code review prompt: when the agent opens the PR, the PR description includes a security checklist generated from the diff, flagging any patterns the automated tools raised as warnings rather than hard blocks, so the human reviewer has structured guidance rather than a blank review surface.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "creative_execution"],
+              "explanation": "These three components operate at different points in the output path and are mechanistically distinct. The SAST scan is a broad automated gate covering the full OWASP surface. The parameterized-query enforcement pass is a targeted check for the exact vulnerability class that occurred in this incident. The security-aware PR description bridges the automated pipeline to the human reviewer without replacing the reviewer entirely. Together they create two blocking gates and one advisory gate before the code is merged, addressing both the technical gap and the review gap the incident revealed.",
+              "framework_hint": "Domain Expertise: SAST tooling (Semgrep, CodeQL) and parameterized-query checks are standard, well-understood interventions for SQL injection. Creative Execution: generating three mechanistically distinct components rather than one monolithic 'security check' reflects how defense-in-depth security architecture actually works."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The agent should run a security linter on all generated code before opening a PR. A linter that flags known insecure patterns — string-concatenated queries, hardcoded credentials, unsafe deserialization — would catch this class of vulnerability. If the linter returns findings, the agent should add a warning comment to the PR.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "A security linter is the right direction and would have caught the string-concatenated query in this incident. The incompleteness is the response to a finding: adding a warning comment does not block a vulnerable PR from being merged by a reviewer who is moving fast. The guardrail design needs to distinguish between findings that block the PR (high-severity, OWASP Top 10) and findings that warn (lower-severity patterns). A warning comment on a SQL injection finding treats a critical vulnerability as advisory, which misaligns the severity signal with the response.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies linting as the technical mechanism. Creative Execution gap: treating all linter findings as warning comments rather than designing a severity-tiered response (block vs. warn) produces a guardrail that can be overridden by a distracted reviewer on the most critical vulnerability class."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The agent should require a security-trained engineer to review every PR it opens before it is eligible to merge. Adding a required reviewer from the customer's security team to each PR would catch vulnerabilities before production.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Requiring a security reviewer is a process control, not a pipeline guardrail. The list step asks what the agent's output pipeline must enforce, not what the customer's review process should include. More practically, not every customer has a security-trained engineer available for every PR. A required-reviewer policy also does not address the structural problem: the agent is emitting vulnerable code and nothing in its own pipeline is flagging it. Human review is the fallback, not the primary defense.",
+              "framework_hint": "Strategic Thinking failure: the required-reviewer approach moves the security burden from the agent's pipeline to the customer's organization, which is the inverse of the fix the near-miss reveals is needed. The agent's pipeline produced a SQL injection vulnerability and opened a PR. The agent's pipeline is where the fix belongs."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The agent should use a language model prompt that explicitly instructs it to write secure code. Adding a system-prompt rule like 'always use parameterized queries for database operations' would prevent the agent from generating string-concatenated SQL in the first place.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Prompt-level instructions are not reliable security controls. Language models do not follow system-prompt rules with the consistency that a security gate requires — they can produce string-concatenated queries on edge cases, unusual ORM configurations, or novel ticket phrasings even when instructed otherwise. A prompt rule has no enforcement mechanism; it is a hint, not a constraint. SAST tooling and parameterized-query enforcement checks operate on the generated code deterministically, independent of what the model was instructed to do.",
+              "framework_hint": "Domain Expertise failure: treating LLM system-prompt instructions as equivalent to static analysis tooling conflates probabilistic guidance with deterministic enforcement. Security guardrails in software pipelines are gates, not suggestions. A prompt that says 'use parameterized queries' does not block a generated query that fails to do so."
+            }
+          ]
+        },
+        {
+          "question_text": "What must a defensible liability model for an autonomous coding agent cover, given that the agent can produce code that reaches production?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["strategic_thinking", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "A defensible liability model must define three things. First, the agent's explicit security obligations: the startup commits that the agent will not open PRs containing OWASP Top 10 class vulnerabilities that its pipeline detects — specifically including SQL injection via string concatenation. This is not a blanket guarantee of secure code; it is a defined, auditable scope. Second, the customer's explicit obligations: the customer must require human review and approval before any agent-generated PR is merged to a production branch. The agent is a co-developer, not an autonomous deployer. Third, the incident and disclosure protocol: if a vulnerability originating from agent-generated code reaches production and is exploited, the startup commits to a defined notification timeline and cooperates with remediation. The model is shared responsibility with clear boundaries, not a full disclaimer and not a full warranty.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "cognitive_empathy"],
+              "explanation": "This model works because each obligation is specific and auditable. The startup's obligation (no OWASP Top 10 in detected output) is scoped to what the pipeline can actually enforce, not to a vague promise of secure code. The customer's obligation (human review before merge) is a defined practice the customer controls. The incident protocol creates a trustworthy response posture without admitting unlimited liability. Together these three components produce a model that enterprise procurement teams can evaluate, which is the actual gate the startup is facing on the next enterprise deal.",
+              "framework_hint": "Cognitive Empathy: simulating the enterprise procurement team's position reveals they are not asking for a blanket warranty — they are asking for defined obligations they can present to their security council. Strategic Thinking: shared responsibility with specific obligations on each side is the model that cloud providers and developer tool vendors have converged on; it is more defensible than full disclaimer and more commercially viable than full warranty."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The liability model should clearly disclaim that all agent-generated code is provided as-is and that the startup is not responsible for vulnerabilities in code that customers choose to deploy. The terms of service should require customers to accept this disclaimer before using the product. This is the standard approach for developer tools.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A disclaimer is legally advisable and most developer tool companies include one. The incompleteness is that a full disclaimer misaligns incentives in a way that hurts the startup's enterprise sales. Enterprise customers evaluating an autonomous coding agent will not accept a product that disclaims all security responsibility for code it autonomously writes and opens for review. The disclaimer approach also ignores the technical fact that the startup's pipeline did not flag the SQL injection — which means the agent produced something the startup's own tooling could have caught. Disclaiming liability for something your pipeline could detect is harder to defend than accepting a defined scope of obligation.",
+              "framework_hint": "Cognitive Empathy gap: enterprise procurement is not asking 'do you have a disclaimer' — they are asking 'what do you guarantee and what do we own.' A full disclaimer answers neither question and loses enterprise deals to competitors who offer a defined shared-responsibility model."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The liability model should offer a security warranty: the startup guarantees that all agent-generated code is free of vulnerabilities, and will indemnify customers for any losses resulting from exploited vulnerabilities in code the agent produced.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A full security warranty with indemnification is not commercially viable for a startup. The agent operates on arbitrary customer codebases, integrates with libraries the startup does not control, and implements tickets that the customer writes. Guaranteeing vulnerability-free output across that surface is a commitment no responsible company can make, regardless of pipeline quality. The indemnification obligation would also be existentially risky for a startup in the event of a significant breach. A warranty that covers what the pipeline detectably enforces is defensible; a blanket warranty on all generated code is not.",
+              "framework_hint": "Strategic Thinking failure: a blanket warranty sounds customer-friendly but creates unlimited liability exposure for a startup operating on customer-controlled codebases and tickets. The correct calibration is specific obligations the startup can actually audit and enforce, not a guarantee that the startup cannot operationally back."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The liability model should require customers to purchase a security add-on that includes a dedicated security review of all agent PRs by the startup's engineering team. Customers who do not purchase the add-on accept full liability for agent-generated code. This creates a revenue stream and a clear liability split.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Monetizing security review as an add-on is a business model decision, not a liability model. It also does not answer the structural question: who is responsible for a vulnerability the agent produced before any review? A security add-on that requires the startup to review every PR is also not operationally scalable for an autonomous coding agent product. The list step asks what a liability model must cover, not what pricing structure to build around it.",
+              "framework_hint": "Creative Execution failure: the add-on framing treats security obligations as a monetization surface rather than as the foundational question of what the product guarantees at its base tier. Enterprise customers who cannot rely on a base-tier security commitment will not progress to a conversation about premium add-ons."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The team knows what to build in the pipeline and roughly how to structure the liability model. Now name the tradeoff: what does the startup give up by adding a SAST gate that blocks PRs on high-severity findings, and how should they price that sacrifice?",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding how aggressively to tune the SAST gate's blocking threshold — specifically, when to block a PR automatically versus when to warn and let the developer decide?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is exploitability in context, not vulnerability class alone. A SQL injection via string concatenation where the parameter comes from an unauthenticated HTTP request — the pattern that occurred in this incident — warrants a hard block: the agent will not open the PR until the finding is resolved. A SQL injection pattern in a migration script that operates on internal admin inputs only, where exploitability requires authenticated access, warrants a warning with required acknowledgment. The sacrifice is explicit: some PRs that a developer would have merged without issue will be blocked by the gate, creating friction on legitimate code. That friction is the price of an agent the startup can make binding security commitments about. Setting the threshold on exploitability-in-context rather than on vulnerability class alone avoids over-blocking low-risk patterns while still hard-blocking the vulnerability type that caused this incident.",
+              "quality": "best",
+              "competencies": ["taste", "domain_expertise"],
+              "explanation": "This criterion correctly distinguishes between a hard block (unauthenticated SQL injection, which is what occurred in this incident) and a warning (SQL injection in a context where exploitability is bounded). It names the sacrifice — blocked legitimate PRs, developer friction — and frames it as the cost of a product with auditable security commitments. Tuning on exploitability-in-context rather than raw vulnerability class is how mature SAST deployments reduce false positives without weakening security posture on the highest-risk findings.",
+              "framework_hint": "Taste: the decision is not 'should we block SQL injection findings' but 'which SQL injection findings warrant a hard block versus a warning.' That distinction reflects knowing the difference between a tradeoff (some legitimate PRs blocked, in exchange for auditable security commitments) and a preference (block everything, never block anything). Domain Expertise: SQL injection exploitability depends on the source of the user-controlled parameter — an unauthenticated HTTP parameter is high-exploitability; an admin-authenticated input is lower."
+            },
+            {
+              "option_label": "B",
+              "option_text": "All OWASP Top 10 findings should trigger hard blocks. If the agent detects any vulnerability in its generated code, it will not open a PR. The startup's security commitment is binary: the agent does not emit code with known vulnerabilities. This is the cleanest message for enterprise customers.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A binary block-all approach is clean to communicate and defensible from a security posture standpoint. The sacrifice it demands is significant: SAST tools generate false positives and context-insensitive findings, particularly on complex codebases with custom ORMs or internal security controls that the tool does not understand. Blocking all OWASP Top 10 findings without a severity or exploitability filter will result in agent PRs being blocked on findings that experienced engineers would immediately dismiss, which degrades the product's utility. The criterion needs to distinguish severity and context, not collapse everything to a binary.",
+              "framework_hint": "Taste gap: 'block everything' is a preference for simplicity, not a tradeoff. The real tradeoff is how much false-positive friction the startup is willing to impose on customers in exchange for the cleanliness of the commitment. A criterion that does not name that sacrifice has not actually priced the tradeoff."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The threshold should be customer-configurable. Each customer can set their own sensitivity level for the SAST gate — strict, standard, or off. Enterprise customers with mature security teams might want strict blocking; smaller teams might prefer warnings only. Customer control makes the product more flexible.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Customer-configurable security thresholds are a reasonable enterprise product feature, but they are not a criterion for the startup's own design decision about where the default threshold belongs. More importantly, allowing customers to turn the security gate off undermines the liability model the startup is trying to establish. If a customer disables the gate and a SQL injection vulnerability reaches production, the startup's shared-responsibility argument collapses — they knew the gate was off. The threshold design must first establish a defensible default before considering customer override options.",
+              "framework_hint": "Strategic Thinking failure: configurability is a product-design feature, not an answer to the optimization question. The question asks what criterion the startup uses to set the gate — not who controls the dial. A default that can be turned off by customers also creates liability exposure that directly contradicts the shared-responsibility model the startup needs to build."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The gate should block PRs whenever the SAST tool returns any finding with a CVSS score above 7.0. CVSS is a standardized scoring system; using it as the threshold gives the startup an objective, auditable criterion that enterprise security teams recognize.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "CVSS scoring is a real and widely used vulnerability severity framework, and citing it gives the threshold an auditable basis. The limitation is that CVSS scores are assigned to known CVEs and vulnerability patterns in the abstract, not to specific code-in-context. A SQL injection finding in agent-generated code does not automatically have a CVSS score assigned — SAST tools flag patterns, not CVEs with pre-assigned scores. Applying CVSS thresholds to SAST output requires mapping that is not always clean or complete. The criterion sounds precise but may not be operationally executable on the SAST tool's actual output format.",
+              "framework_hint": "Domain Expertise gap: CVSS scores apply to known vulnerabilities in software products, not to SAST pattern findings in generated code. SAST tools like Semgrep report rule IDs and severity tiers (error, warning, info), not CVSS scores. A threshold built on CVSS may not map cleanly to the tool's output, making the criterion harder to implement than it appears."
+            }
+          ]
+        },
+        {
+          "question_text": "How should the startup communicate the new SAST gate to existing customers whose workflows currently rely on the agent opening PRs without a blocking security step?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The communication should frame the SAST gate as a product obligation the startup is taking on, not as a feature it is adding. Existing customers should receive a direct account communication that names what the gate does (blocks PRs containing unauthenticated SQL injection and other high-exploitability OWASP Top 10 patterns before they are opened), what it costs them operationally (some PRs will be blocked and require developer resolution before the agent reopens them), and what it changes about the liability model (the startup is now making a specific, auditable security commitment for detected finding classes). The message should acknowledge that blocked PRs create friction and provide a clear path for customers to report false-positive blocking. Framing the gate as a commitment the startup is taking on, rather than a policy the customer must comply with, positions the change as the startup standing behind its product.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "strategic_thinking"],
+              "explanation": "This approach correctly simulates what existing customers care about: not whether the feature exists, but what it will do to their PR workflow and what they get in return. Naming the operational cost (blocked PRs requiring resolution) prevents customer surprise. Naming the new commitment (auditable security obligation for detected findings) gives customers a concrete benefit to hold the startup to. Framing the change as the startup standing behind its product rather than adding a compliance requirement produces a communication that customers forward to their security teams, not one they escalate to their account manager.",
+              "framework_hint": "Cognitive Empathy: simulating the existing customer's position (they built workflow automation around the agent opening PRs without delay) reveals that the communication must acknowledge friction before claiming benefit. Strategic Thinking: framing the gate as a startup commitment rather than a customer-facing policy shifts the conversation from 'you must now review blocked PRs' to 'we now guarantee something we did not guarantee before.'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "Send a product changelog update to all customers announcing the new SAST integration as a security enhancement. Include documentation on how the gate works and what findings it blocks. Customers can read the changelog and update their workflows accordingly.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A changelog entry is the minimum required communication and is not wrong, but it treats a workflow-impacting change as equivalent to a minor product update. Existing customers who have built automation around the agent's PR behavior will have broken workflows when PRs start getting blocked by findings the gate treats as hard stops. A changelog does not give those customers time to adjust or a direct channel to flag false positives. The communication needs to be direct, acknowledge the operational impact, and provide a support path.",
+              "framework_hint": "Cognitive Empathy failure: a changelog entry assumes customers monitor release notes for changes that affect their day-to-day workflows. Customers who have integrated the agent's PR output into their CI pipeline will discover the blocking behavior when a PR fails to open on a ticket they expected to be automated. That is a worse experience than proactive direct communication."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Roll out the gate in warning-only mode for existing customers for 90 days before enabling hard blocking. This gives customers time to observe what the gate would have blocked and adjust their workflows before the blocking behavior is enforced.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A phased rollout from warning-only to hard-blocking is a reasonable change management approach and reduces workflow disruption. The incompleteness is that 90 days of warning-only mode means 90 days of SQL injection vulnerabilities (and other OWASP Top 10 findings) being emitted by the agent with only a warning rather than a block. If a customer merges a warned finding during the rollout window and it reaches production, the liability model the startup is trying to build has a 90-day hole in it. The phased approach needs a tighter timeline or a narrower scope (warning-only only for medium-severity findings, not for high-exploitability SQL injection patterns).",
+              "framework_hint": "Strategic Thinking partial credit: a phased rollout reduces customer friction. Taste gap: 90 days of warning-only mode on the exact vulnerability class that caused the incident (SQL injection) is not a tradeoff the startup can defend if a customer exploits a warned finding during the window. The sacrifice must be priced: less customer friction in exchange for a defined period where the startup's security commitment is advisory rather than enforced."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Do not communicate the gate change proactively. When customers encounter blocked PRs, they will naturally reach out to support, and the support team can explain the new behavior. This avoids creating anxiety among customers who may never encounter a blocked PR.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Allowing customers to discover a blocking behavior change through a failed workflow rather than through proactive communication is almost universally the wrong approach for enterprise developer tools. A broken PR automation with no prior warning produces a support escalation and a trust signal: the startup changed behavior without notice. Customers who have built automation on top of the agent's PR output need to know about blocking changes before their pipelines break, not after. The anxiety argument is also backwards: customers who have seen the near-miss report will be more anxious about the absence of a security gate than about the addition of one.",
+              "framework_hint": "Cognitive Empathy failure: simulating customer behavior as 'they might never encounter a blocked PR' ignores that the customers most likely to be affected are the ones with the highest PR volume, who are also the most important customers to retain. Discovering a workflow change through a broken pipeline is the experience worst-suited to building the trust the startup needs after a severity-1 security incident."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The guardrail design is a hypothesis. Name the metric, threshold, and timeline that confirm it is working — and name the counter-signal that tells you the gate is failing before a customer tells you.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What is a falsifiable success bar for the SAST gate after it ships to production, covering both security efficacy and developer experience impact?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: within 60 days of the SAST gate shipping, zero PRs containing unauthenticated SQL injection via string concatenation should reach a customer's repository unblocked — this is the specific finding class from this incident and is the gate's primary obligation. The secondary metric is false-positive block rate: if more than 8% of blocked PRs are resolved by the developer marking the finding as a false positive (not by fixing the code), the gate's pattern set is over-triggering on non-exploitable patterns, and the threshold or rule set needs tuning. The counter-signal is: a customer reports a vulnerability in agent-generated code that the gate would have caught but did not block — meaning the gate ran and returned no finding on a PR that contained an exploitable pattern. That signal means the SAST ruleset has a gap, not a tuning problem, and requires an emergency rule update and a customer notification.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This win condition pairs a security efficacy metric (zero unblocked SQL injection PRs of the incident-specific pattern class) with a developer experience metric (false-positive block rate below 8%), and distinguishes between two failure modes: over-triggering (too many false positives, tuning required) and under-coverage (a finding class the gate misses entirely, requiring a ruleset update). The counter-signal is specific to the incident type, not generic — it targets the exact vulnerability class the startup committed to catching. Naming both metrics and both failure modes gives the team a complete picture of whether the gate is working rather than a single success number.",
+              "framework_hint": "Domain Expertise: false-positive rate is the standard operational health metric for SAST deployments. An 8% threshold reflects that SAST tools generate some false positives and that rate above that level starts degrading developer trust in the gate. Strategic Thinking: distinguishing between tuning failure (false-positive rate) and coverage failure (a missed finding class) produces two operationally distinct responses, preventing the team from treating all gate problems as the same issue."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means no security-related customer escalations for 90 days after the gate ships. If no customer reports a vulnerability in agent-generated code within 90 days, the gate is working. Track support ticket tags for security-related issues and set an alert if any escalation arrives.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Zero customer escalations over 90 days is a lagging and weak signal. Customers who merge agent-generated code may not discover a vulnerability for months, particularly if the code is not heavily exercised immediately. The near-miss in this incident was caught by a pre-production security scan — if that scan had not run, the vulnerability might have sat in production for significantly longer before anyone noticed. A success bar measured only by customer escalations will not detect a gate that is emitting false negatives until a customer runs a security audit.",
+              "framework_hint": "Domain Expertise failure: customer escalations are an output of vulnerability discovery, which lags vulnerability introduction by an indeterminate period. A win condition for a security gate must be measured against the gate's own detection output, not against the downstream discovery rate by customers."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success means the gate blocks at least 95% of PRs that contain any SAST finding, across all severity levels, within 30 days of shipping. Measure the fraction of findings that result in hard blocks versus warnings. A 95% block rate confirms the gate is enforcing security strictly.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A 95% block rate across all severity levels conflates the success metric with the gate's configuration. If the gate is configured to block all findings above a certain threshold, the block rate is a function of configuration, not of security efficacy. This metric also does not distinguish between true-positive blocks (real vulnerability, correctly blocked) and false-positive blocks (clean code flagged by an overly broad rule). A high block rate that includes a high false-positive rate means the gate is degrading developer experience without improving security outcomes. The success metric must separate true-positive block rate from false-positive block rate.",
+              "framework_hint": "Strategic Thinking failure: block rate as a success metric creates an incentive to set the threshold aggressively to maximize the rate, which produces false positives and developer friction rather than genuine security improvement. A win condition must measure security efficacy (findings that were real vulnerabilities, blocked before PR open) separately from operational cost (findings that were false positives, blocked unnecessarily)."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success means the gate ships to all existing customers within 30 days of the incident resolution. Measure rollout completion as the primary metric. Once all customers are running the gate, the security obligation is satisfied.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Measuring rollout completion is a valid operational milestone and gives the team a clear definition of when the gate is universally active. The incompleteness is that rollout completion says nothing about whether the gate is detecting and blocking the vulnerability class it is designed to catch. A gate that ships to all customers but has a misconfigured ruleset that misses SQL injection patterns has 100% rollout and 0% efficacy. The win condition must include at least one detection or efficacy metric to confirm the gate is performing its security function, not just that it has been deployed.",
+              "framework_hint": "Strategic Thinking partial credit: 30-day rollout completion is a concrete, measurable milestone. Domain Expertise gap: deployment is not the same as detection. A win condition for a security control must verify that the control is catching what it was designed to catch, not just that it has been deployed to the right environments."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

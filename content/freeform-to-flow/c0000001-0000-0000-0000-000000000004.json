@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000004",
+  "title": "On-Call Alert Volume is Killing Team Morale",
+  "scenario_role": null,
+  "scenario_context": "A team of eight engineers maintains a high-traffic e-commerce checkout service. Over the past year, on-call page volume has climbed from 4 pages per shift to 14. P95 latency stays within SLA. The error rate is 0.3%, which leadership considers acceptable. Two engineers have told their manager they will quit if on-call conditions do not improve.",
+  "scenario_trigger": "Leadership looks at the dashboards and sees green: latency is fine, error rate is fine. From their vantage point, nothing is broken. From the team's vantage point, the on-call rotation has become unsustainable. The gap between what the dashboards show and what the engineers experience is widening every quarter.",
+  "scenario_question": "The dashboards show a healthy system. The team says the system is breaking them. Frame the real problem, identify the sources of alert volume, decide what to optimize for, and define what success looks like in a way leadership will act on.",
+  "engineer_standout": "A strong answer recognizes that P95 latency and error rate measure system health, not operational health. The 350% increase in pages per shift (from 4 to 14) signals alert quality degradation, not a system regression. The problem to solve is actionable-alert ratio, not uptime.",
+  "paradigm": "traditional",
+  "difficulty": "standard",
+  "estimated_minutes": 20,
+  "primary_competencies": ["cognitive_empathy", "strategic_thinking", "motivation_theory"],
+  "secondary_competencies": ["domain_expertise"],
+  "topic_tags": ["on-call", "alert-fatigue", "reliability", "team-health"],
+  "technique_tags": ["taste-frame", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The dashboards show green. That is the clue, not the alibi. What is the dashboard actually measuring, and what is it missing?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the on-call problem?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The monitoring stack is measuring system health (latency, error rate) but not operational health (alert actionability, toil per shift). The real problem is that page volume tripled while system metrics stayed flat, which means most of the new pages are low-signal or non-actionable. Leadership's dashboards are not wrong; they are measuring the wrong thing.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "strategic_thinking"],
+              "explanation": "This framing separates the metric from the problem. P95 and error rate describe the system's behavior for end users. They say nothing about whether a 3am page requires engineer judgment or could be suppressed automatically. The 350% increase in pages (4 to 14 per shift) against flat system metrics is the signal that alert quality, not system reliability, is what degraded.",
+              "framework_hint": "Cognitive Empathy: the engineer's success metric is 'can I sleep tonight and still respond well tomorrow.' Leadership's metric is 'does the system serve customers.' Both are valid; only one predicts retention. Framing the gap between them is the reasoning move here."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The system is actually less reliable than the dashboards suggest. P95 latency and a 0.3% error rate are aggregate metrics that may hide tail behavior, and the engineers are experiencing those failures directly via pager.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Questioning aggregate metrics is good instinct, but this framing assumes the pages are valid signals of system failure. The scenario gives no evidence that P99 or P999 latency is degraded, and the error rate is stable. The more parsimonious explanation, given the data, is alert quality degradation rather than hidden system regression.",
+              "framework_hint": "Strategic Thinking: testing an alternative hypothesis is correct process, but forming a hypothesis without evidence is speculation. The framing should account for what the data does and does not show before concluding."
+            },
+            {
+              "option_label": "C",
+              "option_text": "On-call burnout is a people management problem. Two engineers threatening to quit is a retention risk that HR and the engineering manager need to address through workload redistribution or hiring.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Treating the symptom (retention risk) as the problem to solve bypasses the structural cause. Hiring more engineers into a broken on-call rotation produces more burned-out engineers. The problem is upstream: why are there 14 pages per shift when the system metrics are healthy?",
+              "framework_hint": "Motivation Theory failure: addressing the friction at the surface level (people are unhappy, redistribute load) without asking what is creating the friction in the first place. Friction identification must precede solution design."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The checkout service SLA thresholds are too tight. If leadership relaxed the alerting thresholds to match the actual business impact of a P95 latency exceedance, the page volume would drop naturally.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Loosening SLA thresholds is a drastic action that trades customer experience for operational comfort without diagnosing what is generating the alerts. Most of the new pages may come from non-SLA-related alerts entirely. This option skips the diagnostic step and proposes a solution that could mask real incidents.",
+              "framework_hint": "Strategic Thinking failure: proposing a solution before framing the problem. The thresholds may be part of the issue, but naming that as the fix requires knowing the composition of the 14 pages per shift, which the question does not provide."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Page volume tripled while the system stayed healthy. That gap points to specific sources. List what could be generating non-actionable pages.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of causes best explains why alert volume grew from 4 to 14 pages per shift without a corresponding degradation in P95 latency or error rate?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The most structurally distinct causes are: alert thresholds set to static values that have not been recalibrated as traffic grew (producing more threshold crossings for the same relative behavior); non-actionable alerts that fire but resolve without engineer intervention; missing deduplication so a single upstream spike fans out into multiple pages; and ownership gaps where alerts route to on-call because no team has claimed them.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "These four causes are structurally distinct. Static thresholds produce false positives as traffic scales. Non-actionable alerts identify signal noise. Missing deduplication multiplies page count per incident. Ownership gaps dump unclaimed alerts on on-call by default. Enumerating them separately matters because each requires a different fix: recalibration, suppression rules, deduplication logic, and ownership assignment respectively.",
+              "framework_hint": "Creative Execution: generating structurally distinct root causes rather than variations of 'too many alerts.' Each item here has a different remediation path. Listing three variations of 'noisy thresholds' would score lower than naming four mechanistically separate causes."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Alert volume increased because the checkout service grew in traffic and request volume over the past year, so the absolute number of threshold crossings went up even if the rate stayed constant. This is a scaling problem and the fix is to normalize alert thresholds as a percentage of traffic rather than as absolute counts.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Traffic growth contributing to threshold crossings is plausible and worth testing. But it is one cause, not a full enumeration. Non-actionable alerts, deduplication failures, and ownership gaps can each independently drive volume up. A complete list is more useful for triage than a single-cause explanation, even a correct one.",
+              "framework_hint": "Cognitive Empathy partial credit: identifies a mechanism the on-call engineer experiences (more pages as traffic grows) but does not simulate the full range of sources an engineer would encounter across a shift."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team added new monitoring coverage in the past year, which naturally produces more alerts. The fix is to review which new monitors are providing value and prune the ones that are not.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "New monitor coverage as a cause is possible but speculative; the scenario does not mention it. More importantly, reviewing and pruning is the correct direction but this option describes a process without naming the structural causes that make pruning necessary. It does not distinguish between alert types or explain the mechanism behind the 10-page increase.",
+              "framework_hint": "Creative Execution failure: proposing a remediation (review and prune) before completing the enumeration of causes. The list step requires generating hypotheses, not solutions."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The engineers are over-rotating on alerts because the on-call culture is too reactive. A runbook overhaul and better incident response training would reduce the time each engineer spends per page, effectively lowering the burden even if raw page count stays the same.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Improving response efficiency is a reasonable operational investment, but it does not address page volume. Fourteen pages per shift that are each handled faster is still fourteen interruptions. The scenario describes engineers threatening to quit, which indicates the volume itself is the problem, not response time. Conflating efficiency with volume reduction misframes the intervention.",
+              "framework_hint": "Motivation Theory failure: optimizing the response to friction rather than removing the friction source. Faster response to non-actionable alerts does not reduce the alert load that is damaging morale."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "There is a real tradeoff here: tightening alert sensitivity catches real incidents; loosening it reduces toil. Name the criterion that tells you where to draw the line.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding which alerts to keep, modify, or suppress?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is actionable-alert ratio: the percentage of pages that require and receive a meaningful engineer action (a config change, a rollback, a mitigation) versus pages that auto-resolve or are acknowledged and closed without action. An alert that fires and resolves on its own, or that an engineer closes without doing anything, is by definition non-actionable. Optimize for a ratio above 80% actionable, accepting that some real incidents may be caught slightly later in exchange for sustainable on-call load.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "Actionable-alert ratio is the correct criterion because it directly measures whether an alert deserves to wake an engineer. It names the sacrifice explicitly: a small increase in mean-time-to-detect for low-severity events in exchange for a sustainable on-call rotation. This is a tradeoff, not a preference, because reducing alert noise does carry a real cost (slower detection of some incidents).",
+              "framework_hint": "Taste: 'feels noisy' is a preference. 'Actionable-alert ratio below 60% means engineers are interrupted for events that resolve themselves' is a tradeoff. Naming the criterion and the sacrifice converts an opinion into a decision. Strategic Thinking: the criterion also gives leadership a number they can monitor and act on."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Suppress any alert that has fired more than three times in the past 30 days without leading to a production incident. Repeated no-op alerts are clearly not valuable and removing them is low risk.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Frequency-based suppression is a reasonable heuristic and would reduce some noise. The problem is that it does not name a criterion, it names a rule. A rule without a criterion cannot be extended or debated. What about an alert that fires twice and is always actionable? What about an alert that fires once a quarter and is always critical? A heuristic rule is not a decision framework.",
+              "framework_hint": "Taste partial credit: moves in the right direction (removing noise) but does not name the underlying value being optimized. A criterion makes the tradeoff explicit and transferable; a rule does not."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Reduce total alert volume by 50% over the next quarter. Set a target number and work backward to identify which alerts to cut. The engineers need immediate relief and a concrete target creates accountability.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A volume reduction target is an output metric, not a criterion. Cutting 50% of alerts by count could mean suppressing seven critical alerts and keeping seven non-critical ones. The criterion question asks what property distinguishes an alert worth keeping from one worth suppressing. Volume is a proxy for that, not the answer.",
+              "framework_hint": "Strategic Thinking failure: optimizing for a number (50% reduction) rather than for the property that makes an alert valuable. Output metrics without decision criteria lead to gaming: the team hits the number by cutting safe-to-cut alerts while leaving the real noise untouched."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Let engineers vote on which alerts they find most annoying and suppress the top 10 by vote count. Engineers are closest to the data and their judgment should be trusted.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Engineer input is valuable but voting on annoyance is a sentiment survey, not a triage process. An alert can be annoying and still be critical; an alert can be tolerated and still be non-actionable. The criterion needs to be observable and defensible, not a preference aggregation. Crowdsourcing the suppression list without a principled criterion produces arbitrary and potentially unsafe outcomes.",
+              "framework_hint": "Taste failure: 'annoying' is a feeling about the alert, not a property of the alert. Taste requires distinguishing between a real signal and a false one based on observable criteria, not on whether the recipient dislikes the interruption."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Leadership sees green dashboards and thinks everything is fine. What does success look like in terms they will act on, and how do you know it worked?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define and communicate success in a way that makes the on-call improvement visible to leadership and falsifiable over time?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "motivation_theory", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Define success as: pages per engineer per shift falls from 14 to below 6 within 90 days, and actionable-alert ratio reaches 80% or above. Communicate this to leadership as a retention intervention with a falsifiable outcome: if neither target is met by day 90, the team will revisit the approach. If both are met, a 30-day follow-up check confirms the two engineers who flagged quitting are no longer planning to leave.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "motivation_theory", "domain_expertise"],
+              "explanation": "This answer names two specific metrics with thresholds and a timeline (6 pages/shift, 80% actionable ratio, 90 days), connects them to the business consequence leadership cares about (two engineers threatening to quit), and includes a falsifiability condition (if not met, revisit). It also separates the leading indicator (alert metrics) from the lagging outcome (retention), which gives leadership a way to track progress before the retention risk becomes a resignation.",
+              "framework_hint": "Domain Expertise: real metrics require specific numbers, not directional language. '14 to below 6' and '80% actionable' are testable. 'Improve morale' is not. Strategic Thinking: the because-Z structure (we will know this worked if X reaches Y by Z, we will know it failed if counter-signal W) closes the loop leadership needs to commit resources."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Track pages per shift on a weekly basis and report to leadership monthly. Set a goal of meaningful reduction over the quarter and adjust the target as the team learns what is and is not actionable.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Tracking pages per shift is the right metric and monthly reporting to leadership is appropriate. But 'meaningful reduction' is not a number, and 'adjust as we learn' is not a falsifiability condition. Without a specific threshold and timeline, leadership has no basis for deciding whether the intervention is working or needs to be escalated.",
+              "framework_hint": "Strategic Thinking partial credit: identifies the right metric but does not complete the hypothesis. A hypothesis requires a threshold, a timeline, and a counter-signal. Directional language defers the decision to a future conversation rather than making it now."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Run an all-hands retro on on-call health and present the findings to leadership as evidence that the team needs relief. Use the retro output to build momentum for investing in alerting improvements.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A retro produces qualitative evidence, which can be useful for building empathy. But leadership's objection in this scenario is already stated: the dashboards look fine. A retro does not add a metric; it adds more sentiment. The gap the team needs to close is between what the dashboards measure and what engineers experience, and that gap requires a new quantitative signal, not a meeting.",
+              "framework_hint": "Motivation Theory partial engagement: builds empathy through a shared process but does not convert that empathy into a measurable outcome. Satisfaction (the final stage of the motivation cycle) requires a concrete signal that the friction has been removed, not a narrative that it exists."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Propose an SLA for on-call load (maximum 5 pages per shift) and add it to the team's engineering charter. If the SLA is breached, the team is automatically authorized to stop new feature work and focus on alert remediation.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "An on-call load SLA sounds structurally sound but it conflates a success definition with an escalation policy. The question asks how to define and communicate success, not how to create an automatic work-stoppage rule. More critically, a charter entry does not make success visible to leadership in the short term, and the current situation (14 pages/shift) already qualifies as a breach, so the automatic authorization would take effect immediately with no remediation plan in place.",
+              "framework_hint": "Strategic Thinking failure: the SLA is a governance mechanism, not a success hypothesis. It defines a threshold for triggering action but does not describe what success looks like after the remediation runs. Leadership needs a forward-looking metric, not a breach condition."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -339,6 +339,7 @@ export interface QuestionRevealRecord {
   score: number
   gradeLabel: string
   competencySignal: { primary: string; signal: string; framework_hint: string } | null
+  confidence: number | null   // 0-3 index into CONF_LABELS, for the reveal calibration read
 }
 
 interface CompletionData {
@@ -1090,6 +1091,37 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     return () => { if (codingAutosaveTimerRef.current) clearTimeout(codingAutosaveTimerRef.current) }
   }, [currentCode, currentLanguage, isCodingChallenge, attemptId, activePartId, apiChallengeType])
 
+  // Autosave MCQ FLOW step drafts every 8s when they change. Without this a
+  // refresh or expired session mid-step silently wipes the user's in-progress
+  // answers (the batch submit only persists on full-step completion). Keyed by
+  // step so navigating to a new step doesn't clobber earlier steps' drafts.
+  const flowAutosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const coachTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (isInterviewChallenge || !isApiMode || !attemptId) return
+    if (Object.keys(stepDrafts).length === 0) return
+    if (flowAutosaveTimerRef.current) clearTimeout(flowAutosaveTimerRef.current)
+    flowAutosaveTimerRef.current = setTimeout(async () => {
+      try {
+        await fetch('/api/hatch/session/autosave', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            attemptId,
+            draftSnapshot: {
+              type: 'flow',
+              step: currentStep,
+              questionIdx,
+              stepDrafts,
+            },
+            updatedAt: new Date().toISOString(),
+          }),
+        })
+      } catch { /* fire and forget */ }
+    }, 8000)
+    return () => { if (flowAutosaveTimerRef.current) clearTimeout(flowAutosaveTimerRef.current) }
+  }, [stepDrafts, questionIdx, currentStep, isInterviewChallenge, isApiMode, attemptId])
+
   // Pick the right default language for coding challenges:
   // - SQL challenges (have sql_schema) → 'sql'
   // - Otherwise honour metadata.supported_languages, falling back to 'python'
@@ -1279,6 +1311,40 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const currentQuestion = activeStepData?.questions[questionIdx] ?? null
   const activeSubmitting = isApiMode ? submitting : adapterSubmitting
 
+  // Rehydrate MCQ step drafts from the persisted snapshot once per attempt, but
+  // only when the saved snapshot is for the step the server resumed us into.
+  const didHydrateFlowRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (isInterviewChallenge || !isApiMode || !detail?.challenge) return
+    const attemptKey = detail.current_attempt?.id ?? attemptId
+    if (!attemptKey || didHydrateFlowRef.current === attemptKey) return
+    const snap = detail.current_attempt?.draft_snapshot as
+      | { type?: string; step?: FlowStep; questionIdx?: number; stepDrafts?: Record<string, QuestionDraft> }
+      | undefined
+    const hasFlowSnapshot = snap?.type === 'flow' && !!snap.stepDrafts && Object.keys(snap.stepDrafts!).length > 0
+    // If there's no flow draft to restore, mark hydrated immediately so we don't retry.
+    if (!hasFlowSnapshot) {
+      didHydrateFlowRef.current = attemptKey
+      return
+    }
+    // There IS a snapshot, but it may belong to a step the resume hasn't applied
+    // yet (currentStep starts at 'frame' and is updated async). Wait for the step
+    // to match before consuming it — do NOT mark hydrated until it does.
+    if (snap!.step !== currentStep) return
+    setStepDrafts(snap!.stepDrafts!)
+    const idx = typeof snap!.questionIdx === 'number' ? snap!.questionIdx : 0
+    setQuestionIdx(idx)
+    const q = activeStepData?.questions[idx] ?? activeStepData?.questions[0] ?? null
+    const d = q ? snap!.stepDrafts![q.id] : undefined
+    setSelectedOptionId(d?.selectedOptionId ?? null)
+    setSelectedOptionIds(d?.selectedOptionIds ?? [])
+    setReasoning(d?.reasoning ?? '')
+    setElaboration(d?.reasoning ?? '')
+    setConfidence(d?.confidence ?? null)
+    didHydrateFlowRef.current = attemptKey
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail?.current_attempt?.id, attemptId, isInterviewChallenge, isApiMode, currentStep, activeStepData])
+
   // Update Hatch message when step loads
   useEffect(() => {
     if (phase !== 'question' || !activeStepData) return
@@ -1301,8 +1367,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     return () => { tween.kill() }
   }, [phase])
 
-  // Clean up the between-questions acknowledgment timer on unmount.
-  useEffect(() => () => { if (ackTimerRef.current) clearTimeout(ackTimerRef.current) }, [])
+  // Clean up transient timers on unmount (ack beat + coaching-fallback).
+  useEffect(() => () => {
+    if (ackTimerRef.current) clearTimeout(ackTimerRef.current)
+    if (coachTimerRef.current) clearTimeout(coachTimerRef.current)
+  }, [])
+
+  // Cancel a pending coaching-fallback timer when the step changes, so it can't
+  // fire stale against a new step's reveal.
+  useEffect(() => () => {
+    if (coachTimerRef.current) { clearTimeout(coachTimerRef.current); coachTimerRef.current = null }
+  }, [currentStep])
 
   // GSAP: slide-up + green glow pulse when user picks an option; kill on submit/question change
   const prevSelectedOptionRef = useRef<string | null>(null)
@@ -1409,7 +1484,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       loadDraftIntoWorkingState(nextQ)
       startTimeRef.current = Date.now()
       setAckVisible(false)
-    }, 900)
+    }, 500)
   }, [currentQuestionAnswered, ackVisible, questionIdx, stepQuestions, loadDraftIntoWorkingState, setHatch])
 
   // ── Navigation: backward within a step (instant, editable) ──
@@ -1465,6 +1540,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             competencySignal: qr.competency_signal
               ? { primary: qr.competency_signal.competency, signal: qr.competency_signal.signal, framework_hint: qr.competency_signal.framework_hint ?? '' }
               : null,
+            confidence: d?.confidence ?? null,
           }
         })
         setQuestionRevealHistory(history)
@@ -1477,9 +1553,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           : null)
 
         // Coaching for the step (uses the first question's pick as anchor).
+        // The reveal shows a skeleton until roleContext lands. Guarantee it
+        // resolves: if the async coach is slow or fails, fall back to the
+        // synchronous competency signal so the reveal never strands on a
+        // perpetual shimmer.
         const anchor = orderedQuestions[0]
         const anchorDraft = anchor ? stepDrafts[anchor.id] : undefined
+        const fallbackCoach = result.competency_signal?.signal
+          ?? history.find((h) => h.competencySignal?.signal)?.competencySignal?.signal
+          ?? 'Step graded. Open each question below to see what the strongest answer does differently.'
+        // Timer is held in a ref so a step change / unmount can cancel it
+        // (cleanup effect below). setRoleContext(prev => prev || ...) makes the
+        // late path idempotent: whichever of timer/response wins, the other no-ops.
+        if (coachTimerRef.current) { clearTimeout(coachTimerRef.current); coachTimerRef.current = null }
         if (anchor) {
+          coachTimerRef.current = setTimeout(() => {
+            coachTimerRef.current = null
+            setRoleContext((prev) => prev || fallbackCoach)
+          }, 6000)
           fetchCoaching({
             attemptId,
             questionId: anchor.id,
@@ -1487,11 +1578,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             roleId: initialRoleId,
             userText: anchorDraft?.reasoning || null,
           }).then((coaching) => {
+            if (coachTimerRef.current) { clearTimeout(coachTimerRef.current); coachTimerRef.current = null }
             if (coaching) {
-              setRoleContext(coaching.role_context)
-              setCareerSignal(coaching.career_signal)
+              setRoleContext((prev) => prev || coaching.role_context || fallbackCoach)
+              if (coaching.career_signal) setCareerSignal(coaching.career_signal)
+            } else {
+              setRoleContext((prev) => prev || fallbackCoach)
             }
+          }).catch(() => {
+            if (coachTimerRef.current) { clearTimeout(coachTimerRef.current); coachTimerRef.current = null }
+            setRoleContext((prev) => prev || fallbackCoach)
           })
+        } else {
+          setRoleContext(fallbackCoach)
         }
         setPhase('reveal')
       } else {
@@ -1520,6 +1619,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               score: result.score,
               gradeLabel: result.grade_label,
               competencySignal: null,
+              confidence: d?.confidence ?? null,
             })
             const coaching = await adapter.fetchCoaching({ step: currentStep, optionId: d?.selectedOptionId ?? null, userText: d?.reasoning || null }).catch(() => null)
             if (coaching) {
@@ -1531,6 +1631,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           setStepScore(lastScore)
           setStepTotalScore(lastScore)
           setStepGrade(lastGrade)
+          // Never leave the reveal coaching card on a perpetual skeleton.
+          setRoleContext((prev) => prev || 'Step graded. Open each question below to see what the strongest answer does differently.')
           setPhase('reveal')
         } finally {
           setAdapterSubmitting(false)
@@ -1543,7 +1645,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   const primaryButtonLabel = !isLastQuestionInStep
     ? 'Next question'
-    : (isLastStep ? 'See results' : 'Submit')
+    : (isLastStep ? 'See results' : 'Submit step')
 
   const uploadCanvasPng = useCallback(async (attemptId: string): Promise<string | null> => {
     if (!canvasExportRef.current) return null
@@ -1788,8 +1890,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       // individual score (which misrepresents multi-question steps).
       score: stepTotalScore ?? stepRevealRecord.score ?? 0,
       quality_label: stepRevealRecord.gradeLabel ?? 'plausible_wrong',
-      confidence: confidence,
-      reasoning: reasoning,
+      // Source from the step's reveal record, not transient working state, so
+      // multi-question steps report the representative answer's values.
+      confidence: stepRevealRecord.confidence ?? confidence,
+      reasoning: stepRevealRecord.userText ?? reasoning,
       competency_signal: stepRevealRecord.competencySignal ?? undefined,
       hatchSignal: stepRevealRecord.competencySignal?.signal ?? null,
       frameworkHint: stepRevealRecord.competencySignal?.framework_hint ?? null,

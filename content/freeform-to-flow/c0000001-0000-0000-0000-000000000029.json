@@ -1,0 +1,299 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000029",
+  "title": "AI Fairness Audit: Model Works Better for Some Users",
+  "scenario_role": null,
+  "scenario_context": "A fintech startup's AI credit-risk model predicts loan defaults with 88% overall accuracy across its active customer base. Sliced by geography, the picture changes: urban zip codes produce 91% accuracy while rural zip codes produce 79%. Sliced by income, the gap is wider: applicants earning above $80K score 92% accuracy while applicants earning below $30K score 76%. The model drives automated approval and denial decisions at scale, and the business is profitable. The CEO has reviewed the aggregate number and sees no problem worth addressing.",
+  "scenario_trigger": "The data team is alarmed. A 12-point accuracy gap between high-income and low-income applicants in a lending product is not a performance issue sitting in the backlog. It is a disparate impact problem: the applicants least able to absorb a wrongful denial are the ones the model gets wrong most often. Regulators and plaintiffs routinely treat this pattern as evidence of discrimination under the Equal Credit Opportunity Act, regardless of whether any discriminatory intent existed. The data team needs to decide what to do, how to present the case internally, and what 'fix it' actually means in measurable terms.",
+  "scenario_question": "Frame why the 88% aggregate figure is the wrong lens, enumerate what actually needs to change and in what order, name the tradeoff between fairness intervention and business performance, and define a falsifiable target for what 'fixed' looks like.",
+  "engineer_standout": "A strong answer refuses to treat this as an accuracy-improvement project. The reasoning move is to reframe 'the model is 88% accurate and profitable' into 'the model fails the people least able to absorb a wrong decision, and that failure creates regulatory, legal, and ethical liability that the CEO's aggregate number is hiding.' The 76% accuracy for below-$30K applicants means roughly one in four predictions is wrong for that group. In a lending context, a false denial costs an applicant access to credit and is not recoverable the way a false approval (a bad loan) might be corrected later. Defining 'fixed' requires committing to a specific fairness metric (equalized accuracy, equalized false negative rate, or demographic parity) and naming a threshold, not just 'reduce the gap.'",
+  "paradigm": "ai_native",
+  "difficulty": "hard",
+  "estimated_minutes": 40,
+  "primary_competencies": ["cognitive_empathy", "domain_expertise"],
+  "secondary_competencies": ["strategic_thinking"],
+  "topic_tags": ["ai-fairness", "credit-risk", "machine-learning", "regulation", "product-ethics"],
+  "technique_tags": ["disparate-impact", "fairness-metrics", "slice-based-evaluation"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The aggregate number is hiding something. The real problem is upstream: whose error is this, and what does the error cost the person it lands on?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the problem the data team is facing?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 88% aggregate accuracy is a misleading summary that obscures a 16-point accuracy gap between the model's performance on above-$80K applicants (92%) and below-$30K applicants (76%). In a credit-risk model, accuracy gaps of this size across income segments constitute a disparate impact pattern: the applicants least able to absorb a wrongful denial are receiving the model's worst predictions at the highest rate. Under the Equal Credit Opportunity Act, a lending system does not need discriminatory intent to create legal liability; a disparate outcome measured by protected-class-correlated variables is sufficient. The real problem is not that the model underperforms; it is that the model's underperformance is concentrated on the population for whom the consequences of a wrong decision are most severe and least reversible.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "domain_expertise"],
+              "explanation": "This framing correctly identifies three things the CEO's aggregate number hides: the magnitude of the performance gap (16 points between income bands), the direction of the error's harm (false denials land on people who cannot easily seek credit elsewhere), and the regulatory exposure (disparate impact under ECOA does not require intent). Framing the problem this way forces the internal conversation to move from 'is 88% good enough?' to 'can the company defend a 76% accuracy rate for its most financially vulnerable applicants in a regulatory examination?'",
+              "framework_hint": "Cognitive Empathy: simulating the applicant below $30K who receives a wrongful denial reveals that the consequence is not symmetric with a wrongful approval. A false denial removes credit access; the applicant has no appeal mechanism built into the model. Domain Expertise: ECOA disparate impact doctrine means the 12-point gap between rural and urban applicants, and the 16-point gap between income bands, are the exact pattern regulators examine during fair lending audits."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The problem is that the model has lower accuracy for underrepresented segments because those groups are likely underrepresented in the training data. The fix is to collect more data from rural zip codes and low-income applicants so the model can learn their default patterns more reliably. More training data will close the accuracy gap over time without requiring any changes to the model architecture or decision threshold.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Training data imbalance is a real contributing factor to accuracy gaps, and collecting more representative data is a legitimate technical intervention. The framing falls short because it treats the problem as purely a data-quantity issue and skips the regulatory and ethical dimensions. More data collection takes quarters; the disparate impact exists today and creates compliance risk right now. The framing also assumes the gap is caused by data imbalance rather than by proxies for protected characteristics encoded in the features, which is not established. Presenting this as the complete problem definition would mislead the CEO into thinking a data-collection backlog item resolves the liability.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies training data imbalance as a potential cause of segment-level accuracy gaps. Cognitive Empathy gap: does not address the harm asymmetry between a false denial and a false approval, which is the ethical core of the problem. A framing that positions more data as the solution implies the current model is fine to run while data is gathered, which understates the regulatory exposure."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The model's 88% accuracy is the relevant number because it reflects performance across the entire customer base. Slicing by income or geography produces smaller sample sizes that make accuracy estimates less reliable. The data team should focus on improving the overall model before drawing conclusions from subgroup statistics that may not be statistically significant.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Statistical significance is a legitimate concern in small samples, but dismissing the subgroup analysis on those grounds gets the logic backwards here. Regulators and plaintiffs do not need statistical significance in the academic sense to initiate a fair lending examination; they need a pattern of disparate outcomes that correlates with income, geography, or other protected-class proxies. The scenario does not indicate that the 79% rural or 76% low-income figures are based on tiny samples. Framing the problem as a statistical artifact instructs the organization to ignore the gap, which is the opposite of what a compliant lending operation should do.",
+              "framework_hint": "Cognitive Empathy failure: the framing protects the model's reputation rather than simulating what happens to the applicant who receives a wrongful denial because the model underperforms on their segment. Domain Expertise failure: fair lending compliance does not grant a safe harbor for aggregate accuracy. Disparate impact analysis specifically looks at subgroup outcomes, and a framing that treats subgroup statistics as noise is inconsistent with how the ECOA examination works."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is a communication and stakeholder management challenge. The data team needs to present the accuracy gap to the CEO with clear business risk framing so that leadership understands the regulatory exposure. Once leadership is aligned, the team can propose a model retraining sprint. The technical fix is straightforward; the harder part is getting organizational buy-in.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Getting leadership alignment is a necessary step, but naming it as the problem conflates an execution challenge with the underlying issue. The real problem is not that the CEO does not yet know; it is that a lending model with a 16-point accuracy gap between income segments is currently making decisions that may constitute disparate impact. The framing also assumes the technical fix is straightforward, which it is not: closing an accuracy gap in a deployed credit model without introducing new biases or degrading overall performance is a non-trivial ML problem. Labeling it a communication problem understates both the technical and regulatory complexity.",
+              "framework_hint": "Strategic Thinking failure: treating stakeholder alignment as the problem assumes that once the CEO agrees, the problem is solved. Regulatory liability exists regardless of internal agreement. A framing that centers communication skips the question of what the model should actually do differently and what 'fixed' means in measurable terms, which are the harder and more important questions."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "There is more than one thing that needs to change, and the order matters. List what the team actually needs to address before any recommendation can be made.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of actions most completely covers what needs to happen before the data team can confidently recommend a path forward?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["domain_expertise", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four things need to happen in parallel before a recommendation is possible. First, audit the feature set for proxies: identify whether any input features (zip code, employment sector, income band) are correlated with protected classes at a level that would make the model's decisions legally attributable to those characteristics even without explicit protected-class data. Second, measure the error type that matters most: the 76% accuracy for below-$30K applicants is the headline, but the falsely denied applicants (false negatives) cause irreversible harm while falsely approved applicants (false positives) create recoverable bad loans. Quantify the false negative rate by segment separately from overall accuracy. Third, assess current regulatory exposure: document the accuracy disparities and consult legal to understand whether the present model requires a remediation plan filed with regulators or simply an internal audit. Fourth, scope the fix options: technical interventions (resampling, threshold adjustment per segment, retraining with fairness constraints) have different timelines, costs, and tradeoffs against overall model performance. All four need to be understood before the team can make a defensible recommendation to leadership.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "cognitive_empathy"],
+              "explanation": "These four actions are structurally distinct. The feature audit determines whether the model's current inputs are defensible under ECOA; the false negative analysis corrects for the misleading accuracy aggregate by measuring the error type that causes applicant harm; the legal assessment establishes the timeline and mandatory steps; and the fix-option scoping prevents the team from recommending a solution without knowing whether it is buildable within the regulatory window. Conflating any two of these produces an incomplete recommendation. For example, recommending retraining without the feature audit risks retraining a model that still encodes proxies. Recommending a threshold adjustment without the false negative analysis may improve overall accuracy without reducing the false denial rate for the most harmed group.",
+              "framework_hint": "Domain Expertise: distinguishing false negative rate from overall accuracy is the key domain move. A model with 76% accuracy for below-$30K applicants could be failing that group primarily through false positives (approving risky loans) or primarily through false negatives (denying creditworthy applicants). The harm profile is completely different, and the fix is different. Cognitive Empathy: the false negative analysis centers the question on what is happening to the applicant who is wrongly denied, not on what is happening to the model's score."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team should retrain the model with a balanced dataset that oversamples low-income and rural applicants, then re-evaluate accuracy across segments. If the gap narrows to within 5 points across all segments, the model can be redeployed. If the gap persists, switch to a simpler, more interpretable model that is easier to audit for bias.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Oversampling underrepresented groups and evaluating segment-level accuracy after retraining are both legitimate technical steps. The gap is that this answer treats the problem as purely a model-improvement task and skips the legal, compliance, and harm-analysis dimensions. It also defines success as 'within 5 points across segments' without explaining why 5 points is the right threshold or which fairness metric that threshold is attached to. The 5-point criterion could still permit a false negative rate for below-$30K applicants that is twice the rate for above-$80K applicants, which would not satisfy a disparate impact analysis.",
+              "framework_hint": "Domain Expertise partial credit: identifies two real technical interventions (oversampling and switching model complexity) and connects them to the accuracy-gap problem. Cognitive Empathy gap: does not ask what the accuracy gap looks like in terms of false negative rates per segment, which is the error type that directly harms applicants. Strategic Thinking gap: does not address the legal and compliance steps that are independent of the technical fix and must happen in parallel."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should flag the issue to the CEO with a business risk memo, pause new model deployments while the audit is underway, and hire an external AI fairness consultant to review the model. Once the consultant delivers a report, the team will have external validation to act on.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A business risk memo to the CEO and engaging external expertise are both reasonable steps, but they are process actions, not the substantive actions that define what the problem actually is and how to fix it. Pausing deployments may be premature if the current model is the only live decision system. Waiting for a consultant's report before the internal team does its own analysis cedes the framing of the problem to an outside party and delays action by weeks or months. The list step should identify what the team itself needs to understand before it can make a recommendation, not what it needs to outsource.",
+              "framework_hint": "Cognitive Empathy failure: the actions are oriented toward protecting the organization rather than toward understanding and reducing the harm to the applicants currently being wrongly denied. A list of actions that starts with 'memo to CEO' and ends with 'wait for consultant' does not move the team toward understanding the false negative rate by segment, which is the number that directly describes applicant harm."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The team needs to define a fairness metric, pick a threshold, and retrain the model to hit that threshold. Common options include demographic parity (equal approval rates across groups), equalized odds (equal true positive and false positive rates across groups), and calibration (predicted probabilities match actual default rates within each group). Pick one, set the target, retrain, and measure.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Choosing a fairness metric and retraining to hit a target is ultimately where the technical work needs to go, and naming the three standard fairness metrics (demographic parity, equalized odds, calibration) is accurate. The problem is ordering: this answer skips the diagnosis steps that determine which fairness metric is legally and ethically appropriate for a credit-risk context. Demographic parity (equal approval rates) and equalized odds (equal error rates) are mathematically incompatible when base rates differ across groups, which they do here. Picking one without analyzing the base rates and the false negative distribution first produces a constraint that may solve the wrong problem or be legally indefensible.",
+              "framework_hint": "Domain Expertise partial credit: correctly enumerates the three principal fairness metrics used in ML. Strategic Thinking failure: recommends a solution sequencing (pick metric, retrain, measure) that skips the analysis steps needed to choose the right metric. In lending, equalized odds (specifically equal false negative rates) is typically more defensible than demographic parity under ECOA because it focuses on equal treatment of creditworthy applicants rather than equal approval rates regardless of credit risk."
+            }
+          ]
+        },
+        {
+          "question_text": "Which stakeholder's perspective is most important to model accurately before proposing any fairness intervention to leadership?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The below-$30K applicant who receives a false denial. At 76% model accuracy, roughly one in four predictions for this income group is wrong. A false denial in a credit-risk model is not a recoverable error from the applicant's perspective: they do not receive a reason code that can be disputed, they cannot retroactively access credit they were denied, and the denial itself may appear on their credit report as a rejection signal that makes the next application harder. Accurately modeling this person's experience means the team walks into the CEO meeting knowing that the 24% error rate for below-$30K applicants is not an abstract performance metric but a concrete harm landing on specific people in specific situations, most of whom have no practical recourse.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Centering the wrongly denied low-income applicant converts a statistical discussion (76% vs. 92% accuracy) into a concrete description of a specific harm: credit access denied to a person who qualified, with no appeal path and a possible downstream effect on future creditworthiness. This is the perspective that makes the conversation with the CEO about regulatory exposure feel real rather than hypothetical. It also shapes the technical intervention: the team should be optimizing to reduce the false denial rate for below-$30K applicants specifically, not just to improve overall accuracy or to equalize a number on a dashboard.",
+              "framework_hint": "Cognitive Empathy: simulating the applicant who is wrongly denied reveals that the harm is asymmetric and largely irreversible. A false approval (the model incorrectly predicts repayment) creates a bad loan the lender can eventually write off. A false denial (the model incorrectly predicts default) removes credit access from someone who qualified, and the applicant has no mechanism to recover that lost opportunity. Keeping this asymmetry visible is what distinguishes a fairness framing from an accuracy-improvement framing."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The regulator conducting a fair lending examination. Understanding the regulator's lens means the team can anticipate the questions they would ask, the data they would request, and the remediation steps they would expect. Framing the internal proposal in terms of what a regulatory examination would surface makes the business risk concrete and actionable for the CEO.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Modeling the regulator's perspective is genuinely useful for framing the business risk internally, and the team does need to anticipate what a fair lending examination would look like. The gap is that the regulator's perspective is instrumental: it helps the organization protect itself from external accountability. The below-$30K applicant's perspective is the ethical and design anchor: it tells the team what the model is actually doing to real people, which should shape the intervention regardless of regulatory pressure. A list step that names the regulator before the affected applicant has the priorities in the wrong order.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that anticipating the regulator's questions is a useful framing device for the CEO conversation. Cognitive Empathy gap: the regulator's perspective is an organizational protection lens; the applicant's perspective is the harm lens. A fairness intervention motivated primarily by regulatory risk rather than by applicant harm will optimize for passing an audit, which is not the same as reducing the false denial rate for people who qualified."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The CEO, who currently sees no problem. Modeling the CEO's perspective means understanding what would change their mind: business risk framing, regulatory exposure, competitive disadvantage if a more equitable competitor enters the market, or reputational risk from a journalism investigation. The team needs to build a case that speaks to the CEO's existing incentives.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Understanding how to communicate with the CEO is a practical need, but the CEO's perspective is not the one that defines what the problem is or what fix is required. The CEO is currently missing information. Centering the CEO's perspective shapes the communication strategy, not the intervention design. The list step asks what the team needs to understand before making a recommendation; modeling stakeholder incentives for an internal pitch is execution planning, not problem definition.",
+              "framework_hint": "Cognitive Empathy failure: applying cognitive empathy to an internal stakeholder whose incentives are about organizational protection rather than to the external party experiencing the harm. The question asks whose perspective is most important to model accurately before proposing an intervention, which is asking about the target of the fairness concern, not about the audience for the internal pitch."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The data scientist who built the original model. Understanding their design decisions, feature choices, and the training objective they optimized for will reveal why the accuracy gap exists and whether it is fixable within the current architecture. The fairness problem is ultimately a model-design problem, and the original designer has the most relevant context.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The original model designer has important technical context, but their perspective is an input to the root-cause analysis, not the perspective that should anchor the intervention design. Centering the designer's choices frames the problem as a technical artifact to be debugged, which skips the question of what the model is doing to the people it is making decisions about. A fairness audit that starts by understanding the designer's intent will produce an intervention shaped by what was intended, not by what is actually happening to applicants.",
+              "framework_hint": "Cognitive Empathy failure: the designer's perspective explains the model's current behavior; the affected applicant's perspective explains the consequences of that behavior for real people. Fairness interventions anchored in designer intent tend to produce technical improvements (better accuracy on the underrepresented group) without necessarily reducing the false denial rate for the people most harmed, because the two are not the same thing."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Fairness and accuracy are in tension in this model. Name the tradeoff the team must accept and the criterion that justifies accepting it.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding how aggressively to close the accuracy gap between below-$30K and above-$80K applicants?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is equalized false negative rate across income segments, accepted at whatever cost to overall model accuracy is required to reach parity within a legally defensible threshold. The current false negative rate for below-$30K applicants is almost certainly higher than for above-$80K applicants given the 16-point accuracy gap: these are the applicants being wrongly denied at the highest rate. The sacrifice this criterion demands is explicit: overall model accuracy will likely fall when the model is retrained with a fairness constraint, which means some loans that would have been correctly denied will now be approved, increasing the expected default rate. That sacrifice is acceptable because the alternative is continuing to make decisions that are legally indefensible under ECOA and that concentrate the worst errors on the people who can least absorb them. The business is profitable enough to carry a modestly higher default rate in exchange for a model that is defensible under a regulatory examination.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names what the company is optimizing for (equal false negative rates, not equal overall accuracy) and what it is giving up (some overall accuracy, translated into a modestly higher default rate). It grounds both sides in the specific constraints of the scenario: the 88% vs. 76% accuracy gap most likely reflects a higher false denial rate for low-income applicants; the business is already profitable, which means it can absorb the cost of a tighter fairness constraint; and ECOA disparate impact doctrine means equalized error rates is closer to the legally relevant standard than equalized overall accuracy.",
+              "framework_hint": "Taste: the distinction between equalized accuracy (which allows equal error rates regardless of error type) and equalized false negative rate (which directly addresses denied-credit harm) is the kind of call that requires knowing which property actually matters in a lending context. Strategic Thinking: naming the sacrifice (higher default rate, lower overall accuracy) prevents the organization from pretending that the fairness intervention is free. A team that presents the intervention as 'we can make the model fair without degrading performance' is setting the CEO up for a budget surprise."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion is overall model accuracy: improve the model's performance on low-income and rural segments until the accuracy gap narrows to within 5 percentage points across all groups. This can be achieved through targeted data collection and retraining without committing to a specific fairness metric that may conflict with business goals. If overall accuracy stays above 88%, the business case for the intervention is straightforward.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Closing the accuracy gap to within 5 points and maintaining overall accuracy above 88% is a concrete, measurable target and better than a vague directive to 'be more fair.' The gap is that overall accuracy and false negative rate are not the same thing. The model could achieve equal accuracy across income segments while still denying creditworthy below-$30K applicants at twice the rate of above-$80K applicants, if the errors for low-income applicants shift from false negatives (wrong denials) to false positives (wrong approvals). The criterion needs to specify which type of accuracy matters, because the harm to applicants comes specifically from false negatives, and ECOA disparate impact analysis often focuses on approval and denial rates, not overall accuracy.",
+              "framework_hint": "Strategic Thinking partial credit: identifies a specific, measurable threshold (5-point gap, 88% floor) and ties it to business continuity. Taste gap: treating overall accuracy as the criterion conflates the error types that matter for applicant harm with a summary statistic that is easy to report. The optimize step requires naming the sacrifice explicitly; this answer avoids the sacrifice by assuming accuracy improvements for low-income groups will not require giving anything up."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be demographic parity: equal approval rates across income segments and geographies regardless of predicted default probability. This is the most straightforward fairness definition and the easiest to audit. The model should approve the same percentage of applicants from each group until approval rates are equalized.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Demographic parity (equal approval rates) is a recognized fairness metric but it is not the right criterion for a credit-risk model where default rates differ across groups. If below-$30K applicants default at a genuinely higher rate than above-$80K applicants, forcing equal approval rates means approving a larger proportion of the higher-risk low-income applicants, which increases expected defaults in a way that may not be financially sustainable and may not actually serve those applicants well if they take on debt they cannot repay. Demographic parity is mathematically incompatible with calibration when base rates differ, and credit risk is a domain where base rate differences are expected and financially material.",
+              "framework_hint": "Domain Expertise failure: in lending, demographic parity is legally and practically distinct from equalized odds. ECOA case law and CFPB guidance focus on disparate impact in credit decisions, which is closer to equalized false negative rates than to demographic parity. A fairness intervention that equalizes approval rates regardless of creditworthiness would be challenged both by lenders as financially unsound and by regulators as a quota system. The optimize criterion must be compatible with the domain's legal and financial constraints."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is regulatory minimum: meet the statutory requirements of the Equal Credit Opportunity Act and the CFPB's fair lending guidance, then stop. Fairness interventions beyond the legal minimum reduce model accuracy and increase default rates without producing additional business benefit. The goal is compliance, not optimization beyond compliance.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Defining the criterion as regulatory minimum is a defensible business position but it is not a criterion that guides the technical work. ECOA and CFPB guidance do not specify a particular fairness metric or a numerical threshold for acceptable disparate impact; they establish a legal standard that regulators interpret case by case. 'Meet the regulatory minimum' gives the data team no guidance on which fairness metric to use, what threshold to target, or what sacrifice to accept. It also treats fairness as a cost to be minimized rather than as a property that should be designed into the model, which produces an intervention motivated by avoiding liability rather than by reducing applicant harm.",
+              "framework_hint": "Strategic Thinking failure: using 'regulatory minimum' as a criterion defers the hard design decision to regulators rather than making it explicitly. The optimize step requires the team to name what it is optimizing for and what it is giving up; 'comply and stop' does neither. It also misrepresents the regulatory landscape: ECOA does not specify a minimum disparity threshold, so 'meeting the minimum' is not a concrete target."
+            }
+          ]
+        },
+        {
+          "question_text": "The product team argues that any fairness intervention reducing overall accuracy from 88% will hurt profitability. What is the strongest counter-argument from the data team?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["strategic_thinking", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The profitability argument treats the current model's default rate as a reliable baseline, but the current model is making decisions that create regulatory exposure. A single CFPB examination triggered by the 16-point accuracy gap between income bands could result in remediation orders, fines, and mandatory model replacement on a timeline not of the company's choosing and at a cost that far exceeds the expected-value cost of a modestly higher default rate from a fairer model. The business is profitable today on the assumption that the current model will not be scrutinized. That assumption is not stable. The data team's intervention reduces a contingent liability that is currently unpriced in the profitability calculation.",
+              "quality": "best",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This counter-argument converts a technical trade-off (accuracy vs. fairness) into a risk-adjusted financial argument that speaks the product team's language. It correctly identifies that the profitability calculation is missing the expected cost of regulatory action, which is a non-trivial probability given the documented 16-point accuracy gap between income segments. The argument does not require the data team to claim that the fair model will be as profitable; it requires only that the expected cost of a regulatory action exceeds the expected cost of reduced accuracy from the fairness intervention.",
+              "framework_hint": "Strategic Thinking: framing the profitability argument as an incomplete expected-value calculation. The product team is comparing certain cost (lower accuracy) against zero (their implicit assumption that the model's regulatory risk is zero). Correcting for the non-zero probability of regulatory action changes the math without requiring the data team to argue that fairness is free. Cognitive Empathy: the argument works because it translates applicant harm into organizational risk, which is what moves a business conversation."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Fairness interventions do not necessarily reduce overall accuracy. Modern techniques like adversarial debiasing, reweighting, and threshold calibration per segment have been shown in research to improve fairness with minimal accuracy loss. The product team's concern may be based on an outdated assumption that accuracy and fairness are always in tension. A properly executed retraining could maintain 88% overall accuracy while narrowing the income-segment gap.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "It is true that modern fairness techniques can reduce disparity without large accuracy losses, and citing those techniques is useful context. The counter-argument falls short because it is contingent: 'may be based on an outdated assumption' and 'could maintain 88%' are hedges that allow the product team to continue objecting until the experiment is run. A stronger counter-argument does not depend on an empirical outcome that has not yet occurred. It addresses the assumption in the profitability argument itself, which is that the current model's profitability is stable. That assumption is not stable because of regulatory exposure.",
+              "framework_hint": "Domain Expertise partial credit: accurately describes the state of fairness-aware ML methods and correctly challenges the assumption that accuracy and fairness are necessarily opposed. Strategic Thinking gap: the counter-argument is conditional on a future experimental result rather than on a structural flaw in the product team's reasoning. The strongest counter-argument to 'fairness reduces profitability' is 'your current profitability calculation is missing the regulatory risk,' not 'the accuracy loss may be smaller than you think.'"
+            },
+            {
+              "option_label": "C",
+              "option_text": "The profitability argument is ethically wrong. A company should not optimize for profit at the expense of accuracy for its most vulnerable users. The data team's obligation is to the applicants who are being wrongly denied, and the business case should be secondary to doing the right thing. If profitability falls, that is the cost of operating a fair system.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "This argument is ethically coherent but strategically ineffective. In a business setting, a counter-argument that frames the discussion as ethics versus profit will not change the product team's position; it will harden it. The optimize step asks for the criterion and the sacrifice, and the strongest criterion is the one that works in the arena where the debate is happening. A counter-argument that concedes the profitability trade-off and claims the moral high ground will lose to a profitability argument in most business contexts, even when the ethics argument is correct.",
+              "framework_hint": "Cognitive Empathy failure: modeling the product team's perspective and their decision-making context reveals that an appeal to ethics without business grounding will not be persuasive to someone whose job is to protect the business's financial position. The best counter-arguments in a business context translate ethical concerns into financial risk terms, which is what the 'regulatory exposure is unpriced' argument does."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The product team's argument ignores the growth opportunity in the below-$30K segment. A fairer model that performs better for low-income applicants will approve more loans in that segment, growing the customer base. The incremental revenue from previously declined creditworthy applicants in the below-$30K income band could offset the revenue loss from any increase in defaults.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The growth opportunity argument sounds compelling but rests on a claim that is not established in the scenario: that the below-$30K applicants who are currently being wrongly denied are creditworthy at a rate that would produce net positive economics. The scenario tells us the model has 76% accuracy for that group, which means both types of errors are higher, including false positives (approving applicants who will default). Approving more applicants from a group with a higher-than-average false positive rate to capture wrongly denied creditworthy applicants may increase defaults by more than it increases revenue. The growth argument requires knowing the false negative rate specifically, not the overall accuracy, before it can be made responsibly.",
+              "framework_hint": "Domain Expertise failure: using overall accuracy (76%) as a proxy for the creditworthiness of the wrongly denied applicants conflates two distinct populations. The 24% error rate for below-$30K applicants is a mix of false denials (wrongly denied creditworthy applicants) and false approvals (wrongly approved high-risk applicants). Claiming a revenue upside from approving more low-income applicants requires knowing which error type dominates, which the scenario does not establish."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. What does 'the model is fixed' look like as a number with a timeline, and what would tell you it failed?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for a fairness intervention on this credit-risk model?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The intervention succeeds if, within 90 days of redeployment, the false negative rate for below-$30K applicants is within 3 percentage points of the false negative rate for above-$80K applicants, overall model accuracy does not fall below 85%, and the default rate on newly approved loans in the below-$30K segment does not exceed the current portfolio default rate by more than 1.5 percentage points. The false negative parity threshold tests whether the core harm (creditworthy low-income applicants being wrongly denied) has been addressed. The 85% accuracy floor tests that the fairness intervention has not degraded the model to the point of financial unsustainability. The 1.5-point default rate ceiling tests that the new approvals are genuinely creditworthy applicants who were previously denied incorrectly, not high-risk applicants being approved to hit the parity target. The counter-signal is: false negative parity achieved but default rates in the below-$30K segment rise by more than 3 points, which would indicate the model is approving the wrong applicants to equalize denial rates.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names three metrics with specific thresholds, each measuring a different dimension of the hypothesis. The false negative parity threshold tests the primary harm reduction. The 85% accuracy floor makes the business sustainability constraint explicit. The 1.5-point default ceiling is the most important non-obvious guard: it distinguishes between a fairness intervention that approves previously denied creditworthy applicants (the goal) and one that approves higher-risk applicants to hit a parity metric (gaming the metric). The counter-signal identifies the failure mode that looks like success on the primary metric.",
+              "framework_hint": "Domain Expertise: false negative parity is the correct primary metric for a lending fairness intervention because it directly measures whether creditworthy applicants are being denied at equal rates across income groups. The 1.5-point default ceiling reflects that a true fix should produce a modest increase in defaults (previously denied creditworthy applicants now borrowing), not a large increase (high-risk applicants now approved). Strategic Thinking: naming the counter-signal (parity achieved but defaults spike) forces the team to monitor the metric that would reveal that the intervention solved the wrong problem."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means closing the overall accuracy gap between income segments to within 5 percentage points: the below-$30K segment should reach at least 87% accuracy within six months of model redeployment. Monitor accuracy monthly. If the gap re-opens above 5 points after six months, trigger a retraining cycle. Overall model accuracy should not fall below 86%.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Setting a specific accuracy threshold (87% for below-$30K) with a monitoring cadence and a retraining trigger is better than a vague commitment to 'improve fairness.' The gap is the same as in the optimize step: overall accuracy does not distinguish between false positives and false negatives. A model could reach 87% accuracy for below-$30K applicants while still denying creditworthy applicants from that group at twice the rate of above-$80K applicants, if the error shift moves from false negatives to false positives. The win condition needs to specify which errors are being corrected.",
+              "framework_hint": "Strategic Thinking partial credit: names a specific threshold, a timeline, and a retraining trigger. Domain Expertise gap: accuracy is the wrong primary metric for a fairness win condition in lending. A win condition grounded in false negative parity is more legally defensible, more applicant-centered, and harder to game than an overall accuracy threshold, because it directly measures the harm the intervention is designed to reduce."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success means passing an external AI fairness audit conducted by a third-party firm within 12 months of the intervention. The audit should evaluate the model against published fairness standards (IEEE, NIST AI RMF, CFPB guidance) and certify that no actionable disparate impact exists. A clean audit report constitutes the win condition.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "An external audit is a useful validation step but it is not a falsifiable success bar. The win condition asks for a metric, a threshold, and a timeline that the team can measure without waiting for an outside party to render judgment. An audit outcome is a lagging indicator that could take 12 months to arrive and whose criteria are determined by the auditor, not by the team. A team that defines success as 'passing an audit' has deferred the question of what the model should actually do differently to a third party.",
+              "framework_hint": "Strategic Thinking failure: an audit is a process outcome, not a model performance outcome. The win step requires the team to name the metric that tells them whether the intervention worked before any external party weighs in. If the false negative parity threshold and default rate ceiling are met, the team should be able to say the intervention succeeded without waiting for an audit; if they are not met, a clean audit report would not change that."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success means that the CEO and product team are satisfied that the regulatory risk has been addressed and the business case for the intervention has been accepted. If internal stakeholders agree the model is now fair and the legal team confirms no known regulatory exposure, the intervention is complete. Business alignment on the outcome constitutes a win.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Internal stakeholder agreement is a necessary condition for organizational adoption but it is not a falsifiable success bar. The CEO and product team could declare satisfaction with the model because the data team stopped flagging concerns, not because the model's false negative rate for below-$30K applicants actually improved. A win condition defined by stakeholder sentiment can be met without any change to the model's behavior. More fundamentally, ECOA disparate impact liability is not determined by whether internal stakeholders believe the risk is addressed; it is determined by what the model's outputs show when examined externally.",
+              "framework_hint": "Strategic Thinking failure: organizational satisfaction is an input to execution, not a property of the model's fairness. A win condition that can be met without the model changing is not a win condition. Domain Expertise failure: regulatory exposure under ECOA is objective, not subjective. The legal team confirming 'no known exposure' on a model that still has a 16-point accuracy gap between income segments does not eliminate the exposure; it means the exposure has not yet been externally identified."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

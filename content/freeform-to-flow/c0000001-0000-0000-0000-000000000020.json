@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000020",
+  "title": "Build AI On Top or Build Your Own Model?",
+  "scenario_role": null,
+  "scenario_context": "A 60-person legal-tech startup builds software that helps lawyers draft contracts. The product has traction, and the team is now facing a foundational AI infrastructure decision. Two paths are on the table. Path A: fine-tune a proprietary LLM on the company's 2 million legal documents, at roughly $800K upfront and a four-month build. Path B: wrap GPT-4o with prompt engineering and RAG, at roughly $15K upfront and a three-week build. The investor base is pushing hard for Path A, arguing it creates a moat. The CTO wants Path B.",
+  "scenario_trigger": "The leadership team needs a recommendation before the next board call. The investors' moat argument is compelling on paper, but the CTO is skeptical. At 60 people, the company has not yet reached the customer volume or product clarity that would tell you what a fine-tuned model actually needs to do better than GPT-4o plus RAG.",
+  "scenario_question": "Frame what the real decision is and what the investors are getting wrong about moats, identify the structurally distinct paths and what each one bets on, decide what to optimize for at this stage, and define a falsifiable gate that would justify moving to Path A later.",
+  "engineer_standout": "A strong answer recognizes that the moat at this stage is not the model weights. The moat is the proprietary legal corpus, the workflow integrations lawyers rely on, and the trust the product earns through accurate, reliable output on real legal tasks. Path A bets $800K and four months on a spec that the company has not yet validated. Fine-tuning a model requires knowing precisely what capabilities you need the model to demonstrate beyond what GPT-4o plus RAG already delivers. For retrieval-heavy tasks like contract drafting assistance, RAG over a well-structured legal corpus frequently outperforms a fine-tuned model because the answer is in the retrieved context, not in the model weights. Path B ships in three weeks at 1/50th the cost, starts accumulating real usage data, and positions the team to answer the question 'what does our proprietary data let us do that GPT-4o cannot?' Path A presumes the answer before collecting the evidence. The correct move is to start with B, accumulate the proprietary data and workflow signal that constitutes the real moat, and treat fine-tuning as an option to exercise once you have a validated spec for what it needs to beat.",
+  "paradigm": "ai_assisted",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["strategic_thinking", "domain_expertise"],
+  "secondary_competencies": ["taste", "cognitive_empathy"],
+  "topic_tags": ["build-vs-buy", "ai-strategy", "moat", "fine-tuning"],
+  "technique_tags": ["taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The investors say Path A creates a moat. The CTO wants Path B. Before picking a side, ask what a moat in legal-tech AI actually is, and whether $800K spent on model weights is the thing that creates it.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the Path A versus Path B decision?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The real decision is not which model to use. It is whether the company knows enough about what lawyers need the model to do, well enough to spend $800K and four months building toward a specific capability gap that GPT-4o plus RAG cannot close. At 60 people, without the usage data that reveals exactly where GPT-4o plus RAG falls short on the company's 2 million legal documents, Path A is a bet on a spec that has not been written yet. The investor framing treats owning model weights as the moat, but in legal-tech the moat is the proprietary corpus, the workflow integrations lawyers depend on, and the accuracy record that earns trust on high-stakes documents. Fine-tuning produces a moat only once you know what the model needs to do better, and Path B is how you find that out at 1/50th the cost.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing identifies the actual decision: not build versus buy, but known-spec versus unknown-spec at $800K. The investor argument conflates model ownership with defensibility. In retrieval-heavy legal tasks, the moat is the corpus plus workflow plus trust, not the weights. Framing the choice as 'do we know what we need the model to do better?' reorients the decision around evidence the company does not yet have, which is exactly the question Path B generates data to answer.",
+              "framework_hint": "Strategic Thinking: the frame that matters is 'do we have a validated spec for what fine-tuning needs to beat?' not 'do we want a moat?' Domain Expertise: for retrieval-heavy contract drafting tasks, model weights are not the primary defensibility lever. The corpus, workflow integration, and trust record are, and Path B accumulates all three faster."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The decision is a classic build-versus-buy tradeoff. Path A gives the company full control over its AI stack and long-term differentiation. Path B is faster and cheaper but leaves the company dependent on OpenAI's pricing and roadmap. At some point, every serious AI product company needs to own its model to control quality and cost, so the question is timing, not whether.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The vendor dependency risk is real and worth naming. OpenAI's pricing and roadmap are legitimate long-term considerations. The gap is that this framing accepts the premise that owning a model is the destination, rather than asking whether a fine-tuned model is what creates defensibility for this specific product at this stage. Legal-tech moats are not primarily about model ownership. The frame needs to challenge the investors' moat claim before accepting the endpoint they assume.",
+              "framework_hint": "Strategic Thinking partial credit: correctly names vendor dependency as a long-term risk. Gap: does not challenge whether model ownership is the right form of differentiation for a contract-drafting product. The framing step requires asking whose goal is actually served by Path A before evaluating the tradeoff."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The decision is about cost and speed. Path B is clearly better in the short term because it is cheaper and faster. Path A might make sense later once the company is bigger and has more money to spend on infrastructure.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Cost and speed are real factors but they are not the frame. Treating Path A as simply an expensive version of Path B misses the substantive question: whether fine-tuning on 2 million legal documents would actually produce a better product for contract drafting assistance, and whether the company currently knows what 'better' means in a way that could guide the fine-tune. The frame step requires diagnosing what kind of decision this is before comparing the options on price.",
+              "framework_hint": "Strategic Thinking failure: framing the decision as short-term cost versus long-term investment does not surface the key question, which is whether the company has a validated spec for what fine-tuning needs to demonstrate. Cost is a constraint, not the frame. Motivation Theory gap: does not ask what the investors' moat argument is actually trying to achieve or whether Path A is the only way to achieve it."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision is fundamentally about competitive positioning. Legal-tech is a regulated industry where proprietary AI is a credibility signal to enterprise buyers and law firms. Path A is strategically correct because enterprise legal clients will not trust a product built on a third-party API, and the $800K investment signals commitment to the market. The CTO's preference for Path B reflects an engineering instinct for speed, not a strategic one.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The credibility signal argument is plausible and occasionally true for specific enterprise segments. The problem is that it treats an assertion about buyer psychology as a validated fact. At 60 people, the company has not yet demonstrated that the law firms it serves care more about model provenance than about accuracy and workflow fit. More importantly, 'enterprise clients won't trust a third-party API' is falsifiable, and Path B is exactly how you find out whether it is true before spending $800K on the assumption that it is.",
+              "framework_hint": "Cognitive Empathy failure: asserts what enterprise legal clients care about without grounding it in observed behavior. Domain Expertise failure: many successful legal-tech products at this stage run on foundation model APIs. The credibility framing presumes the end state rather than asking what evidence would confirm or refute it at current scale."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The choice is not just Path A or Path B. Think about what each path actually bets on, what defensibility it builds, and which structural alternatives exist between '$800K fine-tune now' and 'GPT-4o wrapper forever.'",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of options best covers the real solution space for an AI-first legal-tech product at this stage?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three structurally distinct options exist. First: Path B now, with a deliberate data flywheel, meaning GPT-4o plus RAG ships in three weeks, but every lawyer interaction is logged in a structured format to build the labeled dataset and usage signal that would spec a future fine-tune. Second: Path A with a scoped pilot, meaning fine-tune on a narrow task (say, a specific contract clause type) rather than the full 2 million document corpus, at a fraction of the $800K cost, to test whether fine-tuning actually outperforms GPT-4o plus RAG on a real lawyer workflow before committing to the full build. Third: Path B indefinitely, treating the GPT-4o plus RAG stack as the permanent architecture and investing the $785K difference into workflow depth, corpus curation, and lawyer-facing features that create switching cost without touching model weights. These are mechanistically distinct: the first defers fine-tuning but builds toward a validated spec, the second tests the fine-tuning hypothesis cheaply before the full $800K bet, the third abandons fine-tuning as a goal and bets that workflow moat is sufficient.",
+              "quality": "best",
+              "competencies": ["creative_execution", "strategic_thinking"],
+              "explanation": "The three options are structurally distinct because they differ on the key variable: whether and when to commit to fine-tuning, and what evidence would justify that commitment. The first option (Path B plus data flywheel) treats fine-tuning as a validated future option, not a foregone conclusion. The second (scoped pilot) tests the fine-tuning hypothesis at 10% of the cost before the full bet. The third (Path B indefinitely) challenges the premise that fine-tuning is necessary at all. Listing them separately forces the decision-maker to name what they believe about the value of model ownership before choosing.",
+              "framework_hint": "Creative Execution: the three options are mechanistically distinct because they differ on whether fine-tuning is validated, deferred, or abandoned, not just on cost and timeline. Strategic Thinking: each option bets on a different theory of where the moat comes from, which is the question the list step needs to surface before optimization."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The main options are Path A now, Path B now, or a hybrid approach where you start with Path B and switch to Path A once revenue justifies the investment. The hybrid is the most pragmatic because it sequences the investment behind evidence of commercial traction.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The sequencing instinct is correct, and 'start with B, move to A once traction is proven' is the right directional answer. The gap is that this frames the options as temporal variants of the same endpoint (fine-tuning is the destination; the question is when) rather than asking whether fine-tuning is the right destination at all. A complete list would include the option of staying on GPT-4o plus RAG indefinitely and building moat through workflow and corpus depth rather than model weights.",
+              "framework_hint": "Strategic Thinking partial credit: correctly sequences the investment behind evidence. Creative Execution gap: the three options described are variations on 'when to fine-tune' rather than structurally distinct theories of where moat comes from. A full enumeration includes the option that fine-tuning is never the right investment for this product."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The options are to use GPT-4o, use Claude, or use an open-source model like Llama and fine-tune it on the legal corpus at lower cost. The open-source route gives the company model ownership without the full $800K price tag.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Model provider selection is a downstream decision that sits inside one branch of the option space. Listing GPT-4o versus Claude versus Llama as the three options skips the upstream question of whether fine-tuning is the right investment at all, and for which tasks. The list step requires enumerating structurally distinct strategies, not implementation choices within a single strategy.",
+              "framework_hint": "Creative Execution failure: listing model providers is not a list of strategies. The relevant structural distinction is between paths that bet on model ownership for moat versus paths that bet on corpus, workflow, and trust. Enumerating GPT-4o versus Claude versus Llama evaluates tools before deciding what the tool needs to do and why."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The only real option is to do Path A, since the investors are right that model ownership is strategically necessary in legal-tech. The question is how to reduce the $800K cost and compress the four-month timeline, perhaps through offshore engineering or a smaller initial corpus.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Accepting the investor framing as the correct endpoint and optimizing for cost reduction within it collapses the list step before it starts. The investor claim that model ownership is strategically necessary is an assertion, not a validated fact. The list step exists to surface alternatives before committing to one theory of moat. Reducing the $800K fine-tune to a smaller corpus does not address the underlying question of whether fine-tuning outperforms GPT-4o plus RAG for retrieval-heavy contract drafting tasks.",
+              "framework_hint": "Strategic Thinking failure: anchoring the option set on the investors' conclusion rather than on the underlying question of where moat comes from. Creative Execution failure: treating cost reduction as the only lever within a single path, rather than enumerating paths that differ in their theory of competitive defensibility."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion that governs the decision at this stage, and be explicit about what you are giving up by choosing Path B first. The investors gave up speed and learning. What does Path B give up?",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What criterion should govern the choice of first step, and what are you explicitly trading away?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The governing criterion is fastest path to validated value while accumulating the assets that constitute the real moat. Path B with a deliberate data flywheel satisfies this criterion. It ships in three weeks at $15K, starts generating real lawyer interactions on the 2 million document corpus, and accumulates the labeled usage data and failure cases that would spec a future fine-tune. The explicit sacrifice is the option that Path A closes off: if a competitor fine-tunes a model in the next four months while the company is on Path B, the company loses that window. That sacrifice is acceptable at 60 people because the more likely failure mode is spending $800K on a model that does not outperform GPT-4o plus RAG on retrieval-heavy contract drafting tasks, before the company has a validated product spec to guide the fine-tune. The criterion is not 'moat versus no moat.' It is 'buy validated learning at $15K or buy an unvalidated spec at $800K.'",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "Naming the criterion as 'fastest path to validated value while accumulating moat assets' converts the speed-versus-moat tension into a decision rule. The sacrifice (the window for Path A) is named explicitly and the reason it is acceptable is grounded in the failure mode at 60 people: a premature $800K commitment to an unvalidated spec. This is the taste move: distinguishing between the investors' preference for moat optics and the real tradeoff between validated learning and premature capital commitment.",
+              "framework_hint": "Taste: the tradeoff is not 'moat versus no moat' but 'buy validated learning at $15K or buy an unvalidated spec at $800K.' Naming the criterion separates the investors' moat preference from the real decision. Strategic Thinking: the because-Z is 'Path B first because it accumulates the corpus signal, workflow depth, and usage data that constitute the actual moat, while keeping Path A as a validated option rather than a $800K bet on an unwritten spec.'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "Optimize for risk-adjusted speed. Path B is faster and cheaper, and at 60 people the company cannot absorb a $800K bet that does not pay off. The sacrifice is the potential for a proprietary model moat, but that sacrifice is acceptable given the current stage. Fine-tuning can be revisited once there is more revenue.",
+              "quality": "good_but_incomplete",
+              "competencies": ["taste"],
+              "explanation": "Risk-adjusted speed is the right direction and the stage-appropriateness framing is sound. The gap is that 'revisit fine-tuning once there is more revenue' does not name the criterion that would actually trigger the switch. What usage signal, accuracy gap, or competitive event would justify Path A later? Without naming the criterion, the recommendation is a judgment call rather than a decision rule, and the next team that looks at it will re-litigate the same debate.",
+              "framework_hint": "Taste partial credit: correctly identifies the risk asymmetry at 60 people and chooses the lower-cost path. Strategic Thinking gap: does not name the criterion or the gate that would justify Path A later. A criterion makes the decision legible and gives the board something falsifiable to hold the team to."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Optimize for investor confidence. The investors are pushing Path A and they control the next funding round. Choosing Path B risks the relationship and the next check. A modified version of Path A, with a smaller initial corpus and a tighter four-week timeline, keeps the investors satisfied while reducing cost.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Investor satisfaction is a real stakeholder need but it is not a governing criterion for a product infrastructure decision. Optimizing for investor confidence before asking whether Path A is actually the right product bet produces the wrong artifact for the wrong reason. A modified Path A that the investors accept but the CTO doubts still carries the core problem: no validated spec for what the fine-tuned model needs to outperform. The criterion should be derived from the product's success conditions, not from the funding relationship.",
+              "framework_hint": "Taste failure: optimizing for investor confidence is a preference, not a tradeoff. It does not name what the company is giving up or why the sacrifice is acceptable on product grounds. Strategic Thinking failure: a criterion grounded in stakeholder appeasement rather than in the product's success conditions cannot be falsified or evaluated after the fact."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Optimize for technical differentiation. The legal-tech market will eventually commoditize on GPT-4o wrappers, and the companies that win will be the ones with proprietary model stacks. Path A is the correct long-term bet and the criterion is 'are we building something competitors cannot copy?' GPT-4o plus RAG is copyable in three weeks by any competitor.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The commoditization concern is real. GPT-4o plus RAG is not a durable moat on its own. The problem is that this criterion (are we building something competitors cannot copy?) leads to the wrong answer if the thing that competitors cannot copy is the corpus, workflow integration, and trust record rather than the model weights. Path B with a data flywheel accumulates proprietary signal that is genuinely hard to replicate. Path A produces weights that are hard to replicate, but only if the fine-tune meaningfully outperforms GPT-4o plus RAG, which requires a validated spec the company does not yet have.",
+              "framework_hint": "Strategic Thinking failure: 'something competitors cannot copy' is the right criterion shape but the wrong answer if model weights are not the primary differentiation lever for legal contract drafting. Domain Expertise failure: conflates model ownership with defensibility. In retrieval-heavy AI tasks, a proprietary corpus plus workflow plus trust record is frequently the harder thing to replicate, not the weights."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Path B is the starting point. What observable outcome in the next 90 days would confirm the strategy is working, and what metric or event would justify pulling the trigger on Path A?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define a falsifiable gate that would justify investing in Path A after starting with Path B?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The gate is a measurable accuracy gap that GPT-4o plus RAG cannot close with better prompting or retrieval. Within 90 days on Path B, the team should be logging every case where the model's output is rejected by a lawyer, requires manual correction, or generates a clause the lawyer flags as legally incorrect. If that error rate on a specific task class (say, jurisdiction-specific clause generation or multi-party indemnification structures) stays above a defined threshold after prompt and retrieval optimization, that is the spec for the fine-tune: the model needs to do better on these 200 clause types, across these 15 jurisdictions, with error rate below X%. If the error rate drops to acceptable levels through prompt and retrieval work alone, Path A loses its justification. The gate is not 'when revenue justifies it.' The gate is 'when GPT-4o plus RAG has a demonstrated, measurable accuracy ceiling on a lawyer-validated task class.'",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "Naming the gate as a demonstrated accuracy ceiling on a specific task class gives the team a falsifiable condition that the data from Path B will either confirm or refute. The 90-day logging requirement makes the spec for any future fine-tune grounded in real lawyer usage rather than in investor preference. The counter-signal (error rate drops through prompt optimization) closes the feedback loop: if Path B is sufficient, Path A never gets triggered. This is the domain expertise move: naming what 'better' means for a legal-specific task in terms the team can actually measure.",
+              "framework_hint": "Domain Expertise: a real fine-tuning gate requires specifying the task class, the error type, and the threshold, not just 'accuracy is good enough.' Strategic Thinking: the falsifiability condition (if error rate drops through prompt optimization, Path A is not triggered) prevents the team from defaulting to Path A for reasons unrelated to product performance. The gate converts the investors' moat instinct into a measurable product hypothesis."
+            },
+            {
+              "option_label": "B",
+              "option_text": "If Path B generates strong adoption among lawyers and the product hits a revenue milestone (say, $1M ARR), that is the signal to invest in Path A. At that point the company has the cash and the customer proof to justify the $800K bet. The win condition for Path B is product-market fit, not model performance.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Revenue milestone as a gate for capital allocation is reasonable and operationally grounded. The gap is that revenue does not tell you whether fine-tuning would improve the product. A company at $1M ARR on Path B might have no accuracy gaps that a fine-tune would close, meaning Path A is still a poorly-validated bet, just a better-funded one. The gate needs to be product-performance-based, not revenue-based, so the team knows whether the $800K would actually make the model better for lawyers.",
+              "framework_hint": "Strategic Thinking partial credit: correctly links capital allocation to evidence rather than to investor preference. Domain Expertise gap: revenue does not validate the fine-tuning hypothesis. The gate needs to measure whether the model's accuracy on legal-specific tasks has a ceiling that fine-tuning could raise, not whether the business has enough money to try."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The win condition is staying ahead of competitors. If a competitor ships a fine-tuned legal model and starts winning deals because of it, that is the signal to move to Path A. Until then, stay on Path B and watch the market.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Competitive reaction as a gate produces a permanently reactive posture. Waiting for a competitor to validate the fine-tuning hypothesis before acting means the company is always one cycle behind. More importantly, a competitor winning deals with a fine-tuned model is not proof that the fine-tune is causing the wins. They might be winning on workflow, price, or sales motion. The gate should be grounded in the company's own product performance data, not in competitive signals that are hard to interpret accurately.",
+              "framework_hint": "Strategic Thinking failure: a gate defined by competitor behavior is not falsifiable against the company's own product hypothesis. Domain Expertise failure: competitor wins do not confirm that model weights are the differentiating factor. The gate must measure whether fine-tuning would improve performance on a specific task the product already does, not whether a competitor has decided to fine-tune."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The win condition for Path B is that the board is satisfied with the AI strategy at the next funding round. If investors are comfortable with the GPT-4o plus RAG approach and renew their confidence, the team can continue on Path B. If they push back again, that is the signal to reconsider Path A.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Investor satisfaction is a real stakeholder outcome but it cannot serve as a falsifiable product win condition. The board's comfort with the AI strategy depends on how it is framed to them, not on whether the product is actually producing better outcomes for lawyers. A win defined by stakeholder sentiment rather than by product performance cannot be evaluated objectively and gives the team no guidance on when the strategy is genuinely working or when it needs to change.",
+              "framework_hint": "Strategic Thinking failure: a win condition defined by investor sentiment is not falsifiable. The board can be persuaded to approve either path depending on how it is presented, which means their reaction provides no signal about product quality. Domain Expertise failure: does not name any measurable outcome in the product that would confirm the Path B strategy is accumulating the corpus and workflow signal that constitutes the real moat."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

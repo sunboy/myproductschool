@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import type { UserRoleV2 } from '@/lib/types'
 import { FlowWorkspaceShellClient } from './FlowWorkspaceShellClient'
 import { IS_MOCK } from '@/lib/mock'
@@ -125,22 +126,18 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user && !IS_MOCK) redirect('/login')
 
-  // Resolve slug → id: look up by slug first, fall back to raw param
+  // Resolve number-slug / slug / id → canonical id. The resolver accepts a number
+  // slug (e.g. "sql-2001"), the text slug, or the raw id, and returns challenge_type.
   let challengeId = id
   let challengeSlug = id
   if (!IS_MOCK) {
-    const admin = createAdminClient()
-    const { data: ch } = await admin.from('challenges').select('id, slug, challenge_type').eq('slug', id).maybeSingle()
-    if (ch?.id) {
-      challengeId = ch.id
-      challengeSlug = ch.slug
-      // Quick takes don't have FLOW steps - send to challenges hub
-      if (ch.challenge_type === 'quick_take') redirect('/challenges')
-    } else {
-      // Try by UUID
-      const { data: chById } = await admin.from('challenges').select('id, slug, challenge_type').eq('id', id).maybeSingle()
-      if (chById?.challenge_type === 'quick_take') redirect('/challenges')
+    const identity = await resolveChallengeIdentity(id, createAdminClient())
+    if (identity?.id) {
+      challengeId = identity.id
+      challengeSlug = identity.slug ?? identity.id
     }
+    // Quick takes don't have FLOW steps - send to challenges hub
+    if (identity?.challenge_type === 'quick_take') redirect('/challenges')
   }
 
   // Compute next challenge: prefer plan order, fall back to same-category

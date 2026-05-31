@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000015",
+  "title": "Redesign Causes Metric Split: Who's Right?",
+  "scenario_role": null,
+  "scenario_context": "LinkedIn ran a homepage redesign A/B test over six weeks on 10% of its user base. The results split cleanly across team lines. Feed engagement rose 18%. Connection requests climbed 12%. Job application clicks fell 9%. Premium upsell clicks dropped 22%.",
+  "scenario_trigger": "The design team is pushing to ship. The monetization team is refusing. The PM has written 'it's complicated' in the decision doc. An engineering lead is being asked to cast a tie-breaking vote before the next planning cycle closes.",
+  "scenario_question": "Reason through the metric split and decide whether to ship, hold, or iterate. Your answer should establish a metric hierarchy before declaring a winner.",
+  "engineer_standout": "A strong answer refuses to treat this as a vote between two teams. The metric split is not ambiguous, it is a diagnostic. LinkedIn's revenue comes overwhelmingly from job postings, recruiter licenses, and premium subscriptions, so a -22% drop in premium upsell and -9% drop in job application clicks are not edge cases, they are signals in the company's primary value-delivery surfaces. The +18% engagement gain is real but it lives in a secondary value chain. The move is to ask whether engagement compounds into LinkedIn's revenue surfaces over time, or whether the redesign moved attention away from monetizing surfaces in a way that is structural. If attention reallocation is structural, the engagement gain does not offset the revenue risk. If it is a novelty effect or a CTA burial problem, the redesign can be iterated to recover the monetizing clicks without discarding the engagement lift.",
+  "paradigm": "traditional",
+  "difficulty": "hard",
+  "estimated_minutes": 40,
+  "primary_competencies": ["strategic_thinking", "domain_expertise", "taste"],
+  "secondary_competencies": ["cognitive_empathy"],
+  "topic_tags": ["north-star", "monetization", "retention", "growth"],
+  "technique_tags": ["north-star-cascade", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The metrics moved in opposite directions. Before picking a side, establish which metrics sit closer to LinkedIn's actual value driver. 'Engagement up, revenue down' is not a tie unless you treat all metrics as equal.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the decision the A/B test results actually require?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "This is a metric-hierarchy problem, not a team-politics problem. LinkedIn's business model runs on job postings, recruiter licenses, and premium subscriptions, which means job application clicks and premium upsell clicks sit directly in the revenue-generating surfaces. Feed engagement and connection requests are valuable but they live in a secondary value chain. The -22% premium upsell and -9% job application drops are not edge signals, they are signals in the company's primary monetization layer. The real question is whether the +18% feed engagement gain compounds into those revenue surfaces over time, or whether the redesign structurally shifted attention away from them. That question cannot be answered by a tie-breaking vote between teams. It requires naming the metric hierarchy first.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing correctly identifies that the apparent tie exists only if you weight all four metrics equally. LinkedIn's revenue model makes that weighting false. Job application clicks and premium upsell clicks are downstream of the company's ability to charge advertisers, recruiters, and subscribers. Feed engagement does not directly produce revenue in LinkedIn's current model. The framing names the upstream problem: until the metrics are ranked by their proximity to the revenue model, the 'who is right' question is unanswerable. This is the reasoning move at Frame, finding the problem behind the apparent conflict.",
+              "framework_hint": "Strategic Thinking: the Frame move requires naming the problem that makes all downstream choices coherent. The surface problem is two teams disagreeing on a number. The upstream problem is that the numbers have not been ranked against LinkedIn's actual value driver. Domain Expertise: knowing that LinkedIn's revenue comes from premium subscriptions and recruiter/job-posting revenue, not from feed engagement, is the domain fact that resolves the apparent tie before any tradeoff analysis begins."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The test shows a classic engagement-monetization tension. Engagement metrics went up, revenue metrics went down, and the right framing is that LinkedIn needs to decide which matters more for its long-term growth strategy. If LinkedIn is optimizing for user growth and retention, engagement wins. If it is optimizing for near-term revenue, monetization wins.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This framing correctly identifies the tension as an engagement-monetization tradeoff and names long-term vs near-term as a dimension. But it stops short of the key insight: LinkedIn's engagement and monetization are not independent dials. Premium subscriptions and recruiter usage depend on the platform being a place where users actively pursue professional goals. A feed redesign that increases passive engagement but suppresses active job-seeking behavior may be optimizing engagement in a way that undermines the revenue surfaces over any time horizon, not just near-term. The framing also doesn't establish which metrics are primary to LinkedIn's actual model.",
+              "framework_hint": "Strategic Thinking: this framing identifies the tension but frames it as a values choice between growth and revenue, which understates the degree to which LinkedIn's revenue model makes the metric hierarchy deterministic rather than a matter of organizational preference. The missing move is naming which metric chain feeds LinkedIn's specific business model."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The A/B test ran for six weeks on only 10% of users, which is too short and too small to trust the results. The real framing is that the data is inconclusive and the team needs a longer test before making any decision.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Six weeks and 10% of a platform the size of LinkedIn is a substantial test in absolute user terms and a reasonable duration for detecting behavioral changes in session-level metrics. Calling the test inconclusive to avoid the decision is a procedural escape from the substantive question. Even if you wanted a longer test, the framing question is about what the metrics mean and how to rank them, not about whether more data is needed. Procedural escalation at Frame is a signal that the reasoning move hasn't been made.",
+              "framework_hint": "Taste failure: calling for more data is a valid tactic when data quality is genuinely insufficient. Here it functions as a preference to avoid committing to a metric hierarchy. The Frame move is to name the problem structure, not to defer it. Confusing data quality concerns with the framing question is a surface-level answer."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The design team is right. Feed engagement up 18% and connection requests up 12% represent the core LinkedIn value proposition, which is professional networking. The -22% premium upsell drop is a UX problem that can be fixed with better placement. The framing is: ship the redesign, then optimize the monetization surfaces separately.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "This answer picks a winner before establishing the metric hierarchy, which is precisely the reasoning error the Frame step is meant to prevent. It also asserts that the premium upsell drop is purely a UX placement problem without any evidence, treating a hypothesis as a conclusion. The -22% drop in premium upsell clicks is a large signal in LinkedIn's primary revenue surface. Framing it as a fixable UX issue to justify shipping is motivated reasoning, not analysis. The framing move requires naming the problem structure, not advocating for a team's position.",
+              "framework_hint": "Strategic Thinking failure: framing that advocates for a position before establishing the evaluative criteria is not framing, it is conclusion-first reasoning dressed as analysis. The Frame move requires identifying the problem behind the conflict, not declaring one side correct. Domain Expertise failure: LinkedIn's monetization depends on premium subscriptions and recruiter activity, and a -22% upsell drop is not a UX issue until the causal mechanism is understood."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "There are at least four structurally different explanations for why the engagement metrics went up while the revenue metrics went down. Enumerate them before deciding. Each explanation implies a different course of action.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of explanations for the metric split most completely maps the causal possibilities?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct causal explanations cover the space: (1) CTA burial, the redesign de-emphasized the job-search and premium upgrade surfaces in favor of the feed, so job clicks and upsell clicks dropped because fewer users saw them, not because demand fell; (2) attention reallocation, the redesign made the feed more compelling such that users who previously clicked into job search now spend that time in the feed, a structural shift in session behavior; (3) novelty effect, engagement is temporarily elevated because the redesign is new, and the -22% premium upsell drop reflects disruption to a learned behavior pattern that will recover as users acclimate; (4) segment heterogeneity, the 10% test group skews toward casual users or a demographic that engages heavily but converts to premium at lower rates, making the metric split a sampling artifact rather than a treatment effect.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "creative_execution"],
+              "explanation": "This set is structurally distinct because each explanation implies a different intervention. CTA burial is fixable with design iteration without touching the engagement gains. Attention reallocation is structural and means the engagement lift is costing direct revenue at a rate that may not be recoverable. Novelty effect is a time artifact and would argue for waiting before deciding. Segment heterogeneity is a measurement problem that would argue for re-running the test with a stratified sample. Listing all four prevents premature convergence on a single explanation and makes the diagnostic step legible.",
+              "framework_hint": "Creative Execution: the List move requires generating structurally distinct options, not variations on a theme. These four explanations are structurally distinct because they imply different interventions: design change, product hold, time delay, and re-measurement. Collapsing them into 'engagement is up so it is good' or 'revenue is down so it is bad' loses the information that determines what to do."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two explanations cover the key cases: either the redesign genuinely improved engagement at the cost of monetization, in which case it is a strategic tradeoff the company must decide on, or the redesign buried the monetization CTAs as an unintended consequence, in which case it should be iterated to fix the placement. Run a follow-up design audit to determine which one is true.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "CTA burial vs. genuine attention reallocation is the most important distinction and this answer names it. But it misses novelty effect and segment heterogeneity, both of which change the decision timeline. If the engagement lift is a novelty effect, shipping immediately bets on a signal that may decay. If the test sample skews toward a low-converting demographic, the revenue drops may be overstated. A two-explanation list is incomplete and leads to a premature design-audit recommendation that may not address the actual causal mechanism.",
+              "framework_hint": "Creative Execution: a two-option list is usually incomplete at the List step. The structural gap here is that it only includes mechanisms that require a design change to diagnose or fix, and misses the temporal (novelty) and measurement (segment) explanations that would change the decision timeline without any design work."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The split is explained by the fact that users engaging more in the feed means they are finding more value in LinkedIn, which will eventually convert into premium subscriptions and job applications as they develop professional intent. The metric decline is a lag, not a loss.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "This explanation asserts that engagement compounds into revenue without providing any mechanism or evidence. LinkedIn's engagement and premium conversion have no documented lag relationship that would support treating a -22% upsell drop as a future gain. The answer treats an optimistic hypothesis as an enumerated causal explanation. At the List step the task is to map the causal possibilities, not to argue for the most favorable one.",
+              "framework_hint": "Domain Expertise failure: 'engagement will eventually compound into revenue' is a hypothesis that requires a named mechanism and a timeframe to be an explanation. Without those it is an assertion. The List move requires enumerating the distinct causal structures, not the most favorable interpretation of one."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The metric split proves the design team optimized for the wrong metrics. LinkedIn should have defined a single north-star metric before running the test, and the split would not have occurred. The explanation is organizational, not product-related: the team lacked alignment before the test started.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Organizational misalignment before the test is a process observation, not a causal explanation for why the redesign produced the specific metric pattern it did. The metric split would have occurred regardless of whether a north-star was pre-defined because the redesign produced those effects on user behavior. Pre-defining a north-star would have determined how to interpret the results, not changed the results themselves. This answer substitutes a retrospective process critique for the causal analysis the List step requires.",
+              "framework_hint": "Strategic Thinking failure: organizational process critique at the List step is a category error. The question is why the metrics moved the way they did, not whether the team was aligned before the test. Conflating those two questions turns a causal analysis into a blame assignment, which produces no useful information about what to do next."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before committing to a path. Is LinkedIn optimizing for engagement as a value driver, or for engagement as an input into the revenue surfaces? The answer determines whether the +18% feed gain justifies the -22% premium upsell loss.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which course of action is most defensible, and what is the explicit criterion and sacrifice that justifies it?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Hold the ship and run a targeted design iteration that attempts to recover the monetizing-surface clicks while preserving the feed engagement gains. The criterion is long-term revenue integrity: a -22% premium upsell drop in LinkedIn's primary monetization surface is too large to absorb on the bet that engagement will compound into revenue. The sacrifice is the speed of shipping the engagement gains to the full user base. That sacrifice is acceptable because the CTA burial explanation, the most actionable of the four, can be tested in two to three weeks without discarding the redesign. If the iterated design recovers premium upsell clicks to within 5% of baseline while holding the feed engagement lift, the ship decision becomes easy. If it cannot, the attention reallocation explanation is more likely true, and shipping would have been the wrong call.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking", "domain_expertise"],
+              "explanation": "This answer names the criterion (long-term revenue integrity), names the sacrifice (shipping speed), and explains why the sacrifice is acceptable (the CTA burial hypothesis is testable in weeks, not months, and the cost of testing it is lower than the cost of a -22% upsell drop compounded at scale). It also names the falsification path: if design iteration cannot recover the monetizing clicks, the worse causal mechanism is confirmed. This is the Optimize move done correctly: criterion named, sacrifice named, the tradeoff made explicit rather than assumed away.",
+              "framework_hint": "Taste: the reasoning move at Optimize is feeling the difference between a tradeoff and a preference. Holding the ship to test CTA burial is a tradeoff because the delay has a real cost, and a 22% premium upsell drop has a real cost, and the answer names both. Strategic Thinking: naming the criterion explicitly (long-term revenue integrity, not short-term engagement) makes the choice auditable. Domain Expertise: knowing that LinkedIn's revenue model makes a -22% premium upsell drop a primary signal, not an edge signal, grounds the criterion in the business model."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Ship the redesign. The +18% feed engagement and +12% connection request gains represent core LinkedIn value, and the -9% job application and -22% premium upsell drops are a secondary concern that can be addressed post-ship. The design team is right that engagement is the leading indicator of platform health.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This answer names a criterion (engagement as a leading indicator of platform health) but does not name the sacrifice honestly. Shipping with a -22% premium upsell drop at scale means accepting that LinkedIn's primary monetization surface degrades for 100% of users during the time it takes to iterate post-ship. At LinkedIn's scale, 22% fewer premium upsell clicks is a material revenue signal, not a post-ship cleanup item. The answer also treats 'engagement is a leading indicator' as a fact rather than a hypothesis that requires the engagement-to-revenue compounding mechanism to be named.",
+              "framework_hint": "Taste: the reasoning move at Optimize requires naming the sacrifice honestly, not minimizing it. 'Address it post-ship' is not a named sacrifice, it is a deferral. A -22% upsell drop deployed to 100% of users is a different scale of risk than a -22% drop in a 10% test cohort, and naming that difference is part of the criterion-sacrifice structure."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Do not ship and do not iterate. The metric split is too ambiguous to act on. Wait for 12 more weeks of test data to see whether the engagement gains hold and the revenue drops recover on their own before making any decision.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Twelve more weeks of the same test design will not distinguish between the four causal explanations. If the novelty effect is the explanation, the engagement gains will decay and the revenue metrics will recover, but that information arrives at the cost of delaying a potentially good redesign. If attention reallocation is the explanation, 12 more weeks of revenue erosion in the test cohort is an unnecessary cost. The 'wait for more data' answer at the Optimize step avoids naming a criterion and sacrifice, which is the task the step requires.",
+              "framework_hint": "Taste failure: an Optimize answer that refuses to name a criterion and a sacrifice is not a tradeoff, it is a deferral. Deferral has a real cost in both directions, delayed shipping of an engagement gain and continued revenue erosion in the test cohort. Not naming that cost does not make it go away."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Ship to 100% immediately and monitor the revenue metrics weekly. If the premium upsell rate drops more than 30% from baseline at full scale, revert. The speed of iteration is LinkedIn's advantage and the risk of moving slowly outweighs the risk of a monetization dip.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Setting a revert threshold of 30% below baseline on a metric that already dropped 22% in testing means accepting a further decline before triggering any action. At full scale for a platform the size of LinkedIn, a 30% drop in premium upsell clicks is a very large revenue event. The answer also treats the -22% test-cohort result as a temporary dip rather than a structural signal, which requires the CTA burial or novelty hypotheses to be true but provides no mechanism to test that assumption before exposing 100% of users to the treatment.",
+              "framework_hint": "Domain Expertise failure: setting a post-ship revert threshold above a signal that already measured -22% in testing is not risk management, it is planning to absorb a larger version of the risk you already observed. The Optimize move requires naming the criterion that justifies the shipping decision, not designing a rollback policy that accepts more downside than the test already measured."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name a falsifiable target for the iteration path. What number, at what threshold, by when, would tell you that the redesign can be shipped without the revenue risk? And what result would tell you the attention reallocation is structural and the redesign should be discarded?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define the winning and failure conditions for the iterate-and-retest path over a four-week horizon?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success: a redesigned variant recovers premium upsell clicks to within 5% of the original baseline while retaining at least 12% of the feed engagement gain, in a two-week re-test on the same 10% cohort. This confirms the CTA burial explanation and justifies a full ship. Failure: if the iterated design cannot recover premium upsell clicks above -10% of baseline without losing the engagement gains entirely, the attention reallocation explanation is the more likely cause, and the redesign should be discarded or scoped back to changes that do not touch the monetizing surfaces. Both conditions are measurable within four weeks and directly testable against the same six-week test's baselines.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions and uses the A/B test's own baseline numbers as the reference. The 5% premium upsell recovery threshold is specific and grounded in the observed -22% drop. The 12% engagement floor names the minimum acceptable preservation of the original gain, preventing an iteration that recovers revenue by discarding all the redesign's value. The failure condition names the causal mechanism it would confirm (attention reallocation) and the action it implies (discard or scope back). Both conditions are timed to a four-week re-test, making the decision path concrete.",
+              "framework_hint": "Strategic Thinking: the Win move requires writing a hypothesis with a falsification condition, not just a target. The failure signal (premium upsell still below -10% baseline after design iteration) confirms the structural causal mechanism and determines the action. Domain Expertise: anchoring success on the -22% premium upsell observation and naming a specific recovery threshold (within 5% of baseline) connects the winning condition to the primary revenue surface that motivated the hold decision."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success is: the iterated redesign shows overall user satisfaction scores improving in the test cohort. Failure is: satisfaction scores stay flat or decline, indicating the redesign is not improving the user experience. Measure over four weeks using a post-session survey.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "User satisfaction is a reasonable signal for UX quality but it does not answer the question the iteration is designed to test, which is whether the CTA burial explanation is correct and whether the redesign can recover revenue-surface clicks while preserving engagement. Satisfaction surveys measure subjective perception, not the behavioral metrics (premium upsell clicks, job application clicks) that motivated the hold. A redesign that users rate highly but that still suppresses upsell clicks by 22% has not resolved the decision.",
+              "framework_hint": "Domain Expertise: a winning condition must measure the outcome the strategy was designed to produce. The iteration is testing whether a design change can recover behavioral clicks in specific revenue surfaces. Satisfaction surveys measure a different signal and cannot confirm or deny the CTA burial hypothesis."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is: the redesign ships to 100% of users within the next sprint and the PM closes the decision doc. Failure is: the team continues debating and misses the planning cycle. Speed of decision is the real win condition.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Closing the decision doc is not a winning condition for the product. The Win step requires naming the metric that would tell you the strategy worked, not the process milestone that tells you the team stopped debating. Speed of decision is a process value, not an outcome measurement. An answer that substitutes organizational velocity for a product metric has not done the Win step.",
+              "framework_hint": "Strategic Thinking failure: a winning condition that measures team process rather than user or business outcomes is not falsifiable in any meaningful sense. The Win move is to name what the company can observe and measure that would confirm the strategic bet is paying off."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is: competitors like Indeed and Glassdoor report slower growth over the next two quarters, confirming that LinkedIn's engagement redesign is pulling professional intent away from job-search competitors. Failure is: competitors continue growing at their historical rates.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Competitor growth rates are not observable in real time, not attributable to LinkedIn's design decision, and operate on a quarterly reporting lag that makes them useless as a four-week winning condition. The decision about whether to ship the redesign requires measuring LinkedIn's own user behavior in its own revenue surfaces. Competitor metrics cannot confirm whether the CTA burial hypothesis is true or whether the redesign recovered the premium upsell rate. This answer defines the win condition using a metric the team cannot observe or influence.",
+              "framework_hint": "Strategic Thinking failure: winning conditions must be defined by metrics the team can observe and that are causally connected to the decision being made. Competitor quarterly growth is neither. The Win move requires naming what LinkedIn can measure within the test cohort, not predicting what will appear in a competitor's earnings call six months from now."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

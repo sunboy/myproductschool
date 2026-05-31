@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000041",
+  "title": "Designing the First Screen of an AI-Native App",
+  "scenario_role": null,
+  "scenario_context": "A startup has built an AI-native task manager. Unlike traditional apps with menus, forms, and navigation hierarchies, the product is primarily conversational: users type or speak what they want, and the AI acts on it. There are no buttons for 'Add Task' or 'Set Reminder.' The entire interface is a conversation.",
+  "scenario_trigger": "The team is now designing the first-run experience. When a brand-new user opens the app for the first time, they see a blank input box and a blinking cursor. Internal testing shows that most new users stare at the box for several seconds, type nothing, and close the app. Traditional onboarding patterns, tooltips, feature walkthroughs, and tutorial modals, do not apply here because there are no UI elements to point at. The team needs to solve the blank-page problem before launch.",
+  "scenario_question": "Design a first-run experience that teaches a new user how to interact with a conversational AI interface so they succeed on the first attempt.",
+  "engineer_standout": "A strong answer recognizes that the blank-box paralysis is not a discoverability problem in the traditional sense. There are no hidden features to surface. The problem is that the user does not know what the AI can do or how to express a request, so the first-run experience must demonstrate capability through action rather than description. A tooltip explaining 'just type what you want' fails because the user still does not know what 'what you want' should look like. The right move is a guided first success: pre-populated example prompts that the user can tap and immediately see the AI do something useful, teaching the interaction model by doing rather than by explaining. The key insight is that the first success instills the mental model faster than any instruction.",
+  "paradigm": "ai_native",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["motivation_theory", "cognitive_empathy"],
+  "secondary_competencies": ["creative_execution", "taste"],
+  "topic_tags": ["ai-native", "onboarding", "product-design", "first-run-experience", "conversational-ui"],
+  "technique_tags": ["guided-first-success", "blank-page-reduction", "capability-demonstration"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Naming the symptom ('users do not type anything') is not the problem statement. Find the upstream reason the blank conversational box is paralyzing.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why new users fail on first open?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["motivation_theory", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The blank input box is paralyzing because users have no mental model of the AI's capability space. In traditional apps, menus and forms make the action set visible: a user opens a task manager and sees 'Add Task,' so they know what to do. In a conversational interface with no menus and no forms, the user faces an open field with no signal about what is possible or how to phrase a request. Staring at the box and closing the app is the friction response, not a motivation failure. The user is not uninterested; they are blocked by not knowing how to begin.",
+              "quality": "best",
+              "competencies": ["motivation_theory", "cognitive_empathy"],
+              "explanation": "This framing correctly locates the problem upstream of the symptom. The blank box does not tell the user what the AI can do, what level of specificity to use, or whether the AI will understand a casual sentence or needs structured input. This is a friction problem in the motivation-theory sense: the user has motivation (they downloaded the app) but hits a friction point before achieving any satisfaction. The framing also correctly contrasts the conversational interface with traditional menus and forms, which makes the structural gap concrete rather than abstract.",
+              "framework_hint": "Motivation Theory: the blank box is a friction point between motivation (user opened the app) and satisfaction (user gets something done). The user is not unmotivated; they are stalled at friction. Cognitive Empathy: simulating the new user's perspective reveals that 'just type what you want' is not actionable without knowing what the AI considers within scope."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The first-run experience is failing because the app has no onboarding tutorial. Users need to be walked through the app's features before they can use it. Adding a short interactive walkthrough explaining the key concepts would give users the foundation to start typing.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Recognizing that users need orientation before they can act is the right instinct. The gap is proposing a tutorial as the solution before the framing is complete. In a conversational interface with no menus or forms, a feature walkthrough has nothing to point at. The deeper framing issue is that the user does not know how to express a request in natural language to this specific AI, and a tutorial that explains concepts without demonstrating a real interaction does not close that gap.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that users need context before they can act. The gap is that 'walkthrough' is borrowed from traditional onboarding and assumes there are UI elements to tour. In a conversational interface, capability is expressed through language, not through navigating menus, so the framing should examine what happens when the user has to generate that language from nothing."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Users are not typing because the app is not interesting enough at first glance. The empty state needs better visual design, a more compelling headline, and a stronger value proposition above the input box to motivate users to engage.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Visual polish and headline copy can help with first impressions, but they do not address the specific failure being described. Internal testing showed users staring at the box for several seconds and then closing the app, which is a behavior pattern consistent with confusion, not with low motivation from weak visual design. A user who reads a compelling headline and then still cannot figure out what to type will still close the app. The framing mistake is treating a friction problem as a motivation problem.",
+              "framework_hint": "Motivation Theory failure: this option diagnoses weak motivation when the data points to friction. Users who open a new app have already cleared the motivation bar. Staring at a blank box for several seconds before leaving suggests they were trying to act but could not, not that they were unpersuaded by the value proposition."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The real problem is that users are not the right fit for a conversational interface. People who are comfortable with AI chatbots will succeed; people who are not will always struggle with a blank input box. The first-run experience should include a screening question to segment users and route less-comfortable users to a simplified guided mode.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Segmenting users by AI comfort level sounds data-driven, but it misidentifies the root cause. The blank-box paralysis is not a personality trait or a prior-experience gap; it is a missing mental model about this specific product's capability space. Even people who use ChatGPT daily would not know unprompted what a new task manager AI can and cannot do. Routing users to a 'simplified guided mode' is also a workaround that defers solving the framing problem rather than addressing it.",
+              "framework_hint": "Cognitive Empathy failure: this frame projects a stable user attribute (AI comfort) onto what is actually a situational knowledge gap (what can I ask this specific AI to do?). A user who is comfortable with ChatGPT still needs to learn the task manager AI's capability space. The problem is the absence of that map, not the absence of prior AI experience."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Before settling on a design direction, map the distinct approaches available. Not all onboarding strategies work the same way for a conversational interface.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of first-run design options most completely spans the space of approaches for a conversational AI interface?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct approaches cover the space. First, guided first success: pre-populate the input with a real example prompt the user can send with one tap, so the first interaction is a demonstration, not an experiment. Second, capability sampling: show three to five short example prompts as chips the user can browse before typing, revealing the range of what the AI can handle without requiring any commitment. Third, progressive disclosure via the AI itself: the AI opens the conversation with a message that names what it can do and invites a specific type of request, reducing the blank-page effect without adding any UI chrome. Fourth, scaffolded input: rather than a freeform box, offer a lightweight structured prompt builder (pick an action, pick an object) that composes the first natural-language request for the user, then dissolves after the first success. Each approach teaches the interaction model differently: one by doing, one by showing options, one by conversing, one by scaffolding the first output.",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "These four approaches are mechanistically distinct, not variations of the same idea. Guided first success teaches by immediate demonstration. Capability sampling teaches by showing scope without requiring a commitment. AI-initiated conversation turns the blank box into a prompt rather than a void. Scaffolded input removes the language-generation burden entirely for the first task. Each addresses the blank-page problem differently and has different tradeoffs around friction reduction versus learning depth. A list that generates these four reveals that the design space is richer than 'add a tooltip or add a tutorial.'",
+              "framework_hint": "Creative Execution: the four options are structurally independent, not variations on a theme. Guided first success and capability sampling both use pre-written prompts but to different ends: one demonstrates an outcome, the other reveals scope. Cognitive Empathy: scaffolded input reflects the insight that the hardest part of a blank box is generating the first sentence, so removing the generation burden entirely may be the most empathetic starting point for users with no prior frame."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The main options are: add a tutorial video explaining how to use the AI, add a tooltip that says 'Type a task or request here,' add a progress bar showing onboarding steps, and add an FAQ section. These are standard onboarding patterns adapted for the new interface.",
+              "quality": "good_but_incomplete",
+              "competencies": [],
+              "explanation": "This list applies standard onboarding patterns to a context where they do not fully translate. A tooltip that says 'Type a task or request here' does not resolve the blank-page problem because the user still does not know what to type. A tutorial video may help with understanding but delays the first success. The options listed are variations on the same approach (explanation and instruction) rather than structurally distinct strategies. None of them addresses the specific challenge of teaching an interaction model through demonstration rather than description.",
+              "framework_hint": "Creative Execution failure: the four options are variations of the instruction-first pattern rather than mechanistically distinct approaches. In a conversational interface where there are no UI elements to tour, instruction-first patterns are limited because they cannot show the AI in action. The list misses approaches that use the AI itself (AI-initiated conversation) or that restructure the input moment (scaffolded prompts)."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The options are: make the input box larger and more prominent, change the placeholder text to be more inviting, add a microphone button for voice input, and show a spinner animation to signal that the AI is ready. Visual and interaction design changes will reduce the perceived barrier to starting.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Visual changes can reduce minor friction but do not address the core problem. A larger input box or friendlier placeholder text does not tell the user what the AI can do or how to phrase a request. Voice input adds a new modality but does not solve the capability-space problem: the user still does not know what to say. These options treat the symptom (the box feels intimidating) rather than the cause (the user has no model of what is possible).",
+              "framework_hint": "Cognitive Empathy failure: this list reflects the perspective of a designer looking at the UI rather than a user encountering the blank box for the first time. A user who does not know what to type also does not know what to say or whether the microphone will understand them. Changing the presentation of the blank box does not provide the missing map of capability."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The options are: require users to complete a short quiz about their task management habits before accessing the app, generate a personalized onboarding flow based on quiz results, and pre-populate the AI with five tasks imported from their calendar. Personalization will make the first experience feel relevant and reduce the motivation to leave.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Personalization is a real design lever, but applying it here adds friction rather than reducing it. A quiz before the app is usable is an additional step that delays the first success and may cause more drop-off than the blank box itself. Calendar import addresses a different problem (giving the AI data) rather than teaching the interaction model. The underlying blank-page problem, not knowing how to express a request, is not resolved by personalizing the content the AI has access to.",
+              "framework_hint": "Motivation Theory failure: this approach mistakes 'make the content more relevant' for 'reduce the friction of starting.' A user who sees five of their own calendar events in the app still faces the same question: what do I type to do something useful with these? Personalization before the interaction model is established creates a sophisticated empty state rather than a blank one, which does not close the capability-space gap."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the design criterion that tells you which approach best trades off teaching the interaction model against adding friction to the first-run experience.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right design criterion for choosing the primary first-run pattern?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is: which approach delivers a genuine first success before the user has to make a decision about what to ask? Guided first success via tappable example prompts meets this criterion because the user can trigger a real AI response without generating any language of their own. The first exchange teaches the interaction model by showing the AI in action, not by explaining it. The sacrifice is that the user's first interaction is not self-directed, but that is acceptable because the goal at this stage is installing a mental model, not maximizing autonomy. An approach that adds steps before the first success, like a quiz, a tutorial, or a modal, fails this criterion regardless of how well-designed those steps are.",
+              "quality": "best",
+              "competencies": ["taste", "creative_execution"],
+              "explanation": "This criterion captures the right tradeoff. Tappable example prompts allow the user to see the AI do something useful without having to know what to ask, which is the precise friction point identified in the framing step. The criterion also exposes the sacrifice clearly: the first interaction is guided, not freeform. Naming that sacrifice distinguishes this from a preference ('guided feels friendlier') and makes it a reasoning choice ('we accept reduced autonomy on the first interaction in exchange for installing the mental model before the user gives up'). The criterion also correctly filters out approaches that add pre-success steps.",
+              "framework_hint": "Taste: the criterion distinguishes between 'feels welcoming' (a preference) and 'delivers first success before the user can get stuck' (a tradeoff). Creative Execution: the tappable prompt chip is a design pattern that does not exist in traditional onboarding because traditional apps have menus to point at. In a conversational interface, the example prompt IS the interface during first run."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion is engagement rate in the first session. The best first-run design is whichever pattern produces the highest percentage of users who type something in the first 60 seconds. Run an A/B test across the candidate patterns, measure 60-second engagement rate, and ship the winner. The criterion is empirical rather than design-theoretic.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A/B testing on 60-second engagement rate is a sound evaluation method, but it is not a design criterion. A criterion tells you how to choose before you have test data, and which tradeoffs you are willing to make. Measuring engagement rate is how you verify that the chosen pattern works, not how you reason about which patterns to test. Proposing a test without a criterion also means the test results cannot be interpreted: a pattern that drives 80% of users to type something in 60 seconds but produces low-quality first interactions may score well on this metric while failing on the deeper goal of installing the interaction model.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the decision should be empirically grounded rather than purely intuitive. The gap is that an A/B test is a validation method, not a selection criterion. The optimize step asks for the reasoning that would tell you what to test and how to interpret the results, not just a commitment to test."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion is simplicity: the best design is the one with the fewest UI elements added to the existing blank input box. Every addition (chips, tooltips, example text) makes the interface less clean. The right move is to refine the placeholder text and trust users to figure it out. Simple is always better in product design.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Simplicity is a real design value, but applying it as an absolute criterion here ignores the specific failure being solved. The blank input box is already simple, and it is producing an 80% or more early-exit rate in internal testing. A criterion of 'fewest additions' would select the design that is already failing. Simplicity is a useful tiebreaker between designs that are otherwise comparable; it is not a criterion that overrides evidence of a concrete user failure.",
+              "framework_hint": "Taste failure: this option mistakes minimalism for the right criterion. Taste is knowing which tradeoff actually matters in context. In this case, the context is a product that is failing its new-user experience at the most basic level. Adding three tappable example prompts is a small UI addition that addresses the highest-impact failure. Choosing simplicity over solving the failure is a preference, not a reasoning move."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is alignment with the brand's conversational identity. Since the product is built around natural conversation, the first-run experience should be purely conversational too: the AI should initiate with a greeting and let the interaction unfold naturally from there. Adding chips or structured prompts breaks the conversational metaphor and signals that the product is not truly AI-native.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Brand consistency is a real consideration, but using it as the primary criterion for a first-run design reverses the priority order. The first-run experience must solve a concrete functional problem (blank-page paralysis causing drop-off) before it can reinforce a brand identity. An AI-initiated greeting is one of the listed approaches and may be part of the right solution, but framing it as the criterion because it is 'more on-brand' subordinates user success to aesthetic coherence. A product that feels on-brand but causes new users to drop before their first successful interaction has failed at the more fundamental goal.",
+              "framework_hint": "Cognitive Empathy failure: this criterion centers the product team's concern (brand identity) over the new user's situation (not knowing what to do). Brand consistency matters once the user has a working mental model of the product; before that point, it is a secondary concern. An AI-native interface that initiates conversation is valuable as a design pattern, but its merit should be evaluated on whether it reduces blank-page paralysis, not on whether it feels more conversational than chips."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that tells you the first-run design has failed, not just underperformed.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the guided first-success onboarding pattern after it ships?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: within the first 14 days after launch, 70% or more of new users complete at least one AI interaction in the first session, and 40% or more return for a second session within 48 hours. The 70% first-interaction threshold tests whether the guided example prompts are actually removing the blank-page barrier. The 40% day-two retention threshold tests whether the installed mental model is durable enough to bring users back when they have to initiate a conversation on their own. The counter-signal is: first-interaction rate is above 70% but day-two retention is below 25%, which would indicate that the example prompts are producing interactions but not installing the mental model. Users would be tapping examples mechanically without understanding what the AI can do for them, meaning the first-run design is a parlor trick, not an onboarding tool.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "Each metric tests a distinct element of the design hypothesis. First-interaction rate tests whether the guided prompts remove the immediate friction of the blank box. Day-two retention tests whether that first interaction installed a durable mental model, because a user who understood what the AI can do will have something to come back and ask on day two. The counter-signal is non-obvious and consequential: a high first-interaction rate paired with low retention is the failure mode where onboarding appears to work in session but produces no lasting behavior change. The 14-day window and 48-hour retention window are calibrated to an early launch with a small user base where tight feedback loops matter.",
+              "framework_hint": "Domain Expertise: a 40% day-two retention target is consistent with early-stage consumer productivity apps where the initial cohort is motivated early adopters. Strategic Thinking: the counter-signal (high first-interaction, low return) distinguishes between a design that reduces friction in the moment and one that actually teaches the interaction model. A first-run experience that only works when the prompt is pre-written has not solved the underlying problem."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means the app store rating improves from below 4.0 to above 4.3 in the 30 days after the onboarding redesign ships. User reviews that mention confusion or difficulty getting started should drop by at least half. Ratings are a reliable proxy for whether the first experience is working.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "App store ratings are a useful lagging indicator and monitoring review sentiment is a real practice. The gap is that ratings aggregate feedback from all users across all experiences, not specifically new users in the first session. A first-run improvement could be masked by unrelated complaints about existing features, or inflated by enthusiastic early adopters who would have succeeded regardless of the onboarding change. Ratings also cannot distinguish between a first-run experience that reduces confusion and one that reduces confusion while failing to install a durable mental model.",
+              "framework_hint": "Strategic Thinking partial credit: names a specific threshold and a 30-day window, which are both elements of a falsifiable bar. The gap is that app store ratings are not causally linked to the first-run experience with enough specificity to tell you whether the design change worked. A metric that measures new-user behavior directly (first interaction rate, day-two return) tests the hypothesis more precisely."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means the team feels confident the onboarding is working after reviewing session recordings at the 30-day mark. If the recordings show users successfully interacting with the AI in their first session without visible confusion, the design has succeeded. Qualitative observation is more informative than metrics at this stage.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Session recording review is a valuable research method but it is not a falsifiable success bar. 'The team feels confident' is not a threshold. Qualitative observation without a prior definition of success cannot be falsified: the same recordings could be interpreted as success or partial success depending on the observer's prior beliefs. At the win step, the goal is to define conditions under which you would conclude the design has failed, not just to gather evidence.",
+              "framework_hint": "Strategic Thinking failure: qualitative confidence is an output of good research, not a metric. The win step requires naming the signal in advance that would tell you the bet is wrong. Session recordings cannot do that because they do not produce a number that can be compared to a pre-specified threshold."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is confirmed when the product has 1,000 active users with a 60% monthly retention rate. These are the real business metrics that matter. Onboarding is only worth optimizing if it demonstrably moves retention at scale. Until then, the team should not over-index on first-session behavior.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Monthly retention at scale is the right long-term goal for a consumer app, but it is not a useful success bar for a specific first-run design change at launch. Reaching 1,000 active users conflates a growth target with a design test. Monthly retention at that scale would take months to measure, during which time the onboarding design cannot be iterated. The win step for this design bet needs to be measurable within weeks on a small early-user cohort, with metrics causally linked to the first-run experience rather than to overall product-market fit.",
+              "framework_hint": "Domain Expertise failure: monthly retention at 1,000 users is the right metric for evaluating product-market fit, not for evaluating a first-run design change. At launch, the team needs a signal they can act on within two to four weeks on a cohort of tens to hundreds of users. Deferring the success bar to 1,000 users and 60% monthly retention means waiting six or more months to learn whether the onboarding change worked at all."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

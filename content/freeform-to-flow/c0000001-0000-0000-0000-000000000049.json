@@ -1,0 +1,383 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000049",
+  "title": "AI-Native Product at Scale: When Personalization Diverges",
+  "scenario_role": null,
+  "scenario_context": "An AI-native email client has reached 500,000 users. The AI learns each user's preferences deeply — tone, priority signals, response style, snooze patterns — and adapts its behavior to match. At scale, that depth of personalization means the product is effectively 500,000 different products running simultaneously. Bug reports arrive that on-call engineers cannot reproduce because the triggering behavior depends on a specific user's accumulated preference state. Quality is inconsistent across cohorts: power users who have trained the AI extensively experience it very differently from new users or users who had their accounts migrated. The engineering team can test against representative profiles, but representative is not the same as a given user's actual state.",
+  "scenario_trigger": "A wave of complaints surfaces from a cohort of users who migrated from a legacy email client six months ago. Their AI behavior has drifted in ways they describe as 'wrong but hard to explain' — the AI is deprioritizing emails they care about and over-surfacing threads they have mentally archived. On-call cannot reproduce the issue because there is no single bug: the drift is an emergent property of how the AI absorbed an ambiguous signal from the migration import. The team realizes they have no systematic way to audit, compare, or reset the personalization state of any given user without wiping it entirely. Every proposed fix either destroys the personalization or requires the team to treat each of the 500,000 users as a one-off debugging case.",
+  "scenario_question": "How do you maintain product quality when the product is fundamentally personalized at a scale where individual debugging is impossible?",
+  "engineer_standout": "A strong answer recognizes that the root problem is reproducibility, not personalization. Personalization is the value; the bug is that the personalization space is opaque and unbounded. The insight is that you cannot QA 500,000 products individually, so the architecture must constrain the personalization to bounded and inspectable parameters rather than opaque per-user learned state, make any user's state capturable and replayable so bugs are reproducible without access to the user's live account, and monitor quality at the cohort and distribution level rather than per-instance. Quality at scale requires reproducibility by design. The migration cohort issue is a diagnostic gift: it reveals that the system has no way to distinguish 'user trained the AI to behave this way' from 'the AI absorbed a bad signal it cannot attribute.' Those two states look identical from outside but require different remedies.",
+  "paradigm": "ai_native",
+  "difficulty": "hard",
+  "estimated_minutes": 45,
+  "primary_competencies": ["strategic_thinking", "domain_expertise"],
+  "secondary_competencies": ["creative_execution", "cognitive_empathy"],
+  "topic_tags": ["ai-native", "personalization", "quality-at-scale", "debugging", "product-architecture"],
+  "technique_tags": ["reproducibility-by-design", "cohort-monitoring", "bounded-personalization", "state-capture-replay"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The migration cohort complaint is the visible symptom. Before proposing a fix, name the structural condition that makes this class of problem impossible to resolve with normal debugging tools.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the quality problem at 500,000 users?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The problem is not personalization itself but the loss of reproducibility that personalization creates. When each user's AI behavior is a function of their unique accumulated preference state, a bug is no longer a deterministic deviation from a spec — it is an emergent property of a specific user's state that cannot be reconstructed without that user's exact history. At 500,000 users, individual debugging is infeasible, and the migration cohort's drift is a concrete example: the AI absorbed an ambiguous signal from the import, producing behavior that is 'wrong but hard to explain' precisely because the causal chain lives inside an opaque learned model rather than in inspectable parameters. The quality problem is that the product architecture does not distinguish 'the user trained the AI to do this' from 'the AI reached this state through a corrupted signal,' and those two conditions look identical from outside while requiring opposite responses.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing correctly identifies reproducibility as the structural issue rather than treating the migration cohort complaint as a one-off data quality problem. The distinction between 'user-trained behavior' and 'signal-corrupted behavior' is load-bearing: without it, any fix either invalidates legitimate personalization or leaves corrupted state intact. The frame also explains why standard debugging fails at 500,000 users — the causal chain for any given user's behavior is inaccessible without reconstructing their full preference history, which the current architecture does not support.",
+              "framework_hint": "Strategic Thinking: reframing 'we have a quality problem' as 'we have an architecture that structurally prevents quality assurance at scale.' Domain Expertise: in AI-native products, the distinction between model behavior as a function of design choices versus model behavior as a function of training data quality is the central QA challenge — it requires different remediation paths and different detection methods."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The problem is a data quality failure in the migration import. The migrated users' AI behavior drifted because the import process introduced ambiguous or low-quality signals that the AI over-weighted. The frame is 'we shipped a bad migration' and the fix is to identify which signals the import introduced, remove or correct them, and re-train the affected cohort's models from their post-migration behavior. The 500,000-user scale is incidental — the root cause is a specific, bounded data quality event.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Identifying the migration import as the source of corrupted signals is a real and useful diagnostic step. The gap is treating it as the complete frame. A migration data quality failure explains why the current cohort is experiencing drift, but it does not address why the team has no way to identify, audit, or selectively reset the corrupted state without wiping the entire personalization. That architectural absence is what transforms a bounded data quality event into an ongoing quality control crisis — and it will recur with the next feature launch, the next migration, or the next model update that introduces an unintended learning signal.",
+              "framework_hint": "Domain Expertise partial credit: correctly traces the drift to a specific signal source. Strategic Thinking gap: a frame that scopes the problem to 'this migration' leaves the architectural condition that made the migration catastrophic unaddressed. The team will face the same inability to audit or selectively remediate personalization state in every future incident."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is scale. At 500,000 users the support burden has outgrown the team's capacity to handle individualized complaints. The frame is 'we need better triage and support tooling' so that the team can efficiently identify clusters of similar complaints, route them to the right engineers, and track resolution without every ticket requiring an on-call investigation.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Support tooling improvements would help the team manage the volume of incoming complaints but they do not address why on-call engineers cannot reproduce the issues they are triaging. Better ticket routing cannot compensate for an architecture where the causal state of any given user's AI behavior is opaque and non-reconstructible. The frame must explain what makes the quality problem structurally intractable, not just operationally heavy.",
+              "framework_hint": "Strategic Thinking failure: optimizing the symptom management process (support workflow) rather than the structural condition that produces the symptom (non-reproducible personalization state). At 500,000 users, faster triage of irreproducible bugs produces faster acknowledgment of irreproducible bugs — not resolutions."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is insufficient user control. If each user's AI were more configurable — explicit preference settings instead of implicit learning — users could identify and correct the drift themselves without requiring engineering intervention. The migration cohort would have noticed the bad import signals and adjusted their settings before the behavior diverged significantly.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Increasing user control over AI preferences is a legitimate design direction for some product scenarios, but it does not address the framing problem here. The migration cohort's complaint is that the drift is 'wrong but hard to explain' — users are experiencing a problem they cannot diagnose, which means they also cannot fix it through settings. More configurability helps users who understand what is wrong; it does not help users who only know something feels off. The frame must account for the fact that the AI's learned state is opaque to users as well as to engineers.",
+              "framework_hint": "Cognitive Empathy failure: assuming users can identify and correct corrupted AI state through settings requires them to understand what signals the AI is weighting and why — the same diagnostic information the engineering team lacks. Users experiencing 'wrong but hard to explain' drift cannot write a settings rule to fix a problem they cannot describe."
+            }
+          ]
+        },
+        {
+          "question_text": "Why does the standard software debugging workflow — reproduce the bug, identify the cause, ship a fix — fail for this class of problem?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The standard debugging workflow assumes that the same input produces the same output — that a bug is a deterministic deviation from expected behavior that can be reproduced by supplying the same inputs in a test environment. AI-native personalization breaks that assumption: the output is a function of both the current input and the user's entire accumulated preference history, which is not present in a test environment and cannot be reconstructed from logs alone. On-call engineers trying to reproduce the migration cohort's drift face this directly — the behavior that feels wrong to a specific user is the AI's correct output given that user's corrupted state. There is no bug in the traditional sense; there is a model operating correctly on bad training data, and the only way to surface it is to reconstruct that user's exact state, which the current architecture does not support.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This answer correctly identifies the determinism assumption as the specific property of standard debugging that fails when AI personalization is in play. It also connects the failure mode to the concrete example — the migration cohort's behavior is not a bug in the code but a correct output from a corrupted model state — which explains why on-call cannot fix it by reading stack traces or adding log lines. The framing has a clear implication: the architecture needs to support state capture and replay, not just better instrumentation of the current execution path.",
+              "framework_hint": "Domain Expertise: the distinction between 'bug in deterministic code' and 'correct behavior of a model trained on bad data' is the foundational quality challenge in AI-native products. The tools, workflows, and team structures built for the first category do not transfer to the second. Strategic Thinking: this failure mode will recur with every model update, every new feature that introduces a learning signal, and every data import — making it an architectural priority, not an incident to resolve."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Standard debugging fails because the team does not have access to production user data for privacy reasons, making it impossible to reproduce the exact conditions that produced the bug. The fix is to build a synthetic data pipeline that generates realistic user profiles representing the migration cohort, run the AI against those profiles, and observe whether the drift reproduces in the synthetic environment.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Synthetic profile generation is a real technique for improving reproducibility in AI systems, and building it would be a legitimate investment. The gap is that synthetic profiles representing a cohort are not the same as a specific user's actual accumulated state. If the drift is an emergent property of how the AI processed a specific sequence of signals from the migration import, a statistically representative synthetic profile will not necessarily reproduce it. The answer correctly identifies a useful tool but misidentifies why debugging fails — it is not primarily a data access problem but a state reconstruction problem.",
+              "framework_hint": "Domain Expertise partial credit: synthetic data pipelines are a recognized technique in AI quality engineering. Strategic Thinking gap: the explanation conflates 'we cannot access user data' with 'we cannot reconstruct user state' — these are related but distinct problems with different solutions. State capture and replay requires serializing the actual model state, not approximating it with synthetic inputs."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Standard debugging fails because the AI model is a black box — the team cannot inspect its internal state to understand why it prioritizes certain emails over others. The fix is to adopt a more interpretable model architecture (such as a rules engine with weighted features) so that engineers can read the model's decision criteria directly and identify which weights were corrupted by the migration import.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Model interpretability is a legitimate engineering concern and switching to a more inspectable architecture is a meaningful design choice with real tradeoffs. The problem is that it is presented here as the reason debugging fails, when interpretability alone does not solve the state reconstruction problem. Even a fully interpretable model with visible weights cannot be debugged by on-call if the team has no way to load a specific user's weight vector into a test environment. Interpretability helps with understanding why a model behaves as it does; reproducibility requires capturing and replaying the state that produced the behavior.",
+              "framework_hint": "Strategic Thinking gap: interpretability and reproducibility are related but orthogonal properties. A fully interpretable model that cannot have its state captured and replayed is still not debuggable in the workflow described. The frame must identify the missing architectural capability (state capture and replay) rather than the missing model property (interpretability), because the former is what enables the debugging workflow to function."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Standard debugging fails because the team does not have enough monitoring. If the team had real-time dashboards showing AI behavior across the user base — emails prioritized, responses suggested, snooze patterns accepted — they would have caught the migration cohort's drift before it became a wave of complaints. The fix is better observability: more metrics, faster alerting, and anomaly detection that flags cohort-level divergence before users notice.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Better observability would help detect quality problems earlier, and cohort-level anomaly detection is a legitimate investment. The gap is that observability tells the team that a problem exists; it does not tell them why, nor does it give them the means to reproduce and fix it. Knowing that the migration cohort's AI behavior diverged three weeks after import is not the same as being able to reconstruct the state that produced the divergence and test a fix against it. The frame must identify why reproduction fails, not just why detection was late.",
+              "framework_hint": "Domain Expertise gap: detection and reproducibility are distinct capabilities. Observability closes the detection gap; state capture and replay closes the reproducibility gap. Both are necessary; conflating them produces a plan that monitors the problem well but still cannot resolve individual incidents or validate fixes before shipping them."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The problem is that 500,000 personalization states are opaque, non-reproducible, and impossible to audit individually. List the distinct approaches that would give the team systemic quality control without debugging each user's state one at a time.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of approaches most completely addresses the quality control problem at 500,000 personalized AI states?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three structurally distinct approaches together cover the problem space. First, bounded personalization: replace or layer over the opaque learned model with a bounded parameter space — a finite set of named, inspectable preference dimensions (tone formality, priority signal weights, snooze aggressiveness) that the AI adjusts within defined ranges. Any given user's state is now expressible as a readable vector of bounded parameters, not as an opaque model artifact. Second, state capture and replay: serialize each user's current parameter vector into a snapshot that on-call can load into a test environment, run a specific email sequence against it, and observe the AI's output without touching the user's live account. Third, cohort-level distribution monitoring: rather than waiting for individual complaints, track the statistical distribution of key parameters and outputs across the user base, and flag cohorts whose distributions deviate from the baseline established at account creation or last known-good state. Each approach addresses a different layer of the problem: bounded parameters make individual state readable, capture and replay makes individual bugs reproducible, and distribution monitoring makes cohort-level drift detectable before it generates support tickets.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These three approaches are structurally distinct rather than variations on a theme. Bounded personalization changes what the AI stores. State capture and replay changes how engineers debug. Distribution monitoring changes how the team detects. Together they address the full problem — opacity, non-reproducibility, and undetectable cohort drift — without any single approach depending on the others to function. The migration cohort's problem is specifically addressed: with bounded parameters and distribution monitoring, the import-corrupted parameter drift would surface as a statistical anomaly in the affected cohort's preference vector, before and without waiting for user complaints.",
+              "framework_hint": "Creative Execution: three approaches that each target a different layer of the problem (representation, debuggability, detection) rather than three variations on 'better logging.' Domain Expertise: bounded parameter spaces as a replacement for opaque learned models is a recognized pattern in production ML systems where explainability and auditability are product requirements — it trades some modeling expressiveness for operational controllability."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team needs a shadow mode where every AI decision is replicated by a second, simpler rule-based system running in parallel. When the two systems disagree significantly on a prioritization decision, the discrepancy is logged and flagged for review. This gives the team a continuous sanity check against a ground-truth reference without requiring access to individual user state.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "A shadow mode with a rule-based reference system is a legitimate technique for detecting when the AI's behavior has drifted significantly from an interpretable baseline. The gap is that it detects divergence but does not explain it or make it reproducible. Knowing that a user's AI disagrees with the rule engine on 40% of prioritization decisions tells the team the user may be experiencing drift — it does not tell them which parameter caused the drift, whether it is intentional personalization or signal corruption, or how to reproduce the behavior in a test environment to verify a fix. Shadow mode is a useful detection layer but not a complete quality control approach.",
+              "framework_hint": "Domain Expertise partial credit: shadow testing against a reference system is a recognized deployment pattern for AI quality assurance. Creative Execution gap: a single detection mechanism does not address the full problem surface — it adds observability without adding reproducibility or individual state auditability. The three-layer approach (representation + debuggability + detection) covers all three failure modes."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Run A/B tests continuously across the user base to validate AI behavior changes before full rollout. Any model update or parameter change is first deployed to a 1% test bucket, behavior metrics are measured against the control group, and the change only rolls out broadly if the metrics meet quality thresholds. This is standard practice for consumer products and applies directly to AI-native personalization.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A/B testing model changes before broad rollout is a sound practice for validating new features or model updates. The problem is that it addresses the wrong failure mode. The migration cohort's drift is not a consequence of a recent model update that could have been caught by a test bucket — it is an emergent property of how the AI processed a historical signal from six months ago. A/B testing at rollout cannot retroactively prevent drift that accumulated through prior data. More fundamentally, A/B testing validates aggregate behavior differences between groups; it does not make individual user states auditable or individual bugs reproducible.",
+              "framework_hint": "Strategic Thinking gap: A/B testing is a quality gate for changes going forward, not a mechanism for auditing existing personalization state. The quality problem described is about historical state that has already diverged — a test bucket for the next model update does not give the team tools to understand or remediate the current drift in 500,000 existing accounts."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Build a user-facing 'AI reset' button that lets any user restore their account to a clean default state, clearing all learned preferences. Pair it with a feedback mechanism where users can mark specific AI decisions as wrong, which trains the model to avoid similar decisions for that user. This puts quality control in the hands of users rather than requiring engineering intervention for every complaint.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A reset button and a feedback mechanism are useful user-facing features and would reduce the support burden for some complaint types. The problem is that they transfer the quality control responsibility to users experiencing a problem they have described as 'wrong but hard to explain.' A user who cannot articulate what the AI is doing incorrectly cannot give the feedback signal that would train it back to correct behavior, and wiping their personalization to a clean default erases potentially months of valuable legitimate training. These features are appropriate complements to a quality architecture but not substitutes for it.",
+              "framework_hint": "Cognitive Empathy failure: a user-controlled reset assumes users can diagnose their own personalization drift well enough to decide when a reset is appropriate. The migration cohort's complaint — 'wrong but hard to explain' — is precisely the scenario where users cannot make that judgment. User-facing controls are useful when users understand what is wrong; they are insufficient when the problem is opaque to both the user and the engineering team."
+            }
+          ]
+        },
+        {
+          "question_text": "For the migration cohort specifically, which approach most directly identifies which users are affected and allows the team to remediate without wiping every migrated user's personalization?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["domain_expertise", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "If personalization is stored as a bounded parameter vector rather than an opaque model artifact, the team can query the distribution of specific parameters for the migration cohort and compare it to a matched non-migrated cohort with similar account age and usage patterns. Parameters that are statistically out of range in the migration cohort — priority signal weights that are abnormally low for categories the users interact with frequently, for example — identify the corrupted signal directly. The team can then write a targeted correction: a one-time adjustment to the specific out-of-range parameters for affected users, leaving the rest of their personalization intact. Users whose parameters are within the expected range are not touched. This approach requires the bounded parameter architecture to already be in place, but it is the only approach that distinguishes corrupted state from legitimate personalization without asking users to explain what is wrong.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "cognitive_empathy"],
+              "explanation": "This answer demonstrates why bounded parameters are not just a debugging convenience but a remediation prerequisite. Without an inspectable parameter vector, the team cannot distinguish which users in the migration cohort have corrupted state and which have legitimate personalization that happens to look unusual. The targeted correction approach — adjusting only the specific out-of-range parameters — is the only one that remediates the actual problem without collateral damage to valid personalization. It also explains why the current architecture, where state is opaque, forces the team into the all-or-nothing choice between individual debugging and wholesale wiping.",
+              "framework_hint": "Domain Expertise: comparing parameter distributions between treatment and control cohorts is a standard technique in production ML systems for identifying model drift caused by specific data events. Cognitive Empathy: designing the remediation to touch only corrupted parameters preserves the value each user has accumulated through legitimate interaction — treating their personalization as something worth preserving, not as a liability to be reset."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Send a targeted survey to the migration cohort asking them to rate their satisfaction with three specific AI behaviors: email prioritization, suggested responses, and snooze recommendations. Users who rate any behavior below a threshold are flagged for manual review. This gives the team a data-driven way to identify affected users without relying on unsolicited complaint volume.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A targeted survey would produce a signal about which migrated users are dissatisfied, but it relies on users accurately rating behaviors they have described as 'wrong but hard to explain.' Survey responses capture user perception, not the causal parameter state. A user who has adapted their behavior to work around the drift may rate their satisfaction higher than a user who has not, even if both have equally corrupted state. The approach also scales poorly — reviewing every below-threshold response manually is exactly the individual-debugging problem the quality architecture is meant to eliminate.",
+              "framework_hint": "Cognitive Empathy gap: user satisfaction ratings are a lagging and indirect signal of parameter corruption. Users who have normalized the AI's drift by working around it will not rate it as problematic, even though their state is equally corrupted. The remediation approach must identify corrupted state from the system's own data, not from users' ability to articulate a problem they find hard to explain."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Roll back the entire migration cohort's AI state to the clean default that existed before the import. Send them a notification explaining that the migration introduced a known data quality issue and that their AI will re-learn from their post-migration behavior over the next four to six weeks. This is the simplest approach and ensures no user in the cohort is operating on corrupted state.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A full rollback guarantees that no user operates on corrupted state, but it does so by destroying all the legitimate personalization that migrated users accumulated in the six months since the import. For users who have been happy with the AI's behavior — whose preferences were trained correctly despite the import — this is a significant regression that erases months of value. The approach also treats all migrated users as uniformly affected, when the actual distribution of corruption is almost certainly non-uniform. A targeted approach that identifies and corrects only the corrupted parameters produces better outcomes for both affected and unaffected users.",
+              "framework_hint": "Cognitive Empathy failure: simulating a user who migrated six months ago, has been satisfied with the AI's behavior, and receives a notification that their preferences are being wiped because of a data quality issue reveals that the rollback imposes a cost on users who experienced no problem. Targeted remediation requires more engineering investment than a blanket rollback but it respects the value users have built through legitimate interaction."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Build a real-time audit log that records every AI prioritization decision for users in the migration cohort for the next 30 days. Flag decisions that deviate significantly from the user's stated interaction patterns — emails from frequent contacts that are deprioritized, threads the user always responds to that are buried — and surface them to on-call for review. Use the flagged decisions to identify which users are most affected.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "A decision audit log for the migration cohort is a useful detection tool and would help identify which users are experiencing the most significant drift. The gap is that detecting anomalous decisions does not identify the causal parameter — it identifies effects, not causes. Knowing that a specific user's AI is deprioritizing emails from their manager does not tell the team which parameter is corrupted or how to correct it without touching the rest of their personalization. The audit log addresses detection; the remediation requires inspectable state.",
+              "framework_hint": "Domain Expertise partial credit: decision-level audit logs are a legitimate observability investment and are useful for confirming that a remediation worked. Strategic Thinking gap: the approach identifies the problem's manifestation (anomalous decisions) without providing access to the underlying cause (corrupted parameters). Remediation requires the latter."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Bounded personalization and cohort monitoring are the two strongest approaches. Now name the single criterion that determines how tightly to bound the personalization — and what the product gives up when it constrains the AI's learning space.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding how tightly to bound the personalization parameter space?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is whether a parameter can be described in a sentence a support engineer could read without knowing the user. If a parameter requires reconstructing the user's full interaction history to interpret — 'this weight reflects the model's inferred prioritization gradient across the user's contact graph' — it belongs outside the bounded space or needs to be decomposed into inspectable sub-parameters. If a parameter can be read as 'this user has trained the AI to treat emails from addresses tagged as 'team' as high priority, with a weight of 0.8 on a 0-1 scale,' it belongs inside the bounded space. This criterion is deliberate: it couples inspectability to debuggability by construction. A parameter an engineer cannot interpret without reconstructing history is one they cannot audit, compare across cohorts, or selectively correct. The sacrifice is real: some personalization that genuinely requires complex learned representations cannot be expressed in an inspectable bounded space, and the AI will be less expressive in those dimensions. The product accepts that sacrifice in exchange for a system where quality can be maintained at 500,000 users without 500,000 individual debugging sessions.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion is concrete and decision-forcing. It does not ask 'how many parameters should we have' or 'how wide should the range be' — it asks whether a specific parameter is interpretable by the team that has to debug it. That coupling between inspectability and debuggability is the insight that makes the criterion architecturally principled rather than arbitrary. The sacrifice is also named explicitly: some modeling expressiveness is lost, and the product must accept that tradeoff in order to make quality control feasible at scale.",
+              "framework_hint": "Taste: distinguishing between 'this parameter is technically valid' (it captures a real aspect of user preference) and 'this parameter is operationally viable' (it can be audited, compared, and corrected by an on-call engineer). Choosing operational viability as the criterion is a tradeoff, not a preference — it gives up some personalization depth in exchange for a system that can be maintained. Strategic Thinking: the criterion makes the tradeoff explicit rather than discovering it after a production incident."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The right criterion is user satisfaction with AI behavior. Run regular surveys or use implicit signals (email reply rates, snooze pattern changes, manual re-prioritizations) to measure whether users find the AI's behavior accurate. Expand the parameter space incrementally as long as satisfaction metrics improve, and contract it if they decline. The optimal bound is wherever user satisfaction peaks.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Using user satisfaction as a signal to calibrate the personalization space is a reasonable product heuristic, and implicit signals like re-prioritization frequency are real quality indicators. The gap is that user satisfaction is an aggregate outcome metric, not a criterion for parameter space design. A personalization space that produces high average satisfaction but opaque individual states still generates irreproducible bugs and non-auditable cohort drift — the exact problems the bounded approach is designed to solve. The criterion must be about operational viability, not about satisfaction optimization.",
+              "framework_hint": "Strategic Thinking partial credit: satisfaction signals are legitimate calibration inputs for the AI's learning behavior. Taste gap: using satisfaction as the bound-tightness criterion conflates 'users are happy with the output' with 'engineers can maintain the system that produces the output.' High satisfaction is compatible with an unmaintainable architecture; the criterion must target maintainability specifically."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Bound the parameter space as tightly as possible — use only five to seven core parameters (priority weight, tone formality, response suggestion aggressiveness, snooze threshold, thread grouping preference) and keep each on a simple integer scale. Simplicity should be the primary criterion. A small, simple parameter space is the most debuggable, the most explainable to users, and the most resistant to drift from ambiguous signals.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Simplicity is a virtue in parameter space design and a small, integer-scale set of core parameters would be highly debuggable. The gap is that simplicity as the primary criterion does not account for whether five parameters actually capture the personalization that makes the AI valuable. If users' experience of the product depends on nuances that cannot be expressed in a five-parameter space, the tightly bounded system will underperform the original AI significantly enough to drive churn — not because of quality failures but because of capability gaps. The criterion must balance operational viability with sufficient expressive power to deliver the core value proposition.",
+              "framework_hint": "Taste gap: maximum simplicity is a preference, not a tradeoff. The correct criterion names what is given up (some modeling expressiveness) in exchange for what is gained (debuggability). Simply minimizing the parameter count maximizes debuggability while potentially abandoning the personalization quality that makes the product worth using — and that is a tradeoff the product team needs to consciously accept, not discover post-launch."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Let the engineering team define the bound based on what they can store and query efficiently in the current data infrastructure. If the team can index and query up to 50 named parameters per user at low latency, bound the space at 50. If infrastructure evolves to support 200 parameters, expand accordingly. The bound should track infrastructure capacity, not be set as a fixed product decision.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Infrastructure capacity is a real constraint on parameter space design, but making it the primary criterion produces a parameter space whose bounds have no relationship to what the team can actually interpret and debug. A 50-parameter space is efficiently queryable but may still contain parameters that require reconstructing a user's full interaction history to understand — which is exactly what makes the current architecture unmaintainable. Infrastructure capacity is a ceiling on what is technically feasible; the inspectability criterion is the floor on what is operationally viable. The bound must satisfy both, with inspectability as the design criterion and infrastructure capacity as the implementation constraint.",
+              "framework_hint": "Domain Expertise failure: confusing the technical feasibility of storing parameters with the operational feasibility of using them for quality control. A 50-parameter space that no engineer can interpret during an on-call incident is not more debuggable than the current opaque model — it is a false improvement that adds structure without adding auditability."
+            }
+          ]
+        },
+        {
+          "question_text": "What does the product sacrifice when it adopts bounded personalization, and how should that sacrifice be communicated to stakeholders?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Bounded personalization gives up modeling depth in exchange for operational control. The AI will be less expressive in dimensions that genuinely require complex learned representations — nuanced tone adaptation across relationship types, for example, or context-aware priority shifts that depend on subtle behavioral signals the parameter space cannot capture. For users with complex email behaviors who have trained the AI extensively, bounded personalization may feel like a regression. The honest framing to stakeholders is: 'At 500,000 users, an AI that no engineer can debug is not a quality product, regardless of how well it performs on average. We are trading some personalization ceiling in the top percentile of users in exchange for a system where we can detect, reproduce, and fix quality failures for any user. That is the right trade for a product at this scale.' The sacrifice should not be papered over by claiming the bounded system will eventually match the depth of the current one — it may not, and stakeholders need to design around that honestly.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "strategic_thinking"],
+              "explanation": "This answer names the sacrifice specifically (modeling depth for complex users), identifies who bears it (users with extensive, nuanced training), and frames the stakeholder communication as a genuine tradeoff statement rather than a reframing that avoids the cost. Telling stakeholders 'we are trading personalization ceiling for quality assurance' is more credible and more actionable than 'we are improving the system' — it gives them accurate information to make decisions about user segmentation, premium tier design, and product positioning.",
+              "framework_hint": "Cognitive Empathy: identifying that the sacrifice falls disproportionately on the most engaged users — the ones who have trained the AI most extensively and who will notice the regression most acutely. Strategic Thinking: framing the sacrifice as a product-level quality decision rather than a technical compromise gives stakeholders the right context to evaluate it. 'We cannot maintain quality at 500,000 users with an opaque model' is a product argument, not an engineering excuse."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The sacrifice is minimal in practice. Most users interact with the AI in ways that are well within a bounded parameter space — they care about a few core behaviors (priority sorting, snooze suggestions) and are indifferent to the nuances that require complex learned representations. The transition to bounded parameters will be imperceptible to the majority of users. Stakeholders should be told that the change is an infrastructure improvement that improves stability and debuggability without affecting user-facing behavior.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Characterizing the sacrifice as minimal may be optimistic, but the deeper problem is telling stakeholders the change does not affect user-facing behavior when it may for the most engaged user segment. If the bounded system does produce regressions for power users, stakeholders who were told to expect no visible change will be unprepared to respond. The honest communication is one that names the sacrifice and the population likely to experience it, so the team can monitor for it and design a response before it surfaces as complaints.",
+              "framework_hint": "Cognitive Empathy failure: assuming that because the median user is unlikely to notice the regression, the sacrifice does not need to be communicated. Power users who have invested in training the AI are often the most vocal and most influential segment — a regression that affects the top 5% of users by engagement can generate disproportionate complaint volume and affect brand perception beyond that segment."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The sacrifice is short-term quality reduction while the bounded system learns from a smaller signal space. Stakeholders should be framed the change as a temporary architectural transition, with the expectation that the bounded system will eventually match the depth of the current one as the parameter definitions are refined and expanded. Set a timeline of six months for the bounded system to reach parity.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Framing the bounded system as a temporary regression on the way to parity is a misrepresentation if the bounded architecture genuinely cannot capture the modeling depth of the current system. Committing to a six-month parity timeline without evidence that the bounded parameter space can be expanded to match opaque learned representations gives stakeholders a false expectation that will require a second difficult conversation when parity is not achieved. The sacrifice must be named honestly, including the possibility that it is permanent in specific dimensions.",
+              "framework_hint": "Strategic Thinking failure: setting a parity timeline as a stakeholder management tool rather than as a genuine engineering commitment. If the architectural decision to bound the parameter space is correct, it should be communicated as such — not softened into 'temporary transition' framing that defers the harder conversation about what the product is giving up permanently."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The sacrifice is engineering velocity. Defining and maintaining a bounded parameter schema adds ongoing maintenance work — every new personalization dimension requires a schema change, a migration, and validation tooling. Stakeholders should understand that the bounded architecture trades some engineering flexibility for operational control, and should plan for a slower feature release cadence in the personalization surface area going forward.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Engineering velocity is a real and legitimate cost of bounded personalization — schema-driven parameter spaces require more deliberate change management than opaque learned models. The gap is that it is the secondary sacrifice, not the primary one. The more significant and user-visible sacrifice is modeling depth, particularly for the most engaged users. Telling stakeholders only about engineering velocity is less complete than telling them about both the user-facing and the team-facing costs of the architectural decision.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies a real cost of the bounded approach that affects team planning and release cadence. Cognitive Empathy gap: the stakeholder communication must include the user-facing cost — reduced personalization ceiling for power users — not just the internal engineering cost. Stakeholders in product, growth, and customer success need the user-facing framing to plan their responses."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The bounded personalization architecture is a hypothesis. Name the specific metric, threshold, and timeline that confirm it is working — and the counter-signal that says the personalization depth sacrifice drove more harm than the quality gains justified.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success condition look like for the bounded personalization architecture at six months post-rollout?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The architecture succeeds at six months if three conditions hold simultaneously. First, on-call mean time to reproduce a reported AI behavior issue drops below 30 minutes — the team can load any user's parameter vector into a test environment, run the email sequence from the report, and observe the same behavior the user described. Second, the cohort-level drift detection system identifies at least two statistically anomalous parameter distributions before they generate support ticket volume — confirming that monitoring catches problems proactively rather than reactively. Third, the re-prioritization override rate (how often users manually correct the AI's priority decisions) does not increase more than 10% above the pre-rollout baseline for any engagement quartile, indicating that the bounded system's personalization ceiling has not produced a visible regression in AI accuracy for the broader user base. The counter-signal is: the re-prioritization override rate for the top engagement quartile — users who had trained the AI most extensively before the rollout — increases more than 25% above their individual baselines within 60 days. That specific pattern, concentrated in the highest-engagement cohort, confirms that the personalization depth sacrifice produced a real regression for the users who had invested most in training the AI, and the architecture needs to be expanded or the ceiling raised for that segment.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This success condition is falsifiable because it names three specific metrics with numeric thresholds, a timeline, and a counter-signal that targets the precise failure mode the architecture risks creating. The 30-minute MTTR threshold is specific to the reproducibility problem being solved. The proactive detection condition verifies that the monitoring system is adding genuine value rather than just existing. The override rate condition measures the personalization depth sacrifice in user behavior terms rather than in engineering terms. The counter-signal is targeted at the top engagement quartile because that is the population most likely to experience the regression — and the one most likely to generate vocal complaints and brand damage.",
+              "framework_hint": "Strategic Thinking: the three conditions are designed to detect different failure modes simultaneously — MTTR catches whether the architecture solved the debuggability problem, proactive detection catches whether monitoring is working, and override rate catches whether the personalization sacrifice was too large. Domain Expertise: using re-prioritization override rate as a personalization quality signal is a recognized implicit feedback metric in recommendation and prioritization systems — it measures the gap between the AI's output and the user's actual preference without requiring explicit ratings."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success at six months means on-call engineers report the system is easier to debug than the previous architecture, based on a qualitative team survey. If the majority of on-call engineers rate the bounded system as significantly more debuggable, the architecture has achieved its goal. Pair this with a check that user satisfaction scores have not declined more than 5% overall.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "An engineer satisfaction signal for debuggability is a legitimate indicator that the architecture is working as intended, and the overall satisfaction check is a reasonable guard against catastrophic user-visible regression. The gap is that qualitative survey-based MTTR proxies are weaker evidence than measured MTTR, and a 5% aggregate satisfaction floor does not catch a localized regression in the top engagement quartile — the users most likely to experience the personalization depth sacrifice. The success condition needs metrics that are specific to the architecture's failure modes, not aggregate quality signals.",
+              "framework_hint": "Strategic Thinking partial credit: connecting success conditions to both engineering experience and user experience is correct. Domain Expertise gap: 'engineers find it easier to debug' is a directional signal, not a falsifiable threshold. The architecture's value is measurable — MTTR is a concrete number that either crosses the target or does not — and using a qualitative proxy gives the team less decision-relevant information than the direct metric."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success means zero critical AI behavior incidents in the six months after rollout. If no on-call escalation reaches severity-1 status and no complaint wave exceeds the pre-rollout volume baseline, the architecture is performing adequately. Track incident volume monthly and declare success if the trend is flat or declining.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Incident volume is a lagging signal that measures whether the architecture has failed severely enough to generate an escalation — it does not measure whether the architecture is proactively preventing the class of problem it was designed to address. An architecture that reduces MTTR from four hours to 25 minutes while preventing two cohort drift events from becoming complaint waves will show the same flat incident count as one that got lucky with no new drift events. The success condition must include the leading indicators (MTTR, proactive detection count) that confirm the architecture's mechanisms are working, not just the downstream outcome it is meant to prevent.",
+              "framework_hint": "Strategic Thinking failure: incident count at a severity threshold is a useful lagging indicator but cannot distinguish 'the architecture prevented incidents' from 'no incidents happened to occur.' The success condition must include metrics that are specific to the architecture's mechanisms — MTTR measures whether bugs are reproducible, proactive detection count measures whether monitoring is catching drift before it surfaces. Both are directly attributable to the architecture; incident count is not."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success at six months is the migration cohort's satisfaction recovering to parity with non-migrated users of similar tenure. If migrated users rate their AI experience comparably to non-migrated users in the same usage quartile, the architecture has resolved the original problem that motivated it. Track satisfaction monthly per cohort and declare the migration incident closed when parity is reached.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Migration cohort satisfaction parity is a reasonable success condition for the specific incident that triggered the architecture change, but it is too narrow to confirm that the broader quality problem has been solved. The architecture is designed to prevent future drift detection failures and debuggability gaps — not just to resolve the current cohort's experience. A success condition that only tracks the migration cohort provides no evidence that the monitoring system will catch the next drift event, or that the next on-call incident will be reproducible in under 30 minutes.",
+              "framework_hint": "Domain Expertise failure: scoping the success condition to the incident that motivated the work rather than to the architectural capability that was built. The architecture's value is systemic — it changes how the team handles any future drift event, not just the current one. A success condition that only measures the current incident's resolution leaves the team without evidence that the architecture will perform as designed when the next drift event occurs."
+            }
+          ]
+        },
+        {
+          "question_text": "How should the team frame the architectural decision to the 500,000 users, specifically to users in the top engagement quartile who may notice a change in AI behavior?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["cognitive_empathy", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The framing should acknowledge what is changing and why without overexplaining the architecture. For the top engagement quartile, the communication should name the specific behavior they may notice — 'the AI's recommendations may feel slightly less precisely tuned to your habits over the next few weeks as we transition to a new personalization model' — and explain the reason in terms of what they gain: 'this change allows us to detect and fix issues that affect specific users much faster, so if something feels off, our team will be able to identify and resolve it within hours rather than days.' The framing does not apologize for the change or promise that behavior will return to its previous state. It treats the user as someone who has invested in the product and deserves a clear explanation of the tradeoff, not a reassurance that nothing is changing when something clearly is.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "motivation_theory"],
+              "explanation": "This framing correctly identifies the audience — users who have invested the most in training the AI and are most likely to notice the transition — and gives them the information they need to interpret what they observe. Naming the specific behavior change ('slightly less precisely tuned') and the specific benefit ('detect and fix issues within hours rather than days') is more credible than vague reassurance, and it treats the engagement investment as something worth acknowledging rather than something to avoid mentioning. The framing does not promise parity because it cannot; it gives the user accurate information to decide how to respond.",
+              "framework_hint": "Cognitive Empathy: simulating a user who has spent months training the AI and notices it behaving differently, then receiving either a vague 'we've made improvements' message or a clear explanation of what changed and why. The latter produces less distrust. Motivation Theory: Friction — the friction of noticing unexpected behavior change — is reduced when users have a causal explanation. Users who understand why the AI changed can adapt; users who receive no explanation attribute the change to product failure."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Do not proactively communicate the change to users. The transition to bounded personalization is an internal architecture decision and does not rise to the level of a user-facing announcement. If users notice behavioral changes and contact support, train the support team to explain the transition. Proactive communication about AI behavior changes at scale creates more questions than it answers and may drive unnecessary churn from users who would not otherwise have noticed anything different.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The reasoning against proactive communication has some practical basis — most users in the bottom three engagement quartiles may genuinely not notice the transition, and mass communications about infrastructure changes often generate unproductive anxiety. The problem is that the top engagement quartile — the users who will notice — will experience the behavioral change without context and will generate support contacts anyway. Reactive support at that volume is less efficient than targeted proactive communication to the affected segment. More importantly, a user who notices the AI behaving differently and receives no explanation will attribute the change to product failure, which is harder to recover from than a clear transition explanation.",
+              "framework_hint": "Motivation Theory: Friction for high-engagement users who notice unexpected AI behavior change and have no explanation for it is higher than friction for users who received a clear, honest transition message before the change. The absence of communication does not prevent friction; it shifts it from 'I understood this was changing' to 'something broke and nobody told me.'"
+            },
+            {
+              "option_label": "C",
+              "option_text": "Frame the change as an improvement. Announce that the AI has been upgraded with a new, more transparent personalization model that gives users greater visibility and control over their preferences. Emphasize the new preference inspection features (viewing your current parameter settings) and the faster issue resolution timeline. Avoid mentioning any reduction in modeling depth.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Framing a tradeoff as an improvement without acknowledging the cost is a credibility risk. Power users who notice that the AI's recommendations feel less precisely tuned will not find 'this is an upgrade' credible, and the gap between the announcement framing and their experience will generate more distrust than an honest transition message would have. The framing must acknowledge what is changing, not only what is being gained.",
+              "framework_hint": "Motivation Theory failure: 'this is an improvement' framing does not reduce the friction of noticing behavioral regression — it adds a second friction layer when the user's experience contradicts the announcement. Users who were told to expect an upgrade and experienced a regression feel more betrayed than users who were told 'this may feel slightly different, and here is why.'"
+            },
+            {
+              "option_label": "D",
+              "option_text": "Send a personalized message to each user in the top engagement quartile explaining that their AI model is being updated and offering them the option to freeze their current model state rather than migrate to the bounded system. Users who value their current personalization depth over the debuggability improvements can opt out of the migration for six months while the team evaluates whether to extend the bounded system's capability to match their needs.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Offering an opt-out for the most invested users is a thoughtful response to the personalization depth sacrifice and shows genuine consideration for their engagement investment. The gap is operational: maintaining two parallel model architectures — the opaque legacy system and the bounded new system — for the top engagement quartile for six months doubles the debugging surface area and undermines the quality control rationale for making the transition in the first place. If the legacy model remains live for the most engaged users, the team still cannot reproduce and debug behavior issues for that segment using the new architecture's tools. The opt-out is a compassionate gesture that creates an engineering problem the architecture was designed to eliminate.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that the most engaged users deserve a differentiated response and are likely to value their personalization history most strongly. Strategic Thinking gap: a six-month opt-out window for the top engagement quartile defers the architecture's quality control benefits for exactly the users whose complex behavior is most likely to generate hard-to-reproduce incidents. The quality architecture must be complete to be effective."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

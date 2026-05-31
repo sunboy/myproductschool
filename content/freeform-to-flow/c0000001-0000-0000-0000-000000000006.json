@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000006",
+  "title": "Checkout Funnel: Page 3 Drop-off Spike",
+  "scenario_role": null,
+  "scenario_context": "Stripe's checkout funnel for a mid-market SaaS has four steps. Page 3, the billing details screen, has run at a steady 12% drop-off for months. Mobile sits at 15%, desktop at 11%. Both numbers are stable and accepted by the team.",
+  "scenario_trigger": "Last Tuesday at 2pm PST, mobile drop-off on Page 3 jumped from 15% to 48%. Desktop held flat at 11%. No code was deployed that day. The spike has not recovered. The CEO wants a root cause by morning.",
+  "scenario_question": "Frame what kind of problem this actually is, identify the most likely external sources, decide how to isolate the cause under time pressure, and define what confirmation looks like.",
+  "engineer_standout": "A strong answer treats the desktop-flat / mobile-spiked split and the precise 2pm PST timestamp as the primary diagnostic signal. Those two facts together rule out a general funnel regression and point toward an external change that affected mobile specifically at a known moment: a third-party SDK update, a mobile browser or OS push, a payment provider configuration change, or a feature flag flipped by another team. The engineering instinct to 'check our deploys' is correct but must extend to the full change surface: vendor changelogs, CDN configurations, A/B experiment flags, and third-party script versions.",
+  "paradigm": "traditional",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["strategic_thinking", "domain_expertise"],
+  "secondary_competencies": ["cognitive_empathy", "taste"],
+  "topic_tags": ["checkout-funnel", "conversion", "debugging", "retention"],
+  "technique_tags": ["taste-frame", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Desktop held flat at 11%. Mobile jumped from 15% to 48% at exactly 2pm PST. What kind of problem does that split describe?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the Page 3 drop-off spike?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Mobile drop-off tripling from 15% to 48% while desktop stayed flat at 11%, with the onset at a precise timestamp and no internal deploy, is the signature of an external or environmental change scoped to the mobile rendering path. The problem is not a general checkout regression. It is a mobile-specific breakage introduced by something outside the codebase: a third-party script, a payment provider configuration, a mobile browser update pushed at 2pm, or a feature flag flipped by another team. The framing that matters is 'what changed at 2pm that only affects mobile,' not 'what is wrong with Page 3.'",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "The desktop-flat / mobile-spiked split is the diagnostic crux. A regression in the codebase would affect both surfaces or show a different pattern. The 2pm PST onset with no deploy narrows the cause to an external event at a known moment. Framing the problem correctly as 'mobile-specific external change' rather than 'checkout funnel regression' determines which investigation paths are worth pursuing.",
+              "framework_hint": "Strategic Thinking: the because-Z framing here is 'mobile dropped because something changed at 2pm that only the mobile render path encounters.' That hypothesis is falsifiable and directs investigation toward vendor changelogs, CDN configs, and flag systems rather than internal code history."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Page 3 has a usability problem on mobile that was always present at a low level and has now crossed a threshold. The 15% baseline was already elevated relative to desktop's 11%, and something amplified an underlying friction. The spike should be treated as a worsening of a pre-existing issue rather than a new one.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "The baseline gap between mobile (15%) and desktop (11%) is worth noting, and pre-existing mobile friction is a real phenomenon. But this framing does not account for the sudden onset: a gradual usability problem does not jump 33 percentage points in a single afternoon. Treating a step-change as a worsening trend misses the point that something discrete happened at 2pm PST, which is the most useful piece of diagnostic information available.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly models that mobile users face different friction than desktop users, but fails to account for the temporal signal. Simulating the mobile user's experience at 2:01pm versus 1:59pm is the reasoning move that surfaces the discrete cause."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The checkout funnel has a conversion problem. A 34% drop-off on Page 3 is unacceptable and the team should run a UX audit of the billing details form: field count, auto-fill support, error messaging, and mobile keyboard behavior.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A UX audit is the right long-term investment for a persistently elevated drop-off, but it addresses the wrong problem here. The 34% drop-off did not exist yesterday. A UX audit explains why drop-off might be chronically elevated; it does not explain why it tripled overnight. Treating a sudden spike as a design problem skips the diagnostic step that would reveal a time-bounded external cause.",
+              "framework_hint": "Motivation Theory failure: identifying friction (billing form is hard) without asking why the friction appeared when it did. The form has not changed. The friction source is external and recent. Skipping to solutions before framing the problem correctly sends the investigation in the wrong direction."
+            },
+            {
+              "option_label": "D",
+              "option_text": "A bot or fraud-detection rule change is blocking mobile users on Page 3. Payment processors frequently update their fraud signals, and mobile sessions trigger more false positives. The spike is a backend rejection issue masquerading as a user drop-off.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Payment processor fraud rule changes are a legitimate cause of checkout drop-off and worth checking. The problem is treating this specific hypothesis as the framing. Fraud-rule changes are one item in the list of external causes, not the frame that organizes the investigation. Jumping to a single external hypothesis before establishing that the problem is external and mobile-scoped bypasses the framing step and risks anchoring the investigation on a plausible-but-unconfirmed cause.",
+              "framework_hint": "Strategic Thinking failure: a hypothesis is not a frame. The frame should describe the structure of the problem (external, mobile-specific, timestamp-bounded) so that fraud rules, SDK updates, browser pushes, and flag flips can all be evaluated as candidates. Naming one candidate as the explanation collapses the problem prematurely."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The cause is external and mobile-specific with a 2pm PST onset. What are the structurally distinct sources that could produce exactly this pattern?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of causes best explains a mobile-only drop-off spike at a precise timestamp with no internal deploy?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct causes match the mobile-only, timestamp-bounded pattern: a payment SDK or third-party script that auto-updated at 2pm and broke a mobile-specific API call or render path; a mobile browser or OS update pushed to a significant user segment at that time, breaking autofill or form behavior on Page 3; a feature flag or A/B experiment targeting mobile users that another team activated, intercepting or altering the checkout flow; and a CDN or edge configuration change that affected mobile-specific asset delivery or certificate validation. Each has a different remediation path and a different verification step, which is why enumerating them separately matters.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These four causes are mechanistically distinct. A payment SDK update requires checking vendor changelogs and script version logs. A browser or OS push requires segmenting drop-off by browser version and device OS. A feature flag activation requires checking the flag management system and experiment configs. A CDN change requires reviewing edge configuration history. Listing variations of 'something changed on mobile' would not produce actionable investigation paths. The value of the list step is generating hypotheses that point to different data sources.",
+              "framework_hint": "Creative Execution: generating structurally distinct hypotheses rather than variations on a theme. Each item here requires a different lookup to confirm or rule out. A list of four phrasings of 'SDK update' would score as one hypothesis, not four."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The most likely cause is a third-party payment script or SDK that updated automatically and introduced a mobile-specific bug. Stripe and its payment provider dependencies auto-update scripts frequently, and a breaking change in a script that renders the billing form or processes card tokenization would affect mobile without touching the codebase.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Third-party script or SDK auto-update is a strong candidate and should be near the top of the investigation list. The limitation is that this is one hypothesis, not a complete enumeration. Browser OS updates, feature flag activations by other teams, and CDN configuration changes can each independently produce the same pattern and are missed here. A complete list matters because the investigation should run all four checks in parallel rather than sequencing them on a single guess.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies a real mechanism (payment script auto-update) with the right domain knowledge. Creative Execution gap: stops at one structurally distinct cause when the framing calls for an exhaustive enumeration that covers different investigation paths."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Mobile users are experiencing network or connectivity issues. Mobile sessions are more susceptible to timeouts and slow connections, and Page 3 with its billing form and payment processing calls may be timing out before users can complete it.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Network degradation affecting mobile is a real phenomenon, but it does not explain the timestamp. Mobile network conditions do not sharply worsen at 2pm PST on a Tuesday and stay worse indefinitely. A persistent connectivity explanation would show a gradual rise, geographic clustering, or correlation with a carrier event, none of which are indicated in the scenario. This option correctly identifies mobile as different from desktop but proposes a mechanism that does not fit the temporal pattern.",
+              "framework_hint": "Creative Execution failure: the candidate mechanism (network timeout) is generic rather than grounded in the specific signals available. The 2pm onset and sustained spike are constraints that the listed cause must satisfy. A hypothesis that cannot explain the timestamp is a weak hypothesis."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The spike correlates with a marketing campaign that drove a surge in lower-intent mobile traffic at 2pm. High-intent users convert; low-intent users abandon at the billing step. The drop-off rate rose because the traffic composition changed, not because the checkout broke.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Traffic composition change is a legitimate cause of drop-off rate movement and should always be considered in funnel analysis. The problem is that a marketing campaign driving lower-intent mobile traffic at exactly 2pm PST on a random Tuesday and sustaining that composition for days is an implausible mechanism. More critically, this explanation predicts that total mobile sessions also rose sharply at 2pm, a check that would quickly confirm or rule it out. Treating an unlikely cause as a primary hypothesis wastes investigation time that should go to external change detection.",
+              "framework_hint": "Strategic Thinking failure: the hypothesis is falsifiable (check session volume) but unlikely given the scenario constraints. A traffic composition shift from a campaign would show up in volume data immediately. Generating hypotheses that are quickly disproven by available data is not bad instinct, but ranking them as primary candidates ahead of more structurally fitting causes reflects miscalibrated prior assignment."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The CEO wants a root cause by morning. Diagnosing first gives you certainty; rolling back blind gives you speed. Name the criterion that decides which path to take.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Under morning deadline pressure, what is the right approach to isolating the cause and the criterion that governs the decision?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Run two parallel tracks simultaneously: a fast segmentation analysis (segment drop-off by mobile OS version, browser version, and device type to identify which cohort the spike is concentrated in) and a change-log audit (pull external dependency versions, CDN config history, and feature flag activation logs for the 1:45pm to 2:15pm window). The criterion governing the decision is reversibility: if the segmentation and logs point to a specific external change that can be reverted or disabled without touching production code, revert it immediately and confirm recovery. If the cause is ambiguous or the fix requires a code deploy, diagnose to certainty first rather than shipping a speculative fix under pressure. The sacrifice is clear: parallel tracks cost more engineer hours in the short term, but a wrong blind rollback that fails to recover drop-off wastes more time and erodes CEO confidence before morning.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "The reversibility criterion is the correct one because it converts a time-pressure decision into a structured rule: if you can reverse an external change without a deploy, the cost of acting on a strong but unconfirmed hypothesis is low. If you cannot, the cost of a wrong fix is high enough to justify diagnosing to certainty first. Parallel tracks are the right operational approach because they eliminate the false tradeoff between speed and accuracy. The sacrifice named explicitly is the additional engineer coordination cost of running two tracks versus a sequential investigation.",
+              "framework_hint": "Taste: the tradeoff is not 'fast versus thorough' but 'reversible action on partial information versus confirmed action on complete information.' Naming the criterion (reversibility) turns a preference (move fast) into a decision rule. Strategic Thinking: parallel tracks eliminate the false binary and make the time constraint surmountable without sacrificing diagnostic quality."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Segment mobile sessions by OS and browser version immediately. Drop-off concentrated in a specific browser version confirms an external browser update as the cause and gives the CEO a specific, defensible answer by morning. If the spike is distributed across all mobile cohorts, expand the investigation to CDN and third-party script changes.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Segmentation by OS and browser is the right first technical step and the sequencing logic (start narrow, expand if distributed) is sound. The gap is that this approach runs investigation tracks sequentially rather than in parallel, which is suboptimal under a morning deadline. More importantly, the option does not name a criterion for deciding between diagnose-first and act-on-signal. It describes a diagnostic sequence but leaves the rollback decision implicit.",
+              "framework_hint": "Strategic Thinking partial credit: correct investigation sequencing. Taste gap: does not name the criterion that governs action under time pressure. A criterion converts a judgment call into a rule the team can execute without debating each step."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Immediately disable all third-party scripts on Page 3 and revert to a minimal billing form to restore conversion while the root cause is investigated separately. Speed matters more than precision when the CEO wants an answer by morning and revenue is at risk.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Disabling all third-party scripts on a payment checkout page is a high-risk action. Payment tokenization, fraud detection, and compliance scripts may all be involved. A blanket disable could break payment processing entirely, which transforms a drop-off problem into an outage. Speed under pressure is a real constraint, but the optimization should be toward the fastest path to a reversible, targeted fix, not toward the fastest path to any action regardless of consequences.",
+              "framework_hint": "Taste failure: 'speed matters more' is a preference, not a criterion. A criterion would name which actions are reversible and which carry irreversible risk. Blanket script disabling on a payment page is not a low-cost action. Conflating urgency with the wisdom of a specific action is a common reasoning failure under deadline pressure."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Escalate to the payment provider (Stripe or the acquiring bank) immediately. A 34% mobile drop-off on a billing page most likely involves a payment infrastructure failure on their side, and they have tooling to identify configuration changes or service degradation in the 2pm window. External root causes require external investigation.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Contacting the payment provider is one correct action and should be on the parallel track list. The problem is framing it as the primary optimization decision. Payment provider escalation has a multi-hour response time in most SLAs, and the internal investigation (segmentation, change logs, flag history) can run in minutes. Outsourcing the primary investigation to an external party before running available internal checks is a poor use of the deadline window, even if provider involvement is ultimately necessary.",
+              "framework_hint": "Strategic Thinking failure: the optimization question asks what criterion governs the investigation approach. Escalating externally first is an action, not a criterion. The criterion should govern when to escalate (after internal checks rule out controllable causes) rather than substituting escalation for internal investigation."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The CEO wants a root cause, not a status update. What does confirmation look like, and how do you know the fix worked?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define and communicate a confirmed root cause and a falsifiable success condition for the CEO by morning?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Root cause is confirmed when two conditions are met simultaneously: the segmentation data identifies the specific cohort carrying the spike (for example, iOS 17.5 users on Safari account for 80% of the drop-off increase), and a change in that cohort's environment at or before 2pm PST is identified in external logs (for example, Apple pushed a Safari update at 1:58pm that altered autofill behavior on payment forms). Success is falsifiable: after the identified change is reverted or mitigated, mobile Page 3 drop-off returns to within 2 percentage points of the 15% baseline within four hours of the fix going live. If drop-off does not recover, the identified cause is not the sole root cause and investigation continues.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This answer defines confirmation as the conjunction of two conditions (cohort identification plus external log evidence), not just a plausible hypothesis. It names specific, measurable success thresholds (return to within 2 percentage points of 15% within four hours) and includes a falsifiability condition (if recovery does not occur, the root cause identification is incomplete). The CEO gets a specific, defensible claim with a recovery metric, not a narrative.",
+              "framework_hint": "Domain Expertise: real root cause confirmation requires two independent signals, not one. A cohort analysis without a matching external event is a correlation. An external log entry without matching cohort concentration is a coincidence. Together they form a confirmed cause. Strategic Thinking: the falsifiability condition (if drop-off does not recover after the fix, the cause is incomplete) closes the loop and prevents the team from declaring victory on a partial fix."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Present the CEO with the most likely cause (a third-party script or SDK update) and a confidence level, along with a timeline for full confirmation. Explain that the spike is external and mobile-specific, that the team has identified the probable cause, and that a definitive confirmation will follow the fix. Communicate proactively and update every two hours.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Communicating proactively and setting a confidence level is good stakeholder management. The gap is that 'probable cause' and 'update every two hours' is not a falsifiable success condition. The CEO asked for a root cause by morning, which requires a specific claim with a recovery metric attached. Providing a confidence level without a verification condition leaves the definition of 'confirmed' to a future conversation rather than establishing it now.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly models what the CEO needs in terms of communication cadence and framing. Strategic Thinking gap: does not close the loop with a falsifiable outcome. A hypothesis that cannot be proven wrong in a defined timeframe is not a root cause, it is a guess with good presentation."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Monitor the mobile drop-off rate over the next 24 hours after any fix is applied. If it returns to near the 15% baseline, the fix worked. If it stays elevated, the investigation continues. Share the trend chart with the CEO in the morning to show directional recovery.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Monitoring and sharing a trend chart is the correct operational follow-through, but it is not a success definition. 'Near the 15% baseline' is not a threshold. '24 hours' is not a deadline that answers a morning request. A trend chart shows direction, not confirmation. The CEO question requires a specific metric, a specific threshold, and a specific timeline, not a promise to continue watching the chart.",
+              "framework_hint": "Domain Expertise failure: 'near the baseline' and 'directional recovery' are not measurable claims. A winning definition requires specific numbers (return to within 2 percentage points of 15%), a timeline (within four hours of fix), and a counter-signal (if it does not recover, the cause identification is incomplete). Directional language defers the definition of success to a future judgment call."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The root cause is confirmed once the team identifies the specific code or configuration change responsible. At that point, a postmortem is scheduled, a fix is deployed, and the incident is closed. The CEO should be notified when the postmortem is written and the fix is in production.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Identifying the responsible change is necessary but not sufficient for confirmation. A configuration change identified in logs might be the cause, a contributing factor, or a coincidence. Confirmation requires observing recovery after the fix: if mobile drop-off returns to the baseline after the identified change is reverted, the root cause claim is supported. Treating identification as confirmation and closing the incident before observing recovery risks declaring victory on a wrong or incomplete cause.",
+              "framework_hint": "Strategic Thinking failure: identification is a hypothesis, not a confirmation. Closing an incident before observing recovery violates the falsifiability requirement. The winning definition must include a recovery metric, not just a causal claim. A postmortem written before confirming recovery documents a hypothesis as a fact, which is a systematic reasoning error in incident response."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

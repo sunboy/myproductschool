@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000033",
+  "title": "How Much Autonomy Should Your AI Agent Have?",
+  "scenario_role": null,
+  "scenario_context": "An AI agent for e-commerce store owners monitors inventory levels, writes and publishes product descriptions, adjusts prices based on competitor data, and responds to customer emails. Every one of those actions currently requires human approval before it executes. Store owners signed up because they wanted the grunt work handled automatically, but the approval queue has become its own burden.",
+  "scenario_trigger": "Users are churning with the same complaint: the approval flow defeats the purpose. But the team is not willing to grant blanket autonomy either. Changing a price or sending an email to a customer is visible to the outside world and hard to walk back cleanly. The question is not how much autonomy to grant in general; it is which of the four actions can run on their own and which ones need a gate, and on what basis.",
+  "scenario_question": "Design the autonomy model that lets the agent act freely where it is safe to do so and holds for human approval only where the consequence warrants it.",
+  "engineer_standout": "A strong answer recognizes that 'how much autonomy' is the wrong frame. The right frame is 'how much autonomy per action, tiered by reversibility and blast radius.' Publishing a product description is low-risk: the store owner can edit or unpublish it after the fact, and no external party is affected until they happen to read it. Adjusting a price or sending a customer email is different: the price change is visible to every visitor the moment it goes live, and the email lands in a customer inbox the agent cannot recall. The reasoning move is to tier the four actions by consequence rather than apply a single blanket policy, and then name what the gate is actually checking.",
+  "paradigm": "agentic",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["taste", "cognitive_empathy"],
+  "secondary_competencies": ["strategic_thinking", "creative_execution"],
+  "topic_tags": ["ai-agents", "product-design", "autonomy", "human-in-the-loop", "e-commerce"],
+  "technique_tags": ["consequence-gating", "blast-radius-framing", "reversibility-tiering"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The approval queue is painful, but 'the approval queue is painful' is not the problem statement. Find the upstream design gap that makes one blanket approval policy the wrong answer.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the autonomy problem for this e-commerce agent?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The agent applies a single approval policy to four actions that have fundamentally different consequence profiles. Publishing a product description is low-stakes and reversible: the owner can edit it after the fact and no external party is harmed until someone happens to read it. Adjusting a price or sending a customer email is externally visible the moment it executes and cannot be cleanly recalled. Treating all four the same way forces the owner to approve actions that do not need approval, which is why the queue feels like friction rather than protection.",
+              "quality": "best",
+              "competencies": ["taste", "cognitive_empathy"],
+              "explanation": "This framing correctly locates the problem in the design of the policy rather than in the concept of approval itself. Pricing and customer emails are the two actions that carry real blast radius: a price change is visible to every visitor, and an email in a customer inbox cannot be unsent. Product descriptions and inventory monitoring sit in a different tier entirely. Getting the framing right here is what makes the rest of the design tractable, because the fix is tiering by consequence rather than loosening or tightening a single dial.",
+              "framework_hint": "Taste: distinguishing between 'the approval flow is annoying' (a UX complaint) and 'the agent treats a description draft and a customer email as equivalent risks' (a structural design error) is the move. Cognitive Empathy: thinking through what actually happens to a customer who receives an incorrect email, versus a customer who sees a slightly wrong product description, makes the asymmetry concrete."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The agent asks for too many approvals, eroding the user experience. The fix is to reduce the number of approval prompts overall by setting a confidence threshold: if the agent's confidence in an action is above 90%, it acts autonomously; if below, it asks. High-confidence actions should not need human review.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Confidence thresholds are a real mechanism in agentic product design, but they conflate model confidence with action consequence. An agent can be highly confident it has found a good price to set and still be wrong in a way that immediately affects every visitor to the store. Model confidence is a measure of the agent's certainty about its own reasoning, not a measure of whether the action is safe to execute without a gate. A 95%-confident pricing change that undercuts margin still needs a human in the loop.",
+              "framework_hint": "Taste partial credit: correctly identifies that not all approvals should be treated equally. The gap is substituting a model-internal signal (confidence) for the load-bearing external property (consequence of the action on affected parties). Confidence and blast radius are independent variables."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The real problem is that users do not trust the agent yet. The solution is a trust-building phase where the agent proposes actions and the user approves them, and after 30 days of clean performance the agent earns autonomy on all actions. Trust is the gating factor.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A trust-building phase is a real onboarding pattern, but applying it uniformly across all four actions misses the point. After 30 days of clean performance on description drafts and inventory checks, the agent would also earn autonomy on pricing and customer emails, which are the two actions that carry genuine blast radius regardless of past performance. Trust accrued on reversible actions does not transfer to irreversible ones.",
+              "framework_hint": "Cognitive Empathy failure: this frame centers the user's trust in the agent rather than the consequence to the customer or the market. A customer who receives an incorrect automated email does not care whether the agent had a clean 30-day track record. The gate should be calibrated to consequence, not to accumulated performance on unrelated action types."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The approval flow is a symptom of a weak onboarding design. If the agent were set up correctly at the start, with the owner defining rules for each action type, the agent would not need to ask for approval. The fix is a better configuration wizard, not a redesigned autonomy model.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A configuration wizard addresses the setup experience, not the structural question of which actions warrant human oversight. Even with a perfect onboarding flow, the agent would still need a gate for pricing and customer emails because the consequence of getting those wrong is visible to people outside the store. Rules defined at setup cannot anticipate every pricing situation or customer email context, so the agent will still encounter cases where autonomous action carries real blast radius. Onboarding improves usability; it does not resolve the consequence asymmetry between the four action types.",
+              "framework_hint": "Strategic Thinking failure: configuration and autonomy gating are two separate concerns. Configuration tells the agent what to do; the autonomy model tells the agent when to ask before doing it. A well-configured agent with no consequence gate can still send a badly timed customer email or set a price that damages margin, acting confidently within the rules it was given."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Before designing the tier system, enumerate what actually separates an action the agent can take on its own from one that needs a gate. The four actions in this scenario are the test cases.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of factors most completely explains why pricing and customer emails need a gate while inventory monitoring and description drafting do not?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three structurally independent factors explain the split. First, reversibility: a published product description can be edited or unpublished after the fact with no lasting harm; a customer email lands in an inbox the agent cannot retrieve, and a price change is live to every visitor the moment it executes. Second, external visibility: inventory monitoring and description drafting affect internal state until the owner chooses to surface them; pricing and customer emails are immediately visible to people outside the business who did not choose to be involved in the agent's decision. Third, stakeholder blast radius: a description with an error affects the owner's brand gradually; an incorrect price change affects the owner's margin on every transaction until corrected, and an inappropriate customer email can damage a specific relationship in a way that is hard to repair.",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "These three factors are mechanistically distinct. Reversibility addresses whether the action can be undone; external visibility addresses who is exposed before the owner has a chance to correct it; blast radius addresses how many people are affected and how badly. A product description scores well on all three: it is editable, it is only surfaced when a customer happens to visit the page, and the harm from an error is gradual. A customer email scores poorly on all three: it cannot be recalled, it goes directly to a specific person who did not ask for it, and a single badly worded message can damage a customer relationship. Pricing sits between the two on reversibility but scores high on visibility and blast radius.",
+              "framework_hint": "Creative Execution: generating three factors that are genuinely independent rather than variations of 'how risky is this.' Reversibility and external visibility are often conflated but distinct: a price change is reversible in principle but is externally visible immediately, so the exposure window exists even if the error is fixed quickly. Cognitive Empathy: including external visibility forces the design to account for people who are affected by the agent's action without being party to the decision."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The key factor is financial risk. Pricing changes directly affect revenue and margin; customer emails can lead to refunds or chargebacks; inventory is less directly tied to money; descriptions affect brand, which is hard to quantify. Actions with direct financial exposure should require approval; others can run autonomously.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Financial risk is a real and relevant factor, and correctly separates pricing from the other three actions in most cases. The gap is that it does not fully explain why customer emails belong in the gated tier. An email that is factually incorrect, inappropriately timed, or poorly worded can damage a customer relationship in ways that never appear as a direct financial event, even if they eventually cause churn. Financial risk also does not capture reversibility: a price error that is fixed in two minutes still had external visibility during that window.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that financial exposure is an important dimension and applies it reasonably to the four actions. The gap is that financial risk is not the only load-bearing variable; external visibility and reversibility explain cases that financial risk cannot, particularly the customer email, which can cause real harm without a traceable dollar cost."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The important factor is how often the action is taken. Inventory checks and description drafts happen frequently, so the friction of approval is high and the per-instance stakes are low. Pricing and email changes happen less often, so approval adds less friction and the stakes per instance are higher. Approval should be reserved for infrequent, high-stakes actions.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Frequency is a reasonable proxy in some contexts but it is not the structural variable here. The problem with uniform approval is not primarily that it is applied too often; it is that it is applied regardless of whether the action warrants a gate. An agent that sends customer emails infrequently but does so without oversight can still damage a customer relationship with a single ill-timed message. Frequency affects the cost of the approval flow, not whether a gate is warranted in the first place.",
+              "framework_hint": "Cognitive Empathy failure: this frame centers the owner's experience of approval friction rather than the customer's exposure to an unreviewed automated message. A customer who receives one poorly written automated email is not consoled by the fact that the agent does not send many."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The key factor is whether the action is creative or operational. Writing product descriptions is creative work the agent is doing on behalf of the owner, who should review it as an author would. Inventory and pricing are operational decisions with clear rules, so the agent can execute them without review. Customer emails are also operational and should run autonomously once templates are set.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The creative-versus-operational framing produces the wrong tier split. It correctly puts description drafting in the review bucket, but it also puts pricing and customer emails in the autonomous bucket on the grounds that they follow rules. The problem is that rules do not eliminate blast radius: a rule-following price adjustment that undercuts margin is still externally visible the moment it fires, and a template-based customer email still lands in a real inbox. The factor that determines whether a gate is needed is not whether the action is creative or operational but whether it is visible to external parties before the owner can intervene.",
+              "framework_hint": "Taste failure: the creative-versus-operational frame is appealing because it maps to a familiar product distinction, but it produces the wrong answer for customer emails. An operational action that is externally visible and non-reversible needs a gate for the same reasons a creative one does. The frame needs to be consequence-based, not action-category-based."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Two of the four actions belong in the autonomous tier and two belong behind a gate. Name the criterion the gate is actually checking, and name what the team gives up by drawing the line there.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for the gate, and what does adopting that criterion require the team to sacrifice?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The gate criterion is external visibility combined with irreversibility at the moment of execution. An action crosses the threshold when it is immediately visible to someone outside the business and cannot be cleanly recalled once it fires. By that criterion, inventory monitoring and description drafting stay autonomous, because they affect internal state and can be corrected before anyone outside the business sees the result. Pricing and customer emails go behind the gate, because a price change is live to every store visitor the moment it executes and a customer email cannot be unsent. The sacrifice this criterion demands is explicit: the agent will be slower on pricing and email than users initially hoped, and some users who wanted full autonomy will be disappointed. That disappointment is worth accepting, because a single incorrect customer email or a margin-damaging price change is the kind of visible, external mistake that can end a store owner's trust in the product entirely.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion maps directly onto the structural split between the four actions. It is not arbitrary: the gate fires on the property that makes an error hard to contain, which is that the action exposes external parties to the agent's output before the owner can review it. Naming the sacrifice (slower pricing and email, disappointed users who wanted full autonomy) makes this a tradeoff with a defensible rationale rather than a preference. The rationale is also durable: it does not depend on the agent's confidence level or past performance, only on whether the action is externally visible and irreversible.",
+              "framework_hint": "Taste: the criterion is not 'actions the team is nervous about' (a preference) but 'actions that expose external parties before the owner can intervene' (a structural property). The sacrifice is named and accepted rather than minimized. Strategic Thinking: the criterion scales to new action types the agent might acquire later, because external visibility and reversibility are properties of any action, not just the current four."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be dollar exposure per action: set a threshold such that any pricing change above a certain margin impact requires approval, and any email associated with an order above a certain value requires review. Below the thresholds, the agent acts autonomously. The team gives up some simplicity in the gate logic, but gains a risk-calibrated autonomy model.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Dollar thresholds are a real implementation approach and correctly recognize that not all pricing changes carry equal consequence. The gap is that dollar exposure does not fully capture the damage a poorly worded customer email can cause, because relationship damage often does not correlate with order value. A low-value order customer who receives an inappropriate automated message can still leave a public review or dispute the charge. Dollar exposure also requires the team to maintain and update thresholds as the store scales, while external visibility and reversibility are properties that remain stable.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the gate should be calibrated to magnitude of consequence rather than applied uniformly. The gap is that dollar exposure is one proxy for consequence, not the full criterion. Customer emails in particular carry blast radius that is not well-captured by order value."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be user-configured per action type: let store owners decide for themselves which actions they want the agent to handle autonomously. Power users can unlock full autonomy; cautious users keep approval on everything. The team gives up a default autonomy model but gains flexibility.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "User configurability is a reasonable product feature for a future iteration, but it is not a gate criterion. Giving every store owner the ability to unlock full autonomy on pricing and customer emails means some owners will do exactly that, and the first time an agent sends an incorrect customer email or sets a damaging price autonomously, the product bears the consequence. The gate criterion needs to reflect the actual structure of the risk, not the user's preference for friction.",
+              "framework_hint": "Taste failure: 'let users decide' sounds like respecting autonomy but actually defers the design question rather than answering it. The team still needs to set the default, and the default matters most for new users who have not yet built intuition about which actions are safe. A gate calibrated to user preference is not a gate calibrated to consequence."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion should be time-to-execute: if an action can be staged and previewed before it goes live, the agent can execute autonomously and the owner reviews the staged output. If an action fires immediately with no staging layer, it requires pre-approval. The team gives up speed on actions without staging infrastructure.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Staging is a real implementation mechanism and staging a price change before it goes live is a valid engineering approach. The problem is that this criterion delegates the gate logic to the infrastructure design rather than to the action's consequence. If the team builds a staging layer for customer emails, the criterion would classify them as autonomous-safe, even though an email that escapes a staging layer by accident still lands in a real inbox. The gate criterion should be a property of the action's consequence, not a property of the infrastructure the team happens to have built.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that staging is a mechanism that can reduce the blast radius of certain actions by inserting a review step. The gap is that staging is a means of implementing a gate, not a criterion for when a gate is needed. The underlying question of which actions need oversight does not change based on whether staging infrastructure exists."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the tiered autonomy model has failed, not just underperformed.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the tiered autonomy model after it ships to existing users?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: approval queue volume drops by at least 60% within 30 days of the tiered model shipping, driven by inventory and description actions moving to autonomous execution; zero pricing or customer email actions execute without approval during that same window; and the 30-day churn rate among the users who complained about the approval flow drops by at least 15 percentage points. The 60% queue reduction tests that the tier split is actually relieving the friction that drove complaints. The zero gate-bypass rate on pricing and emails tests that the high-consequence actions remain properly fenced. The churn delta tests that the fix was meaningful enough to change retention behavior. The counter-signal is: approval acceptance rate on pricing and email prompts falls below 70%, which would indicate that users are dismissing those gates rather than acting on them, turning the high-consequence prompts into noise.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "Each metric tests a distinct element of the design hypothesis. The 60% queue reduction is calibrated to the fact that inventory monitoring and description drafting are the higher-volume actions; if they move to autonomous execution, the queue should shrink substantially. The zero bypass rate on pricing and emails tests that the structural split has held in practice. The churn delta tests retention impact on the specific users whose behavior was the signal for the problem. The counter-signal (low acceptance rate) identifies the failure mode where the gate technically fires correctly but users learn to ignore it, making the high-stakes prompts invisible in the noise of frequent approvals.",
+              "framework_hint": "Domain Expertise: a 60% queue reduction is calibrated to the action-mix of a typical e-commerce agent, where routine description updates and inventory checks outnumber pricing and email actions. An agent that only removes approval from low-volume actions would not see this kind of reduction. Strategic Thinking: the counter-signal (prompt fatigue from low acceptance rate) identifies the failure mode that does not appear in the gate's own correctness metrics but would make the system unsafe over time."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means net promoter score increases by 10 points in the 60 days after the model ships, measured via in-app survey. If NPS goes up, the fix landed well. If it stays flat, the tiered model did not move the needle on user experience.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "NPS is a real and relevant signal for a product-experience change of this kind, and tracking it is not wrong. The gap is that NPS is a composite of many factors, and a 10-point increase over 60 days may or may not be driven by the autonomy model specifically. More critically, NPS cannot tell you whether the gate on pricing and emails held, or whether the queue reduction was large enough to meaningfully change the experience. The win condition should include at least one metric that directly tests the structural design hypothesis.",
+              "framework_hint": "Strategic Thinking partial credit: NPS is a legitimate outcome metric and naming a specific threshold and timeline is the right instinct. The gap is that a composite sentiment score cannot confirm that the specific design choice, gating pricing and emails while freeing inventory and descriptions, was the mechanism that drove the change."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means no support tickets about incorrect autonomous actions in the 30 days after shipping. If the agent makes no observable mistakes on the actions it now handles autonomously, the model is working.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Zero support tickets is a plausible hygiene check but not a falsifiable win condition. Store owners often do not file support tickets for errors they notice and correct themselves; they just fix the description or revert the inventory flag. A silent error rate is not the same as a zero error rate. This metric also does not test whether the gate on pricing and emails is functioning or whether the queue reduction is substantial enough to address the original churn signal.",
+              "framework_hint": "Strategic Thinking failure: support tickets are a lagging indicator with a strong selection bias toward errors that are visible, confusing, and egregious enough to prompt a formal complaint. A model that produces subtle errors on description copy would pass this metric while still degrading brand quality. The win condition needs metrics that directly test the design hypothesis, not proxies that depend on users reporting problems."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is confirmed when the three users who explicitly cited the approval flow as a reason for churning are retained at the 60-day mark. Qualitative interviews with those three users at day 60 will confirm whether the tiered model resolved their objection.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Retaining specific churned users is a meaningful signal but it is not a falsifiable win condition for the design change. Three users re-engaging at 60 days might reflect the tiered model working, or it might reflect outreach, pricing changes, or coincidence. Qualitative interviews with three people cannot distinguish between these explanations. A win condition needs a metric with a threshold that the system either crosses or does not, so the team can tell whether the design hypothesis held.",
+              "framework_hint": "Domain Expertise failure: at small sample sizes, individual retention outcomes are dominated by noise. Three users is not a statistically meaningful signal for a product design question. The win condition should be defined over the full cohort of users who complained about the approval flow, with a measurable retention delta, so the outcome can be distinguished from random variation."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

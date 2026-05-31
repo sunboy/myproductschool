@@ -1,0 +1,341 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000028",
+  "title": "Multi-Model Strategy: When to Mix LLMs",
+  "scenario_role": null,
+  "scenario_context": "A Series B startup has eight AI-powered features running in production: code generation, document summarization, text classification, sentiment analysis, entity extraction, semantic search, question-answering, and image captioning. Every one of them calls GPT-4o. The combined LLM API bill is $180K per month, and it is growing at roughly 20% month-over-month as user traffic scales. A junior engineer has proposed routing cheaper models — Anthropic's Haiku and Meta's Llama 3.1 8B — to the simpler, higher-volume tasks, cutting costs by 60% or more on the routed features. The CTO is not opposed to saving money but is uncomfortable with the added operational complexity: two or three models means two or three prompt pipelines to maintain, two or three failure modes to monitor, and a new class of production incident where a cheaper model quietly degrades output quality without triggering an error.",
+  "scenario_trigger": "The proposal lands in a product review. Finance wants a cost reduction plan within the quarter. Engineering is stretched. The CTO's complexity concern is legitimate: the startup does not yet have a model-evaluation harness, and 'route simpler tasks to cheaper models' is not a routing strategy until someone defines what 'simpler' means, how quality is measured, and what the fallback is when a cheaper model silently underperforms. The team has to decide which features to route, what the routing criterion is, and how to catch degradation before users do.",
+  "scenario_question": "Frame the real problem behind the cost concern, enumerate the features and factors that belong in a routing decision, name the tradeoff the team must accept, and define a falsifiable success bar for the routing strategy.",
+  "engineer_standout": "A strong answer refuses to treat this as a blanket cost-reduction exercise. The eight features split cleanly into two bands: classification, sentiment, and entity extraction are high-volume, low-quality-sensitivity, and well-suited to Haiku or Llama 3.1 8B with little perceptible output difference. Code generation and question-answering are quality-critical, low-tolerance, and should stay on GPT-4o. The CTO's complexity concern is not wrong — it is the real tradeoff to price. The routing strategy only works if the team ships a lightweight evaluation harness alongside it. Without that harness, degradation is invisible until users complain. The reasoning move: segment by (quality sensitivity × volume × cost per token), route accordingly, and define the guardrail before routing, not after.",
+  "paradigm": "ai_native",
+  "difficulty": "hard",
+  "estimated_minutes": 45,
+  "primary_competencies": ["domain_expertise", "strategic_thinking"],
+  "secondary_competencies": ["taste", "cognitive_empathy"],
+  "topic_tags": ["ai-infrastructure", "cost-optimization", "model-routing", "llm", "product-strategy"],
+  "technique_tags": ["cost-quality-tradeoff", "segmentation"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The invoice is $180K/month, but the invoice is not the problem. What is actually at risk if routing goes wrong, and why is the CTO's complexity worry a more important signal than the finance team's cost target?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the problem the startup needs to solve before routing any of its eight features to cheaper models?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The real problem is that the startup is running eight features on GPT-4o without distinguishing which ones actually need GPT-4o's reasoning depth, and without any mechanism to detect when a cheaper model underperforms. At $180K per month, the cost is painful, but the CTO's complexity concern points to the deeper issue: routing to Haiku or Llama 3.1 8B without a quality evaluation harness means degradation is invisible until users surface it. Classification, sentiment, and entity extraction can likely move to a smaller model tomorrow with negligible quality loss, but code generation and question-answering have no tolerance for silent regressions. The framing is not 'how do we cut costs' but 'how do we segment our eight features by quality sensitivity so that routing decisions are defensible and degradation is detectable before it reaches users.'",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing correctly identifies that the $180K bill is a symptom of an undifferentiated model strategy, not the root problem. The root problem is that the team has no quality-sensitivity taxonomy for its own features and no evaluation harness to catch regressions. Routing without those two things means cost goes down and quality risk goes up invisibly, which is the CTO's legitimate concern. Framing the decision as 'how do we segment by quality sensitivity' puts the team in the right position to make defensible routing choices rather than guessing which features can tolerate a cheaper model.",
+              "framework_hint": "Domain Expertise: knowing that classification, sentiment, and entity extraction are high-volume, deterministic tasks where small models perform comparably to large ones — while code generation and question-answering require reasoning depth that degrades measurably on smaller models. Strategic Thinking: reframing 'cost reduction' as 'quality-segmented routing with detection' surfaces the CTO's complexity concern as a prerequisite, not an objection."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The problem is that AI infrastructure costs are scaling faster than revenue. At 20% month-over-month growth and $180K already, the bill will exceed $500K per month within a year at current model mix. The company needs to reduce per-feature token costs immediately. Routing cheaper models to some features is the obvious solution; the question is which features to start with.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The cost trajectory is real and the urgency is accurate. The gap is that framing this as a cost problem to be solved by routing skips the question the CTO is actually raising: how does the team know when a cheaper model is degrading quality, and what is the operational cost of managing multiple model pipelines? Framing around cost alone leads to routing decisions that optimize for the invoice without testing whether users notice the difference. The CTO's complexity concern is not resistance to change — it is a prerequisite condition the team has not yet satisfied.",
+              "framework_hint": "Strategic Thinking partial credit: correctly reads the cost trajectory and frames action as urgent. Misses the upstream problem that makes routing risky: no quality benchmark for the eight features means no way to detect degradation after routing. A framing that names cost as the problem will produce a cost-focused routing plan that ships without the evaluation harness required to make it safe."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is that the team has not evaluated alternatives to GPT-4o. Open-source models like Llama 3.1 8B have closed the quality gap significantly. A systematic benchmark of all eight features against Llama 3.1 8B would reveal which features can migrate without quality loss. Once benchmarked, migration is a straightforward engineering task.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Running a benchmark is a useful action but it is not a framing of the problem. The framing step asks what is actually at risk, not what the next engineering task is. A benchmarking plan also assumes the team has an evaluation criterion for each of the eight features before the benchmark begins — otherwise the benchmark produces numbers without a quality threshold to compare against. The scenario's deeper challenge is defining what quality means for code generation versus sentiment classification, which the benchmark alone cannot answer.",
+              "framework_hint": "Domain Expertise partial: recognizes that open-source models have narrowed the quality gap. Framing failure: a benchmark is a tool, not a problem definition. The frame step requires naming what is at risk if the routing decision is wrong, which is not 'the benchmark was too slow' but 'quality degraded silently on production traffic before anyone noticed.'"
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is organizational. Finance wants cost cuts, engineering is stretched, and the CTO is risk-averse. These are competing priorities. The team needs a cross-functional alignment session to agree on how much quality degradation is acceptable in exchange for cost savings before any routing decision can be made.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Cross-functional alignment sounds productive but it is not a problem frame. The disagreement between finance and the CTO is not about competing priorities — they both want cost reduction without breaking production. The actual problem is technical and product-specific: the team does not know which of its eight features can tolerate model downgrading because it has no quality-sensitivity taxonomy and no evaluation harness. Calling an alignment session does not resolve that. Naming the missing technical prerequisite is the correct frame.",
+              "framework_hint": "Cognitive Empathy failure: simulating stakeholder positions (finance, CTO) without asking what is actually preventing the decision. The CTO is not risk-averse in the abstract — the CTO is pointing at a specific operational gap (no evaluation harness) that makes routing risky. An alignment session does not produce the evaluation harness."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Eight features, three candidate models, and a CTO who has named complexity as the cost of routing. List the factors that belong in a routing decision — both the ones that tell you which features to route and the ones that tell you whether routing is operationally safe.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of factors most completely covers what needs to be evaluated before deciding which of the eight features to route to Haiku or Llama 3.1 8B?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct factors govern the routing decision for each of the eight features. First, quality sensitivity: how much does output quality matter to users, and is degradation measurable — code generation and question-answering fail visibly; sentiment classification rarely does. Second, call volume and cost concentration: which features drive the majority of the $180K monthly bill — high-volume low-value calls (classification, entity extraction) are better routing candidates than low-volume high-value calls (code generation). Third, task complexity: does the feature require multi-step reasoning or chain-of-thought, or is it a pattern-matching classification — Haiku and Llama 3.1 8B handle classification well and struggle with extended reasoning chains. Fourth, evaluation harness readiness: does the team have a way to measure output quality for this feature automatically, or would regression detection rely on user complaints? Fifth, operational overhead per routed feature: each routed feature adds a prompt pipeline to maintain and a failure mode to monitor — this is the CTO's complexity cost and it is real.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These five factors are mechanistically different. Quality sensitivity and task complexity determine which features can be safely routed. Call volume and cost concentration determine which features are worth routing. Evaluation harness readiness determines whether routing is operationally safe. Operational overhead per feature prices in the CTO's complexity concern explicitly, which prevents the team from routing many features simultaneously and discovering the maintenance cost after the fact. Together they produce a structured routing decision rather than an intuition about which tasks are 'simple.'",
+              "framework_hint": "Creative Execution: generating factors that cut across different dimensions of the routing problem — quality, cost, complexity, operational safety, and maintenance cost — rather than listing variations of 'which model is cheaper.' Domain Expertise: distinguishing task complexity (chain-of-thought versus pattern matching) as a model-selection variable reflects how smaller models actually behave on different NLP tasks: they close the gap on classification and fall behind on reasoning."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team should evaluate each feature on three dimensions: cost per call, quality sensitivity, and ease of switching. Features with high cost per call, low quality sensitivity, and simple prompt structures are the best routing candidates. Classification, sentiment, and entity extraction likely score well on all three. Code generation and question-answering likely score poorly and should stay on GPT-4o.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "This answer correctly identifies the three most important dimensions and reaches the right directional conclusion about which features to route and which to leave. The gap is that it omits evaluation harness readiness and operational overhead, which are the two factors that determine whether routing is operationally safe rather than just cost-effective. Without an evaluation harness, the team cannot detect when a cheaper model begins degrading quality on classification or entity extraction tasks as prompt distributions shift. The CTO's complexity concern is priced out entirely.",
+              "framework_hint": "Domain Expertise: correctly maps cost per call and quality sensitivity to the right features. Creative Execution gap: three factors produce a routing shortlist but not a routing strategy — the missing factors (harness readiness, operational overhead) are what turn a shortlist into a decision the CTO can approve."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should survey users across all eight features to understand which outputs users find most valuable. Features with high user satisfaction should stay on GPT-4o. Features where satisfaction is average or below can be tested with cheaper models. User perception is the ground truth for quality sensitivity.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "User perception is an output of quality, not a factor in a routing decision. A user satisfaction survey cannot distinguish between 'this feature uses GPT-4o and produces great output' and 'users have low expectations for this feature so any output quality looks acceptable.' More practically, entity extraction and text classification are typically non-interactive backend tasks — users do not evaluate individual extraction calls directly. The list step requires decision factors, not a data-gathering process.",
+              "framework_hint": "Cognitive Empathy failure: inferring quality sensitivity from user satisfaction surveys confuses user awareness of a feature with the feature's actual tolerance for model downgrading. A user who has never seen a better entity extraction output cannot report that the current one is inadequate."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The key factor is latency. Cheaper models like Llama 3.1 8B run faster than GPT-4o, which means routing to them will improve response times for users. Features where low latency matters most should be routed first. Latency improvement is an additional user benefit that makes the routing decision easier to justify internally.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Latency is a property of model deployment and infrastructure, not a primary routing criterion. Llama 3.1 8B running on a self-hosted or third-party API may or may not be faster than GPT-4o depending on the serving setup. More fundamentally, framing routing around latency improvement misidentifies the driver: the routing proposal exists because the startup is spending $180K per month, not because users are complaining about response times. A routing strategy optimized for latency would lead the team to route features where latency matters (real-time code generation) rather than where cost concentration is highest (high-volume classification calls).",
+              "framework_hint": "Strategic Thinking failure: latency is a real engineering variable but it is not the variable that governs the routing decision in this scenario. The scenario names cost ($180K/month) and complexity (CTO's concern) as the two forces to balance. Routing for latency addresses neither."
+            }
+          ]
+        },
+        {
+          "question_text": "How should the eight features be segmented for initial routing consideration, and what is the reasoning for placing each feature in its segment?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["domain_expertise", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The eight features split into three segments. Segment one — route immediately: classification, sentiment analysis, and entity extraction. These are pattern-matching tasks with well-understood output structures, high call volume (likely the majority of the $180K bill), and low quality sensitivity, since a correct classification at 92% accuracy is functionally equivalent to one at 95% for most downstream uses. Segment two — test with evaluation harness first: summarization, semantic search, and image captioning. These have moderate quality sensitivity where a small model may degrade on edge cases without obvious failure signals, making them candidates for routing once a quality evaluation pipeline is in place. Segment three — stay on GPT-4o: code generation and question-answering. These tasks require multi-step reasoning, produce outputs users directly evaluate, and carry high cost of failure — a wrong code suggestion or a hallucinated Q&A answer has direct consequences.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "cognitive_empathy"],
+              "explanation": "This segmentation correctly separates the eight features by quality sensitivity and task type, and explicitly connects each segment to a recommended action rather than just a label. Segment one covers the features where routing savings are greatest and risk is lowest. Segment two respects the CTO's complexity concern by requiring an evaluation harness before routing, rather than assuming moderate-quality-sensitivity features will route cleanly. Segment three treats code generation and question-answering as non-negotiable GPT-4o tasks based on the reasoning demands and user consequences of failure.",
+              "framework_hint": "Domain Expertise: knowing that entity extraction, sentiment, and classification are standard NLP tasks where small fine-tuned models routinely match large general-purpose models. Cognitive Empathy: simulating the user's experience of a wrong code suggestion (direct productivity loss) versus a slightly degraded classification (often invisible to the end user) reveals why the two segments have different tolerance profiles."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The features should be segmented by token usage per call. High-token calls are more expensive and therefore better routing candidates regardless of task type. Image captioning and summarization likely use more tokens than classification and entity extraction, making them better candidates for routing. Code generation may also be a candidate if prompts can be shortened.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Token usage per call is a real cost variable but it is not the primary routing criterion. A high-token classification prompt that is cheap to route is a better candidate than a low-token code generation prompt that cannot safely be routed. The correct segmentation primary key is quality sensitivity and task complexity, with token usage as a secondary weighting factor. Routing image captioning before classification because captioning uses more tokens would increase operational overhead on a moderate-quality-sensitivity feature while leaving the highest-volume, easiest-to-route features untouched.",
+              "framework_hint": "Domain Expertise gap: treating token count as the primary segmentation key conflates 'expensive' with 'safe to route.' Summarization and image captioning are more expensive per call precisely because they require richer model output, which also means a smaller model is more likely to degrade on them. Quality sensitivity and token count are inversely correlated across this feature set."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The features cannot be segmented without running a benchmark first. Route all eight features to Haiku in a shadow mode — run both GPT-4o and Haiku in parallel on live traffic for two weeks without changing user-facing outputs, then compare outputs. Features where the outputs match at least 90% of the time are safe to route.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Shadow mode comparison is a useful engineering technique but it is not a segmentation approach for the list step. More fundamentally, comparing outputs at 90% match rate assumes the team has a comparison metric, which requires defining what 'match' means for code generation output, summarization, and entity spans — which is exactly the evaluation harness problem the scenario says does not yet exist. The list step asks for a principled segmentation based on available knowledge, not a test plan.",
+              "framework_hint": "Creative Execution failure: proposing a process (shadow mode benchmark) instead of a segmentation. A segmentation based on domain knowledge about task complexity and quality sensitivity can be produced before a benchmark and will determine which features to benchmark first. The process follows the segmentation, not the reverse."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The features should be segmented by customer tier. Enterprise customers should always receive GPT-4o outputs for all eight features regardless of task type. Smaller customers can receive Haiku or Llama 3.1 8B outputs. This creates a natural premium differentiation that supports the pricing model.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Tier-based model routing is a product differentiation strategy, not a solution to the cost problem the scenario describes. The $180K monthly bill is driven by call volume across all customer tiers, not exclusively by enterprise usage. Routing smaller customers to cheaper models without evaluating quality sensitivity by feature would expose the startup to the same silent degradation risk the CTO is concerned about, only now applied selectively to a customer segment. The scenario asks for a feature-level routing strategy, not a customer-segmentation pricing strategy.",
+              "framework_hint": "Strategic Thinking failure: the tier-based approach treats model routing as a product SKU decision rather than a quality-cost-complexity engineering decision. Tier-based model routing could be a downstream product decision after the routing infrastructure is built, but it does not address the problem of which features can safely be routed to smaller models at all."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The team knows which features can route and which cannot. Now name the single criterion that tells you when the added operational complexity of running multiple models is worth paying. The CTO is not asking you to abandon cost reduction — the CTO is asking you to price the complexity honestly.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding how aggressively to expand model routing beyond the initial three high-confidence features (classification, sentiment, entity extraction)?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is cost savings per unit of operational complexity added. Routing classification, sentiment, and entity extraction to Haiku is expected to cut at least 40% of the $180K bill — call it $72K per month — while adding exactly three prompt pipelines and three monitoring surfaces. That is a high ratio of savings to complexity. Routing summarization or image captioning adds more complexity (moderate quality sensitivity means the evaluation harness must be tighter) for smaller additional savings (these features have lower call volume than classification). The team should route the next feature only when the evaluation harness for that feature is shipped, tested on two weeks of production traffic, and producing a stable false-positive rate below 5%. The sacrifice is explicit: the startup will leave some cost on the table for features in segment two until the harness is ready, and will accept the cost of maintaining the harness as an ongoing engineering investment.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names what is being optimized (savings per complexity unit) and what is being sacrificed (speed of segment-two routing, plus the ongoing harness maintenance cost). It grounds both sides in scenario-specific numbers: the $72K monthly savings from the first three features, the lower incremental savings from moderate-quality-sensitivity features, and the harness readiness requirement before any segment-two feature routes. Naming the sacrifice explicitly prevents the team from routing segment two features before the harness is ready and discovering silent degradation in production.",
+              "framework_hint": "Taste: distinguishing between 'we can route more features' (a preference for maximizing savings) and 'the harness false-positive rate is below 5% on two weeks of production traffic' (a property that determines whether the next routing decision is operationally safe). Strategic Thinking: the criterion maps to the CTO's concern precisely — complexity is only acceptable when the evaluation infrastructure needed to manage that complexity is already in place."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be total monthly cost reduction. Set a target of cutting the LLM bill to $90K per month — a 50% reduction. Route features in order of cost contribution until the target is reached. If classification, sentiment, and entity extraction get the team to $100K, add summarization. If summarization gets to $90K, stop. The criterion is the invoice target.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A specific cost target with a clear stopping rule is better than directional language, and the instinct to sequence routing by cost contribution is correct. The gap is that the invoice target says nothing about the quality threshold that must be satisfied before adding each feature to the routing pool. A team optimizing against an invoice target might route summarization to reach $90K before the evaluation harness for summarization is ready, which is exactly the scenario the CTO is concerned about. The criterion needs to pair the cost target with a quality-safety gate per feature.",
+              "framework_hint": "Strategic Thinking partial credit: correctly names a specific target ($90K) and a sequencing principle (route by cost contribution). Taste gap: the invoice target as the sole criterion produces a decision that is right directionally but does not force the team to name what it is giving up by routing each additional feature before the harness covers it. A criterion without a named sacrifice is a preference, not a tradeoff."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should optimize for engineering simplicity. The CTO is right that complexity is a real cost. The criterion should be: only route a feature if the prompt can be moved to the cheaper model with zero changes to the existing pipeline. If swapping the model endpoint is a one-line change, route it. If it requires a new prompt or evaluation logic, skip it. Simplicity caps complexity growth.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Zero-change prompt compatibility is too restrictive a criterion and misidentifies the CTO's concern. The CTO is not worried about the size of the code change — the CTO is worried about production quality degradation and monitoring overhead. A feature that routes with a one-line endpoint change and no evaluation harness is just as risky as one that requires a prompt rewrite. The criterion also rules out the segment-two features that would benefit most from routing once harness coverage is in place, leaving savings on the table indefinitely.",
+              "framework_hint": "Cognitive Empathy failure: simulating the CTO's concern as 'less code change equals less complexity' rather than 'quality degradation is invisible without monitoring infrastructure.' The CTO's complexity cost is operational, not syntactic. A criterion that minimizes code change size does not address the monitoring and maintenance overhead the CTO is actually pricing."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is user experience parity. For each feature routed to a cheaper model, run a blind A/B test with 5% of production traffic. If users cannot distinguish between GPT-4o and the cheaper model output at statistical significance, route the full feature. If they can, keep GPT-4o. User perception is the only ground truth that matters.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Blind A/B testing on user perception is a legitimate quality-validation technique for consumer-facing features with measurable engagement signals. It is not an appropriate criterion for entity extraction, classification, or sentiment analysis, which are typically backend tasks with no direct user-visible output for users to react to. More practically, a 5% traffic split A/B test takes weeks to reach statistical significance on lower-frequency features, which does not fit the quarter deadline Finance has imposed. A criterion must be operationally feasible in the scenario's timeframe.",
+              "framework_hint": "Domain Expertise failure: A/B testing on user perception assumes users can perceive individual model outputs, which is true for code generation and summarization but not for classification and entity extraction, where model outputs feed downstream systems rather than user interfaces. The criterion is context-appropriate for some features and inapplicable to others, making it unsuitable as a universal routing criterion."
+            }
+          ]
+        },
+        {
+          "question_text": "How should the startup handle the CTO's complexity concern when presenting the routing strategy for approval?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The complexity concern should be treated as a constraint to engineer around, not an objection to overcome. The proposal to the CTO should include three things alongside the routing plan: a lightweight evaluation harness scoped to the three segment-one features (automated output sampling, a pass/fail threshold per feature, a weekly quality report), an explicit routing expansion policy (one new feature per sprint, only after two weeks of clean harness data on the prior feature), and an incident runbook for each routed feature covering the rollback path if quality degrades. These three deliverables make the complexity cost visible and manageable. The CTO's concern is not that routing is wrong — it is that the team does not yet have the infrastructure to know when routing is going wrong. Shipping the harness as part of the proposal answers that concern directly.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "strategic_thinking"],
+              "explanation": "This approach correctly simulates the CTO's actual concern: not cost reduction per se, but the operational infrastructure needed to manage quality safely across multiple models. Packaging the harness, the expansion policy, and the incident runbook into the proposal transforms the complexity concern from an abstract risk into a managed cost with a defined upper bound. It also gives the CTO a concrete yes/no on whether the team is prepared to manage the complexity, rather than asking for trust.",
+              "framework_hint": "Cognitive Empathy: simulating the CTO's goal (maintain production quality while reducing cost) and designing a proposal that demonstrates operational readiness, not just cost savings. Strategic Thinking: structuring the proposal as 'route three features now, expand under a gating policy, with rollback capability' is a sequenced commitment with defined checkpoints, which is how a technically credible CTO evaluates infrastructure proposals."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The CTO's concern should be quantified. Calculate the engineering overhead of maintaining two model pipelines — estimate hours per month for prompt maintenance, monitoring, and incident response — and compare it against the $72K monthly savings. If the engineering cost is less than $72K, the routing strategy is net positive and the CTO should approve it. Present the math as the basis for the decision.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Quantifying the engineering overhead is a legitimate and useful framing tool. The gap is that it reduces the CTO's concern to an hourly-rate calculation, which misses the non-linear risk: a silent quality regression on entity extraction does not cost the team a defined number of engineering hours. It costs user trust, downstream data quality, and potentially customer churn before it is detected. The complexity concern is partially a cost argument but also a quality-risk argument that hourly estimates do not capture.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that quantifying the CTO's concern makes it addressable. Strategic Thinking gap: the hourly-rate framing treats complexity as a linear cost when the CTO's actual concern is non-linear quality risk. A proposal that prices engineering overhead in hours but does not address the detection gap for silent degradation has answered the wrong version of the objection."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The complexity concern should be acknowledged and then set aside. The CTO's job is to weigh the technical risk, but the Finance team's mandate to cut costs is a business requirement. Frame the routing strategy as a Finance deliverable that Engineering is obligated to support. The CTO can raise concerns but should not have veto power over a cost-reduction mandate.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Overriding a technically legitimate objection by invoking a business mandate is not a product strategy — it is organizational politics that produces bad technical decisions. The CTO's concern is not aesthetic: the startup does not have a model evaluation harness, which means routing without one creates a real production quality risk. A finance mandate to cut costs does not resolve that risk. A routing strategy approved over CTO objection through organizational escalation will encounter the production incident the CTO predicted, and the complexity cost will be borne by the engineering team regardless of who approved the plan.",
+              "framework_hint": "Cognitive Empathy failure: simulating the CTO's position as obstruction rather than as a technically grounded prerequisite condition. The CTO is not blocking cost reduction — the CTO is identifying that the team lacks the infrastructure to do it safely. Escalating over a legitimate technical concern does not resolve the technical gap."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Assign a dedicated engineer to manage all model routing infrastructure for six months. With a single owner, the complexity cost is contained and predictable. The CTO's concern about maintenance overhead is resolved by headcount, and the routing strategy can expand to all eight features without a staged rollout.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Dedicating a single engineer to routing infrastructure is an organizational response to an operational concern, not a quality-safety response. One engineer managing all eight features simultaneously still creates the silent degradation risk the CTO is worried about — the risk is not that maintenance is unowned but that there is no mechanism to detect when a cheaper model's output quality drifts on production traffic. A single owner cannot monitor quality without an evaluation harness any more than a team can.",
+              "framework_hint": "Strategic Thinking failure: confusing ownership (who is responsible) with detection capability (how the team knows when quality is degrading). The CTO's complexity concern is an infrastructure problem. Adding a headcount owner without building the harness leaves the underlying detection gap unresolved."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A routing strategy is a hypothesis. Name the metric, the threshold, and the timeline that would tell you the routing strategy is working — and name the counter-signal that would tell you it is not, before users tell you first.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the model-routing strategy at this startup, covering both cost reduction and quality safety?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: route classification, sentiment, and entity extraction to Haiku within 30 days, reducing the monthly LLM bill from $180K to below $110K — a $70K reduction at minimum — with the following quality gates in place before routing is live. The harness must sample 5% of all routed calls daily, compare outputs against a held-out GPT-4o baseline set of 500 examples per feature, and flag any week where task-specific accuracy drops more than 2 percentage points from the baseline. The counter-signal is: cost falls below $110K but the weekly harness report flags accuracy drops of more than 2 points on entity extraction within 60 days of routing. That signal would mean the prompt distribution has drifted from the baseline sample in a way that disadvantages the smaller model, requiring either prompt recalibration or rollback. The win condition fails if cost savings are achieved without the harness producing clean weekly reports.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This win condition names a specific cost target ($110K or below from $180K), a timeline (30 days for routing, 60 days for the counter-signal observation window), and a quality gate with a specific threshold (2 percentage point accuracy drop from a 500-example baseline). The counter-signal is non-obvious and important: cost reduction paired with harness degradation signal means the routing is not safely managed and the expansion policy must stop. Linking win-condition failure to missing harness data — not just to quality drops — treats the harness as a prerequisite for claiming success, not a nice-to-have.",
+              "framework_hint": "Domain Expertise: the 2 percentage point accuracy threshold on entity extraction reflects that NLP task accuracy at production scale has measurable and consequential differences — a 95% to 93% drop on an entity extraction feature feeding a downstream search index is not cosmetic. Strategic Thinking: naming the counter-signal as a combination of cost success and quality degradation forces the team to distinguish between 'routing worked' and 'routing worked and we know it worked because the harness is clean.'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means reducing the monthly LLM bill by 40% within 90 days. Track monthly invoice totals. If the bill drops from $180K to below $110K by month three, the strategy is working. If cost is still above $140K at 60 days, escalate and add segment-two features earlier than planned.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A specific cost target with a timeline and an escalation trigger is better than directional language. The gap is that the win condition contains no quality metric and no counter-signal. A team that routes classification, sentiment, and entity extraction to a misconfigured or degraded Haiku endpoint might achieve cost reduction while simultaneously producing incorrect classification labels that corrupt downstream data. The win condition cannot be verified on the invoice alone — it requires at least one quality-safety metric to confirm the routing is performing as expected.",
+              "framework_hint": "Strategic Thinking partial credit: names a specific threshold ($110K) and a timeline (90 days) with an escalation condition. Domain Expertise gap: the invoice is a lagging indicator of cost, not a leading indicator of quality. A win condition measured only by the invoice treats quality as assumed rather than verified."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The routing strategy wins if no user complains about output quality for 60 days after routing goes live. Monitor support tickets and in-app feedback. Zero quality-related complaints in 60 days confirms that the cheaper models are performing acceptably. If complaints spike, roll back the affected feature.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Zero user complaints is a lagging quality signal and a particularly weak one for backend tasks. Classification, sentiment, and entity extraction feed downstream systems — users of the product features that depend on those classifications may never know they are receiving misclassified data until it manifests as something else (incorrect content shown, wrong segment assigned, missed entity in search). A support ticket threshold cannot detect silent degradation on backend ML tasks.",
+              "framework_hint": "Domain Expertise failure: user complaints are a useful signal for consumer-facing features but are structurally absent for backend ML tasks where the model output is not directly user-visible. The win step requires a metric that is directly connected to the quality variable being managed, not a proxy metric that the user community is unlikely to surface until degradation is severe."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The strategy wins if the engineering team reports that the routing infrastructure is maintainable at six months — specifically, if the mean time to detect a model degradation incident is under four hours and mean time to resolve is under eight hours. These operational metrics confirm that the complexity is well-managed.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "MTTR and MTTD are valid operational health metrics for any production system, and including them in an incident response plan is correct. They are not, however, win conditions for the routing strategy itself. MTTD of under four hours says nothing about whether cost savings were achieved, whether quality degraded before detection, or whether the harness is generating false positives. Win conditions must connect to the strategic hypothesis being tested — that routing three features to cheaper models reduces cost without degrading quality — not to the operational health of the infrastructure that manages the strategy.",
+              "framework_hint": "Strategic Thinking failure: MTTR and MTTD are second-order operational metrics. They measure how quickly the team responds to incidents but do not measure whether the strategy is producing its intended cost savings or whether quality is staying within acceptable bounds during normal operation, not just during incidents."
+            }
+          ]
+        },
+        {
+          "question_text": "If the routing strategy succeeds on segment one (classification, sentiment, entity extraction), what is the right decision framework for expanding to segment two (summarization, semantic search, image captioning)?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Expansion to segment two should be gated on two conditions clearing simultaneously: four weeks of clean harness data on the current segment (no false-positive quality alerts, no rollbacks), and a feature-specific evaluation set for the candidate segment-two feature containing at least 300 examples with human-verified expected outputs. The second condition is harder to satisfy than the first because summarization and image captioning do not have a simple accuracy metric — their quality must be evaluated against reference outputs, which requires investment to produce. The sacrifice this framework demands is explicit: the startup will not route summarization or semantic search to a cheaper model until those reference sets exist, even if segment-one savings have stabilized and Finance is pushing for more. That is a real constraint, not a scheduling preference, because routing a summarization feature to Haiku without a reference evaluation set means degradation is undetectable until a user reads a bad summary.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This framework correctly identifies that segment-two expansion is gated on two separate conditions with different difficulty levels. The four-week harness-clean requirement ensures segment one is stable before adding complexity. The 300-example reference set requirement reflects that summarization and image captioning require human-verified expected outputs, not accuracy scores from a held-out test set — this is a domain-specific distinction that most teams underestimate. Naming the sacrifice (no expansion until the reference set exists, despite Finance pressure) prevents the team from expanding under deadline pressure without the safety infrastructure in place.",
+              "framework_hint": "Taste: distinguishing between 'segment one is working and saving money' (a fact) and 'therefore segment two is ready to route' (an inference that ignores that segment-two features require a more expensive evaluation infrastructure than segment one). The two conditions are not equivalent, and treating them as if they are leads to premature expansion. Strategic Thinking: naming the specific constraint (reference evaluation set with 300 human-verified examples) makes the expansion policy concrete enough that the CTO can validate it and Finance can schedule against it."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Expansion to segment two should be approved by the CTO after a technical review. Present segment-one results (cost savings, harness data, no incidents) and propose a timeline for segment-two routing. If the CTO approves, proceed. If the CTO has concerns, address them and resubmit. The review process ensures technical rigor.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "A CTO review process ensures organizational alignment and is not wrong. The gap is that 'present results and get approval' is a process, not a decision framework. It does not specify what criteria the CTO should evaluate, what evidence is required for approval, or what the expansion gate condition is. A CTO who does not have a concrete gating criterion will apply intuition, and intuition is not auditable or reproducible. The framework should name the conditions for approval, not just the approval process.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly recognizes that the CTO needs to be part of expansion decisions. Strategic Thinking gap: a review process without defined approval criteria produces decisions that depend on the CTO's mood and context rather than on the quality of the evidence presented. The framework must be specific enough to tell the team what to prepare, not just who to ask."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Route segment two as soon as segment-one cost savings are confirmed on the invoice. If the $72K monthly reduction has materialized and no incidents have occurred, the routing approach is validated. Segment two can proceed because the team now has demonstrated routing capability.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Routing capability demonstrated on segment one does not transfer directly to segment two because the two segments have different quality-sensitivity profiles. Classification is pattern-matching with a clear accuracy metric. Summarization and image captioning require generative outputs evaluated against reference expectations — a different and harder evaluation problem. 'No incidents in segment one' means the harness caught no regressions on classification tasks, not that the team can safely monitor quality on summarization tasks using the same infrastructure. The inference from segment-one success to segment-two readiness skips the step of verifying that the evaluation infrastructure is adequate for segment-two tasks.",
+              "framework_hint": "Domain Expertise failure: conflating routing infrastructure maturity (demonstrated by segment one) with evaluation harness adequacy for generative tasks (required before segment two). These are different capabilities. A team that can monitor classification accuracy does not automatically have the infrastructure to evaluate summarization quality without additional investment."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Expansion to segment two should be driven by the Finance team's quarterly targets. If the $72K monthly saving from segment one is insufficient to meet the cost-reduction mandate, route segment two immediately. If segment one already satisfies the Finance requirement, keep segment two on GPT-4o indefinitely.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Routing decisions driven by Finance targets rather than feature quality-safety assessments invert the decision sequence. The Finance mandate is a constraint on the outcome, not a criterion for which features are safe to route. Routing segment two immediately to meet a Finance deadline without the evaluation harness in place is the scenario the CTO is concerned about. Conversely, keeping segment two on GPT-4o indefinitely if segment one meets the target ignores that the startup is still paying for GPT-4o on features that could safely route once the infrastructure exists.",
+              "framework_hint": "Strategic Thinking failure: Finance targets are output constraints, not input criteria. Using them as routing triggers means the decision is driven by the invoice rather than by the quality-safety readiness of each feature. This is the same mistake as optimizing for the invoice target without a quality gate — it produces a decision that is financially compliant but operationally risky."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

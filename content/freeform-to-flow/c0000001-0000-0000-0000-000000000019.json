@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000019",
+  "title": "AI Summarization: Fast but Wrong 12% of the Time",
+  "scenario_role": null,
+  "scenario_context": "An enterprise SaaS company shipped AI-powered meeting summarization six weeks ago. The feature runs on GPT-4o and auto-generates recaps immediately after each meeting ends, including a list of action items and speaker attributions. Adoption hit 67% of active accounts within the first month, faster than any feature the company has shipped. The legal team has escalated concerns about factual errors.",
+  "scenario_trigger": "Internal audits show the summaries are factually wrong 12% of the time. The errors split into two categories: wrong action items (attributing a commitment to someone who never made it) and wrong speaker attribution (quoting one participant's words under another's name). Users are not catching these errors at the same rate they occur because the summaries feel authoritative and match the format of hand-written notes. Legal wants a meeting before the next release cycle.",
+  "scenario_question": "The feature is loved, widely adopted, and silently harmful a significant fraction of the time. Decide whether to keep shipping, pause, or redesign, and specify what that decision requires.",
+  "engineer_standout": "A strong answer recognizes that 12% is not a single risk number. It is a distribution of error types with different blast radii. Wrong speaker attribution is embarrassing but usually correctable. Wrong action items in an enterprise context can cause a missed commitment to a client, a compliance failure, or an internal accountability dispute where the AI summary is treated as the record of truth. The 67% adoption number makes the situation worse, not better: high adoption at 12% error rate means many errors are occurring per day and most go uncorrected because users trust the output. The right move is not a binary keep-or-pause decision. It is a redesign that keeps the convenience while making errors visible, cheap to correct, and structurally impossible to silently propagate for high-stakes outputs like action items.",
+  "paradigm": "ai_assisted",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["taste", "cognitive_empathy", "domain_expertise"],
+  "secondary_competencies": ["strategic_thinking", "motivation_theory"],
+  "topic_tags": ["ai-reliability", "trust", "human-in-the-loop", "enterprise"],
+  "technique_tags": ["taste-frame", "jobs-mapping"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "12% sounds like a number you can fix with a better model. Before going there, name precisely what kind of harm a 12% error rate produces in an enterprise context where summaries are treated as authoritative records.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the problem with the AI summarization feature?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 12% error rate is not a single risk. It is a distribution of error types with very different consequences. Wrong speaker attribution is an embarrassment. Wrong action items in an enterprise meeting are a different category of harm: they produce missed client commitments, internal accountability disputes, and potentially compliance failures if the summary is treated as the official record. The 67% adoption rate amplifies both: at that usage level, many errors are occurring across the customer base every week, and high adoption means users are trusting the output rather than verifying it. The real framing is that high adoption with silent errors is more dangerous than low adoption with visible errors, because trust removes the verification step that would otherwise catch mistakes.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "taste"],
+              "explanation": "This framing correctly identifies two things the flat 12% number obscures: the error types have asymmetric consequences (wrong action items cause downstream harm that wrong attribution does not), and 67% adoption actively worsens the situation by replacing human verification with AI trust. Both elements must be in the framing for the subsequent steps to address the right problem.",
+              "framework_hint": "Cognitive Empathy: simulating what a wrong action item looks like from the perspective of the enterprise user who relied on it in a client call a week later. Taste: the reasoning move is distinguishing between 'a 12% error rate is an accuracy problem' and 'a 12% error rate at 67% adoption in an enterprise trust context is a liability problem,' which are different claims requiring different responses."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The model is accurate enough for the majority of meetings but struggles with longer, multi-speaker sessions where speaker turn-taking is dense. The 12% error rate is concentrated in a specific usage pattern. Improving the transcription pipeline and fine-tuning GPT-4o on enterprise meeting data would bring the error rate down to an acceptable threshold, probably below 3 to 4%, at which point the feature can ship without qualification.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Improving the underlying model is a real and necessary intervention. The framing gap is that it treats 12% as an engineering problem to be solved before the product question is addressed. It does not name what makes a 3 to 4% error rate acceptable in an enterprise context versus 12%, which requires thinking through the error type and consequence, not just the rate. A 3% wrong-action-item rate in a high-volume enterprise account is still meaningful harm if those items go unverified.",
+              "framework_hint": "Domain Expertise: correctly identifying that model improvement is part of the solution. Cognitive Empathy gap: the framing does not simulate what one wrong action item costs a user whose client relationship depends on it, which means the acceptable threshold is arrived at by intuition rather than by consequence analysis."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The legal team is overreacting. A 12% error rate with 67% adoption shows the feature is working. Any product that users adopt this quickly will have imperfections. Adding too many warnings or verification steps will undermine the convenience that drove adoption. The right framing is that this is a confidence and communication problem, not a product problem.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "High adoption alongside a 12% factual error rate is not evidence that the feature is working correctly. It is evidence that the error rate has not yet surfaced in a way users can attribute to the feature. In an enterprise context, the gap between 'users love it' and 'users are being harmed by it' can be months. Legal escalations are a leading indicator, not a lagging one. Framing this as a communication problem delays addressing the actual harm.",
+              "framework_hint": "Motivation Theory failure: attributing the adoption signal to product quality rather than to convenience and low verification. High adoption does not confirm low harm when the errors are silent and the output format encourages trust."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is that the error rate threshold was not defined before launch. The team shipped without agreeing on what accuracy level was acceptable, so now any error feels like a crisis. The fix is to set a formal accuracy SLA for the feature, communicate it to customers in the product's terms of service, and treat errors within that SLA as a known limitation rather than a defect.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Defining accuracy thresholds is a useful governance step but it does not change whether harm is occurring. An action item that was never committed to does not become acceptable because it falls within a disclosed SLA. Enterprise customers do not use terms of service to decide whether to trust a summary. The legal concern is not about missing documentation; it is about the real-world consequences of errors that users are treating as factual records.",
+              "framework_hint": "Taste failure: treating a governance artifact (an SLA) as a substitute for reducing the harm. The reasoning move conflates 'we disclosed the limitation' with 'the limitation is now acceptable,' which are different things when the consequences of errors include missed client commitments."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Map the specific levers available. Think about what makes these errors dangerous (silence, trust, high-stakes outputs) and what interventions address each of those properties.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of interventions best addresses the underlying causes of the AI summarization risk?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct interventions address different properties of the risk. First, surface model confidence on each claim so uncertain outputs are visually distinct from high-confidence ones. Second, link every action item and speaker attribution to the source transcript segment so users can verify with one click rather than re-watching the recording. Third, make editing fast and frictionless so correcting a wrong item takes under ten seconds. Fourth, gate the highest-stakes output, action items, behind a lightweight human confirmation step before they propagate to task management integrations or are emailed to participants. Fifth, run targeted model improvement on the two error categories, wrong action items and wrong speaker attribution, separately, since they likely have different root causes in the transcription and generation pipeline.",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "These five interventions are structurally distinct: confidence display, source-linking, editing UX, human-in-the-loop gating, and model improvement each address a different reason errors cause harm. Confidence display makes errors visible. Source-linking makes them verifiable. Frictionless editing makes them correctable. Gating prevents propagation. Model improvement reduces occurrence. A list that contains all five is stronger than any single-intervention option because they are not interchangeable.",
+              "framework_hint": "Creative Execution: generating interventions that address different causal mechanisms (visibility, verifiability, correctability, propagation, occurrence rate) rather than five variations on 'improve accuracy.' Cognitive Empathy: simulating the user path from 'this looks right' to 'I forwarded a wrong commitment to a client' and identifying every point where the path could be interrupted."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The most important intervention is requiring human review before action items are sent to external integrations or emailed to meeting participants. Action items are the highest-stakes output because they create commitments. Adding a confirmation step where the meeting owner approves or edits the action item list before distribution addresses the propagation problem without slowing down the summarization itself.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Human-in-the-loop gating for action items is the right first priority given the legal concern and the asymmetry between error types. The gap is that it addresses propagation but not visibility or verifiability for the other error type, speaker attribution. It also does not address the underlying model improvement work that would reduce the error rate over time. A one-intervention list produces a one-dimensional response to a multi-dimensional problem.",
+              "framework_hint": "Cognitive Empathy: correctly identifying action items as the highest-blast-radius error type and designing an intervention that targets propagation. Creative Execution gap: stopping at one intervention leaves the speaker attribution errors and the verification UX unaddressed, which means the feature still has an unresolved trust problem for users who discover attribution errors after the fact."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Improve the GPT-4o prompting and add a post-processing validation step that checks the generated summary against the transcript for named entities and action verbs. Automated validation can catch a significant portion of factual errors before they reach users. Pair this with a model fine-tuning effort over the next quarter to bring the error rate below 5%.",
+              "quality": "surface",
+              "competencies": ["domain_expertise"],
+              "explanation": "Automated post-processing validation and model improvement are real and necessary investments. The gap is that they address error occurrence and potentially error detection, but not what happens when the validation step misses an error (which it will, at some rate). The question of what users see, how they verify, and what happens when an action item propagates to an integration before being caught is not addressed. Technical improvement alone does not redesign the trust architecture.",
+              "framework_hint": "Domain Expertise: correctly identifying technical interventions in the generation and validation pipeline. Cognitive Empathy gap: the response does not model what a user experiences when a wrong action item appears in a task management tool attributed to them, which is the failure mode that generates the legal concern."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Add a disclaimer to every AI-generated summary stating that the content is AI-generated and may contain errors, and include a support email address for users to report mistakes. This gives users notice that verification is their responsibility and creates a feedback channel that can be used to identify systematic error patterns.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Disclaimers shift disclosure without changing behavior. Users who trust a summary because it looks authoritative will continue to trust it after reading a disclaimer. Research on AI transparency consistently shows that generic warnings do not meaningfully change verification rates when the output format itself conveys confidence. The legal concern is also not satisfied by disclosure: if a wrong action item causes a missed client commitment, the disclaimer does not undo the harm.",
+              "framework_hint": "Motivation Theory failure: assuming that informing users of the risk changes whether they verify the output. The friction is not ignorance about AI limitations. It is that the summary format actively encourages trust, and a disclaimer in the footer does not counteract the authoritative presentation of the content itself."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Convenience and accuracy are in tension here. Name the real tradeoff, what you are optimizing for, and what you are willing to give up to get there.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Given 67% adoption, 12% error rate, and legal concerns, what is the right product decision and what does it require giving up?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Redesign the feature to separate the low-stakes and high-stakes outputs. Meeting notes and speaker summaries ship automatically, as they do today, because wrong attribution is embarrassing but low-consequence. Action items require a 30-second human confirmation step from the meeting owner before propagating to integrations or being emailed out. The gain is that the most legally and operationally dangerous error type can no longer silently propagate. The sacrifice is that action items take slightly longer to distribute and require one deliberate step from the meeting owner. That sacrifice is acceptable because the convenience users actually love, getting a summary without taking notes, is fully preserved. Only the propagation of the highest-stakes output is gated.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This is the correct tradeoff move. It names what is gained (silent propagation of wrong action items is prevented), what is given up (one confirmation step for action item distribution), and why the sacrifice is proportionate (the loved convenience of automatic summarization is untouched). It also reflects the insight from the framing step: error types have asymmetric consequences, so the intervention should be asymmetric too.",
+              "framework_hint": "Taste: the tradeoff is precise. The sacrifice (one confirmation step for action items) is proportionate to the gain (preventing the error type with the highest blast radius from propagating silently). Strategic Thinking: naming the criterion as 'preserve the loved convenience while containing the highest-consequence error type' is a different optimization target than 'reduce the flat 12% error rate,' and it produces a different design."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Pause the feature until the error rate is below 5%, then re-release with a public accuracy statement. At 12%, the risk to enterprise customers exceeds the benefit of fast adoption. A brief pause signals to legal that the company takes the concern seriously and gives engineering time to improve the model without shipping more wrong summaries in the meantime.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Pausing is a defensible risk management decision and it addresses the legal concern directly. The gap is that it does not answer the design question: when the feature returns at 5% error rate, will there still be silent wrong action items propagating to integrations? A lower error rate at the same architecture still produces wrong action items at some rate, and 5% wrong in high-stakes enterprise outputs is still meaningful harm without a verification layer. The pause does not name what must change before re-release.",
+              "framework_hint": "Strategic Thinking: correctly identifying that shipping at 12% accepts ongoing harm. Taste gap: the answer stops at risk management without naming the tradeoff that makes the redesigned feature worth shipping. Pausing and improving the error rate is necessary but not sufficient if the underlying propagation architecture is unchanged."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Keep shipping. The 67% adoption rate shows that customers value the feature significantly. Remove the feature only if adoption drops or if there is a documented instance of actual harm to a customer. Legal concerns are speculative until an incident occurs, and pulling a loved feature based on potential liability sets a precedent that will slow future AI feature development.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Waiting for a documented incident means accepting that the first confirmation of harm will be a customer complaint or a legal claim rather than an internal audit finding. In an enterprise context, a documented instance of harm is exactly what legal is trying to prevent. The logic also conflates user love for a feature with absence of harm: 67% adoption at 12% error rate means many errors have already occurred; most have simply not been traced back to the feature yet.",
+              "framework_hint": "Motivation Theory failure: using the adoption signal (users find value) to dismiss the harm signal (12% of outputs are factually wrong). High adoption and ongoing harm can coexist when errors are silent and the output format encourages trust. Waiting for an incident to confirm the causal link is not a product decision; it is a liability decision made by inaction."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Add a prominent disclaimer banner to every summary and reduce the feature's rollout from 67% of accounts to a smaller voluntary beta group of 10% who are willing to accept higher error rates in exchange for early access. This limits exposure while preserving the feature for users who want it.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Reducing rollout to 10% limits the volume of errors but does not address what happens when errors occur within that 10%. Wrong action items in a voluntary beta still propagate to task integrations and emails. The disclaimer banner, as established in the List step, does not change verification behavior. This option reduces the scale of the problem without solving the architecture of the problem, and it sacrifices the feature's successful adoption without gaining the trust redesign that would make full rollout safe.",
+              "framework_hint": "Strategic Thinking failure: scaling back rollout without changing the error propagation mechanism treats volume reduction as equivalent to harm reduction. The harm from one wrong action item in a client-facing enterprise meeting is independent of what percentage of accounts are in the beta."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What does success look like in a form specific enough that a skeptic who points at the 12% number can be shown whether the fix worked? Name a metric, a threshold, and a timeline.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "Write the success criterion for the redesigned feature. What specific metric, threshold, and timeline would confirm that the risk has been addressed without destroying what users love?",
+          "question_nudge": "Name a metric tied to the error type that caused the legal concern, alongside an adoption or engagement metric that confirms the convenience benefit was preserved.",
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "In a two-week controlled rollout at 20% of accounts, the redesigned feature ships to 100% only if three conditions hold simultaneously: the uncorrected wrong-action-item propagation rate drops to below 1% of all meetings (from the estimated 8 to 10% today, accounting for the fraction of the 12% error rate attributable to action items), adoption among rollout accounts stays above 55% of the pre-redesign 67% baseline, and the meeting owner confirmation step is completed within 4 hours for at least 80% of meetings. The 80% completion threshold confirms the gate is not disruptive enough to abandon the feature. Publishing all three numbers together in the post-rollout review prevents any single metric from being used to justify shipping while another is failing.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This satisfies every requirement of a falsifiable win criterion for this specific scenario. The primary metric targets the error type that created the legal concern (wrong action item propagation), not the flat 12% that mixes error types. The adoption guardrail confirms the redesign preserved what users loved. The completion rate confirms the human-in-the-loop step is operationally viable. All three are specific, numeric, and time-bound.",
+              "framework_hint": "Strategic Thinking: the hypothesis is falsifiable in two directions. We will know it failed if uncorrected wrong-action-item propagation stays above 1%, or if adoption drops below 55% of baseline. Domain Expertise: separating the action-item error rate from the flat 12% reflects the framing insight that error types have different blast radii and must be tracked separately."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means the legal team formally closes their concern within 30 days of the redesign shipping, and user satisfaction ratings for the feature (collected via an in-app prompt) return to their pre-escalation level. Both conditions should be met before expanding rollout beyond the redesign pilot group.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Legal sign-off is a meaningful proxy for risk containment and it directly connects to the trigger that created the decision. The gap is that legal sign-off and satisfaction ratings are outcomes, not leading indicators. If the redesign did not actually fix the propagation problem, legal may still close the concern based on the design change rather than measured error reduction. A criterion grounded in the error propagation rate is more directly connected to whether the harm was addressed.",
+              "framework_hint": "Strategic Thinking: using stakeholder sign-off as a success indicator is practical but not falsifiable in the way a metric-based criterion is. Domain Expertise gap: satisfaction ratings and legal close do not confirm whether wrong action items are still propagating at a problematic rate, which is the actual risk that needs to be measured."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Track the overall AI summary error rate for 60 days after the redesign ships. If it drops from 12% to below 5% and adoption stays above 60%, declare the feature stable. The 60-day window ensures the improvement is sustained and not a short-term artifact of rollout effects.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Tracking overall error rate improvement is reasonable, but 5% wrong at full adoption in an enterprise context still produces wrong action items at a meaningful rate if the propagation architecture is unchanged. The 60-day full-traffic window also means two months of errors accumulate before the measurement confirms whether the redesign worked. A staged rollout with a faster decision gate is more appropriate when the harm per error is meaningful.",
+              "framework_hint": "Domain Expertise failure: using the flat error rate (12% to 5%) as the success metric treats all errors as equivalent, which ignores the framing insight that wrong action items in an enterprise context have a different consequence profile than wrong speaker attribution. A 5% wrong-action-item propagation rate at 67% adoption is still a significant risk."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is when no new legal escalations occur for 90 days after the redesign ships. The absence of escalation is the clearest signal that the risk has been managed. Pair this with a quarterly model quality review to ensure the error rate is trending down over time.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Absence of escalation is not a falsifiable criterion because it is a lagging indicator with a high threshold. Legal escalations occur when harm reaches a visibility level that triggers action, not when the first wrong action item propagates. A feature can produce ongoing harm at a rate below the escalation threshold for months. A criterion based on absence of escalation confirms that harm did not become a crisis, not that harm stopped occurring.",
+              "framework_hint": "Strategic Thinking failure: using absence of a negative event as a success criterion is not a hypothesis test. A real win condition requires a positive metric to move in a specified direction by a specified amount in a specified window, so the team knows whether the redesign caused the improvement or whether harm simply did not surface this quarter."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

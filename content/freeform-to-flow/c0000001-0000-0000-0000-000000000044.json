@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000044",
+  "title": "AI-Native App Retention Cliff at Day 7",
+  "scenario_role": null,
+  "scenario_context": "An AI-native journaling app launched six months ago to strong early signals. Day 1 retention sits at 68%, which is healthy for a consumer app competing with well-funded incumbents. But Day 7 retention is 19%, and Day 30 retention is 7%. The drop from D1 to D7 is steep enough to make the D1 number misleading: most users who open the app once never form a durable habit. Qualitative research surfaces two recurring phrases from churned users: 'I forgot it was there' and 'I wasn't sure what to do with it.' The product itself works. The AI generates insightful reflections that users describe as genuinely useful in exit surveys. There is no push-notification strategy in place. Users return only when they actively remember to open the app.",
+  "scenario_trigger": "The team is preparing a growth plan that requires demonstrating a path to 35% D30 retention before the next funding round. The current D7-to-D30 drop from 19% to 7% means even users who survive the first week are not forming a lasting habit. The engineering lead notes that the AI model quality is not the bottleneck: users who do journal consistently rate the reflections 4.6 out of 5. The problem is getting users back to the point where the AI has something to show them.",
+  "scenario_question": "Design the re-engagement and habit-formation system that would close the gap from D7 retention at 19% to a trajectory that supports 35% D30.",
+  "engineer_standout": "A strong answer recognizes that 'I forgot it was there' is a trigger problem, not a value problem. Users who return describe the AI reflections as excellent, which means the product delivers on its promise once opened. The cliff between D1 and D7 is not caused by disappointment; it is caused by the absence of a reliable external trigger that pulls the user back before the habit window closes. The reasoning move is to distinguish between value delivery and habit formation: value delivery is solved (the 4.6 reflection rating proves this), but habit formation requires a trigger tied to an existing routine and a reason to return that is specific to the user ('the AI has something for you'), not a generic reminder. A push notification that says 'Time to journal!' fails because it treats the trigger as a scheduling problem. A trigger that says 'Your reflection from Tuesday has a follow-up based on what you wrote' fails for a different reason if there is no new content. The retention cliff is fixed by a trigger that carries its own pull: something new and specific to the user is waiting.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["motivation_theory", "creative_execution"],
+  "secondary_competencies": ["cognitive_empathy", "strategic_thinking"],
+  "topic_tags": ["retention", "habit-formation", "engagement", "ai-product", "consumer"],
+  "technique_tags": ["hook-model", "trigger-design", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Both 'I forgot it was there' and 'I wasn't sure what to do with it' describe a missing hook, not a missing feature. What is the actual problem to solve?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the D1-to-D7 retention cliff in an AI-native journaling app whose users rate the AI reflections 4.6 out of 5?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["motivation_theory", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The cliff is a trigger failure, not a value failure. Users who return rate the AI reflections 4.6 out of 5, which means the product delivers real value when opened. The 68% D1 retention confirms that first-session experience is strong. What is missing is the mechanism that pulls users back before the habit window closes. 'I forgot it was there' is a precise symptom: the app has no external trigger tied to a moment the user already inhabits. Journaling is a behavior that most people want to do but rarely do unprompted, which means the product is dependent on the user supplying their own motivation to return. Without a trigger that arrives at a contextually relevant moment and carries a reason specific to that user, the app competes with every other intention the user has for their attention. The D7 cliff is where the initial curiosity fades and nothing takes its place.",
+              "quality": "best",
+              "competencies": ["motivation_theory", "cognitive_empathy"],
+              "explanation": "This framing correctly separates value delivery from habit formation. The 4.6 reflection rating is evidence that the product is not failing users who return; it is failing to pull users back in the first place. 'I forgot it was there' describes the absence of a trigger in the motivation-friction-satisfaction sequence: motivation exists (users who return find it valuable), friction exists (the cost of remembering and opening the app), but there is no nudge that arrives at the right moment to bridge them. Framing the problem as a trigger failure rather than a product quality failure points toward the correct solution space: not improving the AI, but creating a hook that carries its own pull.",
+              "framework_hint": "Motivation Theory: the sequence here is Motivation (wanting to reflect) → Friction (not being pulled back) → missing Nudge. The app has Motivation and delivers Satisfaction but has no Nudge mechanism. The cliff appears at D7 because initial novelty provided the nudge for D1, and nothing replaced it."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The cliff reflects unclear product utility. 'I wasn't sure what to do with it' suggests users do not understand the core journaling flow well enough to continue. The team should audit the onboarding sequence to ensure users understand what the AI reflections are, how to prompt better journal entries, and what they gain from consistent use. If users leave because the product's value proposition is unclear, improving discoverability of features will increase D7 retention.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "The 'I wasn't sure what to do with it' signal is real and worth investigating, and onboarding clarity genuinely affects early retention. But this framing ignores the equally important signal: 'I forgot it was there.' A user who understood the product perfectly but had no trigger to return would still churn by D7. The 4.6 reflection rating among returning users is evidence that users who do engage understand the value and rate it highly, which suggests unclear utility is not the primary bottleneck. A cleaner onboarding helps, but it does not solve the trigger gap for users who understood the product in session one and still did not return.",
+              "framework_hint": "Cognitive Empathy partial: correctly models the perspective of a confused new user and identifies that clarity of value matters in early retention. Motivation Theory gap: conflates two different failure modes. 'Wasn't sure what to do with it' points to friction in the first session; 'forgot it was there' points to a missing nudge between sessions. Improving onboarding addresses the first signal but not the second."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The cliff is a content problem. The AI reflections are described as insightful, but 'insightful' is subjective. The D7 drop suggests the AI output is not compelling enough to make users want to return. The team should invest in making the reflections more surprising and personalized so that users feel they are missing something meaningful if they do not open the app.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Making AI output more compelling is a reasonable product aspiration, but this framing contradicts the evidence in the scenario. Users who return rate reflections 4.6 out of 5, which is a high quality signal. The problem is not that the content fails to impress users who see it; the problem is that most users never return to see it. Improving content quality for users who are already churning at D7 assumes those users are aware of what they are missing. They are not: they have already forgotten the app exists. Better reflections sitting unseen do not recover D7 retention.",
+              "framework_hint": "Motivation Theory misapplication: assumes users are making an active quality judgment about the AI when they do not return. The scenario makes clear that users are not evaluating the reflections and finding them insufficient; they are not returning to see them at all. The problem is upstream of content quality."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The cliff is a monetization misalignment. Apps with weak D7 retention often have not created enough locked-in value to justify subscription pricing. Users who do not perceive the app as essential within the first week will not convert. The team should introduce a freemium tier with limited AI reflections per week to create scarcity and drive urgency to return, which would improve D7 retention as a side effect of improving conversion pressure.",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Freemium conversion mechanics are a legitimate product lever and scarcity can drive urgency in certain contexts. This becomes plausible-wrong because it treats a habit formation failure as a pricing architecture problem. Users who say 'I forgot it was there' are not expressing a willingness-to-pay signal; they are describing the absence of a pull mechanism. Artificial scarcity (limited reflections per week) creates urgency only if the user is thinking about the app and choosing not to open it. It does not create urgency for a user who has stopped thinking about the app entirely. Adding a paywall to solve a trigger problem risks compounding churn by adding friction at the moment a churning user might be most receptive to re-engagement.",
+              "framework_hint": "Strategic Thinking partial: correctly identifies that D7 retention affects conversion and that monetization architecture is related to perceived essential value. Motivation Theory failure: scarcity creates urgency for users who are already motivated to return. It does not create the external nudge that brings back users who have lost the habit. The motivation-friction-satisfaction sequence needs a nudge, not a barrier."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "If the problem is a missing trigger, list every distinct mechanism that could pull a user back at the right moment with a reason specific enough to act on.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of re-engagement mechanisms most completely addresses the trigger failure for a journaling app whose AI has user-specific content waiting?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["creative_execution", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct trigger categories address the D7 cliff. First, AI-generated content triggers: when the AI synthesizes a new insight from the user's past entries (a pattern, a recurring theme, a contradiction), a notification arrives saying 'Something new came up in your entries' rather than 'Time to journal.' This creates pull because the AI has done work the user benefits from seeing. Second, routine anchoring: during onboarding, users identify a daily moment they already inhabit (morning coffee, commute, before sleep) and the app schedules a contextual prompt tied to that moment, not a generic time. Third, streak and continuity mechanics: a low-cost daily signal (a single question, a voice memo under 60 seconds) that keeps the chain alive without requiring a full journaling session. Fourth, social or accountability triggers: an opt-in weekly digest shared with one trusted contact or used in a private accountability frame, which introduces an external commitment device that the user supplies their own motivation to honor.",
+              "quality": "best",
+              "competencies": ["creative_execution", "motivation_theory"],
+              "explanation": "These four categories are mechanistically distinct and each operates on a different part of the motivation-friction-satisfaction sequence. AI-generated content triggers create pull by making the reason to return specific to the user and rooted in the product's core capability, which no journaling competitor without AI can replicate. Routine anchoring reduces friction by attaching the new behavior to an existing one, which is how habits form neurologically. Streak mechanics lower the cost of daily engagement so the threshold for maintaining a chain stays low enough to survive interruptions. Social triggers introduce an external commitment device that supplements intrinsic motivation during the period when the habit is not yet automatic. Each of these would fail in isolation; together they address different segments of the churning user population.",
+              "framework_hint": "Creative Execution: the four categories are structurally different, not variations on push notifications. The AI-generated content trigger is particularly high-value because it is native to the paradigm: a journaling app without AI cannot send a notification that says 'your entries revealed something.' Motivation Theory: routine anchoring addresses the friction side of the equation (lower the cost of returning), while AI triggers address the nudge side (give the user a specific reason to care at this moment)."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The primary mechanisms are push notifications and email reminders. Daily push notifications at a user-selected time (morning or evening) would serve as the external trigger that 'I forgot it was there' makes clear is missing. A weekly email summary of the AI reflections generated from the user's entries could also serve as a re-engagement surface for users who have lapsed. Both are established, measurable channels with known benchmark open rates.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "Push notifications and email reminders are legitimate trigger channels and adding them would improve on the current state of having no push strategy. The gap is that both mechanisms are generic unless the content is specific to the user. A notification at 8am that says 'Time to journal!' competes with every other morning alert. The scenario's core insight is that the trigger must carry its own pull: something specific to this user is waiting. Generic scheduled notifications address the trigger absence but not the specificity gap. The four-category answer includes these as a subset but couples them to AI-generated content that makes the notification worth opening.",
+              "framework_hint": "Motivation Theory partial: correctly identifies that an external trigger is the missing mechanism and that push and email are standard channels for delivering it. Creative Execution gap: both mechanisms as described are content-agnostic. A notification that arrives at the right time but says the wrong thing still competes with 'I'll do it later.' The pull comes from specificity, not from the channel."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The core mechanism is in-app gamification: streaks, XP points, badges for journaling milestones, and a weekly leaderboard for users in the same cohort. Gamification creates intrinsic motivation loops that reduce dependence on external triggers. Users who have a streak to protect return without needing a push notification.",
+              "quality": "surface",
+              "competencies": ["motivation_theory"],
+              "explanation": "Streak mechanics are a real retention tool and are included in the best answer as one of four mechanisms. But gamification alone is insufficient for two reasons specific to this scenario. First, a streak only motivates users who are already aware of it, which requires the user to be returning enough to have a streak worth protecting. For users who have already churned at D7, there is no streak to protect. Second, gamification competes with every other gamified app the user has; the journaling app does not have a natural advantage in this domain over apps designed primarily around game mechanics. Gamification is a retention layer, not a re-engagement mechanism for already-churned users.",
+              "framework_hint": "Motivation Theory partial: streak mechanics do activate the loss-aversion branch of motivation (users return to avoid breaking a chain). Creative Execution gap: the answer presents gamification as a complete solution to a trigger failure, but gamification requires the user to be engaged enough to have something to lose. It amplifies retention for users who are already returning; it does not pull back users who have forgotten the app exists."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The highest-leverage mechanism is referral and social sharing. Users who invite friends are 3x more likely to remain active themselves because they feel accountability to the people they introduced. A referral program also addresses growth alongside retention, making it a dual-use investment. Users who share their AI reflections publicly (with anonymized content) create social proof that attracts new users and creates re-engagement moments when friends react to their posts.",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Referral programs and social sharing are real growth mechanics and the correlation between referring and retention is a documented pattern. This becomes plausible-wrong because referral addresses the acquisition and word-of-mouth loop, not the D7 trigger failure. A user who churns at D7 is not a referrer. The referral flywheel only activates for users who are retained enough to share, which means referral cannot be the mechanism that closes the D7 cliff; it can only amplify the retention gains achieved by other mechanisms. Social sharing of AI reflections also has a specific tension in journaling: the product's value is personal and private, and users who journal about sensitive topics may not want reflections shared, even anonymized.",
+              "framework_hint": "Strategic Thinking partial: correctly identifies that social mechanics create accountability and that referral has dual-use economics. Motivation Theory failure: the D7 cliff is a trigger problem for solo users. Referral is a trigger for users who are already retained and motivated to share. It cannot bootstrap habit formation for users who have forgotten the app exists."
+            }
+          ]
+        },
+        {
+          "question_text": "Which stakeholder group's perspective is most important to model when designing the AI-generated content trigger?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The D3-to-D7 user who found session one valuable but has not returned since: this person is in the habit window but has no pull mechanism. Designing the AI trigger for this user requires modeling what they were hoping to get from journaling (clarity, pattern recognition, emotional processing) and engineering a notification that delivers a preview of that thing specifically. 'Your entries from Monday and Wednesday share a theme you might not have noticed' lands for this user because it signals that the AI has done work on their behalf and that something specific is waiting, not a generic invitation to journal more.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "The D3-to-D7 user is the population where the trigger intervention has the highest expected value. This group has demonstrated first-session value recognition (D1 retention at 68% proves the initial experience works) but has not yet formed a habit. Modeling their perspective reveals that the barrier is not motivation, skepticism, or product confusion: it is the absence of a specific pull at the right moment. The AI trigger framing 'your entries share a theme you might not have noticed' works for this user because it activates curiosity (there is something specific for me) without demanding a full journaling session up front. It is personalized in a way only an AI product can deliver.",
+              "framework_hint": "Cognitive Empathy: modeling the D3-D7 user's mental state (curious, not yet habituated, open to return but not actively thinking about the app) shapes the design of the trigger. A user in this state responds to specificity and curiosity, not to urgency or scarcity. The AI's ability to name a pattern in their own entries is the strongest possible hook because it cannot be faked or templated."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The power user who journals daily: understanding why this small segment is retained reveals what the product does well. The AI trigger design should be modeled on the habits and motivations of daily journalers and then used to guide less-engaged users toward the same behaviors. If daily users value morning reflection, the trigger should push morning prompts to everyone.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Understanding retained power users is a legitimate research input and their habits do reveal what the product's ceiling looks like. The gap is that modeling the trigger for already-retained users and applying it to churned users assumes the two groups have the same friction profile. Daily journalers have already overcome the habit formation barrier; they return without a trigger because the behavior is automatic. Designing triggers based on their behavior (morning prompts, daily check-ins) does not address why the D3-D7 user stopped returning, which is that nothing pulled them back specifically. A trigger designed for someone who does not need a trigger is not guaranteed to work for someone who does.",
+              "framework_hint": "Cognitive Empathy partial: correctly identifies that retained users are a useful reference group for understanding what the product does well. The gap is that the D3-D7 churning user has a different friction profile than the daily journaler. Designing the trigger for the retained user's habits (morning routine, daily cadence) may not match the moment or format that pulls back a user who has already lapsed."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The product manager setting retention targets: modeling the PM's perspective ensures the trigger design is tied to measurable D7 and D30 outcomes from the start. An AI trigger that cannot be A/B tested against a control group is not useful for the growth plan. Designing the trigger with the PM's measurement constraints in mind ensures the intervention is actionable and evaluable.",
+              "quality": "surface",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Designing for measurability is a real engineering constraint and A/B testability matters for iterating quickly. But the PM's measurement perspective is an implementation constraint, not a stakeholder perspective to model when designing the trigger. The question asks whose perspective shapes the trigger content and format, which is the churning user's perspective. A trigger designed primarily to be easy to measure may miss what actually pulls the user back. Testability is a property of the experimental framework; it should not constrain the design of the trigger itself.",
+              "framework_hint": "Cognitive Empathy gap: models an internal stakeholder (PM) rather than the end user whose behavior the trigger is designed to change. The PM's measurement needs are real and should inform the test design, but designing the trigger for the PM rather than the churning user is a common product mistake that produces interventions that are easy to evaluate but do not work."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The investor reviewing the D30 retention chart: the trigger design should be framed around what improvement story is most compelling for the next funding round. If D7 can be moved from 19% to 30% and D30 from 7% to 20%, the trajectory justifies the growth narrative. Modeling what the investor needs to see ensures the team prioritizes the retention levers that produce the largest measurable delta in the shortest time.",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Investor-facing retention targets are a real business constraint and the scenario explicitly mentions the next funding round. This becomes plausible-wrong because designing a trigger for an investor's narrative rather than a churning user's psychology produces the wrong intervention. An investor wants to see the retention number move; that number moves when the trigger works for the user. If the trigger is designed to produce a short-term metric spike (e.g., aggressive notification cadences that generate opens without genuine re-engagement), it will inflate D7 in a way that does not translate to D30, which is the metric the funding story depends on.",
+              "framework_hint": "Strategic Thinking partial: correctly identifies that investor-legible retention metrics are the business outcome the team is working toward. Cognitive Empathy failure: the investor is not the person whose behavior determines whether the trigger works. Optimizing the trigger design for the investor's narrative rather than the churning user's psychology is a category error that typically produces short-term metric improvements that do not hold at D30."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Several trigger mechanisms could work. Name the one to build first, name what the team gives up by leading with it, and name the criterion that makes that tradeoff acceptable.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which trigger mechanism should the team build first to attack the D7 retention cliff, and what is the explicit tradeoff?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Lead with AI-generated content triggers: when the AI identifies a new pattern, contradiction, or recurring theme in a user's entries, it surfaces a notification that names what it found rather than asking for more input. This should be the first investment because it is the only mechanism native to an AI-native paradigm that cannot be replicated by a journaling app without AI. The sacrifice is personalization at scale: generating a meaningfully specific insight notification for each user requires enough journal content to identify patterns, which means it works less well for users with only one or two entries (typically the D1 cohort the team most wants to retain). That sacrifice is acceptable because the users with enough entries to trigger a content notification are the D3-to-D7 cohort already showing early engagement, and recovering them is higher expected value than recovering the D1-only users who did not write enough for the AI to have anything specific to surface. The gain is that a trigger rooted in the product's core AI capability creates re-engagement that demonstrates the product's value in the act of pulling the user back.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This answer names the criterion (native to the AI-native paradigm, not replicable by competitors without AI) and names the sacrifice explicitly (works less well for D1 users with only one entry). The criterion makes the sacrifice acceptable because the D1-only cohort is the hardest group to re-engage regardless of mechanism: they have not demonstrated enough engagement to have established a pattern the AI can reference. Optimizing the first trigger for the D3-to-D7 user with enough content for the AI to surface something specific is the correct prioritization because that cohort's retention is recoverable with the right intervention and represents the highest expected value. The sacrifice is real and bounded.",
+              "framework_hint": "Taste: naming the criterion as 'native to the AI-native paradigm' distinguishes between mechanisms that any app could ship (push reminders, email digests) and mechanisms that require the product's specific capability. An AI-generated insight trigger that demonstrates the AI's value in the act of pulling the user back is both a retention tool and a product-differentiation signal. Strategic Thinking: leading with the mechanism that is hardest for competitors to copy and most tightly coupled to the product's core value creates a defensible moat in habit formation, not just an incremental retention lift."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Lead with routine anchoring: during onboarding, ask users to name a daily moment they already own (morning coffee, evening wind-down) and schedule a contextual prompt tied to that moment. This is the fastest to build and requires no AI investment beyond what is already shipped. The sacrifice is that routine anchoring is passive: it depends on the user completing the onboarding step honestly and consistently inhabiting the moment they named. That sacrifice is acceptable because the mechanism works for all users regardless of how much content they have created.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Routine anchoring is a legitimate first step and attaching a new behavior to an existing one is a well-supported habit formation strategy. Leading with it is defensible because it requires no additional AI development and applies to all users including D1 churn who have not written enough for the AI to find patterns. The gap is that it does not differentiate the product: any journaling app can ask users when they prefer to journal. The scenario frames this as an AI-native app, which implies the first trigger investment should demonstrate the AI's value, not replicate what a template-based journaling app could do. Routine anchoring is a good second mechanism, not the primary bet.",
+              "framework_hint": "Strategic Thinking partial: correctly identifies speed to build and universal applicability as criteria for first investment. Taste gap: the criterion used to justify leading with routine anchoring (fast, universal) is not the same as the criterion that distinguishes an AI-native product from a competitor. A habit formation system built on routine anchoring alone could be replicated by any journaling app, which is a missed opportunity to use the AI's capability as the primary retention lever."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Lead with streak mechanics: a daily streak counter with a low-cost entry point (one sentence, a voice memo, a mood tag) that resets if the user misses a day. The sacrifice is that streaks create anxiety for users who break them, which can cause permanent churn rather than temporary lapse. That sacrifice is acceptable if streak recovery options (a 24-hour grace period, a streak shield) are included in the initial build. Streak mechanics are fast to build, easy to A/B test, and do not require additional AI development.",
+              "quality": "surface",
+              "competencies": ["motivation_theory"],
+              "explanation": "Streak mechanics are a real retention tool and the low-cost entry point addresses one specific friction (the all-or-nothing cost of a missed day). But leading with streaks as the primary anti-churn investment for D7 retention misunderstands the user's failure mode. 'I forgot it was there' is not 'I remembered but chose not to.' A streak counter only motivates users who are already thinking about the app and feel the cost of breaking the chain. For users who have stopped thinking about the app entirely by D4, a streak counter does not provide the external trigger that brings them back to discover they have a streak to protect. Streak mechanics amplify retention for users who are already returning; they do not recover users who have already forgotten.",
+              "framework_hint": "Motivation Theory partial: streak mechanics activate loss aversion and create daily momentum once established. The gap is that loss aversion requires the user to be aware of what they are losing. A user who has forgotten the app exists at D4 will not be motivated by a streak they are not thinking about. The trigger must arrive externally before streak mechanics can activate."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Lead with a weekly email digest: every Sunday, each user receives an AI-generated summary of the themes, emotions, and patterns from their entries that week. Email is a proven re-engagement channel with measurable open rates and click-through rates. The sacrifice is that users who have unsubscribed from marketing emails or who do not associate the app with email communication will not be reached. That sacrifice is acceptable because email requires no app interaction and can reach churned users who have deleted push notification permissions.",
+              "quality": "plausible_wrong",
+              "competencies": ["motivation_theory"],
+              "explanation": "A weekly AI-generated digest is a legitimate re-engagement surface and email's ability to reach users outside the app is a real advantage over push notifications that require permission. This becomes plausible-wrong because a weekly email digest operates on a 7-day cadence, which means it arrives after the D7 cliff has already formed. The habit window research suggests that the critical intervention needs to land between D2 and D5, before the behavior has faded from working memory. A weekly email that arrives on Sunday cannot recover a user who churned by Wednesday. The channel is correct in principle (AI-generated, specific, delivered outside the app) but the cadence is mismatched to the retention window the team is trying to defend.",
+              "framework_hint": "Motivation Theory partial: correctly identifies that email can reach churned users who have revoked push permissions and that AI-generated personal content is more compelling than a generic newsletter. Domain Expertise failure: the D7 cliff is not recovered by a D7 intervention. The trigger needs to arrive within the habit-formation window (typically 2 to 5 days after first session) to interrupt the forgetting process before it becomes permanent disengagement."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metric, the threshold, and the timeline. Name the counter-signal that tells you the trigger system is creating notification fatigue rather than genuine habit formation.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success condition look like for the AI-generated content trigger, targeting a path from D7 retention at 19% to D30 at 35%?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: within 45 days of shipping the AI-generated content trigger, D7 retention for new cohorts moves from 19% to at least 28%, measured on users who received at least one AI pattern notification between D2 and D5. The D30 trajectory for the same cohort should reach 20% or above, indicating that the D7 recovery is translating into durable habit formation rather than a one-time re-engagement event. The counter-signal is: within the first 30 days, push notification opt-out rate among users who received AI content triggers exceeds 30%. A 30% opt-out rate would mean the trigger system is generating notification fatigue rather than genuine pull, which would indicate the AI content is not specific enough to feel relevant or the cadence is too frequent. If the counter-signal fires, the team should reduce trigger frequency and audit the quality of the AI insight generation before scaling.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names the metric (D7 retention), the threshold (28%), the timeline (45 days), the population (users who received at least one AI notification between D2 and D5), and the follow-on metric that tests whether the D7 gain is real (D30 at 20%). The D2-to-D5 window is specific to the retention cliff: intervening within this window is the hypothesis, so measuring only users who received a trigger in that window tests the hypothesis directly rather than averaging across all users. The counter-signal at 30% opt-out rate is calibrated to the specific risk of an AI-native trigger system: if users are opting out of push notifications at high rates, the trigger content is not earning its place in the notification stack, which is a signal that specificity is failing before it becomes visible in the retention curve.",
+              "framework_hint": "Domain Expertise: the D2-to-D5 window specification is derived from habit formation research showing that the critical period for a new behavior is within the first week, with the highest risk of permanent disengagement occurring between the second and fifth day after first use. Strategic Thinking: the counter-signal (opt-out rate rather than open rate) is a leading indicator that fires faster than the D30 retention metric and detects the specific failure mode of the intervention: notification fatigue from low-quality or over-frequent AI triggers."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Win means D7 retention rises from 19% to 30% within 90 days, tracked as a weekly rolling average across all new user cohorts. If D7 retention is above 25% at the 30-day mark, the trajectory is on track. The team should also track average session depth (entries per active user per week) to confirm that returning users are engaging meaningfully, not just opening the app and closing it.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "D7 retention as the primary metric is correct and adding session depth as a quality check is a reasonable secondary signal. The gap is that this win condition does not isolate the AI trigger as the causal mechanism. A 90-day rolling average across all cohorts will mix users who received AI triggers with users who returned for other reasons, making it difficult to attribute the retention improvement to the specific intervention. The 30-day intermediate check is useful but the 90-day primary timeline is slow for an A/B test designed to answer whether the trigger works. A win condition should be specific enough to validate the hypothesis, not just measure the outcome the hypothesis is meant to produce.",
+              "framework_hint": "Strategic Thinking partial: correctly identifies D7 retention as the primary metric and adds a quality signal (session depth) to prevent gaming the open metric. Domain Expertise gap: a win condition for an A/B test should specify the population (users in the trigger condition versus control), the minimum detectable effect, and a timeline that is fast enough to inform product decisions before the 45-day cohort data is available."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means the AI reflection rating among users who returned via an AI content trigger is 4.8 or above, compared to the current 4.6 average among all returning users. A higher reflection rating among trigger-returning users would confirm that the AI is surfacing insights that are genuinely more relevant when the content is curated by the pattern-detection system rather than discovered passively. If the rating falls below 4.5, the trigger content is not clearing the quality bar.",
+              "quality": "surface",
+              "competencies": ["domain_expertise"],
+              "explanation": "Measuring reflection ratings among trigger-returning users is an interesting quality signal and comparing them to the overall 4.6 baseline is a sensible analytical move. But reflection ratings measure user satisfaction with the AI output after returning; they do not measure whether the trigger successfully closed the D7 retention gap. A trigger could produce 4.8 satisfaction ratings among the small group it successfully pulls back while failing to recover the 80% of D7 users who never saw it. The win condition needs to measure retention (the primary outcome the team is targeting) before measuring quality (a secondary signal that matters only if retention improves).",
+              "framework_hint": "Domain Expertise partial: correctly identifies that tracking reflection quality specifically among trigger-returning users would isolate the AI content's effectiveness as a re-engagement surface. Strategic Thinking gap: the win condition measures quality of the post-return experience rather than the retention outcome the team is trying to move. A high reflection rating among trigger-returners with no movement in D7 retention means the trigger is working for a small group that was probably going to return anyway."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the app appears in the top 5 in the App Store's Productivity category for at least two weeks within six months of shipping the trigger system. App Store ranking is a composite signal of downloads, ratings, and retention that captures whether the product is resonating at scale. A top-5 ranking would validate that the habit formation system is creating enough retention to drive word-of-mouth and ratings improvement alongside the primary retention metrics.",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "App Store ranking is a real business outcome and appearing in category charts drives organic acquisition. This becomes plausible-wrong because App Store ranking is an extremely lagging and noisy composite signal that cannot isolate whether the AI trigger caused the improvement. Rankings depend on download velocity, rating volume, and update frequency, all of which are influenced by factors outside the trigger experiment. A win condition built around a ranking metric cannot tell the team whether the trigger worked or whether a viral moment, a press mention, or a competitor's decline drove the improvement. Falsifiable win conditions require a metric the team can attribute directly to the intervention being tested.",
+              "framework_hint": "Strategic Thinking partial: correctly identifies that App Store positioning is a business-level outcome that reflects product health. Domain Expertise failure: a falsifiable success condition requires a metric with a direct causal chain from the intervention to the outcome. App Store ranking has too many confounds and too long a lag to serve as the win condition for a trigger A/B test designed to close the D7 retention cliff in 45 days."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000024",
+  "title": "AI Pricing: Per-Seat or Consumption-Based?",
+  "scenario_role": null,
+  "scenario_context": "A startup building an AI-powered data analysis tool for analysts, comparable to Julius or Hex AI, is preparing its first paid tier. Beta testing with 20 analysts has produced a striking usage spread: the top users average 340 AI queries per month, but individual usage ranges from 40 queries at the low end to 1,200 at the high end. Two pricing models are on the table. Model A is per-seat SaaS at $49 per user per month: revenue is predictable, the sales motion is familiar, and the finance team can forecast with confidence. Model B is consumption-based at $0.08 per AI query: pricing aligns directly with the value each user extracts, but revenue becomes harder to forecast and month-to-month spikiness creates budget anxiety for buyers.",
+  "scenario_trigger": "The 40-to-1,200 query range among beta users is not noise: it reflects a real structural difference between casual users who run occasional analyses and power users who have automated AI queries into their daily workflows. Per-seat pricing charges the 40-query user the same $49 as the 1,200-query user. At $0.08 per query, the light user pays $3.20 while the power user pays $96. The company needs to decide which model to launch with, knowing that the first pricing structure shapes buyer expectations, sales compensation, and the kind of customer base the product attracts.",
+  "scenario_question": "Frame the real decision the pricing model forces, enumerate what needs to be evaluated before committing to a structure, name the tradeoff the team must accept, and define a falsifiable success condition for the chosen model.",
+  "engineer_standout": "A strong answer refuses to treat this as a revenue-predictability question. The 40-to-1,200 usage range is the whole story: per-seat pricing systematically overcharges the light user and massively undercharges the power user, whose 1,200 queries at $0.08 represent $96 of value captured for $49 of revenue. The reasoning move is that pricing is a strategic bet about which customer segment the company wants to win and what usage behavior it wants to encourage, not a preference between forecasting convenience and value alignment. The cost of consumption-based pricing (forecasting complexity, buyer budget anxiety) must be weighed against the value left on the table by per-seat, and both must be evaluated against the specific 40-to-1,200 spread in the actual beta cohort.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["strategic_thinking", "taste"],
+  "secondary_competencies": ["domain_expertise", "cognitive_empathy"],
+  "topic_tags": ["pricing", "monetization", "ai-products", "growth", "strategy"],
+  "technique_tags": ["value-capture", "customer-segmentation"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The 40-to-1,200 query range is doing most of the work here. Before choosing a model, name what the range actually reveals about the decision and whose interests the two models serve differently.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the pricing model decision for this AI data analysis startup?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The decision is not a revenue-predictability preference but a strategic bet about which user segment the company wants to win and what behavior it wants to price for. The 40-to-1,200 query spread among 20 beta users means per-seat pricing systematically overcharges the light user at 40 queries and leaves $47 of value on the table for the power user whose 1,200 queries represent $96 of value at $0.08 per query but only cost $49 under the per-seat model. The real frame is: which pricing structure best captures value from the users who generate the most value, without pricing out the users whose light usage might expand over time? Revenue predictability is a financing concern, not a product strategy criterion.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This framing correctly identifies that the 40-to-1,200 usage range makes per-seat pricing structurally misaligned with value: the power user generating 1,200 queries is paying $49 for what costs $96 under consumption pricing, a $47 undercharge per user per month. Treating revenue predictability as the primary frame misses that the choice of pricing model shapes who the product attracts and how much value it captures from each segment. The right frame forces the team to name which segment they are optimizing for before choosing the structure.",
+              "framework_hint": "Strategic Thinking: pricing is a hypothesis about where value is created and who should pay for it. The 40-to-1,200 spread reveals that value is highly concentrated in a small subset of users, which has direct implications for which model captures more total revenue. Taste: distinguishing 'per-seat is easier to sell' (a preference) from 'per-seat undercharges power users by $47/month' (a structural property of the model given the beta data)."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The decision is fundamentally about revenue predictability. Per-seat SaaS produces stable monthly recurring revenue that is easy to forecast, which matters for a startup managing runway and planning headcount. Consumption-based models create variance that complicates financial planning and can make enterprise buyers reluctant to commit. The company should choose per-seat to give itself a stable financial foundation while it scales.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Revenue predictability is a real operational concern and per-seat pricing does reduce forecast variance. The gap is that this framing treats a financing preference as a strategic criterion without accounting for what the 40-to-1,200 usage range reveals: per-seat pricing systematically leaves value on the table from high-usage accounts. A startup optimizing for revenue stability while undercharging its power users by $47 per month is trading long-term value capture for short-term forecast convenience. The frame is not wrong, but it is incomplete because it ignores the structural misalignment the usage data has already surfaced.",
+              "framework_hint": "Strategic Thinking partial credit: identifies a real concern (forecast stability) and correctly maps it to per-seat pricing. Taste gap: treating a financing preference as a decision criterion without naming what is being sacrificed. Revenue predictability does not disappear as a concern under consumption pricing; it becomes a modeling challenge. The question is whether the value captured from power users justifies accepting that challenge."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The decision is a competitive positioning question. If Julius and Hex AI use per-seat pricing, adopting the same model reduces friction for buyers already familiar with that structure. Differentiated pricing could confuse the market. The company should match the industry norm unless it has a strong reason to deviate.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Matching competitor pricing structure is a legitimate consideration but it is not a decision frame; it is an execution shortcut. The scenario provides concrete beta data showing a 40-to-1,200 usage spread that makes per-seat structurally misaligned with value in this specific product. Competitive mimicry ignores that data entirely. More importantly, 'what do competitors do' does not answer the question of which model captures more value from this user base, which is what the pricing decision actually determines.",
+              "framework_hint": "Cognitive Empathy failure: simulating the buyer's perspective is useful, but the option mistakes buyer familiarity with a pricing norm for a strategic criterion. A buyer familiar with per-seat pricing will adopt consumption pricing if the unit economics are favorable. The question is whether the company's pricing model fits its value distribution, not whether it matches a market convention."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision is an engineering cost question. Consumption-based pricing requires metering infrastructure to count AI queries accurately. Per-seat pricing is simpler to implement and does not require usage tracking. The company should choose per-seat to avoid engineering complexity while it is still finding product-market fit.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Metering infrastructure is a real implementation cost but it is an execution concern, not a framing for the strategic decision. The startup already has 20 beta users with documented query volumes ranging from 40 to 1,200, which means it already has usage tracking in place for product analytics. The framing inverts the decision sequence: pricing strategy should be chosen on value-capture grounds, and the engineering work required to support it should follow. Choosing a structurally misaligned pricing model to avoid an engineering investment is a decision with compounding long-term consequences.",
+              "framework_hint": "Strategic Thinking failure: letting an implementation variable govern a pricing strategy decision. The beta data (20 users, 40 to 1,200 queries, average 340) already exists, which means basic metering is in place. The question is whether to use that data to price by value, not whether to build the metering infrastructure from scratch."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Two models are on the table but the real work is enumerating what actually needs to be compared before recommending one. List the variables that matter given the 40-to-1,200 usage spread in the beta cohort.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of factors most completely covers what needs to be evaluated before choosing between per-seat and consumption-based pricing for this AI data analysis tool?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct factors need to be evaluated. First, value capture by segment: at $0.08 per query, the average user (340 queries) pays $27.20 versus $49 per seat, but the power user (1,200 queries) pays $96 versus $49, so the models produce radically different revenue per user depending on who dominates the customer mix. Second, buyer budget predictability: enterprise procurement teams and finance departments strongly prefer fixed monthly costs because they can be encumbered in advance; consumption costs create variance that requires ongoing monitoring and can trigger budget exceptions. Third, usage expansion dynamics: consumption pricing incentivizes the company to help users extract more value because revenue grows with usage, while per-seat pricing makes additional usage free at the margin, which may discourage investment in user activation. Fourth, customer acquisition profile: at $49 per seat, the light user (40 queries, $3.20 of consumption value) is overcharged, which may deter cost-conscious buyers who would be profitable at their actual usage level. Fifth, counter-party risk: if a small number of power users dominate revenue under consumption pricing, churn from those accounts creates disproportionate revenue impact.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These five factors are mechanistically different. Value capture by segment directly uses the beta data ($0.08 times 340, 40, and 1,200) to show what each model produces in dollar terms for each user type. Buyer budget predictability captures a real procurement behavior that affects close rates, not just forecast variance. Usage expansion dynamics reveals how each model changes the company's incentive to invest in user activation. Customer acquisition profile captures who is effectively priced out under each model. Counter-party risk captures a concentration risk specific to consumption models. Listing them separately makes the tradeoffs visible before the optimize step forces a criterion.",
+              "framework_hint": "Creative Execution: generating factors that reveal structurally different properties of the two models, not variations of 'which model makes more money.' Value capture by segment and usage expansion dynamics look similar on a slide but have completely different implications: one describes current revenue, the other describes the incentive structure the pricing model creates for future investment. Domain Expertise: buyer budget predictability reflects how enterprise procurement actually works, where consumption costs require different approval workflows than fixed SaaS fees."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The evaluation should cover revenue predictability, competitive pricing norms, and customer lifetime value potential. Per-seat scores well on predictability and fits market norms. Consumption-based may produce higher LTV from power users but creates more churn risk if pricing feels punishing at scale. A simple model comparing expected ARR under both structures would surface the right answer.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Revenue predictability and lifetime value are real factors, and comparing expected ARR under both models is a reasonable analytical step. The gap is that 'competitive pricing norms' is not a load-bearing variable for this decision (the scenario does not establish that market norms are determinative), and the list omits buyer budget predictability as distinct from revenue predictability, usage expansion dynamics as an incentive structure question, and customer acquisition profile as a factor that determines who the product can acquire cost-effectively. A list that covers three of five load-bearing factors will produce a different, less complete recommendation.",
+              "framework_hint": "Creative Execution partial credit: identifies revenue predictability and LTV as real factors and correctly observes that the models produce different outcomes for different user types. Domain Expertise gap: 'competitive pricing norms' conflates what competitors do with what buyers require, which are different things. A buyer may prefer per-seat pricing not because competitors use it but because it fits procurement workflows."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The company should survey beta users before deciding. Ask the 20 beta users whether they prefer to pay per seat or per query. Whichever model more users prefer should be adopted, since customer satisfaction drives retention. The company should also ask what price points feel fair.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Customer preferences about pricing are a real signal but they are not a list of decision factors. The list step asks for the variables that differentiate the two models on strategic grounds, not for a research method to gather more data. More practically, users reliably prefer the model that costs them less at their current usage level: light users will prefer per-seat (which overcharges them less than they think) and power users will prefer per-seat even more (since $49 is far cheaper than $96). Surveying users on pricing preference elicits the wrong signal and skips the structural analysis the decision requires.",
+              "framework_hint": "Cognitive Empathy failure: simulating user preference about pricing does not reveal what the company should optimize for. Users prefer cheaper pricing; that is not a decision criterion. The structural analysis of value capture, usage dynamics, and acquisition profile requires company-side reasoning, not user surveys."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The factors are simplicity and scalability. Per-seat is simpler to explain, invoice, and scale. Consumption-based pricing gets complicated at high volume: billing, metering, and customer disputes add operational overhead. The company should evaluate whether it has the operational maturity to handle consumption billing before adopting it.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Operational complexity is a real implementation concern but it is not a strategic factor that differentiates the two models on value-capture grounds. Framing the decision primarily as a simplicity question treats an execution challenge as a decision criterion, which produces a recommendation that defaults to per-seat regardless of the structural misalignment the beta data reveals. The operational overhead of consumption billing is a solvable engineering problem; the strategic misalignment of per-seat pricing in a high-variance usage environment is a business model problem.",
+              "framework_hint": "Strategic Thinking failure: using an operational variable (billing complexity) as the primary decision criterion. Simplicity is a preference, not a tradeoff. The optimize step requires naming a criterion that forces a real sacrifice to be named: what does the company give up by choosing each model, and why is that sacrifice acceptable? Operational simplicity does not force that question."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The power user at 1,200 queries generates $96 of value at $0.08 per query but pays only $49 under per-seat. Name the criterion that tells you whether capturing that $47 gap is worth the forecasting complexity and buyer friction that consumption pricing creates.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for choosing between per-seat pricing at $49 per user per month and consumption-based pricing at $0.08 per AI query for this AI data analysis startup?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is value capture alignment weighted against segment concentration risk. The company should ask: how much revenue is left on the table per month under per-seat pricing relative to the power user share of the beta cohort, and does the forecasting complexity of consumption pricing become manageable once that revenue gap is quantified? The 1,200-query power user represents a $47 monthly undercharge under per-seat, and if power users become a significant share of the customer base, the cumulative undercharge compounds into a structural revenue gap that is difficult to correct without a disruptive pricing transition later. The sacrifice the criterion demands is explicit: the company accepts forecasting complexity and buyer budget anxiety in exchange for a pricing model that scales revenue proportionally with the value its highest-usage customers extract. That is a real tradeoff, not a preference, because fixing a structurally misaligned pricing model after customers have committed to per-seat contracts requires renegotiation and can trigger churn.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names both what the company is optimizing for (value capture from high-usage accounts) and what it is giving up (forecast simplicity, buyer familiarity). It grounds both sides in the specific beta data: the $47 monthly undercharge for a 1,200-query power user is a concrete number, and the note that repricing later requires renegotiation reflects a real business constraint. The criterion also correctly frames the long-term risk of per-seat: structural undercharging compounds over time and becomes harder to correct as customers anchor to the lower price point.",
+              "framework_hint": "Taste: distinguishing 'consumption pricing is harder to forecast' (a financing preference) from 'per-seat undercharges the 1,200-query user by $47 every month' (a structural property of the model that compounds over time). Strategic Thinking: the criterion maps to the company's actual competitive position, which depends on capturing value from its highest-value users. A pricing model that systematically undercharges power users transfers value from the company to those users, which is only rational if it produces better acquisition or retention outcomes that cannot be achieved another way."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be expected ARR under a 12-month model. Project the revenue from 100 customers under both models, using the beta usage distribution (40 to 1,200 queries, average 340). The model that produces higher projected ARR while keeping monthly revenue variance below 20% of the mean should be adopted. Per-seat likely wins on variance and consumption likely wins on mean ARR given the power user tail.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A projected ARR comparison using the actual beta distribution is a legitimate analytical step and applying a variance constraint is directionally correct. The gap is that this criterion treats a modeled output (projected ARR) as the decision variable rather than naming the underlying strategic principle that determines which model is right for which company. It also does not name the sacrifice: what does the company give up by choosing the model with higher projected ARR, and is that sacrifice acceptable given the company's position? A quantitative criterion that does not name the sacrifice produces a recommendation that looks rigorous but avoids the hard call.",
+              "framework_hint": "Strategic Thinking partial credit: uses the actual beta data to construct a comparative model and correctly applies a variance constraint as a proxy for buyer budget predictability. Taste gap: a variance threshold of 20% of the mean is an assumption dressed up as a criterion. The optimize step requires naming why that threshold is the right one, which forces the team to name the sacrifice explicitly rather than embedding it in a parameter."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The company should optimize for the model that produces the lowest customer acquisition cost. Per-seat pricing has a fixed, easy-to-communicate value proposition that reduces sales cycle length. Consumption pricing requires buyers to model their own usage before committing, which adds friction and extends the sales cycle. Lower CAC compounds into better unit economics over time.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Sales cycle length and customer acquisition cost are real outputs that pricing models affect, but they are not the decision criterion: they are downstream consequences of the pricing model choice. The optimize step requires naming a criterion that makes the tradeoff visible, and 'minimize CAC' does not force the team to confront what it is giving up. Per-seat pricing may produce lower CAC while also producing lower revenue per power user: optimizing CAC without naming the value-capture sacrifice produces a recommendation that sounds operationally sound but ignores the $47 monthly undercharge for the highest-usage accounts.",
+              "framework_hint": "Taste failure: 'lower CAC is better' is a preference (lower cost is always better) rather than a tradeoff. The criterion must name what the company gives up by choosing the model that minimizes CAC. In this case, minimizing CAC via per-seat pricing means accepting that 1,200-query power users pay $49 rather than $96, which is a real sacrifice of value capture that must be named and justified."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is investor optics. SaaS investors value predictable recurring revenue and will assign a higher multiple to per-seat MRR than to consumption revenue with the same mean but higher variance. The company should adopt per-seat pricing to maximize its fundraising valuation, then consider transitioning to consumption pricing after its Series B when it has the operational infrastructure to manage variance.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Investor valuation multiples are a real consideration for fundraising-stage startups, but using them as the primary pricing criterion inverts the decision. Investors apply higher multiples to predictable recurring revenue because it reflects lower business risk: the multiple is a consequence of revenue quality, not a criterion for pricing strategy. Choosing a structurally misaligned pricing model to obtain a favorable multiple delays the misalignment problem rather than resolving it. A Series B company transitioning from per-seat to consumption pricing faces renegotiation with existing customers anchored to the lower price, which is a harder problem than implementing consumption pricing from the start.",
+              "framework_hint": "Strategic Thinking failure: optimizing for a secondary outcome (valuation multiple) rather than for the primary decision variable (value capture alignment). The investor optics criterion is a real consideration for a fundraising conversation but it should inform how the company presents its pricing model to investors, not which model it adopts. The underlying business question is which model captures more value from the customer base; the investor conversation follows from that decision."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metric, the threshold, and the timeline. Then name the counter-signal: what would tell you the chosen pricing model is producing the wrong customer mix or leaving structural value problems for later?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the pricing model chosen by this AI data analysis startup in its first paid tier?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet for consumption-based pricing is: average revenue per active user reaches $28 to $35 per month within six months of launch, with at least 60% of paying customers generating more than 200 queries per month. The $28 to $35 ARPU range corresponds to usage between 350 and 438 queries per month at $0.08, which would confirm that the paying customer base is weighted toward engaged users rather than light experimenters. The 60% above-200-query floor prevents a small number of power users from inflating mean ARPU while the majority of accounts underuse the product. The counter-signal is: ARPU meets target but the top three accounts represent more than 40% of consumption revenue, which signals dangerous concentration that would make churn from any one of those accounts a material revenue event.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names ARPU with a specific range tied to the beta query data, a customer distribution metric (60% above 200 queries) that prevents a power-user tail from masking weak product-market fit in the main cohort, and a counter-signal (top-three account concentration above 40%) that is non-obvious and actionable. The ARPU range is grounded in the beta average: 340 queries times $0.08 equals $27.20, so $28 to $35 ARPU implies slightly higher average usage than the beta cohort, which is a reasonable launch target. The counter-signal tests for the structural risk of consumption pricing: revenue concentration in a few high-usage accounts.",
+              "framework_hint": "Domain Expertise: ARPU of $28 to $35 at $0.08 per query corresponds to 350 to 438 queries per month, which is calibrated to the beta average of 340 queries and represents a plausible first-cohort usage target for a product that has already demonstrated this usage range in beta. Strategic Thinking: naming account concentration as the counter-signal forces the company to distinguish between a healthy consumption revenue base (broadly distributed high usage) and a fragile one (a few power users carrying disproportionate revenue)."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means reaching $50K in monthly recurring revenue within nine months of launch. Track MRR growth monthly. If growth is above 20% month-over-month for the first four months, the pricing is working. If it falls below 10% for two consecutive months, revisit the price per query.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A specific MRR target with a timeline and a growth-rate early warning signal is better than directional language. The gap is that MRR growth alone does not test the strategic hypothesis: the company could reach $50K MRR with a small number of high-spending power users and a large tail of light experimenters paying almost nothing, which would look like success on this metric while masking customer acquisition problems and concentration risk. The win condition needs at least one metric that tests the quality of the revenue distribution, not just its total.",
+              "framework_hint": "Domain Expertise partial credit: names a specific MRR threshold and a growth-rate trigger for early reassessment. Strategic Thinking gap: MRR growth cannot distinguish between a broad, healthy usage distribution and a power-user-concentrated revenue base. A win condition that only measures total revenue cannot detect the counter-signal (high ARPU from a few accounts, low usage from the majority) that would signal the pricing model is attracting the wrong mix."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means positive feedback from the first 10 paying customers about whether the pricing feels fair. If customers describe the pricing as fair and proportional to value within 30 days of signing, the model is validated. If multiple customers complain that the pricing feels punishing or unpredictable, switch to per-seat.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Customer feedback on pricing fairness is a qualitative signal that is hard to act on reliably: customers who are paying less than they would under a higher-priced alternative will describe the pricing as fair regardless of whether the model is capturing value appropriately. Ten customers is too small a sample to produce a statistically meaningful signal, and 30 days is too short a window for usage patterns to stabilize. The win step requires falsifiable metrics with specific thresholds; qualitative fairness feedback cannot generate a clear counter-signal.",
+              "framework_hint": "Strategic Thinking failure: defining success as a subjective customer sentiment measure rather than a business outcome. A win condition must connect to the decision criterion named in the optimize step: value capture alignment and account concentration risk. Customer sentiment about pricing fairness does not test either of those properties."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the top 20% of customers by query volume account for 80% of total revenue within 12 months. This Pareto distribution is healthy in consumption models and signals that pricing is correctly rewarding heavy usage. If the distribution is flatter than 70/30 (top 20% generating less than 70% of revenue), the pricing is too low per query and should be raised.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A Pareto distribution target sounds analytically precise but it encodes the wrong signal as a success condition. Revenue concentration in 20% of customers is a warning sign for churn risk, not a validation of pricing health: if the top 20% of customers churn, 80% of revenue disappears. More fundamentally, the win condition should test whether the pricing model is attracting and retaining a broad base of engaged users, not whether a small fraction of users is generating most of the revenue. The metric rewards concentration rather than detecting it as a risk.",
+              "framework_hint": "Domain Expertise failure: misapplying the Pareto principle. Revenue concentration is a risk metric to be monitored, not a target to be optimized. A healthy consumption pricing model produces broad engagement across the customer base, where many users generate meaningful revenue, not a structure where a few accounts represent existential concentration risk."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

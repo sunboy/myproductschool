@@ -58,6 +58,7 @@ export async function GET(
       is_featured: false,
       created_at: '2024-01-01T00:00:00Z',
       challenge_type: 'flow' as const,
+      display_number: 3001,
       prompt_text: null,
       domain_id: null,
       move_tags: [],

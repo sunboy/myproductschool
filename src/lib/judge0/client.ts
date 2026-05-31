@@ -33,6 +33,27 @@ const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504])
 const MAX_RETRIES = 4
 const BASE_BACKOFF_MS = 400
 const MAX_BACKOFF_MS = 3000
+// Per-request ceiling. The shared RapidAPI CE endpoint can accept a connection
+// and then stall under the same load that produces 429s. A stalled fetch never
+// resolves or rejects on its own, so without this it hangs the whole route
+// indefinitely. AbortSignal.timeout makes fetch reject with a TimeoutError.
+const REQUEST_TIMEOUT_MS = 7_000
+// Wall-clock ceilings for the two phases. The deadline is the point we stop
+// *issuing* new requests; a single in-flight request may run up to
+// REQUEST_TIMEOUT_MS past it before aborting. So true worst case is:
+//   submit (SUBMIT_DEADLINE_MS + REQUEST_TIMEOUT_MS) +
+//   poll   (POLL_DEADLINE_MS   + REQUEST_TIMEOUT_MS)
+//   = (8+7) + (11+7) = ~33s, covered by the route's maxDuration=40 backstop.
+// Normal runs finish in 2-5s; these only bound pathological stalls.
+const POLL_DEADLINE_MS = 11_000
+// Caps the submit phase (429/5xx backoff retries) so it can't eat the whole
+// budget before polling even starts. A POST timeout is not retried anyway.
+const SUBMIT_DEADLINE_MS = 8_000
+
+/** True for an AbortSignal.timeout abort (vs a 429/5xx or a real network drop). */
+function isTimeoutAbort(err: unknown): boolean {
+  return err instanceof DOMException && (err.name === 'TimeoutError' || err.name === 'AbortError')
+}
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -59,16 +80,40 @@ function parseRetryAfter(header: string | null): number | null {
  * (429 / 5xx / network errors) with Retry-After-aware exponential backoff +
  * jitter. Returns a Response with res.ok true for callers to read; throws
  * Judge0TransientError only after exhausting retries on a retryable status.
+ *
+ * A per-request AbortSignal.timeout bounds each attempt so a stalled socket can
+ * never hang the route. Retry policy for that timeout depends on idempotency:
+ * a non-idempotent request (POST /submissions) that times out throws
+ * immediately rather than retrying, because the first attempt may have already
+ * created submissions server-side and retrying would duplicate them. GET polls
+ * are idempotent and retry their timeouts freely.
+ *
+ * `deadline` is an optional absolute Date.now() ms timestamp. When set, no new
+ * attempt or backoff sleep starts past it, so the caller's overall budget is
+ * never blown by this function's inner retries (the poll loops pass it so their
+ * last iteration can't overshoot POLL_DEADLINE_MS by a full retry cycle).
  */
-async function judge0Fetch(path: string, init: RequestInit = {}): Promise<Response> {
+async function judge0Fetch(
+  path: string,
+  init: RequestInit = {},
+  deadline?: number,
+): Promise<Response> {
   const key = getKey() // throws Judge0UnconfiguredError if missing — not retried
+  const isIdempotent = (init.method ?? 'GET').toUpperCase() === 'GET'
   let lastStatus = 0
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    // Budget guard at the TOP of every attempt: if a prior backoff sleep pushed
+    // us past the deadline, stop here rather than firing another timed request.
+    // (attempt 0 always runs — the deadline only gates retries, not the first try.)
+    if (attempt > 0 && pastDeadline(deadline)) break
+
     let res: Response
     try {
       res = await fetch(`https://${JUDGE0_HOST}${path}`, {
         ...init,
+        // Abort a stalled request so it can't hang the whole route.
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         headers: {
           'x-rapidapi-key': key,
           'x-rapidapi-host': JUDGE0_HOST,
@@ -77,9 +122,13 @@ async function judge0Fetch(path: string, init: RequestInit = {}): Promise<Respon
         },
       })
     } catch (networkErr) {
-      // Network/DNS/socket error — treat as transient and retry.
+      // A timed-out non-idempotent request must NOT be retried — the server may
+      // have accepted it and retrying would double-submit. Surface it instead.
+      if (isTimeoutAbort(networkErr) && !isIdempotent) throw networkErr
+      // Network/DNS/socket error, or a timeout on an idempotent request —
+      // transient, retry with backoff (unless out of attempts or past deadline).
       lastStatus = 0
-      if (attempt === MAX_RETRIES) throw networkErr
+      if (attempt === MAX_RETRIES || pastDeadline(deadline)) throw networkErr
       await sleep(backoffDelay(attempt, null))
       continue
     }
@@ -88,13 +137,18 @@ async function judge0Fetch(path: string, init: RequestInit = {}): Promise<Respon
       return res
     }
 
-    // Retryable status — back off and try again (unless out of attempts).
+    // Retryable status — back off and try again (unless out of attempts/budget).
     lastStatus = res.status
-    if (attempt === MAX_RETRIES) break
+    if (attempt === MAX_RETRIES || pastDeadline(deadline)) break
     await sleep(backoffDelay(attempt, parseRetryAfter(res.headers.get('retry-after'))))
   }
 
   throw new Judge0TransientError(lastStatus)
+}
+
+/** True if a deadline (absolute Date.now() ms) is set and already passed. */
+function pastDeadline(deadline?: number): boolean {
+  return deadline !== undefined && Date.now() >= deadline
 }
 
 /** Exponential backoff with jitter, honoring an explicit Retry-After when given. */
@@ -116,7 +170,7 @@ export async function submitToJudge0(params: {
       language_id: JUDGE0_LANGUAGE_IDS[params.language],
       stdin: params.stdin,
     }),
-  })
+  }, Date.now() + SUBMIT_DEADLINE_MS)
 
   if (!res.ok) {
     const body = await res.text()
@@ -152,10 +206,21 @@ export async function submitBatchToJudge0(
   items: BatchSubmissionInput[]
 ): Promise<BatchSubmissionResult[]> {
   const out: BatchSubmissionResult[] = []
+  // Shared budget across all chunks so the submit phase can't eat the run.
+  const submitDeadline = Date.now() + SUBMIT_DEADLINE_MS
 
   // Chunk to the batch-size cap (challenges have ~1-3 tests today, but be safe).
   for (let start = 0; start < items.length; start += MAX_BATCH) {
     const chunk = items.slice(start, start + MAX_BATCH)
+    // Don't START a new chunk past the submit budget (only reachable with >20
+    // tests / multiple chunks). Emit aligned error entries for the remainder so
+    // the result array stays one-per-input and the caller surfaces them.
+    if (Date.now() >= submitDeadline) {
+      for (let i = start; i < items.length; i++) {
+        out.push({ token: null, error: 'Submit budget exceeded before this test was sent.' })
+      }
+      break
+    }
     const res = await judge0Fetch('/submissions/batch?base64_encoded=false', {
       method: 'POST',
       body: JSON.stringify({
@@ -165,7 +230,7 @@ export async function submitBatchToJudge0(
           stdin: it.stdin,
         })),
       }),
-    })
+    }, submitDeadline)
 
     if (!res.ok) {
       const body = await res.text()
@@ -190,13 +255,20 @@ export async function submitBatchToJudge0(
 
 export async function pollJudge0Result(token: string): Promise<Judge0Result> {
   // Judge0 is async — poll until status.id >= 3 (finished states start at 3).
-  const maxAttempts = 20
+  // maxAttempts is a sanity ceiling; the binding stop is POLL_DEADLINE_MS.
+  const maxAttempts = 40
   const delayMs = 500
+  const startedAt = Date.now()
+  const deadline = startedAt + POLL_DEADLINE_MS
 
   for (let i = 0; i < maxAttempts; i++) {
     await sleep(delayMs)
+    // Check AFTER the sleep, right before the request: a sleep that crossed the
+    // deadline stops the loop instead of firing one more timed GET.
+    if (Date.now() > deadline) break
 
-    const res = await judge0Fetch(`/submissions/${token}?base64_encoded=false`)
+    // Pass the deadline so this GET's own retries can't overshoot the budget.
+    const res = await judge0Fetch(`/submissions/${token}?base64_encoded=false`, {}, deadline)
     if (!res.ok) continue
 
     const result = (await res.json()) as Judge0Result
@@ -221,15 +293,25 @@ export async function pollJudge0Batch(
   if (realTokens.length === 0) return tokens.map(() => null)
 
   const byToken = new Map<string, Judge0Result>()
-  const maxAttempts = 30
+  // maxAttempts is a generous sanity ceiling; the binding stop is the
+  // POLL_DEADLINE_MS wall clock, so a slow-fetch run can't exceed the budget.
+  const maxAttempts = 60
   const delayMs = 500
+  const startedAt = Date.now()
+  const deadline = startedAt + POLL_DEADLINE_MS
 
   for (let i = 0; i < maxAttempts && byToken.size < realTokens.length; i++) {
     await sleep(delayMs)
+    // Check AFTER the sleep, right before the request: a sleep that crossed the
+    // deadline stops the loop instead of firing one more timed GET.
+    if (Date.now() > deadline) break
 
     const pending = realTokens.filter((t) => !byToken.has(t))
+    // Pass the deadline so this GET's own retries can't overshoot the budget.
     const res = await judge0Fetch(
-      `/submissions/batch?tokens=${pending.join(',')}&base64_encoded=false`
+      `/submissions/batch?tokens=${pending.join(',')}&base64_encoded=false`,
+      {},
+      deadline,
     )
     if (!res.ok) continue
 

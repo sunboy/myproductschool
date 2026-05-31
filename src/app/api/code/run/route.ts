@@ -9,6 +9,11 @@ import type { CompareMode } from '@/lib/coding/compare'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
+// Hard function budget. Judge0 submit + poll are each wall-clock bounded in
+// src/lib/judge0/client.ts; their true worst case (incl. one trailing in-flight
+// request per phase) is ~33s, so 40 is the backstop that lets the route return
+// a friendly result rather than being killed mid-run by the platform.
+export const maxDuration = 40
 
 // ---------------------------------------------------------------------------
 // Constants

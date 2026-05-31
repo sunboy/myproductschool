@@ -4,14 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
 import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
-import { routeResponse, gradePureMCQ, gradeMultiSelectMCQ } from '@/lib/v2/skills/grading-router'
-import { scoreOption } from '@/lib/v2/skills/option-scorer'
+import { routeResponse } from '@/lib/v2/skills/grading-router'
+import { gradeOneAnswer, AnswerNotReadyError } from '@/lib/v2/skills/grade-step-answer'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
 import { STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
-import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
-import { buildEmptyStateResponse, detectSubmissionQuality } from '@/lib/hatch/skill-context'
+import { PlanLimitExceeded } from '@/lib/usage/assert-plan-limit'
+import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
 
 // ── Request body ─────────────────────────────────────────────
 
@@ -269,7 +269,7 @@ export async function POST(
 
   const targetCompetencies: string[] = questionRow?.target_competencies ?? []
 
-  // ── Grade based on response_type ─────────────────────────
+  // ── Grade based on response_type (shared helper) ─────────
 
   const path = routeResponse(response_type)
   const userPlan = path === 'deterministic' ? null : await getUserPlanForBudget(user.id)
@@ -284,107 +284,39 @@ export async function POST(
   let grading_confidence: number
   let competency_signal: { competency: string; signal: string; framework_hint?: string } | null = null
 
-  if (path === 'deterministic') {
-    // pure_mcq - NO freeform-grader import or call
-    if (!selected_option_id) {
-      return NextResponse.json({ error: 'selected_option_id required for pure_mcq' }, { status: 400 })
+  try {
+    const graded = await gradeOneAnswer({
+      answer: {
+        questionId: question_id,
+        responseType: response_type,
+        selectedOptionId: selected_option_id ?? null,
+        selectedOptionIds: selected_option_ids,
+        userText: user_text ?? null,
+        targetCompetencies,
+      },
+      options,
+      scenario,
+      step,
+      userId: user.id,
+      userPlan,
+      aiBudget,
+    })
+    score = graded.score
+    quality_label = graded.quality_label
+    competencies_demonstrated = graded.competencies_demonstrated
+    grading_explanation = graded.grading_explanation
+    grading_confidence = graded.grading_confidence
+    competency_signal = graded.competency_signal
+  } catch (error) {
+    if (error instanceof AnswerNotReadyError) {
+      return notReadyFreeformResponse(error.reason, options)
     }
-    const result = gradePureMCQ(selected_option_id, options)
-    score = result.score
-    quality_label = result.quality_label
-    competencies_demonstrated = result.competencies_demonstrated
-    grading_explanation = result.grading_explanation
-    grading_confidence = result.confidence
-
-    // Generate competency_signal from option metadata
-    const selectedOption = options.find(o => o.id === selected_option_id)
-    const hint = selectedOption?.framework_hint?.trim() ?? ''
-    competency_signal = hint ? {
-      competency: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
-      signal: hint,
-      framework_hint: hint,
-    } : null
-
-  } else if (path === 'multi_deterministic') {
-    // multi_select_mcq — array of selected option ids
-    if (!selected_option_ids || selected_option_ids.length === 0) {
-      return NextResponse.json({ error: 'selected_option_ids required for multi_select_mcq' }, { status: 400 })
+    const limit = aiLimitResponse(error)
+    if (limit) return limit
+    if (error instanceof Error && error.message.includes('required for')) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
     }
-    const result = gradeMultiSelectMCQ(selected_option_ids, options)
-    score = result.score
-    quality_label = result.quality_label
-    competencies_demonstrated = result.competencies_demonstrated
-    grading_explanation = result.grading_explanation
-    grading_confidence = result.confidence
-
-  } else if (path === 'hybrid') {
-    // mcq_plus_elaboration - base score + AI elaboration adjustment
-    if (!selected_option_id) {
-      return NextResponse.json({ error: 'selected_option_id required for mcq_plus_elaboration' }, { status: 400 })
-    }
-    const baseResult = scoreOption(selected_option_id, options)
-    const baseOption = options.find(o => o.id === selected_option_id)!
-
-    if (user_text?.trim()) {
-      // Lazy import to keep pure_mcq path free of freeform-grader
-      const { gradeElaboration } = await import('@/lib/v2/skills/ai/freeform-grader')
-      let elaborationResult
-      try {
-        await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
-        elaborationResult = await gradeElaboration(baseOption, user_text, options, scenario, step, aiBudget)
-      } catch (error) {
-        const response = aiLimitResponse(error)
-        if (response) return response
-        throw error
-      }
-      score = elaborationResult.finalScore
-      quality_label = baseResult.quality_label
-      competencies_demonstrated = [
-        ...baseResult.competencies_demonstrated,
-        ...elaborationResult.additional_competencies,
-      ]
-      grading_explanation = elaborationResult.adjustment_reason
-      grading_confidence = 0.85
-    } else {
-      // No elaboration text - use deterministic base score
-      score = baseResult.score
-      quality_label = baseResult.quality_label
-      competencies_demonstrated = baseResult.competencies_demonstrated
-      grading_explanation = baseResult.grading_explanation
-      grading_confidence = 1.0
-    }
-
-    // Generate competency_signal from selected option metadata
-    const baseHint = baseOption.framework_hint?.trim() ?? ''
-    competency_signal = baseHint ? {
-      competency: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
-      signal: baseHint,
-      framework_hint: baseHint,
-    } : null
-
-  } else {
-    // modified_option or freeform - full AI evaluation
-    const textToGrade = response_type === 'modified_option' ? (user_text ?? '') : (user_text ?? '')
-    const submissionQuality = detectSubmissionQuality(textToGrade)
-    if (submissionQuality !== 'substantive') {
-      return notReadyFreeformResponse(submissionQuality, options)
-    }
-    const { gradeFreeform } = await import('@/lib/v2/skills/ai/freeform-grader')
-    let aiResult
-    try {
-      await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
-      aiResult = await gradeFreeform(textToGrade, options, scenario, step, targetCompetencies, user.id, aiBudget)
-    } catch (error) {
-      const response = aiLimitResponse(error)
-      if (response) return response
-      throw error
-    }
-    score = aiResult.score
-    quality_label = aiResult.quality_label
-    competencies_demonstrated = aiResult.competencies_demonstrated
-    grading_explanation = aiResult.explanation
-    grading_confidence = aiResult.confidence
-    competency_signal = aiResult.competency_signal ?? null
+    throw error
   }
 
   // ── Persist step_attempt ──────────────────────────────────
@@ -500,12 +432,14 @@ export async function POST(
         }
       })
 
+      // Advance to 'done' but leave status in_progress — /complete is the sole
+      // finalizer (it computes total_score + XP and early-returns if already
+      // completed). Marking completed here would short-circuit that and zero the
+      // final result. Matches the batch submit-batch route's contract.
       await adminClient
         .from('challenge_attempts')
         .update({
           current_step: 'done',
-          status: 'completed',
-          completed_at: new Date().toISOString(),
           mental_models_breakdown: breakdown,
         })
         .eq('id', attempt_id)

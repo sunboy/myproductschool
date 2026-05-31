@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000005",
+  "title": "New Feature vs. Tech Debt: Allocating Next Quarter",
+  "scenario_role": null,
+  "scenario_context": "A 40-person startup's authentication service is the shared dependency every other service in the stack calls. Engineers on every team have flagged it: slow response times, brittle error handling, and a fragile internal interface that forces workarounds in downstream code. Product has three new features lined up for next quarter, roughly three weeks of engineering per feature. Refactoring the auth service would take an estimated six weeks and occupy two engineers full-time.",
+  "scenario_trigger": "The engineering manager needs to present a quarterly allocation proposal. The features have clear business value. The auth refactor has no direct revenue line. Every week of delay on auth is a week the rest of the org builds on a shaky foundation, but the board is watching feature velocity.",
+  "scenario_question": "Write a proposal for how to allocate the quarter. What framework do you use, and how do you sequence the work?",
+  "engineer_standout": "A strong answer refuses the either/or frame. Auth is not competing with features for budget in the abstract; it is actively taxing every feature being built on top of it. The real analysis quantifies the cost of auth's current state (incident blast radius, per-feature velocity drag, expected failure probability over the quarter) and asks whether that cost, compounded across three features, exceeds the cost of a six-week refactor. The best answers also look for sequencing that avoids the all-or-nothing trap: a strangler-pattern partial refactor targeting the highest-risk auth path first can de-risk the blast radius without consuming the full six weeks before a single feature ships.",
+  "paradigm": "traditional",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["strategic_thinking", "taste"],
+  "secondary_competencies": ["domain_expertise", "creative_execution"],
+  "topic_tags": ["tech-debt", "prioritization", "risk", "roadmap"],
+  "technique_tags": ["north-star-cascade", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The auth service is not an internal inconvenience. Every one of the three features will run on top of it. Find the problem behind the request before choosing a solution.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the decision the engineering manager actually faces?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The auth service is a shared dependency that every other service calls, so its brittleness is a systemic reliability risk with a broad blast radius, not a trade-off against individual features. The real decision is not 'features vs. debt' but 'what is the expected cost of shipping three features on a fragile auth layer versus the cost of a six-week refactor that removes that risk?' Framing it as a morality tale about tech debt lets the most important variable, the compounding velocity drag auth imposes on every team every week, disappear from the analysis.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This framing does the upstream work correctly. It names the causal mechanism (shared dependency, broad blast radius) that makes auth qualitatively different from ordinary tech debt. Because every one of the three planned features runs on auth, any auth incident during Q3 blocks all of them simultaneously. The either/or frame hides this: it treats auth as one item on a list competing with three others, when it is actually the ground all three items stand on. Getting the framing right is what makes the downstream sequencing decision tractable.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Frame is identifying the problem that makes all downstream choices coherent. The surface problem is a resource allocation question. The upstream problem is that the auth service is a systemic risk multiplier, and until that is named, any allocation proposal is answering the wrong question. Taste: the either/or framing is a preference for simplicity, not a tradeoff. Recognizing that is what separates a strong frame from a weak one."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The engineering manager is facing a classic feature vs. debt trade-off. Features generate revenue and are visible to the board. Tech debt is invisible to stakeholders and creates long-term drag. The decision is about balancing short-term business pressure against long-term engineering health, and the manager needs to find a way to communicate that debt has a real cost even when it doesn't show up on a roadmap.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This framing is directionally correct that tech debt has a real cost, but it stops at the generic formulation without identifying the specific mechanism that makes this auth situation more urgent than ordinary debt. It treats auth as a representative example of tech debt in general rather than as a shared dependency with a broad blast radius. That gap matters for the proposal: a generic debt argument is easy to defer; a specific argument about auth's blast radius across all three Q3 features is much harder to dismiss.",
+              "framework_hint": "Strategic Thinking: a good Frame answer names the specific structural reason this situation is different from the general case. The shared-dependency property of auth is not generic debt; it is a systemic risk that changes the expected cost calculation for every feature on the roadmap."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Engineers are complaining about the auth service, but engineers often prefer refactoring over shipping. The manager should ask whether the auth problems are severe enough to justify the delay, or whether the team can ship the three features while making incremental improvements to auth in parallel.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "This framing starts from a skeptical prior about engineering preferences rather than from the structural fact that auth is a shared dependency. It reframes the problem as an internal credibility question (do the engineers' complaints warrant action?) rather than a risk question (what happens to all three features if auth fails mid-quarter?). Incremental improvement in parallel is a reasonable sequencing option, but presenting it at the Frame stage, before quantifying the risk, skips the analysis entirely.",
+              "framework_hint": "Taste failure: framing an engineering concern as potentially exaggerated before examining the blast radius is a preference (ship fast) masquerading as a strategic frame. The reasoning move at Frame is to understand the structural problem before evaluating solutions."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision is primarily a people management problem. If the auth service is making engineers miserable, morale will suffer and attrition will follow. The manager should prioritize the refactor to protect team health and retention, especially at a 40-person startup where losing two engineers would be disproportionately painful.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Engineer morale and retention are real concerns at a 40-person startup, and they are worth naming in a full proposal. But leading with morale as the framing converts a risk-and-velocity problem into a people-management problem, which changes the entire analysis. A board skeptical of the refactor can dismiss a morale argument much more easily than a quantified blast-radius argument. More importantly, the morale framing does not surface the systemic risk that auth poses to all three Q3 features, which is the strongest case for acting on it now.",
+              "framework_hint": "Strategic Thinking failure: the framing of a problem should surface the variable that most changes the downstream decision. Morale is a downstream consequence of the auth situation; the systemic risk to Q3 features is the upstream cause. Leading with the consequence obscures the cause and weakens the proposal."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "There are more than two options here. A full refactor first and features first are the poles. Find the options that live between them before committing to either extreme.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of options most completely maps the realistic paths available for the quarter?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct paths: (1) full auth refactor first, then all three features, sacrificing at least one feature given the six-week timeline; (2) features first across the full quarter, deferring the auth refactor with explicit monitoring on incident rate; (3) a strangler-pattern partial refactor targeting the single highest-risk auth path first, two to three weeks of focused work that removes the primary blast-radius risk, followed by the three features; (4) a parallel track where the two auth engineers work on the refactor while the remaining engineers start on features, accepting slower feature velocity in exchange for de-risking auth in the background.",
+              "quality": "best",
+              "competencies": ["creative_execution", "strategic_thinking"],
+              "explanation": "This set covers the decision space without treating the two poles as the only options. The strangler-pattern partial refactor (option 3) is the key non-obvious move: it asks which auth path poses the highest incident risk, fixes that specific path, and lets the team ship features on a meaningfully more stable foundation without consuming the full six weeks. The parallel track (option 4) is the political compromise most organizations reach, though it requires enough engineers to staff both workstreams simultaneously. Listing all four makes the tradeoffs between them visible before choosing.",
+              "framework_hint": "Creative Execution: the reasoning move at List is generating structurally distinct options, not variations on the same theme. Options 1 and 3 both involve 'refactoring auth before features', but through completely different sequencing mechanisms with different risk profiles and different feature delivery timelines. Distinguishing them is what separates a complete list from a truncated one."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two options: do the auth refactor first to remove the risk, then ship whatever features fit in the remaining time; or ship all three features first and schedule the auth refactor for next quarter when the business has more runway from the new features.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The binary framing captures the poles but misses the middle options. A strangler-pattern partial refactor targeting only the highest-risk auth path is structurally different from a full six-week refactor, and it may deliver most of the risk reduction at a fraction of the cost. The parallel track is also absent. Presenting only the poles understates the design space and increases the likelihood of a suboptimal all-or-nothing decision.",
+              "framework_hint": "Creative Execution: a two-option list at the List step almost always signals an incomplete analysis. The reasoning move is to find the third option that the binary framing obscures, which here is incremental de-risking through a targeted partial refactor rather than full-or-nothing."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The manager should survey the engineering team to understand how severe the auth problems actually are, get estimates for each failure mode, and then decide. Without better data, any allocation is a guess.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Gathering more data before deciding is occasionally the right move, but presenting it as a strategic option at the List step conflates the reconnaissance phase with the decision phase. The scenario already provides the key inputs: auth is slow, brittle, and a shared dependency; refactor takes six weeks and two engineers; three features at three weeks each. The reasoning move at List is to enumerate what to do with the information available, not to defer enumeration until perfect information arrives.",
+              "framework_hint": "Creative Execution failure: listing 'do more research' as a strategic option is not generating options, it is deferring the move. The List step requires enumerating real paths forward from current information, not preconditions for starting the analysis."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The manager should hire a contractor for the auth refactor so the existing engineering team can focus entirely on the three features. This avoids the trade-off altogether by adding capacity rather than reallocating it.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Adding contractor capacity is a theoretically valid option, but it is not a realistic path at a 40-person startup on a quarterly planning timeline. Ramping a contractor on the auth codebase quickly enough to be productive within the quarter, especially on a system every team depends on, would likely consume more than the two engineer-weeks it is supposed to save. The option also does not appear in any realistic constraint set for a small startup and treats resourcing as frictionless when the scenario has already defined the available capacity.",
+              "framework_hint": "Strategic Thinking failure: an option that requires resources or timelines outside the stated constraints of the scenario is not a real option. The reasoning move at List is to enumerate paths available within the actual decision space, not to hypothesize conditions under which the trade-off disappears."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before picking a path. What is this team actually optimizing for this quarter: shipping three features, reducing incident risk, or protecting overall velocity? The criterion determines which path wins.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which allocation path should the manager propose, and what explicit criterion and sacrifice justify the recommendation?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Prioritize a two-to-three-week strangler-pattern partial refactor targeting the highest-risk auth path, then ship the three features on the stabilized foundation. The criterion is expected total velocity: removing the most failure-prone auth path first lowers the probability of a mid-quarter auth incident that would block all three features simultaneously, and the six-week full refactor is deferred to Q4 with a specific scope. The sacrifice is one to two weeks of feature start delay; that sacrifice is acceptable because an auth outage mid-quarter costs more than two weeks in incident response, rollback coordination across multiple teams, and compounded rescheduling across all three features.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This answer names the criterion (expected total velocity, not just feature count), names the sacrifice (one to two weeks of feature start delay), and explains why the sacrifice is acceptable using the blast-radius logic from the Frame step. It also avoids the all-or-nothing trap by scoping the refactor to the highest-risk path rather than the full six-week rewrite, which means the team can still ship all three features while materially reducing systemic risk. The tradeoff is real and explicitly named.",
+              "framework_hint": "Taste: the reasoning move at Optimize is feeling the difference between a tradeoff and a preference. Choosing a targeted partial refactor over full feature sprint is a tradeoff because both options sacrifice something real, feature start velocity versus incident risk. Naming the expected-value logic (incident cost across three features outweighs two weeks of delay) is what makes the sacrifice legible rather than arbitrary. Strategic Thinking: naming the criterion explicitly (expected total velocity, not feature count alone) is what makes the recommendation defensible to a board watching feature velocity."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Ship the three features first to deliver business value this quarter, then schedule the auth refactor for Q4 with a hard commitment. The criterion is near-term feature velocity. The risk of auth failure exists but can be mitigated by setting up better monitoring and on-call rotations during the quarter.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This option names a criterion (near-term feature velocity) but does not honestly name the sacrifice. Better monitoring does not reduce the probability of an auth incident; it only reduces detection time. The real sacrifice is accepting a meaningful probability that an auth failure mid-quarter will disrupt all three features, and that sacrifice is not named or evaluated against its expected cost. An answer that treats monitoring as a risk mitigation for a brittle shared dependency is conflating detection with prevention.",
+              "framework_hint": "Taste: the reasoning move at Optimize is naming the sacrifice clearly, not minimizing it. 'Add monitoring' is not a sacrifice, it is a risk mitigation that does not address the root cause. An answer that describes what it gains (feature velocity) without honestly accounting for what it gives up (incident probability across all three features) is not completing the tradeoff."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The manager should do the full six-week auth refactor before starting any features. Technical foundations must be solid before building on them. The quarter may produce fewer features but the engineering organization will be healthier going into Q4.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "This recommendation does not name a criterion or a sacrifice. 'Engineering health' is not a measurable criterion, and the proposal does not engage with the business cost of delivering no features in a quarter at a board-watched startup. The six-week full refactor may be the right call in some scenarios, but presenting it without quantifying either the expected cost of not doing it or the expected cost of doing it in full before any feature work makes it an assertion rather than a reasoned proposal.",
+              "framework_hint": "Taste failure: 'technical foundations must be solid' is a principle, not a criterion. The reasoning move at Optimize is naming what the team is specifically optimizing for this quarter and what it is giving up. Invoking a general engineering principle without connecting it to the actual tradeoffs in this scenario is the surface pattern."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The manager should present both options to the product team and let them decide, since the features are their priority. Engineering should own the auth refactor recommendation but not unilaterally block the feature roadmap.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The engineering manager's job in this scenario is to make a proposal, not to escalate the tradeoff. Framing the decision as product's call treats the auth risk as a product preference rather than an engineering constraint the manager is responsible for surfacing and quantifying. An EM who presents both options without a recommendation has not done the analysis the role requires. More importantly, auth reliability is not a preference product stakeholders are equipped to weigh against feature value without engineering's risk quantification.",
+              "framework_hint": "Strategic Thinking failure: a proposal that defers the choice upward without a recommendation is not completing the Optimize step. The reasoning move is to name a criterion, evaluate the options against it, and commit to a direction. Delegating the criterion selection to stakeholders is abdicating the analysis."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What number, at what threshold, by when, tells you the partial refactor actually reduced the risk? Name the failure signal too, not just the success condition.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define a falsifiable winning condition for the partial-refactor-first proposal over the quarter?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success: zero auth-attributed P0 or P1 incidents during the feature sprint after the partial refactor, and auth p95 latency on the refactored path drops to under 200ms, confirming the targeted fix landed. All three features ship by end of quarter. Failure: if auth incidents occur on the refactored path post-fix, it signals the scope of the partial refactor was wrong and the full six-week rewrite should be pulled forward rather than deferred to Q4.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions. The success condition measures whether the partial refactor actually removed the risk (zero P0/P1 incidents, latency below a named threshold) while also confirming the feature delivery goal. The failure condition names the specific signal (incidents on the refactored path post-fix) that would tell the team the partial approach was insufficient and escalate the scope decision. Anchoring on incident rate and latency connects the win condition back to the structural problem identified in the Frame step.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Win is writing a hypothesis with a falsification condition, not just a success target. The failure signal (incidents on the refactored path post-fix) is what distinguishes a testable proposal from an aspiration. Domain Expertise: naming p95 latency and incident severity tier (P0/P1) as the measurement instruments shows command of the operational metrics that actually matter for a shared auth dependency."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success is delivering all three features on time and having the engineering team report that auth caused fewer problems than the previous quarter. If engineers are less frustrated by auth after the partial refactor, it was worth doing.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Engineer satisfaction is a reasonable qualitative signal, but it is not a falsifiable winning condition. 'Fewer problems than last quarter' is unmeasurable without a baseline and is too coarse to attribute to the partial refactor specifically. An auth incident that happens to fall below the reported threshold would pass this test even if the refactor failed to address the root cause. The success condition also does not name a failure signal.",
+              "framework_hint": "Strategic Thinking: a winning condition that cannot distinguish between 'the refactor worked' and 'we got lucky this quarter' is not falsifiable. The reasoning move at Win is to name the specific metric the refactor should move, not the broadest available sentiment signal."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is completing the partial refactor in two to three weeks as scoped and shipping all three features. On-time delivery is the criterion.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Completing the work on schedule is a project management metric, not a winning condition for the strategic bet. The proposal's core claim is that a targeted partial refactor will reduce the systemic risk auth poses to the three features. A schedule-only success condition does not test that claim at all. The refactor could finish on time and still leave the blast-radius risk intact if the wrong path was targeted.",
+              "framework_hint": "Domain Expertise failure: the winning condition must measure the outcome the proposal was designed to produce. On-time delivery measures execution, not impact. The proposal's core hypothesis is about risk reduction; the winning condition must test whether the risk was actually reduced."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is: the board approves the Q4 full refactor without pushback, demonstrating that the partial refactor built enough credibility for engineering to get the investment they need. If the board defers the Q4 refactor, the strategy failed.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A winning condition defined by a stakeholder's reaction is not under the team's direct control and is not a measurement of whether the technical problem was solved. Board approval is influenced by company context, competitive pressure, and financial position, none of which the partial refactor can reliably move. This conflates the political outcome with the technical outcome and makes the winning condition unactionable.",
+              "framework_hint": "Strategic Thinking failure: winning conditions must be defined by metrics the team can observe and influence through their own execution. Stakeholder approval is an input to political context, not a signal of whether the refactor reduced systemic risk. The reasoning move at Win is naming what the team can measure, not predicting how others will respond."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

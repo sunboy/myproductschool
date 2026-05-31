@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { Challenge } from '@/lib/types'
 import { ChallengeCardV2 } from '@/components/v2/ChallengeCardV2'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { challengePath } from '@/lib/challenges/challengeNumber'
 
 interface V2ChallengeWithMeta extends Challenge {
   attempt_count?: number
@@ -58,7 +59,7 @@ export function V2ChallengesSection({ paradigm, difficulty, role }: V2Challenges
             <ChallengeCardV2
               key={c.id}
               challenge={c}
-              onStart={() => router.push(`/workspace/challenges/${c.slug ?? c.id}`)}
+              onStart={() => router.push(challengePath(c))}
             />
           ))}
         </div>

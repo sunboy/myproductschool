@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
 import { getTechniqueLabelAny, getTopicLabelAny } from '@/lib/data/taxonomy'
+import { challengePath } from '@/lib/challenges/challengeNumber'
 
 export default async function DomainDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -191,7 +192,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
             {realInterviewChallenges.slice(0, 5).map(c => (
               <Link
                 key={c.id}
-                href={`/workspace/challenges/${c.slug ?? c.id}`}
+                href={challengePath(c)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-container transition-colors group"
               >
                 <span

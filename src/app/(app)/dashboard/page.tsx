@@ -12,6 +12,7 @@ import {
 } from '@/lib/data/dashboard'
 import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
+import { challengePath } from '@/lib/challenges/challengeNumber'
 import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
@@ -60,14 +61,14 @@ function targetDifficulties(avgXp: number): string[] {
   return expandDifficultiesForQuery(buckets)
 }
 
-type RawChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domain?: { title: string }[] | { title: string } | null }
-type NextChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domainName?: string | null; hatch_insight?: string | null }
+type RawChallenge = { id: string; slug?: string | null; title: string; difficulty: string; display_number?: number | null; challenge_type?: string | null; domain?: { title: string }[] | { title: string } | null }
+type NextChallenge = { id: string; slug?: string | null; title: string; difficulty: string; display_number?: number | null; challenge_type?: string | null; domainName?: string | null; hatch_insight?: string | null }
 
 function normalizeChallenge(raw: RawChallenge | null): NextChallenge | null {
   if (!raw) return null
   const d = raw.domain
   const domainName = Array.isArray(d) ? (d[0]?.title ?? null) : (d?.title ?? null)
-  return { id: raw.id, slug: raw.slug, title: raw.title, difficulty: raw.difficulty, domainName }
+  return { id: raw.id, slug: raw.slug, title: raw.title, difficulty: raw.difficulty, display_number: raw.display_number, challenge_type: raw.challenge_type, domainName }
 }
 
 function getPersonalizedGreeting(displayName: string, streakDays: number, lastAttemptDate: string | null, isCalibrated: boolean): string {
@@ -381,7 +382,7 @@ export default async function DashboardPage() {
     // 1. Same move + right difficulty band
     let nextQuery = adminClient
       .from('challenges')
-      .select('id, slug, title, difficulty, domain:domains(title)')
+      .select('id, slug, title, difficulty, display_number, challenge_type, domain:domains(title)')
       .eq('is_published', true)
       .neq('challenge_type', 'quick_take')
       .contains('move_tags', [weakestMove])
@@ -428,7 +429,7 @@ export default async function DashboardPage() {
   if (!nextChallenge) {
     const { data: fallbackChallenge } = await adminClient
       .from('challenges')
-      .select('id, slug, title, difficulty, domain:domains(title)')
+      .select('id, slug, title, difficulty, display_number, challenge_type, domain:domains(title)')
       .eq('is_published', true)
       .neq('challenge_type', 'quick_take')
       .limit(1)
@@ -470,7 +471,7 @@ export default async function DashboardPage() {
         icon: 'track_changes',
         done: doneFlowChallenge,
         active: doneQuickTake && !doneFlowChallenge,
-        href: nextChallenge ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}` : undefined,
+        href: nextChallenge ? challengePath(nextChallenge) : undefined,
       },
       {
         label: 'Reflect',
@@ -514,7 +515,7 @@ export default async function DashboardPage() {
               dailyDone={dailyDone}
               sessionHref={
                 nextChallenge
-                  ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}`
+                  ? challengePath(nextChallenge)
                   : '/challenges'
               }
               studyPlanHref={enrolledPlans.length > 0 ? `/explore/plans/${enrolledPlans[0].slug}` : '/explore/plans'}

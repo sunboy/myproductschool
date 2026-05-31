@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000010",
+  "title": "Why Did Power Users Churn?",
+  "scenario_role": null,
+  "scenario_context": "Figma's enterprise segment lost 3 of its top 10 accounts in a single 6-week window: one at 800 seats, one at 600, one at 450. All three churned to the same competitor. NPS for those accounts was 72, well above the segment average. Customer success logged the exits as 'wanted features we don't have.' Product confirmed those features were on the Q3 roadmap.",
+  "scenario_trigger": "Leadership wants a post-mortem before the next renewal cycle hits. The surface-level read is a product gap. But three high-NPS accounts churning simultaneously to one competitor, in one six-week window, suggests something more specific was at work.",
+  "scenario_question": "What actually went wrong, and what post-mortem framework would surface the real failure mode before the next renewal cycle?",
+  "engineer_standout": "A strong answer notices that NPS at 72 rules out dissatisfaction as the cause and points instead to renewal-timed competitive displacement: a competitor enterprise push, a pricing deal timed to contract renewal, or a single missing must-have that became a dealbreaker only at the buying moment. The Q3 roadmap trap is central: a feature on the roadmap does not help an account whose renewal is today. The post-mortem framework must separate sentiment risk from switching risk, and must identify leading indicators that fire before renewal, not after.",
+  "paradigm": "traditional",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["strategic_thinking", "cognitive_empathy"],
+  "secondary_competencies": ["motivation_theory", "domain_expertise"],
+  "topic_tags": ["churn", "retention", "north-star"],
+  "technique_tags": ["retention-cohorts", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "NPS at 72 rules out dissatisfaction. Three accounts, one competitor, six weeks: what does the timing tell you that sentiment data cannot?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why three high-NPS accounts churned simultaneously?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "NPS at 72 means these accounts were not dissatisfied, which rules out slow erosion as the cause. Three accounts of 800, 600, and 450 seats churning to the same competitor inside six weeks points to a single triggering event aligned with the buying cycle: a competitor enterprise push, a renewal-timed pricing deal, or a feature gap that became a contract dealbreaker at the moment of renewal. The Q3 roadmap placement is the compounding failure: a promised feature does not protect an account whose renewal is happening now. The real problem is that Figma's risk model measured sentiment instead of switching risk, and the two are not the same thing.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "cognitive_empathy"],
+              "explanation": "This framing does the upstream move correctly: it uses the NPS number as evidence of what did NOT cause the churn, then uses the timing pattern (three accounts, one competitor, six weeks) to identify the class of cause that fits. The Q3 roadmap point is not incidental but structurally important: it shows that Figma's internal system gave a false signal of safety. Framing the problem as 'sentiment risk vs switching risk are different instruments' is the reasoning move that makes all downstream decisions coherent.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Frame is identifying the problem behind the problem. The surface problem is a feature gap. The upstream problem is that NPS measures satisfaction and switching risk are decoupled, so a high-NPS account can be fully at risk without any metric flagging it. Cognitive Empathy: understanding that the buying moment has its own logic, separate from day-to-day product sentiment, requires simulating the account's decision-making at renewal time, not at usage time."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The Q3 roadmap timing is the core failure: Figma committed to features the accounts needed, then missed the delivery window that mattered. The accounts churned because the roadmap promise wasn't kept in time. The framing is a product execution gap, and the post-mortem should center on roadmap-to-renewal alignment.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Roadmap-to-renewal misalignment is a real part of the failure and worth naming. But this framing accepts the customer success log ('wanted features we don't have') as the full explanation without interrogating the NPS score. If these accounts were truly blocked by a feature gap, NPS should have reflected friction well before renewal. The 72 NPS suggests the accounts were satisfied users who made a switching decision at contract time, not frustrated users who finally reached a breaking point. Stopping at roadmap execution misses the sentiment-vs-switching-risk distinction.",
+              "framework_hint": "Strategic Thinking: directionally correct about roadmap timing, but the framing still treats a feature gap as the root cause without explaining why high-NPS accounts would have it. The reasoning move at Frame is to find the explanation that accounts for all the evidence, including the NPS figure."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Three large accounts churning in six weeks indicates a product quality regression that Figma's metrics didn't catch. NPS surveys lag real-time experience, so the 72 score likely reflects satisfaction from before the regression hit. The post-mortem should audit recent releases for the features these accounts used most heavily.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A quality regression is a plausible hypothesis in isolation, but the scenario specifies that all three accounts churned to the same competitor and that customer success identified a feature gap, not a bug. A regression would typically surface in support tickets and usage drops before renewal. Treating NPS lag as the full explanation for the 72 score requires ignoring that the accounts were simultaneously acquired by a competitor, which is a different kind of event than silent product degradation.",
+              "framework_hint": "Motivation Theory failure: this answer identifies a friction source (quality regression) without asking whether the evidence actually supports it. The reasoning move at Frame is to use the available signals, NPS at 72, simultaneous churn to one competitor, six-week window, to identify the class of cause that fits all three facts, not just one."
+            },
+            {
+              "option_label": "D",
+              "option_text": "High NPS does not prevent churn when a key champion leaves. The most likely explanation is that a product champion at each of these three accounts departed, taking institutional knowledge and advocacy with them. Without a champion, even satisfied accounts become vulnerable. The post-mortem should audit champion turnover at churned accounts.",
+              "quality": "plausible_wrong",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Champion departure is a real churn vector and worth including in a post-mortem, but it cannot explain the pattern in this scenario. Three accounts losing champions and all three churning to the same competitor in the same six-week window is statistically implausible as coincidence. The competitor-specific destination and the synchronized timing point to an external trigger, a competitive offer or renewal-cycle event, not to internal account dynamics happening independently at three separate companies.",
+              "framework_hint": "Cognitive Empathy failure: simulating one account's internal dynamics (champion loss) is reasonable, but the reasoning move requires accounting for why all three accounts did the same thing in the same window. An explanation that requires three independent champion departures happening simultaneously is not the upstream problem; it is one that dismisses the strongest signal in the data."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "High NPS plus churn is a pattern, not a one-off. Enumerate why accounts churn at renewal even when satisfaction is high, and be specific about what each cause looks like in the data.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of reasons most completely explains why high-NPS enterprise accounts churn at renewal?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct causes: (1) renewal-timed competitive displacement, where a competitor targets accounts at contract expiry with pricing or a bundled offer, so switching cost is lowest and the account is actively re-evaluating; (2) a single missing must-have that is not a daily friction but becomes a dealbreaker at the procurement table, invisible to NPS because satisfaction surveys measure the current product, not the renewal decision; (3) economic or procurement changes inside the account, a new CFO, a vendor consolidation mandate, a budget cut, that make the account's own economics change regardless of product satisfaction; (4) champion departure combined with a weaker successor relationship, where the incoming champion inherits no loyalty and the competitor fills the vacuum. Each cause has a different leading indicator and a different intervention.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "This list is structurally complete because each cause has a different data signature and a different intervention. Cause 1 (competitive displacement at renewal) shows up in win/loss data and competitor pricing intelligence, not in NPS. Cause 2 (must-have gap as dealbreaker) shows up in renewal-stage sales calls and procurement checklists, not in support tickets. Cause 3 (economic changes) shows up in account health data about budget cycles and org changes. Cause 4 (champion departure) shows up in CRM contact activity. Listing them separately matters because treating them as one 'retention problem' produces interventions that address only one cause.",
+              "framework_hint": "Cognitive Empathy: the reasoning move at List is simulating every stakeholder's success metric. The account's procurement team, its finance function, its new champion, and its day-to-day users all have different goals at renewal time, and each produces a different churn path. Creative Execution: structurally distinct causes have distinct data signatures and interventions. Conflating them into 'low satisfaction' collapses the list into one option and misses three."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two main causes: feature gaps that weren't addressed in time, and competitive pressure from a better-priced alternative. Both are product and pricing problems, and both require roadmap acceleration and a pricing response to fix.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Feature gaps and competitive pricing are real causes and both are present in this scenario. But reducing all enterprise churn to two product-and-pricing levers omits the causes that don't show up in product feedback: economic changes inside the account, champion dynamics, and procurement-cycle logic. A post-mortem that only investigates features and pricing will miss accounts churning because of a CFO change or a vendor consolidation mandate, which requires a different early-warning system.",
+              "framework_hint": "Creative Execution: a two-cause list at the List step usually indicates that structurally different causes are being grouped together. The reasoning move is to find the causes that require different interventions, because those are the ones that a single roadmap-and-pricing response will not fix."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The most common reason high-NPS accounts churn is that NPS surveys aren't sent to the right people. Decision-makers at renewal are often not the day-to-day users who give high NPS scores. The list of causes should start with fixing the survey methodology.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Survey methodology is a legitimate operational note but it is not a cause of churn. Improving who receives NPS surveys might surface lower scores from decision-makers, but it doesn't explain why these three accounts left or what would prevent the next three from doing the same. Listing 'fix the survey' as the primary cause inverts the diagnostic task: the question is why accounts churn, not why the measurement underestimated the risk.",
+              "framework_hint": "Motivation Theory failure: the List step requires enumerating causes of the problem, not causes of a measurement gap. Survey methodology is an instrument concern; the reasoning move is to enumerate the actual conditions that produce high-NPS churn, which the measurement may or may not capture."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Enterprise accounts churn when the product fails to deliver measurable ROI. At 800, 600, and 450 seats, the accounts were large enough to have formal ROI reviews. If Figma's design tooling couldn't show a clear dollar return on those seat costs, procurement would push for a cheaper alternative regardless of user satisfaction.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "ROI measurement is a genuine enterprise buying criterion and can contribute to churn, but treating it as the primary explanation for this specific pattern requires ignoring that all three accounts moved to the same competitor, not to a cheaper generic alternative. If the cause were ROI failure, accounts would be consolidating onto lower-cost tools or reducing seats, not migrating en masse to a specific competitor in a single six-week window. The competitor-specific destination points to a pull factor from that competitor, not a push factor from Figma's pricing.",
+              "framework_hint": "Domain Expertise failure: ROI-driven churn produces dispersed outcomes, cost reduction, partial cancellation, seat downgrades. Synchronized migration to a single competitor is a different pattern that requires a pull explanation. Using a generally true enterprise principle without checking whether it fits the specific evidence in the scenario is domain knowledge misapplied."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The post-mortem generates two intervention paths: chase the three lost logos' features, or protect the remaining at-risk renewals. Name the criterion and the sacrifice before choosing.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What should Figma's immediate post-mortem response prioritize, and what is the explicit criterion and sacrifice that justifies the choice?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Protect the remaining at-risk renewals, not the three lost accounts. The criterion is renewal cycle proximity: accounts whose contracts expire in the next 90 days are in the decision window where a competitor offer lands. Pulling those accounts into active retention conversations now, before procurement starts soliciting alternatives, is the intervention with the highest leverage. The sacrifice is the win-back effort on the three churned logos: pursuing them now signals desperation, delays product investment, and the competitor has already embedded at those accounts. That sacrifice is acceptable because the remaining at-risk base represents more total seat exposure than the 1,850 already lost.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This answer names the criterion (renewal cycle proximity as the lever for intervention), names the sacrifice (deprioritizing win-back of the three lost accounts), and explains why the sacrifice is acceptable with a specific quantity comparison (remaining at-risk base vs 1,850 churned seats). The tradeoff is real: win-back efforts cost sales and product time that could go toward protecting accounts still in play. The answer treats the post-mortem as a forward-looking intervention, not a backward-looking audit.",
+              "framework_hint": "Taste: the reasoning move at Optimize is feeling the difference between a real tradeoff and a preference. Choosing active retention over win-back is a tradeoff because both things have value and both compete for the same sales and product capacity. Strategic Thinking: naming the criterion explicitly (renewal cycle proximity) makes the prioritization defensible to leadership rather than appearing to write off three major accounts arbitrarily."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Accelerate the Q3 roadmap features to Q2. The accounts churned because of a feature gap that was acknowledged and roadmapped. Shipping those features faster demonstrates responsiveness and gives the sales team something concrete to bring back to the churned accounts and to at-risk renewals.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Roadmap acceleration is a reasonable operational response, but it doesn't name the criterion or the sacrifice. Pulling features from Q3 to Q2 has a cost: other roadmap items slip, and engineering teams working under a compressed timeline produce more defects. More importantly, this answer assumes the missing features were the primary cause without resolving whether the accounts churned because of a genuine must-have gap or because a competitor made a well-timed deal at renewal. Shipping faster is the right intervention if the cause is a feature gap, but premature if the cause is competitive timing.",
+              "framework_hint": "Taste: this answer identifies a direction without naming what gets sacrificed. The reasoning move at Optimize is to make the tradeoff explicit, including what slips on the roadmap when Q3 features move to Q2 and whether that compression changes the bet."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Run a win-back campaign on all three churned accounts. Enterprise relationships are long-term, and accounts that churned over a feature gap can return once that gap closes. Staying engaged with the churned logos keeps the door open and demonstrates that Figma takes their feedback seriously.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Staying in contact with churned accounts is reasonable relationship management, but treating win-back as the primary post-mortem response misallocates urgency. The competitor has already embedded at the 1,850 churned seats, making near-term win-back expensive and unlikely to succeed. Meanwhile, accounts with renewals in the next 90 days are in active risk without intervention. A post-mortem response that focuses on accounts already lost while ignoring accounts still in play inverts the leverage.",
+              "framework_hint": "Taste failure: win-back as the primary focus is a preference (keeping the relationship alive) not a strategic tradeoff. The reasoning move at Optimize is to identify what the available capacity should protect, and accounts mid-renewal-cycle have higher intervention leverage than accounts already migrated to a competitor's platform."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Conduct executive business reviews with all top 20 accounts immediately. If three of the top 10 churned, the entire top-tier base is at risk. An EBR sweep shows the segment that Figma is paying attention, surfaces undeclared concerns before renewal, and rebuilds trust at the executive level.",
+              "quality": "plausible_wrong",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "An EBR sweep for all top 20 accounts sounds proactive, but it confuses relationship activity with a prioritized intervention. Not all top-20 accounts are at equal risk: accounts with renewals 12 months out have very different urgency than accounts renewing in 60 days. Treating all 20 accounts identically spreads executive and CS capacity uniformly across a non-uniform risk distribution. The answer also doesn't name a criterion or a sacrifice, making it a preference statement rather than a strategic choice.",
+              "framework_hint": "Strategic Thinking failure: an intervention that treats all accounts as equally urgent is not a prioritization, it is an activity plan. The reasoning move at Optimize is to name the criterion that makes some accounts higher priority than others, and renewal cycle proximity is exactly that criterion here."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What metric, at what threshold, by when, would tell you the post-mortem interventions are working before the next renewal cycle ends? Name the failure signal too.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What is a falsifiable early-warning signal that Figma's post-mortem response is protecting the remaining enterprise base?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success: a renewal-risk score, built from contract expiry date, competitor engagement signals (RFP requests, competitive demos logged by sales), and feature-gap flags from CS, reaches 100% coverage of the top 50 enterprise accounts within 60 days. Accounts flagged as high-risk receive an active retention conversation before their renewal window opens. Retention rate for top-50 accounts holds at or above 90% over the next two renewal cycles. Failure: if any top-10 account enters its 90-day renewal window without a logged CS touchpoint on record, the early-warning system is not working and the same pattern will repeat.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions. The success metric (renewal-risk score coverage, 90% top-50 retention over two cycles) measures whether the intervention is running and whether it is producing the outcome. The failure signal (any top-10 account entering the 90-day renewal window without a logged touchpoint) is a leading indicator that fires before churn happens, unlike NPS which fires after satisfaction has already declined. The 60-day coverage deadline gives the system a timebound check rather than an open-ended aspiration.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Win is writing a hypothesis with a falsification condition, not just a success target. The failure signal (accounts entering the renewal window without a touchpoint) is what distinguishes a monitoring system from an aspiration. Domain Expertise: a renewal-risk score built from contract dates, competitor engagement, and feature-gap flags is the right instrument because it fires before the buying decision, while NPS and CSAT fire after satisfaction has already formed."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success: NPS for the enterprise segment recovers from its current level to above 75 within two quarters, confirming that the post-mortem interventions improved account health. Failure: if NPS stays flat or declines, the interventions are not working.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "NPS improvement is a reasonable long-term health signal, but it is the wrong leading indicator for renewal-cycle risk. The three accounts that churned had NPS of 72, demonstrating that high NPS does not prevent switching decisions made at the procurement table. Using NPS recovery as the winning condition repeats the measurement error that the scenario is built around: it monitors sentiment when the risk being addressed is switching behavior at renewal.",
+              "framework_hint": "Domain Expertise failure: the winning condition must be sensitive to the risk being managed. NPS measures satisfaction; the post-mortem is addressing switching risk at renewal. These are different phenomena that require different instruments. Using NPS as the success metric for a renewal-risk intervention is choosing the wrong measurement for the job."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success: the three churned accounts return within 12 months after the missing features ship in Q3. If win-back conversations stall after Q3 delivery, the cause was something other than the feature gap.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Using win-back of the three lost logos as the primary winning condition optimizes for the accounts that already left rather than the accounts still at risk. Win-back is a long-odds outcome: the competitor has embedded at 1,850 seats, switching costs now run in the other direction, and Q3 delivery still requires the accounts to negotiate a return after publicly migrating. A winning condition that depends on three specific accounts returning is not a falsifiable system; it is a point outcome that reveals nothing about whether the underlying risk model has changed.",
+              "framework_hint": "Strategic Thinking failure: a winning condition defined by the behavior of three specific accounts that have already switched cannot measure whether the intervention improved Figma's ability to protect future renewals. The reasoning move at Win is to name a metric that the strategy specifically moves, and win-back rate at three accounts is too narrow and too late to serve that function."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success: the competitor that captured all three accounts loses market share in the enterprise design tools segment over the next 12 months, confirming that Figma's post-mortem response stabilized the market position. Failure: if the competitor continues gaining enterprise logos, Figma's response was insufficient.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A winning condition defined by a competitor's market share movement is not measurable, not attributable to Figma's actions, and not timebound in a way Figma can influence. Competitor share data is available only with a significant lag, blends all segments, and reflects market forces well beyond what any post-mortem intervention can move. This confuses a strategic context indicator with a metric Figma's team can track and act on.",
+              "framework_hint": "Strategic Thinking failure: winning conditions must be defined by metrics the team can observe, attribute, and influence. Competitor market share satisfies none of these criteria. The reasoning move at Win is naming what Figma can measure about its own accounts, its own retention rate, its own risk coverage, not what the competitor does in response."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
