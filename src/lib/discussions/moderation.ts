@@ -1,4 +1,14 @@
 import { NextResponse } from 'next/server'
+
+// Moderation is intentionally disabled for now: all discussion posts are allowed.
+// This removes the hard dependency on OpenAI moderation, which was 503-blocking
+// every post in prod when OPENAI_API_KEY was absent. To re-enable, restore the
+// moderateUserContent gate below.
+export async function discussionModerationError(_content: string): Promise<NextResponse | null> {
+  return null
+}
+
+/*
 import { apiError } from '@/lib/api/error'
 import { moderateUserContent } from '@/lib/ai/moderation'
 
@@ -22,3 +32,4 @@ export async function discussionModerationError(content: string): Promise<NextRe
 
   return null
 }
+*/
