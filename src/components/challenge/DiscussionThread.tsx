@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ReportButton } from '@/components/feedback/ReportButton'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Md } from '@/components/ui/Md'
 import { ChallengeDiscussion, DiscussionReply } from '@/lib/types'
 
 interface Props {
@@ -267,7 +268,9 @@ export function DiscussionThread({
     </div>
   ) : (
     <>
-      <p className="text-on-surface text-sm leading-relaxed">{discussion.content}</p>
+      <div className="text-on-surface text-sm leading-relaxed">
+        <Md variant="compact">{discussion.content}</Md>
+      </div>
       {editError && (
         <p className="mt-2 text-xs font-medium text-error">{editError}</p>
       )}
@@ -333,7 +336,9 @@ export function DiscussionThread({
                 <span className="text-xs font-bold text-on-surface">{replyName}</span>
                 <span className="text-[10px] text-on-surface-variant">· {relativeTime(r.created_at)}</span>
               </div>
-              <p className="text-xs text-on-surface-variant leading-relaxed">{r.content}</p>
+              <div className="text-xs text-on-surface-variant leading-relaxed">
+                <Md variant="compact">{r.content}</Md>
+              </div>
             </div>
           </div>
         )

@@ -69,7 +69,17 @@ export async function POST(
     const discussion = await postDiscussion(identity.id, user.id, content.trim())
     return NextResponse.json(discussion, { status: 201 })
   } catch (err) {
-    console.error('Discussion post error:', err)
+    // Structured logging so a masked 500 is debuggable from prod logs. Log only
+    // the error code + ids — NOT details/hint, because Postgres error details for
+    // failures like NOT NULL violations can echo the failing row (the post
+    // content). `message` is the static constraint text, safe to log.
+    const e = err as { code?: string; message?: string }
+    console.error('[discussions.post] failed', {
+      code: e?.code,
+      message: e?.message,
+      challengeParam: id,
+      userId: user.id,
+    })
     return apiError(500, 'discussion_post_failed', 'Failed to post discussion')
   }
 }

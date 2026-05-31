@@ -33,8 +33,11 @@ export function validateDiscussionContent(text: string): DiscussionValidationRes
     errors.push('Write something before posting.')
   }
 
-  if (trimmed.length > 500) {
-    errors.push('Keep discussion posts under 500 characters.')
+  // Matches the composer's MAX_LENGTH in DiscussionInput.tsx. The old 500-char
+  // cap silently blocked multi-paragraph / code-block posts before they could be
+  // submitted, even though the API accepts up to 10,000.
+  if (trimmed.length > 4000) {
+    errors.push('Keep discussion posts under 4000 characters.')
   }
 
   if (matchingNeedles(EM_DASH_PATTERNS, trimmed).length > 0) {

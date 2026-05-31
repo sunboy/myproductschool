@@ -20,6 +20,13 @@ function validationIssues(error: ZodError) {
   }))
 }
 
+// Mirrors getGradeLabel() in coding-submit/route.ts (overall_score is 1-5).
+function gradeLabelForScore(score: number): string {
+  if (score >= 4.5) return 'best'
+  if (score >= 3) return 'good'
+  return 'surface'
+}
+
 function aiLimitResponse(error: unknown) {
   if (error instanceof PlanLimitExceeded) {
     return NextResponse.json({
@@ -141,12 +148,17 @@ export async function POST(
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Grading succeeded - NOW mark the attempt completed.
+  // Grading succeeded - NOW mark the attempt completed. Persist score + label
+  // onto the attempt row (mirroring coding-submit) so the Submissions/history
+  // tab and /api/attempts show a real score, not a stale default.
   await supabase
     .from('challenge_attempts')
     .update({
       status: 'completed',
       completed_at: new Date().toISOString(),
+      total_score: grade.overall_score,
+      max_score: 5,
+      grade_label: gradeLabelForScore(grade.overall_score),
     })
     .eq('id', attemptId)
 
