@@ -1,9 +1,12 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useReaderScroll } from '@/hooks/useReaderScroll';
+import { useReaderResume } from '@/hooks/useReaderResume';
 import { ParallaxHero } from './ParallaxHero';
 import { ReaderDock } from './ReaderDock';
+import { ReaderRail } from './ReaderRail';
+import { ResumeBanner } from './ResumeBanner';
 import { BookmarkToggle } from './BookmarkToggle';
 import { PrevNextChips } from './PrevNextChips';
 import { QuickReadDark } from './sections/QuickReadDark';
@@ -64,11 +67,74 @@ export function CinematicReader({
     ...(story.sources.length > 0 ? [{ id: 'sources', label: 'Sources' }] : []),
   ];
 
-  const { scrollPct, activeSection } = useReaderScroll(sectionIds, contentRef);
+  const { scrollPct, activeSection, visitedSections } = useReaderScroll(sectionIds, contentRef);
   const backHref = `/explore/autopsies/${story.companySlug}`;
 
+  const activeLabel = tocItems.find(t => t.id === activeSection)?.label ?? null;
+
+  // Hold off persisting until any resume restore has settled (see effect below),
+  // so the restore scroll can't overwrite the saved position with the top section.
+  const [persistReady, setPersistReady] = useState(false);
+
+  const { resumeSection, resumeScrollPct, showResumeBanner, dismissBanner, clearResume, restored } =
+    useReaderResume({
+      storyKey: `${story.companySlug}/${story.slug}`,
+      sectionIds,
+      activeId: activeSection,
+      scrollPct,
+      canPersist: persistReady,
+    });
+
+  const scrollToSection = (id: string) => {
+    const el = document.querySelector(`[data-section-id="${id}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // On return, restore the saved scroll position once. We restore by scroll
+  // PERCENTAGE (monotonic, reliable) rather than by sectionId, which an
+  // IntersectionObserver can mis-report on tall sections. After the restore
+  // settles (or if there's nothing to restore), allow persistence. The banner's
+  // visibility is owned by the hook (showResumeBanner).
+  const didRestoreRef = useRef(false);
+  useEffect(() => {
+    if (didRestoreRef.current) return;
+    // Wait for the hook's mount-read to finish before deciding.
+    if (!restored) return;
+    if (resumeScrollPct == null) {
+      // Read finished, nothing to restore — start persisting on the next tick.
+      const t = setTimeout(() => setPersistReady(true), 0);
+      return () => clearTimeout(t);
+    }
+    didRestoreRef.current = true;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    if (maxScroll > 0) {
+      window.scrollTo({ top: Math.round((resumeScrollPct / 100) * maxScroll), behavior: 'auto' });
+    }
+    // Let the programmatic scroll + IntersectionObserver settle before writing.
+    const t = setTimeout(() => setPersistReady(true), 600);
+    return () => clearTimeout(t);
+  }, [resumeScrollPct, restored]);
+
+  const resumeLabel =
+    tocItems.find(t => t.id === resumeSection)?.label ?? 'where you left off';
+
   return (
-    <div className="relative min-h-screen pb-32">
+    <div className="relative min-h-screen pb-32 lg:flex lg:items-start">
+      <ReaderRail
+        variant="cinematic"
+        items={tocItems}
+        activeId={activeSection}
+        visitedIds={visitedSections}
+        scrollPct={scrollPct}
+        title={companyName}
+        kicker="Product Autopsy"
+        accent={companyAccent ?? '#4a7c59'}
+        backHref={backHref}
+        backLabel="All autopsies"
+        onNavigate={scrollToSection}
+      />
+
+      <div className="relative min-w-0 flex-1">
       <div className="fixed right-4 top-4 z-30">
         <BookmarkToggle
           companySlug={story.companySlug}
@@ -77,10 +143,25 @@ export function CinematicReader({
         />
       </div>
 
-      <article ref={contentRef}>
+      <article
+        ref={contentRef}
+        data-hatch-context-root
+        data-hatch-context={activeLabel ? `Reading "${story.title}" — section: ${activeLabel}` : `Reading "${story.title}"`}
+      >
         <ParallaxHero story={story} companyName={companyName} companyAccent={companyAccent} />
 
         <div className="sc-page-narrow sc-reader-body">
+          {showResumeBanner && resumeLabel && (
+            <ResumeBanner
+              variant="cinematic"
+              label={resumeLabel}
+              onBackToTop={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                clearResume();
+              }}
+              onDismiss={dismissBanner}
+            />
+          )}
           {lede && (
             <FlowSectionDark
               section={lede}
@@ -148,6 +229,7 @@ export function CinematicReader({
         companyName={companyName}
         storyTitle={story.title}
       />
+      </div>
     </div>
   );
 }
