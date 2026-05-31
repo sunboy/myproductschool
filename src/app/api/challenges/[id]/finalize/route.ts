@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { gradeCodingAttempt, shouldUseDeterministicCodingGrade } from '@/lib/coding-grading/grader'
 import type { ChatMessage, SessionEvent } from '@/lib/coding-grading/grader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
@@ -439,6 +440,11 @@ export async function POST(
       completed_at: new Date().toISOString(),
     })
     .eq('id', attemptId)
+
+  // Record daily streak (RPC is service_role-only, so use the admin client)
+  const admin = createAdminClient()
+  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
+  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
 
   // ---------------------------------------------------------------------------
   // Return
