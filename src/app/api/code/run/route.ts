@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { wrapWithHarness } from '@/lib/judge0/harness'
-import { submitToJudge0, pollJudge0Result, mapJudge0Status } from '@/lib/judge0/client'
+import { submitBatchToJudge0, pollJudge0Batch, mapJudge0Status, Judge0TransientError } from '@/lib/judge0/client'
 import type { SupportedJudge0Language } from '@/lib/judge0/languageMap'
 import type { RunResult, TestResult } from '@/lib/coding/types'
 import { compareOutputs } from '@/lib/coding/compare'
@@ -284,61 +284,91 @@ export async function POST(req: NextRequest) {
   // --- Build harness-wrapped source code ---
   const wrappedCode = wrapWithHarness(code, validatedLanguage)
 
-  // --- Submit all test cases to Judge0 in parallel ---
+  // --- Submit all test cases to Judge0 in ONE batch request ---
+  // A single POST /submissions/batch (instead of N parallel single POSTs)
+  // keeps a multi-test run under the per-second rate limit. judge0Fetch
+  // retries transient 429/5xx with backoff under the hood.
   const runId = randomUUID()
 
-  const submissionTokens = await Promise.all(
-    casesToRun.map(async (tc) => {
-      // Use structured stdin shape when input_types or output_type is present;
-      // fall back to bare array for backward compatibility.
-      const stdin =
-        (tc.input_types && tc.input_types.length > 0) || tc.output_type
-          ? JSON.stringify({ args: tc.args, input_types: tc.input_types ?? [], output_type: tc.output_type ?? null })
-          : JSON.stringify(tc.args)
-      try {
-        const { token } = await submitToJudge0({
-          sourceCode: wrappedCode,
-          language: validatedLanguage,
-          stdin,
-        })
-        return { tc, token, submitError: null }
-      } catch (err) {
-        return { tc, token: null, submitError: String(err) }
-      }
-    })
-  )
+  const batchInputs = casesToRun.map((tc) => ({
+    sourceCode: wrappedCode,
+    language: validatedLanguage,
+    // Structured stdin shape when input_types/output_type present; else bare array.
+    stdin:
+      (tc.input_types && tc.input_types.length > 0) || tc.output_type
+        ? JSON.stringify({ args: tc.args, input_types: tc.input_types ?? [], output_type: tc.output_type ?? null })
+        : JSON.stringify(tc.args),
+  }))
 
-  // --- Poll for results in parallel ---
-  const results: TestResult[] = await Promise.all(
-    submissionTokens.map(async ({ tc, token, submitError }): Promise<TestResult> => {
-      if (submitError || !token) {
-        return {
-          id: tc.id,
-          label: tc.label,
-          status: 'error',
-          hidden: tc.hidden,
-          input: tc.hidden ? undefined : tc.args,
-          matchMode: tc.compare_mode,
-          errorMessage: submitError ?? 'Submit failed',
-        }
-      }
+  let submissions: Awaited<ReturnType<typeof submitBatchToJudge0>> | null = null
+  let batchFailureMessage: string | null = null
+  try {
+    submissions = await submitBatchToJudge0(batchInputs)
+  } catch (err) {
+    // Whole-batch failure (transient retries exhausted, or non-retryable error).
+    // Surface a friendly, recoverable message per test rather than the raw HTTP
+    // string the user saw before. Flow through the shared logging + return tail
+    // (don't early-return) so the run is still recorded.
+    batchFailureMessage =
+      err instanceof Judge0TransientError ? err.message : 'Code runner error. Please try again.'
+  }
 
-      let judge0Result
-      try {
-        judge0Result = await pollJudge0Result(token)
-      } catch {
-        // Polling timed out (>20 attempts)
-        return {
-          id: tc.id,
-          label: tc.label,
-          status: 'error',
-          hidden: tc.hidden,
-          input: tc.hidden ? undefined : tc.args,
-          matchMode: tc.compare_mode,
-          errorMessage: 'execution timed out',
-        }
-      }
+  // --- Poll the whole batch in one request per attempt ---
+  const tokens = submissions ? submissions.map((s) => s.token) : []
+  let batchResults: (Awaited<ReturnType<typeof pollJudge0Batch>>[number])[] = []
+  if (submissions) {
+    try {
+      batchResults = await pollJudge0Batch(tokens)
+    } catch {
+      batchResults = tokens.map(() => null)
+    }
+  }
 
+  // --- Map each test case's result with the existing comparison logic ---
+  const results: TestResult[] = casesToRun.map((tc, idx): TestResult => {
+    // Whole-batch submit failed → every test is a recoverable runner error.
+    if (batchFailureMessage) {
+      return {
+        id: tc.id,
+        label: tc.label,
+        status: 'error',
+        hidden: tc.hidden,
+        input: tc.hidden ? undefined : tc.args,
+        matchMode: tc.compare_mode,
+        errorMessage: batchFailureMessage,
+      }
+    }
+
+    // Past the batchFailureMessage guard, submissions is guaranteed non-null.
+    const submitError = submissions![idx]?.error ?? null
+    const judge0Result = batchResults[idx]
+
+    if (submitError || !tokens[idx]) {
+      return {
+        id: tc.id,
+        label: tc.label,
+        status: 'error',
+        hidden: tc.hidden,
+        input: tc.hidden ? undefined : tc.args,
+        matchMode: tc.compare_mode,
+        errorMessage: 'Code runner is busy. Please try again in a moment.',
+      }
+    }
+
+    if (!judge0Result) {
+      // Token submitted but never reached a terminal state in the poll window.
+      return {
+        id: tc.id,
+        label: tc.label,
+        status: 'error',
+        hidden: tc.hidden,
+        input: tc.hidden ? undefined : tc.args,
+        matchMode: tc.compare_mode,
+        errorMessage: 'execution timed out',
+      }
+    }
+
+    {
       const statusId = judge0Result.status?.id ?? 13
       const durationMs = judge0Result.time ? Math.round(parseFloat(judge0Result.time) * 1000) : undefined
 
@@ -426,8 +456,8 @@ export async function POST(req: NextRequest) {
         matchMode: tc.compare_mode,
         durationMs,
       }
-    })
-  )
+    }
+  })
 
   const testsPassed = results.filter((r) => r.status === 'passed').length
   const testsTotal = results.length
