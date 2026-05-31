@@ -19,8 +19,9 @@ const RequestSchema = z.object({
   attempt_id: z.string().uuid(),
   question_id: z.string().uuid(),
   response_type: z.enum(['pure_mcq', 'mcq_plus_elaboration', 'modified_option', 'freeform', 'coding_subtask', 'multi_select_mcq']),
-  selected_option_id: z.string().uuid().nullable().optional(),
-  selected_option_ids: z.array(z.string().uuid()).optional(),
+  // Option IDs may be slugs, not UUIDs (some seeded challenges). Accept any non-empty string.
+  selected_option_id: z.string().min(1).nullable().optional(),
+  selected_option_ids: z.array(z.string().min(1)).optional(),
   user_text: z.string().max(50000).nullable().optional(),
   time_spent_seconds: z.number().int().min(0).max(24 * 60 * 60).optional().default(0),
 })
