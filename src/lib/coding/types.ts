@@ -87,4 +87,6 @@ export interface GradingFeedback {
   summary?: string
   next_actions?: string[]
   practice_link?: { title: string; href: string; reason: string }
+  /** True when this grade was synthesized from objective signals because the AI grader was unavailable. */
+  degraded?: boolean
 }

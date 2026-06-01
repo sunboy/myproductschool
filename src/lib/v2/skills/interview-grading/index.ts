@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded } from '@/lib/usage/assert-plan-limit'
 import { SYSTEM_DESIGN_GRADING_PROMPT } from './prompts/system-design'
 import { DATA_MODELING_GRADING_PROMPT } from './prompts/data-modeling'
 import { validateInterviewGrade } from './schemas/feedback-output'
 import { summarizeScene, sceneToPrompt } from '@/lib/hatch/canvas-scene'
-import type { InterviewGrade, ChallengeType } from '@/lib/types'
+import type { InterviewGrade, InterviewGradeDimension, ChallengeType } from '@/lib/types'
 
 type AiBudget = { userId: string; userPlan: string; route: string }
 
@@ -97,16 +99,66 @@ Grade this session according to the rubric.`
     return JSON.parse(cleaned.slice(start, end + 1))
   }
 
-  let parsed
-  try {
-    parsed = await callGrader()
-  } catch (err) {
-    // One retry with explicit reinforcement on conciseness — most parse failures
-    // come from the model hitting max_tokens mid-output. Tighten the ask.
-    console.warn('Grader first attempt failed, retrying:', err)
-    parsed = await callGrader(
-      '\n\nIMPORTANT: keep the response under 3000 tokens of JSON. Trim verbose evidence/how_to_improve fields if needed. Return ONLY valid JSON, no markdown fences, no prose outside the JSON object.'
-    )
+  // Up to 3 attempts with progressively stronger JSON-only reinforcement. Most
+  // parse failures come from the model hitting max_tokens mid-output or wrapping
+  // prose around the JSON. If all attempts fail, fall back to a neutral grade so
+  // the user gets a usable result instead of a hard "Grading failed" error.
+  const nudges = [
+    '',
+    '\n\nIMPORTANT: keep the response under 3000 tokens of JSON. Trim verbose evidence/how_to_improve fields if needed. Return ONLY valid JSON, no markdown fences, no prose outside the JSON object.',
+    '\n\nCRITICAL: Your previous responses were not valid JSON. Return ONLY a single JSON object that exactly matches the required schema, including a numeric "overall_score". No markdown fences, no prose, no commentary before or after the object.',
+  ]
+  let lastErr: unknown
+  for (let attempt = 0; attempt < nudges.length; attempt++) {
+    try {
+      return validateInterviewGrade(await callGrader(nudges[attempt]))
+    } catch (err) {
+      // Budget/plan-limit errors are not model-output failures — let the route
+      // surface them as a 402 instead of masking them with a fallback grade.
+      if (err instanceof AiBudgetExceededError || err instanceof PlanLimitExceeded) throw err
+      lastErr = err
+      console.warn(`Interview grader attempt ${attempt + 1} failed:`, err)
+    }
   }
-  return validateInterviewGrade(parsed)
+
+  console.error('Interview grader exhausted retries, using neutral fallback:', lastErr)
+  return neutralInterviewGradeFallback(challengeType)
+}
+
+// Fallback when the AI grader exhausts its retries. There is no objective score
+// signal for a canvas/conversation interview, so use a neutral mid score and an
+// honest headline. The user can re-submit for a real AI grade.
+function neutralInterviewGradeFallback(challengeType: ChallengeType): InterviewGrade {
+  const note = "Hatch's detailed review was unavailable this time."
+  const dim = (verdict: string): InterviewGradeDimension => ({
+    score: 3,
+    verdict,
+    evidence: note,
+    hole_to_poke: 'A full review was not generated for this attempt.',
+    how_to_improve: 'Re-submit to get a detailed grade, or ask Hatch about a specific part of your design.',
+  })
+  const dimensions: Record<string, InterviewGradeDimension> =
+    challengeType === 'system_design'
+      ? {
+          requirements: dim('Could not assess requirements this time.'),
+          architecture: dim('Could not assess the architecture this time.'),
+          tradeoffs: dim('Could not assess tradeoffs this time.'),
+          scalability: dim('Could not assess scalability this time.'),
+          communication: dim('Could not assess communication this time.'),
+        }
+      : {
+          entities: dim('Could not assess entities this time.'),
+          relationships: dim('Could not assess relationships this time.'),
+          normalization: dim('Could not assess normalization this time.'),
+          constraints: dim('Could not assess constraints this time.'),
+          communication: dim('Could not assess communication this time.'),
+        }
+  return {
+    overall_score: 3,
+    headline: note,
+    dimensions,
+    top_strength: 'Your submission was recorded.',
+    top_improvement: 'Re-submit to get a detailed grade from Hatch.',
+    canvas_annotations: [],
+  }
 }

@@ -1818,6 +1818,70 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [isApiMode, props, attemptId, currentCode, currentLanguage, isSubmittingCoding, codeRunner])
 
+  // Re-run Hatch grading on the SAME submission, in place. Used by the "Retry
+  // grading" button on the complete screen when the AI grader errored. Reuses the
+  // already-computed correctness result (tests are deterministic — no need to
+  // re-run them) and stays on phase==='complete' rather than starting a new attempt.
+  const retryGradingInFlightRef = useRef(false)
+  const retryCodingGrading = useCallback(async () => {
+    const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
+    // Synchronous in-flight guard — a state flag can lose a double-click race.
+    if (!challengeId || !attemptId || !lastRunResult || isLoadingGrading || retryGradingInFlightRef.current) return
+    retryGradingInFlightRef.current = true
+    // Keep the existing error/feedback on screen until we have a result, so a
+    // failed retry (e.g. 409) doesn't blank the panel.
+    setIsLoadingGrading(true)
+    try {
+      const gradingRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attemptId,
+          finalCode: currentCode,
+          language: currentLanguage,
+          correctnessPayload: lastRunResult,
+        }),
+      })
+      if (!gradingRes.ok) {
+        const payload = await gradingRes.json().catch(() => null)
+        // 409 means a grade already exists for this attempt (e.g. a prior
+        // fallback grade persisted). Surface a clear, non-destructive message.
+        if (gradingRes.status === 409) {
+          setCodingGradingError('This attempt is already graded. Start a new attempt for a fresh grade.')
+          return
+        }
+        throw new Error(payload?.details ?? payload?.error ?? `Grading failed: ${gradingRes.status}`)
+      }
+      const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback }
+      if (gradingPayload.grade) {
+        setCodingGradingError(undefined)
+        setCodingFeedback(gradingPayload.grade)
+        const score = gradingPayload.grade.overall_score ?? 0
+        recordSubmission({
+          attemptId,
+          challengeType: apiChallengeType ?? null,
+          completedAt: new Date(),
+          gradeLabel: scoreToGradeLabel(score),
+          totalScore: score,
+          maxScore: 5,
+          xpAwarded: 0,
+          stepResults: [],
+          competencyDeltas: [],
+          canvasPngUrl: null,
+        })
+        void loadSubmissionHistory()
+      } else {
+        setCodingGradingError('Hatch did not return feedback for this submission.')
+      }
+    } catch (gradingErr) {
+      console.error('Coding grading retry error:', gradingErr)
+      setCodingGradingError(gradingErr instanceof Error ? gradingErr.message : 'Hatch feedback failed')
+    } finally {
+      setIsLoadingGrading(false)
+      retryGradingInFlightRef.current = false
+    }
+  }, [isApiMode, props, attemptId, currentCode, currentLanguage, lastRunResult, isLoadingGrading, apiChallengeType, recordSubmission, loadSubmissionHistory])
+
   // Per-language draft preservation: on language change, save current code and load draft/starter
   const handleLanguageChange = useCallback((newLang: SupportedLanguage) => {
     if (newLang === currentLanguage) return
@@ -3516,6 +3580,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   if (phase === 'reveal' || phase === 'complete' || selectedHistoryIdx !== null) {
     const historyRecord = selectedHistoryIdx !== null ? sessionHistory[selectedHistoryIdx] : null
     const showMirror = phase === 'complete' || historyRecord !== null
+    // recordSubmission auto-selects the just-graded attempt (idx 0), flipping the
+    // complete screen into "history view". When the selected record IS the attempt
+    // we just finished in this session, the live code/run context is still in
+    // memory, so Ask Hatch and Retry grading should remain available. Suppress them
+    // only when browsing an OLDER attempt.
+    const isCurrentAttemptRecord =
+      historyRecord !== null && selectedHistoryIdx === 0 && historyRecord.attemptId === attemptId
+    // Treat the current-attempt record like the live complete view for coding controls.
+    const codingControlsLive = !historyRecord || isCurrentAttemptRecord
 
     return (
       <div className="flex flex-col overflow-hidden h-full">
@@ -3611,16 +3684,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   </div>
                 ) : (
                   <CodingFeedback
-                    correctness={historyRecord ? historyCodingCorrectness : lastRunResult}
-                    grading={historyRecord ? historyCodingFeedback : codingFeedback}
-                    submittedCode={historyRecord ? historySubmittedCode : currentCode}
-                    language={historyRecord ? historyCodingLanguage : currentLanguage}
-                    isLoadingGrading={historyRecord ? false : isLoadingGrading}
-                    isSqlMode={historyRecord
-                      ? (historyCodingLanguage === 'sql' || historyRecord.challengeType === 'sql')
-                      : currentLanguage === 'sql'}
-                    gradingError={historyRecord ? undefined : codingGradingError}
-                    onRetry={historyRecord ? undefined : async () => {
+                    // For the current-attempt record, prefer the live in-memory
+                    // state (it reflects the latest retry); only browse persisted
+                    // history data for OLDER attempts.
+                    correctness={codingControlsLive ? lastRunResult : historyCodingCorrectness}
+                    grading={codingControlsLive ? codingFeedback : historyCodingFeedback}
+                    submittedCode={codingControlsLive ? currentCode : historySubmittedCode}
+                    language={codingControlsLive ? currentLanguage : historyCodingLanguage}
+                    isLoadingGrading={codingControlsLive ? isLoadingGrading : false}
+                    isSqlMode={codingControlsLive
+                      ? currentLanguage === 'sql'
+                      : (historyCodingLanguage === 'sql' || historyRecord?.challengeType === 'sql')}
+                    gradingError={codingControlsLive ? codingGradingError : undefined}
+                    onRetry={codingControlsLive ? async () => {
+                      setSelectedHistoryIdx(null)
                       setIsSubmittingCoding(false)
                       setIsLoadingGrading(false)
                       setLastRunResult(null)
@@ -3633,12 +3710,34 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                         setAttemptId(nextAttempt.id)
                         setPhase('question')
                       }
-                    }}
-                    onAskHatch={historyRecord ? undefined : () => setChatPanelOpen(true)}
-                    onNextChallenge={nextChallengeHref && !historyRecord
+                    } : undefined}
+                    onRetryGrading={codingControlsLive ? retryCodingGrading : undefined}
+                    onAskHatch={codingControlsLive ? () => queueHatchPrompt('My tests are failing. Can you help me figure out why?', false) : undefined}
+                    onNextChallenge={nextChallengeHref && codingControlsLive
                       ? () => { window.location.href = nextChallengeHref }
                       : undefined
                     }
+                  />
+                )}
+                {/* Hatch coach on the coding complete screen — the question-phase
+                    CanvasChatPanel is unmounted here, so mount a dedicated instance
+                    so "Ask Hatch" has a panel to open. Available for the live
+                    complete view and the just-graded current attempt. */}
+                {codingControlsLive && (
+                  <CanvasChatPanel
+                    attemptId={attemptId ?? ''}
+                    challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
+                    challengeType="coding"
+                    scene={scene}
+                    queuedPrompt={queuedHatchPrompt}
+                    isOpen={chatPanelOpen}
+                    onToggle={() => setChatPanelOpen((v) => !v)}
+                    onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
+                    currentCode={currentCode}
+                    currentLanguage={currentLanguage}
+                    lastRunResult={lastRunResult}
+                    challengeTitle={challengeTitle ?? undefined}
+                    problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
                   />
                 )}
               </div>

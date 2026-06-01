@@ -11,6 +11,8 @@ interface CodingFeedbackProps {
   isLoadingCorrectness?: boolean
   isLoadingGrading?: boolean
   onRetry?: () => void
+  /** Re-runs grading on the SAME submission in place (does not start a new attempt). */
+  onRetryGrading?: () => void
   onAskHatch?: () => void
   onNextChallenge?: () => void
   submittedCode?: string | null
@@ -483,12 +485,14 @@ function GradingColumn({
   error,
   onAskHatch,
   onRetry,
+  onRetryGrading,
 }: {
   grading?: GradingFeedback | null
   isLoading?: boolean
   error?: string
   onAskHatch?: () => void
   onRetry?: () => void
+  onRetryGrading?: () => void
 }) {
   if (isLoading) {
     return (
@@ -519,13 +523,18 @@ function GradingColumn({
               Couldn&apos;t generate feedback.
             </p>
             <p className="text-xs text-error/80">
-              Your code is still in the editor. {error}
+              Hatch could not score this attempt. Your test results are still shown on the left.
             </p>
+            {error && (
+              <p className="text-[11px] text-error/60 mt-1" title={error}>
+                {error}
+              </p>
+            )}
           </div>
         </div>
-        {onRetry && (
+        {(onRetryGrading ?? onRetry) && (
           <button
-            onClick={onRetry}
+            onClick={onRetryGrading ?? onRetry}
             className="w-full py-2 rounded-full bg-surface-container border border-outline-variant text-sm font-label font-semibold text-on-surface hover:bg-surface-container-high transition-colors"
           >
             Retry grading
@@ -699,6 +708,7 @@ export function CodingFeedback({
   isLoadingCorrectness = false,
   isLoadingGrading = false,
   onRetry,
+  onRetryGrading,
   onAskHatch,
   onNextChallenge,
   submittedCode,
@@ -746,6 +756,7 @@ export function CodingFeedback({
               <button
                 type="button"
                 onClick={onAskHatch}
+                data-testid="ask-hatch-banner"
                 className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-on-primary transition-opacity hover:opacity-90"
               >
                 <HatchGlyph size={15} state="speaking" className="text-on-primary" />
@@ -799,6 +810,7 @@ export function CodingFeedback({
             error={gradingError}
             onAskHatch={onAskHatch}
             onRetry={onRetry}
+            onRetryGrading={onRetryGrading}
           />
         </div>
       </div>
