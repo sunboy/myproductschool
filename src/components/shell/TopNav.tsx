@@ -1,8 +1,9 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useSession } from '@/context/SessionContext'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { cn } from '@/lib/utils'
@@ -21,27 +22,6 @@ const NAV_ITEMS = [
 
 const AFFILIATES_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
 
-interface ProfileData {
-  streak_days: number
-  xp_total: number
-  display_name: string | null
-  avatar_url: string | null
-  plan: string | null
-  daily_attempts_today?: number
-  subscription?: {
-    status?: string | null
-    current_period_end?: string | null
-    billing_interval?: string | null
-    cancel_at_period_end?: boolean | null
-  } | null
-  dunning?: {
-    state: string
-    shouldShowBanner: boolean
-    bannerMessage: string | null
-    gracePeriodEndsAt: string | null
-  } | null
-}
-
 function getInitials(name: string | null | undefined): string {
   if (!name?.trim()) return '?'
   const parts = name.trim().split(/\s+/)
@@ -53,47 +33,13 @@ function getInitials(name: string | null | undefined): string {
 export function TopNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const [profile, setProfile] = useState<ProfileData | null>(null)
+  // Profile comes from the session fetched once by SessionProvider and refreshed
+  // on challenge-completed / profile-stats-updated events — no per-navigation
+  // /api/profile refetch.
+  const { profile } = useSession()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { muted, toggleMuted } = useHatchSonics()
-
-  const fetchProfile = useCallback(() => {
-    fetch('/api/profile')
-      .then(r => {
-        if (r.status === 401) { window.location.href = '/login'; return null }
-        return r.ok ? r.json() : null
-      })
-      .then(data => {
-        if (data) setProfile({
-          streak_days: data.streak_days ?? 0,
-          xp_total: data.xp_total ?? 0,
-          display_name: data.display_name ?? null,
-          avatar_url: data.avatar_url ?? null,
-          plan: data.plan ?? null,
-          daily_attempts_today: data.daily_attempts_today ?? 0,
-          subscription: data.subscription ?? null,
-          dunning: data.dunning ?? null,
-        })
-      })
-      .catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    const refreshProfileStats = () => fetchProfile()
-    window.addEventListener('challenge-completed', refreshProfileStats)
-    window.addEventListener('profile-stats-updated', refreshProfileStats)
-    return () => {
-      window.removeEventListener('challenge-completed', refreshProfileStats)
-      window.removeEventListener('profile-stats-updated', refreshProfileStats)
-    }
-  }, [fetchProfile])
-
-  useEffect(() => {
-    // Route transitions can occur after progression writes complete.
-    // Re-fetch on path change to keep nav badges fresh.
-    fetchProfile()
-  }, [fetchProfile, pathname])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
