@@ -97,49 +97,43 @@ export async function GET(
   // Use the resolved challenge ID (not the raw param which may be a slug)
   const resolvedId = challenge.id
 
-  // Fetch flow steps ordered by step_order
-  const { data: flowSteps, error: stepsError } = await supabase
-    .from('flow_steps')
-    .select('id, step, step_order, step_nudge, grading_weight, challenge_id')
-    .eq('challenge_id', resolvedId)
-    .order('step_order', { ascending: true })
+  // Fetch flow steps (with per-step question counts via a nested aggregate, so
+  // we don't need a second round-trip to step_questions) in parallel with the
+  // user's in-progress attempt. The two reads are independent once we have the
+  // resolved challenge id.
+  const [
+    { data: flowSteps, error: stepsError },
+    { data: currentAttempt },
+  ] = await Promise.all([
+    supabase
+      .from('flow_steps')
+      .select('id, step, step_order, step_nudge, grading_weight, challenge_id, step_questions(count)')
+      .eq('challenge_id', resolvedId)
+      .order('step_order', { ascending: true }),
+    supabase
+      .from('challenge_attempts')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('challenge_id', resolvedId)
+      .eq('status', 'in_progress')
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
 
   if (stepsError) {
     return NextResponse.json({ error: 'Failed to fetch steps' }, { status: 500 })
   }
 
-  // Fetch question counts per step
-  const stepIds = (flowSteps ?? []).map((s: FlowStepRecord) => s.id)
-  const questionCountMap = new Map<string, number>()
-
-  if (stepIds.length > 0) {
-    const { data: questionCounts } = await supabase
-      .from('step_questions')
-      .select('flow_step_id')
-      .in('flow_step_id', stepIds)
-
-    for (const row of (questionCounts ?? []) as Array<{ flow_step_id: string }>) {
-      const prev = questionCountMap.get(row.flow_step_id) ?? 0
-      questionCountMap.set(row.flow_step_id, prev + 1)
-    }
+  type FlowStepWithCount = FlowStepRecord & {
+    step_questions?: Array<{ count: number }> | null
   }
 
-  const steps: StepSummary[] = (flowSteps ?? []).map((s: FlowStepRecord) => ({
+  const steps: StepSummary[] = ((flowSteps ?? []) as FlowStepWithCount[]).map((s) => ({
     step: s.step,
     step_order: s.step_order,
-    question_count: questionCountMap.get(s.id) ?? 0,
+    question_count: s.step_questions?.[0]?.count ?? 0,
   }))
-
-  // Fetch in-progress attempt for this user
-  const { data: currentAttempt } = await supabase
-    .from('challenge_attempts')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('challenge_id', resolvedId)
-    .eq('status', 'in_progress')
-    .order('started_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
 
   // ── Coding parts (multi-part coding challenges) ───────────────────────────
   // For coding challenges: find the single flow_steps row with step='coding',

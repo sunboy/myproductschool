@@ -43,7 +43,7 @@ export async function POST(
   const adminClient = createAdminClient()
 
   const [loopResult, roundsResult, profileResult] = await Promise.all([
-    adminClient.from('interview_loops' as string).select('*').eq('id', id).eq('user_id', user.id).single(),
+    adminClient.from('interview_loops' as string).select('cross_round_memory, target_company, target_role').eq('id', id).eq('user_id', user.id).single(),
     adminClient.from('loop_rounds' as string).select('*').eq('loop_id', id).order('round_index', { ascending: true }),
     adminClient.from('profiles').select('archetype, archetype_description').eq('id', user.id).single(),
   ])

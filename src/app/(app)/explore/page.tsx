@@ -145,6 +145,10 @@ export default async function ExplorePage() {
           .eq('is_published', true)
           .eq('is_real_interview', true)
           .not('company_tags', 'eq', '{}')
+          // The page only renders the top 4 companies x 5 challenges. Bound the
+          // scan so it doesn't grow with the whole real-interview catalog.
+          .order('created_at', { ascending: false })
+          .limit(200)
         const rows = (data ?? []) as CuratedChallenge[]
         // Count per company
         const counts = new Map<string, CuratedChallenge[]>()
