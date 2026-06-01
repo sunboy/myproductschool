@@ -144,6 +144,15 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
     return process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
   }
 
+  // For OAuth / magic-link round-trips, prefer the actual host the user is on.
+  // Baking NEXT_PUBLIC_APP_URL (apex) causes an apex→www 307 mid-flow that drops
+  // the PKCE code-verifier cookie, breaking exchangeCodeForSession. Using the live
+  // origin also makes local dev (localhost:3000) work.
+  function oauthOrigin() {
+    if (typeof window !== 'undefined') return window.location.origin
+    return process.env.NEXT_PUBLIC_APP_URL ?? ''
+  }
+
   function resolvedRedirectTo(fallback: string) {
     if (!redirectTo) return fallback
     if (redirectTo.startsWith('/') && !redirectTo.startsWith('//')) return redirectTo
@@ -241,7 +250,7 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
         await postAuthAction('/api/auth/magic-link', {
           email: validation.data.email,
           turnstileToken,
-          redirectTo: `${siteOrigin()}/auth/callback`,
+          redirectTo: `${oauthOrigin()}/auth/callback`,
         })
         play('success')
         router.push(`/magic-link-sent?email=${encodeURIComponent(validation.data.email)}`)
@@ -324,10 +333,20 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
 
   async function handleGoogleSignIn() {
     play('open')
-    await supabase.auth.signInWithOAuth({
+    // Send Google back through /auth/callback (which runs exchangeCodeForSession)
+    // and carry the post-login destination as ?next=, which the callback's safeNextPath
+    // reads it. Redirecting straight to /dashboard skips the code exchange, so no
+    // session is set and the proxy bounces the user to /login.
+    const next = resolvedRedirectTo('/dashboard')
+    const callback = `${oauthOrigin()}/auth/callback?next=${encodeURIComponent(next)}`
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${siteOrigin()}${resolvedRedirectTo('/dashboard')}` }
+      options: { redirectTo: callback },
     })
+    if (error) {
+      setError('Could not start Google sign-in. Please try again.')
+      play('error')
+    }
   }
 
   const inputClass = [
@@ -669,6 +688,20 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
                   {activeMode === 'signup' && (
                     <p className="text-xs text-center font-label" style={{ color: 'rgba(255,255,255,0.45)' }}>
                       You&apos;ll meet Hatch right after.
+                    </p>
+                  )}
+
+                  {activeMode === 'signup' && (
+                    <p className="text-xs text-center font-label leading-5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                      By creating an account, you agree to our{' '}
+                      <a href="/terms" className="underline" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                        Terms of Service
+                      </a>{' '}
+                      and{' '}
+                      <a href="/privacy" className="underline" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                        Privacy Policy
+                      </a>
+                      .
                     </p>
                   )}
                 </form>
