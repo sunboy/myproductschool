@@ -8,6 +8,7 @@ import { appendReturnTo } from '@/lib/navigation/return-to'
 import { challengePath } from '@/lib/challenges/challengeNumber'
 import { coerceDifficulty, DIFFICULTY_PILL_CLASSES } from '@/lib/practice/difficulty'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
+import { deriveChallengeStatus } from '@/lib/challenges/status'
 import type { ChallengeWithDomain } from '@/lib/types'
 
 interface Props {
@@ -46,6 +47,7 @@ function ChallengeRow({ challenge, locked = false, returnHref }: { challenge: Ch
   const techLabel = challenge.technique_tags?.[0] ? getTechniqueLabelAny(challenge.technique_tags[0]) : undefined
   const isReal = challenge.is_real_interview && (challenge.company_tags ?? []).length > 0
   const href = appendReturnTo(challengePath(challenge), returnHref)
+  const status = deriveChallengeStatus(challenge)
 
   const rowClass = 'flex items-center gap-3 px-4 py-3 group transition-colors'
   const inner = (
@@ -53,13 +55,13 @@ function ChallengeRow({ challenge, locked = false, returnHref }: { challenge: Ch
       {/* Completion state */}
       <span
         className={`material-symbols-outlined text-[20px] shrink-0 ${
-          challenge.is_completed ? 'text-primary' : challenge.is_in_progress ? 'text-tertiary' : 'text-outline'
+          status === 'completed' ? 'text-primary' : status === 'attempted' ? 'text-tertiary' : 'text-outline'
         }`}
-        style={challenge.is_completed || challenge.is_in_progress ? { fontVariationSettings: "'FILL' 1" } : {}}
+        style={status !== 'not_started' ? { fontVariationSettings: "'FILL' 1" } : {}}
       >
-        {challenge.is_completed
+        {status === 'completed'
           ? 'check_circle'
-          : challenge.is_in_progress
+          : status === 'attempted'
           ? 'timelapse'
           : 'radio_button_unchecked'}
       </span>
@@ -68,7 +70,7 @@ function ChallengeRow({ challenge, locked = false, returnHref }: { challenge: Ch
       <div className="min-w-0 flex-1">
         <span
           className={`text-sm font-semibold truncate block ${
-            challenge.is_completed ? 'text-on-surface' : 'text-on-surface-variant'
+            status === 'completed' ? 'text-on-surface' : 'text-on-surface-variant'
           }`}
         >
           {challenge.title}
@@ -119,7 +121,7 @@ function ChallengeRow({ challenge, locked = false, returnHref }: { challenge: Ch
           </span>
         ) : (
           <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-tight font-label">
-            {challenge.is_in_progress ? 'Resume' : 'Start'}
+            {status === 'attempted' ? 'Resume' : 'Start'}
           </span>
         )}
         {locked ? (

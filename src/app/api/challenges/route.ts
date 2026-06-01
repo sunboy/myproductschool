@@ -3,11 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import type { Challenge, ChallengeAttemptV2 } from '@/lib/types'
 import { coerceDifficulty, expandDifficultyForQuery } from '@/lib/practice/difficulty'
 import { slugifyIndustry } from '@/lib/practice/slugify'
+import { buildStatsMap } from '@/lib/challenges/status'
 
 interface ChallengeWithStats extends Challenge {
   attempt_count: number
   best_score: number | null
   is_completed: boolean
+  is_in_progress: boolean
 }
 
 export async function GET(req: NextRequest) {
@@ -63,28 +65,16 @@ export async function GET(req: NextRequest) {
     .eq('user_id', user.id)
     .in('challenge_id', challengeIds)
 
-  // Build per-challenge stats map
-  const statsMap = new Map<string, { attempt_count: number; best_score: number | null; is_completed: boolean }>()
-  for (const id of challengeIds) {
-    statsMap.set(id, { attempt_count: 0, best_score: null, is_completed: false })
-  }
-  for (const attempt of (attempts ?? []) as Pick<ChallengeAttemptV2, 'challenge_id' | 'total_score' | 'status'>[]) {
-    const existing = statsMap.get(attempt.challenge_id)
-    if (!existing) continue
-    existing.attempt_count += 1
-    if (attempt.status === 'completed') {
-      existing.is_completed = true
-      if (attempt.total_score !== null) {
-        existing.best_score = existing.best_score === null
-          ? attempt.total_score
-          : Math.max(existing.best_score, attempt.total_score)
-      }
-    }
-  }
+  // Build per-challenge stats map (shared derivation — keeps is_in_progress
+  // consistent with getChallenges / ChallengeCard).
+  const statsMap = buildStatsMap(
+    challengeIds,
+    (attempts ?? []) as Pick<ChallengeAttemptV2, 'challenge_id' | 'total_score' | 'status'>[],
+  )
 
   const result: ChallengeWithStats[] = (challenges as Challenge[]).map(c => ({
     ...c,
-    ...statsMap.get(c.id) ?? { attempt_count: 0, best_score: null, is_completed: false },
+    ...(statsMap.get(c.id) ?? { attempt_count: 0, best_score: null, is_completed: false, is_in_progress: false }),
   }))
 
   const total = count ?? 0
