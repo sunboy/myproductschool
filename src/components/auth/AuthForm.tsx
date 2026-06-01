@@ -290,7 +290,7 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
           return
         }
         play('success')
-        const dest = data.onboardingCompleted ? resolvedRedirectTo('/dashboard') : '/onboarding/welcome'
+        const dest = resolvedRedirectTo('/dashboard')
         window.location.href = dest
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
@@ -315,7 +315,7 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
         })
         if (data.hasSession) {
           play('success')
-          router.push('/onboarding/welcome')
+          router.push('/dashboard')
           router.refresh()
         } else {
           resetTurnstile()

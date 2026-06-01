@@ -1,0 +1,138 @@
+'use client'
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
+import { useSession } from '@/context/SessionContext'
+import { getOnboardingState } from '@/lib/onboarding/state-client'
+
+// ── Constants ──────────────────────────────────────────────────────────────────
+
+const DISMISSED_KEY = 'onboarding-modal-dismissed'
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+type ModalSource = 'auto' | 'hero' | 'settings'
+
+interface OnboardingModalState {
+  open: boolean
+  hasMeaningfulProgress: boolean
+  completed: boolean
+}
+
+interface OnboardingModalContextValue extends OnboardingModalState {
+  openModal: (source?: ModalSource) => void
+  closeModal: () => void
+  markCompleted: () => void
+}
+
+// ── Context ────────────────────────────────────────────────────────────────────
+
+const OnboardingModalContext = createContext<OnboardingModalContextValue>({
+  open: false,
+  hasMeaningfulProgress: false,
+  completed: false,
+  openModal: () => {},
+  closeModal: () => {},
+  markCompleted: () => {},
+})
+
+// ── Provider ───────────────────────────────────────────────────────────────────
+
+export function OnboardingModalProvider({ children }: { children: ReactNode }) {
+  const { profile } = useSession()
+
+  const [open, setOpen] = useState(false)
+  const [hasMeaningfulProgress, setHasMeaningfulProgress] = useState(false)
+  const [completed, setCompleted] = useState(false)
+
+  // Track whether we've done the one-time mount check so we don't re-run
+  const mounted = useRef(false)
+
+  // ── Mount effect: auto-launch logic ──────────────────────────────────────
+  useEffect(() => {
+    // Wait for the profile to load before deciding
+    if (profile === null) return
+    // Already ran
+    if (mounted.current) return
+    mounted.current = true
+
+    // Already calibrated — nothing to do
+    if (profile.onboarding_completed_at) {
+      setCompleted(true)
+      return
+    }
+
+    // Fetch server-side onboarding state once to check meaningful progress
+    getOnboardingState()
+      .then(state => {
+        if (!state) return
+        const data = state.data as Record<string, unknown> | undefined
+        // Meaningful = they got past the intro screen
+        const screen = typeof data?.screen === 'string' ? data.screen : 'intro'
+        const meaningful = screen !== 'intro' && screen !== 'results'
+        setHasMeaningfulProgress(meaningful)
+      })
+      .catch(() => {})
+      .finally(() => {
+        // Auto-launch: only on /dashboard, only if not dismissed this session
+        if (
+          typeof window !== 'undefined' &&
+          window.location.pathname.startsWith('/dashboard') &&
+          !sessionStorage.getItem(DISMISSED_KEY)
+        ) {
+          setOpen(true)
+        }
+      })
+  }, [profile])
+
+  // ── Window event listener: mirror open-upgrade-modal pattern ─────────────
+  useEffect(() => {
+    const handler = () => setOpen(true)
+    window.addEventListener('open-onboarding-modal', handler)
+    return () => window.removeEventListener('open-onboarding-modal', handler)
+  }, [])
+
+  // ── Methods ───────────────────────────────────────────────────────────────
+
+  const openModal = useCallback((_source?: ModalSource) => {
+    setOpen(true)
+  }, [])
+
+  const closeModal = useCallback(() => {
+    setOpen(false)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(DISMISSED_KEY, '1')
+    }
+  }, [])
+
+  const markCompleted = useCallback(() => {
+    setCompleted(true)
+    setOpen(false)
+    // Fire profile-stats-updated so SessionContext.refresh re-reads
+    // onboarding_completed_at and flips the dashboard to State A.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('profile-stats-updated'))
+    }
+  }, [])
+
+  return (
+    <OnboardingModalContext.Provider
+      value={{ open, hasMeaningfulProgress, completed, openModal, closeModal, markCompleted }}
+    >
+      {children}
+    </OnboardingModalContext.Provider>
+  )
+}
+
+// ── Hook ───────────────────────────────────────────────────────────────────────
+
+export function useOnboardingModal(): OnboardingModalContextValue {
+  return useContext(OnboardingModalContext)
+}

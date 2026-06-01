@@ -8,9 +8,11 @@ import { IS_MOCK } from '@/lib/mock'
 import {
   CalibrationSubmitSchema,
   buildCalibrationPersistencePayload,
+  computePersonalisedPlanSlug,
   type CalibrationMove,
   type CalibrationScores,
 } from '@/lib/onboarding/calibration-submit'
+import { embedAndStoreContext } from '@/lib/notes/embeddings'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = CalibrationSubmitSchema
@@ -122,11 +124,7 @@ export async function POST(request: Request) {
       onboarding_completed_at: new Date().toISOString(),
       starting_levels: { frame: 3, list: 2, optimize: 2, win: 3 },
       hatch_observation: "You think in narratives and outcomes first. That's rare.",
-      // personalised_plan_slug retired in Phase 5 — the 4 move-shells were
-      // unpublished in R2.E. Routing now lands on /dashboard which uses
-      // profiles.interview_meta.preferred_move to bias the "next challenge"
-      // suggestion. Field kept as null for backward compat with the client.
-      personalised_plan_slug: null as string | null,
+      personalised_plan_slug: 'optimize-under-pressure' as string | null,
     })
   }
 
@@ -149,7 +147,7 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { answers, role } = body
+  const { answers, role, primary_goal, target_company, interview_date } = body
 
   const scores: CalibrationScores = {
     frame:    scoreMove('frame',    answers.frame    ?? ''),
@@ -276,10 +274,12 @@ export async function POST(request: Request) {
   ])
   if (writeError) return NextResponse.json({ error: writeError.message }, { status: 500 })
 
-  // Durable write of preferred_move into profiles.interview_meta. The
-  // dashboard's "next challenge" card reads this to bias suggestions toward
-  // the user's weakest FLOW move. Failure here doesn't fail the calibration
-  // response (the user already passed onboarding), but we log it.
+  // Compute personalised plan slug from weakness move + goal
+  const personalisedPlanSlug = computePersonalisedPlanSlug(weak, primary_goal ?? null)
+
+  // Durable write of preferred_move (and any new personalization fields) into
+  // profiles.interview_meta. Failure here doesn't fail the calibration response
+  // (the user already passed onboarding), but we log it.
   try {
     const { data: profileRow } = await adminClient
       .from('profiles')
@@ -287,13 +287,47 @@ export async function POST(request: Request) {
       .eq('id', user.id)
       .single()
     const current = (profileRow?.interview_meta as Record<string, unknown>) ?? {}
+    const metaUpdate: Record<string, unknown> = { ...current, preferred_move: weak }
+    if (target_company) metaUpdate.target_company = target_company
+
     const { error: metaErr } = await adminClient
       .from('profiles')
-      .update({ interview_meta: { ...current, preferred_move: weak } })
+      .update({ interview_meta: metaUpdate })
       .eq('id', user.id)
-    if (metaErr) console.error('[calibration] preferred_move write failed:', metaErr.message)
+    if (metaErr) console.error('[calibration] interview_meta write failed:', metaErr.message)
   } catch (e) {
-    console.error('[calibration] preferred_move write threw:', e)
+    console.error('[calibration] interview_meta write threw:', e)
+  }
+
+  // Embed interview_date and target_company into Hatch context (non-critical).
+  // Fire-and-forget: the embeddings provider can be slow, and awaiting it here
+  // would block the calibration response and hang the "Calibrating..." screen.
+  // The embedding completing slightly after the response is fine.
+  if (interview_date) {
+    const daysUntil = Math.max(
+      0,
+      Math.ceil((new Date(interview_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    )
+    const companyPart = target_company ? ` at ${target_company}` : ''
+    const content = daysUntil > 0
+      ? `You're preparing for an interview${companyPart} in ${daysUntil} day${daysUntil === 1 ? '' : 's'}.`
+      : `Your interview${companyPart} is today. Good luck.`
+    void embedAndStoreContext(
+      user.id,
+      'interview_date',
+      content,
+      'profile',
+      { interview_date, days_until: daysUntil, company: target_company }
+    ).catch(() => {})
+  } else if (target_company) {
+    // No interview date but company was provided - store company context alone
+    void embedAndStoreContext(
+      user.id,
+      'target_company',
+      `You are targeting ${target_company}.`,
+      'profile',
+      { company: target_company }
+    ).catch(() => {})
   }
 
   return NextResponse.json({
@@ -311,8 +345,6 @@ export async function POST(request: Request) {
       win: scoreToLevel(scores.win),
     },
     hatch_observation: observation,
-    // Retired in Phase 5 (move-shells unpublished). Kept as null so the client
-    // type contract holds; client now routes to /dashboard when slug is null.
-    personalised_plan_slug: null as string | null,
+    personalised_plan_slug: personalisedPlanSlug,
   })
 }

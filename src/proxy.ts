@@ -60,7 +60,7 @@ const PUBLIC_SCORECARD_ROUTE =
   /^\/workspace\/challenges\/[^/]+\/share(?:\/[^/]+(?:\/(?:opengraph-image|twitter-image)[^/]*)?)?$/
 
 // Routes that can be reached before signing in.
-const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration', '/results', '/baseline', '/canvas-harness']
+const APP_PUBLIC_ROUTES = ['/canvas-harness']
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname

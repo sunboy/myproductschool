@@ -1,7 +1,5 @@
 import Link from 'next/link'
-import { Suspense } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { CalibrationHero } from './CalibrationHero'
+import { Suspense, type ReactNode } from 'react'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -36,28 +34,62 @@ import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
 
-function getGreeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
-}
-
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
-function moveHatchInsight(move: string, level: number): string {
-  if (level <= 2) return `You're building your ${move} foundation. This challenge is the right next rep.`
-  if (level <= 5) return `Your ${move} move needs reps at this difficulty. Push through it.`
-  return `Strong overall. This sharpens your ${move} edge.`
+function moveHatchInsight(
+  move: string,
+  level: number,
+  primaryGoal?: string | null,
+): string {
+  const goalContext: Record<string, string> = {
+    land_pm_adjacent: 'Sharpening product thinking for a PM-adjacent role.',
+    level_up_current: 'Leveling up within your current role.',
+    ship_better: 'Making sharper product calls day to day.',
+    explore: 'Getting a feel for the practice loop.',
+  }
+  const goalLine = goalContext[primaryGoal ?? ''] ?? null
+
+  let levelLine: string
+  if (level <= 2) levelLine = `${capitalize(move)} is the gap right now. This challenge builds the foundation.`
+  else if (level <= 5) levelLine = `${capitalize(move)} needs more reps at this difficulty.`
+  else levelLine = `${capitalize(move)} is looking solid. This sharpens the edge.`
+
+  return goalLine ? `${goalLine} ${levelLine}` : levelLine
 }
 
 // Returns DB values used by `.in('difficulty', ...)` queries. Expands to the
 // union of legacy and canonical strings so the query works pre- and post-R2.
-function targetDifficulties(avgXp: number): string[] {
+// primary_goal and prep_timeline shift the difficulty band:
+//   - land_pm_adjacent / level_up_current → ramp one notch harder
+//   - explore → always stay gentle (easy/medium) regardless of XP
+//   - prep_timeline 'lt_1mo' → also ramp one notch harder
+function targetDifficulties(
+  avgXp: number,
+  primaryGoal?: string | null,
+  prepTimeline?: string | null,
+): string[] {
+  // explore goal always stays gentle
+  if (primaryGoal === 'explore') {
+    return expandDifficultiesForQuery(['easy', 'medium'])
+  }
+
   let buckets: PracticeDifficulty[]
   if (avgXp < 100) buckets = ['easy', 'medium']
   else if (avgXp < 300) buckets = ['medium', 'hard']
   else buckets = ['hard']
+
+  // shift harder for goal-driven users or tight timelines
+  const shiftHarder =
+    primaryGoal === 'land_pm_adjacent' ||
+    primaryGoal === 'level_up_current' ||
+    prepTimeline === 'lt_1mo'
+
+  if (shiftHarder) {
+    if (buckets[0] === 'easy') buckets = ['medium', 'hard']
+    else if (buckets[0] === 'medium' && buckets.length > 1) buckets = ['hard']
+    // already ['hard'] — no further shift possible
+  }
+
   return expandDifficultiesForQuery(buckets)
 }
 
@@ -71,39 +103,17 @@ function normalizeChallenge(raw: RawChallenge | null): NextChallenge | null {
   return { id: raw.id, slug: raw.slug, title: raw.title, difficulty: raw.difficulty, display_number: raw.display_number, challenge_type: raw.challenge_type, domainName }
 }
 
-function getPersonalizedGreeting(displayName: string, streakDays: number, lastAttemptDate: string | null, isCalibrated: boolean): string {
-  const base = getGreeting()
-  if (!isCalibrated) return `Welcome, ${displayName}!`
-  const today = new Date().toISOString().split('T')[0]
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-  if (streakDays >= 7) return `${base}, ${displayName}: ${streakDays} days strong.`
-  if (lastAttemptDate === today) return `${base}, ${displayName}! You're already on a roll today.`
-  if (lastAttemptDate === yesterday && streakDays > 1) return `${base}, ${displayName}: don't break your ${streakDays}-day streak.`
-  if (!lastAttemptDate || streakDays === 0) return `Welcome back, ${displayName}! Ready to get back into it?`
-  return `${base}, ${displayName}!`
-}
-
-function LockedMoveLevels() {
-  const moves = ['Frame', 'List', 'Optimize', 'Win']
+function LockOverlay({ children, label = 'Unlocks after calibration' }: { children: ReactNode; label?: string }) {
   return (
-    <div className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/30">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-headline font-semibold text-sm text-on-surface">FLOW Levels</h3>
-        <div className="flex items-center gap-1 text-[11px] text-on-surface-variant font-label">
-          <span className="material-symbols-outlined text-[13px]">lock</span>
-          Unlocks after calibration
-        </div>
+    <div className="relative">
+      <div className="opacity-40 blur-[1.5px] pointer-events-none select-none" aria-hidden>
+        {children}
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 opacity-30 blur-[1.5px] pointer-events-none select-none">
-        {moves.map(move => (
-          <div key={move} className="bg-surface-container-high rounded-xl p-3 flex flex-col gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-surface-container-highest flex items-center justify-center">
-              <span className="material-symbols-outlined text-sm text-on-surface-variant">lock</span>
-            </div>
-            <div className="text-xs font-bold text-on-surface font-label">{move}</div>
-            <div className="h-1 bg-surface-container-highest rounded-full" />
-          </div>
-        ))}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-3 py-1.5 text-[11px] font-label text-on-surface-variant shadow-sm">
+          <span className="material-symbols-outlined text-[13px]">lock</span>
+          {label}
+        </div>
       </div>
     </div>
   )
@@ -203,29 +213,23 @@ export default async function DashboardPage() {
   let xpTotal = 0
   let interviewDate: string | null = null
   let isCalibrated = false
-  let lastAttemptDate: string | null = null
   let dailyDone = 0
   let plan: string | null = 'free'
+  let primaryGoal: string | null = null
+  let prepTimeline: string | null = null
+  let roleContext: string | null = null
   // Raw display name (null when unset) for the leaderboard's "You" fallback,
   // distinct from displayName which coalesces to 'there' for the greeting.
   let rawDisplayName: string | null = null
 
   if (user) {
     const today = new Date().toISOString().split('T')[0]
-    const [{ data: profile }, { data: lastAttempt }, { count: dailyCount }] = await Promise.all([
+    const [{ data: profile }, { count: dailyCount }] = await Promise.all([
       supabase
         .from('profiles')
-        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan')
+        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan, primary_goal, prep_timeline, role_context')
         .eq('id', user.id)
         .single(),
-      supabase
-        .from('challenge_attempts')
-        .select('created_at')
-        .eq('user_id', user.id)
-        .eq('status', 'completed')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
       supabase
         .from('challenge_attempts')
         .select('id', { count: 'exact', head: true })
@@ -239,9 +243,11 @@ export default async function DashboardPage() {
     xpTotal = profile?.xp_total ?? 0
     interviewDate = profile?.interview_date ?? null
     isCalibrated = !!profile?.onboarding_completed_at
-    lastAttemptDate = lastAttempt?.created_at ? lastAttempt.created_at.split('T')[0] : null
     dailyDone = dailyCount ?? 0
     plan = profile?.plan ?? 'free'
+    primaryGoal = (profile as Record<string, unknown>)?.primary_goal as string | null ?? null
+    prepTimeline = (profile as Record<string, unknown>)?.prep_timeline as string | null ?? null
+    roleContext = (profile as Record<string, unknown>)?.role_context as string | null ?? null
   }
 
   const userId = user?.id ?? ''
@@ -295,7 +301,10 @@ export default async function DashboardPage() {
   type AttemptRow = { challenge_id: string; created_at: string; challenges: { title: string; slug: string | null; challenge_type: string | null } | null }
   let todayAttempts: AttemptRow[] = []
 
-  if (userId && isCalibrated) {
+  // Built for any logged-in user. Uncalibrated users have no streak/achievement
+  // rows, so the week grid renders all-empty and every achievement shows locked —
+  // the genuine empty state, identical to a calibrated-but-inactive user.
+  if (userId) {
     const now = new Date()
     // Use local date parts to avoid UTC offset shifting dates
     const pad = (n: number) => String(n).padStart(2, '0')
@@ -373,7 +382,7 @@ export default async function DashboardPage() {
     const avgXp = allMoveLevels.length > 0
       ? allMoveLevels.reduce((s, m) => s + m.xp, 0) / allMoveLevels.length
       : 0
-    const difficulties = targetDifficulties(avgXp)
+    const difficulties = targetDifficulties(avgXp, primaryGoal, prepTimeline)
     const completedIds = new Set((completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id))
 
     quickTakePrompt =
@@ -444,14 +453,16 @@ export default async function DashboardPage() {
   // Attach rule-based insight from move level data; no AI call.
   if (nextChallenge && allMoveLevels.length > 0) {
     const weakestLevel = allMoveLevels[0].level ?? 1
-    nextChallenge = { ...nextChallenge, hatch_insight: moveHatchInsight(weakestMove, weakestLevel) }
+    nextChallenge = { ...nextChallenge, hatch_insight: moveHatchInsight(weakestMove, weakestLevel, primaryGoal) }
   }
 
   // ── Build Today's Path (depends on quickTakePrompt + nextChallenge) ──
+  // Built for any logged-in user, calibrated or not. Uncalibrated users have no
+  // todayAttempts, so all steps render as not-done (the warm-up empty state).
   let todaysPathSteps: { label: string; sub: string; icon: string; done: boolean; active: boolean; href?: string }[] = []
   let todaysPathCompleted = 0
 
-  if (userId && isCalibrated) {
+  if (userId) {
     const doneQuickTake = todayAttempts.some(a => a.challenges?.challenge_type === 'quick_take')
     const doneFlowChallenge = todayAttempts.some(a => a.challenges?.challenge_type !== 'quick_take')
 
@@ -505,9 +516,10 @@ export default async function DashboardPage() {
         <UpgradedBanner />
       </Suspense>
 
-      {/* State A: Calibrated */}
-      {isCalibrated && (
-        <div className="grid min-w-0 grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_340px]">
+      {/* Unified dashboard — same layout for first-time and calibrated users.
+          Calibration-seeded cards (FLOW Levels) lock until calibration is done;
+          activity-driven cards render their genuine empty states. */}
+      <div className="grid min-w-0 grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_340px]">
           {/* Main column */}
           <div className="flex flex-col gap-6 min-w-0">
             <HeroGreeterCard
@@ -517,6 +529,7 @@ export default async function DashboardPage() {
               focusMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
               focusLevel={allMoveLevels[0]?.level ?? 1}
               dailyDone={dailyDone}
+              isCalibrated={isCalibrated}
               sessionHref={
                 nextChallenge
                   ? challengePath(nextChallenge)
@@ -567,8 +580,14 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            {/* FLOW Move Levels */}
-            <FlowMoveLevelsCard levels={allMoveLevels} />
+            {/* FLOW Move Levels — calibration seeds these, so lock until done */}
+            {isCalibrated ? (
+              <FlowMoveLevelsCard levels={allMoveLevels} />
+            ) : (
+              <LockOverlay>
+                <FlowMoveLevelsCard levels={allMoveLevels} />
+              </LockOverlay>
+            )}
 
             {hasFollowUpCards && (
               <div className={`grid grid-cols-1 gap-4 ${showSplitFollowUps ? 'xl:grid-cols-2' : 'xl:max-w-[640px]'}`}>
@@ -585,8 +604,8 @@ export default async function DashboardPage() {
 
             <CommunityActivityCard events={communityActivity} />
 
-            {/* Interview Countdown — conditional */}
-            {interviewDate && (
+            {/* Interview Countdown — only for users who selected an interview goal */}
+            {interviewDate && (roleContext === 'engineer_pm_interview' || roleContext === 'both') && (
               <InterviewCountdownCard interviews={interviews} />
             )}
           </div>
@@ -614,32 +633,6 @@ export default async function DashboardPage() {
             )}
           </aside>
         </div>
-      )}
-
-      {/* State B: Uncalibrated */}
-      {!isCalibrated && (
-        <div className="space-y-4">
-          {/* Hatch Greeting Bar */}
-          <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-hatch-card relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
-            <HatchGlyph size={48} state="celebrating" className="flex-shrink-0 relative" />
-            <div className="flex-1 min-w-0 relative">
-              <p className="font-headline font-bold text-[17px] text-on-surface leading-tight">
-                {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, false)}
-              </p>
-              <p className="text-sm text-on-surface-variant mt-0.5">
-                {"I'm Hatch, your product thinking coach. Let's find your starting point."}
-              </p>
-            </div>
-          </div>
-          <CalibrationHero />
-          {featuredAutopsy && (
-            <FeaturedAutopsyCard story={featuredAutopsy.story} company={featuredAutopsy.company} />
-          )}
-          <LockedMoveLevels />
-          <HotChallengesCard challenges={hotChallenges} />
-        </div>
-      )}
     </div>
   )
 }

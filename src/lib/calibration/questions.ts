@@ -14,54 +14,128 @@ export interface CalibrationQuestion {
   options: CalibrationOption[]
 }
 
-// One AI-native incident thread — each question spans product, systems, data, SQL, and coding signals.
+// Four short, role-agnostic product scenarios, one per FLOW move.
+// No single incident thread. Each scenario is self-contained and solvable
+// by any engineer or PM without domain-specific knowledge.
 export const QUESTIONS: CalibrationQuestion[] = [
   {
     move: 'frame',
-    scenario: 'You are on the team for an AI coding assistant. Free users are burning 40% more inference, paid upgrades are flat, SQL practice accuracy dropped, and support says users feel the product is "random." Leadership wants a fix by tomorrow.',
-    q: "What's your first move?",
-    hatch: "Frame move — I'm watching whether you separate product symptoms, system cost, data quality, and user trust before jumping to fixes.",
+    scenario:
+      'A B2B SaaS product has seen a 30% drop in weekly active users over two months. Support tickets mention that "the dashboard feels slow," but no performance regressions appear in engineering logs. Leadership wants a fix shipped this sprint.',
+    q: "What is the right first move?",
+    hatch:
+      'Frame move: watching whether you separate the stated symptom (slowness perception) from possible root causes before committing to a solution direction.',
     options: [
-      { id: 'A', text: 'Define the decision first: are we solving cost leakage, learning quality, conversion, or trust? Then pull evidence for each before picking a lever', quality: 'best' },
-      { id: 'B', text: 'Segment by discipline, plan tier, model route, and recent release cohort to see where the signal concentrates', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Review the last deployments to see whether prompt routing, SQL grading, or auth limits changed', quality: 'good_but_incomplete' },
-      { id: 'D', text: 'Immediately reduce the free token limit so spend stops growing while the team investigates', quality: 'surface' },
+      {
+        id: 'A',
+        text: 'Clarify the real problem first: perceived slowness and actual churn are different signals. Pull retention, task-completion, and session-depth data to see what users stopped doing before you decide what to fix.',
+        quality: 'best',
+      },
+      {
+        id: 'B',
+        text: 'Run performance profiling on the dashboard and add a loading skeleton so users see progress feedback while data loads.',
+        quality: 'good_but_incomplete',
+      },
+      {
+        id: 'C',
+        text: 'Send a survey to churned users asking why they left.',
+        quality: 'surface',
+      },
+      {
+        id: 'D',
+        text: 'Escalate to engineering to fix the slowness so leadership sees action this sprint.',
+        quality: 'plausible_wrong',
+      },
     ],
   },
   {
     move: 'list',
-    scenario: 'The data shows three hotspots: SQL hints loop too long, system design users ask Hatch for full answers, and coding users rerun failing submissions without reading feedback.',
-    q: 'What set of options do you explore?',
-    hatch: "List move — I'm watching whether you generate structurally different product, system, data, and UX interventions.",
+    scenario:
+      'A mobile app for tracking personal finances shows strong acquisition but most users stop logging transactions after two weeks. The core flow requires five taps to add an entry. Three engineers are available for the next sprint.',
+    q: 'What options do you put on the table?',
+    hatch:
+      'List move: watching whether your options span structurally different mechanisms (habit formation, friction reduction, incentive, defaults) rather than variations on one theme.',
     options: [
-      { id: 'A', text: 'List distinct levers: cap full-solution requests, change hint depth, add reflection checkpoints, route cheaper models for low-risk nudges, and fix SQL rubric loops separately', quality: 'best' },
-      { id: 'B', text: 'Audit the prompt chain and logs for each discipline so you can see whether Hatch is over-answering or users are over-requesting', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Interview a few users from each discipline to understand when they ask for answers instead of hints', quality: 'good_but_incomplete' },
-      { id: 'D', text: 'Make all free users wait 30 seconds between Hatch replies so they naturally ask fewer questions', quality: 'plausible_wrong' },
+      {
+        id: 'A',
+        text: 'Put genuinely different levers on the table: a one-tap quick-add widget, a recurring-transaction auto-suggestion that removes the need to log at all, a streak-with-recovery mechanic to rebuild the habit, and a baseline mode that imports bank data so zero-effort users still get value.',
+        quality: 'best',
+      },
+      {
+        id: 'B',
+        text: 'Redesign the add-entry flow to cut it from five taps to two and run an A/B test against the current flow.',
+        quality: 'good_but_incomplete',
+      },
+      {
+        id: 'C',
+        text: 'Add a daily push notification reminding users to log their spending.',
+        quality: 'surface',
+      },
+      {
+        id: 'D',
+        text: 'Remove the transaction log entirely and replace it with a category-spend summary generated from bank-account read access.',
+        quality: 'plausible_wrong',
+      },
     ],
   },
   {
     move: 'optimize',
-    scenario: 'You can ship one thing this sprint: a token-aware hint ladder that costs 32% less, or a new onboarding game that improves activation but may increase Hatch usage. Finance wants 80% gross margin at $30/mo; growth wants conversion.',
-    q: "How do you choose?",
-    hatch: "Optimize move — I'm watching whether you connect user value to cost, learning quality, and margin instead of picking the flashiest feature.",
+    scenario:
+      'A checkout redesign test shows two variants performing differently: Variant A reduces cart abandonment by 18% but increases average checkout time by 40 seconds. Variant B cuts checkout time by 25 seconds but shows no statistically significant change in abandonment rate. The team must ship one.',
+    q: 'How do you decide which variant to ship?',
+    hatch:
+      'Optimize move: watching whether you name the real criterion and the sacrifice, rather than defaulting to whichever metric sounds best in isolation.',
     options: [
-      { id: 'A', text: 'Ship the hint ladder first if it preserves learning quality and makes unit economics work; growth that breaks margin is not durable', quality: 'best' },
-      { id: 'B', text: 'Run the decision as assumptions: onboarding must lift paid conversion enough to pay for extra tokens; hint ladder must not reduce challenge completion or perceived help', quality: 'best' },
-      { id: 'C', text: 'Ship onboarding because first impressions matter most and cost can be optimized later', quality: 'surface' },
-      { id: 'D', text: 'Split engineering between both so neither stakeholder feels ignored', quality: 'good_but_incomplete' },
+      {
+        id: 'A',
+        text: 'Name the criterion explicitly: if the business goal is revenue per visitor, model whether 18% fewer abandoned carts outweighs the friction of 40 extra seconds for completers. Check that the time increase does not hurt mobile conversion separately, then ship the variant that wins on that metric.',
+        quality: 'best',
+      },
+      {
+        id: 'B',
+        text: 'Ship Variant A because reducing abandonment directly increases revenue and the 40 seconds only affects people who complete the purchase anyway.',
+        quality: 'good_but_incomplete',
+      },
+      {
+        id: 'C',
+        text: 'Ship Variant B because a faster checkout feels like a better user experience.',
+        quality: 'surface',
+      },
+      {
+        id: 'D',
+        text: 'Run a third variant that combines the abandonment-reducing elements of A with the speed improvements of B before making a decision.',
+        quality: 'plausible_wrong',
+      },
     ],
   },
   {
     move: 'win',
-    scenario: 'You recommend the hint ladder. A senior engineer worries it will make Hatch feel less magical; support worries free users will complain; the CEO wants the $30 plan to feel premium.',
-    q: "What's your move?",
-    hatch: "Win move — I'm watching whether you can land a crisp decision with measurement, empathy, and a reversible rollout.",
+    scenario:
+      'A team is weighing whether to deprecate a legacy export format that 12% of users still request but costs disproportionate engineering time to maintain. The head of sales worries about enterprise churn, the VP of Engineering wants to cut the maintenance burden now, and the CEO is neutral but wants the decision made this week.',
+    q: 'How does the team land this decision?',
+    hatch:
+      'Win move: watching whether the recommendation includes clear measurement, an empathetic read of each stakeholder, and a path that makes reversal visible if the bet is wrong.',
     options: [
-      { id: 'A', text: 'Frame it as a learning-quality upgrade, not a cost cut: hints reveal progressively, full answers still exist when earned, and success is completion plus margin', quality: 'best' },
-      { id: 'B', text: 'Propose a staged rollout by discipline with guardrails: complaint rate, paid conversion, completion, and cost per active learner', quality: 'best' },
-      { id: 'C', text: 'Tell support that free users are not the target customer and the company cannot subsidize unlimited AI usage', quality: 'plausible_wrong' },
-      { id: 'D', text: 'Ask the CEO to decide whether premium feel or gross margin matters more', quality: 'surface' },
+      {
+        id: 'A',
+        text: 'Propose a 90-day sunset with migration tooling and direct outreach to the 12%: track which accounts convert to the new format vs. churn, set a cancellation-rate guardrail, and give sales a concrete offer to retain at-risk accounts. The decision is reversible up to the sunset date; the measurement makes the tradeoff visible to everyone.',
+        quality: 'best',
+      },
+      {
+        id: 'B',
+        text: 'Agree to deprecate, announce a sunset date in the next release notes, and redirect support tickets to migration docs.',
+        quality: 'good_but_incomplete',
+      },
+      {
+        id: 'C',
+        text: 'Tell sales that 12% of users does not represent 12% of revenue, so the churn risk is overstated.',
+        quality: 'plausible_wrong',
+      },
+      {
+        id: 'D',
+        text: 'Ask the CEO to make the final call so the team has clear direction.',
+        quality: 'surface',
+      },
     ],
   },
 ]
@@ -71,4 +145,17 @@ export const QUESTIONS_BY_MOVE = {
   list:     QUESTIONS.filter(q => q.move === 'list'),
   optimize: QUESTIONS.filter(q => q.move === 'optimize'),
   win:      QUESTIONS.filter(q => q.move === 'win'),
+}
+
+// One Hatch one-liner per quality tier, authored once and reused across all questions.
+// Register: opinionated staff engineer thinking out loud. No em dashes. No second-person role framing.
+export const FEEDBACK_BY_TIER: Record<OptionQuality, string> = {
+  best:
+    "That's the move. You named the real constraint before picking a direction.",
+  good_but_incomplete:
+    "Solid instinct, but the reasoning stops one step short of the full picture.",
+  surface:
+    "This treats a symptom. The question is what's driving it.",
+  plausible_wrong:
+    "Logical on the surface, but it skips the problem and optimizes for the wrong thing.",
 }

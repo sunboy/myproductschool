@@ -48,6 +48,6 @@ export async function GET(request: NextRequest) {
 
   const destination = profile?.onboarding_completed_at
     ? safeNextPath(request) ?? '/dashboard'
-    : '/onboarding/welcome'
+    : '/dashboard'
   return NextResponse.redirect(new URL(destination, request.url))
 }

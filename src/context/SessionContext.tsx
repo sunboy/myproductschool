@@ -18,6 +18,7 @@ export interface SessionProfile {
   display_name: string | null
   avatar_url: string | null
   plan: string | null
+  onboarding_completed_at: string | null
   daily_attempts_today?: number
   subscription?: {
     status?: string | null
@@ -92,6 +93,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             display_name: data.display_name ?? null,
             avatar_url: data.avatar_url ?? null,
             plan: data.plan ?? null,
+            onboarding_completed_at: data.onboarding_completed_at ?? null,
             daily_attempts_today: data.daily_attempts_today ?? 0,
             subscription: data.subscription ?? null,
             dunning: data.dunning ?? null,
