@@ -279,6 +279,20 @@ function weakestMove(ctx: HatchUserContext) {
   return [...ctx.moveLevels].sort((a, b) => a.level - b.level)[0]?.move ?? null
 }
 
+const SKILL_GOAL_LABELS: Record<string, string> = {
+  land_pm_adjacent: 'aiming for a PM or PM-adjacent role',
+  level_up_current: 'aiming to get promoted in current eng role',
+  ship_better: 'making sharper product calls at work',
+  explore: 'exploring product thinking',
+}
+
+const SKILL_TIMELINE_LABELS: Record<string, string> = {
+  lt_1mo: 'within a month',
+  '1_3mo': 'one to three months',
+  gt_3mo: 'longer than three months',
+  no_timeline: 'no fixed timeline',
+}
+
 function buildLearnerLines(ctx: HatchUserContext, discipline: SkillDiscipline, surface: SkillSurface) {
   const weakMove = weakestMove(ctx)
   const topPattern = ctx.recurringPatterns[0]
@@ -288,6 +302,9 @@ function buildLearnerLines(ctx: HatchUserContext, discipline: SkillDiscipline, s
   if (ctx.displayName) lines.push(`Learner: ${ctx.displayName}`)
   lines.push(`Role: ${roleLabel(ctx)}`)
   if (ctx.roleContext) lines.push(`Role context: ${truncate(ctx.roleContext, 180)}`)
+  if (ctx.goal) lines.push(`Goal: ${SKILL_GOAL_LABELS[ctx.goal] ?? ctx.goal}`)
+  if (ctx.prepTimeline) lines.push(`Timeline: ${SKILL_TIMELINE_LABELS[ctx.prepTimeline] ?? ctx.prepTimeline}`)
+  if (ctx.targetCompany) lines.push(`Target company: ${ctx.targetCompany}`)
   lines.push(`Discipline lens: ${discipline}`)
   lines.push(`Skill level: ${ctx.overallLevel}`)
   if (ctx.weakestCompetency) lines.push(`Weakest competency: ${ctx.weakestCompetency}`)

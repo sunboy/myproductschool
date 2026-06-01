@@ -264,14 +264,14 @@ test.describe('Auth launch scenarios', () => {
     await page.goto(data.properties.action_link)
     await expect.poll(() => new URL(page.url()).hash).toContain('access_token=')
     await installLocalSessionFromCurrentHash(page)
-    await page.goto(`${BASE_URL}/onboarding/welcome`)
-    await expect(page).toHaveURL(/\/onboarding\/welcome/, { timeout: 30000 })
+    // New flow: auth redirects uncalibrated users to /dashboard (modal auto-opens there)
+    await page.goto(`${BASE_URL}/dashboard`)
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 })
 
     const complete = await appFetch(page, '/api/onboarding/complete', {
       method: 'POST',
       data: {
-        role_context: 'Software engineer',
-        experience_level: 'mid',
+        role_context: 'engineer_pm_interview',
         calibration_answers: [],
       },
     })

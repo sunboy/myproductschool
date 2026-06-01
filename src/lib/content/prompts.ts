@@ -1,6 +1,7 @@
 // src/lib/content/prompts.ts
 
 import type { ScenarioExcerpt } from '@/lib/types'
+import { DOMAINS } from '@/lib/data/taxonomy'
 
 export const INTELLECTUAL_THEMES = {
   T1: { name: 'Upstream Before Downstream', step: 'frame', focus: 'Identify the root cause upstream of the stated problem. Ask: what systemic condition makes this problem inevitable? Exclude downstream symptoms.' },
@@ -318,6 +319,9 @@ Discipline: ${discipline}
 Allowed topic slugs for this discipline (pick 1-3 that best match): ${JSON.stringify(allowedTopics)}
 Allowed technique slugs for this discipline (pick 1-3 that best match): ${JSON.stringify(allowedTechniques)}
 
+Allowed domain slugs (pick the SINGLE best theme this challenge is about):
+${DOMAINS.map(d => `  - ${d.slug}: ${d.label} — ${d.description}`).join('\n')}
+
 Return ONLY valid JSON:
 {
   "paradigm": "...",             // one of: traditional, ai_assisted, agentic, ai_native
@@ -332,6 +336,7 @@ Return ONLY valid JSON:
   "company_tags": [],
   "topic_tags": [],              // REQUIRED: 1-3 slugs chosen from the allowed topic slugs above
   "technique_tags": [],          // REQUIRED: 1-3 slugs chosen from the allowed technique slugs above
+  "domain_slug": "...",          // REQUIRED: exactly ONE slug from the allowed domain slugs above
   "is_real_interview": false,    // true only if the source is a confirmed real interview question
   "source_url": null             // URL of the source confirming this is a real interview question; null otherwise
 }
@@ -339,7 +344,8 @@ Return ONLY valid JSON:
 relevant_roles options: swe, data_eng, ml_eng, devops, founding_eng, em, tech_lead, pm, designer, data_scientist.
 competencies options: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise.
 topic_tags and technique_tags MUST only contain slugs from the allowed lists above. Do not invent slugs.
-Both topic_tags and technique_tags MUST be non-empty — a challenge with an empty topic_tags or technique_tags is rejected at publish.`
+Both topic_tags and technique_tags MUST be non-empty — a challenge with an empty topic_tags or technique_tags is rejected at publish.
+domain_slug MUST be exactly one slug from the allowed domain list. If the challenge centers on AI agents, autonomy, or tool use, pick ai-agents; if on LLMs/prompting/RAG/model behavior, pick llms; otherwise pick the closest product or engineering theme.`
 }
 
 // Helper for job-server.ts to decide whether to run the expansion + verifier path

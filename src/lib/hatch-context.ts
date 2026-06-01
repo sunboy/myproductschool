@@ -8,6 +8,9 @@ export interface HatchUserContext {
   activeRole: string | null
   roleContext: string | null
   interviewDate: string | null
+  goal: string | null
+  prepTimeline: string | null
+  targetCompany: string | null
   overallLevel: 'Beginner' | 'Developing' | 'Advanced' | 'Expert'
   competencies: Array<{ competency: string; score: number; trend: string }>
   weakestCompetency: string | null
@@ -67,6 +70,9 @@ const EMPTY_CONTEXT: HatchUserContext = {
   activeRole: null,
   roleContext: null,
   interviewDate: null,
+  goal: null,
+  prepTimeline: null,
+  targetCompany: null,
   overallLevel: 'Beginner',
   competencies: [],
   weakestCompetency: null,
@@ -114,7 +120,7 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
         try {
           const { data } = await admin
             .from('profiles')
-            .select('preferred_role, display_name, active_role, role_context, interview_date')
+            .select('preferred_role, display_name, active_role, role_context, interview_date, primary_goal, prep_timeline, interview_meta')
             .eq('id', userId)
             .single()
           return data
@@ -312,42 +318,29 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
       .map((session) => session.overallScore)
       .filter((score): score is number => typeof score === 'number' && Number.isFinite(score))
 
+    type ProfileRow = {
+      preferred_role: string | null
+      display_name: string | null
+      active_role: string | null
+      role_context: string | null
+      interview_date: string | null
+      primary_goal: string | null
+      prep_timeline: string | null
+      interview_meta: Record<string, unknown> | null
+    }
+    const profile = (profileResult as ProfileRow | null)
+    const interviewMeta = profile?.interview_meta ?? null
+    const targetCompany = (typeof interviewMeta?.target_company === 'string' ? interviewMeta.target_company : null)
+
     return {
-      displayName: (profileResult as {
-        preferred_role: string | null
-        display_name: string | null
-        active_role: string | null
-        role_context: string | null
-        interview_date: string | null
-      } | null)?.display_name ?? null,
-      preferredRole: (profileResult as {
-        preferred_role: string | null
-        display_name: string | null
-        active_role: string | null
-        role_context: string | null
-        interview_date: string | null
-      } | null)?.preferred_role ?? null,
-      activeRole: (profileResult as {
-        preferred_role: string | null
-        display_name: string | null
-        active_role: string | null
-        role_context: string | null
-        interview_date: string | null
-      } | null)?.active_role ?? null,
-      roleContext: (profileResult as {
-        preferred_role: string | null
-        display_name: string | null
-        active_role: string | null
-        role_context: string | null
-        interview_date: string | null
-      } | null)?.role_context ?? null,
-      interviewDate: (profileResult as {
-        preferred_role: string | null
-        display_name: string | null
-        active_role: string | null
-        role_context: string | null
-        interview_date: string | null
-      } | null)?.interview_date ?? null,
+      displayName: profile?.display_name ?? null,
+      preferredRole: profile?.preferred_role ?? null,
+      activeRole: profile?.active_role ?? null,
+      roleContext: profile?.role_context ?? null,
+      interviewDate: profile?.interview_date ?? null,
+      goal: profile?.primary_goal ?? null,
+      prepTimeline: profile?.prep_timeline ?? null,
+      targetCompany,
       overallLevel: deriveOverallLevel(competencies),
       competencies,
       weakestCompetency: deriveWeakestCompetency(competencies),
@@ -382,6 +375,9 @@ function isEmptyContext(ctx: HatchUserContext): boolean {
     ctx.activeRole === null &&
     ctx.roleContext === null &&
     ctx.interviewDate === null &&
+    ctx.goal === null &&
+    ctx.prepTimeline === null &&
+    ctx.targetCompany === null &&
     ctx.competencies.length === 0 &&
     ctx.moveLevels.length === 0 &&
     ctx.recurringPatterns.length === 0 &&
@@ -394,6 +390,20 @@ function isEmptyContext(ctx: HatchUserContext): boolean {
     ctx.communitySignals.feedbackReceivedCount === 0 &&
     ctx.communitySignals.badges.length === 0
   )
+}
+
+const GOAL_LABELS: Record<string, string> = {
+  land_pm_adjacent: 'aiming for a PM or PM-adjacent role',
+  level_up_current: 'aiming to get promoted in current eng role',
+  ship_better: 'making sharper product calls at work',
+  explore: 'exploring product thinking',
+}
+
+const TIMELINE_LABELS: Record<string, string> = {
+  lt_1mo: 'within a month',
+  '1_3mo': 'one to three months',
+  gt_3mo: 'longer than three months',
+  no_timeline: 'no fixed timeline',
 }
 
 export function buildHatchContextString(
@@ -444,8 +454,11 @@ export function buildHatchContextString(
         : 'none detected'
       const lines: string[] = []
       if (ctx.displayName) lines.push(`Learner name: ${ctx.displayName}`)
+      lines.push(`User role: ${role}`)
+      if (ctx.goal) lines.push(`Goal: ${GOAL_LABELS[ctx.goal] ?? ctx.goal}`)
+      if (ctx.prepTimeline) lines.push(`Timeline: ${TIMELINE_LABELS[ctx.prepTimeline] ?? ctx.prepTimeline}`)
+      if (ctx.targetCompany) lines.push(`Target company: ${ctx.targetCompany}`)
       lines.push(
-        `User role: ${role}`,
         `Interview date: ${ctx.interviewDate ?? 'not set'}`,
         `Skill level: ${ctx.overallLevel}`,
         `Weakest competency: ${ctx.weakestCompetency ?? 'unknown'}`,
@@ -471,8 +484,11 @@ export function buildHatchContextString(
         : 'no attempts yet'
       const lines: string[] = []
       if (ctx.displayName) lines.push(`Learner name: ${ctx.displayName}`)
+      lines.push(`User role: ${role}`)
+      if (ctx.goal) lines.push(`Goal: ${GOAL_LABELS[ctx.goal] ?? ctx.goal}`)
+      if (ctx.prepTimeline) lines.push(`Timeline: ${TIMELINE_LABELS[ctx.prepTimeline] ?? ctx.prepTimeline}`)
+      if (ctx.targetCompany) lines.push(`Target company: ${ctx.targetCompany}`)
       lines.push(
-        `User role: ${role}`,
         `Interview date: ${ctx.interviewDate ?? 'not set'}`,
         `Skill level: ${ctx.overallLevel}`,
         `FLOW move levels: ${moveLevelsStr}`,
@@ -503,9 +519,12 @@ export function buildHatchContextString(
         : 'no attempts yet'
       const lines: string[] = []
       if (ctx.displayName) lines.push(`Learner name: ${ctx.displayName}`)
+      lines.push(`User role: ${role}`)
+      if (ctx.roleContext) lines.push(`Role context: ${ctx.roleContext}`)
+      if (ctx.goal) lines.push(`Goal: ${GOAL_LABELS[ctx.goal] ?? ctx.goal}`)
+      if (ctx.prepTimeline) lines.push(`Timeline: ${TIMELINE_LABELS[ctx.prepTimeline] ?? ctx.prepTimeline}`)
+      if (ctx.targetCompany) lines.push(`Target company: ${ctx.targetCompany}`)
       lines.push(
-        `User role: ${role}`,
-        `Role context: ${ctx.roleContext ?? 'not specified'}`,
         `Interview date: ${ctx.interviewDate ?? 'not set'}`,
         `Skill level: ${ctx.overallLevel}`,
         `Practice stats: ${practiceStats}`,

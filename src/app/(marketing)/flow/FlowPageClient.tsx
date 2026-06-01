@@ -500,7 +500,7 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
           ...validation.data,
           turnstileToken,
           website,
-          redirectTo: `${window.location.origin}/onboarding/welcome`,
+          redirectTo: `${window.location.origin}/dashboard`,
         })
         if (data.hasSession) {
           router.push('/explore/flow')

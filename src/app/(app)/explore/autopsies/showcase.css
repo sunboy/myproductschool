@@ -728,8 +728,8 @@
 }
 .sc-firehose-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
 }
 
 .sc-search-overlay,
@@ -1911,7 +1911,7 @@
   .sc-featured-card { min-height: 0; }
   .sc-company-grid { grid-template-columns: repeat(4, 1fr); }
   .sc-reading-path-grid { grid-template-columns: repeat(2, 1fr); }
-  .sc-firehose-grid { grid-template-columns: 1fr; }
+  .sc-firehose-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
   .sc-company-story-grid,
   .sc-related-grid { grid-template-columns: repeat(2, 1fr); }
 }

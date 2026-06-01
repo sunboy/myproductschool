@@ -83,7 +83,9 @@ const MOCK_PLAN = {
 function buildFallbackPlan(
   weakestMove: string,
   challenges: ChallengeLite[],
-  preferredRole: string | null
+  preferredRole: string | null,
+  primaryGoal?: string | null,
+  prepTimeline?: string | null,
 ): StudyPlanShape {
   const rolePriority: Record<string, string[]> = {
     swe: ['algorithm', 'system_design', 'product_sense', 'sql'],
@@ -136,9 +138,25 @@ function buildFallbackPlan(
     return picked
   }
 
+  const goalContext: Record<string, string> = {
+    land_pm_adjacent: 'Getting you ready for a PM-adjacent role.',
+    level_up_current: 'Leveling up within your current role.',
+    ship_better: 'Sharpening the product calls you make day to day.',
+    explore: 'Giving you a broad feel across the practice surface.',
+  }
+  const timelineContext: Record<string, string> = {
+    lt_1mo: 'With under a month, the plan front-loads difficulty.',
+    '1_3mo': 'With 1-3 months, the plan ramps steadily.',
+    '3_6mo': 'With 3-6 months, the plan builds durable foundations.',
+    flexible: 'No hard deadline means the plan can optimize for depth.',
+  }
+  const goalLine = goalContext[primaryGoal ?? ''] ?? null
+  const timelineLine = timelineContext[prepTimeline ?? ''] ?? null
+  const rationalePrefix = [goalLine, timelineLine].filter(Boolean).join(' ')
+
   return {
     title: '4-Week Builder Sprint',
-    hatch_rationale: `Hatch is prioritizing your ${weakestMove} move while still rotating through the disciplines your role needs: product, systems, data, SQL, and coding. The goal is steady improvement without unfocused practice.`,
+    hatch_rationale: `${rationalePrefix ? rationalePrefix + ' ' : ''}Hatch is prioritizing your ${weakestMove} move while rotating through the disciplines your role needs: product, systems, data, SQL, and coding.`,
     move_sequence: disciplineOrder.slice(0, 4).map((discipline, i) => {
       const ids = pickForDiscipline(discipline)
       // Derive topic_tags from picked challenges
@@ -289,6 +307,9 @@ export async function POST(req: NextRequest) {
 
   // ── Filter and rank candidates by profile ────────────────
   const preferredRole = hatchCtx.preferredRole ?? null
+  const userGoal = hatchCtx.goal ?? null
+  const userPrepTimeline = hatchCtx.prepTimeline ?? null
+  const userRoleContext = hatchCtx.roleContext ?? null
   const DIFFICULTY_ORDER: Record<string, number> = { easy: 0, beginner: 0, intermediate: 1, medium: 1, advanced: 2, hard: 2 }
 
   function roleMatches(c: ChallengeLite): boolean {
@@ -338,6 +359,9 @@ export async function POST(req: NextRequest) {
         .map((c) => `${c.id} - "${c.title}" [type: ${c.challenge_type ?? 'unknown'}; difficulty: ${c.difficulty ?? 'unknown'}; roles: ${(c.relevant_roles ?? []).join(', ') || 'any'}; topics: ${(c.topic_tags ?? []).join(', ')}; techniques: ${(c.technique_tags ?? []).join(', ')}]`)
         .join('\n')
       const roleLabel = preferredRole ?? 'not specified'
+      const goalLabel = userGoal ?? 'not specified'
+      const timelineLabel = userPrepTimeline ?? 'not specified'
+      const roleContextLabel = userRoleContext ?? 'not specified'
 
       const userPrompt = [
         contextString,
@@ -346,7 +370,9 @@ export async function POST(req: NextRequest) {
         challengeList,
         '',
         `Preferred role: ${roleLabel}.`,
-        'Generate a personalised 4-week HackProduct study plan for this learner based on their role, FLOW move levels, competency scores, and recent patterns.',
+        `Primary goal: ${goalLabel}. Prep timeline: ${timelineLabel}. Role context: ${roleContextLabel}.`,
+        'Generate a personalised 4-week HackProduct study plan for this learner based on their role, goal, prep timeline, FLOW move levels, competency scores, and recent patterns.',
+        'In hatch_rationale, reference the learner\'s primary_goal and prep_timeline directly. For example: if goal is "land_pm_adjacent" and timeline is "lt_1mo", the rationale should reflect that urgency and PM-adjacent focus.',
         'The plan must cover multiple disciplines, not only product sense. Rotate intelligently across product sense, system design, data modeling, SQL, and coding based on role fit and weak signals.',
         'For each week, choose 1-2 challenges. Prefer role-relevant challenges. Week 1 should use Easy/Beginner challenges; Week 2-3 Medium/Intermediate; Week 4 Advanced. Keep at least three distinct challenge_type families across the full plan when available.',
         'Populate topic_tags for each week using the topic_tags from the selected challenges (first challenge in the week).',
@@ -386,7 +412,7 @@ export async function POST(req: NextRequest) {
 
   // ── Deterministic fallback ────────────────────────────────
   if (!generatedPlan) {
-    generatedPlan = buildFallbackPlan(weakestFlowMove, availableChallenges, hatchCtx.preferredRole)
+    generatedPlan = buildFallbackPlan(weakestFlowMove, availableChallenges, hatchCtx.preferredRole, userGoal, userPrepTimeline)
   }
 
   // ── Insert into user_study_plans ──────────────────────────

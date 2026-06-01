@@ -1,40 +1,14 @@
-import { Challenge, ChallengeWithDomain, ChallengeAttemptV2 } from '@/lib/types'
+import { Challenge, ChallengeWithDomain } from '@/lib/types'
 import { MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
 import { IS_MOCK } from '@/lib/mock'
 import { coerceDifficulty, expandDifficultyForQuery } from '@/lib/practice/difficulty'
+import { EMPTY_STATS, buildStatsMap, type AttemptRow } from '@/lib/challenges/status'
 
-type AttemptRow = Pick<ChallengeAttemptV2, 'challenge_id' | 'total_score' | 'status'>
-
-interface ChallengeStats {
-  attempt_count: number
-  best_score: number | null
-  is_completed: boolean
-}
-
-export function buildStatsMap(
-  challengeIds: string[],
-  attempts: AttemptRow[],
-): Map<string, ChallengeStats> {
-  const map = new Map<string, ChallengeStats>()
-  for (const id of challengeIds) {
-    map.set(id, { attempt_count: 0, best_score: null, is_completed: false })
-  }
-  for (const attempt of attempts) {
-    const existing = map.get(attempt.challenge_id)
-    if (!existing) continue
-    existing.attempt_count += 1
-    if (attempt.status === 'completed') {
-      existing.is_completed = true
-      if (attempt.total_score !== null) {
-        existing.best_score =
-          existing.best_score === null
-            ? attempt.total_score
-            : Math.max(existing.best_score, attempt.total_score)
-      }
-    }
-  }
-  return map
-}
+// Pure status helpers live in a server-import-free module so client components
+// (ChallengeCard, GroupedChallengeList) can use them without bundling
+// next/headers. Re-export for existing call sites that import from here.
+export { EMPTY_STATS, buildStatsMap, deriveChallengeStatus } from '@/lib/challenges/status'
+export type { ChallengeStatus, ChallengeStats } from '@/lib/challenges/status'
 
 export async function getChallenges(filters?: {
   domainId?: string
@@ -65,9 +39,7 @@ export async function getChallenges(filters?: {
       return {
         ...challenge,
         domain: { slug: domain?.slug ?? '', title: domain?.title ?? '', icon: domain?.icon ?? null },
-        attempt_count: 0,
-        best_score: null,
-        is_completed: false,
+        ...EMPTY_STATS,
       }
     })
   }
@@ -90,7 +62,12 @@ export async function getChallenges(filters?: {
   }
   if (filters?.paradigm && filters.paradigm !== 'all') query = query.eq('paradigm', filters.paradigm)
   if (filters?.role && filters.role !== 'all') query = query.contains('relevant_roles', [filters.role])
-  if (filters?.company) query = query.contains('company_tags', [filters.company])
+  // company_tags are stored as lowercase slugs (e.g. "meta", "google"); the
+  // filter UI sends display labels (e.g. "Meta", "Google"). Match on the slug.
+  if (filters?.company) {
+    const companySlug = filters.company.toLowerCase().replace(/[\s]+/g, '-')
+    query = query.contains('company_tags', [companySlug])
+  }
   if (filters?.q) query = query.ilike('title', `%${filters.q}%`)
   if (filters?.type && filters.type !== 'all') query = query.eq('challenge_type', filters.type)
   if (filters?.topic) query = query.contains('topic_tags', [filters.topic])
@@ -116,7 +93,7 @@ export async function getChallenges(filters?: {
     ...c,
     slug: c.slug ?? c.id.replace(/^c\d+-/, ''),
     domain: { slug: '', title: '', icon: null },
-    ...(statsMap.get(c.id) ?? { attempt_count: 0, best_score: null, is_completed: false }),
+    ...(statsMap.get(c.id) ?? EMPTY_STATS),
   }))
 }
 
@@ -153,7 +130,7 @@ export async function getFeaturedChallenges(): Promise<ChallengeWithDomain[]> {
     ...c,
     slug: c.slug ?? c.id.replace(/^c\d+-/, ''),
     domain: { slug: '', title: '', icon: null },
-    ...(statsMap.get(c.id) ?? { attempt_count: 0, best_score: null, is_completed: false }),
+    ...(statsMap.get(c.id) ?? EMPTY_STATS),
   }))
 }
 

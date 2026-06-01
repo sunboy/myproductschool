@@ -80,7 +80,6 @@ export async function POST(req: NextRequest) {
     },
     billing_address_collection: 'required',
     automatic_tax: { enabled: true },
-    branding_settings: getCheckoutBrandingSettings(appUrl),
     allow_promotion_codes: true,
   }
 
@@ -89,26 +88,37 @@ export async function POST(req: NextRequest) {
   const minuteBucket = Math.floor(Date.now() / 60_000)
   const idempotencyKey = `checkout-${user.id}-${plan}-${embedded ? 'e' : 'h'}-${minuteBucket}`
 
-  if (embedded) {
+  try {
+    if (embedded) {
+      const session = await stripe.checkout.sessions.create(
+        {
+          ...baseSessionParams,
+          // Stripe rejects logo/icon branding on embedded sessions.
+          branding_settings: getCheckoutBrandingSettings(appUrl, { embedded: true }),
+          ui_mode: 'embedded',
+          return_url: `${appUrl}/dashboard?upgraded=1`,
+        },
+        { idempotencyKey }
+      )
+      return NextResponse.json({ clientSecret: session.client_secret, mode: stripeRuntime.mode })
+    }
+
     const session = await stripe.checkout.sessions.create(
       {
         ...baseSessionParams,
-        ui_mode: 'embedded',
-        return_url: `${appUrl}/dashboard?upgraded=1`,
+        branding_settings: getCheckoutBrandingSettings(appUrl),
+        success_url: `${appUrl}/dashboard?upgraded=1`,
+        cancel_url: `${appUrl}/dashboard`,
       },
       { idempotencyKey }
     )
-    return NextResponse.json({ clientSecret: session.client_secret, mode: stripeRuntime.mode })
+
+    return NextResponse.json({ url: session.url, mode: stripeRuntime.mode })
+  } catch (err) {
+    console.error('[create-checkout] Stripe session creation failed', err)
+    return NextResponse.json(
+      { error: 'Could not start checkout. Please try again.' },
+      { status: 500 }
+    )
   }
-
-  const session = await stripe.checkout.sessions.create(
-    {
-      ...baseSessionParams,
-      success_url: `${appUrl}/dashboard?upgraded=1`,
-      cancel_url: `${appUrl}/dashboard`,
-    },
-    { idempotencyKey }
-  )
-
-  return NextResponse.json({ url: session.url, mode: stripeRuntime.mode })
 }

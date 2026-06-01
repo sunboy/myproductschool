@@ -342,3 +342,84 @@ export function getTechniqueLabelAny(slug: string): string | undefined {
   }
   return undefined
 }
+
+// ── Domains ─────────────────────────────────────────────────────────────────
+//
+// Theme-based grouping for the explore page. Distinct from `challenge_type`
+// (which the practice page already groups by) — a domain answers "what is this
+// about", not "what format is it". Every published challenge belongs to exactly
+// one domain. This is the canonical source of truth; the seed migration and the
+// content-authoring taxonomy step must reference these slugs, never hardcode.
+
+export interface DomainEntry {
+  slug: string
+  label: string
+  description: string
+  icon: string // Material Symbols Outlined name
+}
+
+export const DOMAINS: ReadonlyArray<DomainEntry> = [
+  {
+    slug: 'product-strategy',
+    label: 'Product Strategy',
+    description: 'Positioning, bets, and long-term direction.',
+    icon: 'map',
+  },
+  {
+    slug: 'metrics-analytics',
+    label: 'Metrics & Analytics',
+    description: 'Defining success, instrumentation, and reading the numbers.',
+    icon: 'query_stats',
+  },
+  {
+    slug: 'ai-agents',
+    label: 'AI Agents',
+    description: 'Autonomous systems, tool use, orchestration, and agent memory.',
+    icon: 'smart_toy',
+  },
+  {
+    slug: 'llms',
+    label: 'LLMs & Prompting',
+    description: 'Model internals, prompting, RAG, evaluation, and serving.',
+    icon: 'network_intelligence',
+  },
+  {
+    slug: 'conversions-growth',
+    label: 'Conversions & Growth',
+    description: 'Acquisition, activation, retention, and monetization loops.',
+    icon: 'trending_up',
+  },
+  {
+    slug: 'system-design',
+    label: 'System Design',
+    description: 'Scalable architecture, reliability, and distributed systems.',
+    icon: 'lan',
+  },
+  {
+    slug: 'databases-data',
+    label: 'Databases & Data',
+    description: 'Data modeling, SQL, storage, and query design.',
+    icon: 'database',
+  },
+  {
+    slug: 'algorithms',
+    label: 'Algorithms & Data Structures',
+    description: 'Core algorithmic problem solving and complexity.',
+    icon: 'account_tree',
+  },
+] as const
+
+export const DOMAIN_SLUGS: ReadonlyArray<string> = DOMAINS.map(d => d.slug)
+
+/** Default domain for challenges a classifier cannot confidently place. */
+export const DEFAULT_DOMAIN_SLUG = 'product-strategy'
+
+/** Returns true if the slug is a valid domain. */
+export function isValidDomain(slug: string): boolean {
+  return DOMAIN_SLUGS.includes(slug)
+}
+
+/** Returns the display label for a domain slug, if known. */
+export function getDomainLabel(slug: string): string | undefined {
+  return DOMAINS.find(d => d.slug === slug)?.label
+}

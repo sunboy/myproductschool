@@ -29,3 +29,21 @@ export async function getLearnModuleSummaries(limit?: number): Promise<LearnModu
   if (error) throw error
   return data ?? []
 }
+
+/**
+ * Exact total count of learn_modules ("guides"). Used for the "See all (N)"
+ * label and meta chip on the explore page, where only a few preview cards are
+ * rendered but the link should reflect the full catalog size.
+ */
+export async function getLearnModuleCount(): Promise<number> {
+  if (IS_MOCK) return MOCK_MODULES.length
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+
+  const { count, error } = await supabase
+    .from('learn_modules')
+    .select('id', { count: 'exact', head: true })
+  if (error) throw error
+  return count ?? 0
+}

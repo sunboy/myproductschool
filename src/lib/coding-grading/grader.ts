@@ -2,7 +2,16 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { buildEmptyStateResponse, buildSkillContextPrompt } from '@/lib/hatch/skill-context'
+import { AiBudgetExceededError } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded } from '@/lib/usage/assert-plan-limit'
 import type { GradingDimensionKey, GradingFeedback, RunResult } from '@/lib/coding/types'
+
+// AI budget / plan-limit errors must propagate to the route so it can return a
+// 402 limit_reached response. They are NOT model-output failures, so they must
+// never be swallowed into the deterministic fallback.
+function isAiLimitError(err: unknown): boolean {
+  return err instanceof AiBudgetExceededError || err instanceof PlanLimitExceeded
+}
 
 type AiBudget = { userId: string; userPlan: string; route: string }
 
@@ -313,6 +322,47 @@ function deterministicCodingGrade(input: GradingInput): GradingFeedback {
   }, input)
 }
 
+// Fallback used when the AI grader exhausts its retries but a runnable test
+// signal IS available. Anchors the score to the objective test pass rate so the
+// user gets a usable grade (and the success UI) instead of a hard error. The
+// "Retry grading" button lets them request a real AI re-grade.
+function gradeFromCorrectnessFallback(input: GradingInput): GradingFeedback {
+  const { testsPassed, testsTotal } = input.correctness
+  // No runnable signal either — defer to the existing empty-state grade.
+  if (testsTotal <= 0) return deterministicCodingGrade(input)
+
+  const passRate = testsPassed / testsTotal
+  const score = roundTenth(1 + passRate * 4) // 0/n -> 1.0, n/n -> 5.0
+  const dimScore = Math.max(1, Math.round(score))
+  const challengeType = input.language === 'sql' ? 'sql' : 'algorithm'
+  const noun = challengeType === 'sql' ? 'query' : 'solution'
+  const passText = `${testsPassed} of ${testsTotal} tests passed.`
+  const improvement = passRate >= 1
+    ? `Tighten edge cases and explain why this ${noun} is correct.`
+    : `Inspect the failing case and adjust the ${noun} so the remaining tests pass.`
+  const note = "Hatch's detailed review was unavailable this time, so this score reflects your test results."
+
+  return withCodingScoreBreakdown({
+    overall_score: score,
+    headline: `Scored from your test results. ${note}`,
+    dimensions: {
+      problem_approach: dimension(dimScore, passText, improvement),
+      ai_collaboration: dimension(dimScore, 'Detailed review was unavailable for this attempt.', 'Ask Hatch a focused question about the failing case.'),
+      code_quality: dimension(dimScore, `Correctness signal: ${passText}`, improvement),
+      verification_discipline: dimension(dimScore, passRate >= 1 ? 'All visible tests passed.' : 'Some visible tests are still failing.', improvement),
+      interview_communication: dimension(dimScore, 'Detailed review was unavailable for this attempt.', `State your approach and one edge case for this ${noun}.`),
+    },
+    top_strength: passRate >= 1 ? 'All visible tests pass.' : passText,
+    top_improvement: improvement,
+    what_a_5_would_look_like: challengeType === 'sql'
+      ? 'A clear query that passes visible tests, handles edge cases, and names the result shape.'
+      : 'A working solution that passes visible tests, explains the pattern, and covers edge cases.',
+    summary: `${passText} ${note}`,
+    next_actions: [improvement],
+    degraded: true,
+  }, input)
+}
+
 // ---------------------------------------------------------------------------
 // JSON validation
 // ---------------------------------------------------------------------------
@@ -436,16 +486,27 @@ export async function gradeCodingAttempt(input: GradingInput): Promise<GradingFe
     return validateGradingFeedback(parsed)
   }
 
-  try {
-    return withCodingScoreBreakdown(await callGrader(), input)
-  } catch (err) {
-    // One retry with explicit reinforcement on conciseness
-    console.warn('Coding grader first attempt failed, retrying:', err)
-    return withCodingScoreBreakdown(
-      await callGrader(
-        '\n\nIMPORTANT: keep the response under 3000 tokens of JSON. Trim verbose evidence/how_to_improve fields if needed. Return ONLY valid JSON, no markdown fences, no prose outside the JSON object.'
-      ),
-      input
-    )
+  // Up to 3 attempts with progressively stronger JSON-only reinforcement. If the
+  // model still returns malformed output, fall back to a deterministic grade
+  // derived from the objective test pass rate so the user never sees a hard error.
+  const nudges = [
+    '',
+    '\n\nIMPORTANT: keep the response under 3000 tokens of JSON. Trim verbose evidence/how_to_improve fields if needed. Return ONLY valid JSON, no markdown fences, no prose outside the JSON object.',
+    '\n\nCRITICAL: Your previous responses were not valid JSON. Return ONLY a single JSON object that exactly matches the required schema, including a numeric "overall_score". No markdown fences, no prose, no commentary before or after the object.',
+  ]
+  let lastErr: unknown
+  for (let attempt = 0; attempt < nudges.length; attempt++) {
+    try {
+      return withCodingScoreBreakdown(await callGrader(nudges[attempt]), input)
+    } catch (err) {
+      // Budget/plan-limit errors are not model-output failures — let the route
+      // surface them as a 402 instead of masking them with a fallback grade.
+      if (isAiLimitError(err)) throw err
+      lastErr = err
+      console.warn(`Coding grader attempt ${attempt + 1} failed:`, err)
+    }
   }
+
+  console.error('Coding grader exhausted retries, using deterministic fallback:', lastErr)
+  return gradeFromCorrectnessFallback(input)
 }

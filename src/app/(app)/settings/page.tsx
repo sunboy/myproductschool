@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
 import { ReauthModal } from '@/components/auth/ReauthModal'
-import { authEmailSchema, newPasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
+import { newPasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
+import { clearOnboardingState } from '@/lib/onboarding/state-client'
+import { useOnboardingModal } from '@/context/OnboardingModalContext'
 
 type SubscriptionInfo = {
   plan?: string | null
@@ -50,7 +52,6 @@ type LinkedIdentity = {
 }
 
 type IdentityAction = 'link-google' | 'unlink-google'
-type EmailChangeField = 'email'
 type PasswordField = 'password' | 'confirm'
 type ReauthRequest = {
   title: string
@@ -72,6 +73,8 @@ function formatBillingDate(value?: string | null) {
 
 export default function SettingsPage() {
   const router = useRouter()
+  const { openModal } = useOnboardingModal()
+  const [redoingCalibration, setRedoingCalibration] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [editingName, setEditingName] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
@@ -97,13 +100,6 @@ export default function SettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null)
   const [passwordSaving, setPasswordSaving] = useState(false)
   const [visiblePasswordFields, setVisiblePasswordFields] = useState<Partial<Record<PasswordField, boolean>>>({})
-  const [emailChangeForm, setEmailChangeForm] = useState({
-    email: '',
-  })
-  const [emailChangeFieldErrors, setEmailChangeFieldErrors] = useState<Partial<Record<EmailChangeField, string>>>({})
-  const [emailChangeError, setEmailChangeError] = useState<string | null>(null)
-  const [emailChangeSuccess, setEmailChangeSuccess] = useState<string | null>(null)
-  const [emailChangeSaving, setEmailChangeSaving] = useState(false)
   const [reauthRequest, setReauthRequest] = useState<ReauthRequest | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteEmail, setDeleteEmail] = useState('')
@@ -111,6 +107,16 @@ export default function SettingsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleteSaving, setDeleteSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleRedoCalibration() {
+    setRedoingCalibration(true)
+    try {
+      await clearOnboardingState()
+      openModal('settings')
+    } finally {
+      setRedoingCalibration(false)
+    }
+  }
 
   async function refreshProfile() {
     const data: ProfileResponse | null = await fetch('/api/profile')
@@ -249,61 +255,6 @@ export default function SettingsPage() {
 
   function togglePasswordVisibility(field: PasswordField) {
     setVisiblePasswordFields(current => ({ ...current, [field]: !current[field] }))
-  }
-
-  function updateEmailChangeField(field: EmailChangeField, value: string) {
-    setEmailChangeForm(current => ({ ...current, [field]: value }))
-    setEmailChangeFieldErrors(current => ({ ...current, [field]: undefined }))
-    setEmailChangeError(null)
-    setEmailChangeSuccess(null)
-  }
-
-  async function handleEmailChange(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setEmailChangeError(null)
-    setEmailChangeSuccess(null)
-    setEmailChangeFieldErrors({})
-
-    const validation = authEmailSchema.safeParse(emailChangeForm.email)
-    if (!validation.success) {
-      setEmailChangeFieldErrors({ email: validation.error.issues[0]?.message ?? 'Enter a valid email.' })
-      return
-    }
-
-    const nextEmail = validation.data
-    setReauthRequest({
-      title: 'Confirm email change',
-      description: 'Enter your current password before changing your sign-in email.',
-      confirmLabel: 'Send confirmation',
-      onVerified: async (currentPassword) => {
-        setEmailChangeSaving(true)
-        try {
-          const redirectTo = `${window.location.origin}/auth/callback?next=/settings`
-          const res = await fetch('/api/auth/request-email-change', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: nextEmail, currentPassword, redirectTo }),
-          })
-          const data = await res.json().catch(() => ({}))
-          if (!res.ok) {
-            if (res.status === 429) {
-              throw new Error('Too many attempts. Try again in a minute.')
-            }
-            if (data.error === 'reauth_required') {
-              throw new Error('Confirm your password and try again.')
-            }
-            throw new Error(data.error ?? 'Could not request email change.')
-          }
-          setEmailChangeForm({ email: '' })
-          setEmailChangeSuccess(`Check ${nextEmail} for confirmation.`)
-        } catch (error) {
-          setEmailChangeError(error instanceof Error ? error.message : 'Could not request email change.')
-          throw error
-        } finally {
-          setEmailChangeSaving(false)
-        }
-      },
-    })
   }
 
   async function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {
@@ -615,49 +566,22 @@ export default function SettingsPage() {
             <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">chevron_right</span>
           </Link>
 
-          <form onSubmit={handleEmailChange} className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Email change</p>
-                <p className="mt-1 text-sm font-body font-semibold text-on-surface">Request a new sign-in email</p>
-              </div>
-              <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">alternate_email</span>
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-background/70 px-4 py-3">
+            <div className="min-w-0">
+              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Calibration</p>
+              <p className="mt-1 text-sm font-body font-semibold text-on-surface">Reset your FLOW baseline</p>
+              <p className="mt-0.5 text-xs font-body text-on-surface-variant">Takes ~5 minutes. Hatch will re-route your challenges.</p>
             </div>
-
-            <div className="mt-3 space-y-1.5">
-              <label htmlFor="settings-new-email" className="block text-xs font-label font-bold text-on-surface-variant">
-                New email
-              </label>
-              <input
-                id="settings-new-email"
-                type="email"
-                value={emailChangeForm.email}
-                onChange={e => updateEmailChangeField('email', e.target.value)}
-                className={passwordInputClass}
-                placeholder={email ?? 'name@example.com'}
-                autoComplete="email"
-              />
-              {emailChangeFieldErrors.email && (
-                <p className="text-xs font-body text-error">{emailChangeFieldErrors.email}</p>
-              )}
-            </div>
-
-            {emailChangeError && (
-              <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{emailChangeError}</p>
-            )}
-            {emailChangeSuccess && (
-              <p className="mt-3 rounded-xl bg-primary-fixed px-3 py-2 text-sm font-body font-semibold text-primary">{emailChangeSuccess}</p>
-            )}
-
             <button
-              type="submit"
-              disabled={emailChangeSaving || reauthRequest !== null}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
+              type="button"
+              onClick={handleRedoCalibration}
+              disabled={redoingCalibration}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-outline-variant/70 px-3 py-2 text-xs font-label font-bold text-on-surface-variant transition-colors hover:bg-background hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[17px]">outgoing_mail</span>
-              {emailChangeSaving ? 'Sending' : 'Send confirmation'}
+              <span className="material-symbols-outlined text-[15px]">refresh</span>
+              {redoingCalibration ? 'Opening' : 'Redo calibration'}
             </button>
-          </form>
+          </div>
 
           <div className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
             <div className="flex items-center justify-between gap-3">
@@ -1009,7 +933,7 @@ export default function SettingsPage() {
       />
 
       <footer className="mt-8 flex items-center justify-between pb-8">
-        <p className="text-[10px] text-on-surface-variant/45 font-label uppercase tracking-widest">HackProduct · Sunboy Labs</p>
+        <p className="text-[10px] text-on-surface-variant/45 font-label uppercase tracking-widest">HackProduct</p>
         <div className="flex gap-4">
           <Link href="/privacy" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Privacy</Link>
           <Link href="/terms" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Terms</Link>

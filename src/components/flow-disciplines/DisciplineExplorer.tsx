@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { DisciplineCard } from './DisciplineCard'
 import { DisciplineExplorerModal } from './DisciplineExplorerModal'
 import type { DisciplineId } from '@/lib/data/flow-framework/types'
@@ -16,6 +16,15 @@ export function DisciplineExplorer() {
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
+  }, [])
+
+  // Listen for the 'open-flow-explorer' event dispatched from the onboarding results screen
+  useEffect(() => {
+    function handleExternalOpen() {
+      setIsOpen(true)
+    }
+    window.addEventListener('open-flow-explorer', handleExternalOpen)
+    return () => window.removeEventListener('open-flow-explorer', handleExternalOpen)
   }, [])
 
   return (

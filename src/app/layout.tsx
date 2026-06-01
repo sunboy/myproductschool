@@ -105,11 +105,31 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${raleway.variable} ${literata.variable} ${geist.variable} h-full antialiased`}>
       <head>
-        {/* Material Symbols Outlined icon font */}
+        {/* Material Symbols Outlined icon font — loaded non-render-blocking.
+            Preconnect warms the connection. The stylesheet loads with media="print"
+            so it doesn't block first paint, then a tiny script swaps it to all
+            once the browser has it. A <noscript> fallback covers JS-disabled. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
+          media="print"
+          data-icon-font="material-symbols"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          suppressHydrationWarning
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "var __ms=document.querySelector('link[data-icon-font=\"material-symbols\"]');if(__ms){__ms.addEventListener('load',function(){this.media='all';});if(__ms.sheet){__ms.media='all';}}",
+          }}
+        />
+        <noscript>
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          />
+        </noscript>
       </head>
       <body className="min-h-full flex flex-col bg-background text-on-surface">
         <MotionProvider>

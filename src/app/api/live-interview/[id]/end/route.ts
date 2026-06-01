@@ -130,7 +130,11 @@ export async function POST(
 
   // Load session + turns in parallel
   const [sessionResult, turnsResult] = await Promise.all([
-    adminClient.from('live_interview_sessions').select('*').eq('id', id).single(),
+    adminClient
+      .from('live_interview_sessions')
+      .select('user_id, status, debrief_json, calibration_snapshot, scenario_rubric, flow_coverage, challenge_id, started_at')
+      .eq('id', id)
+      .single(),
     adminClient
       .from('live_interview_turns')
       .select('role, content, turn_index')

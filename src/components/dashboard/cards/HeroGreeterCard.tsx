@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MaskoAvatar } from '@/components/shell/MaskoAvatar'
+import { useOnboardingModal } from '@/context/OnboardingModalContext'
 
 const lines = [
   "I lined up challenges that build on where you left off.",
@@ -26,15 +27,18 @@ interface HeroGreeterCardProps {
   dailyDone: number
   sessionHref?: string
   studyPlanHref?: string
+  isCalibrated?: boolean
 }
 
-export function HeroGreeterCard({ displayName, streakDays, xpTotal, focusMove, focusLevel, dailyDone, sessionHref = '/challenges', studyPlanHref = '/explore/plans' }: HeroGreeterCardProps) {
+export function HeroGreeterCard({ displayName, streakDays, xpTotal, focusMove, focusLevel, dailyDone, sessionHref = '/challenges', studyPlanHref = '/explore/plans', isCalibrated = true }: HeroGreeterCardProps) {
   const [idx, setIdx] = useState(0)
+  const { openModal } = useOnboardingModal()
 
   useEffect(() => {
+    if (!isCalibrated) return
     const t = setInterval(() => setIdx(i => (i + 1) % lines.length), 5000)
     return () => clearInterval(t)
-  }, [])
+  }, [isCalibrated])
 
   return (
     <div
@@ -133,32 +137,47 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, focusMove, f
         >
           {timeOfDay()}, {displayName}.
         </h1>
-        <p key={idx} className="animate-fade-up text-[15.5px] opacity-80" style={{ lineHeight: '1.5', height: '1.5em' }}>
-          {lines[idx]}
+        <p key={isCalibrated ? idx : 'cal'} className="animate-fade-up text-[15.5px] opacity-80" style={{ lineHeight: '1.5', height: '1.5em' }}>
+          {isCalibrated ? lines[idx] : "Let's find your starting point."}
         </p>
         <div className="flex flex-wrap gap-2.5 mt-5">
-          <Link
-            href={sessionHref}
-            data-hatch-target="dashboard-session"
-            className="inline-flex max-w-full items-center justify-center gap-2 rounded-full px-3.5 py-2.5 font-label text-[13px] font-bold sm:px-5 sm:py-3 sm:text-sm"
-            style={{ background: '#f3ede0', color: '#1e1b14' }}
-          >
-            <span className="material-symbols-outlined text-[18px]">play_arrow</span>
-            Start today&apos;s session
-          </Link>
-          <Link
-            href={studyPlanHref}
-            data-hatch-target="dashboard-study-plan"
-            className="inline-flex max-w-full items-center justify-center gap-2 rounded-full px-3.5 py-2.5 font-label text-[13px] font-bold sm:px-5 sm:py-3 sm:text-sm"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: '#f3ede0',
-            }}
-          >
-            <span className="material-symbols-outlined text-[18px]">menu_book</span>
-            Open study plan
-          </Link>
+          {isCalibrated ? (
+            <>
+              <Link
+                href={sessionHref}
+                data-hatch-target="dashboard-session"
+                className="inline-flex max-w-full items-center justify-center gap-2 rounded-full px-3.5 py-2.5 font-label text-[13px] font-bold sm:px-5 sm:py-3 sm:text-sm"
+                style={{ background: '#f3ede0', color: '#1e1b14' }}
+              >
+                <span className="material-symbols-outlined text-[18px]">play_arrow</span>
+                Start today&apos;s session
+              </Link>
+              <Link
+                href={studyPlanHref}
+                data-hatch-target="dashboard-study-plan"
+                className="inline-flex max-w-full items-center justify-center gap-2 rounded-full px-3.5 py-2.5 font-label text-[13px] font-bold sm:px-5 sm:py-3 sm:text-sm"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  color: '#f3ede0',
+                }}
+              >
+                <span className="material-symbols-outlined text-[18px]">menu_book</span>
+                Open study plan
+              </Link>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openModal('hero')}
+              data-hatch-target="dashboard-calibrate"
+              className="animate-cta-pulse inline-flex max-w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 font-label text-[13px] font-bold sm:px-6 sm:py-3 sm:text-sm"
+              style={{ background: '#f3ede0', color: '#1e1b14' }}
+            >
+              <span className="material-symbols-outlined text-[18px]">play_arrow</span>
+              Start calibration
+            </button>
+          )}
         </div>
       </div>
 

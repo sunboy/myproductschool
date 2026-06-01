@@ -90,3 +90,7 @@ v2 plannin.md
 
 # bmad agent framework scaffolding
 /_bmad/
+
+# graphify output
+/graphify-out/
+seeds/chillinterview/

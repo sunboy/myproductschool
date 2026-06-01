@@ -194,18 +194,10 @@ export function FreemiumUsageSummary({ plan, compact = false, className = '' }: 
 
   return (
     <div className={`rounded-xl border border-outline-variant/50 bg-surface-container-low px-3 py-2 ${className}`}>
-      <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="mb-2 flex items-center gap-2">
         <span className="text-[10px] font-label font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">
           Free reps left
         </span>
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
-          className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[11px] font-label font-bold text-on-primary"
-        >
-          Upgrade
-          <span className="material-symbols-outlined text-[12px]">arrow_forward</span>
-        </button>
       </div>
       <div className={compact ? 'flex gap-3' : 'grid grid-cols-1 gap-3 sm:grid-cols-2'}>
         <Meter

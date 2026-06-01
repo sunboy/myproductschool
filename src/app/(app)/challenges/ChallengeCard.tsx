@@ -8,6 +8,7 @@ import { cleanDisplayCopy } from '@/lib/copy/display'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
 import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 import type { ChallengeWithDomain } from '@/lib/types'
+import { deriveChallengeStatus } from '@/lib/challenges/status'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
@@ -206,11 +207,15 @@ export function ChallengeCard({
   const challengeHref = appendReturnTo(challengePath(challenge), returnHref)
   const discussionHref = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
   const numberLabel = formatChallengeNumber(challenge.challenge_type, challenge.display_number)
-  const statusIcon = challenge.is_completed
-    ? { icon: 'check_circle', fill: 1, color: 'var(--color-primary)' }
-    : attempts > 0
-      ? { icon: 'incomplete_circle', fill: 0, color: 'var(--color-tertiary)' }
-      : null
+  // Three-way status (not_started / attempted / completed) derived in one place
+  // so every card reads the same accurate state across the app.
+  const status = deriveChallengeStatus(challenge)
+  const statusIcon =
+    status === 'completed'
+      ? { icon: 'check_circle', fill: 1, color: 'var(--color-primary)' }
+      : status === 'attempted'
+        ? { icon: 'incomplete_circle', fill: 0, color: 'var(--color-tertiary)' }
+        : null
 
   if (listView) {
     return (
@@ -302,17 +307,17 @@ export function ChallengeCard({
           <span
             className="material-symbols-outlined text-[13px]"
             style={{
-              fontVariationSettings: `'FILL' ${challenge.is_completed ? 1 : 0}`,
-              color: challenge.is_completed
+              fontVariationSettings: `'FILL' ${status === 'completed' ? 1 : 0}`,
+              color: status === 'completed'
                 ? 'var(--color-primary)'
-                : attempts > 0
+                : status === 'attempted'
                   ? 'var(--color-tertiary)'
                   : 'color-mix(in srgb, var(--color-on-surface) 40%, transparent)',
             }}
           >
-            {challenge.is_completed
+            {status === 'completed'
               ? 'check_circle'
-              : attempts > 0
+              : status === 'attempted'
                 ? 'incomplete_circle'
                 : 'circle'}
           </span>

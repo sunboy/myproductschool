@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { StudyPlan, LearnModule, DomainWithProgress, AutopsyProduct } from '@/lib/types'
 import { getStudyPlanSummaries } from '@/lib/data/study-plans'
 import { getShowcaseProducts } from '@/lib/data/showcase'
-import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
+import { getLearnModuleSummaries, getLearnModuleCount } from '@/lib/data/learn-modules'
 import { getDomainsWithProgress } from '@/lib/data/domains'
 import { getReadableAppCompanies, getReadableLegacyOnlyShowcaseProducts } from '@/lib/autopsies/app-library'
 import { getAutopsyCompanies } from '@/lib/autopsies/queries'
@@ -113,11 +113,12 @@ export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [studyPlansRaw, autopsyCompanies, legacyProducts, modulesRaw, domains, personalisedPlan, topCompanyChallenges] = await Promise.all([
+  const [studyPlansRaw, autopsyCompanies, legacyProducts, modulesRaw, moduleCount, domains, personalisedPlan, topCompanyChallenges] = await Promise.all([
     getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
     getAutopsyCompanies().catch(() => [] as AutopsyCompanyWithStories[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
     getLearnModuleSummaries(4).catch(() => [] as LearnModule[]),
+    getLearnModuleCount().catch(() => 0),
     getDomainsWithProgress().catch(() => [] as DomainWithProgress[]),
     (async (): Promise<PersonalisedPlan | null> => {
       if (!user) return null
@@ -145,6 +146,10 @@ export default async function ExplorePage() {
           .eq('is_published', true)
           .eq('is_real_interview', true)
           .not('company_tags', 'eq', '{}')
+          // The page only renders the top 4 companies x 5 challenges. Bound the
+          // scan so it doesn't grow with the whole real-interview catalog.
+          .order('created_at', { ascending: false })
+          .limit(200)
         const rows = (data ?? []) as CuratedChallenge[]
         // Count per company
         const counts = new Map<string, CuratedChallenge[]>()
@@ -186,6 +191,10 @@ export default async function ExplorePage() {
     : PLANS_STATIC
 
   const modules = modulesRaw.length > 0 ? modulesRaw.slice(0, 4) : MODULES_STATIC
+  // True total of guides for the "See all" label + meta chip. Only `modules`
+  // (max 4) is rendered, so never derive the count from its length. Fall back
+  // to the rendered count if the count query failed (so it never shows 0).
+  const guidesCount = moduleCount > 0 ? moduleCount : modules.length
   const autopsyHubs = getReadableAppCompanies(autopsyCompanies)
   const legacyOnlyAutopsyHubs = getReadableLegacyOnlyShowcaseProducts(
     legacyProducts,
@@ -223,7 +232,7 @@ export default async function ExplorePage() {
             Explore
           </h1>
           <div className="mt-4 flex flex-wrap gap-2">
-            <MetaChip icon="menu_book" label={`${modules.length} guides`} />
+            <MetaChip icon="menu_book" label={`${guidesCount} guides`} />
             {totalAutopsyHubs > 0 && <MetaChip icon="troubleshoot" label={`${totalAutopsyHubs} autopsy hubs`} />}
             {topDomains.length > 0 && <MetaChip icon="category" label={`${topDomains.length} domains`} />}
           </div>
@@ -265,7 +274,7 @@ export default async function ExplorePage() {
         ))}
       </section>
 
-      <SectionHeading title="Guides" href="/explore/modules" linkLabel={`See all (${modules.length})`} />
+      <SectionHeading title="Guides" href="/explore/modules" linkLabel={`See all (${guidesCount})`} />
       <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((module, index) => (
           <ModuleCard key={module.slug} module={module} index={index} />
@@ -285,7 +294,7 @@ export default async function ExplorePage() {
 
       {topDomains.length > 0 && (
         <>
-          <SectionHeading title="Domains" href="/domains" linkLabel={`See all (${topDomains.length})`} />
+          <SectionHeading title="Domains" href="/explore/domains" linkLabel={`See all (${topDomains.length})`} />
           <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {topDomains.map((domain, index) => (
               <DomainRow key={domain.slug} domain={domain} index={index} />

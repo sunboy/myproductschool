@@ -1,53 +1,25 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+// UsageContext is now a thin compatibility layer over SessionContext.
+// Usage data is fetched once per session via /api/profile (see SessionProvider)
+// instead of a separate /api/usage/me request on every app mount. The public
+// API (useUsage / useIsAtLimit / UsageData / FeatureUsage) is unchanged so
+// existing consumers keep working without edits.
 
-export interface FeatureUsage {
-  used: number
-  limit: number
-  windowDays: number
-  unit?: 'count' | 'cents'
-}
+import { type ReactNode } from 'react'
+import { useSession, type UsageData, type FeatureUsage } from '@/context/SessionContext'
 
-export interface UsageData {
-  challenges: FeatureUsage
-  interviews: FeatureUsage
-  hatchAiCents: FeatureUsage
-}
+export type { UsageData, FeatureUsage }
 
-const DEFAULT_USAGE: UsageData = {
-  challenges: { used: 0, limit: 3, windowDays: 30, unit: 'count' },
-  interviews:  { used: 0, limit: 1, windowDays: 30, unit: 'count' },
-  hatchAiCents: { used: 0, limit: 35, windowDays: 30, unit: 'cents' },
-}
-
-const UsageContext = createContext<UsageData>(DEFAULT_USAGE)
-
+// Passthrough kept for backward compatibility. Usage now lives in SessionProvider
+// (mounted once in (app)/layout.tsx), so this no longer fetches or owns state —
+// it simply renders children. Nested instances are harmless no-ops.
 export function UsageProvider({ children }: { children: ReactNode }) {
-  const [usage, setUsage] = useState<UsageData>(DEFAULT_USAGE)
-
-  useEffect(() => {
-    fetch('/api/usage/me')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data) {
-          // API returns both legacy shape (challenges, interviews, hatchAiCents)
-          // and extended spend-indicator fields — pick out what UsageContext needs
-          setUsage({
-            challenges: data.challenges ?? DEFAULT_USAGE.challenges,
-            interviews: data.interviews ?? DEFAULT_USAGE.interviews,
-            hatchAiCents: data.hatchAiCents ?? DEFAULT_USAGE.hatchAiCents,
-          })
-        }
-      })
-      .catch(() => {/* silent — defaults are safe */})
-  }, [])
-
-  return <UsageContext.Provider value={usage}>{children}</UsageContext.Provider>
+  return <>{children}</>
 }
 
 export function useUsage(): UsageData {
-  return useContext(UsageContext)
+  return useSession().usage
 }
 
 export function useIsAtLimit(feature: keyof UsageData): boolean {
