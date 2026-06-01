@@ -1,5 +1,6 @@
 // src/app/api/admin/content/drafts/[id]/publish/route.ts
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAdminAction } from '@/lib/admin/audit-log'
 import { checkAdminSecret } from '@/lib/content/admin-auth'
@@ -22,6 +23,10 @@ export async function POST(
       targetId: id,
       after: { challenge_id: challengeId },
     })
+    // Publishing a new challenge changes the cached domain counts and the
+    // trending list, so drop those caches immediately instead of waiting for TTL.
+    revalidateTag('domains', 'max')
+    revalidateTag('hot-challenges', 'max')
     return NextResponse.json({ ok: true, challenge_id: challengeId })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)

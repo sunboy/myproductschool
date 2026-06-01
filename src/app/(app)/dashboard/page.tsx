@@ -206,6 +206,9 @@ export default async function DashboardPage() {
   let lastAttemptDate: string | null = null
   let dailyDone = 0
   let plan: string | null = 'free'
+  // Raw display name (null when unset) for the leaderboard's "You" fallback,
+  // distinct from displayName which coalesces to 'there' for the greeting.
+  let rawDisplayName: string | null = null
 
   if (user) {
     const today = new Date().toISOString().split('T')[0]
@@ -230,6 +233,7 @@ export default async function DashboardPage() {
         .gte('created_at', today),
     ])
 
+    rawDisplayName = profile?.display_name ?? null
     displayName = profile?.display_name ?? 'there'
     streakDays = profile?.streak_days ?? 0
     xpTotal = profile?.xp_total ?? 0
@@ -245,7 +249,7 @@ export default async function DashboardPage() {
 
   const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, featuredAutopsy, activePlanResult] = await Promise.all([
     getHotChallenges(),
-    userId ? getLeaderboardPeek(userId) : [],
+    userId ? getLeaderboardPeek(userId, { display_name: rawDisplayName, xp_total: xpTotal }) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
     userId ? getCommunityActivityFeed(6) : [],
