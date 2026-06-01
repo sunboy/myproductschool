@@ -6,6 +6,7 @@ import { motion, motionTokens } from '@/components/motion'
 import { appendReturnTo } from '@/lib/navigation/return-to'
 import { cleanDisplayCopy } from '@/lib/copy/display'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
+import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
@@ -202,9 +203,9 @@ export function ChallengeCard({
     scenario_question?: string | null
     metadata?: Record<string, unknown> | null
   })
-  const challengePath = `/workspace/challenges/${challenge.slug ?? challenge.id}`
-  const challengeHref = appendReturnTo(challengePath, returnHref)
+  const challengeHref = appendReturnTo(challengePath(challenge), returnHref)
   const discussionHref = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
+  const numberLabel = formatChallengeNumber(challenge.challenge_type, challenge.display_number)
   const statusIcon = challenge.is_completed
     ? { icon: 'check_circle', fill: 1, color: 'var(--color-primary)' }
     : attempts > 0
@@ -237,6 +238,13 @@ export function ChallengeCard({
             </p>
           </Link>
         </div>
+
+        {/* Catalog number */}
+        {numberLabel && (
+          <span className="hidden sm:inline font-mono text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant shrink-0">
+            {numberLabel}
+          </span>
+        )}
 
         {/* Paradigm badge */}
         <span
@@ -361,6 +369,14 @@ export function ChallengeCard({
       {/* Top row: paradigm badge + difficulty */}
       <div className="flex items-center justify-between gap-1.5">
         <div className="flex items-center gap-1.5 flex-wrap">
+          {numberLabel && (
+            <span
+              className="font-mono text-[10px] px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: 'rgba(255,255,255,0.5)', color: style.fg }}
+            >
+              {numberLabel}
+            </span>
+          )}
           <span
             className="text-[11px] font-bold px-2.5 py-0.5 rounded-full font-label"
             style={{ backgroundColor: 'rgba(255,255,255,0.7)', color: style.fg }}

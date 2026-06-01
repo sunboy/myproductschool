@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000007",
+  "title": "Should Notion Build a Native Calendar?",
+  "scenario_role": null,
+  "scenario_context": "Early 2024. Notion has 30 million users and a suite of database views: table, board, gallery, timeline, list. Forty percent of Notion databases contain at least one date property. Eight percent of those databases use calendar view. In 2022, Notion acquired Cron, a calendar app with a devoted following among power users, but the integration has remained shallow: Cron operates as a separate product, not a native Notion surface.",
+  "scenario_trigger": "Google Calendar and Fantastical each hold deep roots in how knowledge workers manage time. Both have rich integrations, mature mobile apps, and years of behavioral entrenchment. Meanwhile, the 40% / 8% gap in Notion's own data raises a question that does not resolve cleanly: is that low calendar-view adoption a sign of latent demand waiting for a better native experience, or a sign that users have already delegated scheduling to a tool that does it better?",
+  "scenario_question": "Frame the real strategic question, enumerate the build options, name the tradeoff Notion must accept, and define a falsifiable bet on whether native calendar deepens Notion's connected-workspace moat or adds a commodity feature to a saturated market.",
+  "engineer_standout": "A strong answer refuses to treat 'should Notion build a calendar?' as the actual question. The real question is whether calendar functionality, done natively, increases the gravitational pull of Notion's database layer. The 40% / 8% gap is the crux: either the calendar view is underpowered and blocking adoption (fixable), or users have decoupled scheduling from their Notion workspace (structural). These two explanations predict opposite product moves.",
+  "paradigm": "traditional",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["strategic_thinking", "taste"],
+  "secondary_competencies": ["cognitive_empathy", "domain_expertise"],
+  "topic_tags": ["strategy", "build-vs-buy", "product-expansion", "north-star", "network-effects"],
+  "technique_tags": ["taste-frame", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The 40% / 8% gap is a symptom. Two opposite explanations fit it. Framing the problem means deciding which explanation to build against.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the strategic decision Notion faces on calendar?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The real question is not whether to build a calendar but whether native calendar functionality increases the connectedness of Notion's database layer. Forty percent of Notion databases have date properties; only 8% use calendar view. That gap could mean the calendar view is underpowered and blocking adoption, or it could mean the 40% have already offloaded scheduling to Google Calendar or Fantastical and do not want it back. These two explanations predict opposite product moves: the first calls for a deeper native calendar, the second calls for a better integration layer with external calendars. Framing the decision requires knowing which explanation is true before committing to either path.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "cognitive_empathy"],
+              "explanation": "This framing names the real ambiguity: the 40% / 8% gap is evidence of two structurally different user situations, not a single problem. A PM who frames it as 'users want a calendar and the current one is bad' will build a native calendar and discover the demand was not there. A PM who frames it as 'users have decoupled scheduling from Notion' will invest in integrations and miss the users who would have adopted a better native surface. The framing step exists to resolve this ambiguity before spending engineering quarters on a direction.",
+              "framework_hint": "Cognitive Empathy: simulating two distinct user situations (users who want a calendar but do not use the current one, versus users who are not in Notion for scheduling at all) is the reasoning move that makes this framing strong. Strategic Thinking: naming the question as 'which hypothesis is true' rather than 'what should we build' puts the team in the right epistemic position."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Notion's calendar view is clearly underpowered. With 30 million users and 40% using date properties, the low calendar view adoption (8%) is a conversion problem, not a demand problem. The task is to identify the specific UX gaps in the current calendar view, close them, and measure whether adoption lifts. The Cron acquisition gives Notion a head start: ship Cron's best features into the native calendar and the gap should close.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This framing makes a reasonable bet, but it commits to an explanation (underpowered UX) before ruling out the alternative (users have already decoupled scheduling). The 8% figure could be the ceiling, not the floor. If most of the 40% are already using Google Calendar daily and see Notion's calendar as redundant, improving the UX will not move the number. The framing is not wrong about the opportunity but it treats a hypothesis as a fact.",
+              "framework_hint": "Strategic Thinking partial credit: identifies a plausible mechanism (UX gap) and a logical fix (close the gap with Cron features). Misses the step of falsifying the competing explanation before committing. A framing that skips hypothesis testing risks building against the wrong model."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Notion is losing users to dedicated calendar apps because it does not have a native calendar. Building a full-featured calendar is a retention play that closes the gap between Notion and competitors like Google Calendar and Fantastical.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "This framing treats the absence of a native calendar as the cause of user loss, but the scenario provides no evidence that users are churning from Notion to calendar apps. Notion has 30 million users and is growing. The problem to frame is not retention but strategic positioning: does adding calendar deepen the core product or dilute it? Framing it as a retention play misidentifies the dynamic.",
+              "framework_hint": "Motivation Theory failure: assumes the friction is 'Notion lacks a calendar' without evidence that this friction is causing users to leave. Friction identification requires grounding in observed user behavior, not in a feature gap on a comparison checklist."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The Cron acquisition signals that Notion has already decided to build a native calendar. The framing question is therefore not whether but how: how deep should the integration go, and how quickly should Notion sunset the standalone Cron product in favor of a native surface?",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "An acquisition is a capability purchase, not a product commitment. Notion could use Cron's team and technology to build a deep integration with Google Calendar rather than a competing native calendar. The acquisition expands the option set; it does not collapse it. Framing the question as 'how to integrate Cron' rather than 'what does calendar connectivity do for the product' skips the strategic reasoning the question requires.",
+              "framework_hint": "Strategic Thinking failure: treating a past decision (the acquisition) as a deterministic constraint on future options. Strategy is a hypothesis about where to compete; an acquisition gives you a new capability, not a predetermined destination."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Four structurally different moves exist here. The goal is not to pick one yet but to enumerate them cleanly enough that the tradeoffs become visible.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of options most completely covers the strategic choices available to Notion on calendar?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct options exist. First: fully integrate Cron into the Notion surface, replacing the current calendar view with Cron's scheduling engine and making calendar a first-class Notion primitive. Second: upgrade the native calendar view without touching Cron, closing the most common UX gaps (recurring events, drag-to-schedule, multi-database overlay) to raise adoption among the 40% with date properties. Third: embed Google Calendar and Fantastical via a deep read-write integration, positioning Notion as the connective layer between data and scheduling tools users already trust. Fourth: do nothing on calendar and redirect calendar-view investment into strengthening the database primitives that underpin all views, on the theory that a better foundation lifts all views including calendar.",
+              "quality": "best",
+              "competencies": ["creative_execution", "strategic_thinking"],
+              "explanation": "These four options are structurally distinct: full Cron integration changes the product surface and the Cron roadmap, native calendar view upgrade is additive without touching the external product, third-party integration positions Notion differently than either build option, and doing nothing is a legitimate bet that calendar is not where leverage lives. Each option has a different resource profile, risk profile, and competitive implication. Listing them separately makes the tradeoffs visible before optimization.",
+              "framework_hint": "Creative Execution: generating options that are mechanistically different, not variations of 'build more calendar.' The Cron integration option and the native upgrade option look similar on the surface but have completely different implications for the Cron team, the Cron user base, and Notion's product identity. Strategic Thinking: including 'do nothing' as a legitimate option forces an explicit choice rather than an implicit drift toward building."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Notion should evaluate two paths: build or integrate. Build means using the Cron acquisition to ship a native calendar that competes with Google Calendar. Integrate means embedding Google Calendar inside Notion so users see their calendar without leaving the app. The decision comes down to how much Notion wants to own the scheduling surface versus how much it wants to be the connective tissue between existing tools.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Build vs. integrate is the right top-level framing but the option collapses the build path (treating Cron integration and native calendar upgrade as the same) and omits the do-nothing option. The list step is where completeness matters: a decision made against two options when four exist will almost certainly miss the best answer. The framing here gets the axis right but does not complete the enumeration.",
+              "framework_hint": "Creative Execution partial credit: identifies the core axis (own the surface vs. connect to it) but stops before generating the full option space. A complete list requires naming structurally distinct options, not just naming the poles of a single dimension."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Notion should survey users to find out whether they want a native calendar before deciding what to build. If more than 30% of date-property users say they want a better calendar, that justifies building one. If fewer, Notion should focus elsewhere.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A user survey is a research method, not a strategic option. The list step asks for the moves available to Notion, not for a process for choosing between them. More fundamentally, survey responses to hypothetical features are unreliable: users routinely say they want features they do not use when those features ship. The 8% calendar-view adoption rate is a behavioral signal that already tells a story surveys cannot improve on.",
+              "framework_hint": "Cognitive Empathy failure: confusing 'what users say they want' with 'what users do.' Simulating user goals requires reasoning from observed behavior (the 40% / 8% gap) rather than asking users to describe desires they may not accurately know."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Notion has three options: acquire a second calendar company to supplement Cron, partner with Apple Calendar for native OS integration, or build a calendar from scratch using Cron's engineers as the core team. Each of these accelerates time-to-market differently.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "These are all variations of one option (build a native calendar) with different sourcing strategies. Acquiring a second calendar company to supplement Cron, partnering with Apple Calendar, and building with Cron's team all result in the same product outcome: a native calendar surface. A list of structurally identical options with different procurement paths does not help Notion understand what it is choosing between at the strategic level.",
+              "framework_hint": "Creative Execution failure: generating variations of one option rather than structurally distinct options. Each item here answers 'how do we build a calendar?' not 'is building a calendar the right move?' The list step requires the latter."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "This is a surface-area vs. depth tradeoff. Name the criterion that tells you whether adding calendar expands Notion's moat or just adds a commodity feature.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding whether to invest deeply in native calendar versus strengthening the existing database and docs core?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is connectedness lift: does native calendar increase the number of cross-object links, database references, or doc-to-event connections in an average workspace? Notion's moat is the connected workspace. Any feature that increases the density of connections between objects (tasks, docs, people, events) deepens the moat. A calendar that exists in isolation from the database layer, even if beautifully designed, is a commodity feature. The sacrifice this criterion demands is explicit: Notion will forgo competing with Google Calendar and Fantastical on scheduling UX in exchange for building a calendar that is only as good as Notion's data layer is rich. If users are not willing to make that trade, they were not Notion's calendar users to win.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "Connectedness lift names a criterion that is specific to Notion's actual competitive position. Google Calendar and Fantastical will always be better at pure scheduling. The only calendar that Notion can win at is one that is meaningfully better because it is connected to Notion's databases. The criterion also names the sacrifice: forgoing scheduling UX parity. That is a real tradeoff, not a preference, because users who want the best calendar experience will still leave. Naming it prevents the team from trying to win on both dimensions.",
+              "framework_hint": "Taste: distinguishing between 'users would prefer a better calendar view' (a preference) and 'a connected calendar increases the number of cross-object links in a workspace' (a property that predicts whether Notion's moat deepens). Strategic Thinking: the criterion maps directly to Notion's competitive position. It does not try to win on Google's terms; it names the dimension where Notion can win."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be calendar-view adoption rate among date-property users. If the current 8% can be raised to 25% within six months of a native calendar launch, the investment is justified. If adoption does not move, the feature is not delivering value and resources should be reallocated.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Adoption rate is a measurable outcome and 25% is a specific threshold, which is better than directional language. The gap is that adoption does not distinguish between a calendar that deepens Notion's moat and one that simply performs better on a commodity dimension. Users could adopt a better calendar view without connecting it to any other Notion object, which would not advance the connected-workspace position at all. The criterion misses what Notion specifically needs the calendar to do.",
+              "framework_hint": "Strategic Thinking partial credit: names a specific number and a timeline, which are properties of a good hypothesis. Does not name what property of the feature is being measured or why that property is strategically important for Notion specifically."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Notion should optimize for user satisfaction scores among calendar-view users. If NPS from teams using the calendar view is significantly lower than NPS from teams using other views, that is evidence of a quality gap worth closing. Higher satisfaction reduces churn and supports premium pricing.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Satisfaction scores measure how users feel about a feature, not whether the feature advances a strategic position. A calendar that satisfies users but does not connect to other Notion objects can produce high NPS while doing nothing to differentiate Notion from Google Calendar. The criterion needs to be specific to what Notion is trying to achieve, not a generic quality signal applicable to any product.",
+              "framework_hint": "Taste failure: satisfaction is a preference metric. The optimize step requires naming a criterion that reveals whether the tradeoff being accepted is worth the sacrifice. NPS can be high for a commodity feature and low for a strategically important one."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is revenue per user. Teams using Notion's calendar should convert to paid plans at a higher rate than teams that do not. If calendar is a paid-plan driver, the investment in building it is self-funding. If calendar does not improve conversion, it is a cost center and should be deprioritized.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Revenue per user is a business outcome, not a decision criterion for product investment. A feature can drive conversion because it hits a threshold of completeness (users upgrade to unlock it) without deepening the product's competitive position at all. More critically, Notion's calendar is currently free. Changing it to a paid-plan driver requires a pricing change, not a product investment decision. The criterion conflates product strategy with monetization strategy.",
+              "framework_hint": "Strategic Thinking failure: using a financial output (conversion rate) as a proxy for a strategic decision. Revenue follows from product-market fit; it does not reveal whether a specific feature deepens a moat or adds a commodity surface. The criterion needs to measure the thing that creates the business outcome, not the outcome itself."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the bet is wrong.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable win condition look like for Notion's calendar investment?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: calendar-view adoption among date-property users reaches 20% within 12 months of shipping the native calendar, AND average cross-object link count per workspace increases by at least 15% in workspaces actively using calendar view. The first metric tests demand; the second tests whether calendar is deepening the connected-workspace position or just adding a standalone surface. The counter-signal is: adoption reaches 20% but cross-object link density does not move. That outcome means users are adopting calendar as a scheduling tool, not as a connected-workspace tool, which puts Notion in direct competition with Google Calendar and Fantastical on their home turf and is a bet Notion cannot win on product quality alone.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names two metrics with specific thresholds and a timeline, connects them to the strategic criterion from the optimize step (connectedness lift), and names a counter-signal that would falsify the strategic bet rather than just the adoption bet. The counter-signal is non-obvious: adoption succeeding while connectedness fails is actually a bad outcome for Notion, because it means calendar is commoditizing rather than differentiating. Naming that scenario explicitly is the reasoning move that separates a strategic hypothesis from a feature success metric.",
+              "framework_hint": "Domain Expertise: 20% adoption and 15% cross-object link lift are specific enough to be testable and calibrated to a realistic 12-month window for a product already at 30M users with an existing (if weak) calendar surface. Strategic Thinking: the because-Z structure here is 'we will know this worked if adoption reaches 20% AND link density lifts 15%; we will know it failed if adoption succeeds but link density does not move, because that means we have built a commodity feature on saturated ground.'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means calendar-view adoption among date-property users doubles from 8% to 16% within 18 months. Track monthly. If adoption is growing consistently, continue investment. If it plateaus below 12%, reconsider the calendar roadmap.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Doubling adoption from 8% to 16% is a specific numeric goal with a timeline, and the 12% plateau as a reconsideration trigger is a reasonable early-warning signal. The gap is that adoption alone does not reveal whether Notion is winning on its own strategic terrain. A calendar that reaches 16% adoption without connecting to other Notion objects tells Notion it built a better calendar view, not that it deepened the connected-workspace moat. The win condition is incomplete because it does not measure the strategic property that distinguishes a Notion-specific win from a commodity win.",
+              "framework_hint": "Domain Expertise partial credit: names a specific number (16%) and a timeline (18 months) with an early-warning threshold (12%). Strategic Thinking gap: the metric does not connect to the criterion from the optimize step. A win condition that does not reference the strategic criterion does not close the loop."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means users stop citing 'no calendar' as a reason for not upgrading to paid plans. Track this through exit surveys and support tickets. When calendar-related churn reasons drop to under 5% of all churn reasons, the investment has paid off.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Exit survey data and support tickets are noisy signals that are easy to game and hard to act on. Churn reasons below 5% could reflect that calendar is fixed, that users stopped mentioning it, or that other churn reasons grew faster. More fundamentally, this win condition measures the absence of a problem, not the presence of a strategic outcome. The win step requires a forward-looking metric that confirms the bet is correct, not a backward-looking metric that confirms a complaint went away.",
+              "framework_hint": "Strategic Thinking failure: defining success as the absence of a negative signal rather than the presence of a positive one. A hypothesis requires a positive outcome metric that would confirm the strategic bet is working, not the cessation of a complaint."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means Notion's calendar is featured in at least three major productivity media outlets (The Verge, Wired, Notion subreddit trending) within the first month of launch, and App Store rating for the Notion mobile app increases by at least 0.3 stars within 90 days. These signals confirm that the launch created genuine excitement and product quality improved.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Press coverage and App Store ratings measure launch reception, not strategic outcome. A feature can generate excellent press and a temporary ratings bump and still fail to deepen Notion's competitive position if users do not incorporate it into their workflows. These metrics are especially problematic here because they are detached from the specific hypothesis being tested: whether calendar increases the connectedness of Notion workspaces. Excitement at launch and strategic impact over time are not the same thing.",
+              "framework_hint": "Domain Expertise failure: confusing launch metrics (press, ratings) with outcome metrics (adoption, connectedness). A falsifiable win condition must measure the property that would confirm or deny the strategic bet, not the loudness of the announcement."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000012",
+  "title": "Search Relevance vs. Monetization Tradeoff",
+  "scenario_role": null,
+  "scenario_context": "Amazon's search team ran an A/B test on ad placement. Variant B moves more sponsored results into positions 2 through 4, pushing organic results further down the page. The results are in: +7% revenue per search, -4% organic CTR, and -2.1% 30-day purchase conversion for exposed users.",
+  "scenario_trigger": "The ads team wants to ship. The search quality team wants to kill it. Both sides have read the same numbers and reached opposite conclusions. The decision is yours.",
+  "scenario_question": "Decide whether to ship Variant B, and build the argument that would hold up to scrutiny from both teams.",
+  "engineer_standout": "A strong answer rejects revenue-per-search as the decision metric and treats the -2.1% 30-day purchase conversion as the load-bearing number. Amazon Search's asset is not ad inventory, it is the trust that users bring to the search bar because they believe it returns the thing they actually want to buy. The +7% revenue-per-search gain is real but local; it measures one session. The -2.1% conversion drop is a signal that the change degrades the core job of search, and at Amazon's scale that signal compounds: fewer successful purchases mean fewer return searches, smaller basket sizes over time, and a gradual erosion of the habit that makes Amazon Search valuable to advertisers in the first place. The trap is optimizing the revenue-per-search metric because it is immediate and visible while discounting conversion because it operates on a 30-day lag. The move is to recognize that revenue-per-search and 30-day purchase conversion are not two equally weighted dials. Conversion is the mechanism that makes ad inventory worth buying. Ship on revenue-per-search while conversion erodes and you are harvesting the asset, not growing it.",
+  "paradigm": "traditional",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["taste", "strategic_thinking"],
+  "secondary_competencies": ["motivation_theory", "domain_expertise"],
+  "topic_tags": ["north-star", "monetization", "retention"],
+  "technique_tags": ["north-star-cascade", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Revenue-per-search went up. Purchase conversion went down. Before picking a side, establish which of those two numbers is closer to the reason Amazon Search exists.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the decision the A/B test results actually require?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The test produced a local revenue gain and a downstream trust signal moving in opposite directions, and the real decision is which one represents the health of Amazon Search as a platform. Revenue-per-search measures one session; the -2.1% 30-day purchase conversion measures whether users who were exposed to more sponsored results came back and bought things at their prior rate. Amazon Search's value to advertisers is built on the premise that users trust it to surface what they actually want. If conversion is falling for exposed users, the test is not just a placement change, it is a signal that the placement change is degrading the core job search is hired to do. The framing is not 'ads team vs. search team.' It is: is revenue-per-search a leading indicator of platform value, or is it a local extraction from a trust asset that the -2.1% conversion drop says is already eroding?",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "motivation_theory"],
+              "explanation": "This framing correctly identifies that the apparent conflict between the two teams dissolves once you establish a metric hierarchy. Revenue-per-search and 30-day purchase conversion are not two equally weighted signals. Conversion measures whether users got the job done, which is the thing that makes Amazon Search a durable ad platform. The framing names the upstream question: is the +7% gain a real value increase or a local extraction from a trust asset the -2.1% conversion signal says is already being drawn down? That question cannot be answered by a team-vote. It requires naming the metric that sits closer to the platform's actual value driver first.",
+              "framework_hint": "Motivation Theory: the Frame move requires naming the friction before designing the fix. The surface problem is two teams reading the same numbers differently. The upstream problem is that revenue-per-search measures a session-level outcome while 30-day purchase conversion measures whether the core job of search was completed. Strategic Thinking: framing requires naming the problem that makes downstream choices coherent. Until the metric hierarchy is established, the ship-vs-kill vote is unanswerable."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The test shows a classic ads-versus-organic tension. The +7% revenue-per-search gain is real and the -4% organic CTR loss is the cost. The framing is a strategic choice between short-term monetization and long-term search quality, and the right answer depends on where Amazon is in its growth cycle and how much headroom exists on ad load.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This framing correctly identifies the short-term versus long-term tension and names ad load as a relevant dimension. But it focuses on the organic CTR drop rather than the 30-day purchase conversion drop, which is the more consequential signal. Organic CTR measures whether users clicked organic results; purchase conversion measures whether users completed the job search was hired for. A framing that anchors on CTR instead of conversion understates the severity of the signal and frames the decision as a growth-cycle preference rather than a platform-trust question.",
+              "framework_hint": "Strategic Thinking: this framing names the tension correctly but anchors on the wrong downstream metric. Organic CTR is a behavior inside the session; 30-day purchase conversion is a signal about whether the session served the user's actual goal. The Frame move requires identifying which metric sits closer to the platform's value driver, not just acknowledging that a tension exists."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The A/B test ran on a sample of users and the -2.1% conversion figure may not be statistically significant at that sample size. The framing is that the data is inconclusive and the team needs a longer test with a larger cohort before making any call. Both sides are jumping to conclusions.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Calling the data inconclusive to avoid committing to a framing is a procedural escape from the substantive question. The test produced three directionally consistent signals: revenue-per-search up, organic CTR down, 30-day conversion down. A -2.1% conversion drop for exposed users on a platform Amazon's size is not a rounding error, it is a meaningful behavioral signal even at moderate sample sizes. The Frame step requires naming the problem structure, not deferring it by questioning data quality without a specific statistical concern.",
+              "framework_hint": "Motivation Theory failure: invoking data insufficiency without identifying a specific quality concern is friction avoidance, not friction analysis. The Frame move is to name the problem behind the apparent conflict. Procedural deferral at Frame means the reasoning move has not been made."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The ads team is right. Revenue-per-search is up 7% and that is the metric the business is optimizing for. The -4% organic CTR and -2.1% conversion are acceptable costs of a higher-monetized search page. The framing is: this is an ads product decision, and search quality concerns are secondary to the revenue mandate.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "This framing picks a winner before establishing the metric hierarchy, which is precisely what the Frame step is meant to prevent. Treating revenue-per-search as the primary metric without examining what the -2.1% conversion drop means for long-term revenue is conclusion-first reasoning. Amazon Search's ad revenue is downstream of user trust and purchase intent. A framing that declares ads revenue primary and conversion secondary has not done the work of establishing why that hierarchy is correct.",
+              "framework_hint": "Strategic Thinking failure: framing that advocates for a team's position before naming the evaluative criterion is not framing, it is motivated reasoning. The Frame move requires identifying the problem behind the apparent conflict. Declaring the ads mandate primary without examining whether conversion erosion undermines that mandate over time skips the reasoning step entirely."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The test produced three signals moving in the same negative direction for users while one moved positively for Amazon. Before deciding, enumerate the second-order effects that do not appear directly in the A/B test numbers.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of second-order effects most completely describes the downstream consequences of shipping Variant B at full scale?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct second-order effects cover the space: (1) trust erosion and return-search decay, users who complete fewer purchases per session over time reduce their search frequency, which shrinks the inventory Amazon can sell to advertisers; (2) advertiser ROI compression, if sponsored placements in positions 2 through 4 convert at lower rates because overall purchase intent on the page is falling, advertisers will reduce bids or shift spend to channels with better conversion, offsetting the per-search revenue gain; (3) ad-load ceiling, there is a point at which adding more sponsored positions above organic results begins to cannibalize the organic quality signal that makes Amazon Search the default purchase-intent surface; (4) competitive surface exposure, users who find Amazon Search less reliable for finding what they want are incrementally more likely to start product searches on Google or go directly to brand sites, and that shift in search-start behavior compounds over months, not sessions.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "creative_execution"],
+              "explanation": "This set is structurally distinct because each effect operates through a different causal mechanism and implies a different risk horizon. Trust erosion affects the search habit. Advertiser ROI compression affects the monetization model. Ad-load ceiling affects the structural integrity of the search product. Competitive surface exposure affects Amazon's position in the purchase journey. Listing all four makes visible that the +7% revenue-per-search gain is being extracted from four different assets simultaneously, not just one. This is what the List step requires: mapping the full consequence space before committing to a path.",
+              "framework_hint": "Creative Execution: the List move requires generating structurally distinct effects, not variations on 'users will be unhappy.' These four effects are structurally distinct because they operate on different timescales and through different causal mechanisms. Cognitive Empathy: simulating the advertiser's perspective (ROI compression) and the user's perspective (trust erosion) surfaces effects that are invisible from the internal revenue-per-search metric alone."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two effects are most important: user trust will erode if sponsored results consistently underperform organic results, leading to fewer return visits, and advertisers will eventually see lower conversion rates on their sponsored placements and reduce bids. Both effects are real but they operate on a long enough lag that they may not materialize if the ad load is reduced before reaching a tipping point.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Trust erosion and advertiser ROI compression are the two highest-priority effects and this answer names them. But it misses the competitive surface exposure effect, which is the one that most directly threatens Amazon's structural position in e-commerce, and the ad-load ceiling effect, which determines whether there is a safe operating range for the change. The 'may not materialize' qualifier also understates the -2.1% conversion signal, which suggests erosion is already occurring in the test cohort, not hypothetical.",
+              "framework_hint": "Creative Execution: a two-effect list at the List step is usually incomplete. The structural gap here is that it only maps effects internal to the Amazon Search product and misses the competitive surface exposure effect, which operates outside the product and is harder to reverse once it compounds."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The main second-order effect is that users will give lower satisfaction ratings in post-purchase surveys, which will eventually show up as NPS decline. Amazon should monitor NPS for the exposed cohort over the next quarter and use that as the early warning signal for whether the change is causing lasting harm.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "NPS surveys measure subjective perception after a purchase, but the -2.1% conversion signal already indicates that fewer purchases are happening for the exposed cohort. Using a post-purchase satisfaction signal to detect harm from a change that is already reducing purchases misses the primary effect. NPS is also a trailing indicator with high noise at the level of a single product change. The List step requires enumerating causal mechanisms, not proposing a measurement instrument.",
+              "framework_hint": "Domain Expertise failure: NPS is a satisfaction signal that requires a completed purchase to generate. If conversion is falling, the NPS measurement surface is itself shrinking. Proposing NPS monitoring as the list of second-order effects substitutes a measurement suggestion for the causal analysis the List step requires."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The main second-order effect is that the search quality team's morale will decline and high-performing engineers on that team may leave. Organizational risk from shipping over a team's explicit objection is the real downstream cost that is not captured in the A/B test numbers.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Organizational morale is a real consideration in large decisions but it is not a second-order effect of the product change being tested. The List step asks for consequences of shipping Variant B at scale, not consequences of the decision-making process. Team morale effects are also not structurally caused by the A/B test result itself, they depend on how the decision is communicated and what follow-up is committed to. Substituting organizational dynamics for product consequence analysis misses the reasoning move the List step requires.",
+              "framework_hint": "Strategic Thinking failure: listing organizational morale as a second-order product effect conflates process concerns with consequence analysis. The List move requires mapping the downstream effects of the product change on users, advertisers, and the platform. Internal team dynamics are a separate consideration that belongs in the decision-making process, not in the causal map of the product change."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before choosing a path. Is Amazon optimizing for revenue extracted per session, or for the trust that makes each session worth anything to advertisers in the first place?",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which course of action is most defensible, and what is the explicit criterion and sacrifice that justifies it?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Do not ship Variant B. The criterion is trust-adjusted long-term GMV, not revenue-per-search. Revenue-per-search is a session-level metric; 30-day purchase conversion is the signal that connects sessions to the compounding purchase behavior that makes Amazon Search's ad inventory valuable in the first place. The -2.1% conversion drop for exposed users is not an acceptable cost of +7% per-search revenue because at Amazon's scale it represents a large absolute reduction in completed purchases, and completed purchases are the mechanism through which advertiser ROI is sustained. The sacrifice is the immediate +7% revenue-per-search gain and the ads team's timeline. That sacrifice is acceptable because the conversion signal already shows the harm is occurring in the test cohort, and a change that degrades the core job of search at scale is not recoverable through ad-load adjustments after the trust erosion compounds.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking", "domain_expertise"],
+              "explanation": "This answer names the criterion (trust-adjusted long-term GMV), names the sacrifice (the +7% per-search revenue gain and the ads team's shipping timeline), and explains why the sacrifice is acceptable (conversion erosion at Amazon's scale is a primary revenue signal, not an acceptable externality). It also names the mechanism: advertiser ROI depends on purchase conversion, so a sustained conversion drop reduces the value of the ad inventory the +7% per-search gain is measuring. This is the Optimize move done correctly.",
+              "framework_hint": "Taste: the Optimize move requires feeling the difference between a tradeoff and a preference. Declining to ship is a genuine tradeoff because the +7% per-search revenue gain is real and immediate. The answer names the sacrifice honestly rather than dismissing it. Strategic Thinking: naming the criterion explicitly (trust-adjusted long-term GMV, not revenue-per-search) makes the choice auditable. Domain Expertise: understanding that advertiser ROI on Amazon Search depends on purchase conversion, not just click volume, grounds the criterion in the actual business model."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Ship Variant B but cap the ad load in positions 2 through 4 at a lower density than the test variant. Take a partial revenue gain rather than the full +7% and preserve more organic real estate. Run the capped variant for 60 days and monitor conversion rate. If conversion holds, expand the ad load incrementally.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "Proposing a capped variant is a reasonable iteration path that avoids the binary ship-or-kill decision. But this answer does not name the criterion that determines what 'holds' means for conversion. If conversion falls 1.5% under the capped variant, is that acceptable? The answer does not establish the threshold, which means the 60-day monitoring plan has no decision rule. An Optimize answer without a named criterion and a named sacrifice leaves the decision open rather than resolving it.",
+              "framework_hint": "Taste: proposing a partial deployment is a tactic, not a tradeoff. The Optimize move requires naming the criterion that determines whether the tactic succeeded or failed. Without a conversion threshold and a decision rule, the monitoring plan defers the tradeoff rather than making it."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Ship Variant B. The ads team has a revenue mandate and the +7% per-search gain is measurable and immediate. The -2.1% conversion drop may be a temporary effect as users adjust to the new page layout, and the right approach is to ship, monitor weekly, and revert if conversion continues to decline over the next month.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Treating the -2.1% conversion drop as a 'may be temporary' effect without a mechanism for why it would recover assumes the least alarming causal explanation without naming the evidence for it. The test ran long enough to capture 30-day purchase behavior, which means the conversion signal is not a measurement artifact from users adjusting to a new layout. The answer also does not name a revert threshold, so the 'monitor and revert' plan has no decision rule. Shipping on revenue-per-search while hoping conversion recovers is not a named tradeoff, it is wishful extrapolation.",
+              "framework_hint": "Taste failure: treating a conversion drop as potentially temporary without naming the mechanism for recovery is a preference disguised as a criterion. The Optimize move requires naming the sacrifice honestly. The sacrifice here is that conversion may not recover, and at Amazon's scale that is not an acceptable post-ship risk to take without a named threshold and a revert trigger."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Escalate to the VP level and let senior leadership make the call. The ads team and search quality team have equal standing and the decision involves a fundamental strategic choice about Amazon's identity as a search platform versus an ad platform. That choice belongs above the PM level.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Escalation is a process move, not an optimization decision. The scenario frames this as a room where the decision is yours, meaning the task is to name the criterion and sacrifice and commit to a path, not to redirect the decision upward. An Optimize answer that defers to hierarchy has not done the reasoning work the step requires. The strategic choice between search quality and ad revenue is answerable from the data in the test: the -2.1% conversion drop is the signal that names the cost, and the criterion (which asset matters more to long-term platform value) is derivable from Amazon's business model.",
+              "framework_hint": "Strategic Thinking failure: escalation at the Optimize step substitutes organizational process for criterion-naming. The Optimize move requires naming what you are optimizing for and what you are willing to give up. A decision that cannot be made without VP sign-off because the criterion was never named is an incomplete Optimize, not a responsible escalation."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name a falsifiable test for the platform-trust thesis. What metric, at what threshold, by when, would tell you that not shipping was the right call? And what result would tell you the conversion signal was a false alarm and you should revisit?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define the winning and failure conditions for holding the ship and commissioning a redesigned variant over a 60-day horizon?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success: a redesigned variant holds 30-day purchase conversion within 0.5 percentage points of the control baseline while recovering at least 4% revenue-per-search (roughly half the Variant B gain), in a 30-day test on the same exposed cohort. This confirms that the placement change can be tuned to add ad revenue without triggering the trust signal the original variant produced. Failure: if no placement configuration recovers more than 2% revenue-per-search without pushing conversion below the control baseline by more than 1 percentage point, the attention-reallocation explanation is the more likely cause, and the sponsored-position strategy should be reconsidered at the product level rather than iterated at the placement level. Both conditions are measurable within 60 days against the Variant B test's own baselines.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions, names specific thresholds derived from the original test numbers (+7% revenue-per-search, -2.1% conversion), and names the causal conclusion each outcome confirms. The success threshold (within 0.5 percentage points of conversion baseline, at least 4% revenue-per-search gain) is specific enough to produce a clear go-no-go signal. The failure threshold names what it would imply about the underlying mechanism, which determines whether the next action is placement iteration or product-level reconsideration. Both are grounded in the A/B test's own measurements.",
+              "framework_hint": "Strategic Thinking: the Win move requires writing a hypothesis with a falsification condition in both directions. The failure signal (no configuration recovers revenue without conversion erosion) names the causal mechanism it confirms and the strategic implication. Domain Expertise: anchoring both thresholds on the original test's numbers (the -2.1% conversion drop and the +7% revenue-per-search gain) connects the winning condition to the specific signals that motivated the hold decision."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success is: the search quality team and ads team reach agreement on a revised placement design within 30 days. Failure is: the teams remain in disagreement and the decision gets escalated again. Cross-functional alignment is the win condition because the underlying product question cannot be resolved without both teams committing to a shared metric framework.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Organizational alignment is a prerequisite for executing a redesigned variant, but it is not a winning condition for the product. Team agreement does not tell you whether the redesigned variant recovered purchase conversion or generated sustainable ad revenue. The Win step requires naming what Amazon can observe in user behavior that would confirm the strategic bet is paying off, not the internal process milestone that enables the next test to run.",
+              "framework_hint": "Cognitive Empathy: considering the teams' perspectives is valuable in the process, but a winning condition that measures internal agreement rather than user or business outcomes is not falsifiable in the way the Win move requires. The Win step asks what the world will look like if the strategy worked, not whether the stakeholders are satisfied with the process."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is: Amazon's quarterly earnings call reports search advertising revenue growth above the prior quarter's rate. Failure is: search ad revenue growth slows or declines. Long-term platform health is the only metric that captures whether the hold decision was correct, and quarterly revenue is the most honest signal for that.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Quarterly earnings are not observable within the 60-day horizon and are not attributable to a single placement decision among hundreds of product changes Amazon ships in any quarter. A winning condition that requires waiting for earnings to evaluate a placement test is not a decision rule, it is an indefinite deferral. The Win step requires naming what you can observe and attribute within the test horizon.",
+              "framework_hint": "Domain Expertise failure: a winning condition must be causally attributable to the decision being evaluated and observable within the decision horizon. Quarterly earnings fail both tests. The Win move requires naming a metric that the hold-and-iterate path directly controls and that can be measured in the same cohort within the same testing infrastructure."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is: user satisfaction scores for the exposed cohort improve relative to the Variant B test group in a follow-up survey. Failure is: satisfaction stays flat or declines, indicating the redesign did not address the underlying experience degradation. Survey feedback gives the search quality team a user-voice signal to work from.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The decision to hold was driven by a -2.1% 30-day purchase conversion signal, not by user satisfaction complaints. A redesigned variant should be evaluated against the same behavioral signal that motivated the hold, not against a different measurement instrument. User satisfaction surveys measure subjective perception and do not confirm whether the conversion erosion was reversed. A variant that users rate as satisfactory but that still suppresses purchase conversion by 1.8% has not resolved the platform-trust question the hold was designed to test.",
+              "framework_hint": "Strategic Thinking failure: winning conditions must be defined using the same metric that motivated the strategic choice. The hold decision was grounded in the conversion signal. Evaluating the redesigned variant on satisfaction surveys substitutes a softer signal for the causal metric, making the win condition unresponsive to the original risk. If the conversion signal was what caused you to hold, the conversion signal is what tells you whether holding worked."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

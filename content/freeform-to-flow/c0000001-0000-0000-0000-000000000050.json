@@ -1,0 +1,383 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000050",
+  "title": "The UI Is the AI: When to Go Full Conversational",
+  "scenario_role": null,
+  "scenario_context": "A startup building AI-native data analytics for non-technical users has shipped a prototype with a hybrid interface: a natural-language query input sits alongside traditional chart builders and filter controls. Early user research splits cleanly by experience level. Power users who know what they want reach for the filter controls and chart settings first — the direct manipulation is faster. New users who have never written a SQL query gravitate to the conversational input and report the product finally feels approachable. Engineering has flagged that maintaining two distinct interaction paradigms doubles the surface area they have to test, debug, and evolve every time the underlying model or data layer changes.",
+  "scenario_trigger": "At the most recent board meeting, an investor said the startup needs to 'just pick one' and go all-in. The investor's reasoning: hybrid UIs signal indecision, fragment the team's focus, and make it harder to tell a coherent product story. The founding team is now debating whether to drop the traditional controls and commit fully to conversational, or to retire the NL input and double down on the power-user experience. The question is whether 'just pick one' is actually the right frame for this decision, or whether there is a more defensible answer.",
+  "scenario_question": "Decide what to do with the hybrid interface and how to validate that decision before committing to an irreversible UI change.",
+  "engineer_standout": "A strong answer recognizes that 'just pick one' is a false binary. The two interface modes do not serve the same user at the same moment — conversational lowers the barrier to first value for new users, while direct manipulation reduces time-to-insight for experienced ones. The interesting question is whether users graduate from conversational to controls as they build domain knowledge, or whether the two populations are permanently distinct. If users graduate, the cost of maintaining both modes is buying coverage during an onboarding window, and the real question is whether that window is worth the engineering tax. If they never graduate, the product serves two permanently separate segments with incompatible needs, and the strategy question shifts to which segment is the right long-term bet. Neither answer is derivable without usage data. The right move is to instrument the prototype, measure whether conversational-to-controls migration happens, and decide after seeing that data — not in response to a board slide.",
+  "paradigm": "ai_native",
+  "difficulty": "hard",
+  "estimated_minutes": 45,
+  "primary_competencies": ["strategic_thinking", "cognitive_empathy", "taste"],
+  "secondary_competencies": ["domain_expertise", "creative_execution"],
+  "topic_tags": ["ai-native", "product-strategy", "ux-strategy", "analytics", "interface-design"],
+  "technique_tags": ["false-binary-detection", "user-graduation-hypothesis", "instrument-before-deciding"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The board said 'just pick one.' Before accepting that as the design constraint, ask what problem the hybrid UI is actually solving and whether the two modes are serving the same user or different ones.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the decision the product team needs to make about the hybrid interface?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["strategic_thinking", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The decision is not 'conversational vs. traditional controls' but 'do users graduate from one to the other.' If new users begin with the NL input and migrate toward filter controls and chart builders as they build familiarity with the data model, then both modes are serving the same user at different stages of their journey. The engineering cost of maintaining both is buying onboarding coverage, and the real question is whether that coverage is worth the maintenance tax. If users never graduate — if the power-user population and the new-user population are permanently distinct — then the product is trying to serve two incompatible segments simultaneously, and the strategy question becomes which segment is the right long-term bet. 'Just pick one' is the right answer only if the data shows no graduation and the two segments are structurally incompatible. That data does not yet exist.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "cognitive_empathy"],
+              "explanation": "This framing correctly identifies the graduation hypothesis as the load-bearing question. The board's 'just pick one' instruction is only valid if the two interface modes serve permanently separate populations — in which case the startup must choose a segment. But if users graduate from conversational to controls, the hybrid is not a signal of indecision; it is a deliberate onboarding funnel. The framing prevents an irreversible UI decision from being made on the basis of a board opinion rather than usage data.",
+              "framework_hint": "Strategic Thinking: reframing 'which UI do we pick' as 'do users move between UIs over time' shifts from a preference-based choice to a testable hypothesis. Cognitive Empathy: simulating both the new user who needs a low-friction entry point and the power user who needs fast direct controls reveals that they are not in conflict if they are the same user at different moments."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The decision is fundamentally about product positioning. A conversational-only interface positions the startup as an AI-native company, which is the more compelling investor story in the current market. Traditional filter controls position the product as a BI tool, a crowded category with established competitors. The right frame is: which interface tells the sharper story and attracts the right users at the top of the funnel?",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Narrative coherence and market positioning are real considerations, and the investor's 'just pick one' instinct is partly about story clarity. The gap is that positioning is a downstream output of the product decision, not the frame that should drive it. A product that is conversational-only because it makes a cleaner pitch but loses power users in production has optimized for the fundraise rather than for the product. The frame needs to start with what users are doing and whether the interface is working for them, then consider what that implies for positioning.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the interface choice has market positioning implications and that investor-facing coherence is a real constraint. Cognitive Empathy gap: does not ask what the current users of each interface mode are experiencing or whether they are succeeding with the product. Positioning cannot be evaluated without knowing which mode is actually producing value for which users."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The decision is an engineering prioritization problem. Maintaining two interaction paradigms is a resource allocation question. The product team should calculate the engineering cost of each mode, compare it to the revenue attributed to each user segment, and pick whichever has the better return on engineering time. The UI that costs the most per dollar of revenue is the one to retire.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Engineering cost and revenue attribution are relevant inputs to the decision, but framing the problem purely as resource allocation misses the structural question of whether the two interfaces are serving the same user at different stages. If new users require the conversational UI to reach first value and then migrate to controls, the revenue attributed to power users is partly downstream of the conversational onboarding experience. A cost-per-revenue comparison that treats the two modes as independent cannot capture that dependency.",
+              "framework_hint": "Strategic Thinking failure: engineering cost-per-revenue is a valid efficiency metric for steady-state features but cannot be applied to an interface that may be functioning as an onboarding funnel. If the conversational UI produces power users, its revenue attribution cannot be measured by looking only at the sessions where it is used."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision is a user research problem that has already been answered. The user research says power users prefer controls and new users prefer conversation. The product team should respect that finding and build two separate products: a power-user analytics tool with deep filter and chart controls, and a separate conversational entry-level product. Let the market segment itself.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The user research finding that power users prefer controls and new users prefer conversation does not resolve the graduation question. It describes a cross-sectional preference — what different types of users say they prefer now — not a longitudinal pattern of whether users transition from one mode to the other as they gain experience. Building two separate products assumes the segments are permanently distinct, which the data does not yet support. A longitudinal observation of how actual users evolve their interface preferences costs far less than shipping two separate products.",
+              "framework_hint": "Cognitive Empathy failure: treating a stated preference ('power users love controls') as equivalent to a structural segment difference ('power users will never want conversation and new users will never want controls'). Preferences at one moment of a user's journey are not the same as fixed segment identities. The research would need to track the same users over time to make the two-product case."
+            }
+          ]
+        },
+        {
+          "question_text": "What is the real cost the startup is paying for the hybrid interface — and why does it matter for the decision?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The real cost is iteration speed on the AI layer, not just test coverage. Every time the underlying model changes — a new prompt strategy, a tighter context window, a different retrieval approach — the team has to verify that the change does not break either the conversational interaction or the chart and filter controls that may be calling the same data layer. The hybrid means that model iteration, which is the primary competitive lever for an AI-native product, is slower than it would be with a single interaction surface. The board's 'just pick one' is not about story clarity; it is an intuition that the hybrid is slowing the most important loop in the product. The question is whether the coverage the hybrid buys is worth slowing that loop.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This framing correctly identifies the model iteration loop as the real cost driver, not just test surface area. For an AI-native product, the speed of experimenting with the underlying model is the core competitive advantage. A UI that creates two surfaces to validate on every model change is not just an engineering inconvenience; it is a drag on the product's ability to improve the thing that differentiates it. The framing makes the cost concrete and relevant to the AI-native paradigm, which a generic 'maintenance cost' framing does not.",
+              "framework_hint": "Taste: distinguishing between 'more code to maintain' (a generic engineering concern) and 'slower model iteration loop' (the specific competitive cost for an AI-native product). Strategic Thinking: naming which loop is most important for a product in this paradigm before evaluating whether the cost of the hybrid is acceptable."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The real cost is the user confusion created when both modes are present simultaneously. Users do not know which to reach for first, so they pick randomly, fail, and churn before discovering the mode that works for them. A hybrid UI requires the product to work harder on onboarding to explain when to use each mode. The cost is not engineering time; it is activation rate.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "User confusion and lower activation are plausible costs of a hybrid UI, especially if the two modes are not clearly differentiated in the interface. The gap is that the user research cited in the scenario does not describe confusion — it describes clear preferences by experience level. If users are finding the right mode without confusion, the activation cost may be lower than assumed. This framing is valid as a hypothesis to test but should not be stated as the established cost without activation data to support it.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that a hybrid UI can create decision paralysis if the two modes are not clearly presented. Strategic Thinking gap: the scenario's user research describes preference, not confusion. Whether users are reaching the right mode without friction is an empirical question separate from whether they prefer one mode over the other."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The real cost is technical debt. Every feature built for one interaction mode needs a counterpart in the other. The codebase grows at roughly twice the rate it would with a single mode, and over time the two surfaces diverge in behavior, creating inconsistencies that are expensive to reconcile. The product team should retire the hybrid before the debt becomes unmanageable.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Technical debt is a real concern, but framing the cost as 'features need counterparts in both modes' may overstate the structural overlap. A conversational NL query and a filter control panel are not necessarily doing the same underlying work twice — the NL query translates user intent to a query; the filter controls expose the query parameters directly. The engineering concern cited in the scenario is test coverage and iteration speed, not a feature-mirroring debt. Treating them as equivalent risks overestimating the cost of the hybrid.",
+              "framework_hint": "Strategic Thinking failure: assuming that two interaction paradigms necessarily double the feature work. In an AI-native analytics product, the NL interface is often a translation layer on top of the same underlying query engine that powers the filter controls. The maintenance cost is real but its structure is different from 'build everything twice.'"
+            },
+            {
+              "option_label": "D",
+              "option_text": "The real cost is investor perception. A hybrid UI signals that the team has not made a conviction bet on the AI-native paradigm. In a market where investors are rewarding AI-native companies with premium valuations, a mixed interface positions the startup as hedging rather than committing. The cost is valuation and fundraising optionality, not engineering time.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Investor perception is a downstream consequence of the product decision, not the cost the product is paying. The scenario describes an investor who offered an opinion in a board meeting. Treating that opinion as the primary cost of the hybrid inverts the relationship between product and investor confidence. Investors form views based on user behavior and product traction; a product that produces strong user outcomes with a hybrid UI will not suffer from valuation compression because of its UI architecture. The cost needs to be grounded in the product and engineering reality, not in the predicted reaction of a future fundraise.",
+              "framework_hint": "Taste failure: mistaking an investor's narrative preference for a structural product cost. The board's 'just pick one' is useful as a forcing function for a decision that was being deferred, not as a diagnosis of what the hybrid is actually costing the product. The real cost is engineering-facing, not investor-facing."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Before deciding what to do, map the full option space. The board said 'just pick one,' but that is one answer among several. List the structurally distinct options and the stakeholder each option serves.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of options most completely covers the decision space for the hybrid interface?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["creative_execution", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct options exist. First, retire the NL input and go controls-only: serves the known power-user segment, accepts losing new users who cannot orient themselves without conversation. Second, retire the controls and go conversational-only: lowers the barrier for new users, accepts the speed penalty for power users who will switch to tools that let them work faster. Third, keep both but make them mode-switched rather than co-present: reduce UI complexity by letting users explicitly toggle between modes, which tests whether the confusion cost is a presentation problem rather than a paradigm problem. Fourth, instrument the existing hybrid for 60 days to measure whether new users migrate toward controls over time before making any irreversible change. Fifth, productize the hybrid as a feature — market the 'meets you where you are' positioning to analytics teams with mixed experience levels, making the dual interface a selling point rather than a hedge.",
+              "quality": "best",
+              "competencies": ["creative_execution", "strategic_thinking"],
+              "explanation": "These five options are structurally distinct: they differ in what they sacrifice, who they serve, and what information they require to evaluate. The mode-switched option tests whether the hybrid's cost is a presentation issue without committing to retirement. The instrumentation option delays the decision until the graduation hypothesis is tested. The productization option reframes the constraint as a market differentiator. Presenting all five prevents the decision from being forced between only the two extremes the board named.",
+              "framework_hint": "Creative Execution: generating five options that are structurally different rather than variations on 'more conversational vs. more traditional.' The mode-switch option and the productization option are both outside the 'just pick one' framing the board offered, which is where the most interesting solutions live. Strategic Thinking: each option implies a different theory about which segment is the long-term bet and what the maintenance cost is actually buying."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Three options cover the space: go conversational-only, go controls-only, or keep both with clearer UX separation so users understand which mode to use. The core decision is which interface to prioritize when trade-offs arise, and the three options represent the three distinct answers to that question.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Identifying three structurally different positions is correct as far as it goes. The gap is that all three accept the current state of knowledge — they do not include the option of gathering more information before making an irreversible choice. For a product with an active prototype and measurable users, the instrumentation option (measure the graduation rate first) is a legitimate fourth option that may dominate all three if the data is available. Leaving it out narrows the decision space prematurely.",
+              "framework_hint": "Creative Execution gap: the three options generated all assume the team has enough information to decide now. In a situation where the crux is the graduation hypothesis, 'gather data first' is a structurally distinct option, not a sub-point of the three named options. Generating it requires recognizing that the decision can be sequenced rather than made as a simultaneous choice."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The two options are conversational-only or traditional controls-only. A hybrid interface is not a real option because it requires the team to maintain two paradigms indefinitely, which is not sustainable for a startup with limited engineering capacity. The only genuine choice is which mode to commit to.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Treating the hybrid as unsustainable accepts the board's framing without testing it. The hybrid is already live and being used; the question is whether the cost it imposes is worth the coverage it provides. Ruling it out as 'not a real option' before evaluating that question is not a list step — it is a premature optimization that collapses the option space before understanding the trade-offs.",
+              "framework_hint": "Strategic Thinking failure: eliminating an existing option based on a resource constraint that has not been quantified. 'A startup cannot maintain two paradigms' may or may not be true depending on what 'maintain' actually costs in this specific product. The list step requires generating the full option space, not pre-filtering it based on an assumption about startup capacity."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The options are: go conversational-only now, go conversational-only in 6 months after improving the experience, or go conversational-only in 12 months once the power-user segment matures. The real question is timing, not direction — the AI-native paradigm is clearly the right long-term bet, so the decision is only about when to make the transition.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Assuming that conversational-only is the inevitable destination and treating the decision as only a timing question is not a list of options — it is a conclusion presented as a menu. It treats the paradigm choice as already resolved in favor of conversational when the user research shows that power users achieve faster outcomes with direct controls. A list step requires genuine openness to structurally different outcomes, not three dates for executing a predetermined strategy.",
+              "framework_hint": "Creative Execution failure: generating only timing variations of a single conclusion rather than structurally distinct options. The list step's purpose is to surface the full decision space, including options that contradict the team's current lean. Collapsing the list into 'when do we go conversational-only' forecloses the possibility that the controls-only or hybrid-with-data option is the better answer."
+            }
+          ]
+        },
+        {
+          "question_text": "Which stakeholders' needs are materially different from each other in this decision, and what does each most need the interface to do?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three stakeholder groups have materially different needs. New users need the interface to give them a successful first insight without requiring them to understand the data model — the conversational input lowers the barrier to that first success by letting them ask a question in the language they already have. Power users need the interface to minimize time between knowing what they want and seeing the answer — the filter controls and chart builder serve this by exposing the query parameters directly rather than routing through a translation layer. Engineering needs the interface to reduce the surface area they have to hold constant when the underlying model or data layer changes — which is a constraint on both modes simultaneously, not a preference for either. These three needs are not fully reconcilable with a single interface, which is what makes the decision non-trivial. A fully conversational interface sacrifices power-user speed. A controls-only interface sacrifices new-user accessibility. The hybrid is paying an engineering cost to cover both.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "This stakeholder map correctly identifies three genuinely distinct need structures and shows how they are partially in tension. Naming engineering as a stakeholder with a specific need — reduced interface surface area during model iteration — connects the maintenance cost to the AI-native product's core loop rather than treating it as a generic resource concern. The analysis does not resolve the tension; it clarifies why the tension is real and what each option sacrifices.",
+              "framework_hint": "Cognitive Empathy: simulating the new user who has never written a data query, the power user who knows exactly which filter to set, and the engineer who has to hold two interaction paradigms stable across model changes — three genuinely different experience and incentive structures. Creative Execution: naming engineering as a stakeholder with a need, not just a constraint, opens up the possibility that the decision should be partly optimized for their workflow, not only for the end users."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The two stakeholders are new users (who need accessibility) and power users (who need speed). The board and engineering are constraint-setters, not stakeholders with needs of their own. The product decision should be made by identifying which user segment is the larger long-term market and building the interface that serves them best.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Correctly centering the decision on user needs is the right instinct, and the new user versus power user distinction is the most important one to name. The gap is treating engineering purely as a constraint rather than as a stakeholder whose experience of the product — specifically their ability to iterate on the model — affects what the product can become over time. In an AI-native analytics product, engineering's ability to ship model improvements is part of the product's value, not only a resource allocation concern.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies the two primary user segments and their distinct needs. Strategic Thinking gap: engineering's need is not just 'we have limited time' — it is 'fast model iteration is the competitive moat for an AI-native product.' Treating that as a constraint rather than a stakeholder need misses why the board's instinct to simplify the interface is about more than story clarity."
+            },
+            {
+              "option_label": "C",
+              "option_text": "All users have the same underlying need: accurate, fast answers to data questions. The conversational and traditional interfaces are just different paths to the same destination. The stakeholder analysis is a distraction; the real question is which path has better conversion rates and which has better retention. Measure both and pick the winner.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Framing all users as having the same need ignores the structural difference that makes this decision difficult. A new user who cannot read SQL has a fundamentally different starting condition than a power user who knows which filter to apply to which table. 'Accurate, fast answers' is a goal both share, but the path to that goal is not interchangeable — it depends on what the user already knows about the data model. Treating the interfaces as equivalent paths to the same destination misses the point of the user research finding.",
+              "framework_hint": "Cognitive Empathy failure: collapsing two genuinely different user conditions into a single abstract goal. The new user's barrier is not that the controls are too slow — it is that the controls require domain knowledge the new user does not yet have. The conversational interface does not make answers faster; it makes the question-asking process accessible to users who cannot specify the query parameters directly."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The board is the key stakeholder. Investor confidence drives funding, and funding enables everything else. The interface decision should be made by asking what UI architecture will most convincingly demonstrate AI-nativeness to future investors. If the board wants a single interface, the team should pick whichever one makes the strongest AI-native case — which is conversational.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Optimizing the interface for investor perception rather than user outcomes inverts the product logic. Investors evaluate AI-native products on user traction and retention, not on which UI elements are present in the prototype. A conversational-only interface that loses power users will produce worse retention metrics than a hybrid that retains both segments, which will make a worse case to investors in the next round, not a better one. The board's opinion is useful input, not the success criterion.",
+              "framework_hint": "Strategic Thinking failure: treating investor narrative as the primary optimization target rather than user outcomes. A product that makes a cleaner AI-native story but produces worse retention for its power-user segment will demonstrate that in the metrics, not in the UI architecture. The stronger investor case is made by showing that users succeed with the product, not by showing that the UI has only one interaction paradigm."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The graduation hypothesis is the load-bearing question. Name the single criterion that determines whether to maintain the hybrid or amputate one mode — and name what the decision sacrifices if it gets that criterion wrong.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding whether to maintain the hybrid interface or commit to a single interaction mode?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is whether users who start with the conversational input migrate toward the filter controls and chart builder within their first 30 days of active use. If new users show a measurable shift toward direct controls as their query complexity increases — meaning the same user who asked 'show me revenue by region last quarter' in natural language later builds the same filter view manually — the hybrid is functioning as a designed onboarding ramp and is worth its engineering cost. The sacrifice the hybrid demands is clear: it slows model iteration, and accepting that cost is only justified if the conversational mode is genuinely producing power users who then use the faster mode. If the migration rate is below 20% at 30 days, the two segments are likely permanently distinct, and the team must choose which segment to serve. The criterion is not about which interface users prefer; it is about whether preference changes with experience.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "The migration rate criterion correctly isolates the graduation hypothesis as the decision variable. It does not ask which mode users prefer (already known from research) or which mode has better session metrics (both likely serve their respective users well). It asks whether the same user changes modes over time, which is the only question that resolves whether maintaining both is buying onboarding coverage or subsidizing two permanent segments. Naming the 20% threshold and 30-day window makes the criterion falsifiable and prevents it from being debated indefinitely.",
+              "framework_hint": "Taste: distinguishing between 'users prefer the conversational mode' (a preference) and 'new users graduate to the controls mode' (a structural property of the product journey). Strategic Thinking: the criterion names what the team is actually optimizing for — whether the engineering cost of the hybrid is producing power users who go on to use the faster mode — and what it sacrifices (model iteration speed) for that outcome."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion is total revenue per user, segmented by which mode each user primarily uses. If conversational-mode users generate more revenue per seat than controls-mode users, the product should invest in conversational. If controls-mode users generate more revenue, the product should invest in controls. Whichever interface is associated with higher-value users is the one to build toward.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Revenue per user is a valid downstream metric and segmenting it by interface mode is a legitimate analysis. The gap is that revenue attribution to interface mode cannot resolve the graduation hypothesis. If a high-revenue power user began as a conversational user six months ago, their revenue is attributed to the controls mode today but was enabled by the conversational mode at onboarding. The attribution is misleading because it ignores the journey. Revenue segmentation by current interface mode is useful context but cannot determine whether maintaining both modes is worth the cost.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that revenue per user should influence the interface investment decision. Taste gap: revenue attributed to the current interface mode is a snapshot, not a longitudinal signal. The criterion for the hybrid decision requires understanding the full journey from onboarding to power use, not the interface a user happens to be in at any given revenue period."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion is engineering team sentiment. If the engineers building and maintaining the hybrid report that it is causing significant slowdown in shipping new features, that is the primary signal to retire one mode. Engineering velocity is the resource that determines whether a startup can keep up with its market, and protecting it takes priority over user preference research.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Engineering sentiment is a useful signal that the maintenance cost is exceeding the expected level, but it is not the criterion for the decision. Engineering teams report slowdown in response to the work they are doing, not in response to the value the work is producing. A maintenance burden that is slowing the team might be worth accepting if the hybrid is genuinely producing power users who drive strong retention. The criterion must connect the cost to the outcome it is buying, not just to whether the cost is being felt.",
+              "framework_hint": "Strategic Thinking failure: substituting a cost signal (engineering feels slow) for a value signal (the hybrid is producing users who graduate to the faster mode). Engineering slowdown is a reason to investigate whether the cost is worth it, not a reason to decide that it is not. The decision requires evaluating cost against what the hybrid is buying, not just whether the cost is painful."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is competitive benchmarking. If leading AI-native analytics products have committed to conversational-only interfaces, the market is signaling that conversational is the winning paradigm. The startup should align with the direction the category is moving rather than trying to maintain a hybrid when its best-funded competitors have already chosen. Following category conventions reduces product risk.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Competitor interface choices are a data point, not a decision criterion. A competitor that has gone conversational-only may have done so because their user base is primarily new users, or because they have a different AI architecture that makes natural language more reliable for complex queries. It may also be a bet that turns out to be wrong. Copying the interface decision of a better-funded competitor does not transfer their user insights, and it abandons the startup's own data about what is working for its specific users. The criterion must come from what is actually happening with the startup's users.",
+              "framework_hint": "Strategic Thinking failure: using competitor behavior as a proxy for the right user experience decision. Competitors choose their interfaces based on their own user research, their AI architecture, and their market positioning — none of which transfers to the startup making this decision. The graduation hypothesis is testable with the startup's own users and does not require inference from competitor product choices."
+            }
+          ]
+        },
+        {
+          "question_text": "What does the product sacrifice if it amputates the conversational interface before measuring the graduation rate — and is that sacrifice recoverable?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["taste", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The sacrifice is the onboarding funnel for users who cannot reach first value without the conversational input. If a meaningful portion of new users require the NL interface to ask their first successful question — and the user research suggests they do — then retiring it without graduation data means the product will lose those users before they ever discover that the filter controls are faster. The loss is recoverable only if the controls-only interface can be redesigned to reduce the domain knowledge required to ask a first question, which is a significant product investment that may not be feasible in the near term. The board's 'just pick one' instruction, if followed without the graduation data, is choosing to amputate an interface that may be producing the power users who are driving retention — without knowing whether that is true.",
+              "quality": "best",
+              "competencies": ["taste", "cognitive_empathy"],
+              "explanation": "This answer correctly identifies what is at risk and tests whether the loss is recoverable. The graduation data matters precisely because a controls-only interface that cannot be redesigned to reduce domain-knowledge barriers will lose new users permanently — they will not return once they have churned from a product that felt inaccessible. Naming the recovery condition (redesign the controls to reduce barriers) makes the sacrifice concrete and shows why the instrumentation option has real option value.",
+              "framework_hint": "Taste: distinguishing between 'we lose some new users' (a recoverable volume loss) and 'we lose the onboarding funnel for users who cannot access the product without conversation' (a structural accessibility loss that may not recover without a second major design investment). Cognitive Empathy: simulating the new user who arrived at the product because someone told them they could ask it questions in plain language, only to find a filter panel and a chart builder with no guidance on where to start."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The sacrifice is marketing message clarity. A conversational interface is the most differentiated positioning for an AI-native analytics product. Retiring it means the product's top-of-funnel story is harder to tell — 'ask your data a question' is a more compelling landing page than 'build charts with filters.' The loss is recoverable if the product builds strong brand recognition through other channels, but it requires more marketing investment to compensate.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Marketing message clarity is a real downstream loss if the conversational interface is retired, and 'ask your data a question' is genuinely a more accessible top-of-funnel frame. The gap is that this answer focuses on acquisition messaging rather than on the product experience that determines whether users who are acquired through that message can actually succeed. A controls-only product marketed as AI-native will face a higher churn rate among users who arrived expecting conversation, which is a more serious consequence than the marketing message difficulty.",
+              "framework_hint": "Cognitive Empathy gap: the sacrifice most worth naming is not the marketing story but the user who arrives expecting one experience and finds another. The marketing message recovers with rebranding; the user who churns because the product did not deliver what the category promised does not."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The sacrifice is manageable. The conversational interface is the more expensive mode to maintain because it involves prompt engineering, model reliability, and query translation — all of which require ongoing tuning. Retiring it reduces operational complexity. The new users who currently prefer conversation will adapt to the controls over time if the controls are well-designed. Users adapt to good interfaces.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Assuming that new users will adapt to controls-only if the controls are well-designed treats the accessibility barrier as a UX problem rather than a domain-knowledge problem. The user research finding is not that new users dislike the controls — it is that they cannot use them without understanding the data model. Designing a cleaner filter panel does not transfer domain knowledge. Users who cannot ask a question in the language they already have will not become power users by being presented with a better-designed tool for expressing queries they do not yet know how to form.",
+              "framework_hint": "Cognitive Empathy failure: simulating a new user adapting to filter controls as if the barrier is ergonomic rather than epistemic. A new user who does not know what dimensions and metrics are available in the data model cannot adapt to a filter panel by clicking around — they need to start somewhere, and the conversational interface provides that starting point in a way that controls cannot."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The sacrifice is minimal. Power users are the higher-value segment, and they prefer the controls. The new users who rely on conversation are likely lower-value users who are less likely to convert to paid plans. Retiring the conversational interface focuses the product on the segment that drives revenue.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Asserting that new users who use the conversational interface are lower-value is not supported by the data described in the scenario. The scenario describes a preference difference between new and experienced users, not a revenue difference. In an analytics product sold to teams, the new user who requires conversation today may be the power user who drives a team upgrade in six months. Assuming a correlation between current interface preference and lifetime value without data is the kind of decision the graduation measurement is designed to prevent.",
+              "framework_hint": "Strategic Thinking failure: inferring commercial value from interface preference without data. New users who need conversational onboarding are not by definition lower-value — they are users who have not yet developed the domain knowledge to use the direct interface. Whether they develop that knowledge, whether they go on to advocate for a team purchase, and whether they eventually become power users are empirical questions that the graduation measurement answers."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metric, threshold, and timeline that confirm the product made the right call on the hybrid — and the counter-signal that says the decision was wrong before the board finds out first.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success condition look like for the interface decision at 90 days post-implementation?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "If the team chose to instrument and preserve the hybrid: the success condition at 90 days is that at least 25% of users who onboarded via conversational input in month one are initiating at least one session per week using the filter controls and chart builder by day 90. This is the graduation signal. A secondary condition: the overall new-user activation rate — defined as completing a first meaningful query within 3 days of signup — is above 60%. The counter-signal is: new-user activation drops below 40% at any week in months two or three, indicating the conversational interface is not successfully bridging new users to their first insight. If that signal appears, the hybrid is not functioning as an onboarding ramp; it may be creating confusion rather than reducing barriers. If the graduation rate at day 90 is below 10%, the two populations are likely permanently distinct and the controls-only bet becomes stronger.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This success condition is falsifiable because it names two specific metrics with numeric thresholds and a timeline, and it distinguishes between two different failure modes: low activation indicates the conversational interface is not working as designed, while low graduation indicates the two segments are permanently distinct. The counter-signal specifically targets activation in months two and three, which is when the onboarding ramp should be functioning if it is ever going to.",
+              "framework_hint": "Strategic Thinking: defining success and failure conditions across two independent metrics prevents the team from declaring the hybrid successful because activation looks good while graduation is flat, or vice versa. Domain Expertise: 60% new-user activation within 3 days is a reasonable SaaS analytics benchmark for a self-serve product — below 40% signals that the UI is not getting users to value quickly enough to justify the interface complexity."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success at 90 days is that the engineering team reports the interface no longer blocking feature velocity. If the engineers confirm that model and data layer updates can be shipped without having to validate both interaction surfaces, the decision was correct regardless of which mode was chosen. Engineering unblocking is the primary goal of the interface decision.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Engineering velocity is a relevant operational metric but not a success condition for a product decision. The interface decision was made for users, not for engineers. A product that gets engineering unblocked by removing the conversational interface but loses 40% of new users before they reach first value has not succeeded — it has traded one problem for a worse one. The success condition must include user behavior metrics that confirm the decision did not damage the product's ability to acquire and retain users.",
+              "framework_hint": "Strategic Thinking failure: substituting an operational metric (engineering velocity) for a product outcome metric (user activation and graduation). Engineering unblocking is a necessary condition for the decision to be sustainable, not a sufficient condition for the decision to be correct."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success at 90 days means MRR is above the pre-decision baseline. If revenue is growing after the interface change, the market has accepted the new UI. If it is flat or declining, the change hurt the product. MRR captures the aggregate effect of all user decisions, including churn, new acquisition, and expansion.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "MRR as the final arbiter of the decision is not wrong — revenue is the ultimate signal. The gap is that MRR at 90 days will lag the effects of an interface change by at least 60 days because most analytics products have monthly billing, churn is gradual, and acquisition pipelines take time to refill. A decision that is damaging new-user activation will not show up in MRR at 90 days in time to correct it. The win condition needs a leading indicator that fires in time to course-correct, not a lagging indicator that confirms the problem after it has compounded.",
+              "framework_hint": "Domain Expertise gap: in B2B SaaS analytics, the consequence of a bad interface decision on MRR typically surfaces 90-180 days after the decision because annual contracts buffer churn and acquisition pipelines have lead times. A 90-day MRR check is too early to confirm success and too late to catch a problem that emerged in week three. The win condition needs a product-behavior leading indicator that fires faster."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is whatever the board agreed to measure before the decision was implemented. If the board set the success condition, they are accountable to the outcome and the product team has clear cover if the metric is missed. Always align on the success condition with the board before implementing a major UI change they requested.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Getting board alignment on a success condition before implementing a major change is a reasonable governance instinct. The gap is that 'whatever the board agreed to' is not a falsifiable success condition — it is a delegation of the measurement design to people who set the original constraint without access to the product data. The board said 'just pick one'; they did not say which metrics indicate whether the pick was correct. The product team's job is to define the right metrics and present them for alignment, not to accept whatever metrics a non-technical board prefers.",
+              "framework_hint": "Strategic Thinking failure: outsourcing the measurement design to the entity that set the constraint rather than to the people who understand the product behavior. Board alignment on a metric is useful, but the metric itself must come from product reasoning about what the decision is changing and how that change should manifest in user behavior."
+            }
+          ]
+        },
+        {
+          "question_text": "If the graduation rate at 60 days is 8% — far below the 25% threshold — what is the correct response?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "An 8% graduation rate at 60 days is evidence that the conversational and controls user populations are structurally distinct rather than sequential stages of the same journey. The data now supports the board's intuition: the startup is paying an engineering tax to maintain two paradigms for two permanently separate segments rather than to serve a single user at different stages of experience. The correct response is to make the segment bet explicitly — ask which segment is the right long-term business, choose the interface that serves them, and communicate the decision to the other segment with a sunset timeline. The decision is no longer a hypothesis; it has been tested. Staying with the hybrid after seeing 8% graduation is no longer a measured hedge — it is a refusal to act on available data.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This response correctly reads the graduation data as a decision-forcing signal. The value of the instrumentation option was to produce data that resolves the ambiguity; 8% graduation at 60 days is a clear enough signal to act on. The response names the next decision — which segment to serve — rather than treating the data as a reason to continue deliberating. It also names the cost of inaction: staying with the hybrid after the data arrives is not caution, it is failure to act on evidence.",
+              "framework_hint": "Taste: distinguishing between 'we don't have enough data to decide yet' (the situation before instrumentation) and 'we have data that does not support the graduation hypothesis' (the situation at 60 days with 8% graduation). Strategic Thinking: the response requires choosing which segment is the right long-term bet, which is the question that the graduation hypothesis was designed to avoid if graduation was happening. Now that it is not, the segment bet must be made explicitly."
+            },
+            {
+              "option_label": "B",
+              "option_text": "8% graduation at 60 days may be too early to conclude the segments are permanently distinct. Extend the instrumentation period to 120 days and add in-product prompts that actively encourage conversational users to try the filter controls. If graduation increases with prompting, the interface design was the barrier, not the user population structure. If graduation stays below 15% at 120 days with prompts, then the segment bet becomes necessary.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Extending the measurement window and testing whether active prompting increases graduation is a legitimate follow-on hypothesis — it distinguishes between 'users do not graduate because they are structurally different' and 'users do not graduate because they are not discovering that the controls exist.' The gap is that adding 60 more days also adds 60 more days of engineering tax on the model iteration loop. If the product is in a competitive market where model iteration speed matters, extending the measurement period has a cost that this response does not name.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the 60-day signal may be confounded by interface discovery (users who prefer conversation may not know the controls are available). Taste gap: the option to extend does not name the cost of extension — 60 more days of slowed model iteration — and does not frame it as a trade-off the team is consciously accepting."
+            },
+            {
+              "option_label": "C",
+              "option_text": "8% graduation is not necessarily a problem. It means 92% of conversational users prefer to stay with conversation, which suggests the conversational interface is meeting their needs effectively. A high retention rate within the conversational mode is a positive signal about that mode's quality. The product should invest in improving the conversational experience further and accept that the power-user segment will self-select into the controls.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Interpreting 8% graduation as 'high conversational retention' reframes the metric to avoid its implication. The graduation rate was defined as the test of whether the hybrid is worth its engineering cost — the hypothesis was that conversational users migrate to controls as they build domain knowledge, justifying the maintenance of both modes. 8% graduation does not confirm that conversational users are happy; it confirms that they are not moving to the faster mode the product built specifically for experienced users. Calling that 'retention' rather than 'no graduation' is relabeling a failure signal as a success signal.",
+              "framework_hint": "Taste failure: reframing a metric result that contradicts the hypothesis as a positive signal for a different hypothesis the team did not set out to test. The graduation rate was set up as the decision criterion; interpreting a low graduation rate as 'high conversational retention' is motivated reasoning, not analysis."
+            },
+            {
+              "option_label": "D",
+              "option_text": "8% graduation means the onboarding experience needs to be redesigned. The low rate is evidence that the product is not doing enough to guide new users toward the controls. Add a structured tutorial that walks conversational users through the filter and chart interface after their first three successful queries. Treat graduation as a product design problem, not a segment structure signal.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A structured tutorial that guides conversational users toward controls is a legitimate UX intervention, but treating 8% graduation primarily as an onboarding design problem assumes the barrier is ergonomic rather than structural. If power users prefer controls because they already know what they want to query, and new users prefer conversation because they do not know how to specify a query, a tutorial may not close that gap — the tutorial itself would need to teach domain knowledge, not just interface mechanics. The response treats the symptom rather than testing whether the underlying population structure is the cause.",
+              "framework_hint": "Cognitive Empathy gap: simulating a new user who has never worked with structured data being guided through a filter panel tutorial after three successful conversational queries. The tutorial teaches where the controls are, not what to control for. If the graduation barrier is epistemic (the user does not know which dimensions and metrics to filter on), a UX tutorial cannot substitute for the domain knowledge required to use the direct interface effectively."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

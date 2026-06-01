@@ -10,14 +10,21 @@
 //   - Study plans live under /prep/study-plans/[slug]
 //   - Learn modules live under /explore/modules/[slug]
 
+import { challengeNumberSlug } from '@/lib/challenges/challengeNumber'
+
 interface ChallengeRef {
   id: string
   slug?: string | null
   challenge_type?: string | null
+  display_number?: number | null
 }
 
 /**
- * Where a learner goes to *attempt* a challenge.
+ * Where a learner goes to *attempt* a challenge. This is the single control
+ * point for the visible workspace URL — the fallback order below decides
+ * whether the address bar shows the catalog number (sql-2001) or the text
+ * slug. Both forms resolve (see resolveChallengeIdentity), so the order is
+ * purely a presentation choice.
  *
  * Quick-takes are an exception: the workspace route redirects `quick_take`
  * challenges to `/challenges`, because they're answered inline on the dashboard
@@ -26,7 +33,8 @@ interface ChallengeRef {
  */
 export function urlForChallenge(c: ChallengeRef): string {
   if (c.challenge_type === 'quick_take') return '/dashboard#quick-take'
-  return `/workspace/challenges/${c.slug ?? c.id}`
+  const numberSlug = challengeNumberSlug(c.challenge_type, c.display_number)
+  return `/workspace/challenges/${numberSlug ?? c.slug ?? c.id}`
 }
 
 /** Where a learner reviews Hatch's feedback on a finished challenge. */

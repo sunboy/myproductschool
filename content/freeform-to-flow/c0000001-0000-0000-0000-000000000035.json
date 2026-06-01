@@ -1,0 +1,299 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000035",
+  "title": "Multi-Agent System: Debugging Emergent Failures",
+  "scenario_role": null,
+  "scenario_context": "A startup runs a four-agent pipeline for automated software testing. The pipeline is sequential: a requirement-parsing agent reads incoming specs and extracts structured test objectives, a test-case-generation agent turns those objectives into concrete test plans, a test-execution agent runs the plans and records pass/fail results, and a bug-reporting agent synthesizes execution output into a filed bug report with a severity rating. Each agent has been validated independently. Each one, given clean and complete input, produces correct output.",
+  "scenario_trigger": "In production, 8% of bug reports carry incorrect severity ratings. Defects that are genuine P0s — crashes, data loss, security holes — are being classified as P3 low-priority issues and deprioritized in the backlog. When the team runs any individual agent in isolation against representative inputs, none of them reproduces the misclassification. The failure only appears when all four agents run together. The engineering team has spent two days tuning the bug-reporting agent's prompt and severity rubric with no improvement.",
+  "scenario_question": "Diagnose where the failure actually lives, list the evidence-gathering and fix strategies that belong in the investigation, name the tradeoff the team must accept to make severity information survive the pipeline, and define a falsifiable success bar for the fix.",
+  "engineer_standout": "A strong answer recognizes early that a bug no individual agent reproduces in isolation is by definition a handoff bug, not an agent bug. The severity information that makes a defect a P0 — context like which user flow triggered it, what data state was present, whether it is reproducible on the first attempt — exists in the requirement-parsing agent's output but is not required by the test-case-generation agent's input schema. It gets dropped. By the time the bug-reporting agent sees the execution log, the P0-identifying context is gone. The fix is not a better severity rubric in the bug-reporting agent; the fix is either making severity-relevant context a mandatory field in every inter-agent message, or assigning severity ownership to the agent with full context (requirement parsing) and carrying that rating forward as a protected field. The reasoning move: stop treating agents as independent units under stress and start treating the inter-agent data contract as the system boundary where the defect lives.",
+  "paradigm": "agentic",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["domain_expertise", "strategic_thinking"],
+  "secondary_competencies": ["cognitive_empathy", "creative_execution"],
+  "topic_tags": ["multi-agent-systems", "debugging", "agentic-ai", "system-design", "data-contracts"],
+  "technique_tags": ["root-cause-analysis", "pipeline-debugging", "emergent-failures"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The bug-reporting agent looks guilty, but the team has already spent two days tuning it with nothing to show. Where should the investigation actually point?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the defect the team is dealing with, given that 8% of P0 defects are classified as P3 and no individual agent reproduces the failure in isolation?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The failure is a data contract defect in the inter-agent handoffs, not a logic defect in any individual agent. Each agent is validated against clean, complete input, which is why isolation testing finds nothing. In production, the requirement-parsing agent extracts severity-relevant context — the user flow, the data state, the reproduction conditions that identify a crash as a P0 — but that context is not a required field in the test-case-generation agent's input schema. It gets dropped at the first handoff. By the time the bug-reporting agent classifies severity, it is working from an execution log that has lost the original context. The framing is: the defect lives between agents, in the information that the pipeline's data contracts do not preserve.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This framing correctly identifies the signature of an emergent failure: it only appears in composition. When an 8% misclassification rate is invisible in isolation testing but appears in the full pipeline, the defect is in what changes between isolation and composition — the inter-agent messages. The requirement-parsing agent has the context that makes something a P0; the downstream agents do not have it because nothing in their input schemas requires it. Two days of tuning the bug-reporting agent's severity rubric cannot fix a data loss that happened two agents upstream.",
+              "framework_hint": "Domain Expertise: in multi-agent pipelines, emergent failures that do not reproduce in isolation are a known class of defect caused by information loss or distortion at handoffs. The debugging strategy for this class is contract tracing, not agent tuning. Strategic Thinking: reframing from 'the bug-reporting agent is misclassifying' to 'severity-relevant context is not surviving the pipeline' changes the fix target entirely."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The bug-reporting agent's severity rubric is under-specified for production traffic. The isolation tests likely use curated inputs that are cleaner and more complete than live pipeline output. The agent needs a more robust rubric that can infer severity from partial execution logs, rather than relying on complete context being present.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Making the bug-reporting agent more robust to incomplete context is a defensible partial fix. The framing gap is that it treats information loss as a given condition to work around rather than a defect to fix. If severity-relevant context is missing from the execution log, teaching the bug-reporting agent to infer severity from fragments is a workaround, not a root-cause fix. The agent cannot reliably infer whether a crash happened in a logged-in versus anonymous session, or on first launch versus after 20 minutes of use, from execution timing alone. Inference from fragments has a ceiling.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that isolation test inputs may be cleaner than production pipeline output. Strategic Thinking gap: framing the fix as 'make the endpoint agent more resilient' rather than 'stop the upstream information loss' produces a fix that degrades gracefully instead of one that preserves the information the system actually needs."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is that the pipeline lacks end-to-end observability. The team cannot see what each agent is producing in production, so they cannot diagnose the failure. Adding logging to every agent output will reveal where the misclassification originates and let the team fix it.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Adding observability is a correct next step and would accelerate diagnosis, but it is a process recommendation rather than a framing of the defect. The frame step asks what is actually wrong, not what tool would help find it. The team already has a strong inferential signal: the failure appears in composition but not in isolation, which points at the handoffs without needing logs to confirm it. Framing the problem as 'we lack observability' defers the diagnosis to future data rather than drawing on the structural evidence already available.",
+              "framework_hint": "Strategic Thinking gap: observability is a diagnostic tool, not a problem frame. A frame that says 'we need logs to know what is wrong' defers the reasoning move the frame step is designed to practice: using the structural signature of the failure (composition-only, isolation-invisible) to locate the defect class before any new data is gathered."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The test-execution agent is the most likely source of the problem. It runs the test plans and produces the output the bug-reporting agent reads. If the execution log is not capturing enough information about test failures — stack traces, error types, reproduction steps — the bug-reporting agent will have too little signal to classify severity correctly.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Pointing at the test-execution agent is plausible because it is the agent immediately upstream of the bug reporter and controls the content of the execution log. But the scenario establishes that each agent performs correctly in isolation, which means the test-execution agent, given a complete test plan as input, produces a correct and sufficiently detailed execution log. The problem is not what the execution agent produces; it is what the test-case-generation agent sends it — a test plan from which the severity-marking context has already been dropped one handoff earlier.",
+              "framework_hint": "Domain Expertise failure: fixing the agent that is most visible to the symptom (execution log quality) without tracing the information flow back to its origin. In a sequential pipeline, information loss accumulates. Blaming the penultimate agent is a common debugging mistake in multi-agent systems where each agent looks correct given its own input."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The defect is in the handoffs. List what needs to be investigated and what fix strategies are actually available — both the ones that address the data contract and the ones that change which agent owns severity.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of investigation steps most completely covers what the team needs to examine to confirm the handoff hypothesis and localize the exact information loss?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["domain_expertise", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four investigation steps cover different causal hypotheses. First, trace the inter-agent message schemas: print the actual structured output of each agent in a failing production run and compare what the requirement-parsing agent produces to what the test-case-generation agent's input schema accepts. Look specifically for P0-identifying fields that exist in the first output but are absent from the second's schema. Second, reproduce the failure with a synthetic P0 case: construct a known-P0 scenario end-to-end and inspect the execution log the bug-reporting agent receives — if the P0-identifying context is absent there, the drop happened upstream. Third, check whether the 8% rate correlates with any structural property of the incoming requirement: does the misclassification cluster around certain requirement types, authors, or lengths, which would suggest the parsing agent's extraction is inconsistent rather than the handoff schema being the problem. Fourth, review whether the pipeline has any message-truncation or context-window limits that silently drop fields from inter-agent payloads — in LLM-based agents, context-window overflow can cause structured output fields to be omitted without raising an error.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "creative_execution"],
+              "explanation": "These four steps are structurally distinct and cover different causal hypotheses: schema mismatch between agents, end-to-end synthetic reproduction, statistical pattern in the failure rate, and infrastructure-level silent truncation. The first two confirm or refute the handoff hypothesis directly. The third rules out a parsing inconsistency that would produce a different fix path. The fourth is the domain-specific trap: LLM-based agents with structured output can silently drop fields when context-window limits are hit, which is a common failure mode in production agentic systems and easy to miss in isolation testing where inputs are smaller.",
+              "framework_hint": "Domain Expertise: context-window truncation silently dropping structured fields is a known production failure mode in LLM-based multi-agent pipelines that does not appear in isolation tests with shorter inputs. Creative Execution: generating four structurally distinct investigation paths rather than variations of 'check the logs' covers the causal space more completely and prevents the team from converging on the wrong fix."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team should run the pipeline twice: once with a known P0 input and once with a known P3 input, capturing the full message payload at every inter-agent boundary. Comparing the two runs will reveal exactly where the P0-identifying information disappears. If it disappears at the first handoff, the schema is the problem. If it disappears later, the problem is elsewhere.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "A controlled comparison run is a correct and high-value investigation step. The gap is that two synthetic runs do not address the 8% rate question: why does the failure affect only some P0s and not all of them? If the handoff schema always drops the same field, misclassification should be closer to 100% of P0s, not 8%. The investigation needs a step that examines whether the failure clusters around specific input properties, which would explain the partial rate and might reveal that the root cause is parsing inconsistency rather than a blanket schema mismatch.",
+              "framework_hint": "Domain Expertise: a 100% schema mismatch would produce close to 100% misclassification; an 8% rate suggests the context loss is conditional, not universal. Investigation plans that only test the happy-path and fail-path without examining the partial rate miss the conditional factor that explains the actual failure pattern."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should add comprehensive logging to all four agents and run the system in production for a week, collecting message payloads. Once enough production data is collected, analyze it statistically to identify where information loss occurs most frequently.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Collecting production data for a week before forming a hypothesis means 8% of P0 bugs will continue to be misclassified as P3 during the data-collection period. More critically, a week of data collection is not necessary to test the handoff hypothesis: the team can construct a synthetic failing case and trace it through the pipeline in hours. Deferring investigation to a statistical analysis of production data is a methodologically sound but unnecessarily slow approach when a faster structural inspection is available.",
+              "framework_hint": "Strategic Thinking gap: production data collection over a week treats the diagnosis as an unknown-unknown problem when the structural evidence already points at a specific hypothesis. Targeted synthetic reproduction of a known-P0 case tests the hypothesis in hours, not days. Waiting for statistical significance on production data is appropriate when hypotheses are unclear; here the hypothesis is clear."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The team should review the bug-reporting agent's training data and prompt to identify whether its severity rubric is calibrated correctly for the startup's specific defect types. The 8% misclassification rate suggests a calibration issue, and the fix is to fine-tune the rubric with labeled examples from past P0 bugs the system incorrectly rated as P3.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Reviewing the bug-reporting agent's rubric is the investigation the team has already spent two days on without improvement. The scenario explicitly states that two days of tuning the severity rubric produced no change in the 8% rate. Proposing it again as the investigation path ignores that result. More fundamentally, if the bug-reporting agent is not receiving the P0-identifying context it needs, a better rubric cannot compensate for missing input data. A rubric calibrated on past cases where severity context was present will not improve on cases where that context has been dropped upstream.",
+              "framework_hint": "Domain Expertise failure: continuing to investigate the agent that is visible in the symptom (bug reporter) after two days of fruitless tuning is a sunk-cost reasoning pattern. In pipeline debugging, when tuning the downstream agent produces no improvement, the signal is that the upstream data is the problem, not the downstream logic."
+            }
+          ]
+        },
+        {
+          "question_text": "Which set of fix strategies covers the structurally distinct ways the team could prevent P0-identifying context from being lost across the four-agent pipeline?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three structurally different fix strategies exist, and they make different tradeoffs. The first is schema enforcement: add a mandatory severity-context block to every inter-agent message schema, define required fields (affected user flow, data state at failure, first-occurrence or recurring flag), and make the pipeline fail fast with an explicit error if any agent sends a message missing those fields. This surfaces information loss at the boundary rather than letting it propagate silently to the bug reporter. The second is severity-ownership transfer: have the requirement-parsing agent assign a provisional severity rating at the point where it has the most context, carry that rating as a protected field that downstream agents can override only with an explicit justification, and give the bug-reporting agent authority to confirm or escalate but not silently downgrade. The third is context-window audit with message compression: if the information loss is caused by context-window overflow in LLM-based agents, compress the severity-context block using a deterministic structured format rather than free-text, so it survives truncation.",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "These three strategies are mechanistically distinct. Schema enforcement stops the information loss at the boundary. Severity-ownership transfer keeps the P0 signal alive even if some context is lost downstream. Message compression addresses the infrastructure cause if context-window limits are producing silent truncation. A team that only considers schema enforcement might miss the case where the parsing agent's extraction is inconsistent; ownership transfer provides a safety net. A team that only considers ownership transfer might not fix the underlying schema gap that caused the problem.",
+              "framework_hint": "Creative Execution: generating three strategies that operate at different layers of the pipeline (schema contract, semantic ownership, infrastructure format) rather than variations of 'add more fields to the message.' Cognitive Empathy: the ownership-transfer strategy reflects how the downstream bug-reporter experiences the problem — it has incomplete inputs and makes a reasonable severity call given what it sees. Moving severity ownership upstream addresses the agent's informational constraint, not its rubric."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team should add a severity field to the bug-reporting agent's input schema and require the test-execution agent to populate it based on the test results. The test-execution agent has direct access to pass/fail outcomes and error types, making it a reasonable place to assign preliminary severity before the bug-reporting agent does a final classification.",
+              "quality": "good_but_incomplete",
+              "competencies": ["creative_execution"],
+              "explanation": "Assigning preliminary severity in the test-execution agent is a partial fix that moves severity ownership closer to the right place. The gap is that the test-execution agent still does not have the requirement-parsing agent's original context about the user flow, data state, and reproduction conditions that make a defect a P0. Pass/fail results and error types can tell the execution agent that a crash occurred; they cannot tell it whether the crash happens on first launch or after 20 minutes of use in a specific logged-in state, which is often what determines whether it is a P0 or a P2. Severity ownership belongs at the agent with the most context, which is the requirement-parsing agent.",
+              "framework_hint": "Domain Expertise gap: the test-execution agent sees execution outcomes but not the original requirement context that determines severity. Moving severity assignment one agent upstream is better than leaving it with the bug reporter, but the correct target is the parsing agent where the full context exists. Partial-upstream fixes leave the same information-gap problem at a different handoff."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The fix is to create a dedicated severity-assessment agent that runs in parallel with the existing pipeline. This agent receives the original requirement directly and produces a severity rating independently, without relying on downstream execution output. The bug-reporting agent then reconciles its rating with the parallel agent's rating before filing the report.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A parallel severity agent receiving the original requirement directly would in principle have access to the right context. The problem is that it adds a fifth agent and a reconciliation step to a pipeline that already has a four-agent coordination problem. If the reconciliation logic between the parallel agent and the bug reporter is not carefully designed, it creates a new class of emergent failure: what happens when the two agents disagree, and how does the reconciliation decide? Adding an agent to solve an agent-coordination problem may compound the coordination surface rather than reduce it.",
+              "framework_hint": "Strategic Thinking gap: adding coordination to solve a coordination problem increases the surface area of potential emergent failures. The simpler structural fix is to make severity-relevant context survive the existing pipeline, not to run a parallel pipeline and reconcile the outputs. When two approaches reach the same goal, the one with fewer moving parts is generally more reliable."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The team should implement a human-in-the-loop review step where any bug classified as P2 or below by the pipeline is flagged for a human to confirm before being filed. This prevents P0s from being quietly filed as P3 and gives the team time to fix the underlying agent issue at their own pace.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A human review step would prevent the immediate business harm of P0 bugs being deprioritized, but it is a mitigation, not a fix. The scenario is an automated testing pipeline: adding a mandatory human review step to every P2-or-below classification partially defeats the automation and introduces a throughput bottleneck. More importantly, the question asks for fix strategies, not mitigation strategies. A fix strategy must address why the pipeline misclassifies, not add a human layer to catch the misclassifications after the fact.",
+              "framework_hint": "Cognitive Empathy gap: simulating what the team needs to feel safe versus what the pipeline actually needs to be correct. A human review step satisfies the team's need for a safety net but does not address the data-contract defect. Permanent human-in-the-loop review on automated pipeline output is expensive and signals that the pipeline's output cannot be trusted, which is a product problem in an automated testing system."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The team now has multiple fix strategies. Name the criterion that tells you which approach is worth its cost — and name the thing the chosen approach forces the team to give up.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for choosing between schema enforcement and severity-ownership transfer as the primary fix?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is which fix makes the information loss visible and recoverable at the earliest point in the pipeline, at the lowest cost of a wrong choice. Schema enforcement with mandatory severity-context fields fails fast at the first bad handoff, which means the team discovers extraction failures immediately and can fix them at the source. Severity-ownership transfer prevents misclassification even when some context is lost downstream, but it requires the requirement-parsing agent to produce a reliable severity rating at the start of the pipeline — which is only possible if that agent's extraction is already consistent. If the 8% misclassification rate is caused partly by parsing inconsistency (not just schema gaps), ownership transfer will propagate incorrect early ratings rather than catching them later. The sacrifice of schema enforcement is that it makes the pipeline stricter and more brittle: any requirement input that cannot supply the required severity-context fields will fail explicitly rather than degrading gracefully. The team must decide whether explicit failure is acceptable given the pipeline's upstream requirements.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names the decision variable (at what point does the information loss become visible and recoverable), prices both fixes against it, and names the sacrifice schema enforcement demands. Explicit-failure brittleness is a real cost: a pipeline that hard-errors on malformed inputs requires the upstream team (whoever authors the requirements) to meet a higher structural standard. Naming that sacrifice prevents the team from choosing schema enforcement and then being surprised when it rejects inputs that the previous pipeline handled gracefully.",
+              "framework_hint": "Taste: distinguishing between schema enforcement (surfacing information loss early, making the pipeline brittle) and ownership transfer (keeping the pipeline flexible, relying on early-agent accuracy). Neither is universally better; the choice depends on how reliable the parsing agent's extraction already is. Strategic Thinking: the right criterion is not which fix is more elegant but which fix is recoverable if the assumption behind it turns out to be wrong."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion is implementation speed. Schema enforcement requires defining the required fields and updating all four agent schemas. Severity-ownership transfer requires modifying the requirement-parsing agent's output and the downstream agents' handling of the severity field. Whichever can be implemented, tested, and deployed in less than a week is the better choice given that P0 bugs are currently being missed.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Implementation speed is a legitimate operational constraint. The gap is that it is a constraint on the decision, not a criterion for choosing between two fixes with different correctness properties. Schema enforcement and ownership transfer are not interchangeable solutions that both work equally well; they handle different root causes. If the cause is schema gaps, ownership transfer alone does not prevent future schema gaps from introducing new information loss. The choice should be grounded in the root cause, with implementation speed as a secondary tiebreaker.",
+              "framework_hint": "Taste gap: treating implementation speed as the primary criterion produces a fix that is correct by coincidence if the chosen approach happens to address the root cause, but incorrect if it does not. Implementation speed is how you choose between two fixes that are equally correct; it is not how you choose between two fixes with different correctness conditions."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion is which fix reduces the 8% misclassification rate to zero. Run both fixes in a controlled experiment with a set of known-P0 inputs. Whichever approach reaches zero misclassification on the test set wins. The test result is the criterion.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Empirical validation is a useful confirmation step, but a test-set outcome is not a decision criterion — it is the output of a decision. To design a meaningful test, the team must already know what each fix is trying to address and construct test cases that cover the causal hypothesis behind each one. A test set of known-P0 inputs does not distinguish between a fix that works because it addresses the root cause and a fix that works on the test set but will break on a novel input class the test set does not cover.",
+              "framework_hint": "Domain Expertise gap: optimizing for test-set performance without a criterion grounded in the root cause produces fixes that are overfit to the test distribution. If the 8% rate is caused partly by parsing inconsistency on certain requirement types, a test set of typical P0 inputs may not cover those types, and a fix that passes the test may still misclassify the edge cases that generate the real 8%."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is team familiarity. The engineering team should implement the fix they understand best and can maintain most confidently. An unfamiliar fix that is theoretically superior is more dangerous than a familiar fix that is slightly suboptimal, because unfamiliar code introduces maintenance risk.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Maintenance familiarity is a real engineering consideration for complex systems. It is not, however, an appropriate criterion for choosing between two fixes for a bug that is causing P0 production defects to be misclassified as P3. The pipeline is already failing in a way that has direct product consequences. The fix must address the root cause; team familiarity is a constraint that affects how the fix is implemented, not whether it is the right fix.",
+              "framework_hint": "Cognitive Empathy gap: simulating the engineering team's comfort level rather than the product's actual need. A team that chooses a familiar but incorrect fix because it is easier to maintain will still have the 8% misclassification rate after the fix ships, and will have spent implementation time without improving the outcome."
+            }
+          ]
+        },
+        {
+          "question_text": "What does the team have to give up if it chooses schema enforcement — mandatory severity-context fields in every inter-agent message — as the primary fix?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Schema enforcement requires giving up the pipeline's current tolerance for underspecified requirements. The existing pipeline accepts incoming requirements of varying completeness and produces some output for each one, even when the requirement does not supply a user flow, a data state description, or a reproduction condition. A mandatory severity-context schema means the pipeline will hard-fail on requirements that cannot supply those fields. The team must accept that some percentage of requirements — those that are too sparse to determine severity — will produce pipeline errors rather than degraded-but-filed bug reports. That is a real product tradeoff: the previous behavior of filing a P3 guess was wrong, but it was silent. The new behavior of rejecting incomplete requirements is correct, but it is loud and requires the upstream requirement authors to improve their inputs. Whether that is acceptable depends on whether the startup can enforce input quality at the source.",
+              "quality": "best",
+              "competencies": ["taste", "cognitive_empathy"],
+              "explanation": "The sacrifice of schema enforcement is precise: the pipeline loses its tolerance for incomplete inputs and the upstream authors gain a structural obligation. Naming this sacrifice matters because it is the source of pushback the team will face from requirement authors who were previously insulated from the consequences of sparse input. The team must decide whether surfacing that cost to upstream authors is worth the gain of correct severity classification, which is a product-level judgment, not a technical one.",
+              "framework_hint": "Taste: the difference between a pipeline that silently files a wrong severity and one that loudly rejects an incomplete input is not just correctness versus error. It is a shift in where the cost of incomplete information lands. Silent wrong answers are absorbed by the bug backlog; loud rejections are absorbed by the upstream authors. Naming which stakeholder bears the new cost is the tradeoff call. Cognitive Empathy: simulating the experience of the requirement authors, who previously had no feedback loop on input completeness, now receiving hard errors when they submit underspecified requirements."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team gives up development velocity. Adding mandatory fields to every inter-agent schema requires coordinating updates across all four agents simultaneously, writing backward-compatibility logic for existing messages in the queue, and updating tests for each agent. This is non-trivial engineering work that will delay other feature development.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Implementation overhead is a real cost of schema enforcement in a production pipeline with existing message queues. The gap is that this is a cost of the fix, not the sacrifice it demands. The optimize step asks what the team gives up by making this choice — what property of the current system goes away permanently. Implementation overhead is a one-time cost paid during rollout. The permanent sacrifice is the pipeline's tolerance for incomplete inputs, which is ongoing. Conflating a temporary implementation cost with the permanent behavioral change the fix produces misframes the tradeoff.",
+              "framework_hint": "Taste gap: confusing a transition cost (implementation effort) with a structural sacrifice (loss of input tolerance). A transition cost ends when the fix is shipped. A structural sacrifice is a lasting property of the system. The optimize step is asking about the structural sacrifice, not the implementation effort."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team gives up the ability to use schema enforcement in the future for other data quality problems, because mandating too many required fields creates a rigid message format that is difficult to extend. Future agents will be constrained by the current schema, reducing the pipeline's adaptability.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Schema rigidity is a genuine architectural concern over long time horizons, but it is not the sacrifice schema enforcement demands in this scenario. Well-designed schemas with versioning support are not permanently rigid. More fundamentally, the specific sacrifice of choosing schema enforcement as a fix for this problem is not about future schema extensibility — it is about what happens to requirements that cannot supply the required fields today. The sacrifice lands on current behavior, not on future flexibility.",
+              "framework_hint": "Strategic Thinking failure: projecting a long-term architectural concern (schema rigidity) onto a tactical fix decision conflates two different questions. The tradeoff to name here is what the fix removes from the current system's behavior, not what it might constrain in future architecture decisions."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The team gives up nothing significant. Schema enforcement is a strictly additive improvement: it adds required fields that should have been required from the start. Any requirement that cannot supply those fields was already producing incorrect output. Making the failure explicit rather than silent is an unambiguous improvement with no real cost.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Claiming a fix has no meaningful cost is the characteristic failure of the optimize step. Every fix that makes a previously permissive system stricter transfers a cost from one party to another. The requirement authors who previously submitted sparse inputs and received a P3 guess will now receive a hard error. Whether that is acceptable depends on who the requirement authors are, what their process looks like, and whether they have the information needed to supply the required fields. Asserting the cost is zero prevents the team from addressing the upstream impact before the fix ships.",
+              "framework_hint": "Taste failure: 'this is strictly better' is almost never the right answer in the optimize step. A change that makes the pipeline reject inputs it previously accepted is changing who bears the cost of incomplete information. The team that ships schema enforcement without preparing the upstream authors for the new requirements will generate a wave of pipeline errors that looks like a regression even though the underlying fix is correct."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The fix is chosen. Name the metric, the threshold, and the timeline that would tell you the pipeline is now correct — and name the counter-signal that would tell you it is not, before the next sprint review.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the schema-enforcement fix on the four-agent testing pipeline?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The fix succeeds if: within 14 days of deployment, the P0-filed-as-P3 misclassification rate drops from 8% to below 1% on the rolling 7-day window, measured against a set of 50 known-severity requirements the team has manually labeled and injected into the production pipeline weekly. The counter-signal is: the misclassification rate stays above 2% after 14 days despite the schema being enforced, which would mean either the severity-context fields the schema requires are not sufficient to distinguish P0 from P3 (the wrong fields were mandated), or the requirement-parsing agent's extraction of those fields is inconsistent for a subset of requirement types. Either counter-signal would require a second investigation pass targeting a different causal layer. Pipeline hard-error rate on incoming requirements should also be tracked: if more than 10% of requirements fail the new schema validation, the upstream input quality problem is large enough to require a separate workstream before the fix can fully operate.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This win condition names a specific metric (P0-as-P3 rate), a specific threshold (below 1%), a timeline (14 days), a measurement mechanism (labeled injection set of 50 known-severity cases), and two distinct counter-signals with different diagnostic implications. The second counter-signal — hard-error rate above 10% on incoming requirements — is the domain-specific addition that prevents a scenario where the fix is technically correct but operationally untenable because upstream inputs are too sparse to satisfy the new schema.",
+              "framework_hint": "Domain Expertise: the labeled-injection measurement approach is necessary because production P0 bugs are not labeled by ground truth in real time — the team must create a known-answer test set to measure misclassification rate directly, rather than inferring it from downstream bug backlog audits. Strategic Thinking: naming two counter-signals with different diagnostic implications (wrong fields versus inconsistent extraction versus upstream input quality) forces the team to prepare different responses for each outcome rather than treating any non-zero post-fix misclassification as a uniform failure."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success is achieved when the engineering team manually audits the next 100 bugs filed after the fix is deployed and finds zero P0s incorrectly classified as P3. A manual audit of 100 bugs is a sufficient sample to confirm the fix is working. If any P0 appears as P3 in the audit, the fix is incomplete and requires further investigation.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A manual audit of 100 bugs is a reasonable validation step. The gap is that 100 production bugs may arrive over days or weeks depending on the system's throughput, and the audit does not include a timeline, a threshold below zero (zero misclassifications is too stringent for a probabilistic system), or a counter-signal. A single misclassification in 100 bugs does not have the same diagnostic value as eight in 100, and the win condition needs a threshold that reflects what the team considers acceptable, not a binary zero-tolerance bar.",
+              "framework_hint": "Domain Expertise gap: zero misclassifications in 100 bugs is unlikely even for a correctly functioning system because some requirements will always be too sparse to classify with certainty. A threshold of zero produces a win condition the team cannot realistically satisfy and does not help them distinguish between 'the fix is working' and 'we happened to get zero in this sample.'"
+            },
+            {
+              "option_label": "C",
+              "option_text": "The fix is working when the development team stops hearing complaints from the product team about P0 bugs being missed. User-reported incidents involving bugs that were filed as P3 and not prioritized are the ground truth signal for whether the pipeline is working correctly.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Stakeholder complaints are a lagging signal with low coverage. A P0 bug that slips through the pipeline as P3, sits in the backlog, and causes a production incident may take weeks to surface as a complaint, and not all production incidents are traced back to a deprioritized bug report in the same sprint. A win condition that relies on the absence of complaints will declare the fix successful during the quiet period before the next incident, not because the fix is working.",
+              "framework_hint": "Domain Expertise failure: lagging stakeholder signals are appropriate win conditions for product features where the goal is user satisfaction, not for pipeline correctness where the goal is that a specific data field is classified accurately on every run. The win condition for a data-pipeline fix must be measured at the pipeline output, not at the downstream incident rate."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success means the schema validation passes on 100% of incoming requirements with no hard errors after a two-week stabilization period. If all requirements are passing schema validation, the pipeline is accepting properly structured inputs and the severity information is reaching the bug-reporting agent intact.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Schema validation passing on 100% of inputs means the input authors have adapted to the new required fields, not that severity is being classified correctly. A requirement author could supply placeholder values for the severity-context fields (filing 'unknown' for user flow and data state) that satisfy the schema but provide no discriminating information for the bug-reporting agent. Zero hard errors is a necessary condition for the fix to operate but is not the same as the fix working. The win condition must measure the output the fix is supposed to change: the P0-as-P3 misclassification rate.",
+              "framework_hint": "Strategic Thinking failure: measuring schema compliance rather than misclassification rate conflates process adherence with outcome. A win condition that measures whether the process runs cleanly rather than whether it produces the right answer will declare victory when the pipeline is structurally compliant but still misclassifying severity, which is the scenario that generated the original problem."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

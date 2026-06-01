@@ -1,0 +1,215 @@
+{
+  "id": "a0000001-0000-0000-0000-000000000001",
+  "title": "Model Accuracy Up, Engagement Down",
+  "scenario_role": null,
+  "scenario_context": "The ML team spent three months retraining the recommendation model. Accuracy improved from 72% to 89% on the internal eval set — a headline number that passed every review. The model shipped to 100% of users two weeks ago.",
+  "scenario_trigger": "The weekly product metrics review shows user engagement down 15% since the model shipped. Session length, click-through rate, and return visits all moved in the same direction. The ML team's dashboard shows the new model is performing exactly as trained.",
+  "scenario_question": "Diagnose what went wrong when accuracy went up but engagement went down, and decide what to do next.",
+  "engineer_standout": "A strong answer recognizes that accuracy is a proxy metric measured offline, while engagement is the actual user outcome measured online. The 17-point accuracy gain and the 15% engagement drop are not contradictions — they are the expected result of optimizing the wrong objective. The investigation should center on what the model now predicts differently: safer, less diverse, or higher-confidence outputs that score well on the eval set but fail the real user need.",
+  "paradigm": "ai_assisted",
+  "difficulty": "advanced",
+  "estimated_minutes": 15,
+  "primary_competencies": ["strategic_thinking", "domain_expertise"],
+  "secondary_competencies": ["taste", "motivation_theory"],
+  "topic_tags": ["ml-metrics", "engagement", "proxy-metrics"],
+  "technique_tags": [],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Accuracy went up and engagement went down at exactly the same time. Before diagnosing solutions, name what is actually broken.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of this situation?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The model was optimized for offline accuracy, a proxy metric measured on a held-out eval set, while the actual goal is online engagement. When these two objectives diverge, improving the proxy can degrade the real outcome. The 72% to 89% accuracy gain signals the model is better at predicting what it was trained to predict, not that users are getting more value.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing correctly identifies the proxy metric trap. Offline accuracy and online engagement measure different things: one scores predictions against historical labels, the other measures whether real users take the next action. The 15% engagement drop is not noise — it is the signal that the optimization target was wrong.",
+              "framework_hint": "Strategic Thinking: naming the criterion that actually matters. Accuracy is the metric the team controlled; engagement is the metric that determines product value. The problem was framing accuracy as a goal instead of a leading indicator."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The ML team shipped a model change without sufficient A/B testing, so the engagement drop may be unrelated to the model. The root cause is a process failure, not a model failure. A proper hold-out experiment would determine whether the model actually caused the drop.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Process failure is a real concern and a controlled experiment is the right remediation step. But framing this purely as a process problem skips the more important question: even if a proper A/B test had been run, what would it have measured? If accuracy was the success criterion for the experiment, the same proxy metric trap would have caused the same result.",
+              "framework_hint": "Strategic Thinking: identifying where the hypothesis was tested but not what hypothesis was tested. The process gap is real, but the framing gap is deeper."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Users are resistant to change — the new model likely made visible changes to what they see, and the engagement drop reflects discomfort with the updated experience rather than a quality problem.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Change aversion can cause short-term drops in engagement, but it typically recovers within days as users adapt. A 15% sustained drop two weeks after launch is too large and too persistent to attribute to adjustment friction. This framing would lead to waiting rather than investigating.",
+              "framework_hint": "Motivation Theory failure: attributing the outcome to user psychology without checking whether the model is delivering what users actually need."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The model improved accuracy so significantly that it is now surfacing higher-quality content, and users who engage less frequently are actually more satisfied. Lower engagement with higher quality is a success state.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "This interpretation would be plausible if satisfaction signals (ratings, saves, shares, survey NPS) had improved alongside the engagement drop. Without that evidence, assuming higher quality caused healthy disengagement is motivated reasoning that protects the model team from accountability.",
+              "framework_hint": "Taste failure: confusing a preference for the model's outputs with evidence that users share that preference. The reasoning move here is a tradeoff framing applied without data — we sacrifice engagement but gain quality — but no quality signal supports the sacrifice."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Map out the specific mechanisms by which an accuracy improvement could cause a 15% engagement drop. Name the hypotheses concretely.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of hypotheses best explains how accuracy rising from 72% to 89% caused a 15% drop in engagement?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["domain_expertise", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three mechanisms are most likely. First, the model now avoids uncertain predictions, collapsing recommendation diversity and making every session feel the same — users stop exploring. Second, if the accuracy gain came from a larger or heavier model, inference latency increased, and even a 100-200ms response time addition measurably reduces engagement. Third, the 72% to 89% gain likely came from the model learning to favor safe, high-confidence items that score well on historical labels but are not the items that create discovery or surprise, the two emotions that drive return visits.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "creative_execution"],
+              "explanation": "These three hypotheses — diversity collapse, latency increase, and over-optimization for historical popularity — are the canonical explanations for the accuracy-engagement divergence pattern. Each is independently testable: check recommendation entropy before and after, check p99 latency in production, and check whether the model's output distribution has narrowed. Naming structurally distinct mechanisms rather than variations of the same idea is the List move.",
+              "framework_hint": "Creative Execution: generating structurally distinct hypotheses, not variations of one idea. Domain Expertise: recognizing diversity collapse, latency sensitivity, and popularity bias as the three real mechanisms behind the accuracy-engagement gap in recommendation systems."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The most likely explanation is that the new model recommends items users have already seen, because those items have more historical interaction data and therefore higher labels in the training set. Recommending familiar items increases accuracy scores but reduces the perceived novelty that makes users open the app.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Popularity and recency bias is a real and important hypothesis. But it accounts for one mechanism. The investigation is incomplete without also checking latency (measurable immediately from infrastructure logs) and recommendation entropy (measurable from model outputs without user data). A complete list distinguishes these because each points to a different fix.",
+              "framework_hint": "Domain Expertise: correctly naming popularity bias as a failure mode. Creative Execution gap: generating one strong hypothesis instead of the full set of structurally distinct mechanisms."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The engagement drop is probably a data pipeline issue unrelated to the model. Something in the tracking or attribution layer broke around the same time, making engagement appear lower than it actually is.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Instrumentation failures are always worth ruling out, but they are a starting assumption, not a primary hypothesis. If multiple engagement metrics (session length, click-through, return visits) all moved together, a tracking bug would need to corrupt all three in the same direction, which is unlikely. Defaulting to instrumentation blame before generating product hypotheses is the junior move.",
+              "framework_hint": "Strategic Thinking failure: using instrumentation doubt to avoid engaging with the harder question of why the model change might have caused the outcome."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The accuracy gain proves the model is better, so the engagement drop must be caused by a concurrent product change or a seasonal effect. Investigate all other changes shipped in the same two-week window before concluding the model is responsible.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Ruling out confounds is correct methodology, but it should run in parallel with model-specific hypotheses, not replace them. Starting with 'the model is better therefore it cannot be the cause' is the exact reasoning error that the proxy metric trap produces. Accuracy proving the model is better is the assumption under examination, not a premise to defend.",
+              "framework_hint": "Strategic Thinking failure: using the optimization result (accuracy) as evidence against investigating the optimization target (engagement). The frame should be the opposite — a 15% engagement drop is strong signal to examine the model first."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "You cannot maximize both accuracy and engagement simultaneously. Name the real criterion and name what you are willing to sacrifice.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Assume the investigation confirms diversity collapse: the model's recommendation entropy dropped 40% and per-session variety scores fell in lockstep with engagement. What is the right product decision?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Redefine the optimization objective. The model should be retrained or fine-tuned with a combined loss that weights engagement signals (click-through, session continuation, return rate) alongside accuracy labels. Accept a regression from 89% to perhaps 82-84% offline accuracy if engagement metrics recover to baseline or above. The sacrifice is a cleaner accuracy number on the eval dashboard; the gain is a model that improves the real outcome it was built to serve.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This is the correct tradeoff move. Taste means feeling the difference between a real tradeoff (we accept lower accuracy because we gain engagement) and a preference (accuracy should stay at 89%). The specific numbers matter: naming an acceptable accuracy range (82-84%) and a measurable recovery target (return to baseline or above) turns this from a philosophical position into a testable engineering decision.",
+              "framework_hint": "Taste: identifying that a preference for 89% accuracy is not a tradeoff. The tradeoff is accuracy for engagement, with explicit numbers on both sides. Strategic Thinking: naming the real optimization criterion (engagement) and making the sacrifice explicit (offline accuracy) rather than pretending both can be maximized."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Add a diversity injection layer on top of the existing model: force a minimum number of distinct categories or topics per session, regardless of the model's predicted scores. This preserves the accuracy gains while restoring surface-level variety.",
+              "quality": "good_but_incomplete",
+              "competencies": ["creative_execution"],
+              "explanation": "Post-hoc diversity injection is a legitimate and commonly shipped technique. It improves recommendation variety without retraining the model, which is faster to ship. The gap is that it treats the symptom without correcting the objective misalignment. If the model's scores still optimize for the wrong thing, diversity injection adds variety but not necessarily the variety that drives engagement. The fix is real but incomplete.",
+              "framework_hint": "Creative Execution: generating an implementable intervention quickly. Taste gap: the diversity injection is a preference for maintaining the accuracy number rather than accepting the tradeoff of retraining."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Roll the model back to the 72% accuracy version while the team investigates. Engagement was stable before the model shipped, so the previous model is the safe baseline. Reopen the investigation with a clearer experiment design before re-shipping.",
+              "quality": "surface",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Rollback is a legitimate risk management tool. But naming it as the optimize decision avoids the actual tradeoff: the old model had lower accuracy for a reason, and rolling back does not tell the team what objective to optimize next time. The team will face the same proxy metric trap in the next training run unless the criterion is redefined.",
+              "framework_hint": "Strategic Thinking gap: rollback restores the status quo but does not name the criterion for the next model. Without naming what to optimize for, the accuracy-engagement tradeoff will recur."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Run an A/B test with the new model against the old model for two more weeks to gather statistically significant engagement data before making any model changes. A/B test results will clarify whether the model is causal.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The A/B test is good methodology, but the question is the optimize decision, not the diagnostic step. Running a two-week test when engagement has already dropped 15% extends user harm by another two weeks to confirm what the existing data already strongly suggests. The optimize move requires committing to a direction — not commissioning more evidence for a question that already has an answer.",
+              "framework_hint": "Taste failure: treating more data as a substitute for a decision. Collecting another two weeks of evidence under a model that is already likely causing the harm is a preference for procedural correctness over real user outcomes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What does success look like in a way that would survive a skeptic in a review meeting? Specify the metric, the threshold, and the timeline.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "Write the success criterion for the next model iteration. What metric, threshold, and timeline would confirm the proxy metric trap has been fixed?",
+          "question_nudge": "Name a specific engagement metric, a number, and a date-anchored evaluation window.",
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The next model ships only if, in a two-week A/B test at 20% traffic, daily engaged sessions per user returns to within 5% of the pre-ship baseline and does not fall below that threshold for three consecutive days. Offline accuracy is allowed to regress to 82-85% from 89%; anything above 80% is acceptable if the engagement criterion is met. The team publishes both numbers side by side in the launch review so the tradeoff is explicit and on record.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This satisfies all three requirements of a falsifiable win criterion: a named metric (daily engaged sessions per user), a threshold (within 5% of pre-ship baseline, sustained three days), and a timeline (two-week test window). The explicit accuracy floor (80%+) and the requirement to publish both metrics together turns the tradeoff into an organizational commitment rather than a single team's decision.",
+              "framework_hint": "Strategic Thinking: the hypothesis is falsifiable — we will know it failed if engaged sessions per user stays below 5% of baseline after two weeks. Domain Expertise: naming daily engaged sessions per user as the primary metric, not raw session count or page views, reflects real user behavior."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The next model ships when offline accuracy holds above 85% and user satisfaction scores (surveyed via in-product NPS after each session) improve by at least 5 points relative to the current deployed model.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Pairing accuracy with NPS is an improvement over accuracy alone, and NPS is a legitimate user satisfaction signal. The gap is that NPS surveys have low response rates and long collection timelines, making them a slow feedback loop for a model decision that needs a two-week turnaround. Behavioral engagement metrics (session continuation, return rate) move faster and are less subject to response bias.",
+              "framework_hint": "Domain Expertise: choosing a real success metric. Strategic Thinking gap: NPS is the right spirit but the wrong instrument for a model evaluation cycle. The metric needs to be observable at the speed of the deployment decision."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The next model ships when the ML team's internal evals show strong performance and the product team has reviewed the output samples. Success means both teams sign off before launch.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Dual sign-off improves process but does not define a measurable success criterion. 'Strong performance' on internal evals is exactly the language that produced the original 89% accuracy headline without anyone asking what it predicts. Process gates without numeric thresholds do not prevent the proxy metric trap from recurring.",
+              "framework_hint": "Strategic Thinking failure: defining win as a process outcome (sign-off from two teams) rather than a user outcome with a measurable threshold. The next training run can still optimize for the wrong objective if no one names what the metric is."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Track engagement for 30 days after the next model ships and compare the trend to the 30-day period before the original model launched. If the trend line is positive, the new model is working.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A 30-day measurement window after launch means the model runs for a month before anyone knows whether it worked. If engagement drops again, 30 days of harm have accumulated. A positive trend line is also not a threshold — it would count as success even if engagement returned to only half of the pre-ship baseline. The criterion is too slow and too vague to be actionable.",
+              "framework_hint": "Domain Expertise failure: choosing a measurement cadence that is too slow for the decision cycle and a success threshold (positive trend) that is too imprecise to falsify. A real metric requires a number and a date, not a directional description."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { gradeInterviewSession } from '@/lib/v2/skills/interview-grading'
 import type { ChallengeType } from '@/lib/types'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
@@ -18,6 +19,13 @@ function validationIssues(error: ZodError) {
     path: issue.path.join('.'),
     message: issue.message,
   }))
+}
+
+// Mirrors getGradeLabel() in coding-submit/route.ts (overall_score is 1-5).
+function gradeLabelForScore(score: number): string {
+  if (score >= 4.5) return 'best'
+  if (score >= 3) return 'good'
+  return 'surface'
 }
 
 function aiLimitResponse(error: unknown) {
@@ -141,14 +149,24 @@ export async function POST(
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Grading succeeded - NOW mark the attempt completed.
+  // Grading succeeded - NOW mark the attempt completed. Persist score + label
+  // onto the attempt row (mirroring coding-submit) so the Submissions/history
+  // tab and /api/attempts show a real score, not a stale default.
   await supabase
     .from('challenge_attempts')
     .update({
       status: 'completed',
       completed_at: new Date().toISOString(),
+      total_score: grade.overall_score,
+      max_score: 5,
+      grade_label: gradeLabelForScore(grade.overall_score),
     })
     .eq('id', attemptId)
+
+  // Record daily streak (RPC is service_role-only, so use the admin client)
+  const admin = createAdminClient()
+  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
+  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
 
   // Persist grade
   await supabase.from('interview_grades').insert({

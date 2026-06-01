@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000026",
+  "title": "Should You Show Users the AI's Confidence Score?",
+  "scenario_role": null,
+  "scenario_context": "A telehealth startup's AI symptom-triage tool produces an internal confidence score for every assessment. When a patient describes fever, sore throat, and fatigue, the model outputs something like '87% confident this is viral, not bacterial' before any clinician review. Engineering built the score to help the model surface its own uncertainty internally, not as a user-facing feature. Now there is pressure to surface it to patients in the app.",
+  "scenario_trigger": "The product team argues that showing the score builds trust and differentiates the app from generic symptom checkers. Engineering is enthusiastic about transparency. The clinical team pushes back hard: an anxious patient who reads '87% confident' may anchor on that number rather than follow through with a clinician, and 87% confident still means a 13% chance of being wrong, which in a medical context is material. Legal flags that displaying a specific percentage could constitute a diagnostic statement and create liability if the assessment is wrong. The feature is on the roadmap for next sprint and the teams cannot agree.",
+  "scenario_question": "Identify the real problem each team is solving, enumerate what the decision actually depends on, name the tradeoff the product must accept, and define a falsifiable bar for whether the chosen approach is working.",
+  "engineer_standout": "A strong answer recognizes that the four teams are not disagreeing about UI; they are each optimizing for a different success metric. Engineering wants system transparency. Clinicians want patient calm and clinical safety. Legal wants defensibility. Product wants differentiation. Showing the literal 87% satisfies only engineering. The real question is whether there is a design that serves informed decision-making, patient safety, and legal defensibility simultaneously, and if so, what it looks like. It probably does not include a raw percentage.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["cognitive_empathy", "taste"],
+  "secondary_competencies": ["strategic_thinking", "motivation_theory"],
+  "topic_tags": ["ai-transparency", "patient-safety", "product-ethics", "stakeholder-alignment", "healthcare"],
+  "technique_tags": ["stakeholder-simulation", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Four teams disagree but they are not actually arguing about a number. What is each team trying to protect, and what does the disagreement reveal about the real problem?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the decision about whether to show the AI's confidence score to patients?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The decision is not a UI choice between showing or hiding a number. It is a stakeholder-simulation problem: engineering, clinicians, legal, and product are each optimizing for a different success metric, and the raw 87% satisfies only one of them. Engineering wants the system's uncertainty visible. Clinicians want patients calm enough to follow through with clinical care. Legal wants no statement the company cannot defend if the 13% case materializes. Product wants a feature that differentiates. The right frame is: what information format, if any, serves informed patient decision-making, clinical safety, and legal defensibility simultaneously, without requiring the literal percentage to do that work?",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "motivation_theory"],
+              "explanation": "This framing correctly identifies that the disagreement is not about design taste but about whose success metric the product is serving. The 87% number is load-bearing only for engineering's transparency goal. For an anxious patient, 87% confident and 13% chance of being wrong are the same fact experienced completely differently, and the clinical risk comes from patients anchoring on the number and foregoing clinician review. Framing the problem as simultaneous constraint satisfaction rather than a binary show-or-hide decision opens the solution space to formats that serve multiple goals at once.",
+              "framework_hint": "Cognitive Empathy: simulating what '87% confident' means to an anxious patient versus what it means to an engineer who built the model. Motivation Theory: identifying each team's underlying goal (safety, defensibility, transparency, differentiation) before evaluating whether the proposed feature satisfies them."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The problem is a trust-building opportunity that the clinical and legal teams are blocking out of excessive caution. Transparency about AI uncertainty is a market differentiator. Patients are capable of understanding probabilistic information. The decision is about how much the company trusts its users.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "User trust is a real goal and the transparency instinct is not wrong. But framing clinical and legal concerns as excessive caution skips the simulation step: anxious patients processing a health concern do not behave like engineers reading a model card. The clinical team's worry is not paternalism but a real failure mode where a patient reads 87% and decides against a follow-up call that would have caught the 13% case. Treating the objections as blocking rather than as signals about different success metrics produces a framing that cannot generate a solution all four teams can support.",
+              "framework_hint": "Motivation Theory partial credit: correctly identifies transparency as a product goal with real user value. Cognitive Empathy gap: does not simulate the anxious patient's experience of the number versus the engineer's experience of the same number. The framing needs to account for how probability is processed differently under health-related anxiety."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The core problem is a legal compliance question. Before making any product decision, the company needs a legal opinion on whether displaying a confidence percentage constitutes a diagnostic claim under FDA or FTC guidelines. Product should wait for legal clearance before proceeding.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Legal review is a legitimate input but it is not the frame for the product decision. Framing it as a legal compliance question turns the product team into a queue waiting for legal, when the actual work is to design an approach that does not create liability in the first place. More practically, legal's concern is about a specific artifact (the raw percentage) rather than about transparency as a principle. The right frame asks whether alternative formats satisfy clinical and legal constraints while preserving the patient information value the engineering team correctly identified.",
+              "framework_hint": "Strategic Thinking failure: conflating 'we need legal input' with 'this is a legal problem.' The product team's job is to generate options that reduce legal exposure, not to outsource the decision to legal. Framing it as a compliance gate produces no actionable path forward."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is feature prioritization. The confidence score display has been added to the roadmap without sufficient user research. The company should run a survey asking patients whether they would want to see the AI's confidence score before deciding whether to build the feature.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A user survey asking 'do you want to see the AI's confidence score?' will almost certainly return yes, because users consistently report wanting more information in the abstract. What they actually do with that information under anxiety is a different question, and the clinical team's concern is precisely about that gap. Framing the problem as a research-gap problem also ignores the stakeholder conflict that is already delaying the feature. The right frame identifies what each team needs and asks what solution space satisfies all of them, not whether users say they want more data.",
+              "framework_hint": "Cognitive Empathy failure: users' stated preferences in a survey do not predict their behavior when reading an '87% confident' assessment about their own health. The research method does not match the failure mode the clinical team is describing. A revealed-preference test (what do patients actually do when they see the number?) is a better instrument than a stated-preference survey."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The question is not just 'show or hide.' List the variables that determine what the right format is, and what alternatives to a raw percentage might exist.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of factors most completely covers what the product team needs to evaluate before deciding how to communicate AI uncertainty to patients in a telehealth triage context?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct factors need to be evaluated. First, patient cognitive state at the moment of reading: patients using a symptom-triage app are experiencing health anxiety, which systematically distorts how probabilistic information is processed. Second, clinical follow-through rate: does showing any uncertainty indicator increase or decrease the likelihood that patients follow the triage recommendation (call a clinician, go to urgent care, wait and monitor)? Third, legal exposure by format: a raw percentage (87%) may constitute a diagnostic statement; a qualitative signal (the model has high confidence in this assessment) may not; the format matters, not just the presence of uncertainty information. Fourth, information value by population: does the uncertainty signal help the 87% case (patients who would follow through anyway) or the 13% case (patients who need to see a clinician and might not)? Fifth, alternative formats and their tradeoffs: qualitative confidence tiers (high / moderate / uncertain), a follow-through nudge ('our model is highly confident, and a clinician should still confirm this'), or no user-facing uncertainty signal paired with a clinician-review gate.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "These five factors are structurally distinct in what they reveal. Patient cognitive state determines whether raw probabilistic information is processed accurately. Clinical follow-through rate tests the actual behavioral outcome the product cares about. Legal exposure by format reveals that the clinical team and legal are objecting to the raw percentage, not to the concept of communicating uncertainty. Information value by population separates the cases where the signal helps from the cases where it matters most. And listing alternative formats explicitly forces the evaluation away from a binary show-or-hide decision into the full solution space.",
+              "framework_hint": "Cognitive Empathy: factor one is directly about simulating the patient's mental state at the moment of reading, not the product team's view of what a rational patient should do with probabilistic information. Creative Execution: factor five forces the list to include structurally different alternatives, not just variations on whether to show the number."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team needs to evaluate user trust, regulatory risk, and competitor behavior. If competitors are already showing confidence scores, not showing one may look like the company is hiding something. Regulatory risk can be mitigated with a disclaimer. User trust is the core metric.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Regulatory risk and competitive context are real considerations. But user trust is an outcome, not a factor to evaluate, and the competitor framing misses that telehealth competitors showing confidence scores have not necessarily solved the clinical safety problem. More critically, this list omits the factor that drives the clinical team's concern: what patients actually do differently when they see a number. A list that does not include clinical follow-through rate cannot evaluate the clinical team's objection on its own terms.",
+              "framework_hint": "Cognitive Empathy gap: the list treats user trust as something patients consciously report rather than something that manifests in their behavior (following through with a clinician or not). A disclaimer does not change how an anxious patient processes '13% chance this is wrong.'"
+            },
+            {
+              "option_label": "C",
+              "option_text": "Run an A/B test showing the confidence score to half the user base and hiding it from the other half. Measure NPS and clinician follow-through rate across both groups. The data will tell the company what to do.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "An A/B test is a validation method, not a list of decision factors. More practically, running an A/B test that exposes half the patient base to a potentially dangerous UI design (if the clinical team's concern is correct) before evaluating alternatives is not responsible product process. The list step asks what factors need to be evaluated before committing to an approach, and the clinical safety concern is precisely the kind of factor that should stop the team from treating this as a standard experiment.",
+              "framework_hint": "Motivation Theory failure: treating a clinical safety concern as a measurement problem rather than as a design constraint. The clinical team's objection is not 'we don't have enough data.' It is 'showing this number to anxious patients is dangerous.' That objection needs to be addressed in the factor list before any experiment runs."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision factors are transparency versus safety. Engineering values transparency; clinicians value safety. Product should decide which company value takes precedence and apply it consistently across all AI features.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Framing this as a values conflict produces a false binary: transparency and safety are not opposites. A qualitative confidence signal ('the model has high confidence in this assessment; please confirm with a clinician') can be transparent without using a raw percentage that creates clinical risk and legal exposure. The list step should surface the specific variables that determine which format achieves both goals, not a values hierarchy that forces the team to sacrifice one for the other.",
+              "framework_hint": "Creative Execution failure: treating transparency and safety as mutually exclusive closes off the solution space before it has been explored. The crux is that a raw 87% is one format among several, and other formats may achieve transparency without the clinical risk. A factor list that starts from 'which value wins' will not discover those formats."
+            }
+          ]
+        },
+        {
+          "question_text": "Which alternative to the raw confidence percentage best serves informed patient decision-making while reducing clinical and legal risk in the telehealth triage context?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Replace the raw percentage with a clinician-review nudge triggered by the model's internal confidence score. When confidence is above 90%, the triage summary says 'Our assessment has high confidence. A clinician can confirm this for you.' When confidence is between 70% and 90% it says 'Our assessment is likely accurate. We recommend a clinician review.' When confidence is below 70% it says 'We are uncertain about this assessment. Speaking with a clinician is strongly recommended.' The patient sees a signal calibrated to their actual clinical risk without processing a number that the clinical literature shows is misread under health anxiety. The raw percentage remains internal, available to clinicians in their dashboard.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "This format solves the core problem: the patient gets an uncertainty signal calibrated to their actual risk, the clinician still has access to the precise number for clinical judgment, and the company is not publishing a specific percentage that could constitute a diagnostic claim. The threshold structure (90%, 70%) maps the model's internal score to behavioral guidance rather than raw probability, which is how clinical decision aids are designed in contexts where patients have limited statistical training. It also preserves engineering's transparency goal: the system's uncertainty is communicated, just not as a raw percentage.",
+              "framework_hint": "Cognitive Empathy: the format simulates what an anxious patient needs (actionable guidance about what to do next) rather than what an engineer finds informative (a precise number). Creative Execution: separating the patient-facing signal from the clinician-facing number is a structurally distinct alternative, not a variation on showing or hiding the 87%."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Show the confidence score alongside a disclaimer that reads 'This is not a medical diagnosis. Please consult a clinician.' This satisfies legal requirements, maintains transparency, and puts the interpretation responsibility with the patient.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Disclaimers are not read by anxious patients in the way they are written by lawyers. Research on health information processing consistently shows that a disclaimer placed below a numerical probability does not meaningfully alter how patients anchor on the number. This approach satisfies legal's desire for a disclaimer but does not address the clinical team's concern, which is about how the number itself is processed under anxiety, not about whether the company has disclaimed liability.",
+              "framework_hint": "Cognitive Empathy failure: assumes that adding text modifies how the number is cognitively processed. Health anxiety research shows patients anchor on the numerical probability first and the disclaimer functions as reassurance that confirms their anchor, not as a correction. The format does not actually reduce clinical risk."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Remove the confidence score from the user interface entirely and focus on making the triage recommendation clearer and more actionable. If the model is not confident, route the patient to a clinician automatically rather than surfacing uncertainty language at all.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Automatic routing on low confidence is a real clinical safety mechanism and may be appropriate, but 'remove uncertainty language entirely' abandons the transparency goal that engineering and product correctly identified as a competitive differentiator. A patient who receives a high-confidence assessment with no indication that the model is highly confident receives less information than they could. The goal is a format that is both transparent and safe, not the absence of uncertainty communication.",
+              "framework_hint": "Motivation Theory: this option satisfies the clinician's success metric (patient calm) and legal's success metric (no diagnostic claim) but fails engineering's goal (transparency) and product's goal (differentiation). A recommendation that satisfies only two of four stakeholders without examining the others has not solved the stakeholder-simulation problem."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Show patients only confidence scores above 95%, treating those as effectively certain. For scores below 95%, show nothing. This way the company only publishes scores it can defend, and patients get transparency only when the model is genuinely sure.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Showing high-confidence scores selectively creates a different problem: patients learn that when they see no number, the model is uncertain, which is a form of binary signal they will quickly decode. More critically, 95% confident in a medical context still means a 5% error rate, which at telehealth scale is not negligible, and the clinical literature on patient numeracy suggests that even a 95% confident label creates over-reassurance in patients who need clinician follow-through. The threshold is arbitrary and does not solve the underlying design problem.",
+              "framework_hint": "Taste failure: the 95% cutoff is a preference (high scores feel safer to publish) rather than a tradeoff (this format achieves transparency and clinical safety simultaneously because of a specific property). The 5% error rate is still a clinical risk in an anxious population, and the binary signal problem means the format does not actually hide uncertainty from patients who look for it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "A qualitative confidence signal solves several problems at once. Name the criterion that tells you whether that solution is actually the right call, and name what the product gives up by choosing it.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for choosing the qualitative confidence-tier signal over either the raw 87% percentage or no uncertainty communication at all?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is clinical follow-through rate at each confidence tier: does the format cause patients who receive a 'high confidence' signal to follow through with a clinician at the same rate as patients who receive a 'we are uncertain' signal? The raw 87% fails this criterion because the number triggers anchoring: a patient who reads '87% confident this is viral' is less likely to book the follow-up call than a patient who reads 'our assessment has high confidence; a clinician can confirm this for you,' because the second format pairs the confidence signal with a clear next action. The sacrifice this criterion demands is explicit: the qualitative tier format gives up the precision that some technically-literate users would find informative, in exchange for a format that is actionable for the anxious majority. That is a real tradeoff, not a preference, because the telehealth population skews toward patients using the app precisely because they are worried, not because they want to analyze model probabilities.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion is specific to the telehealth triage context: the goal of communicating AI uncertainty to a patient is not to maximize information transfer but to support the right clinical behavior. Clinical follow-through rate tests whether the format achieves that goal. Naming the sacrifice explicitly (precision lost for the technically-literate minority) prevents the optimization from being treated as cost-free. The reasoning grounding the criterion in the anxious majority is domain-relevant: telehealth triage apps are used disproportionately by patients with health anxiety, not by patients who enjoy probabilistic reasoning.",
+              "framework_hint": "Taste: distinguishing between 'the raw percentage is more precise' (a property) and 'precision causes anchoring that reduces clinical follow-through' (a tradeoff-revealing observation specific to anxious patients reading health data). Strategic Thinking: the criterion maps to the company's actual goal, which is not maximum transparency but maximum clinical safety combined with actionable patient guidance."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be user satisfaction with the triage experience. Patients who feel informed after using the app are more likely to return and recommend it. A Net Promoter Score comparison between the raw-percentage group and the qualitative-tier group would reveal which format patients prefer.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "User satisfaction is a legitimate product metric and NPS comparison is a real research instrument. The gap is that patient satisfaction and clinical follow-through are not correlated in the way this criterion assumes: a patient who reads '87% confident' may feel highly informed and satisfied while being less likely to book the clinician call the triage recommended. The criterion needs to test the behavioral outcome the clinical team is protecting, not the subjective experience of the information.",
+              "framework_hint": "Motivation Theory partial credit: correctly identifies satisfaction as a goal. Taste gap: does not distinguish between 'patients feel informed' (a satisfaction signal) and 'patients act on the clinical guidance' (the behavioral outcome that clinical safety depends on). These are measurable separately, and the optimize step requires naming the criterion that resolves the actual clinical safety tradeoff."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion is legal defensibility: whichever format legal will sign off on should be chosen. If the qualitative tier format receives legal clearance, it is the right choice. If legal objects to any uncertainty communication, no uncertainty signal should be shown.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Legal clearance is a constraint, not a criterion. A criterion names what the product is optimizing for; a constraint names what it cannot cross. Outsourcing the optimization decision to legal produces whatever format is minimally risky, which is not necessarily the format that best serves patient decision-making. The optimize step requires the product team to name the tradeoff they are accepting, not to find the option that eliminates all tradeoffs by delegating to a risk function.",
+              "framework_hint": "Strategic Thinking failure: treating a risk constraint as a success criterion produces a recommendation that optimizes for defensibility rather than for the patient outcome the telehealth product is supposed to deliver. Legal's job is to define what the company cannot do; product's job is to optimize within those constraints."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is feature differentiation: the format that most clearly distinguishes the telehealth app from generic symptom checkers should be chosen. Competitors show no uncertainty signal; showing even a qualitative tier creates a meaningful product distinction that supports marketing.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Differentiation is a real product goal, and the product team's original instinct was correct that some form of uncertainty communication is a potential differentiator. But using differentiation as the optimization criterion reverses the order of reasoning: the product should first establish what format serves patients safely, then check whether that format is also differentiated. Choosing a format because it is differentiated without testing whether it achieves clinical safety and follow-through is how the 87% raw percentage ends up on the roadmap despite the clinical team's objections.",
+              "framework_hint": "Taste failure: differentiation is a preference ('being distinct is better') not a tradeoff that names what is given up. The optimize step requires a criterion that makes the sacrifice visible. Differentiation as a criterion is indifferent to whether the format is clinically safe, which is precisely the gap the clinical team is pointing to."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the qualitative confidence tier is making things worse, not better.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the qualitative confidence-tier format in a telehealth AI triage product?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: clinician follow-through rate for patients who receive an 'uncertain' or 'recommend clinician review' signal reaches at least 75% within 90 days of launch, measured against a pre-launch baseline of the same triage pathways. A 75% follow-through rate for the uncertain tier means the format is successfully converting the patients most in need of clinical review. The second threshold: for the 'high confidence' tier, follow-through rate stays above 60%, confirming that the high-confidence signal is not causing patients to skip clinician review entirely. The counter-signal is: high-confidence tier follow-through drops below 50%, which would mean the qualitative signal is causing the same anchoring problem as the raw 87% and needs to be redesigned. Both thresholds can be measured from existing app data by adding a triage-outcome event tag and comparing across the tiered groups.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names two metrics with specific thresholds and timelines, each connected to a distinct element of the clinical safety hypothesis. The 75% uncertain-tier follow-through threshold tests whether the format is working where it matters most: patients who need a clinician and might not seek one. The 60% high-confidence follow-through threshold tests the opposite failure mode: does the high-confidence signal cause over-reassurance? The counter-signal (high-confidence follow-through below 50%) is non-obvious and important because it would mean the qualitative format reproduces the clinical risk of the raw percentage despite eliminating the number.",
+              "framework_hint": "Domain Expertise: 75% follow-through for uncertain-tier patients is a meaningful clinical threshold; below that level the format is not moving patient behavior enough to justify the clinical claim. 60% high-confidence follow-through reflects that even a high-confidence triage signal should still prompt clinician confirmation in a telehealth context where the model has a non-trivial error rate. Strategic Thinking: naming the counter-signal forces the team to distinguish between 'the qualitative tier looks cleaner' and 'the qualitative tier actually changes patient behavior in the clinically safe direction.'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means the feature receives no negative press coverage and no patient complaints about the uncertainty language within the first 60 days. If the format is causing patient harm, complaints and press will surface it. Absence of complaints validates the approach.",
+              "quality": "good_but_incomplete",
+              "competencies": [],
+              "explanation": "Absence of complaints is not a success signal in clinical product contexts; it is a noise-floor measurement. Patients who are harmed by anchoring on a confidence signal and forgoing clinical care are unlikely to attribute that outcome to the app's UI. Press coverage of a telehealth AI feature is driven by newsworthy events, not by the quiet failure mode where patients with a 13% misassessment did not follow through with a clinician. A win condition that depends on silence cannot detect the failure modes the clinical team is worried about.",
+              "framework_hint": "Strategic Thinking failure: absence of evidence is not evidence of clinical safety. The win condition must actively measure the behavioral outcome (follow-through rate) that the clinical team identified as the risk, not passively wait for a harm signal that the app's feedback loop cannot reliably surface."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means a 10-point improvement in app NPS within 90 days of launch, attributed to the new confidence-tier feature. If users feel more informed and rate the app more favorably, the feature is working. Track NPS monthly and look for the trend to stabilize above the pre-launch baseline.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "NPS measures satisfaction, which is not the same as clinical follow-through or safety. A patient who reads a qualitative confidence tier and feels more informed may still anchor on the high-confidence signal and not book the clinician call. NPS improvement also cannot be attributed to a single feature in the way this win condition implies; it is an aggregate of the full app experience. The win step requires a metric that is falsifiable for the specific hypothesis the feature is testing: does the format cause patients to act on triage recommendations appropriately?",
+              "framework_hint": "Motivation Theory failure: conflating patient satisfaction with patient behavior. Motivation theory applied correctly here would distinguish between the satisfaction the format produces ('I feel informed') and the clinical outcome it drives ('I followed through with a clinician'). These can move in opposite directions if the format produces over-reassurance."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means legal signs off on the feature language within 30 days and no regulatory inquiry is received within the first year. The company will know the approach is working if it stays out of regulatory trouble. Monitor for FDA or FTC communications as the primary success signal.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Regulatory approval and the absence of inquiry are necessary conditions for operating legally, not sufficient conditions for a successful product feature. A format that receives legal clearance and never triggers a regulator can still cause clinical harm by reducing follow-through rates among patients who need clinician review. The win condition must test whether the feature is achieving its clinical purpose, not just whether it is legally defensible. Legal clearance is the starting gate, not the finish line.",
+              "framework_hint": "Domain Expertise failure: in healthcare product contexts, regulatory compliance and clinical effectiveness are separate dimensions. A feature can be fully compliant and clinically harmful if it changes patient behavior in ways that reduce care-seeking. The win condition must include a clinical effectiveness metric, not just a legal safety signal."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

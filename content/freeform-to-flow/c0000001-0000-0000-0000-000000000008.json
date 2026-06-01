@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000008",
+  "title": "The Activation Metric That Lied",
+  "scenario_role": null,
+  "scenario_context": "A SaaS product team spent six months optimizing for a single activation metric: user creates first project within 7 days of signup. They invested in onboarding flows, contextual tooltips, and a multi-touch email nudge sequence. The metric responded exactly as designed, climbing from 28% to 54%.",
+  "scenario_trigger": "During a quarterly business review, the data tells a different story. 90-day retention dropped from 31% to 24% over the same six months. The VP of Product points at both numbers and says: the activation metric went the wrong direction. You measured the wrong thing.",
+  "scenario_question": "Frame what went wrong with the activation metric, enumerate why the two trends diverged, decide what to optimize for in a redesigned metric, and define what a better activation metric looks like in falsifiable terms.",
+  "engineer_standout": "A strong answer names the Goodhart's Law dynamic explicitly: when a measure becomes a target, it ceases to be a good measure. The activation metric (first project within 7 days) is a proxy for value-realization, not value-realization itself. Nudging users into creating a hollow project decoupled the act from the outcome. The metric rose because the nudges worked. Retention fell because value delivery did not.",
+  "paradigm": "traditional",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["strategic_thinking", "taste", "domain_expertise"],
+  "secondary_competencies": ["motivation_theory"],
+  "topic_tags": ["activation", "retention", "proxy-metrics", "north-star", "onboarding"],
+  "technique_tags": ["north-star-cascade", "retention-cohorts"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Activation went up and retention went down at the same time. Those two facts together are the clue. What does it tell you about what the metric was actually measuring?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why activation climbing from 28% to 54% coincided with retention dropping from 31% to 24%?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The activation metric measured a behavior (first project created within 7 days) rather than a value outcome (user experienced a meaningful result from using the product). Nudges and onboarding flows successfully drove the behavior, but completing the act of creating a project does not mean the user understood the product, got value from it, or had a reason to return. When a metric becomes a target, optimizing for it can decouple the proxy from the thing it was meant to track. The 26-point activation gain and the 7-point retention drop are not a contradiction; they are the same event seen from two angles.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This framing correctly identifies the proxy-metric trap. The 28% to 54% activation lift is real, but it was produced by nudging users into a hollow action. The metric rose not because more users got value, but because more users performed the measurable act. Retention measures whether users returned because the product worked. It fell precisely because the cohort of newly activated users had lower genuine engagement than earlier cohorts who activated without nudges. Naming this dynamic, not just the outcome, is the diagnostic move.",
+              "framework_hint": "Taste: the team optimized a preference (higher activation number) rather than a tradeoff. The real tradeoff is 'we get a higher activation rate; we give up the signal quality that made activation predictive of retention.' Taste is recognizing when a metric you like has stopped meaning what you think it means."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The onboarding improvements attracted a different user cohort who were browsing rather than committed. The activation gain reflects a wider top-of-funnel, not better value delivery. The core product works fine for users who were already motivated, but the new nudges pulled in low-intent signups who were never going to retain regardless of the activation action taken.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Cohort composition shift is a plausible mechanism and worth testing. But it frames the problem as an acquisition issue, which lets the activation metric design off the hook. Even if some of the activation gain came from lower-intent signups, the metric itself would still be poorly designed if completing a project does not correlate with experienced value. The framing misses the deeper issue: the metric was a proxy that could be gamed by nudges regardless of cohort mix.",
+              "framework_hint": "Strategic Thinking partial credit: identifies a real mechanism (cohort shift) but does not interrogate the metric design itself. A complete framing asks whether the metric would remain predictive of retention even with a consistent cohort."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The email nudge sequence is too aggressive and is training users to associate the product with interruption rather than value. Reducing nudge frequency will improve the quality of activations and stop suppressing retention.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Email fatigue can reduce retention, and it is worth measuring. But this framing treats a specific tactic (email nudges) as the root cause without examining why the metric was vulnerable to that tactic in the first place. Reducing email frequency might raise retention somewhat, but it would not fix a metric that measures the wrong milestone. The problem is the definition of activation, not the channel used to drive it.",
+              "framework_hint": "Motivation Theory failure: attributes the friction (retention drop) to a surface-level tactic rather than to the metric design upstream. Reducing email volume removes one specific nudge mechanism but leaves the proxy-metric problem intact."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Retention dropped because the product has a core value delivery problem that no activation metric or onboarding improvement can fix. Users are creating projects and then discovering the product does not meet their needs. The activation work exposed a product-market fit gap that was previously hidden by lower activation rates.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A product-market fit gap is possible, but the scenario provides no evidence for it. 90-day retention was 31% before the activation work; that is not a sign of a broken product. The timing, activation rose as retention fell during the same six-month period, points to the intervention as the causal factor, not a pre-existing product gap. Asserting a PMF problem here requires ignoring what the data actually shows.",
+              "framework_hint": "Strategic Thinking failure: reaches for a sweeping structural explanation (PMF gap) without testing the simpler hypothesis first. The data shows a directional change that coincides with a specific intervention. The correct move is to interrogate the intervention before concluding the product itself is broken."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Activation went up 26 points and retention dropped 7 points over the same six months. List the distinct mechanisms that could explain how both happened at the same time.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of explanations best accounts for why activation rising from 28% to 54% coincided with retention dropping from 31% to 24%?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct mechanisms are at work. First, hollow project creation: nudges moved users to create a project before they understood what the product was for, so the project was a compliance action, not a value signal. Second, wrong milestone selected: creating a project is an input action; a better activation milestone would be an outcome action, such as a collaborator invited or a workflow completed. Third, cohort dilution: the newly activated users are a lower-engagement group by construction, because high-engagement users would have activated without nudges, and the post-nudge cohort includes users who needed prompting to take any action at all. Fourth, metric gaming via channel: the email and tooltip sequence created a high-pressure corridor that maximized project creation without ensuring any surrounding engagement.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "These four causes are mechanistically distinct. Hollow creation explains why the act does not predict retention. Wrong milestone explains why even genuine hollow creations would not be predictive. Cohort dilution explains why the activation gain itself selects for lower-intent users. Metric gaming explains how the channel optimization inflated the number without improving the quality. Each requires a different fix, which is the signal that they are genuinely separate causes rather than variations of the same one.",
+              "framework_hint": "Creative Execution: generating structurally distinct mechanisms rather than four ways of saying 'the metric was bad.' Each item here points to a different design change: milestone redefinition, cohort analysis, channel recalibration, and post-activation engagement design."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The core issue is that creating a project within 7 days is the wrong milestone. Users who get value from the product demonstrate it by returning, not by checking a box in week one. Swap the activation milestone to something that requires demonstrated engagement, such as completing a meaningful workflow, and both metrics should align.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Milestone redefinition is the correct prescription and is the central move in this challenge. But this option presents it as the only explanation when several other mechanisms are also operating. Cohort dilution, hollow creation driven by aggressive nudges, and the general proxy-metric problem are all contributing. A complete enumeration is more useful for triage than a single-cause explanation, even when that explanation points at the right fix.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies what a high-value user looks like (returns, completes meaningful work) but does not enumerate all the ways the metric could have failed. A fuller list would give the team more leverage points to test."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The retention drop is a lagging indicator. Users who were nudged into activation in months one through three are now reaching the 90-day mark, and they retained poorly because they were not genuinely engaged. The fix is to wait for the intervention to roll off the cohorts and see if retention recovers naturally.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Recognizing that 90-day retention is lagged relative to activation is correct. But waiting for the intervention to roll off is not a diagnostic; it is a pause. It does not identify the mechanism, and it does not generate any testable hypothesis. The team needs to understand why activated users retained poorly, not simply observe that they did and wait for the cycle to complete.",
+              "framework_hint": "Creative Execution failure: identifying the timing dynamic without generating any hypothesis about mechanism. The list step requires structural causes, not a description of why the data looks the way it does."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The onboarding investment cannibalized engineering time that should have gone to core product improvements. Better activation numbers mask a product that did not improve, and users who returned after activation found nothing new worth engaging with. The real problem is an under-invested product roadmap.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Engineering resource tradeoffs are a real consideration in any roadmap decision, but the scenario provides no evidence that core product quality degraded. Retention was 31% before the activation investment, and the scenario does not mention any feature regression. Attributing the retention drop to roadmap cannibalization requires an assumption not supported by the available data. More importantly, this explanation does not account for the specific timing alignment between activation rising and retention falling.",
+              "framework_hint": "Strategic Thinking failure: introduces a structural cause (under-invested roadmap) that requires evidence not present in the scenario. The correct move at the list step is to generate hypotheses that are consistent with the data given, not to introduce new structural explanations."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "There is a real tradeoff in redesigning an activation metric. A metric tied to genuine value is harder to move, slower to signal, and more expensive to instrument. Name the criterion that makes that tradeoff worth accepting.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for redesigning an activation metric so it remains predictive of long-term retention rather than vulnerable to gaming?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is retention-correlation fidelity: the activation event must be one that, in historical cohort data, predicts 90-day retention better than the current metric. This means running a survival analysis on existing cohorts and comparing activation events (first project created, first collaborator invited, first workflow completed, first output exported) by their correlation with day-90 survival. The activation milestone that maximizes that correlation becomes the new definition, regardless of how easy or hard it is to move. The sacrifice is explicit: a harder milestone will show lower activation rates in the short term, and leadership needs to accept a number that looks worse before it becomes more meaningful.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "Retention-correlation fidelity is the correct criterion because it grounds the metric in observable data rather than intuition about what constitutes value. The sacrifice is named explicitly: lower activation rate in the short term. This is a tradeoff, not a preference, because accepting a lower number carries a real cost (pressure from leadership, slower growth optics) in exchange for a real gain (a metric that is predictive rather than gameable). The survival analysis approach also makes the decision defensible because it is derived from historical evidence.",
+              "framework_hint": "Taste: 'first workflow completed feels more meaningful' is a preference. 'First workflow completed predicts day-90 retention at 0.72 correlation vs. 0.31 for first project created in our historical cohorts' is a tradeoff. The criterion converts the intuition into a decision. Strategic Thinking: naming the sacrifice (lower headline number) in advance is what makes the criterion actionable for leadership, not just for the product team."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Replace the activation metric with a composite score that includes three signals: project created, at least one collaborator invited, and the product opened on at least three separate days within the first 14 days. A user who hits all three is genuinely activated. This raises the bar and should produce a more retentive cohort.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A composite score is a reasonable design direction and the three signals selected are more predictive than a single project creation event. But this option names a solution rather than a criterion. It does not explain what property distinguishes a good composite signal from a bad one, or why these three events and not others. Without a criterion, the team cannot evaluate whether this composite is better than an alternative, or how to update it as the product evolves.",
+              "framework_hint": "Taste partial credit: moves in the right direction by requiring more engaged behavior, but does not name what 'more engaged' is optimizing for. A criterion is 'the event that maximizes correlation with 90-day retention'; a composite score is a proposed answer to that criterion, not the criterion itself."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Define activation as time-to-value: the number of days between signup and the first moment the user reports or demonstrates getting value. Instrument this with a post-onboarding survey asking 'have you gotten value from the product yet?' and gate the activation flag on a positive response.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Time-to-value is a useful concept, but self-reported value via survey is notoriously unreliable. Users say yes to avoid cognitive dissonance or because they feel socially obligated. A metric that depends on survey response introduces a new gameable layer and creates a data dependency on a noisy signal. The activation definition should be grounded in observable behavior, not in stated experience.",
+              "framework_hint": "Domain Expertise failure: survey-based activation flags are known to produce optimistic results that do not predict behavior. An activation metric built on stated preference rather than demonstrated action makes the same error class as the original metric, just with a different mechanism."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Stop optimizing for activation entirely and treat it as a vanity metric. Focus the team on 30-day and 90-day retention directly, since those are the outcomes that matter. Activation was always a shortcut and the data now shows it was the wrong shortcut.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Discarding activation as a metric class is too drastic. Retention metrics are lagged by 30 to 90 days, which means the team operates without a leading indicator for months. A well-designed activation metric is valuable precisely because it predicts retention earlier, allowing faster iteration. The problem was not the category of metric but the specific definition chosen. Abandoning leading indicators because one was poorly defined leaves the team without any early signal of cohort quality.",
+              "framework_hint": "Strategic Thinking failure: uses the failure of one metric instance to discard the entire metric category. A leading indicator that predicts retention is more useful than retention alone because it shortens the feedback loop. The correct move is to redesign the metric, not eliminate it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A redesigned activation metric is only useful if it is falsifiable. Name the specific event, the threshold, and the timeline that would tell you the new definition is working.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How would you define a redesigned activation metric and specify what success looks like in terms that are falsifiable within a 90-day window?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Define the new activation milestone as: user completes a core workflow that produces a shareable or exportable output within 14 days of signup. This is harder to trigger via nudge because it requires the user to do real product work, not just create a container. Run the new definition against the last 12 months of cohort data to confirm it predicts 90-day retention more reliably than the original definition. If the analysis confirms a statistically significant correlation improvement, roll it as the new activation metric. Success in the next quarter: activation rate on the new definition reaches 30% (roughly the original pre-nudge baseline), and 90-day retention for newly activated cohorts returns to 29% or above. We will know the metric is working if both move together. We will know it is not working if activation on the new definition rises while retention stays flat, which would indicate the new milestone is also gameable.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise", "motivation_theory"],
+              "explanation": "This answer specifies a concrete milestone (core workflow producing a shareable output), a validation step (12-month cohort analysis), a target activation rate (30%, anchored to the pre-nudge baseline rather than the inflated 54%), a retention target (29%, recovering toward the pre-intervention level), and a falsifiability condition (if the new metric shows the same decoupling pattern, it is also gameable). All five elements are required for the answer to be actionable. The 90-day window is explicit. The counter-signal is named.",
+              "framework_hint": "Domain Expertise: real activation metrics require a specific event definition, not a category description. 'Core workflow producing exportable output' is testable; 'meaningful engagement' is not. Strategic Thinking: naming the counter-signal ('activation rises while retention stays flat') closes the hypothesis loop and prevents the team from claiming success prematurely if the same pattern recurs with the new metric."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Redefine activation as: user completes a core workflow within 14 days. Track this against 90-day retention quarterly. If the new activation cohorts show meaningfully better retention than the current 24%, the new metric is validated. Give it two quarters to stabilize before making it the primary metric.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The milestone direction is correct and the intention to validate against retention is sound. But 'meaningfully better' is not a number, and 'two quarters to stabilize' is not a timeline with a decision condition. Without a specific retention target and a falsifiability condition, the team cannot make a go or no-go call at a defined point. Leadership needs a number and a date, not a directional intention.",
+              "framework_hint": "Strategic Thinking partial credit: identifies the right metric category and validation approach but does not complete the hypothesis. A hypothesis requires a threshold (29% retention), a timeline (90 days), and a counter-signal. Directional language defers the decision indefinitely."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Present leadership with three candidate activation definitions and their estimated impact on the activation rate. Let leadership choose which definition to adopt based on their appetite for short-term activation rate reduction. Frame it as a strategic choice, not a technical one.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Presenting options to leadership can be appropriate, but the question asks for a definition and a success measure. Offering a menu without a recommendation defers the analytical work to a group that does not have the product data context. More importantly, 'appetite for short-term activation rate reduction' frames the decision as a preference about optics rather than a question about which metric is actually predictive. The team has the cohort data to run the retention-correlation analysis; they should bring a recommendation, not a menu.",
+              "framework_hint": "Motivation Theory failure: the team's job in the win step is to define what satisfaction looks like after the redesign, not to outsource the definition to leadership preference. Deferring to appetite avoids naming the criterion and leaves the problem open."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Abandon a single activation metric entirely and replace it with a dashboard of leading indicators: day-3 retention, day-7 retention, and feature adoption breadth. Report these weekly to leadership as a more nuanced picture of early product health than any single activation event can provide.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A multi-metric dashboard adds nuance but loses focus. Day-3 and day-7 retention are retention metrics, not activation metrics; calling them leading indicators does not change their category. Feature adoption breadth is useful but highly product-specific and difficult to aggregate into a single signal for leadership. More critically, a dashboard of three metrics with no threshold or success definition is not an answer to the win question. It produces data without a decision condition.",
+              "framework_hint": "Strategic Thinking failure: replaces one gameable metric with three metrics that have no falsifiability condition. The win step requires a specific hypothesis about what success looks like. A dashboard of directional indicators is an observation tool, not a decision framework."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

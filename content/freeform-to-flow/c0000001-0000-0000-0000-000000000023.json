@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000023",
+  "title": "Prompt Engineering ROI: When to Stop Iterating",
+  "scenario_role": null,
+  "scenario_context": "An AI team built a customer-intent classifier to route support tickets automatically. The classifier started at 71% accuracy on the internal eval set. Three weeks of prompt engineering later, accuracy sits at 86%. The work involved iterating on system prompt structure, few-shot example selection, and output parsing logic. The gains started large and have been shrinking: the last week moved accuracy from 84% to 86%.",
+  "scenario_trigger": "The PM asks when to stop. Three paths are on the table: keep prompt-engineering and push for higher accuracy (diminishing returns already visible), fine-tune a smaller model on the labeled eval data (higher ceiling but a 6-to-8 week investment), or ship at 86% now and improve post-launch using production signal. Each path carries different cost, timeline, and risk. The decision cannot be deferred indefinitely because support volume is growing and manual routing is straining the team.",
+  "scenario_question": "Frame what the 86% accuracy figure actually means for the business, enumerate what needs to be compared before choosing a path, name the tradeoff the team must accept, and define a falsifiable success bar for the chosen path.",
+  "engineer_standout": "A strong answer refuses to treat accuracy on the eval set as the decision variable. 86% accuracy is neither good nor bad until you know what a misclassification costs. If misrouting a ticket means a frustrated customer waits two hours for the wrong specialist to transfer them, 86% is too low to ship. If misrouting means a one-click correction by the agent, 86% is more than enough and the remaining 14% gap is a preference, not a business problem. The reasoning move is to replace eval accuracy with business cost of errors, then evaluate each path against that criterion. The diminishing-returns pattern (84% to 86% in one week) tells you that prompt engineering is approaching its ceiling for this task: the next two points will cost more than the first fifteen did. That changes the math on fine-tuning.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["taste", "strategic_thinking"],
+  "secondary_competencies": ["domain_expertise", "motivation_theory"],
+  "topic_tags": ["ai-product", "prioritization", "build-vs-buy", "product-strategy", "classifiers"],
+  "technique_tags": ["north-star-cascade", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "86% accuracy is a number, not a problem statement. What would you need to know before deciding whether that number is good enough?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the 'when to stop' decision for the intent classifier team?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The decision is not about reaching a target accuracy number but about whether the business cost of the remaining 14% error rate is higher or lower than the cost of reducing it further. A misclassification on this classifier routes a support ticket to the wrong team. That cost depends entirely on what happens next: if the agent can correct the routing in one click, the cost per misclassification is seconds of delay and the 86% figure is already past the threshold where further investment changes business outcomes. If misrouting triggers a 2-hour wait for a transfer and a CSAT penalty, the cost per error is real and the gap from 86% to 92% carries material business value. The frame is not 'how accurate is the classifier?' but 'what does one misclassification cost the business, and how many misclassifications happen per day at current volume?'",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This framing correctly identifies that 86% accuracy on an eval set is an intermediate signal, not a decision criterion. The eval set accuracy tells you how often the model is wrong; it says nothing about the magnitude of the harm when it is wrong. Reframing around cost-per-misclassification at current volume turns a subjective accuracy debate into a calculable business question: if support volume is 500 tickets per day and 14% misclassify, that is 70 wrong routes per day, and whether that is tolerable depends on the downstream cost of each wrong route, not on the number 86.",
+              "framework_hint": "Taste: distinguishing between 'accuracy went from 84% to 86%' (a measurement) and 'what does the gap from 86% to 100% cost the business per day?' (the actual decision criterion). Strategic Thinking: the diminishing-returns pattern (one point per week after the first 13 came in three weeks) is evidence that the ceiling for prompt engineering on this task is near 88-90%, which means the frame should also ask whether any accessible path produces the required accuracy at acceptable cost."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The decision is whether 86% is accurate enough to ship. The team should compare 86% against industry benchmarks for intent classifiers and, if the product falls short, continue prompt engineering until reaching a competitive accuracy level before shipping.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Benchmarking is a reasonable instinct and checking against industry standards is not wrong. The gap is that industry benchmarks for intent classifiers reflect different task definitions, ticket volumes, and downstream consequences. A benchmark of 90% accuracy for a high-volume e-commerce classifier where misclassification means a slightly slower refund is not the same problem as this team's classifier where misclassification might mean an enterprise customer waits hours for the wrong specialist. Benchmarks tell you what others have achieved, not what the business needs. The framing still anchors on accuracy as the decision variable rather than on the cost the errors produce.",
+              "framework_hint": "Strategic Thinking partial credit: recognizes that the team needs a reference point for 86% and that shipping without that context is risky. Taste gap: treating benchmarks as proxies for 'good enough' conflates technical performance with business impact. The better frame asks: given what misclassification costs this business specifically, where does the accuracy threshold sit?"
+            },
+            {
+              "option_label": "C",
+              "option_text": "The decision is primarily a team morale and momentum question. Three weeks of prompt engineering is a long time for an AI team. If the team is feeling fatigue, shipping at 86% and moving on to the next feature preserves energy and prevents burnout. A fresh project after the launch will produce more value than grinding for two more accuracy points.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Team fatigue is a real operational consideration but it is not a framing of the business decision. The scenario asks when to stop from a product and strategy standpoint, and the answer cannot be 'when the team is tired.' Using morale as a proxy for the stop criterion produces a decision that would ship at 71% if the team iterated for six weeks, or hold at 91% if the team happened to feel energized. The frame needs to connect accuracy to business consequences, not to the team's subjective state.",
+              "framework_hint": "Motivation Theory misapplication: team motivation is a real input to execution planning (pacing, staffing, sprint length) but it is not a strategic decision criterion for when to ship a classifier. The stop criterion should be derived from the value of the accuracy gain to the business, not from the cost of the accuracy gain to the team's morale."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision is about whether to trust eval accuracy at all. The eval set may not reflect the real distribution of incoming support tickets, so 86% on the eval set might translate to 70% in production. The team should deploy a shadow-mode version alongside manual routing to measure production accuracy before making any path decision.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Questioning eval set representativeness is a legitimate technical concern and shadow-mode evaluation is a real practice in classifier deployment. This becomes a plausible-wrong answer because it reframes the decision as a data quality problem rather than a business value problem. Even if the eval set is perfectly representative and production accuracy matches 86%, the decision of whether to keep iterating, fine-tune, or ship still requires knowing the cost of the 14% error rate. Shadow-mode data would tell you the production accuracy but not whether that accuracy level is acceptable, which remains the core question.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that eval-to-production accuracy gaps are a real risk in classifier deployment. Strategic Thinking failure: resolving the eval representativeness question does not resolve the business decision. You can have a perfect eval set and still not know whether 86% is enough, because 'enough' is determined by the cost of errors, not by the fidelity of the measurement."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Three paths are on the table. List the factors that make each path a different kind of bet, not just a different speed of reaching higher accuracy.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of factors most completely covers what needs to be compared before recommending a path for the intent classifier?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct factors need to be evaluated for each path. First, business cost of the current error rate: at current support volume, how much does each misclassification cost in agent time, CSAT impact, or escalation rate? This sets the floor for whether any further investment is justified. Second, accuracy ceiling of each path: prompt engineering is showing diminishing returns with one point per week in the third week; fine-tuning a smaller model on the labeled eval data has a higher ceiling but requires 6 to 8 weeks; shipping now generates production signal that may unlock a faster improvement loop. Third, time to impact: each path has a different lag between decision and measurable business outcome. Fourth, reversibility: shipping at 86% with a post-launch improvement plan is more reversible than committing 6 to 8 weeks of engineering to fine-tuning. Fifth, opportunity cost: the team hours that go into another two weeks of prompt engineering or into fine-tuning cannot go to other projects, so the value of the accuracy gain needs to be compared against the value of whatever work gets deferred.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These five factors are mechanistically distinct: error cost sets whether any path is worth pursuing, accuracy ceiling reveals whether each path can reach the required threshold, time to impact separates paths that improve the metric now from paths that improve it later, reversibility reflects that fine-tuning commits weeks of engineering that cannot be recovered if the model's production performance disappoints, and opportunity cost makes the investment comparison explicit. Listing them separately makes visible that the three paths are not just 'faster vs. slower accuracy improvement' but bets on different timelines, ceilings, and risk profiles.",
+              "framework_hint": "Creative Execution: generating factors that are mechanistically different rather than variations of 'which path gets to higher accuracy.' Opportunity cost and reversibility are often omitted but they are what makes the fine-tuning path a genuine commitment rather than a dial to be turned up. Domain Expertise: the diminishing-returns signal (84% to 86% in one week, after 13 points in two weeks) is not just a rate of progress but evidence that prompt engineering is approaching the ceiling for this task, which changes the accuracy-ceiling factor for that path."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The comparison should cover accuracy gain potential, time to ship, and engineering cost for each path. Prompt engineering is fastest and cheapest but appears to be running out of headroom. Fine-tuning is slower and more expensive but can reach higher accuracy. Shipping now is fastest but leaves accuracy on the table. A cost-benefit analysis across these three dimensions should surface the right answer.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Accuracy gain potential, time to ship, and engineering cost are real factors and this covers the most visible dimensions of the comparison. The gap is that it omits the business cost of the current error rate, which is the factor that determines whether any further investment is justified at all. If misclassifications cost the business essentially nothing, shipping at 86% dominates on every dimension and the cost-benefit analysis is trivial. It also omits reversibility: fine-tuning is not just 'slower and more expensive' but a commitment that consumes engineering capacity for 6 to 8 weeks before the team learns whether it worked in production.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies the three dimensions that most teams focus on in this comparison. Creative Execution gap: two of the five load-bearing factors (business cost of errors and reversibility) are missing. A cost-benefit analysis applied to three factors will produce a different recommendation than one applied to five, and the missing factors are the ones that most often flip the decision."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should list the stakeholders who have opinions on this decision: PM, engineering lead, support team manager, and the executive sponsor. Each stakeholder has different risk tolerance and different incentives. Mapping their perspectives before choosing a path will surface alignment gaps and prevent the chosen path from being reversed after shipping.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Stakeholder alignment is a real concern in shipping AI systems, and understanding that the support team manager cares about agent experience while the PM cares about ticket resolution time is worth knowing. But the list step asks for the decision factors that differentiate the three paths, not for a process to gather stakeholder opinions. The factors that make fine-tuning a different bet than prompt engineering do not change based on who is in the room: the 6-to-8 week timeline, the accuracy ceiling, and the opportunity cost are properties of the path, not of stakeholder preferences.",
+              "framework_hint": "Cognitive Empathy partial: correctly identifies that different stakeholders weight the three paths differently based on their incentives. Creative Execution gap: stakeholder mapping is an input-gathering exercise, not a list of decision factors. A complete list of factors should be specific enough that the team could evaluate each path against them without needing a separate stakeholder process."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The comparison is simple: accuracy now versus accuracy later. Shipping at 86% means accepting current performance. Fine-tuning means waiting for better performance. Prompt engineering is the middle path. The team should decide based on how urgently the business needs the classifier to be live and let that urgency drive the timeline.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Urgency is a real input to the decision and the scenario does mention that support volume is growing and manual routing is straining the team. But collapsing the comparison to 'accuracy now versus accuracy later' removes all the factors that make the three paths structurally different. It treats fine-tuning and continued prompt engineering as equivalent slower paths, when fine-tuning has a different accuracy ceiling, a different risk profile, and a fundamentally different resource commitment. Letting urgency drive the timeline without naming what accuracy threshold is required produces a decision that ships the classifier at 86% and then has no principled basis for evaluating when post-launch improvements are sufficient.",
+              "framework_hint": "Strategic Thinking failure: reducing a multi-factor decision to a single dimension (time) and letting that dimension dominate eliminates the possibility of identifying which path is right for the business given its specific error cost and growth trajectory. A list of decision factors should include at least the business cost of errors and the accuracy ceiling for each path, or the comparison cannot distinguish between good trade-offs and bad ones."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion that tells you whether 86% is enough to ship, or whether the gap to a higher accuracy threshold is worth the investment. The criterion should name what you are giving up with each path, not just what you are gaining.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding whether to ship at 86%, continue prompt engineering, or invest in fine-tuning the classifier?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is whether the business cost of misclassification at 86% accuracy exceeds the cost of the investment required to close the accuracy gap meaningfully. At current volume, 14% misclassification means a calculable number of wrong routes per day. If each wrong route costs the support team 10 minutes of correction time and a CSAT risk, that is a measurable daily loss. The next two accuracy points from prompt engineering would save roughly 10% of that loss but cost another two weeks of a senior engineer. Fine-tuning could close 6 to 8 additional points but costs 6 to 8 weeks of engineering and may not reach 94% in production even if the eval set improves. Shipping at 86% now preserves optionality: production traffic generates labeled data that either confirms 86% is tolerable or makes the case for fine-tuning with real cost data rather than projected cost data. The sacrifice of shipping now is accepting the current error rate for a sprint or two. That sacrifice is acceptable if the daily cost of the 14% gap is lower than the opportunity cost of the engineering work required to close it.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names what the team is optimizing for (minimizing the business cost of errors relative to the cost of reducing them) and names the sacrifice explicitly: shipping at 86% means accepting the current misclassification rate for the duration of the post-launch observation period. It grounds the sacrifice in the specific numbers of the scenario: 14% error rate, 3 weeks already spent, diminishing returns visible in the third week. It also correctly identifies that shipping now generates production signal that changes the information state for the fine-tuning decision, making it a different kind of bet than either continuing prompt engineering or immediately committing to fine-tuning.",
+              "framework_hint": "Taste: naming the sacrifice (accepting 14% misclassification for a sprint or two) as distinct from a preference (faster shipping is better) forces the team to defend whether the daily cost of the gap is lower than the investment required to close it. Strategic Thinking: framing the ship-now path as preserving optionality rather than as giving up on accuracy is a structural insight: production data at 86% is more informative about the value of the next 6 accuracy points than any amount of eval set iteration, because it reveals what the errors actually cost in a live system."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be total cost of ownership over the next 12 months. Model prompt engineering ongoing maintenance cost, the engineering investment and incremental accuracy of fine-tuning, and the accumulated misclassification cost at 86% if the team ships now. The path with the lowest 12-month total cost wins.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A 12-month total cost of ownership model is a legitimate framework and captures that the decision is not just about what happens in the next sprint. The gap is that this approach requires estimating quantities that are not currently known with confidence: the production misclassification cost (which requires shipping to measure), the fine-tuning accuracy ceiling (which requires fine-tuning to measure), and the ongoing prompt maintenance cost (which depends on how fast the input distribution shifts). Applying a 12-month model to estimated inputs without acknowledging that the biggest uncertainty is the production error cost produces false precision. The optimize step should name that the ship-now path's core advantage is that it resolves the biggest uncertainty (what does each misclassification actually cost?) before committing to the longer investment.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the decision has a multi-period structure and that ongoing costs matter. Taste gap: embedding all uncertainties inside a total cost model treats estimated inputs as if they were known, which obscures the decision. The sacrifice being named should be the cost of the error rate over the observation period, not an amortized estimate."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should optimize for the path most likely to produce a state-of-the-art classifier for the business's use case. Fine-tuning a smaller model on labeled data is the professionally rigorous choice and will produce a more maintainable, explainable, and accurate system than a prompt-engineered large model. The criterion is technical quality, and fine-tuning is the technically superior path.",
+              "quality": "surface",
+              "competencies": ["domain_expertise"],
+              "explanation": "Technical quality and maintainability are real properties that matter for long-term system health, and fine-tuning does generally produce a more predictable system than prompt engineering on a large model. But 'technically superior' is not a decision criterion for the optimize step: it names a preference (rigorous is better) without naming the sacrifice (6 to 8 weeks of engineering capacity at a moment when support volume is growing and manual routing is straining the team). The optimize step requires naming what the team gives up by choosing fine-tuning now, which is 6 to 8 weeks of deployment delay and the accumulated misclassification cost during that window.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that fine-tuning has real technical advantages for classifier maintainability and ceiling accuracy. Taste failure: 'technically superior' is a preference, not a tradeoff. A criterion that always selects the technically rigorous option regardless of the business context does not require any knowledge of the specific scenario to apply."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is team confidence. The right path is whichever one the engineering team believes they can execute successfully and own post-launch. If the team has fine-tuning experience, pursue fine-tuning. If prompt engineering is the team's strength, continue there. Confidence in execution is the best predictor of outcome quality.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Execution confidence is a relevant input to feasibility assessment and it is worth knowing whether the team has fine-tuning experience before committing to that path. But team confidence cannot be the criterion because it makes the decision entirely about the team's capabilities rather than about the business value of the accuracy improvement. A team that is supremely confident in prompt engineering would continue iterating indefinitely on this logic, even after the returns have clearly diminished to one accuracy point per week. The criterion needs to connect the path's cost to the business value it produces.",
+              "framework_hint": "Strategic Thinking failure: using execution confidence as the decision criterion inverts the relationship between team capability and business need. Team capability is a constraint that affects which paths are feasible; it is not a criterion that determines which path is right. The criterion should tell you when to stop even if the team could continue: that requires connecting accuracy to business cost, not to the team's skill profile."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the chosen path is failing before the 6-to-8 week timeline reveals it.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for shipping the intent classifier at 86% with a post-launch improvement commitment?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: within 30 days of launch, the misrouting rate in production is below 16%, average time-to-correct-routing for misclassified tickets is under 5 minutes, and support team CSAT holds within 3 points of the pre-classifier baseline. The 16% production misrouting ceiling tests whether the eval set's 86% accuracy was representative, and a gap larger than 2 points triggers an immediate investigation into which intent categories are failing. The 5-minute correction threshold tests whether the fallback experience is tolerable at current volume: if agents spend more than 5 minutes correcting a misroute, the compounded cost of 14% errors exceeds the threshold that would have justified fine-tuning upfront. The CSAT floor tests whether the customer experience impact is within bounds. The counter-signal is: production misrouting rate exceeds 18% in the first two weeks, which would indicate the eval set was systematically unrepresentative and the fine-tuning path should be pulled forward immediately without waiting out the full 30-day window.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names three metrics with specific thresholds and a 30-day timeline, each connected to a distinct element of the strategic hypothesis. The 16% production misrouting ceiling tests the eval set representativeness question directly. The 5-minute correction threshold converts the abstract 'cost of misclassification' into a measurable operational signal. The CSAT floor prevents the team from treating a customer-experience degradation as acceptable collateral. The counter-signal at 18% in two weeks is non-obvious and critical: it shortens the observation window dramatically if the situation is worse than expected, rather than waiting the full 30 days to learn the ship-at-86% bet was wrong.",
+              "framework_hint": "Domain Expertise: a 16% production misrouting ceiling with a 2-point tolerance band is calibrated to the scenario's 14% eval error rate and reflects the practical gap between controlled eval sets and production distributions in intent classifiers. Strategic Thinking: the counter-signal at 18% is faster than the 30-day window because high early misrouting in a support classifier compounds: each misrouted ticket creates a correction task that occupies agent capacity needed for correctly routed tickets, so the cost accelerates rather than staying linear."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means classifier-assisted routing handles 80% of incoming tickets without manual intervention within 60 days, with overall ticket resolution time no worse than the pre-classifier baseline. Track both metrics weekly and reassess if resolution time degrades by more than 10%.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Automation rate and resolution time are relevant business metrics and weekly tracking with a 10% degradation trigger is a reasonable early-warning approach. The gap is that these metrics do not directly test the accuracy question the decision was built on: a classifier handling 80% of tickets without intervention could be routing 20% of those tickets incorrectly and having them silently corrected by agents without a formal escalation. Resolution time aggregates correct and misrouted tickets, which makes it a lagging signal for the accuracy problem. A win condition for this scenario needs at least one metric that directly measures classification accuracy in production, not just the downstream operational outcome.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies automation rate as a leading indicator of whether the classifier is being trusted at scale and resolution time as a lagging indicator of whether it is helping. Domain Expertise gap: neither metric isolates the accuracy question. A classifier at 86% accuracy could hit 80% automation rate with terrible routing quality if the support team simply accepts misroutes and adds correction steps, which would show resolution time as flat but would not reflect the underlying accuracy problem."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means the support team manager reports that the classifier feels like an improvement over manual routing after 30 days of use. Schedule a retrospective at day 30 and treat a positive qualitative assessment as validation. If the team feels the tool is helping, continue improving it iteratively. If it feels like a burden, reassess.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Qualitative feedback from the support team is a valuable input and a day-30 retrospective is worth scheduling. But 'feels like an improvement' is not a falsifiable success bar: it cannot be objectively measured, it varies by team member, and it does not connect to the accuracy and cost question that drove the path decision. Two people on the support team could give opposite assessments of the same misrouting rate depending on which tickets they handled that week. A win condition for an AI classifier needs to be stated in terms that a person who was not on the team could evaluate against production data without needing to interview anyone.",
+              "framework_hint": "Cognitive Empathy partial: recognizes that the support team is the primary user of the classifier's output and that their experience matters for assessing whether the tool is net positive. Strategic Thinking failure: falsifiability requires a metric and a threshold, not a qualitative sentiment. The win step exists specifically to produce a condition that can be evaluated without ambiguity when the observation window closes."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the classifier accuracy improves from 86% to 90% within 90 days through post-launch iteration, confirming that production signal enables faster improvement than further prompt engineering would have. Measure accuracy monthly on a refreshed eval set drawn from production tickets.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Measuring post-launch accuracy improvement on a production-drawn eval set is a real and important practice for classifier development. This becomes plausible-wrong because it sets the win condition as improving the eval metric rather than as validating the business hypothesis. The team decided to ship at 86% because they believed the business cost of the 14% error rate was tolerable. The win condition should test that belief directly: did the decision to ship rather than fine-tune produce an acceptable customer and operational outcome? Improving eval accuracy to 90% by month three is a technical outcome, not a validation of the strategic decision. A team could hit 90% by month three while support CSAT collapsed in week one because the production misrouting rate was 22%, not 14%.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that production-drawn eval sets are more representative than static eval sets and that post-launch data should inform accuracy tracking. Strategic Thinking failure: the win condition should close the loop on the decision criterion named in the optimize step. If the criterion was 'business cost of misclassification is within acceptable bounds,' the win condition should measure that cost directly, not measure the accuracy improvement that may or may not have been sufficient to keep the cost in bounds."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

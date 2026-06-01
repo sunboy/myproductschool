@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000025",
+  "title": "LLM Costs Are 3x Higher Than Projected",
+  "scenario_role": null,
+  "scenario_context": "An AI email drafting assistant shipped inside a CRM six weeks ago. The assistant drafts outbound emails using an LLM, pulling context from deal history and contact records. Adoption exceeded expectations: 38% of seats use it weekly and satisfaction sits at 4.4 out of 5. The feature is working.",
+  "scenario_trigger": "The projected LLM API cost was $0.04 per user per day. Actual spend is running at $0.13 per user per day, a 3x overrun. The CFO has flagged it and wants an explanation of the root cause and a roadmap to close the gap without killing the feature.",
+  "scenario_question": "Identify the most likely drivers of the 3x cost overrun, decide how to investigate them, define the optimization tradeoffs, and set a falsifiable target for bringing unit economics back in line.",
+  "engineer_standout": "A strong answer treats this as a unit-economics problem on a validated feature, not a product kill decision. The 4.4/5 satisfaction and 38% WAU confirm the value is real, so the job is cost-down without value-down. The 3x gap ($0.04 projected vs $0.13 actual) has two distinct sources: volume (more usage than the model assumed) and per-call cost (prompt size, model tier, lack of caching, retries). The engineering move is to instrument cost per request broken out by user segment and feature path before optimizing anything. Power users burning disproportionate context, a frontier model where a cheaper one suffices, long system prompts that could be cached, and agentic retry loops are the four structurally distinct levers. The winning target is a specific cost-per-active-user threshold with a held quality floor.",
+  "paradigm": "ai_assisted",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["domain_expertise", "strategic_thinking"],
+  "secondary_competencies": ["taste", "creative_execution"],
+  "topic_tags": ["cost-optimization", "north-star", "monetization", "growth"],
+  "technique_tags": ["north-star-cascade", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The feature works, users love it, and it costs 3x what was projected. What is the actual problem being solved here, and what is the right framing before touching anything?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the $0.13 vs $0.04 cost overrun?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 3x overrun ($0.04 projected vs $0.13 actual) on a feature with 4.4/5 satisfaction and 38% WAU is a unit-economics problem on a validated feature, not a signal to kill or cap it. The value is confirmed. The job is to determine whether the gap is driven by higher-than-modeled usage volume, higher-than-modeled per-call cost, or both, and then close it without degrading the experience. The framing that matters is: what does it cost to deliver one satisfying draft, and which inputs to that cost can be reduced without the user noticing?",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing correctly separates the value signal (satisfaction and engagement are strong) from the cost signal (per-user spend is 3x projection) and refuses to conflate them. The 4.4/5 and 38% WAU make shutting down or capping the feature the wrong default. The right frame is a unit-economics optimization problem: reduce cost-per-satisfying-output. That frame directs attention toward the inputs to cost (usage volume, prompt size, model tier, caching) rather than toward the feature itself.",
+              "framework_hint": "Strategic Thinking: the because-Z framing here is 'costs are 3x over because the projected model underestimated either volume or per-call cost, or both.' That hypothesis is falsifiable and directs the investigation toward instrumentation rather than product decisions. Domain Expertise: distinguishing volume-driven overrun from per-call-cost overrun is the first diagnostic split, and each has a different remediation path."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The AI email assistant is generating too much usage for the current budget model to sustain. The 38% WAU signals that users are over-relying on the feature, which drives costs beyond what was scoped. The framing is a usage governance problem: the team needs to introduce limits or throttling to bring spend back within the projected envelope.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "High engagement driving higher-than-projected costs is a real mechanism and worth quantifying. But framing the solution as throttling or governance before attributing the overrun to its actual drivers is premature. Usage volume is one possible cause among several (per-call prompt cost, model tier, caching gaps, retries). More critically, the 4.4/5 satisfaction score means throttling carries a high risk of degrading a working product. The framing should precede the solution direction.",
+              "framework_hint": "Motivation Theory partial credit: correctly identifies that more usage than modeled produces more cost. Strategic Thinking gap: jumping to throttling as the solution before diagnosing whether volume or per-call cost dominates the gap collapses the problem prematurely. The frame should establish what kind of overrun this is before prescribing a fix."
+            },
+            {
+              "option_label": "C",
+              "option_text": "LLM API pricing is unpredictable and the initial projection was simply too optimistic. The team should revise their cost model upward, accept the $0.13 per user per day as the new baseline, and go back to the CFO with updated projections. Features that users love should not be constrained by early-stage cost estimates.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Accepting a 3x overrun as a new baseline without investigating its causes is not a framing, it is a capitulation. The CFO's question is not whether the feature is beloved but whether the unit economics are sustainable. At $0.13 per user per day, the cost structure may make the feature unprofitable at scale. Revising the projection upward without understanding which cost drivers are optimizable abandons the most useful part of the exercise.",
+              "framework_hint": "Motivation Theory failure: this answer skips the friction identification step entirely. The friction is not 'CFO expectations need updating,' it is 'the cost model has a gap that needs attributing.' Satisfaction scores do not exempt a feature from unit-economics scrutiny, especially before the team understands what is driving the overrun."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The 3x cost overrun indicates a technical implementation mistake. The engineering team likely chose the wrong model or wrote inefficient prompts, and the problem is a code quality issue that should be fixed in a sprint. The CFO should be reassured that the team is on it and costs will return to $0.04 within two weeks.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Inefficient prompts or a poorly chosen model are plausible contributors, but framing the entire 3x gap as a code quality mistake conflates hypothesis with diagnosis. The overrun could be equally explained by usage volume, power-user concentration, or missing caching, none of which are fixed by rewriting prompts. Committing to a two-week recovery at $0.04 before attributing the gap is a false precision that will erode CFO trust if the number does not recover on schedule.",
+              "framework_hint": "Domain Expertise failure: a 3x cost gap on an LLM feature has multiple structurally distinct causes (model tier, prompt length, caching, retries, volume distribution). Attributing it to a single cause before instrumenting is a diagnostic shortcut. Strategic Thinking failure: a two-week commitment to a specific target requires knowing which lever is dominant, which the team does not yet know."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The overrun is a unit-economics problem. What are the structurally distinct cost drivers that could together explain the gap from $0.04 to $0.13 per user per day?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of cost drivers best explains a 3x LLM API overrun on a CRM email drafting feature?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct drivers can each independently produce the gap. First, usage volume: the 38% WAU may mask a power-user tail, where a small cohort generates a disproportionate share of requests, inflating the per-seat average beyond what the flat $0.04 model assumed. Second, per-call context size: the system prompt may include full deal history and contact records, producing large token counts that the projection underestimated. Third, model tier: the team may be routing all requests to a frontier model (GPT-4-class) when shorter or templated drafts could run on a cheaper model without quality loss. Fourth, missing caching and retries: static system prompt sections are re-sent on every call, and failed generations may be retried automatically without backoff, each retry billing at full cost.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These four drivers are mechanistically distinct. Power-user volume requires cohort analysis of requests per seat per day. Context size requires logging token counts per call. Model tier requires reviewing the routing configuration. Caching gaps require checking whether static prompt sections are flagged for prompt caching. Each requires a different instrumentation step and has a different remediation. Listing variations of 'the prompts are expensive' would not generate actionable investigation paths.",
+              "framework_hint": "Creative Execution: generating structurally distinct hypotheses rather than variations on a theme. Each driver here requires a different data source to confirm or rule out. Domain Expertise: prompt caching, model right-sizing, and power-user segmentation are real LLM cost levers with established tooling; naming them correctly signals that the investigation will be targeted."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The most likely cause is that the prompts are too long. CRM features tend to include extensive deal history and contact fields in system prompts to improve output quality, and the token count per call is almost certainly higher than what the $0.04 model assumed. Trimming prompts and summarizing context before sending will bring costs down significantly.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Context size is a real and commonly dominant cost driver for CRM-integrated LLM features, and the diagnosis is plausible. The gap is that this is one driver, not a complete enumeration. Power-user concentration, model tier selection, and caching gaps can each independently explain a significant fraction of the 3x overrun and are missed. A team that acts only on prompt length may close half the gap and conclude the problem is solved when other drivers remain unaddressed.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies a real cost driver with the right mechanism. Creative Execution gap: stops at one structurally distinct cause. The list step asks for an enumeration that covers different investigation paths, not a single most-likely hypothesis."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The LLM API vendor raised prices or the team is on an inefficient pricing tier. AI API costs fluctuate and the initial projection may have used an outdated rate card. The first step is to check the current billing rate against the rate used in the projection and renegotiate or switch vendors if needed.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Verifying the rate card against the projection assumption is a legitimate sanity check and takes five minutes. But a vendor price change rarely produces a 3x gap without a notification, and it does not interact with the feature's specific usage patterns. This answer addresses the unit price of tokens but ignores the quantity of tokens consumed, which is where most LLM cost overruns are found. A 3x gap from a price change alone would require the vendor to have tripled rates, which is implausible without the team noticing.",
+              "framework_hint": "Domain Expertise failure: the unit economics of an LLM feature depend on both price per token and tokens per call per user per day. Focusing only on the rate card ignores volume and per-call cost, which are far more likely sources of a 3x gap on a newly shipped feature. Creative Execution failure: this is a single check, not an enumeration of structurally distinct drivers."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Users are abusing the feature, using it for tasks outside email drafting (summarizing deals, generating reports, asking general questions) because the assistant is conveniently embedded in the CRM. The cost overrun is a scope creep problem, not a technical one. Restricting the assistant to email drafting tasks only will bring costs back in line.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Off-label usage is a real phenomenon for embedded LLM assistants and worth checking in the request logs. The problem is treating it as the primary driver without evidence. The scenario describes an email drafting assistant, and a 4.4/5 satisfaction score suggests users are getting what they came for. More importantly, scope creep and power-user volume are the same lever (requests per seat), not a distinct driver that implies a different fix. Restricting the assistant on the assumption of off-label use, before looking at request logs, risks degrading a working feature based on a hypothesis.",
+              "framework_hint": "Cognitive Empathy failure: the hypothesis assumes users are misusing the feature, but the 4.4/5 score and 38% WAU suggest the opposite. Strategic Thinking failure: even if off-label use is occurring, the remediation (restriction) is a product decision that should follow instrumentation, not precede it. Acting on an unconfirmed hypothesis about user behavior before looking at logs is a common reasoning failure in cost optimization."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Multiple levers can reduce cost. Model right-sizing, prompt caching, context trimming, and usage tiering all point in different directions. Name the criterion that governs which to pursue first and what you are willing to sacrifice.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Given the 4.4/5 satisfaction floor, what is the right optimization criterion and the tradeoff it forces?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is cost-per-satisfying-draft held at or below the budget threshold, with output quality (satisfaction score) as the non-negotiable guardrail. The optimization sequence follows cost impact in descending order, starting with changes that are invisible to users: enable prompt caching on the static system prompt sections (zero quality impact, immediate token reduction), then right-size the model by routing shorter or templated drafts to a cheaper tier while keeping complex or high-context requests on the frontier model (minimal quality impact if the routing logic is well-calibrated), then trim context by summarizing deal history rather than appending raw records (moderate quality risk, requires A/B validation against the 4.4 baseline). Usage tiering (caps or overage pricing for power users) comes last because it directly affects the users driving the most engagement and carries the highest churn risk. The sacrifice is explicit: the team accepts a longer optimization runway in exchange for not degrading the experience that produced the 4.4/5 score.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This answer names the criterion (cost-per-satisfying-draft at a held quality floor), sequences the optimization levers by user visibility and quality risk, and makes the sacrifice explicit (longer runway in exchange for experience preservation). The sequencing matters: caching and model right-sizing are engineering changes that users do not feel, while context trimming and usage caps carry measurable satisfaction risk and require validation. The 4.4/5 baseline is named as the guardrail, not a vague 'do not degrade quality' instruction.",
+              "framework_hint": "Taste: the tradeoff here is not 'cheaper versus better' but 'which cost lever has the smallest footprint on user experience.' Naming the criterion (cost-per-satisfying-draft) turns a preferences debate ('should we cap usage?') into a structured decision rule. Strategic Thinking: sequencing by user visibility converts the optimization roadmap into a risk-ordered execution plan rather than a list of simultaneous changes."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Switch from the current LLM to a cheaper, faster model for all requests. Models like GPT-4o-mini or Claude Haiku cost significantly less per token than frontier models and produce good-enough output for email drafting. The satisfaction score may dip slightly but cost savings will be substantial. Run a two-week pilot with a subset of users to validate before full rollout.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Model right-sizing is a high-impact lever and the pilot approach is sound. The gap is that applying it universally, rather than selectively, ignores that some requests (complex deals, long contact histories, multi-recipient emails) may genuinely require frontier-model quality to hold the 4.4/5 satisfaction floor. The option also misses the caching and context-trimming levers, which carry lower quality risk and should be sequenced before a model swap. A blunt universal downgrade risks a satisfaction drop that is harder to reverse than a targeted routing change.",
+              "framework_hint": "Strategic Thinking partial credit: model right-sizing is a real lever with the right directional logic. Taste gap: the criterion (what are we willing to sacrifice?) is not named. A universal downgrade is a preference ('cheaper is fine') not a tradeoff ('we get X cost reduction, we give up Y quality on Z request type, and we accept that because the net satisfaction impact is bounded')."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Implement a daily draft limit per user. If 38% of users are active weekly, a small subset of power users is likely responsible for a disproportionate share of requests. Capping usage at, say, 10 drafts per day protects the budget while leaving casual users unaffected. Power users can request an upgrade or live within the cap.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Usage caps are a legitimate business lever but they address volume at the expense of the users who are most engaged and most likely to champion the feature. Applying a cap before instrumenting which users are driving the overrun, and before exhausting engineering-side optimizations (caching, model routing, context trimming), risks degrading the product for power users without knowing whether the cap would even close the gap. A 10-draft cap chosen without cost attribution data is a number pulled from intuition, not analysis.",
+              "framework_hint": "Motivation Theory failure: the power users hitting high draft counts are demonstrating the most friction-clearing value from the feature. Capping them first removes the product's highest-value use case. Taste failure: this is a preference ('caps feel controllable') not a tradeoff with a named criterion. The criterion should state what we get, what we give up, and why the sacrifice is acceptable."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Renegotiate the API contract with the LLM provider. At current usage volumes, the team likely qualifies for volume discounts or committed-use pricing that was not available when the $0.04 projection was made. A better rate card is the fastest path to closing the gap without touching the product or the engineering implementation.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Volume discounts are real and worth pursuing in parallel, but they rarely close a 3x gap. A committed-use discount of 20-30% is typical; bridging from $0.13 to $0.04 requires an 70% reduction, which no rate negotiation achieves alone. More importantly, a negotiated discount leaves the underlying cost structure unchanged: the same prompt sizes, the same model tier, and the same retry patterns persist. The rate card optimization is additive to engineering changes, not a substitute for them.",
+              "framework_hint": "Domain Expertise failure: volume discounts on LLM APIs typically reduce per-token cost by 20-40%, not 70%. A 3x overrun requires structural changes to tokens-per-call or model routing, not just a better rate. Strategic Thinking failure: treating a rate negotiation as the primary optimization conflates unit price with total cost and skips the levers with the highest absolute impact."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The CFO wants a roadmap, not a promise. What does success look like in a way that is specific enough to confirm, and what would tell you the optimization failed?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define a falsifiable success target for the cost optimization and communicate it to the CFO?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The target is: cost per active user per day reaches $0.06 or below within 60 days of the first optimization going live, while the satisfaction score holds at or above 4.2 out of 5 and weekly active rate holds at or above 35%. The $0.06 threshold is chosen because it represents a 54% cost reduction achievable through caching and model right-sizing alone, without touching usage limits. The $0.04 original projection is the longer-term aspirational target but is not the 60-day commitment, since hitting it may require context trimming validated through A/B testing. Counter-signal: if cost per user per day remains above $0.09 after caching and model routing are live, the dominant driver is volume or context size, not model tier, and the roadmap shifts to context summarization and power-user tiering.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This answer gives three specific, measurable thresholds: a cost target ($0.06/user/day), a satisfaction guardrail (4.2/5), and an engagement floor (35% WAU). It explains why $0.06 is the 60-day commitment rather than the original $0.04, which prevents the CFO from treating an intermediate target as a failure. The counter-signal is named: if cost stays above $0.09 after the first wave of changes, the diagnosis shifts. That condition is falsifiable and prevents the team from declaring victory on a partial result.",
+              "framework_hint": "Domain Expertise: naming $0.06 as the achievable threshold from engineering-only levers (caching, model routing) requires knowing the typical cost reduction from each lever, which is domain knowledge, not intuition. Strategic Thinking: the falsifiability condition (if cost stays above $0.09 after wave one, the dominant driver is not model tier) closes the loop and converts the roadmap into a testable hypothesis rather than a promise."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Commit to returning costs to the original $0.04 per user per day projection within 90 days. Present the CFO with a phased roadmap: prompt caching in week two, model right-sizing in week four, context trimming in week eight, usage tiering if needed by week twelve. Each phase will be monitored for satisfaction impact before proceeding to the next.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A phased roadmap with monitoring gates is the right operational structure. The gap is that $0.04 as the 90-day commitment is a number borrowed from the original projection without confirming it is achievable through the named levers. If context trimming and usage tiering are needed to reach $0.04 but carry satisfaction risk, committing to that number before A/B validation is false precision. The answer also does not include a counter-signal that would tell the team the optimization is not working.",
+              "framework_hint": "Strategic Thinking partial credit: phased execution with monitoring is sound. Domain Expertise gap: the original $0.04 projection was based on modeling assumptions that turned out to be wrong by 3x. Committing to it as a target without attributing the gap first repeats the same modeling error with a different deadline attached."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Tell the CFO that LLM costs will come down significantly over the next 90 days as the team implements optimizations. Share a dashboard showing cost per user per day trending downward each week. The goal is directional improvement, and the team will know they have succeeded when the CFO is satisfied with the trend.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Directional improvement is not a falsifiable target. 'The CFO is satisfied' is not a metric. A trend chart that shows improvement does not tell the team when to stop optimizing or confirm that the unit economics are sustainable. The CFO's original question was about root cause and a roadmap, both of which require specific claims. An answer that defers the definition of success to stakeholder sentiment avoids the accountability the situation requires.",
+              "framework_hint": "Domain Expertise failure: cost per user per day is a specific, computable metric. 'Trending downward' is not a threshold. A winning definition requires a number, a timeline, and a counter-signal. Strategic Thinking failure: grounding success in CFO satisfaction rather than a measurable condition means the team has no internal signal for when the optimization is complete."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The optimization is successful when the feature becomes self-funding: revenue from the users who use the AI email assistant covers the LLM API cost, making the feature net-positive without needing the AI budget. This reframes the CFO conversation from cost reduction to ROI and is a stronger strategic position.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Reframing cost overruns as ROI is a legitimate strategic move for a feature with demonstrated adoption, and the argument has merit for a future investor or board conversation. The problem is that it does not answer the CFO's question, which was about root cause and a roadmap to close the gap. Self-funding is also not a falsifiable near-term target: attributing revenue lift specifically to the email assistant requires controlled attribution, which is a multi-quarter analysis project. This answer sidesteps the operational problem with a strategic narrative.",
+              "framework_hint": "Strategic Thinking failure: a hypothesis that cannot be tested in the near term is not a winning condition, it is a reframe. The CFO asked for a cost roadmap, and answering with 'the feature will pay for itself' without a timeline or measurement plan does not address the unit-economics gap. Cognitive Empathy failure: correctly modeling what the CFO needs (a specific plan with a specific target) means not substituting a more favorable framing for the question that was actually asked."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -34,7 +34,7 @@ describe('Stripe runtime config', () => {
     })
 
     expect(monthly.priceId).toBe('price_test_monthly')
-    expect(monthly.unitAmount).toBe(2900)
+    expect(monthly.unitAmount).toBe(3900)
   })
 
   it('does not reuse live price env vars when test mode is explicitly enabled', () => {

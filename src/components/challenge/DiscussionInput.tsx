@@ -1,6 +1,6 @@
 'use client'
 
-import { type RefObject, useState } from 'react'
+import { type RefObject, useRef, useState } from 'react'
 import { validateDiscussionContent } from '@/lib/content/discussion-validator'
 
 interface Props {
@@ -8,6 +8,15 @@ interface Props {
   onSubmitted?: () => void
   inputRef?: RefObject<HTMLTextAreaElement | null>
 }
+
+type WrapKind = 'bold' | 'italic' | 'code' | 'list'
+
+const TOOLBAR_BUTTONS: { kind: WrapKind; icon: string; label: string }[] = [
+  { kind: 'bold', icon: 'format_bold', label: 'Bold' },
+  { kind: 'italic', icon: 'format_italic', label: 'Italic' },
+  { kind: 'code', icon: 'code', label: 'Code' },
+  { kind: 'list', icon: 'format_list_bulleted', label: 'List' },
+]
 
 // Generous client cap — well under the API's 10,000 char limit, but enough for
 // a multi-paragraph post with a code block. The old 500-char single-line input
@@ -30,6 +39,73 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
   const validationMessage = content.trim()
     ? validation.errors[0] ?? validation.warnings[0] ?? null
     : null
+
+  // Composed ref: callers may pass inputRef; otherwise fall back to a local ref
+  // so the toolbar can still read/restore the textarea selection.
+  const localRef = useRef<HTMLTextAreaElement | null>(null)
+  const textarea = inputRef ?? localRef
+
+  function applyFormat(kind: WrapKind) {
+    const el = textarea.current
+    if (!el) return
+    let start = el.selectionStart
+    const end = el.selectionEnd
+
+    let nextSelected: string
+    let caretStart: number
+    let caretEnd: number
+
+    if (kind === 'list') {
+      // List prefixes whole lines. Always expand `start` back to the beginning of
+      // its line so "- " lands at line start — whether nothing is selected
+      // (caret mid-line) or only part of the first line is selected.
+      start = content.lastIndexOf('\n', start - 1) + 1
+      const block = content.slice(start, end)
+      nextSelected = block
+        .split('\n')
+        .map(line => (line.startsWith('- ') ? line : `- ${line}`))
+        .join('\n')
+      const before = content.slice(0, start)
+      const after = content.slice(end)
+      const next = before + nextSelected + after
+      if (next.length > MAX_LENGTH) return
+      setContent(next)
+      if (error) setError(null)
+      caretStart = start
+      caretEnd = start + nextSelected.length
+      requestAnimationFrame(() => {
+        const node = textarea.current
+        if (!node) return
+        node.focus()
+        node.setSelectionRange(caretStart, caretEnd)
+      })
+      return
+    }
+
+    const before = content.slice(0, start)
+    const selected = content.slice(start, end)
+    const after = content.slice(end)
+    const delim = kind === 'bold' ? '**' : kind === 'italic' ? '_' : '`'
+    nextSelected = `${delim}${selected}${delim}`
+    // Place caret between the delimiters when nothing was selected.
+    caretStart = selected ? start : start + delim.length
+    caretEnd = selected ? start + nextSelected.length : start + delim.length
+
+    const next = before + nextSelected + after
+    // Skip the wrap rather than truncate it — slicing here could cut a closing
+    // delimiter and produce invalid markdown.
+    if (next.length > MAX_LENGTH) return
+
+    setContent(next)
+    if (error) setError(null)
+    // Restore focus + selection after the controlled value updates.
+    requestAnimationFrame(() => {
+      const node = textarea.current
+      if (!node) return
+      node.focus()
+      node.setSelectionRange(caretStart, caretEnd)
+    })
+  }
 
   async function handleSubmit() {
     if (!content.trim() || submitting) return
@@ -67,11 +143,27 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
         <span className="material-symbols-outlined text-outline text-lg">person</span>
       </div>
       <div className="min-w-0 flex-grow">
+        <div className="flex items-center gap-0.5 mb-1">
+          {TOOLBAR_BUTTONS.map(({ kind, icon, label }) => (
+            <button
+              key={kind}
+              type="button"
+              aria-label={label}
+              title={label}
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => applyFormat(kind)}
+              disabled={submitting}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors disabled:opacity-40"
+            >
+              <span className="material-symbols-outlined text-[18px]">{icon}</span>
+            </button>
+          ))}
+        </div>
         <textarea
           className="w-full border-none bg-transparent focus:ring-0 text-sm py-2 placeholder:text-on-surface-variant/60 text-on-surface focus:outline-none resize-y min-h-[44px]"
           placeholder="Add to the discussion… markdown supported (**bold**, `code`, lists)"
           rows={2}
-          ref={inputRef}
+          ref={textarea}
           value={content}
           onChange={e => {
             setContent(e.target.value.slice(0, MAX_LENGTH))

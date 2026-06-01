@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000038",
+  "title": "Agent Economy: When Users Start Selling Agent Outputs",
+  "scenario_role": null,
+  "scenario_context": "An AI research agent synthesizes market-research reports from public and licensed data sources. B2B customers subscribe to the platform to run research on demand, generating polished reports in minutes instead of weeks. The product has been growing steadily, and the largest enterprise accounts have become heavy users.",
+  "scenario_trigger": "Three of the largest enterprise customers are reselling the agent-generated reports as their own research product, charging their clients $2,000 per report. The terms of service prohibit resale. Together, these three accounts represent $180K in annual recurring revenue. Blocking the resale or terminating the accounts would likely churn all three. Doing nothing sets a precedent that the ToS is unenforceable and may attract more resellers at the same low price point.",
+  "scenario_question": "Frame what the resale behavior actually signals about the product's pricing and value, enumerate what needs to be resolved before deciding how to respond, name the tradeoff the company must accept, and define a falsifiable outcome bar for the chosen path.",
+  "engineer_standout": "A strong answer recognizes that the ToS violation is incidental and that the resale behavior is the more important signal: customers found a use case the product was not priced for. If the reports are worth $2,000 each to end buyers, and the platform is selling them to resellers as part of a subscription that costs a fraction of that, the product is mispriced relative to the value it creates. The reasoning move is not 'enforce the ToS or lose the customers' but 'these three accounts revealed a market segment the pricing model does not reach, and the right response is to build a licensed or white-label tier that captures that value instead of forbidding it.' Blocking the resale destroys $180K ARR and the market signal. Doing nothing leaves money on the table and erodes ToS credibility. The third path — redesigning the pricing model around the revealed use case — is the one worth building.",
+  "paradigm": "agentic",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["strategic_thinking", "taste"],
+  "secondary_competencies": ["motivation_theory", "domain_expertise"],
+  "topic_tags": ["ai-product", "pricing", "product-strategy", "monetization", "enterprise"],
+  "technique_tags": ["value-based-pricing", "jobs-to-be-done", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The ToS is being violated — but what is the violation actually revealing about the product? Find the problem behind the enforcement question.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the situation created by the three enterprise customers reselling the agent-generated reports at $2,000 each?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The resale behavior is a pricing signal, not a compliance problem. Three enterprise customers found that the agent-generated reports are worth $2,000 each to downstream buyers, which means the platform is capturing a small fraction of the value it creates. The ToS violation is real but secondary: the primary fact is that a segment of the market — research resellers — is willing to pay multiples of what the platform charges, and the current pricing model has no way to reach that segment or capture that margin. Framing this as a compliance situation and responding accordingly would churn $180K ARR and destroy the market information. The right frame is: the resale pattern revealed a product-market fit in an adjacent segment that the pricing model does not address.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This framing correctly identifies that the $2,000/report resale price is the informative data point, not the ToS breach. The three accounts are running an arbitrage: they buy research capacity at a subscription price calibrated for in-house use and sell the output at a consulting rate. That arbitrage exists because the platform's pricing did not anticipate the resale use case. Treating the behavior as primarily a legal or contractual problem would churn $180K ARR and leave the market signal unread. The insight is that a compliance response destroys the signal along with the relationship.",
+              "framework_hint": "Taste: distinguishing between 'the ToS is being violated' (a fact about the contract) and 'the product is mispriced relative to the value it creates in the resale market' (the strategic fact that drives the decision). Strategic Thinking: the three accounts are not bad actors — they found a use case the product was not designed or priced for, which is exactly the information early-stage products need to expand their market."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The situation is a contract enforcement problem with a revenue risk attached. The ToS clearly prohibits resale, so the company must decide whether to enforce the ToS and risk churning $180K ARR or waive enforcement and accept that the ToS is effectively unenforceable. The decision is primarily about legal precedent and how the company wants to be perceived by other enterprise customers watching how this is handled.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Contract enforcement and precedent are real considerations and ignoring them entirely would be naive. The gap is that framing this as a binary enforcement choice — enforce or waive — closes off the most valuable response: redesigning the pricing model to serve the resale use case legitimately. A company that frames this as a legal dilemma will spend its energy on the contract and miss the pricing insight. The $2,000/report resale price is evidence about market willingness-to-pay that is more valuable than the $180K at risk in these three accounts, and a pure enforcement frame does not surface that evidence.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the decision has downstream precedent effects and that other enterprise accounts will observe the response. Taste gap: framing the choice as 'enforce or waive' treats the ToS as the constraint rather than as one input to a pricing strategy decision. The binary frame eliminates the third path."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The situation is a customer success failure. Three of the largest enterprise accounts discovered a use case the onboarding and customer success process should have identified earlier. The resale behavior suggests these customers were never properly aligned to the intended use case. The fix is to invest in better enterprise onboarding so that future large accounts understand the ToS restrictions before they build a resale business around the product.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Improving onboarding so customers understand ToS restrictions is a reasonable operational step, but it is not a framing of the situation. The customers were not confused about the intended use case: they understood the product well enough to build a profitable resale business around it. Framing the problem as an onboarding gap implies that the right outcome is to educate the customers out of the high-value use case they found, rather than to capture that use case through pricing. This frame treats the resale behavior as a mistake to be corrected rather than as a market signal to be acted on.",
+              "framework_hint": "Cognitive Empathy partial: recognizes that the customers developed a use case that the platform was not designed for and that understanding their actual job-to-be-done matters. Strategic Thinking failure: the customers were not misaligned — they found a valuable use. Treating this as an alignment gap loses the pricing signal."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The situation is a competitive intelligence problem. If three accounts are reselling the reports at $2,000 each, other companies in the market may already be doing the same thing quietly, and competitors may notice the arbitrage opportunity and build directly for the research reseller segment. The primary frame is: how quickly can the company identify all accounts that may be reselling, shut down the behavior, and then build a competitive moat before a rival captures the research-reseller segment?",
+              "quality": "plausible_wrong",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Competitive urgency is a real consideration and the resale signal may indeed attract competitors. But responding by first shutting down the behavior and then building for the segment loses the institutional knowledge those three accounts carry: they understand the end-buyer's willingness to pay, the format and depth that justifies $2,000, and what a sales motion to that segment looks like. Churning them to prevent competitors from noticing removes the best source of information about the new segment. The competitive frame leads to the wrong first move.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the resale arbitrage will attract competitive attention and that there is time pressure. Domain Expertise failure: the three reseller accounts are the company's best informants about the enterprise research market. Enforcing the ToS to close the arbitrage before building for the segment destroys the relationships that would have been the fastest path to understanding the segment."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Multiple paths exist: enforce and churn, waive and do nothing, or build a licensed tier. List what needs to be resolved before choosing — not just the options, but the factors that make each option a structurally different bet.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of factors most completely covers what the team needs to resolve before deciding how to respond to the three accounts reselling reports at $2,000 each?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["strategic_thinking", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct factors need to be resolved. First, the value captured in the resale chain: if buyers are paying $2,000 per report and the resellers are buying platform access at a subscription rate that implies a fraction of that per report, the platform is leaving several multiples of its current revenue on the table in this segment. Second, the size of the resale market: three accounts reselling is a sample; the question is how many research resellers or consultancies exist who would buy a white-label or licensed tier if it existed. Third, the cost of building a licensed tier versus the revenue it could generate: adding an enterprise reseller tier is a pricing and legal change, not a product rebuild, which means the build cost is low relative to the potential revenue. Fourth, what the three accounts need to stay: if they would sign a licensed tier agreement at 3 to 5 times the current contract price, the conversation is revenue expansion, not churn prevention. Fifth, the downstream buyer's willingness to pay: the $2,000/report price reveals that someone in the research market thinks these reports are worth consulting-tier prices, which changes the ceiling for how the product should be priced across all segments.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "creative_execution"],
+              "explanation": "These five factors are mechanistically distinct. The value captured in the resale chain establishes the pricing ceiling. The size of the resale market tells you whether a white-label tier is a niche accommodation or a segment expansion. The cost-to-build factor reveals that this is a pricing change more than a product change. The account retention factor converts the conversation from enforcement to expansion. The downstream buyer factor re-prices the entire product, not just the reseller tier. Together they make visible that the three accounts created a negotiation, not a compliance problem.",
+              "framework_hint": "Creative Execution: generating factors that are structurally different rather than variations of 'how do we handle the ToS.' The downstream buyer's willingness to pay is the factor most teams miss, because they stop at the reseller and do not ask what the reseller's buyer is actually paying for. Domain Expertise: in B2B SaaS, price anchoring to a downstream resale price is standard practice in research and data licensing markets — the platform is effectively being used as a data provider, and data providers routinely charge resellers differently from end-users."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The key factors are churn risk, legal exposure, and product readiness. Churning $180K ARR from three accounts is a quantifiable revenue hit. Legal exposure from not enforcing the ToS creates risk if other accounts point to these three as precedent. Product readiness determines whether a licensed tier could realistically be built in the next quarter. These three factors, assessed together, will surface whether enforcement or accommodation is the right path.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Churn risk and legal exposure are real factors and product readiness is a legitimate operational constraint. The gap is that this set of factors frames the decision as 'can we survive enforcement or can we build an accommodation in time,' which misses the most important factor: the size and revenue potential of the resale market segment that the three accounts accidentally revealed. A decision made only on these three factors might conclude that enforcement is acceptable because $180K is survivable, without ever asking whether those three accounts are the first indicator of a $2M+ market segment.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies the three most visible factors in the immediate situation. Creative Execution gap: the downstream buyer willingness-to-pay and the market size of the research reseller segment are absent, which means the analysis treats this as a one-time enforcement decision rather than a pricing strategy signal."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team needs to conduct customer interviews with all three accounts to understand why they chose to resell rather than buying more seats or adding more internal users. Understanding their motivation will clarify whether the ToS violation was intentional or a misunderstanding, and will reveal what product changes might satisfy their needs without requiring resale.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Customer interviews with the three accounts are a useful tactic but they are not a list of decision factors. The question asks what needs to be resolved before deciding, not how to gather more data. The motivation behind the resale is already clear from the structure of the situation: the platform is priced for internal use, the reports have consulting-tier value in the market, and the accounts are capturing that arbitrage. Listing interview topics as the answer to a strategy question substitutes process for substance.",
+              "framework_hint": "Cognitive Empathy partial: correctly identifies that the three accounts understand the resale market in ways the platform team does not, and that their perspective is valuable. Strategic Thinking failure: the list step should name the decision factors, not the data-gathering steps. Knowing why they reselled does not tell you the size of the resale market or whether a licensed tier would be more profitable than their current contracts."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The primary factor to resolve is legal risk. The company should consult counsel to determine whether the three accounts' behavior constitutes a material breach, what the damages exposure is if they sue after being terminated, and whether the ToS language is enforceable in the jurisdictions where these accounts operate. Until legal exposure is quantified, no business decision should be made.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Legal review before terminating an account is operationally sensible, and the ToS enforceability question is real in multi-jurisdictional B2B contracts. But sequencing the decision so that legal exposure is the gate before any business analysis can proceed inverts the priority. The legal question is 'can we enforce the ToS' — the business question is 'should we, and is there a more valuable path.' Waiting for a legal opinion to answer a strategy question delays the pricing insight indefinitely and treats a compliance function as the decision-maker for a go-to-market strategy call.",
+              "framework_hint": "Strategic Thinking failure: the legal-first frame treats the ToS as the decision criterion rather than as one constraint on the options. In practice, legal review and pricing strategy analysis run in parallel — legal tells you what is permissible, strategy tells you what is valuable. Making legal the gate prevents the team from recognizing that the three accounts represent a pricing opportunity, not a legal threat."
+            }
+          ]
+        },
+        {
+          "question_text": "Which additional factor is most important to resolve before setting a price for a potential licensed or white-label reseller tier?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The gross margin on each report at different reseller price points. At $2,000/report to end buyers, the three accounts are presumably generating strong margins on each sale. A licensed tier priced at, say, $500/report or a higher-tier subscription would need to be calibrated so the platform captures a meaningful share of the $2,000 ceiling while leaving enough margin for resellers to sustain the business model. If the platform prices the reseller tier too high, resellers churn. If it prices too low, it recreates the same arbitrage at a slightly higher price. The calibration requires knowing the reseller's cost structure: how many reports do they sell per month, at what volume, and what margin do they need to make the resale business viable.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "Pricing a reseller tier requires understanding the margin stack, not just setting a number higher than the current subscription. If the platform takes too much of the $2,000 ceiling, the reseller's economics collapse and they churn anyway. If it takes too little, the arbitrage continues at a different price. The calibration question — what margin does the reseller need to sustain their business, and how much can the platform capture above that — is the factor that determines whether a licensed tier is actually an expansion play or just a more expensive version of the current situation.",
+              "framework_hint": "Domain Expertise: in research and data licensing markets, the standard practice is to price reseller tiers at a percentage of the end-buyer price rather than a flat fee, which aligns platform and reseller economics. Strategic Thinking: the $2,000/report downstream price is the ceiling; the reseller's cost structure determines how close to that ceiling the platform can price without destroying the reseller's model."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The number of competitors who already offer a licensed or white-label research tier. If multiple established players already offer this, entering late with a new tier may not attract resellers who have already committed to another platform. Competitive benchmarking would surface whether a licensed tier is a differentiated offering or a catch-up move.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Competitive benchmarking is a relevant input and understanding whether the reseller segment is already served changes the urgency of building a tier. The gap is that the three accounts already proved demand exists for this platform's specific reports at the $2,000 price point — they built a business on it. That revealed demand matters more than whether other platforms offer reseller tiers in the abstract, because the question is not 'is there a reseller market' but 'what price can this platform charge the specific resellers who already depend on it.'",
+              "framework_hint": "Strategic Thinking partial credit: competitive analysis is a real input to pricing strategy. Domain Expertise gap: when three accounts have already built a revenue-generating business on the platform's output, the pricing question is anchored to those accounts' economics, not to what competitors charge in the abstract."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Whether the three accounts' end buyers know the reports are AI-generated. If the end buyers believe they are purchasing human-authored research and later discover the reports came from an AI agent, the reputational risk to the resellers and to the platform could be significant. This disclosure question should be resolved before the platform enables a licensed tier that would make the resale more official.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "AI disclosure is a real consideration in research and consulting contexts, and it is worth thinking through. But it is not the primary factor for pricing a reseller tier: it is an ethical and legal question that the resellers' customers will decide how to handle, not the platform. The platform's pricing decision does not depend on whether downstream buyers know the source — it depends on whether the economics of a licensed tier work for both parties. Disclosure is a product integrity concern, not a pricing calibration factor.",
+              "framework_hint": "Cognitive Empathy partial: correctly identifies that the end buyer's experience and expectations matter. Domain Expertise failure: in licensed data and research markets, the downstream buyer's knowledge of the source is a disclosure and attribution question, not a pricing input. The platform's tier pricing is determined by the reseller's economics, not by the end buyer's awareness of the AI backend."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The platform's data licensing agreements with its underlying sources. If the agent's reports synthesize licensed data, the original licensing agreements may already prohibit commercial resale of derived works. Before building a reseller tier, the platform must confirm it has the rights to offer one, or it would be passing on a ToS violation from its own suppliers.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Upstream data licensing is a legitimate operational check and the scenario mentions both public and licensed data sources, so this is not a fabricated risk. This becomes plausible-wrong as the primary factor because it frames the question as 'can we legally do this' rather than 'what price makes this work.' Legal clearance is a prerequisite that can be verified quickly by reviewing existing agreements, not a strategic factor that determines the pricing model. If the upstream licenses permit commercial use of derived works (which many research data licenses do), this factor resolves immediately and the pricing question remains.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that derived-work licensing is a real constraint in data products and that upstream agreements need to be checked. Strategic Thinking failure: this is an operational prerequisite, not a pricing factor. The calibration question — what price leaves the reseller viable while capturing meaningful margin for the platform — is still the load-bearing decision regardless of what the upstream licenses say."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "A licensed reseller tier is the third path — but name the criterion that tells you whether it is the right move, and name what the company gives up by choosing it over enforcement.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding between enforcing the ToS and churning the three accounts versus building a licensed reseller tier?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is whether the revenue and market access created by a licensed reseller tier exceeds the revenue the three accounts generate at their current contract price, net of the cost and precedent of not enforcing the ToS as written. At $2,000/report with even modest volume, each reseller is generating enough downstream revenue that a properly priced licensed tier could double or triple the $180K ARR from these three accounts alone. If the resaler market is larger than three accounts, the tier becomes a segment expansion, not an accommodation. The sacrifice of building a licensed tier is accepting that the ToS is not a ceiling on how customers use the product — it is a floor, and use cases that generate more value get a different pricing structure. That sacrifice is acceptable if the incremental revenue from the reseller segment is materially larger than $180K and if building the tier takes weeks, not quarters. It is not acceptable if the tier requires product changes that divert engineering from the core roadmap.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion connects the decision to the revenue potential of the reseller segment relative to the cost of building the tier and the sacrifice of ToS flexibility. It names the sacrifice explicitly: accepting that the ToS is a floor rather than a ceiling means that future high-value use cases will also expect accommodation rather than enforcement. That is a real precedent cost and must be weighed against the revenue gain. The criterion is specific to this scenario because it references the $180K ARR baseline, the $2,000/report price signal, and the build cost as a weeks-not-quarters variable.",
+              "framework_hint": "Taste: naming the sacrifice (ToS becomes a floor rather than a ceiling, setting a precedent for future accommodation requests) as distinct from the preference (more revenue is better) forces a real evaluation of whether the precedent cost is worth the revenue gain. Strategic Thinking: the optimize step requires naming what the company gives up, not just what it gains. A company that builds a reseller tier without acknowledging the precedent it sets will face the same conversation from the next set of accounts that find a high-value use case outside the current ToS."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be net revenue impact over 12 months. Model three scenarios: enforce and churn $180K, waive and maintain $180K with no precedent clarity, or build a licensed tier that converts the three accounts to a higher price point and adds new reseller accounts. The scenario with the highest 12-month net revenue wins. This makes the decision calculable and defensible to the board.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A 12-month revenue model is a useful framing exercise and the three-scenario structure does make the options explicit. The gap is that this approach requires estimating the size of the reseller market (unknown), the conversion rate of the three accounts to a higher-tier contract (uncertain), and the number of new reseller accounts that would sign up if a licensed tier existed (speculative). Applying a revenue model to these inputs produces a precise-looking number built on guesses. The criterion should acknowledge that the biggest unknown is not the revenue math but the market size, and that the ship-now path — convert the three accounts and then expand — generates real data rather than projections.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the decision should be grounded in revenue projections and that a three-scenario model makes the trade-offs explicit. Taste gap: the model will produce whichever result its assumptions favor, and the most important assumption (reseller market size) is the least knowable from inside the company. A criterion that names market size as the core uncertainty rather than the revenue total is more useful."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion is which path best aligns with the company's stated mission. If the mission is to democratize access to research, then a licensed tier that allows resellers to mark up reports to $2,000 works against mission alignment, because it raises the cost of research for end buyers. Enforcement reinforces that the product is for direct users, not for intermediaries who add margin on top. Mission alignment should be the primary filter before revenue considerations.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Mission alignment is a real consideration in product strategy but it is not a decision criterion for this specific situation. The scenario does not define the company's mission, and even if it did, applying mission alignment as the primary filter before revenue analysis would lead the same argument to different conclusions depending on how the mission is worded. More importantly, a licensed reseller tier does not necessarily increase the cost of research for end buyers — it creates a legitimate channel for research consultancies that already existed in the market before the platform did. The criterion needs to connect the decision to the specific facts of this scenario.",
+              "framework_hint": "Strategic Thinking failure: mission alignment is a useful input when two options are economically equivalent, but it should not override revenue analysis when one path is materially more valuable. Taste failure: 'mission alignment' as a primary criterion produces the same answer regardless of the scenario details, which means it is not doing the work of a decision criterion — it is doing the work of a preference."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is engineering team capacity. Building a licensed tier requires new pricing logic, contract management, and potentially API rate-limiting features for reseller accounts. If the engineering team is already at capacity on the core roadmap, the right decision is to enforce the ToS, churn the three accounts if necessary, and revisit a licensed tier in the next planning cycle when capacity exists. Shipping a half-built reseller tier is worse than not building one at all.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Engineering capacity is a real operational constraint and the point about half-built features is well-taken. But using capacity as the criterion inverts the analysis: capacity is a constraint that affects the timeline and scope of the licensed tier, not a reason to default to enforcement. A company with limited engineering capacity might still build a lightweight licensed tier — a pricing page change and a contract amendment — without building new product infrastructure. The capacity question should inform the implementation plan, not the strategic direction. Defaulting to enforcement because building feels expensive produces a decision that optimizes for the team's workload rather than the company's revenue.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that adding a reseller tier has real engineering implications around rate-limiting, contract management, and pricing infrastructure. Strategic Thinking failure: capacity is a constraint on implementation, not a decision criterion for whether to pursue the licensed tier. The criterion should compare the expected revenue of the tier against the cost of building it — including the opportunity cost of engineering time — not treat capacity as a binary gate."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metric, threshold, and timeline that would confirm the licensed reseller tier is working. Name the counter-signal that would tell you early that the bet is wrong.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for converting the three enterprise accounts to a licensed reseller tier and expanding the tier to new accounts?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: within 60 days of launching the licensed reseller tier, at least two of the three current accounts sign new contracts at a price point 2.5 times or higher than their current ARR, and at least one net-new reseller account signs within 90 days. The 2.5x contract upgrade tests whether the three accounts' resale economics can support a higher platform price: if they are selling reports at $2,000 each and the platform reprices their access to capture meaningful margin on that, their cost structure needs to absorb the increase. The net-new account in 90 days tests whether the resale market exists beyond the three accounts the platform already knows about. The counter-signal is: none of the three current accounts agree to a contract upgrade within 60 days, which would indicate that the resale economics are thinner than the $2,000/report price implies — possibly because each account sells only a handful of reports per month — and the licensed tier is mispriced relative to what resellers can actually pay.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names two metrics with specific thresholds and timelines, each testing a distinct element of the strategic hypothesis. The 2.5x upgrade tests the reseller's willingness to pay for legitimate access. The net-new account tests market size beyond the three known accounts. The counter-signal at 60 days without a contract upgrade is specific and fast: it reveals whether the $2,000/report price represents high volume or high margin per report, which changes how the platform should price the tier. The 60-day window is short enough to course-correct without committing to a full quarter on a mispriced tier.",
+              "framework_hint": "Domain Expertise: the 2.5x upgrade threshold is calibrated to the scenario's numbers — if the current ARR is $60K per account and the licensed tier targets $150K, that still leaves meaningful margin for a reseller selling even 5 reports per month at $2,000 each. Strategic Thinking: the counter-signal at 60 days without any upgrade is more informative than a 90-day wait because it reveals the economic viability of the reseller model before the company has spent a full quarter trying to build a market that may not support the target price."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Win means the licensed reseller tier generates $500K in ARR within 12 months, which would represent a significant expansion beyond the current $180K from the three accounts and would confirm that the resale market is a real segment rather than an anomaly. Track new ARR from reseller accounts monthly and adjust pricing if the 12-month trajectory falls below $250K by month six.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A 12-month ARR target and a mid-year checkpoint are reasonable constructs for a new pricing tier. The gap is that this win condition does not test the underlying hypothesis: that the three existing accounts will convert to the licensed tier and that the resale market extends beyond them. A team could hit $500K ARR by attracting a different type of enterprise customer who is not a reseller, which would validate the revenue goal but not the pricing strategy. The win condition should test whether the specific bet — that resellers will pay more for legitimate access — is working.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that a 12-month ARR target and a mid-year signal are the right structure for a new tier. Domain Expertise gap: the win condition should be grounded in the conversion of the three accounts and the acquisition of net-new reseller accounts, not just total ARR, because the hypothesis is specifically about the resale segment."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means the three current accounts sign updated agreements that include the licensed reseller terms within 30 days. If all three sign, the ToS violation is remediated and the revenue is preserved. Track contract renewal rate for the reseller tier annually from that point forward to assess whether the tier is sticky.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Getting the three accounts to sign updated agreements is a necessary operational step, not a win condition. It tests whether the enforcement problem was resolved, not whether the licensed reseller tier is a viable business. Annual renewal rate is a relevant long-term metric but it provides no signal for at least 12 months, leaving the team without any early indicator of whether the tier is working. A win condition for a new pricing tier should test the revenue expansion hypothesis within a timeframe short enough to course-correct.",
+              "framework_hint": "Cognitive Empathy partial: recognizes that preserving the relationship with the three accounts is important and that their willingness to sign updated terms is a signal of health. Strategic Thinking failure: contract compliance is a floor condition, not a win condition. The win step should close the loop on the strategic hypothesis — that the resale market can generate materially more revenue than the current $180K — not just confirm that the ToS violation has been addressed."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the research reports produced through the licensed reseller tier receive independent validation from end buyers: testimonials, case studies, or third-party review that confirms the $2,000/report price is supported by perceived quality. Collect five documented end-buyer success stories within six months. This confirms that the platform's output meets consulting-tier quality standards and makes the reseller tier defensible to future prospects.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "End-buyer testimonials are a useful sales and marketing asset and they are worth collecting. But they are a lagging output of a working reseller business, not a falsifiable test of the strategic hypothesis. The three accounts have already been selling reports at $2,000 for some time, which means end-buyer demand is already established — collecting testimonials confirms something already known. A falsifiable win condition tests whether the licensed tier changes the platform's revenue trajectory, not whether the underlying product quality is acceptable to end buyers who are already buying.",
+              "framework_hint": "Domain Expertise partial: correctly identifies that the $2,000/report price requires a quality bar that the platform's reports must meet, and that documented end-buyer outcomes matter for the reseller tier's credibility. Strategic Thinking failure: the win condition should test the revenue hypothesis within a defined timeline, not collect qualitative evidence of product quality. Testimonials are a marketing deliverable; the strategic question is whether the licensed tier generates more ARR from the resale segment than the current subscription model captures."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

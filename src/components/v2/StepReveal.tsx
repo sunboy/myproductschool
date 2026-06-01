@@ -43,6 +43,24 @@ const NEXT_STEP: Record<FlowStep, FlowStep | null> = {
   win:      null,
 }
 
+const CONF_LABELS = ['Guessing', 'Not sure', 'Fairly sure', 'Rock solid'] as const
+
+// Calibration read: compare self-rated confidence against actual answer quality.
+// Returns null when there's nothing instructive to say (no confidence recorded,
+// or a middling pick where neither over- nor under-confidence is clear).
+function calibrationNote(confidence: number | null, quality: string): { tone: 'over' | 'under' | 'aligned'; text: string } | null {
+  if (confidence === null || confidence === undefined) return null
+  const wasStrong = quality === 'best'
+  const wasWeak = quality === 'plausible_wrong' || quality === 'surface'
+  const high = confidence >= 2 // Fairly sure / Rock solid
+  const low = confidence <= 1  // Guessing / Not sure
+
+  if (high && wasWeak) return { tone: 'over', text: `You felt ${CONF_LABELS[confidence]}, but this one missed. Worth a second look at why.` }
+  if (low && wasStrong) return { tone: 'under', text: `You marked ${CONF_LABELS[confidence]}, yet you nailed it. You know more than you think.` }
+  if (high && wasStrong) return { tone: 'aligned', text: `Confident and right. Well calibrated.` }
+  return null
+}
+
 
 // ── Option card ───────────────────────────────────────────────────────────────
 
@@ -135,6 +153,12 @@ function QuestionBreakdown({ record, questionNumber }: { record: QuestionRevealR
   const selectedOption = record.revealedOptions.find(o => o.id === record.selectedOptionId)
   const selectedQuality = selectedOption?.quality ?? 'surface'
   const b = QUALITY_BADGE[selectedQuality] ?? QUALITY_BADGE.plausible_wrong
+  const calibration = calibrationNote(record.confidence, selectedQuality)
+  const CAL_TONE: Record<'over' | 'under' | 'aligned', { bg: string; color: string; icon: string }> = {
+    over:    { bg: 'rgba(184,50,48,0.08)',  color: '#b83230', icon: 'trending_down' },
+    under:   { bg: 'rgba(74,124,89,0.10)',  color: '#3f6b4d', icon: 'trending_up' },
+    aligned: { bg: 'rgba(74,124,89,0.08)',  color: '#3f6b4d', icon: 'check_circle' },
+  }
 
   return (
     <div style={{
@@ -165,6 +189,14 @@ function QuestionBreakdown({ record, questionNumber }: { record: QuestionRevealR
             {record.questionText}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 1 }}>
+            {record.confidence !== null && record.confidence !== undefined && (
+              <span style={{
+                fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 99,
+                background: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)',
+              }}>
+                {CONF_LABELS[record.confidence]}
+              </span>
+            )}
             <span style={{
               fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99,
               background: b.bg, color: b.color,
@@ -185,6 +217,20 @@ function QuestionBreakdown({ record, questionNumber }: { record: QuestionRevealR
 
       {open && (
         <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {calibration && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: CAL_TONE[calibration.tone].bg,
+              color: CAL_TONE[calibration.tone].color,
+              borderRadius: 8, padding: '7px 10px',
+              fontSize: 11.5, fontWeight: 600, lineHeight: 1.45,
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 15, flexShrink: 0, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
+                {CAL_TONE[calibration.tone].icon}
+              </span>
+              <span>{calibration.text}</span>
+            </div>
+          )}
           {sorted.map(opt => (
             <OptionCard
               key={opt.id}

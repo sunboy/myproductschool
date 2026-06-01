@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000031",
+  "title": "Your AI Agent Booked the Wrong Meeting",
+  "scenario_role": null,
+  "scenario_context": "A startup built an AI scheduling agent for executives. The agent connects to calendars, reads attendee schedules, and autonomously resolves conflicts. In beta, it has been moving low-stakes meetings on its own, and most users have welcomed the reduced back-and-forth. This week, the agent detected a conflict on the CEO's calendar and autonomously rescheduled a board meeting to a different day without asking for confirmation.",
+  "scenario_trigger": "The CFO was already on a flight to the original meeting location when the rescheduling happened. The CEO found out mid-morning and is furious. A quick audit reveals this is the third unsanctioned action the agent has taken this month. The previous two involved rescheduling a recruiting interview and a customer QBR, each time causing minor embarrassment but no major fallout. The board meeting is a different category of mistake entirely.",
+  "scenario_question": "Redesign the agent's decision-making model so it acts autonomously when appropriate and asks for confirmation when the stakes demand it.",
+  "engineer_standout": "A strong answer does not propose 'ask more' as the fix. Confirmation prompts on every action would destroy the product's value. The real problem is that the agent has no model of action consequence: it treated moving a board meeting the same as moving a 1:1. The right redesign classifies actions by reversibility and blast radius, then gates confirmation on consequence, not on action type. Moving a board meeting is high-stakes and hard to undo once attendees have made travel plans; rescheduling a 1:1 tomorrow is neither. The gate is consequence-driven, not action-driven.",
+  "paradigm": "agentic",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["cognitive_empathy", "taste"],
+  "secondary_competencies": ["strategic_thinking", "creative_execution"],
+  "topic_tags": ["ai-agents", "product-design", "trust", "automation", "human-in-the-loop"],
+  "technique_tags": ["consequence-gating", "blast-radius-framing"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The agent made a mistake, but 'the agent made a mistake' is not the problem statement. Find the upstream gap in the system design that made this class of mistake possible.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the board meeting incident?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The agent lacked a model of action consequence. It applied the same autonomous-action logic to a board meeting, where the CFO was already in transit to a specific location, that it used for a 1:1 or a recruiting interview. The problem is not that the agent moved a meeting without asking; the problem is that the agent had no way to distinguish a high-blast-radius, hard-to-undo action from a low-stakes, easily reversible one. The third incident in a month confirms this is a structural gap, not an edge case.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "taste"],
+              "explanation": "This framing correctly identifies the gap as structural: the agent treated all scheduling actions as equivalent when they are not. The CFO being on a flight to the original location is exactly what 'hard to undo' looks like in practice. The third-incident pattern confirms the agent has been operating without a consequence model since launch, not that it encountered an unusual edge case this week. Getting the framing right here is the prerequisite for designing a gate that is calibrated to consequence rather than to action type.",
+              "framework_hint": "Cognitive Empathy: simulating the CFO's situation (mid-flight, committed to a location) makes 'irreversible' concrete rather than abstract. Taste: distinguishing between 'the agent erred' (an instance) and 'the agent has no consequence model' (a structural property) is the difference between patching one bug and fixing the class of bugs."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The agent moved a high-importance meeting without authorization. The fix is to add a permission tier for board meetings and other executive-level events, requiring explicit approval before any action is taken on them. The agent should default to asking when it touches anything flagged as high-importance.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A permission tier for high-importance events is a reasonable design direction and closer to the right answer than 'ask more broadly.' The framing falls short because it defines the gate by event type rather than by consequence. A board meeting that is three weeks away and rescheduled by two days may carry low blast radius; the same meeting rescheduled 18 hours before attendees have booked travel is a completely different situation. The event label alone does not tell the agent whether the action is reversible or how many people have already committed resources to the current time.",
+              "framework_hint": "Taste partial credit: correctly identifies that the gate should not apply equally to all events. The gap is that 'high-importance' is a label assigned to the meeting type, while the real criterion is the consequence of the specific action at the specific moment. A board meeting a month out and a board meeting with the CFO already on a flight are both high-importance but have very different blast radii."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The agent moved a meeting it should not have touched. The product needs a stricter allowlist of actions the agent can take autonomously, with everything else requiring confirmation. Limit autonomous actions to same-day reschedules of meetings with two or fewer attendees.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "An allowlist by attendee count and timing is a blunt instrument. A two-person meeting between the CEO and a key investor may carry more consequence than a five-person internal sync. The framing mistakes a proxy variable (attendee count) for the underlying property (blast radius and reversibility). An allowlist also degrades over time as edge cases accumulate, requiring manual maintenance rather than a principled gate.",
+              "framework_hint": "Taste failure: attendee count is a surface signal, not a consequence signal. Two attendees who have booked international flights to a location are more affected by a reschedule than twenty attendees who have not yet confirmed. The frame should be built around consequence, not around easy-to-count features of the meeting object."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The agent moved a meeting the CEO cared deeply about. The core problem is that the agent does not know which meetings are emotionally important to the user. Integrating preference signals, such as how often the user has manually rescheduled certain meeting types, would let the agent learn what to protect. Meetings the user has never touched could be treated as lower priority.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Preference learning is a real AI product technique, but applying it here inverts the problem. The board meeting is not high-stakes because the CEO cares about it emotionally; it is high-stakes because the CFO was already on a flight. Historical rescheduling behavior does not predict blast radius: a meeting the CEO has never rescheduled could still have attendees mid-travel, making autonomous action catastrophic. The model needs to reason about the consequences of a specific action at a specific moment, not about the user's historical preferences.",
+              "framework_hint": "Cognitive Empathy failure: this frame centers the CEO's sentiment rather than the affected parties' situation. The CFO, board members, and their travel logistics are the load-bearing concern. An agent that learns the CEO's preferences but ignores the blast radius on other stakeholders would make the same class of mistake again with a different meeting the CEO 'does not care about.'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Before designing the confirmation gate, enumerate the dimensions that actually separate an action the agent should take autonomously from one it should pause on. Not all scheduling actions are equivalent.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of factors most completely captures what the agent needs to evaluate before deciding whether to act autonomously or request confirmation?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct factors determine the right gate for any scheduling action. First, reversibility: can the action be undone without consequence after the fact? Rescheduling a meeting 15 minutes before it starts is functionally irreversible for attendees who are already in transit. Second, blast radius: how many people are affected and what have they committed? One attendee who added a calendar block is different from ten attendees who have booked travel to a physical location. Third, lead time at action time: how far in the future is the meeting when the action fires? The same reschedule carries different blast radius depending on whether it happens three weeks out or three hours before. Fourth, action origin: was the conflict triggered by a change the user made, or did the agent independently decide to optimize the calendar? User-triggered resolutions carry implicit intent; agent-initiated actions do not.",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "These four factors are structurally independent: a meeting can be far in the future (high lead time) but still have low reversibility if attendees have already committed travel. Blast radius captures the number and depth of stakeholder commitments, not just headcount. Action origin distinguishes between the agent resolving a conflict the user surfaced versus the agent proactively optimizing, which carry different trust implications. The board meeting incident scores poorly on all four: it was functionally irreversible (CFO in transit), had high blast radius (board-level attendees, travel commitments), happened close to the meeting time, and was agent-initiated without any user prompt.",
+              "framework_hint": "Creative Execution: generating factors that are mechanistically different rather than variations of 'how important is the meeting.' Reversibility and blast radius are often conflated but distinct: a meeting can be hard to reverse without many people being badly affected, or it can affect many people who all respond quickly and adjust. Cognitive Empathy: including action origin forces the system to model the implicit intent signal the user sends when they make a change themselves versus what the agent infers on its own."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The agent should evaluate meeting importance, number of attendees, and whether the meeting is recurring or one-off. Board meetings and all-hands are important; 1:1s are less so. Meetings with more than five attendees should require confirmation. Recurring meetings can be rescheduled because a future occurrence exists; one-offs cannot.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Meeting importance and attendee count are real factors and this answer correctly identifies that recurring versus one-off status matters. The gap is that these factors all describe the meeting object rather than the consequence of the specific action at the specific moment. A recurring board meeting rescheduled three weeks out may be low blast radius; the same meeting rescheduled with the CFO already on a flight is not, regardless of its recurrence status. The factors listed here would not have caught the incident that happened.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that attendees and meeting type matter to the gate. The missing move is simulating the situation of the affected parties at the moment the action fires, not at the time the meeting was created. The CFO's position mid-flight is the decisive factor, and it is not captured by any property of the meeting object."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The agent should evaluate user sentiment from past interactions. If the user has complained about interruptions before, the agent should ask less. If the user has praised autonomous actions, the agent should do more. A personalized autonomy level is more useful than a fixed rule.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Personalized autonomy based on user sentiment addresses the wrong variable. The CEO's preference for fewer interruptions does not change the fact that the CFO was on a flight. Calibrating the confirmation gate to the user's historical feedback would produce an agent that asks the CEO less over time, which is the opposite of what the third incident suggests. The gate needs to be calibrated to the consequence of the action, not to the user's tolerance for prompts.",
+              "framework_hint": "Cognitive Empathy failure: this frame centers the primary user's (CEO's) preferences while ignoring the affected parties (CFO, board attendees) whose commitments determine the blast radius. An agent designed around user sentiment would become more autonomous over time with a user who dislikes interruptions, making the board-meeting class of mistake more likely, not less."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The agent should ask three questions before acting: Is this a priority meeting? Is there a conflict that forces a change? Is there a better time available? If all three are yes, the agent can act. If any answer is uncertain, it should ask.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "These three questions describe the logic for whether a reschedule is warranted, not the logic for whether confirmation is warranted. The board meeting that caused the incident would have passed all three tests: it was a priority meeting with a genuine conflict and a better available time. The questions do not evaluate reversibility or blast radius, so they do not distinguish between an action the agent can safely take autonomously and one that requires a human decision.",
+              "framework_hint": "Strategic Thinking failure: conflating the decision to reschedule (should a change happen?) with the decision about confirmation (who should authorize it?). The agent's current logic presumably answers the first question well enough; the failure is entirely in the second. Factors that help the agent decide whether to reschedule are not the same as factors that help it decide whether to ask first."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "A confirmation gate calibrated to consequence, not to action type, is the right direction. Name the criterion that tells the agent when asking is mandatory versus when acting autonomously is acceptable.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right design criterion for the agent's confirmation gate?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is reversibility combined with blast radius at action time. For every proposed action, the agent estimates: how many people have already committed resources (time, travel, preparation) to the current meeting state, and how quickly and completely can those commitments be undone? Actions that score low on both dimensions (few people affected, easily reversed) can proceed autonomously. Actions that score high on either dimension require confirmation before execution. This criterion would have flagged the board meeting because the CFO's flight represented an already-committed, hard-to-reverse resource commitment by an affected party. The sacrifice this criterion demands is explicit: the agent will ask more often for high-stakes actions than users might prefer, but autonomous action on a low-blast-radius event is still the default, so the product's core value is preserved.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion captures the load-bearing variable: it is not the type of meeting or the user's preference for autonomy, but the cost imposed on affected parties at the moment the action fires. The CFO's flight is the most concrete possible illustration of 'already-committed resource that is hard to reverse.' The criterion also preserves the product's value proposition by making autonomous action the default for low-consequence events, rather than collapsing into 'ask for everything' or 'ask for high-importance meetings.' Naming the sacrifice (more prompts on high-stakes actions) makes this a tradeoff rather than a preference.",
+              "framework_hint": "Taste: distinguishing between 'ask more' (a preference that sacrifices product value uniformly) and 'ask when blast radius is high' (a calibrated gate that preserves autonomous value for low-consequence actions). Strategic Thinking: the criterion produces a system that scales with the user's event diversity rather than requiring manual classification of every meeting type."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be meeting tier: the agent classifies every meeting as routine, important, or critical, and autonomous action is only permitted on routine meetings. Important and critical meetings always require confirmation. The classification is driven by signals like attendee seniority, meeting title, and calendar categorization set by the user.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A meeting-tier system is implementable and directionally right in that it would have protected the board meeting from autonomous action. The gap is that tier is a static property of the meeting object, while blast radius is a dynamic property of the action at a specific moment. A routine meeting between two executives can become high-blast-radius if one of them is already on a flight. Tier-based gating requires the user to classify every meeting correctly in advance and cannot respond to situation-specific context like travel commitments.",
+              "framework_hint": "Taste partial credit: correctly identifies that the gate should not be uniform across all meetings. The gap is using a static label (meeting tier) as a proxy for a dynamic property (consequence of this action at this moment). The CFO's flight would not appear in any static meeting classification, but it is the decisive factor in this specific incident."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be user trust score: track how many times the agent has acted autonomously without complaint, and expand the autonomy envelope as the trust score grows. After 50 successful autonomous actions, the agent earns broader latitude. After a complaint, the autonomy score resets.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A trust score based on past behavior conflates 'the user did not complain' with 'the action was safe.' The agent had already taken two unsanctioned actions this month without triggering major complaints, which would have increased its trust score. A trust-score system would have given the agent more autonomy, not less, by the time the board meeting incident occurred. Past complaint rate is not a reliable signal for future blast radius.",
+              "framework_hint": "Cognitive Empathy failure: the trust-score model centers the user's expressed satisfaction rather than the affected parties' actual situation. The recruiting interview and QBR reschedules caused 'minor embarrassment but no major fallout,' which would have boosted the trust score just before the agent applied the same logic to the board meeting, where the consequence was categorically different."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion should be time sensitivity: if a conflict requires resolution more than 48 hours before the meeting, the agent can act autonomously because there is time to correct mistakes. If resolution is required within 48 hours, it must ask. The time window is the simplest reliable proxy for whether the action can be undone.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Lead time is one of the relevant factors, and a 48-hour window is not arbitrary. The problem is that lead time alone does not capture blast radius: the CFO's flight commitment to the original location could have been made days or weeks in advance, long before the 48-hour window. The board meeting could be rescheduled three weeks out, which would pass the 48-hour test, but if board members have already booked travel, the blast radius is high regardless of lead time. Time-based gating addresses one dimension of the criterion but misses the other.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies lead time as a relevant variable and notes its use as a simple proxy. The gap is that a single-variable gate cannot capture the joint distribution of reversibility and blast radius. A meeting far in the future with committed travel is still high blast radius; a meeting in 20 hours with no external commitments may be fine to reschedule autonomously. The criterion needs to evaluate both dimensions, not substitute one for the other."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the new confirmation model is broken, not just imperfect.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the redesigned confirmation gate after it ships to beta users?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: zero high-blast-radius autonomous actions in the 60 days after the gate ships, with confirmation prompt acceptance rate above 80% and autonomous action rate above 70% on low-blast-radius events. The zero high-blast-radius threshold tests that the gate is correctly classifying actions the way the CFO's flight scenario would have demanded. The 80% confirmation acceptance rate tests that the prompts are arriving at the right moment rather than interrupting users on decisions they would prefer to make themselves. The 70% autonomous rate on low-blast-radius events tests that the product has not collapsed into an ask-everything assistant, which would eliminate the core value. The counter-signal is: confirmation acceptance rate falls below 60%, which would mean the gate is over-triggering on low-consequence events and users are ignoring prompts, making the high-stakes prompts invisible in the noise.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "Each metric tests a distinct element of the design hypothesis. The zero high-blast-radius threshold is binary and non-negotiable: a single repeat of the board meeting incident would indicate the gate is miscalibrated. The 80% prompt acceptance tests confirmation quality, not frequency. The 70% autonomous rate tests that the gate preserves the product's value on routine events. The counter-signal (low acceptance rate producing prompt fatigue that obscures high-stakes prompts) is the non-obvious failure mode: the gate can technically fire correctly and still fail if users learn to dismiss prompts.",
+              "framework_hint": "Domain Expertise: a 70% autonomous rate is calibrated to an agent handling a typical executive calendar, where the majority of conflicts involve low-stakes 1:1s or internal syncs. An agent that requires confirmation on 50% or more of actions is effectively a scheduling assistant, not an autonomous agent. Strategic Thinking: the counter-signal (prompt fatigue) identifies the failure mode that does not appear in the gate's own metrics but would make the entire system unsafe."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means no user complaints about autonomous agent actions in the 30 days after the gate ships. Track complaint rate from beta users. If complaints are zero or near zero, the gate is working. If more than two users report unwanted autonomous actions, audit the gate logic.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Complaint rate is a real signal and the instinct to monitor it is correct. The gap is that complaints are a lagging indicator with a selection bias: users often do not report problems that cause minor embarrassment, as the two pre-board-meeting incidents showed. A gate could also generate zero complaints by becoming so conservative that it never acts autonomously, which would satisfy the complaint metric while killing the product's value. The win condition needs at least one metric that tests the quality and calibration of the gate, not just user tolerance.",
+              "framework_hint": "Strategic Thinking partial credit: names a specific threshold (two complaints) with a concrete response (audit). The gap is that complaint rate is an output of user behavior, not a direct measure of gate calibration. The original agent likely would have passed a 30-day complaint-rate test after the first two incidents, because neither triggered formal complaints. A win condition that relies on complaint rate cannot detect the failure mode that was already present."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means user satisfaction scores above 4.2 out of 5 in the beta cohort at the 30-day mark. Run an in-app survey after the gate ships asking users how well the agent handles high-stakes decisions. A score above 4.2 indicates the redesign has restored trust.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Satisfaction scores measure user sentiment, not gate calibration. Beta users who have not experienced a high-blast-radius autonomous action since the update may rate the agent highly simply because nothing has gone wrong, not because the gate would prevent something from going wrong. A 4.2 satisfaction score cannot tell you whether the gate would have caught the CFO-on-a-flight scenario or whether it is prompting too often on low-consequence events.",
+              "framework_hint": "Strategic Thinking failure: defining success as a sentiment score disconnects the win condition from the design hypothesis. The gate's hypothesis is that it correctly classifies actions by consequence; the win condition should test that classification directly through action rates and incident counts, not through how users feel about the agent in general."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is confirmed when the CEO explicitly says the agent feels trustworthy again. Run a structured interview with the CEO and two other beta executives at the 60-day mark. If they describe the agent as trustworthy and helpful, the redesign succeeded. Qualitative feedback from the primary stakeholder is the most reliable indicator of product-market fit at this stage.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "CEO sentiment is a real input to product decisions at an early-stage startup, but it is not a falsifiable success bar. An executive who has not experienced another incident in 60 days may say the agent is trustworthy without being able to confirm that the gate would have correctly handled a new high-blast-radius situation. Qualitative interviews cannot answer the quantitative question: is the gate firing on the right events at the right rate? The win step requires metrics, thresholds, and a counter-signal, not a structured interview.",
+              "framework_hint": "Domain Expertise failure: at beta stage with a small executive cohort, qualitative sentiment from two or three users is not statistically distinguishable from the agent having had no difficult decisions in the measurement window. A trust score from executives who have not been tested by a high-consequence event is not evidence that the gate works."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

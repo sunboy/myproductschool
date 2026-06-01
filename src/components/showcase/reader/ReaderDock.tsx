@@ -17,6 +17,13 @@ interface ReaderDockProps {
   backHref: string;
   companyName: string;
   storyTitle: string;
+  /**
+   * Optional custom navigation. Readers that scroll via something other than the
+   * default `data-section-id` lookup (e.g. the AARRR reader's GSAP `jumpToStage`)
+   * pass their own handler. Defaults to a smooth scrollIntoView on the matching
+   * `[data-section-id]` element.
+   */
+  onNavigate?: (id: string) => void;
 }
 
 /**
@@ -30,10 +37,15 @@ export function ReaderDock({
   backHref,
   companyName,
   storyTitle,
+  onNavigate,
 }: ReaderDockProps) {
   const [tocOpen, setTocOpen] = useState(false);
 
   const handleNavigate = (id: string) => {
+    if (onNavigate) {
+      onNavigate(id);
+      return;
+    }
     const el = document.querySelector(`[data-section-id="${id}"]`);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });

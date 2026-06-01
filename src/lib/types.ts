@@ -92,6 +92,10 @@ export interface ChallengePrompt {
   paradigm?: string | null
   move_tags?: FlowMove[]
   image_url?: string | null
+  /** Per-type catalog number assigned by the DB (banded by challenge_type). See challengeNumber.ts. */
+  display_number?: number
+  /** Needed to format the catalog number prefix; already required on the canonical Challenge type. */
+  challenge_type?: ChallengeType
 }
 
 /** @deprecated Use ChallengeAttemptV2 instead. prompt_id column was removed in migration 037. */
@@ -669,6 +673,8 @@ export interface Challenge {
   primary_competencies: string[]; secondary_competencies: string[]
   frameworks: string[]; relevant_roles: string[]; company_tags: string[]; tags: string[]
   is_published: boolean; is_calibration: boolean; is_premium: boolean; is_featured: boolean; created_at: string
+  /** Per-type catalog number assigned by the DB (banded by challenge_type). See challengeNumber.ts. */
+  display_number?: number
   // Consolidated columns (from challenge_prompts / autopsy_challenges)
   prompt_text: string | null
   domain_id: string | null

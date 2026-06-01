@@ -47,6 +47,32 @@ interface SubmitResult {
   competency_signal?: { primary: string; signal: string; framework_hint: string } | null
 }
 
+export interface StepAnswerDraft {
+  question_id: string
+  response_type: ResponseType
+  selected_option_id?: string | null
+  selected_option_ids?: string[]
+  user_text?: string | null
+  time_spent_seconds?: number
+  confidence?: number | null
+}
+
+export interface BatchQuestionResult {
+  question_id: string
+  sequence: number
+  score: number
+  grade_label: string
+  competency_signal: { competency: string; signal: string; framework_hint?: string } | null
+  revealed_options: RevealedOption[]
+}
+
+export interface StepBatchResult {
+  step_complete: boolean
+  step_score: number
+  competency_signal: { competency: string; signal: string; framework_hint?: string } | null
+  questions: BatchQuestionResult[]
+}
+
 interface UseFlowStepReturn {
   stepData: StepData | null
   loading: boolean
@@ -64,6 +90,10 @@ interface UseFlowStepReturn {
     responseType: ResponseType
     timespentSeconds: number
   }) => Promise<SubmitResult | null>
+  submitStep: (params: {
+    attemptId: string
+    answers: StepAnswerDraft[]
+  }) => Promise<StepBatchResult | null>
   fetchCoaching: (params: {
     attemptId: string
     questionId: string
@@ -138,6 +168,38 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
     }
   }, [challengeId, step])
 
+  const submitStep = useCallback(async (params: {
+    attemptId: string
+    answers: StepAnswerDraft[]
+  }): Promise<StepBatchResult | null> => {
+    setSubmitting(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/step/${step}/submit-batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attempt_id: params.attemptId,
+          answers: params.answers,
+        }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        const nextAction = Array.isArray(body.next_actions) ? body.next_actions[0] : undefined
+        throw new Error(body.status === 'not_ready'
+          ? [body.summary, nextAction].filter(Boolean).join(' ')
+          : body.error ?? `Step submit failed: ${res.status}`)
+      }
+      const result: StepBatchResult = await res.json()
+      return result
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error')
+      return null
+    } finally {
+      setSubmitting(false)
+    }
+  }, [challengeId, step])
+
   const fetchCoaching = useCallback(async (params: {
     attemptId: string
     questionId: string
@@ -170,5 +232,5 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
     setError(null)
   }, [])
 
-  return { stepData, loading, submitting, error, submitResult, clearStepData, loadStep, submitAnswer, fetchCoaching }
+  return { stepData, loading, submitting, error, submitResult, clearStepData, loadStep, submitAnswer, submitStep, fetchCoaching }
 }

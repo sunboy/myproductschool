@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000047",
+  "title": "Personalizing an AI-Native Experience Without Being Creepy",
+  "scenario_role": null,
+  "scenario_context": "An AI-native health coaching app learns from users over time, passively reading sleep patterns, mood check-ins, exercise logs, and eating habits. More data means more tailored coaching, and the model is genuinely useful when it has a full picture. After 90 days of use, though, something shifts: 34% of users start reporting that the app feels like it is watching them. Their engagement drops sharply. Users who never develop that feeling are retained at three times the rate.",
+  "scenario_trigger": "Deeper research reveals a counterintuitive finding: users who feel watched are not necessarily sharing more data than those who do not. The creepiness is triggered when the app surfaces knowledge the user did not consciously hand over, with no explanation of how it got there and no visible way to push back. The volume of data collected is not the cause. The absence of perceived control and consent is.",
+  "scenario_question": "Identify the real driver of the surveillance feeling, enumerate what would need to change in the product to fix it, name the tradeoff the chosen intervention accepts, and define a falsifiable bar for whether the redesign is working.",
+  "engineer_standout": "A strong answer recognizes that the creepiness problem is not a privacy problem in the legal sense and not a data-minimization problem in the engineering sense. It is a perceived-control problem: users feel surveilled when the app demonstrates knowledge they did not consciously offer, with no transparency about how or why. The insight is that personalization becomes surveillance not at a data-volume threshold but at the moment the user loses the mental model of what the app knows and why. The fix is not to collect less; it is to make the knowledge loop visible and controllable so the coaching feels like help the user opted into rather than evidence of silent observation.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 30,
+  "primary_competencies": ["cognitive_empathy", "taste"],
+  "secondary_competencies": ["motivation_theory", "strategic_thinking"],
+  "topic_tags": ["ai-native", "personalization", "privacy", "retention", "user-trust", "health-tech"],
+  "technique_tags": ["mental-model-mapping", "constraint-framing"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The 34% who feel watched are not sharing more data. So what is actually triggering the surveillance feeling, and why does naming it correctly matter before designing a fix?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why 34% of users begin feeling watched after 90 days, even when data volume is not the differentiating factor?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The surveillance feeling is not caused by how much data the app collects. It is caused by the gap between what users consciously handed over and what the app appears to know. When the coaching surfaces an insight from a passive signal — a sleep pattern correlation the user never mentioned, an eating habit inferred rather than logged — without explaining where that came from or how to correct it, the user loses the mental model of what the system knows. That loss of mental model is the creepiness trigger. The framing is: users who feel watched have lost perceived control over the knowledge loop, not over their data. Fixing the data policy addresses the wrong problem. Fixing the visibility and steerability of the knowledge loop addresses the right one.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "motivation_theory"],
+              "explanation": "This framing correctly identifies the mechanism: the surveillance feeling emerges at the moment of perceived-control loss, not at a data-volume threshold. The 90-day cliff in the retention data supports this — users have had enough time to notice that the app knows things they did not deliberately tell it. Framing it as a knowledge-loop opacity problem rather than a data-collection problem points directly at the product surface that needs to change: the coaching explanations and the feedback controls, not the data pipeline. The 34% and 3x retention differential are load-bearing signals here, because they show the feeling is common enough to be structural, not edge-case.",
+              "framework_hint": "Cognitive Empathy: simulating what it feels like to read a coaching insight based on a passive signal you did not consciously share, with no explanation of how the app arrived at it. Motivation Theory: the friction is not 'the app has my data' (users accepted that at signup) but 'the app demonstrates knowledge I did not offer, and I cannot see how or push back on it.'"
+            },
+            {
+              "option_label": "B",
+              "option_text": "The surveillance feeling is a privacy concern driven by data collection volume. After 90 days, users have shared enough that the app's model of them becomes uncomfortably detailed. The fix is to give users the option to limit data collection, reduce passive tracking, or reset the model periodically so it does not accumulate too much.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "Data control is a real user need and giving people the ability to limit or reset their data is a legitimate product lever. But the research finding undermines the volume hypothesis directly: users who feel watched are not sharing more data than those who do not. So data minimization addresses a symptom the data does not support. More importantly, reducing data collection degrades the coaching quality that is the app's core value proposition — a user who limits tracking to avoid feeling watched now gets a worse product. The right frame preserves the data advantage while fixing the perceived-control deficit that is actually causing the feeling.",
+              "framework_hint": "Motivation Theory partial credit: correctly identifies friction in the user's experience of data accumulation. Cognitive Empathy gap: does not simulate why two users with identical data volume have different surveillance feelings. The frame needs to explain that differential, which data volume cannot."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is that the app's onboarding does not set clear enough expectations about what it will learn over time. Users who feel watched are likely users who did not read the data policy. The fix is a better onboarding flow that explains passive tracking upfront so users are not surprised at the 90-day mark.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Informed consent at onboarding is a necessary baseline and it is not wrong to improve it. But the surveillance feeling is not caused by a disclosure gap — it is caused by what happens during active coaching sessions when the app demonstrates knowledge the user did not consciously provide. A user who read every onboarding screen but then receives an unexplained coaching insight from a passively inferred signal will still feel watched at the 90-day mark, because the problem is not information asymmetry at signup but opacity during coaching. Better disclosures fix what users knew going in; they do not fix what users experience when the model shows its work without explanation.",
+              "framework_hint": "Cognitive Empathy failure: assumes that disclosed consent and felt consent are the same. A user can understand intellectually that the app tracks sleep and still feel watched when it surfaces an unexpected insight weeks later. The surveillance feeling is a real-time experience, not a memory of what the privacy policy said."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The 34% who feel watched are a user segment with higher-than-average privacy sensitivity. This is a segmentation problem, not a product design problem. The app should let privacy-sensitive users opt into a 'light mode' with fewer personalization features, while the majority who are comfortable continue to get the full AI coaching experience.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Segmenting by privacy sensitivity and offering a light mode is a real product pattern, but it is the wrong frame here because the research finding cuts across segments: the 34% who feel watched are not concentrated in a pre-existing privacy-sensitive cohort. The feeling develops over time, triggered by specific coaching moments rather than by a stable user disposition. Treating this as a fixed-segment problem will leave the product in a position where it degrades experience for a third of its user base and never fixes the mechanism that is causing the feeling in the first place. The frame needs to explain why the feeling develops, not route around it.",
+              "framework_hint": "Strategic Thinking failure: segment-based workarounds are appropriate when the gap between segments is structural and stable. Here the 34% shifts based on product behavior, not user type, which means the right intervention is in the product mechanism, not in user classification."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Once you know the problem is perceived-control loss, not data volume, the solution space opens considerably. What specific product surfaces and mechanisms would make the knowledge loop visible and steerable?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of product interventions most completely addresses the knowledge-loop opacity that triggers the surveillance feeling in the health coaching app?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct interventions cover the problem. First, coaching provenance: every insight or recommendation should show the signal it came from ('This is based on your sleep data from the last three weeks') so users can trace the connection and correct it if the inference is wrong. Second, a knowledge card or 'what I know about you' surface where users can see a plain-language summary of what the model has inferred, edit inferences, and mark signals as off-limits. Third, consent checkpoints at inference boundaries: before the model uses a new signal type for the first time (e.g., switching from logged mood to inferred mood from message tone), a brief opt-in moment surfaces what is about to change. Fourth, proactive framing in coaching language that positions insights as collaborative rather than demonstrative — 'I noticed something in your sleep data. Want to look at it together?' rather than 'Your sleep quality has been declining because of late evening screen time.'",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "These four interventions are structurally distinct rather than variations on the same idea. Provenance fixes the opacity of individual insights. The knowledge card fixes the opacity of the model's overall picture. Consent checkpoints fix the opacity of expanding data use. Proactive framing fixes the tone that makes demonstrations feel like surveillance rather than collaboration. Together they address the knowledge-loop problem from four directions without requiring the app to collect less data or deliver lower-quality coaching.",
+              "framework_hint": "Creative Execution: the four options each address a different point in the knowledge loop rather than varying the same lever (e.g., four variations on a privacy setting). Cognitive Empathy: the proactive-framing option is directly about simulating how it feels to receive a coaching insight as a demonstration versus as an invitation."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The product needs a privacy dashboard where users can see all data collected, toggle off individual data types, and request deletion. This gives users control over their data, which is what the surveillance feeling is signaling. Pair it with a clear explanation of how personalization works.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "A privacy dashboard addresses user control over data collection, which is a real need and a legal requirement in many jurisdictions. But the surveillance feeling is triggered by coaching moments, not by data-settings screens. A user who visits the dashboard and understands the data policy will still feel watched the next time the app surfaces a coaching insight from a signal they did not consciously log. The list needs to include interventions at the coaching surface itself — provenance, framing, and consent at inference boundaries — not just at the data-management layer.",
+              "framework_hint": "Motivation Theory partial credit: correctly identifies user control as the underlying need. Cognitive Empathy gap: the gap between 'I can see and toggle my data settings' and 'I feel watched when the coach surprises me' is the gap this list does not cross. Data control and perceived-knowledge-loop control are different product surfaces."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Send a weekly digest email summarizing what the app learned that week, what it changed in the coaching model, and what data drove those changes. Transparency via an asynchronous communication channel keeps users informed without interrupting the in-app experience.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A weekly digest is a transparency mechanism, but transparency delivered asynchronously and out of context does not fix the moment-of-surprise that triggers the surveillance feeling. The feeling arises when a coaching insight appears without explanation during an active session. A retrospective summary reviewed three days later does not prevent that moment. It also adds email load that many users will not read, while leaving the in-product coaching surface unchanged. The intervention needs to be at the point of coaching, not in a separate communication channel.",
+              "framework_hint": "Cognitive Empathy failure: the surveillance feeling is a real-time experience triggered in the coaching session. Fixing it requires an in-session intervention, not a retrospective communication. The digest treats the problem as an information deficit rather than a moment-of-surprise deficit."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Let users rate every coaching insight as helpful or not helpful. Use that feedback signal to tune the model away from inferences that users reject. Over time, the model will learn not to surface the types of insights that feel intrusive.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "User ratings are a useful signal for relevance tuning, but they are a slow-loop mechanism that does not address the surveillance feeling in real time. By the time the model has learned from rejected insights, the user who experienced the intrusive moment has already developed the watched feeling. More critically, users rating an insight as unhelpful will not consistently mean they felt watched — they might disagree with the coaching for a dozen other reasons. The feedback loop misidentifies the target variable and introduces a long lag between the problem and any improvement.",
+              "framework_hint": "Creative Execution failure: a rating system is a variation on 'user feedback improves the model' rather than a structurally distinct intervention that addresses the mechanism causing the surveillance feeling. The list step should surface options that act at the point of the problem, not downstream corrections."
+            }
+          ]
+        },
+        {
+          "question_text": "Which specific coaching-language pattern most directly prevents a personalization moment from feeling like surveillance in the health coaching context?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Shift from demonstrative to invitational framing at every inference boundary. Instead of 'Your sleep quality declined last week because your bedtime shifted 40 minutes later,' use 'I noticed something in your sleep pattern from last week. Want to take a look at it together?' The first phrasing demonstrates knowledge the user did not offer. The second phrasing treats the insight as a shared discovery the user opts into in real time. Both convey the same underlying inference. The difference is whether the user experiences receiving a conclusion or participating in forming one. At the 90-day mark, users in the 34% group are accumulating demonstrative moments. A consistent shift to invitational framing changes the experience from 'the app knows me' to 'the app and I are figuring this out together,' which is the mental model that supports retention in the non-watched group.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "This option identifies the specific linguistic mechanism that converts a surveillance moment into a coaching moment. The same inference delivered demonstratively registers as the app revealing what it knows; delivered invitational, it registers as an offer to explore together. The 90-day mark and 34% statistic are directly relevant because the accumulation of demonstrative moments over time is what tips users from comfortable to watched. Invitational framing is also implementable without changing the underlying data model — it is a UX layer, not a data layer, which makes it lower-cost than rebuilding the inference pipeline.",
+              "framework_hint": "Cognitive Empathy: the demonstration/invitation distinction is about simulating what it feels like to receive knowledge versus to discover it. Felt consent is higher when the user participates in surfacing an insight than when they receive it as a conclusion the app has already drawn."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Add a 'why did I get this?' button to every coaching card so users can tap through to see the data signals that drove the recommendation. This gives transparency on demand without adding it to every interaction by default.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "On-demand provenance is better than no provenance and gives curious users a path to understanding. But it does not fix the moment of surprise — the coaching card still arrives as a conclusion, and only users who tap through will see the reasoning. Users who feel watched are unlikely to engage with a 'why' button after they have already experienced the discomfort of the surprising insight. The intervention needs to be at the point of delivery, not a secondary tap. Combining on-demand provenance with invitational framing would be stronger than either alone.",
+              "framework_hint": "Motivation Theory partial credit: correctly identifies transparency as the need and provenance as the mechanism. Cognitive Empathy gap: the tap-through is an active recovery from a surveillance moment rather than prevention of one. The surveillance feeling has already occurred before the user reaches the explanation."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Show the data source for every coaching insight inline, formatted as a small tag beneath the insight text: 'Based on: sleep (14 days), mood check-ins (21 days), exercise logs (18 days).' This gives full attribution without changing the coaching copy.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Inline attribution is a transparency mechanism, but it is additive to a demonstrative coaching card rather than a replacement for it. A card that says 'Your sleep quality declined last week' followed by a data-source tag still delivers the insight as a conclusion the app has drawn. The tag tells the user where the conclusion came from, but it does not shift the felt dynamic from 'the app knows' to 'we figured this out together.' Attribution is necessary but not sufficient to prevent the surveillance feeling.",
+              "framework_hint": "Taste failure: provenance tags and invitational framing address different aspects of the same problem, but this option stops at the data-attribution layer and does not reach the consent-and-agency layer. The distinction matters because provenance tells the user how the app arrived at a conclusion; invitational framing changes whether the user experiences receiving a conclusion at all."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Replace all personalized coaching with generic advice until the user has explicitly tagged at least five data points as 'shareable for coaching.' Build a consent wall before the personalization experience begins, so no inference surfaces without prior explicit sign-off on the underlying data.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Explicit consent for every data point sounds rigorous, but it degrades the core product value to the point of making the coaching useless. The app's coaching quality depends on passive signals precisely because users do not consciously log everything the model needs. A consent wall that blocks passive inference will produce a product where users have complete felt control but minimal coaching benefit — the opposite of what the 3x retention of the non-watched group demonstrates. Those users are getting full personalization and not feeling watched, which means the solution is not to block personalization but to deliver it in a way that sustains the right mental model.",
+              "framework_hint": "Strategic Thinking failure: the non-watched users at 3x retention show that personalization without the surveillance feeling is achievable. A consent wall that blocks passive inference abandons the hypothesis that both are possible simultaneously and opts instead for felt control at the cost of product value."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Invitational framing and a knowledge card both address the perceived-control problem. Name the criterion that tells you which intervention to prioritize first, and name what you give up by choosing it.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for choosing between investing in invitational coaching language versus investing in a visible knowledge card (a 'what I know about you' surface) as the first intervention?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is where in the user journey the surveillance feeling forms. Invitational coaching language acts at the moment of inference delivery, which is where the 34% first experience the watched feeling — during a coaching session, not during a settings visit. A knowledge card acts at a separate surface that users have to seek out, which means it arrives after the feeling has already formed. If the goal is prevention rather than remediation, the first intervention should be at the point of surprise, not downstream of it. The sacrifice this criterion requires is explicit: invitational language is harder to write consistently across hundreds of coaching templates than a knowledge card is to build as a standalone UI, and it requires ongoing discipline in content creation rather than a one-time engineering build. That is a real cost. But a one-time UI feature that most users never visit does not prevent the surveillance moment; it only gives a path to recover from it.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "The criterion — where in the user journey does the feeling form — is specific to this scenario and directly connected to the 90-day retention cliff. The optimize step requires naming both the decision rationale and the sacrifice. The sacrifice here is genuine: consistent invitational framing across a large coaching template library is a sustained operational cost, not a discrete engineering project. Naming it prevents the team from treating invitational language as obviously correct without accounting for the maintenance burden.",
+              "framework_hint": "Taste: distinguishing between 'the knowledge card feels like the right thing to build' (a preference for a discrete, shippable feature) and 'invitational language addresses the moment where the problem actually occurs' (a tradeoff that names what the knowledge card cannot do). Strategic Thinking: the 90-day cliff and the 34% figure are evidence that the feeling forms during coaching sessions, which is where the intervention should be."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be engineering complexity. Invitational coaching language requires rewriting copy across many templates and building a tone-consistency system; a knowledge card is a bounded UI project with clearer scope and a predictable ship date. The team should optimize for what it can build well within the quarter.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Engineering complexity is a legitimate input to prioritization, and shipping something bounded and well-executed is better than shipping something sprawling and half-finished. But engineering complexity is a constraint, not a criterion. A criterion names what the product is optimizing for; a constraint names what limits the options. Choosing based on buildability alone does not ask whether the thing being built addresses the mechanism causing the retention problem. A knowledge card that ships on time and goes unvisited by most users is not the right intervention even if it is the easiest one.",
+              "framework_hint": "Taste failure: optimizing for what can be built rather than for what the retention data says is causing the problem. Engineering effort is a real input but it should be weighed against expected impact on the 34% retention gap, not used as the decision criterion on its own."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion is user preference. Run a survey asking current users whether they would find it more helpful to see the app's knowledge of them in a single place or to receive coaching insights framed as collaborative discoveries. Build what users say they want.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Stated preferences in a survey do not predict which intervention will prevent the surveillance feeling. Users who have not experienced the knowledge card cannot evaluate whether it would have changed how they felt in a coaching session where the app surprised them. More fundamentally, the 34% who feel watched are the users who need the intervention — and they are likely to say they want both, or to say they want control over their data, which maps poorly to either specific intervention. The criterion needs to be grounded in the mechanism causing the problem, not in users' abstract preferences about product features.",
+              "framework_hint": "Cognitive Empathy failure: users' stated preferences about product features do not simulate the moment-of-surprise experience that is causing the surveillance feeling. The research insight that data volume is not the differentiator should make the team skeptical of any method that asks users what they want in the abstract."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is brand positioning. The knowledge card is a more visible, marketable feature that can be promoted as a transparency commitment. Invitational coaching language is invisible to anyone who has not used the product. Prioritize the intervention that communicates the company's values to the market.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Brand and marketing value are real considerations for feature prioritization, but using them as the primary criterion here inverts the priority order. The goal is to fix a retention problem affecting 34% of users at the 90-day mark. An intervention chosen for its marketability that does not address the mechanism causing churn will produce good press and continued user loss. If the knowledge card is the right intervention on the merits, it can also be marketed. But marketing value should not be the criterion that selects it.",
+              "framework_hint": "Strategic Thinking failure: brand positioning is a secondary benefit of a good intervention, not the criterion for choosing between two interventions that address the same underlying problem. Optimizing for visibility to the market while users are leaving at the 34% rate is a misalignment of objectives."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the invitational framing is making things worse, not better.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the invitational coaching language intervention in the AI health coaching app?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: the 90-day retention rate for users who receive invitational coaching language from day one reaches at least 80% within two cohort cycles (approximately six months), compared to the current 66% retention baseline for the full user base implied by the 34% feeling-watched churn. The second threshold targets the watched-feeling proxy directly: among users surveyed at the 90-day mark in the invitational-language cohort, fewer than 15% report feeling like the app is watching them, compared to the 34% baseline. The counter-signal is: coaching engagement rate (session opens, insight interactions) drops more than 20% in the invitational-language cohort relative to the control, which would mean the softer framing is making coaching feel less urgent or less credible, not more trusted. If engagement drops while the surveillance feeling decreases, the intervention is trading the wrong tradeoff.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names two metrics with specific thresholds — 90-day retention above 80% and watched-feeling survey below 15% — each connected to a distinct element of the hypothesis. The retention threshold tests the business outcome the intervention is designed to improve. The survey threshold tests the mechanism: whether the feeling itself has actually changed, not just whether users are staying. The counter-signal is non-obvious and essential: if engagement drops while surveillance feelings improve, the invitational framing has made coaching feel less confident, which would be a new problem the intervention created. Naming that failure mode forces the team to instrument both sides of the tradeoff.",
+              "framework_hint": "Strategic Thinking: two metrics are necessary because retention improvement without surveillance-feeling reduction might reflect other factors, and surveillance-feeling reduction without retention improvement might reflect measurement noise. Both together constitute evidence the intervention is working. Domain Expertise: 80% 90-day retention as a target is grounded in the 3x retention differential — the non-watched group implies a retention rate high enough that closing even half the gap would be meaningful at the scale of a health coaching product."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Win means no increase in privacy-related support tickets or app store reviews mentioning feeling watched within 90 days of launch. If the intervention is working, users will stop complaining. Track complaints monthly and look for a downward trend.",
+              "quality": "good_but_incomplete",
+              "competencies": [],
+              "explanation": "Complaint volume is a lagging and underweighted signal in health app contexts: users who feel watched and disengage rarely file support tickets about it. They simply stop opening the app. The 34% figure from user research would not have surfaced in complaint data alone — it required proactive research. A win condition that depends on complaint silence cannot detect the mechanism the intervention is targeting, and it cannot distinguish between 'users no longer feel watched' and 'users have stopped engaging enough to notice.'",
+              "framework_hint": "Motivation Theory failure: disengagement is the primary behavioral expression of the surveillance feeling, not complaint submission. A win condition must measure the behavioral outcome — retention and re-engagement — not the communication artifact — support tickets — which most disengaged users never produce."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means a 10-point improvement in Net Promoter Score within 60 days across the user base. If users are recommending the app more, it means the experience feels better. Track NPS monthly using an in-app survey after the third coaching session.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "NPS measures likelihood to recommend, which is a satisfaction-adjacent signal. It is not specific to the mechanism being tested: a user who never reaches the 90-day mark and thus never develops the surveillance feeling will still contribute to NPS, diluting any signal from the intervention. More practically, a 10-point NPS improvement in 60 days attributed to a coaching language change is not falsifiable — too many variables affect NPS across the full user base for a single language change to be cleanly detected in aggregate. The win condition needs a metric tied to the 90-day cohort, not the full user base.",
+              "framework_hint": "Strategic Thinking failure: the win condition must be falsifiable for the specific hypothesis being tested. NPS across the full user base is a general product health signal, not a test of whether invitational coaching language prevents the surveillance feeling in users who have been in the app long enough to develop it."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the engineering team ships invitational language across all coaching templates by the end of the quarter and the content team establishes a tone guide that governs future coaching copy. Success is measured by completeness of rollout, not by user behavior.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Rollout completeness is an output metric, not an outcome metric. Shipping invitational language across all templates is a necessary condition for the intervention to work, but it is not evidence that the intervention is working. A team that defines success as shipping the feature has no mechanism for detecting whether the language change actually reduced the surveillance feeling or improved retention. The win condition must test the hypothesis — does the language change address the mechanism causing the 34% watched feeling — not the implementation milestone.",
+              "framework_hint": "Domain Expertise failure: output-based win conditions are appropriate for infrastructure work where the output is the value. For a behavioral intervention targeting a specific retention failure mode, only outcome metrics — retention rate, surveillance-feeling survey, engagement rate — can confirm the hypothesis."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

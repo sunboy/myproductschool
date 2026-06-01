@@ -5,6 +5,7 @@ import { getConcepts } from '@/lib/data/concepts'
 import { getChallenges } from '@/lib/data/challenges'
 import { getDomainBySlug } from '@/lib/data/domains'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { challengePath } from '@/lib/challenges/challengeNumber'
 
 interface TopicPageProps {
   params: Promise<{ skillArea: string; topic: string }>
@@ -160,7 +161,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
                 {topicChallenges.map(challenge => (
                   <Link
                     key={challenge.id}
-                    href={`/workspace/challenges/${challenge.slug ?? challenge.id}`}
+                    href={challengePath(challenge)}
                     className="group flex items-center gap-2 py-1.5 hover:text-primary transition-colors"
                   >
                     <span className="material-symbols-outlined text-on-surface-variant text-base group-hover:text-primary">

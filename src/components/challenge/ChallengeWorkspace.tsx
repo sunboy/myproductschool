@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { ChallengePrompt } from '@/lib/types'
+import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { Md } from '@/components/ui/Md'
 import { useSteps } from '@/hooks/useSteps'
@@ -89,6 +90,7 @@ function formatAutoSave(date: Date | null): string {
 
 export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: ChallengeWorkspaceProps) {
   const router = useRouter()
+  const numberLabel = formatChallengeNumber(challenge.challenge_type, challenge.display_number)
 
   const [mode, setMode]                   = useState<WorkspaceMode>('quick')
   const [activeStep, setActiveStep]       = useState(1) // Start on List (step 1) to match Stitch
@@ -341,6 +343,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
           >
             <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
           </button>
+          {numberLabel && <span className="font-mono text-xs text-on-surface-variant shrink-0">{numberLabel}</span>}
           <span className="font-headline font-black text-lg text-on-surface">{challenge.title}</span>
           <Link
             href={`/challenges/${challenge.id}/discussion`}

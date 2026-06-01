@@ -22,6 +22,15 @@ const DATA_SECTIONS = [
     ],
   },
   {
+    title: 'Google Sign-In',
+    body: [
+      'When an account is created or accessed with "Continue with Google," HackProduct receives a limited set of Google account fields through Supabase Auth: email address, name, and profile picture.',
+      'These fields are used only to create and authenticate the account and to populate the profile name and avatar. They are not sold or used for advertising.',
+      'HackProduct requests only basic profile and email scopes. It does not access Gmail, Google Drive, Google Contacts, Calendar, or any other Google service data.',
+      'Google account access can be revoked at any time from the Google Account permissions page, which signs the linked identity out of HackProduct.',
+    ],
+  },
+  {
     title: 'How We Use Data',
     body: [
       'Run the product, authenticate accounts, route users through onboarding, preserve workspace state, and show progress across practice surfaces.',
@@ -61,11 +70,34 @@ const DATA_SECTIONS = [
   {
     title: 'Rights And Choices',
     body: [
-      'Account holders can request access, correction, export, or deletion of personal data by contacting privacy@hackproduct.dev.',
+      'Account holders can request access, correction, export, or deletion of personal data by contacting founders@hackproduct.com.',
       'Notification preferences can be changed in settings or through signed unsubscribe links in email.',
       'Cookie choices are saved in the current browser. Essential storage is required for login, security, billing, and core product operation.',
       'Deleting an account removes profile data and cascaded practice data where technically possible. Some billing, security, affiliate, tax, dispute, and audit records may remain when retention is required.',
       'Affiliate payouts through Stripe Connect may require additional identity, tax, and bank account information handled by Stripe.',
+    ],
+  },
+  {
+    title: 'Data Location And Transfers',
+    body: [
+      'HackProduct relies on US-based service providers, including Supabase, Stripe, Vercel, Resend, Upstash, and analytics vendors, to operate the product.',
+      'Using the service means personal data is processed and stored in the United States, regardless of where the account holder is located.',
+      'Each provider maintains its own security and compliance program covering the data it processes on behalf of HackProduct.',
+    ],
+  },
+  {
+    title: 'Children',
+    body: [
+      'HackProduct is built for working professionals and is not directed to children under 16.',
+      'Accounts are not knowingly created for anyone under 16. A parent or guardian who believes a child has provided personal data can contact founders@hackproduct.com to have it removed.',
+    ],
+  },
+  {
+    title: 'Changes To This Policy',
+    body: [
+      'This policy may change as the product, vendors, and legal requirements evolve.',
+      'Material changes will be surfaced inside the product or sent to the account email before they take effect where required.',
+      'Continued use of HackProduct after a change means the updated policy is accepted.',
     ],
   },
 ]
@@ -88,10 +120,7 @@ export default function PrivacyPage() {
             <p className="text-lg leading-8 text-on-surface-variant">
               This policy explains what HackProduct collects, why it is used, which vendors process it, how long it is kept, and how account holders can ask for access or deletion.
             </p>
-            <div className="mt-6 rounded-lg border border-primary/25 bg-primary-container/40 p-4 text-sm font-semibold leading-6 text-on-surface">
-              Placeholder: needs legal review before public launch.
-            </div>
-            <p className="mt-5 text-sm text-on-surface-variant">Last updated: May 6, 2026</p>
+            <p className="mt-5 text-sm text-on-surface-variant">Last updated: June 1, 2026</p>
           </div>
         </div>
       </section>
@@ -134,8 +163,8 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-black text-on-surface">Contact</h2>
             <p className="mt-4 text-sm leading-6 text-on-surface-variant">
               Privacy requests can be sent to{' '}
-              <a className="font-bold text-primary" href="mailto:privacy@hackproduct.dev">
-                privacy@hackproduct.dev
+              <a className="font-bold text-primary" href="mailto:founders@hackproduct.com">
+                founders@hackproduct.com
               </a>
               . Include the account email address and the request type.
             </p>

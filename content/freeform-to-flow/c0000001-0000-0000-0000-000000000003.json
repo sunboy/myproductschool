@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000003",
+  "title": "Free Plan Cannibalizing Paid Conversions",
+  "scenario_role": null,
+  "scenario_context": "A startup sells a developer API tool. The free tier allows 10,000 API calls per month. Sixty percent of free users never hit that limit and stay on the free plan indefinitely. The company is growing its paid user base slowly, and there is internal pressure to close the conversion gap.",
+  "scenario_trigger": "Sales wants to cut the free tier to 1,000 calls per month, arguing that the current limit is too generous and removes urgency to upgrade. Engineering pushes back, warning that a 10x reduction would kill the word-of-mouth and integration adoption that drives new signups. The CEO needs a recommendation by end of week.",
+  "scenario_question": "Diagnose whether the free tier is a conversion problem or an acquisition asset, and recommend what to do about the limit.",
+  "engineer_standout": "A strong answer resists treating 60% never-hitting-the-limit as proof of cannibalization. Many of those users are hobbyists, side-project developers, or evaluators who will never buy regardless of the limit. The question is whether cutting to 1,000 calls converts the non-converters or just removes the top-of-funnel flywheel that generates the paying users the company does have. The real framing is: what job does the free tier perform, and is the call cap even the binding conversion constraint?",
+  "paradigm": "traditional",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["strategic_thinking", "motivation_theory"],
+  "secondary_competencies": ["creative_execution", "taste"],
+  "topic_tags": ["pricing", "monetization", "acquisition", "growth"],
+  "technique_tags": ["retention-cohorts", "jobs-mapping"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The 60% who never hit the limit are not one group. Before treating this as a conversion problem, ask what job the free tier is actually doing and whether the call cap is even what determines whether someone upgrades.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the conversion problem?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 60% who never hit 10,000 calls likely contains two distinct segments: non-buyers (hobbyists, students, side-project developers) who would never convert regardless of the limit, and under-using potential buyers whose friction is something other than the call cap. Cutting to 1,000 calls treats the limit as the conversion lever, but if the binding constraint for potential buyers is team-seat pricing, SLA quality, or workflow fit, the cut removes acquisition flywheel without moving conversion. The real framing is: what does the free tier's job-to-be-done tell us about why paying users converted, and does the call cap have anything to do with that path?",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "motivation_theory"],
+              "explanation": "This framing correctly identifies that 60% never hitting 10,000 calls is not cannibalization evidence on its own. It separates two groups with completely different implications: non-buyers who generate referrals and integration lock-in even without converting, and potential buyers whose conversion is blocked by something other than the limit. Treating the limit as the lever without understanding the actual friction produces a change that shrinks the funnel without growing revenue.",
+              "framework_hint": "Motivation Theory: the reasoning move at Frame is finding the friction that is actually blocking the outcome, not the most visible number. 'Calls never hit' is a usage fact, not a friction diagnosis. Strategic Thinking: the upstream question is what job the free tier performs for the business, acquisition flywheel or trial-to-paid funnel, before deciding whether the limit is the right variable to change."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The free tier is too generous. If 60% of users never hit 10,000 calls, the limit provides no conversion pressure. The problem is that the free tier's value is so high relative to the paid tier that there is no meaningful reason to upgrade. Cutting to 1,000 calls restores urgency and aligns the free tier with standard PLG conversion mechanics.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This framing correctly names conversion urgency as a possible variable but assumes the call cap is the conversion lever without evidence. Whether cutting from 10,000 to 1,000 creates upgrade urgency depends on whether the potential buyer segment actually needs more than 1,000 calls. If the non-converting 60% are non-buyers by nature, reducing the limit converts nobody and removes a word-of-mouth surface. The framing is directionally reasonable but skips the segmentation step that determines whether the lever works.",
+              "framework_hint": "Motivation Theory: identifying 'no conversion pressure' is a friction diagnosis, but it assumes the limit is the source of that friction. The upstream move is to ask what actually separates the users who did convert from the users who did not, before prescribing a change to the limit."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The free tier is fine. A 60% never-convert rate is normal for developer tools, and the word-of-mouth effect from a generous free tier is worth more than forcing a few marginal upgrades. The company should focus on improving the paid tier's features rather than restricting the free tier.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Defending the status quo based on industry norms sidesteps the framing entirely. The scenario asks for a diagnosis of whether the free tier is causing a conversion problem, not a defense of the current setup. Whether 60% is normal for developer tools does not answer whether this specific free tier is optimally set for this product's conversion path. The recommendation to improve the paid tier may be valid but is not grounded in any analysis of the conversion dynamic.",
+              "framework_hint": "Strategic Thinking failure: appealing to industry benchmarks without applying them to the specific product's conversion path is not a framing, it is pattern-matching without reasoning. The Frame step requires naming what is actually happening and why, not citing a reference class."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The engineering team is right and the sales team is wrong. Cutting to 1,000 calls is too aggressive and will hurt growth. The CEO should side with engineering on this one because word-of-mouth is more valuable than short-term conversion pressure, especially for a developer tool.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Taking sides between sales and engineering is not a framing, it is a conclusion without analysis. The scenario does not provide enough information to know whether engineering is right. Word-of-mouth may be valuable, but its value depends on whether the non-converting 60% actually drives referrals and what the marginal paid conversion rate looks like across different limit scenarios. Choosing a team before diagnosing the problem produces a recommendation that cannot be defended to the CEO.",
+              "framework_hint": "Motivation Theory failure: the Frame step requires understanding the friction and its source before deciding what to do about it. Choosing the correct stakeholder's position without examining whether their diagnosis is accurate converts a political preference into a product decision."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The call cap is one lever among several. Before recommending a number, enumerate the structurally different ways a free-to-paid conversion path can be designed for a developer API tool.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of levers most completely maps the conversion design space for this product?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "At least four structurally distinct levers exist: (1) usage volume gating, the call cap itself, which creates conversion pressure by constraining throughput; (2) feature gating, where capabilities like higher rate limits, analytics dashboards, or webhook support are paid-only regardless of call volume; (3) team and organizational gating, where multi-seat access, SSO, or audit logs require a paid plan, targeting the upgrade trigger that fires when a project moves from personal use to team adoption; (4) support and SLA gating, where guaranteed response times and uptime SLAs are paid-only, targeting buyers for whom reliability risk is the upgrade trigger. The 1,000-call proposal touches only lever 1.",
+              "quality": "best",
+              "competencies": ["creative_execution", "strategic_thinking"],
+              "explanation": "This set is structurally distinct because each lever targets a different conversion trigger. Volume gating addresses throughput-limited users. Feature gating addresses capability-limited users. Team gating addresses the personal-to-team transition, which is often the highest-value conversion event in developer tools. SLA gating addresses production-use risk. Listing all four before committing to one reveals whether the 1,000-call proposal is attacking the right trigger at all.",
+              "framework_hint": "Creative Execution: the reasoning move at List is generating options that are structurally different, not variations on the same gate. Volume gating and feature gating both restrict access, but they fire at different points in the user journey and for different user types. Enumerating all four makes the downstream optimization step tractable."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two options: cut the free tier's call limit to create urgency, or add premium features to the paid tier to make upgrading more attractive. These represent the two directions, restricting free or enriching paid, and the decision is which approach fits the product better.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The restrict-free versus enrich-paid framing is a useful starting point but collapses several distinct mechanisms into two buckets. Within 'restrict free,' volume gating and feature gating fire at different user segments. Within 'enrich paid,' feature additions, team-seat pricing, and SLA tiers all target different conversion moments. Presenting only two options understates the design space and risks choosing between two incomplete poles when a more targeted lever exists.",
+              "framework_hint": "Creative Execution: a two-option list at the List step usually signals that structurally distinct options are being grouped. The reasoning move is to find the options the binary obscures, here the team-adoption gate and the SLA/support gate, which are neither 'cut free' nor 'add features.'"
+            },
+            {
+              "option_label": "C",
+              "option_text": "The company should survey free users to ask why they have not upgraded, then use the responses to identify the top conversion barrier and fix it. Without direct user feedback, any lever recommendation is speculative.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "User research is valuable input but it is not a lever enumeration. The List step asks for the options available to the decision-maker, not a plan to gather more information before deciding. Proposing a survey instead of enumerating levers defers the move entirely. The scenario already contains meaningful signal: 60% never hitting 10,000 calls and engineering's word-of-mouth concern are starting points for segmentation hypotheses that do not require a survey to reason through.",
+              "framework_hint": "Creative Execution failure: 'do more research' is not an option, it is a process step. The reasoning move at List is enumerating what the team can actually do, not what it can learn first. Deferring to future data avoids the move."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The company should eliminate the free tier entirely and move to a 14-day free trial. Freemium models work for consumer apps but rarely for developer API tools, where the high infrastructure cost of free users erodes margins and the conversion path is better served by a time-limited trial.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Eliminating the free tier is presented as a categorical claim about developer API tools, but it ignores the specific evidence in the scenario: engineering's concern about word-of-mouth suggests the free tier is already generating acquisition value. Whether freemium is the right model depends on whether the non-converting 60% drives referrals and integration adoption that funds the top of the funnel. Recommending elimination without addressing that question discards the evidence presented.",
+              "framework_hint": "Strategic Thinking failure: invoking a category claim (freemium does not work for developer APIs) without applying it to this product's specific evidence is pattern-matching without reasoning. The scenario provides evidence that the free tier does something valuable for acquisition. An option that ignores that evidence is not engaging with the decision."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before picking a lever. Are you optimizing for incremental paid conversions in the next quarter, for long-term ecosystem adoption, or for both? The answer determines whether the 1,000-call cut makes sense.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which recommendation should go to the CEO, and what is the explicit criterion and sacrifice that justifies it?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Hold the 10,000-call limit and add feature gating on team-seat access, SLA guarantees, and analytics as paid-only capabilities. The criterion is incremental paid conversions net of referral loss: the 1,000-call cut risks shrinking the acquisition funnel faster than it accelerates upgrades, because the 60% who never hit the limit likely includes both non-buyers who generate word-of-mouth and low-usage potential buyers whose trigger is team adoption, not throughput. The sacrifice is leaving some conversion urgency on the table for high-volume free users. That sacrifice is acceptable because the volume-limited cohort (the 40% who do approach 10,000 calls) already has a natural upgrade trigger without any change.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This answer names the criterion (incremental paid conversions net of referral loss), names the sacrifice (some conversion urgency for volume-constrained users), and explains why the sacrifice is acceptable (the 40% who approach the limit already have an organic conversion trigger). It treats the 60% as a mixed segment rather than a monolithic conversion problem, and it routes the recommendation to the lever that fires at the most common developer-tool upgrade moment: team adoption.",
+              "framework_hint": "Taste: the reasoning move at Optimize is naming what gets given up, not just what gets gained. Choosing feature gating over volume gating sacrifices some throughput-based urgency in exchange for a conversion trigger that fires at team adoption, which is typically higher-value. Strategic Thinking: naming 'net of referral loss' as the criterion forces the recommendation to account for funnel effects, not just direct conversion math."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Cut the free tier to 5,000 calls as a compromise between sales' 1,000-call proposal and the current 10,000-call limit. This reduces the gap between free and paid enough to create some urgency while avoiding the aggressive cut that engineering warned about.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Splitting the difference between two positions is not a criterion. 5,000 calls may be better than 1,000, but the recommendation does not name what the call limit is optimizing for or what the sacrifice is. If the conversion problem is not rooted in the volume limit at all, adjusting the number from 10,000 to 5,000 moves a variable that does not control the outcome. The recommendation needs a criterion that justifies why volume is the right lever before choosing a number.",
+              "framework_hint": "Taste failure: a compromise answer at the Optimize step avoids naming the tradeoff by splitting the difference. The reasoning move is to name the criterion and the sacrifice, not to average two proposals. A number chosen without a criterion cannot be defended when the CEO asks why 5,000 and not 7,500."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Cut to 1,000 calls as sales recommends. The company needs revenue now, and conversion urgency is a proven tactic for freemium products. Engineering's word-of-mouth concern is real but secondary to hitting near-term paid conversion targets.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "This answer picks a side without naming the criterion or the sacrifice. 'Conversion urgency is proven for freemium products' is a category claim, not an analysis of whether it applies here. The 1,000-call cut may be correct, but the recommendation cannot be defended without addressing whether volume is the binding conversion constraint for this product's specific user mix. Siding with sales because revenue is needed is a priority claim, not a strategic recommendation.",
+              "framework_hint": "Taste failure: prioritizing near-term revenue over engineering's concern is not a named tradeoff, it is a preference statement. The reasoning move at Optimize is to name what gets sacrificed and why that sacrifice is acceptable, not to rank stakeholders by whose concern matters more."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Remove the free tier entirely and move to a 30-day trial with full access. This eliminates the conversion ambiguity, gives potential buyers enough time to integrate and commit, and turns every active user into a conversion opportunity rather than a permanent free rider.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Removing the free tier is a structural change that discards the acquisition flywheel the free tier currently provides without evidence that a 30-day trial produces equivalent top-of-funnel volume. The scenario presents engineering's word-of-mouth concern as a real risk, and 'permanent free riders' is a label that assumes non-converting users produce no business value. If hobbyists and side-project developers drive referrals and integration adoption among teams that do convert, removing them from the funnel shrinks inbound without replacing it.",
+              "framework_hint": "Strategic Thinking failure: eliminating the free tier treats non-converters as costs rather than examining whether they contribute to the conversion path indirectly. The reasoning move at Optimize is to name the criterion that distinguishes between options, and a criterion that counts non-converter referral value as zero is not a named criterion, it is an assumption."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A falsifiable test matters here because the two camps (sales and engineering) disagree about a causal relationship. What would you measure, on which cohort, over what window, to know whether the feature-gating recommendation is working?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define a falsifiable winning condition for the feature-gating recommendation?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Run a 90-day cohort experiment: expose a random 20% of new free signups to the feature-gated plan (no team seats, no SLA, no analytics on free) while holding the 10,000-call limit constant for everyone. Success: the treatment cohort's 90-day paid conversion rate exceeds the control cohort's by at least 3 percentage points, and new free signup volume does not decline by more than 10% (the referral signal). Failure: conversion lift is under 1 percentage point, signaling that the feature gate is not the binding constraint, at which point the volume limit hypothesis deserves a separate test.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions. The success threshold (3 percentage points conversion lift with no more than 10% signup decline) directly tests whether feature gating converts the non-converting 60% without damaging the acquisition flywheel. The failure condition names the specific signal that would falsify the recommendation and point toward testing the volume limit instead. Both conditions can be measured against the 10,000-call baseline without committing to the 1,000-call cut.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Win is writing a hypothesis with a falsification condition, not just a target. The failure signal (under 1 percentage point lift) determines whether to test the volume hypothesis next, which is what makes the experiment useful for decision-making beyond this recommendation. Domain Expertise: anchoring on 90-day paid conversion rate and signup volume as the two metrics connects the winning condition directly to the engineering and sales concerns raised in the scenario."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Track overall paid conversion rate over the next two quarters after launching the feature gate. If it increases, the recommendation worked. If it stays flat, revisit the free tier strategy.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Overall paid conversion rate is the right north-star metric but it is too coarse to attribute to the feature gate specifically. Conversion rate can change for reasons unrelated to the gating change, including seasonal effects, paid acquisition campaigns, or product improvements. Without a control cohort, a flat result cannot falsify the feature-gate recommendation, and an improvement cannot confirm it. The winning condition needs a comparison group to be falsifiable.",
+              "framework_hint": "Strategic Thinking: a winning condition that cannot distinguish between 'the feature gate worked' and 'something else moved conversion' is not falsifiable. The reasoning move at Win is to name the metric and the comparison that makes attribution possible, not the metric alone."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is when the paid user base doubles within one year of launching the feature gate.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Doubling the paid user base is an aspiration, not a falsifiable winning condition. It does not specify a comparison group, does not name what would constitute failure, and does not connect the target to any baseline measurement from the scenario. A one-year window also makes it impossible to course-correct if the recommendation is not working, because the timeline is too long to surface an actionable signal.",
+              "framework_hint": "Domain Expertise failure: a winning condition must name a threshold grounded in the current baseline, not a round-number aspiration. The scenario provides the current free-to-paid ratio implicitly through the conversion problem it describes. A winning condition that ignores the baseline cannot be evaluated against it."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is if the sales team stops requesting a call-limit cut after the feature gate launches, because their conversion pressure will be satisfied by the new paid-tier features.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Stakeholder satisfaction is not a falsifiable metric. Whether the sales team stops requesting a cut depends on their internal priorities and communication, not on whether the feature gate is producing conversion lift. This winning condition cannot be measured objectively, cannot distinguish between 'the recommendation worked' and 'sales moved on to a different priority,' and provides no signal about whether paid conversions actually improved.",
+              "framework_hint": "Strategic Thinking failure: a winning condition defined by a stakeholder's behavior rather than a product outcome cannot be falsified. The reasoning move at Win is naming a metric the team can observe independent of politics, not a signal that depends on whether one team changes its position."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

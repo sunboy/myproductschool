@@ -5,6 +5,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useIsAtLimit } from '@/context/UsageContext'
 import { appendReturnTo } from '@/lib/navigation/return-to'
+import { challengePath } from '@/lib/challenges/challengeNumber'
 import { coerceDifficulty, DIFFICULTY_PILL_CLASSES } from '@/lib/practice/difficulty'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 import type { ChallengeWithDomain } from '@/lib/types'
@@ -44,7 +45,7 @@ function ChallengeRow({ challenge, locked = false, returnHref }: { challenge: Ch
   const topicLabel = challenge.topic_tags?.[0] ? getTopicLabelAny(challenge.topic_tags[0]) : undefined
   const techLabel = challenge.technique_tags?.[0] ? getTechniqueLabelAny(challenge.technique_tags[0]) : undefined
   const isReal = challenge.is_real_interview && (challenge.company_tags ?? []).length > 0
-  const href = appendReturnTo(`/workspace/challenges/${challenge.slug ?? challenge.id}`, returnHref)
+  const href = appendReturnTo(challengePath(challenge), returnHref)
 
   const rowClass = 'flex items-center gap-3 px-4 py-3 group transition-colors'
   const inner = (

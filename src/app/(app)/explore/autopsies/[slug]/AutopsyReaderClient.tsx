@@ -6,6 +6,10 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import type { AutopsyProductDetail, AarrrStageContent } from '@/lib/types'
+import { ReaderRail } from '@/components/showcase/reader/ReaderRail'
+import { ReaderDock } from '@/components/showcase/reader/ReaderDock'
+import { ResumeBanner } from '@/components/showcase/reader/ResumeBanner'
+import { useReaderResume } from '@/hooks/useReaderResume'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -82,88 +86,6 @@ const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
   OPS:    { bg: '#ffedd5', text: '#c2410c' },
 }
 
-// ─── Rail Item ────────────────────────────────────────────────────────────────
-
-interface RailItemProps {
-  stage: AarrrStageContent
-  idx: number
-  activeIdx: number
-  accentColor: string
-  onClick: () => void
-  dotRef: (el: HTMLDivElement | null) => void
-  totalStages: number
-}
-
-function RailItem({ stage, idx, activeIdx, accentColor, onClick, dotRef, totalStages }: RailItemProps) {
-  const isDone = idx < activeIdx
-  const isActive = idx === activeIdx
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 10,
-        padding: '6px 16px 6px 20px',
-        cursor: 'pointer',
-        position: 'relative',
-        transition: 'background 200ms',
-      }}
-      onClick={onClick}
-    >
-      {idx < totalStages - 1 && (
-        <div
-          style={{
-            position: 'absolute',
-            left: 28,
-            top: 22,
-            width: 2,
-            height: 28,
-            background: isDone ? accentColor : '#e0d8c8',
-            transition: 'background 400ms',
-            borderRadius: 1,
-          }}
-        />
-      )}
-
-      <div
-        ref={dotRef}
-        style={{
-          width: 16,
-          height: 16,
-          borderRadius: '50%',
-          flexShrink: 0,
-          marginTop: 2,
-          zIndex: 1,
-          background: isDone ? '#4a7c59' : isActive ? accentColor : '#e0d8c8',
-          border: isActive ? `3px solid ${accentColor}33` : '2px solid transparent',
-          boxShadow: isActive ? `0 0 0 3px ${accentColor}22` : 'none',
-          transition: 'background 300ms, box-shadow 300ms, border 300ms',
-        }}
-      />
-
-      <div style={{ paddingBottom: 14 }}>
-        <div
-          style={{
-            fontFamily: 'var(--font-label)',
-            fontSize: 11,
-            fontWeight: isActive ? 800 : 600,
-            color: isActive ? accentColor : isDone ? '#4a7c59' : '#78715f',
-            transition: 'color 300ms, font-weight 300ms',
-            lineHeight: 1.2,
-          }}
-        >
-          {stage.stage_name}
-        </div>
-        {isActive && (
-          <div style={{ fontFamily: 'var(--font-label)', fontSize: 9, color: '#9c9589', marginTop: 2 }}>
-            Stage {stage.stage_number}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
 // ─── Go Deeper collapsible ────────────────────────────────────────────────────
 
@@ -389,9 +311,10 @@ interface StageSectionProps {
   accentColor: string
   isEven: boolean
   sectionRef: (el: HTMLDivElement | null) => void
+  sectionId: string
 }
 
-function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionProps) {
+function StageSection({ stage, accentColor, isEven, sectionRef, sectionId }: StageSectionProps) {
   const headerRef = useRef<HTMLDivElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
   const questionRef = useRef<HTMLParagraphElement>(null)
@@ -442,7 +365,13 @@ function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionPr
   }, [])
 
   return (
-    <div data-stage-section ref={sectionRef} style={{ background: isEven ? '#ffffff' : '#faf6f0' }}>
+    <div
+      data-stage-section
+      data-section-id={sectionId}
+      data-hatch-context={`Reading teardown stage: ${stage.stage_name}`}
+      ref={sectionRef}
+      style={{ background: isEven ? '#ffffff' : '#faf6f0' }}
+    >
       {/* Top divider */}
       <div
         ref={dividerRef}
@@ -702,8 +631,7 @@ export function AutopsyReaderClient({
   const heroTitleRef = useRef<HTMLHeadingElement>(null)
   const heroMetaRef = useRef<HTMLDivElement>(null)
   const heroTaglineRef = useRef<HTMLParagraphElement>(null)
-  const railRef = useRef<HTMLElement>(null)
-  const railDotRefs = useRef<(HTMLDivElement | null)[]>([])
+  const railRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
   const closingRef = useRef<HTMLDivElement>(null)
   const closingTextRef = useRef<HTMLParagraphElement>(null)
@@ -792,6 +720,53 @@ export function AutopsyReaderClient({
   const heroWords = splitWords(hero?.product_name ?? product.name)
   const closingWords = closing ? splitWords(closing.summary) : []
 
+  // Shared rail / dock wiring. The reader keeps its GSAP-driven activeStageIdx;
+  // we adapt it to the section-id contract the shared components expect.
+  const productName = hero?.product_name ?? product.name
+  const story = product.stories?.[0]
+  const railItems = stages.map((s, i) => ({
+    id: `stage-${i}`,
+    label: s.stage_name,
+    sub: `Stage ${s.stage_number}`,
+  }))
+  const activeSectionId = `stage-${activeStageIdx}`
+  const navById = (id: string) => {
+    const idx = railItems.findIndex(it => it.id === id)
+    if (idx >= 0) jumpToStage(idx)
+  }
+
+  const [persistReady, setPersistReady] = useState(false)
+  const { resumeSection, resumeScrollPct, showResumeBanner, dismissBanner, clearResume, restored } =
+    useReaderResume({
+      storyKey: `${product.slug}/${story?.slug ?? 'aarrr'}`,
+      sectionIds: railItems.map(it => it.id),
+      activeId: activeSectionId,
+      scrollPct: scrollProgress * 100,
+      canPersist: persistReady,
+    })
+
+  const didRestoreRef = useRef(false)
+  useEffect(() => {
+    if (didRestoreRef.current) return
+    // Wait for the hook's mount-read to finish before deciding.
+    if (!restored) return
+    if (resumeScrollPct == null) {
+      const t = setTimeout(() => setPersistReady(true), 0)
+      return () => clearTimeout(t)
+    }
+    didRestoreRef.current = true
+    // Restore by scroll percentage (reliable) rather than section element.
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+    if (maxScroll > 0) {
+      window.scrollTo({ top: Math.round((resumeScrollPct / 100) * maxScroll), behavior: 'auto' })
+    }
+    // Let the programmatic scroll + GSAP ScrollTrigger settle before writing.
+    const t = setTimeout(() => setPersistReady(true), 600)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeScrollPct, restored])
+  const resumeLabel = railItems.find(it => it.id === resumeSection)?.label ?? 'where you left off'
+
   return (
     <div style={{ minHeight: '100vh', background: '#faf6f0', fontFamily: 'var(--font-body)' }}>
       {/* Mobile sticky progress header */}
@@ -821,62 +796,37 @@ export function AutopsyReaderClient({
 
       {/* Layout wrapper */}
       <div ref={scrollBodyRef} style={{ display: 'flex', alignItems: 'flex-start' }}>
-        {/* Left sticky rail (desktop only) */}
-        <aside
-          ref={railRef}
-          className="hidden lg:flex"
-          style={{
-            width: 168,
-            flexShrink: 0,
-            position: 'sticky',
-            top: 48,
-            height: 'calc(100vh - 48px)',
-            overflowY: 'auto',
-            background: '#f0ece4',
-            borderRight: '1px solid #e0d8c8',
-            flexDirection: 'column',
-          }}
-        >
-          <div style={{ padding: '20px 20px 14px', borderBottom: '1px solid #e0d8c8' }}>
-            <div style={{ fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 800, color: accentColor, letterSpacing: '-0.01em' }}>
-              {product.name}
-            </div>
-            <div style={{ fontFamily: 'var(--font-label)', fontSize: 9, color: '#9c9589', marginTop: 3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              Product Autopsy
-            </div>
-            <div style={{ marginTop: 12, height: 3, background: '#e0d8c8', borderRadius: 99, overflow: 'hidden' }}>
-              <div style={{ height: '100%', background: accentColor, width: `${scrollProgress * 100}%`, borderRadius: 99, transition: 'width 80ms linear' }} />
-            </div>
-          </div>
-
-          <div style={{ padding: '12px 0', flex: 1 }}>
-            {stages.map((stage, idx) => (
-              <RailItem
-                key={stage.stage_name}
-                stage={stage}
-                idx={idx}
-                activeIdx={activeStageIdx}
-                accentColor={accentColor}
-                onClick={() => jumpToStage(idx)}
-                dotRef={el => { railDotRefs.current[idx] = el }}
-                totalStages={stages.length}
-              />
-            ))}
-          </div>
-
-          <div style={{ padding: '16px 20px', borderTop: '1px solid #e0d8c8' }}>
-            <Link
-              href={backHref}
-              style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: '#78715f', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5 }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_back</span>
-              {backLabel}
-            </Link>
-          </div>
-        </aside>
+        {/* Left sticky rail (desktop only) — shared across autopsy + teardown readers */}
+        <div ref={railRef} className="hidden lg:block">
+          <ReaderRail
+            variant="aarrr"
+            items={railItems}
+            activeId={activeSectionId}
+            scrollPct={scrollProgress * 100}
+            title={productName}
+            kicker="Product Teardown"
+            accent={accentColor}
+            backHref={backHref}
+            backLabel={backLabel}
+            onNavigate={navById}
+          />
+        </div>
 
         {/* Main content */}
         <main style={{ flex: 1, minWidth: 0 }}>
+          {showResumeBanner && resumeLabel && (
+            <div style={{ position: 'fixed', top: 60, left: 0, right: 0, zIndex: 40, padding: '0 16px' }}>
+              <ResumeBanner
+                variant="aarrr"
+                label={resumeLabel}
+                onBackToTop={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                  clearResume()
+                }}
+                onDismiss={dismissBanner}
+              />
+            </div>
+          )}
           {/* Hero */}
           <div
             ref={heroRef}
@@ -925,6 +875,7 @@ export function AutopsyReaderClient({
               stage={stage}
               accentColor={accentColor}
               isEven={idx % 2 === 0}
+              sectionId={`stage-${idx}`}
               sectionRef={el => { sectionRefs.current[idx] = el }}
             />
           ))}
@@ -975,6 +926,16 @@ export function AutopsyReaderClient({
           )}
         </main>
       </div>
+
+      <ReaderDock
+        scrollPct={scrollProgress * 100}
+        activeSection={activeSectionId}
+        tocItems={railItems}
+        backHref={backHref}
+        companyName={productName}
+        storyTitle={story?.title ?? productName}
+        onNavigate={navById}
+      />
     </div>
   )
 }

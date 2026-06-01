@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000002",
+  "title": "DAU/MAU Looks Great But Revenue Is Flat",
+  "scenario_role": null,
+  "scenario_context": "A B2B SaaS project management tool for engineering teams has seen its DAU/MAU ratio climb from 0.28 to 0.41 over six months. Sessions are up, feature adoption is up, and the growth team is pointing to the engagement numbers as proof the product is working. Net new revenue, however, is flat. Expansion revenue has declined 8%.",
+  "scenario_trigger": "The CEO asks in the all-hands: people are using the product more than ever, so why aren't they paying more? The growth team has no answer. The sales team says the pipeline is healthy. Finance says net revenue retention is below 100% for the first time.",
+  "scenario_question": "Diagnose the disconnect between engagement and revenue, and recommend what to investigate first.",
+  "engineer_standout": "A strong answer recognizes that DAU/MAU measures usage intensity within existing seats, not seat expansion or willingness to pay. Rising engagement among already-paying users tells you the product is sticky, but it does not create new revenue unless the pricing model captures usage. The real alarm is expansion revenue declining 8%, which means existing accounts are contracting or churning seats, not growing. The diagnosis needs to separate four possible explanations: the pricing model does not have a usage-based lever so intensity gains do not translate to revenue; the engaged users are individual contributors who lack budget authority and are not the buyers; heavy usage is concentrated in a small number of accounts already at plan ceilings; or seat growth has stalled because ICP expansion is not happening. Any one of these explains the gap. Choosing which to investigate first is a sequencing decision, and the right answer prioritizes the one most likely to explain the 8% expansion revenue decline.",
+  "paradigm": "traditional",
+  "difficulty": "easy",
+  "estimated_minutes": 20,
+  "primary_competencies": ["strategic_thinking", "domain_expertise"],
+  "secondary_competencies": ["motivation_theory", "cognitive_empathy"],
+  "topic_tags": ["monetization", "retention", "north-star", "growth", "pricing"],
+  "technique_tags": ["north-star-cascade", "retention-cohorts"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "DAU/MAU going up and revenue going flat are not contradictory once you separate what the metric actually measures. What is DAU/MAU telling you, and what is it silent about?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the problem the data presents?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "DAU/MAU rising from 0.28 to 0.41 measures usage intensity within the existing seat base. It says nothing about seat count, buyer behavior, or whether the pricing model captures the value being delivered. The real problem is that expansion revenue declining 8% means the accounts that should be growing are instead contracting. Engagement and monetization are on separate tracks because the pricing model, seat count dynamics, and buyer identity have not been examined alongside the usage data.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing correctly separates what DAU/MAU measures (intensity within existing seats) from what it does not measure (seat expansion, revenue capture, buyer willingness). The 0.28 to 0.41 improvement is real, but it is a within-cohort metric. Expansion revenue declining 8% is the upstream signal that something structural is broken, not a noise item. Getting this distinction right means every downstream investigation targets the right mechanism.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Frame is finding the problem behind the problem. The surface problem is 'engagement up, revenue flat.' The upstream problem is that these two metrics are measuring different things entirely, and the metric that matters for the CEO's question (expansion revenue) is moving in the wrong direction. Domain Expertise: DAU/MAU is a product health metric, not a revenue leading indicator, and treating it as one is a diagnostic error common in growth teams."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The product is clearly delivering value since DAU/MAU has increased significantly, but the sales and pricing teams have failed to convert that engagement into revenue. The problem is a go-to-market failure, not a product failure. The fix is to retrain sales to reference the usage data in expansion conversations.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Pointing to go-to-market as a potential failure is directionally reasonable, but this framing skips the diagnostic step. It assigns blame before investigating whether the pricing model even has a lever to capture usage intensity, whether the engaged users are the buyers, or whether accounts are at plan ceilings. A sales retraining answer assumes the problem is execution when it might be structural.",
+              "framework_hint": "Strategic Thinking: identifying a plausible cause is not the same as framing the problem correctly. The frame step requires naming what is actually broken before proposing a direction. Skipping to a sales-team explanation forecloses the structural causes that expansion revenue declining 8% actually points toward."
+            },
+            {
+              "option_label": "C",
+              "option_text": "DAU/MAU going up and revenue staying flat suggests users are getting value from the product but the pricing is too high. Engaged users are probably using workarounds to avoid upgrading. The problem is that the price point does not match perceived value.",
+              "quality": "surface",
+              "competencies": ["motivation_theory"],
+              "explanation": "Price-too-high is a visible, intuitive explanation, but it directly contradicts the DAU/MAU evidence. Users who find the price too high relative to value typically reduce usage or churn, not increase DAU/MAU from 0.28 to 0.41. This framing also does not engage with the expansion revenue decline, which is about existing paying accounts getting smaller, not new customers refusing to convert.",
+              "framework_hint": "Motivation Theory: this answer identifies friction (price) but misreads its direction. High engagement with flat revenue does not signal price resistance in an existing customer base. The reasoning move at Frame is to read the evidence correctly before naming the friction, and the evidence here points away from a price-value mismatch."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The product has a feature gap. Users are engaged with what exists, but the features required for expansion, such as advanced reporting or admin controls for larger teams, are missing. Once those features ship, expansion revenue will follow naturally because engaged teams will advocate internally for bigger plans.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Feature gap is a plausible story but the data does not support it as the primary frame. DAU/MAU of 0.41 is strong engagement, and if teams were hitting a feature ceiling they would typically plateau or churn rather than deepen usage. Expansion revenue declining 8% is an account-level signal, not a product-satisfaction signal. Proposing a feature roadmap before diagnosing why accounts are contracting treats a revenue mechanics problem as a product problem.",
+              "framework_hint": "Strategic Thinking failure: the frame step requires reading the evidence without projecting a preferred solution onto it. Feature gap is a common engineering-team explanation for revenue problems because it points to a solvable problem within the team's control. But the data does not implicate features as the upstream cause of expansion revenue declining 8%."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "There are at least four structurally distinct reasons why engagement and revenue can diverge in a B2B SaaS. Enumerate them before deciding which to investigate. They have different fixes.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of explanations most completely maps why DAU/MAU could rise while expansion revenue declines?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct explanations: (1) the pricing model is per-seat and flat, so usage intensity within existing seats generates no additional revenue regardless of how active users are; (2) the engaged users are individual contributors who lack budget authority, and the economic buyers are not the ones driving DAU/MAU up; (3) heavy usage is concentrated in a small number of accounts already at plan ceilings, so the DAU/MAU aggregate masks a skewed distribution; (4) seat growth has stalled because the ICP accounts that would expand are not converting, while existing accounts are downsizing teams and shedding seats, producing the 8% expansion revenue decline.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "Each of these four explanations has a different root cause and a different fix. A pricing model problem requires a product and finance decision. A buyer identity problem requires a sales motion change. A ceiling problem requires a plan restructure or an enterprise tier. A seat contraction problem requires churn analysis on the account level. Listing all four before choosing which to investigate prevents the team from executing well on the wrong diagnosis.",
+              "framework_hint": "Creative Execution: the reasoning move at List is generating structurally distinct options, not variations on the same theme. All four explanations produce the same surface symptom (engagement up, revenue flat) but through different mechanisms. Distinguishing them is what makes the investigation tractable. Domain Expertise: in B2B SaaS, DAU/MAU is an within-seat metric and expansion revenue is an account-level metric. The gap between them is almost always explained by one of these four structural causes."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two explanations: either the pricing is wrong (too cheap or wrong model) or the sales team is not doing expansion outreach. One is a product-and-finance problem, the other is a sales execution problem. Investigating both in parallel is the right starting point.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Pricing and sales execution are real explanations, but this list misses the buyer identity problem and the account ceiling problem, which are often the dominant causes in B2B SaaS. A two-item list at the List step almost always means the analysis stopped at the obvious explanations. The buyer identity gap in particular is structural and cannot be fixed by pricing changes or sales calls if the economic buyers are not seeing or feeling the engagement.",
+              "framework_hint": "Creative Execution: a two-option list is the minimum viable answer at the List step, not the complete one. The reasoning move is to find the option that the binary framing obscures, which here is the buyer identity problem and the account ceiling problem."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The most likely explanation is that the product is not retaining new customers well. High DAU/MAU among existing users does not mean new users are converting or staying. The investigation should focus on new user onboarding and activation rates.",
+              "quality": "surface",
+              "competencies": ["motivation_theory"],
+              "explanation": "Onboarding and new user activation are legitimate product health concerns, but they do not explain expansion revenue declining 8%. Expansion revenue comes from existing accounts growing, not new account conversion. A 0.41 DAU/MAU in a B2B product with flat net new revenue and declining expansion revenue points to account-level dynamics among paying customers, not new user activation failures.",
+              "framework_hint": "Cognitive Empathy failure: this answer simulates new users rather than the economic buyers whose behavior determines expansion revenue. In B2B SaaS, the users are often not the buyers, and the investigation has to track which stakeholder group is responsible for the metric that is actually broken."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The product has too many features for the price. Users are getting more value than they are paying for, which means the pricing model needs to be raised across the board. Once pricing reflects the actual value delivered by a 0.41 DAU/MAU product, expansion revenue will naturally recover.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "The premise that high engagement proves underpricing is a common but faulty inference in SaaS. High engagement tells you users find the product useful within a session, not that they have willingness to pay more at the account level. Expansion revenue declining 8% means accounts are getting smaller, not that the price-value ratio is misaligned. Raising prices on contracting accounts would accelerate churn, not recovery.",
+              "framework_hint": "Domain Expertise failure: in B2B SaaS, engagement metrics and price sensitivity are measured at different levels (user vs. account vs. budget holder). Conflating them leads to a pricing recommendation that addresses the wrong problem at the wrong level."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before picking which root cause to investigate first. The criterion is not 'most likely' in the abstract — it is most likely to explain the 8% expansion revenue decline with the fastest path to confirmation.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Which root cause should be investigated first, and what is the explicit criterion and tradeoff that justifies the sequencing?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Investigate buyer identity first: pull the list of accounts where expansion revenue declined, identify the job titles of the most active users in those accounts, and check whether those users have budget authority or are individual contributors. The criterion is falsifiability speed — this can be confirmed or ruled out with CRM data and a handful of account calls in under two weeks. The sacrifice is that if buyer identity is not the problem, the team spent two weeks on the wrong investigation. That sacrifice is acceptable because buyer identity is structurally upstream of pricing and plan ceiling problems: if the buyers are not the engaged users, fixing pricing or plan structure will not reach them anyway.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "Naming falsifiability speed as the criterion and acknowledging the sacrifice (two weeks on a potential wrong lead) is the reasoning move the Optimize step requires. Buyer identity is upstream of the other explanations because a pricing change or plan restructure cannot fix an expansion problem if the people with budget authority are not the ones experiencing the engagement. Investigating it first with CRM and account data is fast and does not require a product or pricing change to validate.",
+              "framework_hint": "Taste: the reasoning move at Optimize is naming the criterion and the sacrifice clearly, not just picking the most appealing option. The criterion here is not 'most important root cause in theory' but 'which investigation can be confirmed or ruled out fastest, and is structurally upstream of the others.' Strategic Thinking: buyer identity is the upstream problem because fixing pricing or plan ceilings does not help if the buyers never experience the engagement value the engaged users are generating."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Investigate pricing model first. If the pricing is per-seat and flat, then usage intensity never converts to revenue regardless of who the buyer is. A usage-based pricing pilot in a small account cohort would show within 60 days whether the revenue capture problem is structural. The sacrifice is some account disruption during the pilot, but the upside is a pricing model that captures value at scale.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Pricing model investigation is valid and may well be the right second step, but it skips the buyer identity question. A usage-based pricing model only works if the people authorizing the pricing change are aware of and influenced by the usage data. If the engaged users are individual contributors and the buyers are finance or procurement, a usage-based pricing pilot will not reach the decision-maker without a separate motion. The answer names a criterion (revenue capture at scale) but does not name the sacrifice or acknowledge the buyer identity dependency.",
+              "framework_hint": "Taste: this answer names a direction and a rough timeline but does not name the sacrifice clearly. The sacrifice in a pricing pilot is not just account disruption; it is the risk that the pilot succeeds on usage metrics but fails on expansion revenue because the buyers were never part of the motion."
+            },
+            {
+              "option_label": "C",
+              "option_text": "All four root causes should be investigated simultaneously using a cross-functional team. Product investigates plan ceilings, sales investigates buyer identity, finance investigates pricing model, and customer success investigates seat contraction. Running them in parallel gets answers faster.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Parallel investigation sounds efficient but avoids the Optimize step's actual challenge: naming a priority. If all four investigations run simultaneously and produce conflicting signals, the team has no decision framework for which signal to act on. Sequencing by criterion is the reasoning move, not parallelism. This answer declines to name a criterion or a sacrifice.",
+              "framework_hint": "Taste failure: the reasoning move at Optimize is making a choice with an explicit criterion and named sacrifice, not distributing the decision across teams to defer the choice. 'Investigate everything in parallel' is a preference statement that avoids the tradeoff entirely."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Investigate seat contraction first by pulling account-level churn data. If accounts are shedding seats, that directly explains the 8% expansion revenue decline and is the most immediate fix. Stop smaller accounts from contracting by offering a loyalty discount or a contract lock-in.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Seat contraction is worth investigating, but jumping to a loyalty discount or contract lock-in before diagnosing why seats are being shed is treating a symptom. Accounts shed seats because of budget pressure, team restructuring, product dissatisfaction, or switching to a competitor. A loyalty discount applied to accounts contracting for structural reasons defers the problem and erodes margin without addressing the cause. This answer skips the criterion entirely and moves straight to a tactic.",
+              "framework_hint": "Strategic Thinking failure: the Optimize step requires naming what you are optimizing for before choosing a path. Jumping from 'seat contraction' to 'loyalty discount' compresses diagnosis and prescription into one step and builds the fix on an unverified cause."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What number, at what threshold, by when, would tell you the investigation found the right root cause and the fix is working? The failure signal matters as much as the success signal.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define a falsifiable winning condition for the intervention over a 90-day horizon?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success: expansion revenue returns to flat or positive growth within 90 days in the cohort of accounts where buyer identity was confirmed and corrective motion was applied, while DAU/MAU holds at or above 0.41 in those same accounts. Failure: if expansion revenue in the treated cohort does not recover and seat counts continue declining, the buyer identity diagnosis was wrong and the investigation should pivot to the pricing model or plan ceiling hypothesis. Both conditions are measurable with CRM data segmented by account cohort.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This winning condition is falsifiable in both directions. The success condition measures the metric that was actually broken (expansion revenue) in the cohort where the intervention was applied, not in aggregate. The failure condition names the specific signal that would trigger a pivot to the next hypothesis. Keeping DAU/MAU as a guardrail ensures the fix does not recover revenue by disrupting engagement, which would be a worse long-term outcome.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Win is writing a hypothesis with a falsification condition, not just a target. Scoping the winning condition to the treated cohort rather than aggregate revenue is what makes it attributable to the intervention rather than confounded by other factors. Domain Expertise: expansion revenue segmented by account cohort is the correct measurement instrument for a B2B SaaS intervention targeting buyer identity in specific accounts."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success is: net revenue retention returns to above 100% within 90 days, indicating that the product is growing revenue within the existing customer base. If NRR stays below 100%, the intervention has not worked and a different approach is needed.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "Net revenue retention above 100% is the right north-star metric for the problem described, but using aggregate NRR as the winning condition makes the result unattributable to the specific intervention. NRR can recover or decline for reasons unrelated to the buyer identity fix. Without segmenting by treated cohort, a positive NRR result cannot confirm the hypothesis and a flat NRR result cannot falsify it.",
+              "framework_hint": "Strategic Thinking: a winning condition that cannot distinguish between 'the intervention worked' and 'something else moved the metric' is not falsifiable. The reasoning move at Win is to name the metric that the intervention specifically moves, scoped to the population where the intervention was applied."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is: DAU/MAU reaches 0.50 within 90 days, showing that the product improvements made during the investigation increased engagement enough to drive expansion conversations naturally.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "DAU/MAU is not the metric that was broken and it is not the metric the intervention targets. Expansion revenue declining 8% is an account-level revenue problem. Tracking engagement intensity as the success condition for a revenue intervention conflates the two tracks that were already decoupled at the start of the problem.",
+              "framework_hint": "Domain Expertise failure: the winning condition must measure the outcome the intervention was designed to produce. DAU/MAU is a within-seat engagement metric. The problem was an account-level revenue metric. Using DAU/MAU as the winning condition for an expansion revenue intervention means the measurement instrument cannot detect whether the intervention worked."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is: the sales team closes three upsell deals in the next 90 days from accounts where DAU/MAU is above 0.40. Three deals prove the engagement-to-revenue pathway is working.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Three deals is not a statistically meaningful threshold and does not connect to the 8% expansion revenue decline as a benchmark. Three upsells could happen for reasons unrelated to any structural fix, and three upsells in 90 days in a B2B SaaS with flat revenue likely does not reverse an 8% decline in expansion revenue at the account portfolio level. This winning condition measures sales activity, not the systemic problem.",
+              "framework_hint": "Strategic Thinking failure: a winning condition built on a small absolute number without a baseline comparison or significance threshold is not falsifiable, it is an activity target. The reasoning move at Win is to name a metric threshold that, if hit, could only be explained by the hypothesis being correct, and if missed, clearly falsifies it."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

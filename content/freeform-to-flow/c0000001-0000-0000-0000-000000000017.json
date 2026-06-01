@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000017",
+  "title": "AI Feature Adoption is 8% After 3 Months",
+  "scenario_role": null,
+  "scenario_context": "An AI writing assistant was shipped inside a project management tool. Three months after launch, only 8% of eligible users have tried it once. Weekly active use sits at 1.2%. The users who do try it rate it 4.1 out of 5.",
+  "scenario_trigger": "Leadership is questioning continued investment. The satisfaction score is strong but the adoption numbers are not moving. The team needs to explain what is happening and what to do about it.",
+  "scenario_question": "Diagnose why adoption is low despite high satisfaction, enumerate where the funnel is leaking, decide what to optimize for, and define what a successful intervention looks like in falsifiable terms.",
+  "engineer_standout": "A strong answer separates quality from distribution. The 4.1/5 rating tells you the feature works for the people who reach it. The 8% trial rate and 1.2% weekly use tell you almost no one is reaching it. The trap is treating this as a feature problem when it is a discovery and trigger problem. The funnel leaks upstream: users do not know the feature exists, or they know it exists but there is no moment in their workflow where reaching for it feels obvious. Improving the AI model does nothing when the bottleneck is before first use.",
+  "paradigm": "ai_assisted",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["motivation_theory", "cognitive_empathy"],
+  "secondary_competencies": ["strategic_thinking", "taste"],
+  "topic_tags": ["adoption", "ai-features", "activation-funnel", "discovery", "onboarding", "retention"],
+  "technique_tags": ["retention-cohorts", "jobs-mapping"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The satisfaction score is 4.1 out of 5 and weekly use is 1.2%. Those two numbers together are the diagnostic. What problem do they actually describe?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the situation: 8% of eligible users tried the AI writing assistant once in 3 months, 1.2% use it weekly, and those who try it rate it 4.1 out of 5?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["motivation_theory", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "This is a discovery and trigger problem, not a quality problem. The 4.1/5 rating confirms the feature delivers value to the people who reach it. The 8% trial rate over three months means the vast majority of eligible users never had a moment where using the writing assistant felt like the obvious next move. The friction is upstream of the feature itself: users are either unaware it exists, or they are aware but their workflow never presents a natural entry point. Improving the AI model or the in-feature experience does nothing when almost no one is getting there in the first place.",
+              "quality": "best",
+              "competencies": ["motivation_theory", "cognitive_empathy"],
+              "explanation": "This framing correctly reads the two data points together. A 4.1/5 satisfaction score from 8% trial is not a signal to improve the feature. It is a signal that the feature is fine and the distribution mechanism is broken. The people who found the assistant liked it. The people who did not find it are the story. Framing it as a discovery and trigger problem directs the team toward the actual bottleneck: the gap between knowing the feature exists and having a moment in the workflow where using it is the obvious choice.",
+              "framework_hint": "Motivation Theory: the job here is to find the friction that is blocking users from reaching the feature, not to fix the feature itself. The 4.1 rating means satisfaction is not the problem. Motivation (awareness, trigger moment) is."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The feature has a narrow use case. Writing assistance inside a project management tool fits a specific kind of user, probably writers or content-heavy PMs, and 8% trial may actually reflect the realistic addressable population. The 4.1/5 from that group confirms the feature is well-executed for its niche. The question is whether leadership's expectations were calibrated to the true addressable market from the start.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Addressable market calibration is a fair hypothesis and worth testing. But it does not account for the 1.2% weekly use given 8% trial. If the feature genuinely fit a niche, users who tried it would retain at a much higher rate. A 15% weekly retention among triers is low even for a niche feature with strong satisfaction scores. The narrow-use-case framing also lets the distribution problem off the hook without investigating whether the trigger moments and discovery surfaces were ever designed for the full eligible audience.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly imagines a subset of users for whom this fits, but does not simulate the experience of the 92% who never tried it or the 98.8% who do not use it weekly. A fuller framing asks what was missing from their workflow, not just whether the feature had a broad enough audience."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The onboarding for the AI feature is insufficient. Users do not understand how to use it effectively, which is why trial is low. A dedicated tutorial, in-product walkthrough, or sample output gallery would show users what is possible and drive more trial and repeat use.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Better onboarding might help at the margins, but the framing mistakes a downstream tactic for the root cause. The 4.1/5 rating from users who did try it suggests understanding is not the barrier for people who reach the feature. Onboarding addresses what happens after a user finds the feature. The 8% trial rate says almost no one is finding it at all. A tutorial does nothing for users who never had a reason to seek the feature out.",
+              "framework_hint": "Motivation Theory failure: this frames the problem as friction inside the feature (confusing to use) when the 4.1 rating shows in-feature friction is low. The actual friction is the absence of a trigger that brings users to the feature in the first place."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The AI writing assistant is competing with tools users already have, like Grammarly or Notion AI. Low adoption reflects that the workflow integration adds no incremental value over existing alternatives. The recommendation should be to shut down the feature or rebuild it around a more differentiated capability.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Competitive displacement is a real category of failure, but the scenario provides no evidence for it. The 4.1/5 from actual users is not consistent with a feature that delivers no incremental value. Users who compared it against alternatives and found it lacking would not rate it that high. More importantly, the scenario says only 8% tried it once: users who are actively comparing alternatives have at least tried the feature. The competitive framing imports an explanation from outside the data.",
+              "framework_hint": "Strategic Thinking failure: reaches for a structural competitive explanation without examining the adoption funnel first. The data does not support a value-delivery failure. Asserting competitive displacement when 92% of users never tried the feature conflates low discovery with low quality."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Eight percent tried it once, 1.2% use it weekly, and 4.1/5 from triers. Map the funnel from eligible user to weekly active. Where are the distinct places it leaks?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of explanations best accounts for the gap between 8% trial and 1.2% weekly active use of the AI writing assistant, given the 4.1/5 satisfaction rating?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct leaks explain the gap. First, awareness: the feature launched without a persistent entry point in the core workflow, so most users never encountered it. Second, missing trigger: writing assistance requires a moment when a user is actively composing text and feels stuck or slow. If the feature is not surfaced at that exact moment, the intent never forms. Third, narrow real use case: project management tools are used heavily for structured tasks like task creation and status updates, not long-form writing. The genuine writing use case exists but may be smaller than the eligible user count implies. Fourth, trial without habit formation: the 8% who tried it once did not return weekly, which points to a missing hook that pulls users back after the first use. Each of these requires a different intervention.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "These four mechanisms are structurally distinct. Awareness is a distribution problem solved by placement. Trigger is a workflow design problem solved by contextual surfacing. Narrow use case is a scope problem that informs investment sizing. Trial without habit is a re-engagement problem solved by habit loops or follow-up nudges. Listing them separately matters because fixing one does not automatically fix the others. A team that only solves awareness will find that most newly exposed users still have no trigger moment, and the trial-to-weekly gap remains.",
+              "framework_hint": "Creative Execution: four mechanisms that each require a different fix, not four ways of saying the same thing. Cognitive Empathy: each mechanism is described from the user's perspective, not the product team's. 'No trigger moment' names the experience of the user who knows the feature exists but never reached for it."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The primary leak is placement. The feature is not surfaced where users are actively writing. If the AI assistant appeared inline in text fields, status update boxes, or description editors rather than behind a menu or settings panel, trial rates would increase substantially. Users are not discovering the feature because they are not looking for it and it is not looking for them.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Placement is almost certainly one of the leaks, and it is the most actionable single intervention. But treating it as the complete explanation skips the trial-to-weekly gap. Even if inline surfacing tripled trial to 24%, something still needs to explain why only 15% of triers become weekly users. A single-cause answer is useful for prioritization but incomplete for diagnosis. The 1.2% weekly use among 8% triers is a separate signal that deserves its own explanation.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly simulates the discovery failure from the user's perspective but does not simulate the experience of the 85% of triers who used it once and did not return. A full list requires imagining both non-triers and lapsed triers."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Users are trying the feature out of curiosity rather than because they have a genuine need. Once they satisfy their curiosity, there is no reason to return. The 4.1/5 score reflects positive impressions from casual exploration, not from solving a real problem. The fix is to recruit power users who have actual writing-heavy workflows and use their feedback to sharpen the use case.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Curiosity-driven trial is a real phenomenon, but attributing all 8% to it discards the information in the 4.1/5 rating. Casual explorers who found nothing useful would typically score lower, not 4.1. The surface-level explanation also does not differentiate between the awareness problem and the habit formation problem, which require completely different fixes. Power-user recruitment is a useful research tactic, but it is not a diagnosis.",
+              "framework_hint": "Creative Execution failure: offers one explanation (curiosity) rather than enumerating distinct mechanisms. The list step requires structural causes that each point to a different intervention. A single-cause answer does not give the team enough to triage."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The 8% trial rate is actually reasonable for a new AI feature in a productivity tool. Many enterprise features see sub-10% trial in the first quarter. The real problem is the trial-to-weekly conversion: 1.2% weekly out of 8% trial means only 15% of triers return. Focus entirely on the post-trial experience and ignore the awareness problem, which is normal for new feature launches.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Benchmarking 8% against industry baselines can be useful context, but declaring the awareness problem normal without evidence leaves the largest leak unaddressed. Even if 8% trial is within a typical range, that does not mean it is optimal or that the team should stop trying to improve it. More importantly, the instruction to ignore the awareness problem in order to focus on post-trial experience prioritizes a smaller problem over a larger one. Fifteen percent trial-to-weekly conversion is low, but most of the potential impact is in the 92% who never tried at all.",
+              "framework_hint": "Strategic Thinking failure: uses a plausible benchmark to close off investigation of the largest segment. The correct move is to enumerate all leaks and then prioritize by impact, not to preemptively discard the biggest one based on an industry comparison."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The team could invest in better in-feature experience, in contextual placement, or in accepting this as a niche feature. Name the criterion that determines which tradeoff is worth making.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding whether to invest in increasing AI writing assistant adoption, versus accepting current adoption as the feature's natural ceiling?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is whether placing the feature at the moment of writing intent lifts weekly active use among triggered users without degrading satisfaction. The current 4.1/5 score is a baseline. If contextual placement, such as surfacing the assistant inline when a user begins typing a description or update longer than two sentences, raises weekly active use among users who encounter the prompt while keeping satisfaction above 3.8, the adoption gap is a placement problem worth solving. If weekly use among triggered users does not improve materially, the feature has a narrow real use case and the investment ceiling is lower. The sacrifice is explicit: instrumenting contextual triggers requires engineering time that is not available for other feature work, and if the trigger does not move weekly use, that time is a loss.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion is specific and testable. It names the intervention (contextual placement at writing intent), the metric being tested (weekly active use among triggered users), the satisfaction floor (3.8, giving some room below the current 4.1), and the sacrifice (engineering time). The criterion also provides the escape condition: if triggered exposure does not improve weekly use, the team has evidence that the use case is genuinely narrow, not simply undiscovered. That is a decision, not a hope.",
+              "framework_hint": "Taste: the tradeoff is named precisely. We get higher weekly active use if the trigger works; we give up engineering cycles for other work. The sacrifice is real and bounded. This is a tradeoff, not a preference. Strategic Thinking: naming the escape condition ('if it does not move weekly use, accept the ceiling') makes the criterion actionable for leadership, not just for the product team."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Run an A/B test where 50% of eligible users see a persistent entry point in the navigation and 50% see the current experience. If the test group shows meaningfully higher trial and weekly use, roll the change. The improvement in numbers will make the investment case clear to leadership.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A/B testing placement is the right method. But 'meaningfully higher' is not a criterion, it is a placeholder. Without specifying what improvement would justify continued investment, the team cannot make a go or no-go decision when the test concludes. 'Higher numbers make the case' defers the decision logic to how leadership feels about the result, not to a pre-specified threshold. A criterion requires a number and a decision rule attached to the test.",
+              "framework_hint": "Taste partial credit: moves toward an empirical decision but stops short of naming the tradeoff. A criterion requires the sacrifice to be named alongside the gain. 'Run a test and see' leaves both sides of the tradeoff open until results arrive, which is indecision structured as rigor."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be user delight: qualitatively, does using the AI assistant feel like a superpower to the people who use it? Run user interviews with the 8% who tried it, find the ones for whom it made a real difference, and let their stories drive the investment decision. Numbers are not enough when the product is AI.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Qualitative research has value in understanding the use case, but 'delight' is not a criterion for an investment decision. It is not measurable, it is not falsifiable, and it selects for motivated users who are already predisposed to positive responses. The team already has a strong satisfaction signal at 4.1/5 and an adoption signal at 8% trial. Adding qualitative interviews may clarify the use case but does not resolve the tradeoff between investing in distribution versus accepting a niche.",
+              "framework_hint": "Taste failure: substitutes a subjective feeling (delight) for a named tradeoff. Taste is the skill of recognizing the difference between a preference and a decision. Recommending user interviews as a decision mechanism avoids naming what the team is actually optimizing for."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is revenue. Calculate the incremental revenue attributable to the AI feature by comparing retention and expansion rates among weekly active users versus non-users. If the feature is associated with higher retention or upsell, continue investing. If not, sunset it. Product decisions at this level should be driven by monetization impact, not usage metrics.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Revenue impact is a legitimate long-term criterion but is the wrong tool at this stage. With 1.2% weekly active users, the signal size is too small to isolate revenue attribution reliably. The correlation between AI feature use and retention or expansion will be confounded by the fact that weekly active users of any feature tend to be more engaged overall. More critically, using revenue as the criterion at this stage skips the diagnostic question: the team does not yet know whether adoption is low because of placement or because of narrow use case. Answering the revenue question before answering the adoption question inverts the sequence.",
+              "framework_hint": "Strategic Thinking failure: applies a later-stage criterion (revenue impact) to an earlier-stage problem (distribution and activation). The correct sequence is to first test whether the adoption ceiling can be raised, then measure the revenue effect of higher adoption. Revenue attribution on 1.2% weekly users is not a stable signal."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the specific change, the metric it moves, the threshold that counts as success, and the counter-signal that would tell you the intervention failed.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How would you define the intervention and specify what success looks like in falsifiable terms, given a starting point of 8% trial, 1.2% weekly active, and 4.1/5 satisfaction?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise", "motivation_theory"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Ship contextual surfacing: when a user begins typing in a description, comment, or update field longer than two sentences, show a one-line AI assist prompt inline. Measure trial rate among users who see the prompt versus a control group that does not. Success: trial rate among prompted users reaches 25% within 60 days, and weekly active use among triers in the prompted group reaches 20% or above, compared to the current 15% (1.2 divided by 8). Satisfaction for prompted users must remain at or above 3.9 on the current 4.1 baseline. We will know the intervention worked if both adoption metrics move together. We will know it failed if trial among prompted users increases but weekly use does not improve, which would confirm the use case is narrow rather than undiscovered.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise", "motivation_theory"],
+              "explanation": "This answer specifies the intervention (inline prompt at writing intent), the comparison group (prompted versus control), two success thresholds (25% trial rate among prompted users, 20% weekly use among triers), a satisfaction floor (3.9), a timeline (60 days), and a named counter-signal. The counter-signal is particularly important: if trial rises but weekly use does not improve from the current 15% trier-to-weekly rate, the team has evidence of a narrow use case rather than a placement problem. That distinction determines the next investment decision.",
+              "framework_hint": "Domain Expertise: the 15% trier-to-weekly baseline is derived from the existing numbers (1.2 divided by 8), giving the success threshold a grounded reference point rather than an arbitrary target. Motivation Theory: the win condition names what satisfaction looks like after the friction is removed, 20% weekly use among triers means users found a recurring trigger moment and are returning to it."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Increase the placement visibility of the AI assistant by adding it to the main toolbar and sending a feature announcement email to all eligible users. Track trial rate over the next quarter. If trial reaches 20% or above, continue investing. If it stays below 10%, deprioritize the feature.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The direction is right and the thresholds are explicit, which is more than most answers provide. But the intervention conflates two mechanisms: toolbar placement and email announcement. If trial increases, the team will not know which intervention caused it or whether both are needed. More importantly, the answer only tracks trial and ignores the trier-to-weekly conversion rate. A 20% trial rate achieved through a one-time announcement email may look like success at 90 days but still leave weekly active use near its current floor.",
+              "framework_hint": "Strategic Thinking partial credit: provides thresholds and a decision rule but mixes interventions and omits the weekly use signal. A complete win statement tracks the full funnel, not just the entry metric. If trial rises and weekly use stays flat, the team needs to know that is the failure condition, not the success condition."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Commission qualitative research to understand the mental model users have of the AI writing assistant. If users do not think of it as a writing tool, the positioning is wrong. Reposition the feature with new naming and iconography that makes the use case clearer, then track whether awareness improves in subsequent user testing. Once positioning is validated, measure adoption impact.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Naming and iconography research is a reasonable input but is not a win statement. It describes a discovery process, not a success condition. The question asks for a falsifiable target: a specific metric, a threshold, and a timeline. Sequencing qualitative research before any measurable intervention means the team cannot show progress for at least one quarter and cannot give leadership a concrete answer to the continued-investment question they have already raised.",
+              "framework_hint": "Motivation Theory failure: the win step requires naming what satisfaction looks like after the problem is solved. Proposing a research phase defers the definition of success indefinitely. Research informs the intervention design; it does not replace the falsifiable target."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The right win condition is for the AI writing assistant to reach feature parity with standalone AI writing tools like Grammarly. Once the feature matches the quality and breadth of dedicated tools, adoption will follow organically. Define success as a 4.5/5 satisfaction rating from a sample of 100 users who completed a structured evaluation of the feature against competitors.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Feature parity with standalone tools is a product vision, not a win condition for the adoption problem. The satisfaction score is already 4.1/5 from organic users. Targeting 4.5 from a structured evaluation cohort is measuring a different population under different conditions. More critically, this answer assumes quality is the bottleneck when all available evidence says it is not. Improving the feature to match Grammarly does not place it in front of users who have never encountered it in their workflow.",
+              "framework_hint": "Strategic Thinking failure: redefines the problem (adoption is low) as a quality problem in order to propose a solution the team may prefer to work on. The win step requires a falsifiable hypothesis about the actual problem, not a pivot to a different problem with a different metric."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

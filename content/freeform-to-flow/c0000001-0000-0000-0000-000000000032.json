@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000032",
+  "title": "Agent Task Completion Rate is 43%",
+  "scenario_role": null,
+  "scenario_context": "A developer tool shipped an AI agent six months ago that autonomously handles three classes of task: setting up new GitHub repos with CI/CD pipelines, creating Jira tickets from requirements documents, and deploying staging environments. The pitch was that developers could hand off routine infrastructure work and focus on code. Early beta feedback was positive. The agent handled simple cases well and the team shipped it broadly.",
+  "scenario_trigger": "Two months in, the autonomous task completion rate sits at 43%. The other 57% of tasks either fail outright or require a developer to step in and finish manually. A dashboard shows all three task types in a single aggregate number. Users who initially trusted the agent have started routing around it entirely, delegating tasks back to Terraform scripts and manual Jira creation. A few have filed bug reports, but most have simply stopped using the feature.",
+  "scenario_question": "Diagnose what is actually driving the 43% aggregate and decide which tasks to cut versus improve.",
+  "engineer_standout": "A strong answer does not treat 43% as a uniform problem to fix uniformly. Completion rate almost certainly varies across the three task types: repo setup with CI/CD may be close to 90% because it follows a predictable template, while staging deploys may be near 20% because they depend on environment-specific config the agent cannot reliably infer. The crux is disaggregation before prescription: separate the per-task completion rates, then decide cut-versus-improve on each task based on two independent questions. First, is the failure fixable? Some failures are caused by missing context the agent could be given; others are caused by irreducible variability in the environment. Second, is the task worth keeping? An agent that reliably completes 90% of repo setups is genuinely valuable; an agent that attempts staging deploys at 20% completion destroys trust faster than it creates value. A trustworthy agent that does fewer things beats an unreliable one that attempts everything.",
+  "paradigm": "agentic",
+  "difficulty": "easy",
+  "estimated_minutes": 25,
+  "primary_competencies": ["strategic_thinking", "taste"],
+  "secondary_competencies": ["domain_expertise", "cognitive_empathy"],
+  "topic_tags": ["ai-agents", "developer-tools", "trust", "automation", "reliability"],
+  "technique_tags": ["disaggregation", "cut-vs-improve", "task-scoping"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "A 43% aggregate number tells you the agent is struggling. It does not tell you where, why, or whether the three task types share the same failure mode. Find the upstream framing question that determines what kind of fix is even possible.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the 43% completion rate problem?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 43% aggregate masks per-task completion rates that are almost certainly not uniform. Repo setup with CI/CD follows a well-defined template and may complete autonomously at a high rate. Jira ticket creation from requirements docs introduces ambiguity about scope and structure. Staging deploys depend on environment-specific configuration the agent cannot reliably infer without access to secrets, service topology, and infra state. Treating all three under one number means any fix will be misdirected. The real problem is that the agent was scoped too broadly at launch, and the aggregate metric hides which tasks it should keep and which it should stop attempting.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This framing correctly identifies that the 43% aggregate is a measurement problem before it is a product problem. The three task types have structurally different completion profiles because they have structurally different input requirements: repo setup is template-driven, ticket creation requires semantic understanding of unstructured docs, and staging deploys require runtime environment context the agent typically lacks. Two months of data at 57% failure and intervention is enough to conclude the agent is eroding trust faster than it is building value. Disaggregation is the prerequisite for any useful decision about what to fix versus what to cut.",
+              "framework_hint": "Strategic Thinking: the aggregate metric is a trap because it obscures whether the problem is fixable (improve the agent) or structural (cut the task). Taste: recognizing that 'fix the agent' and 'cut the task' are two categorically different responses, and that the data needed to choose between them requires disaggregated completion rates, not a better aggregate."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The agent is failing because it lacks sufficient context about the user's environment. If the agent had better access to repo structure, Jira project settings, and deployment configs, completion rates would improve across all three task types. The fix is to expand the agent's integration surface and give it more signals before it attempts a task.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Better context would help for some failure modes, particularly for staging deploys where missing environment config is a plausible root cause. The framing falls short because it assumes all three task types fail for the same reason and prescribes the same fix. Repo setup likely fails for different reasons than staging deploy, and ticket creation from requirements docs may fail because the requirements themselves are ambiguous rather than because the agent lacks integration surface. Prescribing 'more context' before disaggregating the failure modes risks investing engineering effort in integrations that do not move the right metric.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies that missing environment context is a real failure driver for agentic tools, particularly for tasks like staging deploys. The gap is applying a single technical explanation to three structurally different tasks without first checking whether all three fail for the same reason."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The agent is failing because users are not giving it clear enough instructions. Developers who provide detailed prompts get better results. The fix is to add better prompt templates and onboarding guidance so users know how to invoke the agent effectively.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Prompt quality matters for some AI agent failures, but applying this explanation to a 57% fail-and-intervention rate across three distinct task types stretches it too far. Staging environment deploys fail because they require access to live infrastructure state and secrets that no prompt template can supply. Blaming user prompts also shifts the failure onto developers who trusted the product's autonomous framing, which accelerates trust erosion rather than reversing it. The root cause is the agent's scope, not the user's input quality.",
+              "framework_hint": "Cognitive Empathy failure: this frame places the failure on the user's behavior rather than on a mismatch between what the agent promised and what it can actually deliver. A developer who files a bug report after the agent failed a staging deploy is not failing to prompt correctly; they are experiencing a capability gap the product presented as solved."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The 43% completion rate is a trust and UX problem. Users are abandoning the agent not because it fails, but because there is no clear feedback when it does. Adding real-time status updates, failure explanations, and recovery suggestions would restore user confidence and bring completion rates up indirectly by keeping users engaged through the harder cases.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Transparency about failures is a real product quality concern, and the lack of feedback likely does accelerate abandonment. The reason this framing misses is that it conflates symptom with cause. If the agent genuinely cannot complete a staging deploy because it lacks the necessary environment credentials, a better status message does not change the completion rate; it just makes the failure more visible. The 57% failure rate is the primary problem. UX improvements address the experience around the failure, not the failure itself.",
+              "framework_hint": "Strategic Thinking failure: transparency is a second-order fix that assumes the core capability gap is tolerable and just needs better communication. At 57% failure, the capability gap is the problem, not the communication around it. Investing in UX before addressing the structural completion-rate split risks making the failure more legible without making the product more reliable."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Once you have per-task completion rates, you need a framework for deciding what to do with each one. Enumerate the factors that separate a task worth improving from a task worth cutting.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which factors most completely determine whether a failing task type should be improved or cut from the agent's scope?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Two independent questions determine the cut-versus-improve decision for each task. First, is the failure fixable? Some failures stem from missing context the agent could be given, such as an API token or a project key, and are addressable with better integrations. Others stem from irreducible variability in the environment, such as staging deploys that depend on runtime state the agent cannot observe without deep infra access. Second, is the task worth keeping at the completion rate you can realistically achieve? A task that reaches 85% autonomous completion after fixes is a different proposition than one that plateaus at 50% even with better context. Both questions must be answered independently: a fixable failure on a low-value task may still warrant cutting, while an irreducible failure on a high-value task may justify a supervised mode rather than full autonomy.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "These two questions are structurally independent. Repo setup with CI/CD may be both highly fixable and high-value, making it the right candidate to invest in. Staging deploys may have irreducible failure modes due to environment variability, making them a candidate for either a supervised mode or removal from the autonomous scope. Jira ticket creation may be fixable with better document parsing but low-value enough relative to the trust cost that cutting it makes more sense. The grid of fixability times value produces four distinct decisions rather than one uniform treatment.",
+              "framework_hint": "Strategic Thinking: generating two independent evaluation axes avoids the trap of treating cut-versus-improve as a single-factor decision based on failure rate alone. Domain Expertise: recognizing that staging environment variability is often irreducible for agentic tools because it requires live infrastructure access, not just better prompting or additional configuration."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The main factor is how frequently each task type is used. High-frequency tasks are worth improving because more users benefit from the fix. Low-frequency tasks that fail often should be cut because the investment-to-benefit ratio is unfavorable. Usage data from the two-month period would show which tasks to prioritize.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Usage frequency is a legitimate input to prioritization, and the two-month dataset does contain this signal. The factor is incomplete because frequency does not capture whether the failure is fixable or how much trust each failure costs. A low-frequency task that fails visibly and causes developers to abandon the entire agent may warrant more attention than a high-frequency task that fails quietly and is easily recovered. Frequency also does not distinguish between a task that fails because of a missing integration and one that fails because of irreducible environment variability.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that prioritization should be data-driven and that the two-month dataset contains the relevant usage signals. The gap is that frequency alone does not answer the fixability question or the trust-cost question, both of which are necessary to make a well-grounded cut-versus-improve decision."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The key factor is how similar each task is to tasks that are already completing successfully. Tasks that share structure with the 43% that succeed are good candidates for improvement. Tasks that are fundamentally different in type from the successful completions should be cut.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Structural similarity to successful tasks is too vague a criterion to produce actionable decisions. Repo setup and staging deploy are both infrastructure tasks that 'share structure' in a loose sense, but their completion profiles are driven by entirely different factors. This framing also does not engage with the fixability question or the value question, which means it cannot distinguish between a task that fails for a solvable reason and one that fails for a structural reason the team cannot address without a major architecture change.",
+              "framework_hint": "Creative Execution failure: 'similarity to successes' is a descriptive observation, not a decision criterion. It tells you what the successful cases have in common but not why the failing cases fail or whether the failures are addressable. The cut-versus-improve framework needs causal factors, not pattern-matching on surface similarity."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision should be driven by user feedback on each task type. Run surveys asking developers which task failures bother them most. The tasks with the most complaints should be improved first. Tasks with few complaints can be deprioritized or quietly sunset.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "User feedback on which failures bother developers most is a useful signal for prioritization within an improve decision, but it is not the right input for the cut-versus-improve question. Developers who have stopped using the agent entirely are underrepresented in complaint surveys, which biases feedback toward users who are still engaging and may have lower-stakes failure tolerance. More importantly, complaint volume does not answer whether the failure is fixable: a frequently-complained-about task that fails due to irreducible environment variability should still be cut even if complaints are high.",
+              "framework_hint": "Cognitive Empathy partial credit: recognizes that the developer's experience of failure matters and that complaint data exists. The gap is survivorship bias: developers who routed around the agent entirely are not filing bug reports, so complaint rate reflects engaged users' frustrations rather than the full failure distribution across all three task types."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "You have a framework for evaluating each task. Now name the tradeoff. Narrowing the agent's scope means giving up on tasks developers expected the product to handle. What do you sacrifice and why is that sacrifice the right call?",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right design criterion for deciding how narrow the agent's scope should be?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is trustworthy reliability over breadth: keep only the task types where autonomous completion can reach and sustain 85% or above, and remove the others from the autonomous scope. The sacrifice is explicit. Staging deploys, if they plateau below 85% even with better integrations, get cut from the autonomous feature or moved to a supervised mode where the agent generates a plan and waits for human approval. The gain is that developers who use the agent for repo setup get a consistent, reliable experience that rebuilds trust. The loss is that the product's scope narrative shrinks from 'handles three classes of infrastructure task' to 'reliably handles one or two.' That narrowing is the right call because the current breadth is actively destroying trust. A 57% combined failure rate, two months in, means the agent is below the threshold where any developer would choose it over a manual script.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "The 85% threshold is not arbitrary: it is the point where autonomous completion becomes more reliable than a developer's average first-attempt manual execution for a well-defined infrastructure task. Below that, the agent imposes net overhead because the developer must monitor, intervene, and recover from failures more often than they would if they had just done the task themselves. Naming the sacrifice (narrower scope narrative) makes this a real tradeoff. Keeping staging deploys in the autonomous scope because they were promised at launch is a sunk-cost error; the trust cost of continued failures exceeds any value from maintaining scope breadth.",
+              "framework_hint": "Taste: distinguishing between 'cut tasks because they fail' (reactive) and 'keep only tasks where reliable trust can be built' (a principled scope criterion). The 85% threshold operationalizes what 'reliably trustworthy' means for an autonomous agentic tool in a developer workflow. Strategic Thinking: the criterion produces a decision rule that does not require relitigating each task individually every quarter."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion is developer time saved per successful completion. Keep tasks where the agent saves at least 30 minutes of developer time when it succeeds. Cut tasks where the time saved per successful completion does not justify the overhead of monitoring, recovery, and re-runs when it fails. This criterion focuses investment where the productivity gain is largest.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Time saved per successful completion is a legitimate measure of task value and would differentiate between a 5-minute task and a 2-hour task at the same completion rate. The criterion falls short because it only evaluates the upside of success without weighting it against the cost of failure. A task that saves 45 minutes when it works but requires 90 minutes of developer intervention to recover when it fails can score well on the time-saved metric while delivering negative expected value. The criterion needs to account for failure cost, not just success gain.",
+              "framework_hint": "Strategic Thinking partial credit: correctly grounds the decision in productivity impact rather than just completion rate. The gap is that expected value requires both the gain on success and the cost on failure, weighted by their respective probabilities. At a 57% combined failure rate, the failure cost is the dominant term for any task where failure requires significant manual recovery."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion is user adoption rate within 90 days. Tasks that are being actively used despite failures are worth improving. Tasks that users have abandoned entirely should be cut. Revealed preference from usage data is a more reliable signal than any performance threshold.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Revealed preference from usage data does contain information, but it is a trailing signal with a confound: users may have abandoned a task not because the task is inherently low value but because two months of failures taught them not to trust it. Abandonment data cannot distinguish between 'this task type is not valuable' and 'this task type failed enough times that developers stopped trying.' A staging deploy task that developers loved in concept but abandoned after three failures may look identical to a task that was never valuable. The criterion measures the result of the trust problem rather than the input to the cut-versus-improve decision.",
+              "framework_hint": "Cognitive Empathy failure: abandoned tasks are abandoned because of the experience of failure, not necessarily because of the underlying value of the task. A developer who routed around the agent for staging deploys after two failed attempts may still want the agent to handle that task if it were reliable. Treating abandonment as a preference signal confuses the outcome of poor reliability with a negative judgment about task value."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is whether the task can be fully specified upfront. Tasks where the developer can provide all required inputs before the agent starts are worth keeping because the agent has everything it needs to complete autonomously. Tasks that require the agent to make inferences or collect missing information mid-run should be cut from the autonomous scope.",
+              "quality": "plausible_wrong",
+              "competencies": ["domain_expertise"],
+              "explanation": "Upfront specification is a real property of agentic task success, and it correlates with completion rate in predictable ways: repo setup is largely specifiable upfront while staging deploy requires runtime environment state. The problem is that this criterion conflates the cause of failure with the decision rule for the scope. A task that requires mid-run inference could be addressed by redesigning the intake flow to collect more inputs before the agent starts, rather than being cut. The criterion needs to evaluate whether the failure is fixable, not just whether the current task design requires inference.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies that upfront specification is a structural advantage for autonomous task completion. The gap is that 'requires inference' is a property of the current agent design, not an immutable property of the task. A staging deploy task that collects environment credentials and service topology at intake may be fully specifiable, even if the current agent tries to infer them at runtime."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet on scope reduction is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the narrowing made things worse, not better.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for cutting or narrowing the agent's task scope after two months at 43%?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: autonomous completion rate on the retained task types reaches 80% or above within 60 days of scope reduction, with weekly active agent usage returning to or exceeding the first-month baseline. The 80% threshold tests that the narrowing actually fixed the reliability problem rather than just reducing the number of tasks that could fail. The usage recovery tests that developers who abandoned the agent in month two are re-engaging, which is the primary trust signal. The counter-signal is: completion rate on retained tasks improves but weekly active usage continues to fall, which would indicate that trust damage from the 43% aggregate period is deeper than a reliability fix can address, and the team needs to evaluate whether the product requires a re-launch narrative rather than just a reliability update.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "The 80% threshold is the minimum level at which autonomous completion consistently outperforms a developer's manual execution time for a well-defined infrastructure task, making the agent a reliable tool rather than a supervised assistant. Usage recovery tests the trust hypothesis directly: if developers who routed around the agent do not return after the scope narrows and reliability improves, the problem is not solvable through reliability alone. The counter-signal identifies a failure mode that does not appear in the completion rate metric but would determine whether the team's next move is product work or go-to-market work.",
+              "framework_hint": "Domain Expertise: an 80% autonomous completion rate for developer infrastructure tasks is a reasonable threshold because below this level, developers who are tracking their time will calculate that manual execution is faster when accounting for monitoring and recovery overhead. Strategic Thinking: the counter-signal (usage stays flat despite improved reliability) distinguishes between a reliability problem and a trust-recovery problem, which require different responses."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means the support ticket volume for agent failures drops by at least 60% within 30 days of the scope change. Track tickets tagged as agent-related and measure the reduction. A 60% drop means the worst failure modes have been addressed. If tickets do not drop, audit which task types are still generating failures.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Support ticket volume is a real signal and a 60% reduction threshold is specific enough to be testable. The gap is that ticket volume is a lagging indicator with a ceiling: developers who stopped using the agent entirely are not filing tickets. The 57% failure rate may be generating far fewer tickets than it should because most failures happen silently and users have already routed around the feature. A 60% ticket drop could indicate success or it could indicate that usage has fallen low enough that fewer attempts are being made, producing fewer failures. The win condition needs a numerator metric (completion rate) alongside the incident proxy.",
+              "framework_hint": "Strategic Thinking partial credit: support ticket reduction is a valid operational metric and the 30-day timeline is appropriately short for an early detection window. The gap is that ticket volume tracks reported failures from active users, which is a biased sample when 57% failure has already driven significant abandonment. A win condition that relies only on ticket reduction cannot detect the case where reliability improved but usage did not recover."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means developers self-report higher trust in the agent at the 30-day mark through an NPS survey targeted at the beta cohort. A 20-point NPS improvement from the baseline survey taken before the scope change confirms the decision was right.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "NPS improvement is a plausible trust proxy, but NPS surveys in early developer tools tend to reflect recency bias heavily. A developer who had one smooth repo setup in the week before the survey may give a high score regardless of the historical failure rate. More critically, NPS does not distinguish between 'the agent is more trustworthy because it completes tasks reliably' and 'the agent feels better because I no longer have to watch it fail at staging deploys it was never supposed to attempt.' The win condition should test whether the reliability bet paid off, not whether sentiment shifted.",
+              "framework_hint": "Domain Expertise failure: developer NPS in early-stage B2D tools correlates weakly with retention because developers judge tools on whether they save time reliably, not on overall sentiment. A tool that gets a high NPS score in a survey but still loses to a bash script in head-to-head time comparison will eventually lose users regardless of survey results."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is confirmed when three or more reference customers publicly describe the agent as reliable in case studies or LinkedIn posts within 90 days of the scope change. Social proof from trusted developers in the beta cohort is the strongest trust signal at this stage of the product.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Public endorsements from trusted developers are valuable for go-to-market credibility, but they are not a falsifiable test of the reliability hypothesis. A reference customer who posts positively may be highlighting a use case where the agent already worked well before the scope change, or may be responding to the product team's relationship investment rather than to a measurable reliability improvement. Three posts in 90 days also cannot tell the team whether the 80% completion rate threshold has been crossed or whether weekly active usage has recovered. It is a marketing outcome, not a product reliability metric.",
+              "framework_hint": "Strategic Thinking failure: conflating go-to-market validation (reference customers as social proof) with product reliability validation (completion rate and usage recovery). Both matter, but they answer different questions. A developer tool that generates three positive case studies while failing 40% of autonomous tasks for the remaining user base has a PR strategy, not a reliability fix."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

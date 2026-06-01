@@ -269,11 +269,22 @@ export function useCodeRunner({
         body.testCaseIds = testCaseIds
       }
 
-      const res = await fetch('/api/code/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
+      let res: Response
+      try {
+        res = await fetch('/api/code/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          // Never let the spinner outlive the server budget (maxDuration=40s);
+          // sit just above it so the server's friendly result wins the race.
+          signal: AbortSignal.timeout(45_000),
+        })
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'TimeoutError') {
+          throw new Error('The code runner timed out. Give it a moment and run again.')
+        }
+        throw err
+      }
 
       if (res.status === 401) {
         // Recoverable: the access token lapsed. Surface a friendly message; the

@@ -1,0 +1,383 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000040",
+  "title": "Agentic System Latency: P99 is 47 Seconds",
+  "scenario_role": null,
+  "scenario_context": "A multi-agent system for automated contract review processes each document through four sequential agents: a document parsing agent, a clause extraction agent, a risk scoring agent, and a summary agent. Median latency sits at 8 seconds, which is acceptable for the use case. But the 99th percentile is 47 seconds. Enterprise clients have a contractual SLA requiring sub-15 second end-to-end latency at P99. Tracing data is available across all four agents, but the bottleneck does not live in one place. Sometimes clause extraction is the slow link. Sometimes the summary agent is. The variance moves around depending on the contract.",
+  "scenario_trigger": "Three enterprise clients have flagged the P99 breach in their quarterly reviews. One has signaled it will invoke the SLA penalty clause if P99 remains above 15 seconds past the next billing cycle. The system has been live for four months. The engineering team has already tuned each agent individually, shaving average latency on each by 10-20%, but P99 did not move. The question is why average optimization failed to help the tail, and what to do instead.",
+  "scenario_question": "Diagnose why tuning average latency did not fix P99, and design the optimization strategy that will bring P99 below 15 seconds without degrading median performance.",
+  "engineer_standout": "A strong answer identifies that a healthy P50 with a terrible P99 is a variance problem, not a throughput problem. When the bottleneck moves between agents depending on the contract, the system is input-sensitive: long contracts produce more clauses, which slow extraction; many risky clauses produce more scoring work, which slows risk scoring; dense contracts produce longer summaries. Each agent amplifies the input-induced slowdown of the one before it in a serial chain. Shaving average latency on each agent individually does not touch the distribution tail because the tail is driven by worst-case inputs compounding across four sequential stages. The correct strategy targets the tail specifically: identify the 1% of contracts that produce the longest runs through tracing data, parallelize the clause extraction and risk scoring agents so they do not run serially on the same long input, add per-agent timeouts with graceful degradation rather than failure, and consider a pre-classification step that routes oversized contracts through a different path rather than forcing them through the standard chain at full quality.",
+  "paradigm": "agentic",
+  "difficulty": "hard",
+  "estimated_minutes": 45,
+  "primary_competencies": ["domain_expertise", "strategic_thinking"],
+  "secondary_competencies": ["taste", "creative_execution"],
+  "topic_tags": ["agentic-ai", "latency", "distributed-systems", "performance", "sla"],
+  "technique_tags": ["tail-latency", "parallelization", "timeout-strategy", "input-classification", "variance-reduction"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The engineers already tuned each agent and P99 did not move. Before prescribing more optimization work, ask what kind of problem this actually is — because the solution depends entirely on the diagnosis.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What does the combination of a 8-second P50 and a 47-second P99 most precisely reveal about the nature of the latency problem?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "A P50 of 8 seconds and a P99 of 47 seconds means the average case is fine and the system is not slow in general. The problem is variance in a small fraction of requests. Because the bottleneck also moves between clause extraction and the summary agent depending on the contract, the variance is input-driven: certain documents cause one or more agents to take significantly longer, and those slowdowns compound across the four-stage serial chain. Optimizing average latency per agent does not touch this because the 1% of contracts producing the worst runs are structurally different from the median case, not simply slower versions of it. The correct frame is: identify the worst-case input class and change how the system handles it, not make all agents faster on average.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This framing correctly identifies three things at once: the P50-P99 gap is a variance signature, not a throughput signature; the moving bottleneck is a hallmark of input-dependent slowness rather than a fixed architectural weakness; and the serial chain amplifies per-stage variance multiplicatively. These three together explain why per-agent average tuning failed. If each of four agents has a 99th-percentile slowdown event, those events are statistically independent and their probability of co-occurring in the same request grows as you extend the chain. The tail is not one slow agent — it is a compounding of rare-but-real slowdowns across the chain, triggered by the same demanding input class.",
+              "framework_hint": "Domain Expertise: the P50-P99 spread in a serial multi-agent pipeline is a classic variance-compounding pattern. Each agent has its own latency distribution; the chain's P99 is much worse than any single agent's P99 because the slowdowns can stack on the same request. Strategic Thinking: reframing from 'make each agent faster' to 'target the input class that causes tail events' changes the entire solution space."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The P99 being six times the P50 indicates the system has a resource contention problem under load. When multiple contracts arrive concurrently, they compete for CPU, memory, or network I/O at one or more of the four agents, causing some to queue. The contracts that happen to queue longer produce the worst tail latencies. The fix is to add capacity — more instances of the bottleneck agent — so concurrency does not create queuing.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Resource contention under load is a real and common cause of P99 degradation, and it is a reasonable hypothesis. The reason it does not fit here is the tracing data: the bottleneck moves between clause extraction and summary depending on the contract, not consistently appearing at the same agent as a concurrency bottleneck would. A queuing problem would show one agent consistently at capacity during high-traffic windows, producing a fixed bottleneck signature. Input-dependent variability across stages is a different diagnostic signature that points to the contract content, not concurrency, as the causal variable.",
+              "framework_hint": "Domain Expertise gap: resource contention under concurrency produces a fixed bottleneck location with queue depth that increases with traffic volume. Input-dependent variance produces a moving bottleneck location correlated with document characteristics, not traffic volume. Tracing data that shows the bottleneck moving by contract is the key distinguishing signal."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The gap between P50 and P99 shows the system is fundamentally unreliable. A well-designed system should have P99 within two or three times P50. A six-times multiple suggests the architecture is flawed at a level that incremental optimization cannot fix. The system should be redesigned with a faster approach — replacing the sequential four-agent chain with a single large language model call that does all four tasks in parallel.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Concluding architectural redesign from a P50-P99 ratio alone skips the diagnostic step entirely. Many well-designed systems have large P50-P99 gaps in domains where input complexity varies widely — legal document review is one of them. A six-times multiple is not inherently a reliability failure; it is a signal about input-induced variance that warrants investigation before redesign. Replacing four specialized agents with a single large model call solves nothing if the underlying issue is that some contracts are structurally more demanding — the single model will also take longer on the same hard inputs.",
+              "framework_hint": "Strategic Thinking failure: a large P50-P99 ratio in a domain with heterogeneous inputs is not a reliability indicator on its own. Legal contracts vary enormously in length, clause density, and risk profile. The diagnostic question is whether the tail latency correlates with identifiable input characteristics, not whether the ratio exceeds some generic reliability threshold."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The moving bottleneck between clause extraction and summary is the key clue. The two agents are likely sharing a resource — perhaps a model endpoint or a GPU pool — and are interfering with each other. When clause extraction gets slower, it starves summary of a shared resource, causing summary to also slow. This creates a cascading effect that shows up as high P99. The fix is to isolate the agents onto separate resource pools.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Resource isolation between agents is a real operational intervention, and the intuition that shared infrastructure can create cascading slowdowns is correct. The gap is that shared resource contention between clause extraction and summary would cause them to slow together — a positive correlation in their per-request latency. The observed pattern is that sometimes clause extraction is slow and sometimes summary is slow, which points to input-driven variance rather than mutual interference. Isolation is worth verifying but it addresses a different root cause than the one the tracing data implies.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies that shared infrastructure between agents can cause correlated slowdowns. Strategic Thinking gap: the diagnostic implication of a moving bottleneck is that the two agents are not slowing simultaneously — one is slow when the other is not, depending on the contract. Shared-resource interference would predict they slow together, not alternately."
+            }
+          ]
+        },
+        {
+          "question_text": "Why did reducing average latency on each agent individually fail to move P99?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Average latency optimization reduces the time spent on typical inputs. The contracts that produce the 47-second P99 are not typical — they are the 1% of documents that are longer, have more clauses, or contain more risk signals than the median case. Shaving 15% off average latency means the typical 8-second contract now takes 6.8 seconds. It does nothing to the 47-second outlier because the outlier's slowness comes from the volume of work the document creates at each stage, not from overhead that average optimization removes. The P99 is driven by a different input class than the inputs that average tuning optimizes against.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This explanation correctly names the mechanism: average optimization is by definition trained on the median case, and the tail is not a slow version of the median case. It is a structurally different input class producing a qualitatively larger volume of work at each agent. Reducing constant overhead — startup time, model loading, API round-trip latency — helps both the median and the tail proportionally. But if the tail's slowness comes from processing 300 clauses instead of 40, no amount of overhead reduction touches the 260-clause difference. That is why per-agent average tuning left P99 at 47 seconds.",
+              "framework_hint": "Domain Expertise: average-case optimization in a pipeline with heterogeneous inputs is a well-documented failure mode for tail latency improvement. The percentile you care about must be targeted explicitly — by studying the inputs that produce tail runs, not by improving the median run. Strategic Thinking: the team optimized the wrong thing because they chose the wrong measurement target. P99 improvement requires P99-focused analysis, not P50-focused analysis."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The four agents are running sequentially, so even if each agent gets 20% faster, the total saving is only 20% across the chain. A 20% reduction on a 47-second P99 gives 37.6 seconds, still far above the 15-second SLA. The optimization was real but insufficient in magnitude. Larger reductions, perhaps 70% per agent, would be needed to hit the target.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The arithmetic is correct and it reveals something useful: even large per-agent improvements cannot close the gap through proportional reduction alone. But the framing misses the deeper reason the approach fails. A 70% reduction in average latency on each agent is also unlikely to move the P99 meaningfully if the tail is driven by input-induced variance rather than uniform overhead. The real issue is not that the optimization was too small; it is that average-latency optimization is the wrong tool for a variance problem. The answer identifies a practical limitation but not the structural reason why average-tuning is the wrong approach.",
+              "framework_hint": "Strategic Thinking partial credit: the arithmetic argument that 20% improvement leaves the P99 at 37.6 seconds is a useful reality check on the optimization approach. Domain Expertise gap: the deeper point is not that the optimization was insufficiently large but that it targeted the wrong distribution. Proportional improvements on average latency do not compress the tail distribution — they shift the entire distribution left, which is a different effect."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The optimization was tested against average latency benchmarks, which measure performance on a synthetic workload. Real enterprise contracts may have different statistical properties than the benchmark documents. The discrepancy between benchmark improvement and production P99 improvement means the benchmark does not represent the worst-case inputs. Fixing the benchmark to include production-representative long contracts would reveal whether the optimizations actually worked.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Benchmark representativeness is a real engineering concern and worth investigating. But the scenario does not say the optimizations were measured against synthetic workloads — it says the team reduced average latency by 10-20% and P99 did not move. The gap between benchmark and production performance is a hypothesis that requires evidence, and it does not address the underlying question of why average-latency reduction fails to help P99 even when measured correctly. A more representative benchmark would show the same result: average latency improved, P99 did not, because the root cause is input-class variance, not measurement error.",
+              "framework_hint": "Domain Expertise gap: a representative benchmark is a calibration tool, not a diagnostic for why average optimization leaves P99 unchanged. Even if the team measured average latency reduction on production-representative inputs and confirmed a 15% improvement, they would still see P99 unmoved — because the P99 contract class has different latency drivers than the average contract."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The optimizations targeted throughput rather than latency. Throughput improvements — processing more contracts per minute — do not reduce the time any individual contract takes to complete. The team may have confused the two metrics when evaluating their work.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Conflating throughput and latency is a real mistake but the scenario is explicit that the team reduced average latency by 10-20%, not throughput. Introducing a different error than the one described does not explain the observation. The question is why correctly measured average latency reduction left P99 at 47 seconds, which requires engaging with the relationship between average-case optimization and tail-latency distributions.",
+              "framework_hint": "Strategic Thinking failure: attributing the P99 gap to a measurement error contradicts the premise. The diagnostic must work with the stated observation — average latency per agent improved and P99 did not move — not explain it away as a mistake the team made in reporting their results."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The system has four sequential agents and a tail driven by demanding inputs. List the distinct interventions available — they will not all be equivalent, and some will require trade-offs the others do not.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of interventions most completely covers the design space for bringing P99 below 15 seconds in this four-agent serial chain?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct interventions are available. First, parallelize the agents that can run concurrently — clause extraction and risk scoring both operate on the parsed document and do not depend on each other's output, so they can run simultaneously rather than sequentially, cutting the worst-case serial chain from four stages to three. Second, add per-agent hard timeouts with graceful degradation — if an agent exceeds its time budget, return partial output rather than hanging, so the system never blocks indefinitely on one stage. Third, pre-classify contracts by complexity before routing — use a lightweight classifier on document length and clause density to identify contracts likely to hit the 47-second path and route them differently, either to a faster lower-fidelity path or with a longer asynchronous SLA. Fourth, add contract-level caching for repeated or similar documents — enterprise clients often review similar contract templates, and cached agent outputs for previously seen clause patterns eliminate redundant work. Fifth, profile the actual tail cases using existing tracing data to confirm which input characteristics correlate with P99 runs, before committing to any architectural change.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These five interventions are structurally distinct rather than variations on the same theme. Parallelization addresses the serial amplification problem. Timeouts with degradation address indefinite blocking. Pre-classification addresses routing decisions before the chain begins. Caching addresses redundant computation on similar inputs. Tail profiling addresses the decision quality of all the other interventions — it provides the evidence needed to choose among them rationally. Each intervention acts on a different part of the system and has different costs and trade-offs, which makes the list useful for prioritization rather than just enumeration.",
+              "framework_hint": "Creative Execution: generating five options that differ structurally — parallelization, timeout strategy, routing, caching, and diagnostics — rather than five variations of 'make the agents faster.' Domain Expertise: the insight that clause extraction and risk scoring are both downstream of parsing but upstream of summary, and do not consume each other's output, is what makes parallelization possible without changing the chain's logical structure."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Three interventions cover the space: use faster models for each agent to reduce per-agent latency, add more compute resources to handle peak load without queuing, and implement a retry policy so that slow requests automatically re-run when they exceed a latency threshold. Together these address model speed, infrastructure capacity, and individual request failures.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Faster models and more compute are restatements of the average-latency optimization that already failed to move P99. Retry policies on slow requests extend latency rather than reduce it — retrying a 47-second request does not make it complete faster and adds total time if the retry is not preempted at a timeout. None of the three interventions addresses the structural cause identified in the frame step: that the tail is driven by demanding input classes processing through a serial chain, not by insufficient compute or model speed.",
+              "framework_hint": "Creative Execution failure: all three interventions scale the existing approach rather than changing the approach. Domain Expertise gap: retrying a slow request on the same infrastructure with the same input does not change its latency distribution. A retry policy is useful for handling transient failures, not for reducing tail latency caused by structural input-driven variance."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Two interventions address the root cause: parallelize all four agents to run simultaneously, and cap total end-to-end latency at 15 seconds with a hard timeout. Parallelization removes the serial amplification; the hard timeout enforces the SLA contractually.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Parallelization and hard timeouts are both relevant and named correctly. The gap is that parallelizing all four agents is not feasible — summary depends on clause extraction and risk scoring output, and parsing must complete before either can begin. The answer names the right category of intervention but misapplies it to the full chain. A hard timeout without graceful degradation also fails the contract review use case: returning an empty result to meet the SLA does not satisfy the client. The option names two valuable concepts but its execution of both is incomplete.",
+              "framework_hint": "Domain Expertise partial credit: parallelization and timeouts are the right categories of intervention. Creative Execution gap: the answer does not distinguish between the agents that can run in parallel (clause extraction and risk scoring) and those that cannot (parsing before both; summary after both). Treating the chain as uniformly parallelizable is an architectural error."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The best intervention is to rewrite the system as a single large model call that handles parsing, clause extraction, risk scoring, and summarization in one prompt. This eliminates the serial chain overhead, reduces inter-agent communication latency, and gives the model full context at once, which may improve summary quality as a side effect.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Collapsing four specialized agents into one model call eliminates pipeline overhead but does not address the root cause. A single model processing a 300-page contract with 150 high-risk clauses will still take longer than one processing a 20-page contract with 10 clauses. The input-complexity problem exists independently of whether the processing happens in one call or four. Single-call architectures also introduce a different set of problems: context window limits on very long contracts, inability to parallelize sub-tasks, and loss of the independent quality checks each specialized agent currently provides.",
+              "framework_hint": "Domain Expertise failure: consolidating a serial chain into a monolithic call reduces coordination overhead but does not change the relationship between input complexity and processing time. The tail latency in this system is caused by demanding inputs, not by inter-agent communication overhead. A monolithic call that processes the same demanding contract will produce a similar tail distribution."
+            }
+          ]
+        },
+        {
+          "question_text": "What does the existing tracing data need to answer before the team can confidently choose among the interventions?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three questions determine which interventions are highest-priority. First, which input characteristics predict the worst tail runs? — contract length, clause count, and risk signal density are candidates; the tracing data can correlate these document features with per-agent latency on historical requests. Second, what fraction of P99 requests have clause extraction and risk scoring as their two longest stages simultaneously? — if both are long on the same request, parallelizing them directly addresses the dominant tail pattern. Third, what is the P99 latency contribution of each agent across the worst 1% of requests? — if the summary agent accounts for 30 of the 47 seconds on tail runs, the optimization priority is different than if clause extraction accounts for 30 of 47. These three questions let the team match interventions to the actual failure mode rather than to a hypothesis about it.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "These three questions are diagnostically independent and each drives a different intervention choice. Input characteristic correlation determines whether pre-classification is worth building. The co-occurrence of clause extraction and risk scoring slowdowns determines whether parallelization addresses the dominant tail pattern. Per-agent P99 contribution determines where timeout budgets and optimization effort should concentrate. Without these answers the team is guessing about which intervention addresses the actual tail distribution, even if the candidate list is correct.",
+              "framework_hint": "Strategic Thinking: evidence-first prioritization before committing to architectural work is the correct sequence when tracing data already exists. Domain Expertise: per-request tracing across a four-agent chain can answer all three questions from existing data without additional instrumentation — trace IDs link each agent's span duration to the overall request outcome and the input document metadata."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The tracing data needs to answer one question: which of the four agents is slowest on P99 requests. Once the primary bottleneck agent is identified, all optimization effort can concentrate there. The other three agents can be deprioritized until the bottleneck is resolved.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Identifying the single slowest agent is useful but insufficient because the scenario already establishes that the bottleneck moves between agents depending on the contract. A moving bottleneck means there is no single agent to concentrate on — the correct diagnostic is to find the input characteristics that cause each agent to become the bottleneck, not to identify which agent is worst on average across all tail runs. Concentrating on the agent that is slowest in aggregate may miss the case where summary is the tail driver on one class of contracts and clause extraction is the tail driver on another.",
+              "framework_hint": "Domain Expertise failure: in a system with input-dependent variance and a moving bottleneck, the single-bottleneck model of optimization applies only when one agent is consistently the slow link. When the bottleneck moves, the diagnostic must be at the input level, not the agent level. The tracing data should segment tail runs by input characteristics, not by which agent appeared slowest across all tail runs combined."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The tracing data needs to confirm the current infrastructure utilization. If agents are running at 80% or more CPU during peak periods, the tail latency is a capacity problem and more instances will fix it. If utilization is below 60%, the problem is not capacity and adding instances will not help. The utilization pattern determines whether to scale vertically, scale horizontally, or redesign.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Infrastructure utilization is worth checking as a baseline. But the scenario's tracing data is described as showing a moving bottleneck across agents by contract type, which is not consistent with a capacity saturation pattern — capacity saturation produces a fixed bottleneck at the most heavily loaded agent, not a moving bottleneck correlated with document characteristics. Using the tracing data only for utilization checking misses the input-characteristic correlation analysis that the data is actually positioned to answer.",
+              "framework_hint": "Strategic Thinking gap: infrastructure utilization answers whether the system is overloaded in the general sense. The tracing data in this scenario can answer something more specific: which contracts produce the tail latency, and what document properties correlate with those contracts. That analysis determines the root cause. Utilization confirms a different hypothesis and should be secondary."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The tracing data should be used to replay the 1% of worst-performing requests in a staging environment with proposed changes applied. A/B testing interventions in staging on known bad requests is more reliable than making inferences from production traces. Ship the intervention that produces the best result on replayed tail cases.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Replaying known tail cases in staging is a valid validation method for proposed changes. The gap is that it is a testing strategy, not a diagnostic strategy. Before replaying requests in staging, the team needs to know which requests to replay and why they are slow — that is the diagnostic question the tracing data answers. Using staging replay as the primary analytical tool skips the step where the team understands the causal structure of the tail, which means they may test interventions without knowing whether those interventions address the actual root cause.",
+              "framework_hint": "Strategic Thinking partial credit: staging replay is a good validation method once intervention candidates are selected. Domain Expertise gap: replay testing tells you how a proposed change affects the known bad requests, but not why those requests are bad or whether the proposed change addresses the right variable. The diagnostic analysis of existing traces should precede the staging test, not be replaced by it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The candidate interventions are on the table. Name the single criterion that determines which one to ship first — and be explicit about what the system gives up by holding to that criterion.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "Parallelizing clause extraction and risk scoring would reduce the serial chain from four sequential stages to three. What is the right criterion for deciding whether to ship this change before or after adding per-agent timeouts with graceful degradation?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is tail-risk asymmetry: which change eliminates the worst-case outcome faster? Parallelization shortens expected tail latency on contracts where clause extraction and risk scoring are both slow, but it leaves open the failure mode where one of the two agents hangs indefinitely. A hard timeout with graceful degradation bounds the worst case — no request can ever take more than the budgeted sum of per-agent ceilings, even if one agent stalls completely. An indefinitely hanging agent in a production SLA environment is a more damaging outcome than a slower but bounded P99. Therefore timeouts with graceful degradation ship first, because they set a ceiling the enterprise SLA requires. Parallelization ships second, because it reduces latency within that ceiling. The sacrifice is that the team does not get the full benefit of parallelization as quickly, and P99 may still breach the 15-second SLA for some weeks while the timeout architecture is deployed. That is an acceptable cost if the alternative is a system with no upper bound on tail latency.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion — tail-risk asymmetry — correctly distinguishes between two interventions that both reduce P99 but act on different risk dimensions. Parallelization reduces the expected value of P99 by eliminating serial latency on a subset of requests. Timeouts with graceful degradation eliminate the possibility of P99 becoming unbounded, which is a different and more severe risk. In an enterprise SLA context where there is already an SLA penalty clause in play, deploying the change that prevents catastrophic tail events takes priority over the change that reduces the expected tail.",
+              "framework_hint": "Taste: distinguishing between 'reduces P99 on average' (parallelization) and 'eliminates the worst-case tail' (timeouts) — these are different properties, and the criterion must name which property matters more given the penalty clause already in play. Strategic Thinking: an enterprise client that has signaled an SLA penalty invocation is exposed to the worst-case event, not the average case. The first change should address the worst-case."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Ship parallelization first because it delivers more P99 improvement than timeouts for most tail cases. Removing one sequential stage from the chain directly cuts latency. Timeouts with graceful degradation are a safety mechanism but they do not actively reduce latency — they only bound it. Ship the thing that makes the system faster before the thing that caps how slow it can get.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "The intuition that parallelization delivers active latency reduction while timeouts are a bounding mechanism is correct. The gap is that an enterprise client with a contractual penalty clause creates a specific risk profile: the worst-case outcome is more damaging than the average-case improvement is beneficial. Parallelization on a system without timeout ceilings still leaves open the scenario where one agent hangs for 120 seconds, causing an extreme tail event during the window when the penalty clause is being evaluated. In that context, the bounding mechanism protects against the more costly event.",
+              "framework_hint": "Taste gap: 'makes the system faster' and 'prevents the worst-case event' are not the same criterion, and in a penalty-clause context they have different expected values. If the probability of a catastrophic hang is low but the cost of one occurring is the loss of an enterprise contract, the expected value calculation favors the bounding change first."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be engineering complexity. Ship whichever change the team can implement correctly in the shortest time. A change implemented quickly and correctly beats a better change delivered late with bugs. Assess complexity, pick the lower one, ship it, then ship the other.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Engineering complexity is a relevant constraint but it is not the criterion for ordering these two specific interventions. Neither parallelization of two agents nor per-agent timeouts is especially complex to implement in isolation. Using implementation time as the deciding criterion treats both interventions as equivalent in outcome and defers to whichever happens to be easier. The criterion should be which outcome matters more given the SLA penalty risk, not which implementation is faster.",
+              "framework_hint": "Strategic Thinking failure: in a scenario with an active SLA penalty threat, the sequencing criterion is the risk profile of each change, not the engineering effort. Defaulting to implementation complexity as the tiebreaker implicitly assumes the two changes have equivalent business value, which the SLA context contradicts."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Ship both changes simultaneously in the same deployment. Running them together produces the combined effect — latency reduction from parallelization plus a ceiling from timeouts — and reaches the 15-second SLA target faster than shipping either change alone. The risk of shipping both together is low because they operate on independent parts of the system.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Parallelization and timeout changes are not fully independent in their effects. Parallelization changes the coordination and state management between clause extraction and risk scoring; per-agent timeouts interact with how partial outputs are handled when one of the now-parallel agents times out. Shipping both together means a debugging session for any production incident cannot easily isolate which change caused a new failure mode. The argument that their operational independence justifies simultaneous deployment underestimates the integration surface between concurrency changes and timeout handling in a shared context.",
+              "framework_hint": "Domain Expertise failure: in a distributed agentic system, changes to concurrency model and changes to failure handling are not orthogonal. A race condition or partial-output bug introduced by parallelization may only manifest under the timeout-triggered degradation path. Shipping them together forecloses the ability to attribute and isolate any new failure that appears."
+            }
+          ]
+        },
+        {
+          "question_text": "Pre-classifying contracts by complexity before routing them could reduce P99 by sending demanding documents through a lower-fidelity fast path. What is the right frame for deciding whether this is a feature or a bug in a contract review system?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Pre-classification with a lower-fidelity fast path is a feature if — and only if — the lower-fidelity output is disclosed to the client, the client accepts that disclosure as adequate for their use case, and the lower-fidelity path still meets a meaningful accuracy threshold for the contract types it will process. In contract review, the risk of a false negative — missing a material clause because a fast-path model skipped it — is asymmetric: clients will tolerate a slower high-quality review far more readily than a fast review that missed a liability clause. The design question is whether a pre-classified fast path can be defined with an error rate that is contractually defensible, not just technically faster. If the fast path produces outputs that are 95% as accurate on the clause types that appear most in long contracts, and the client explicitly accepts that trade-off in writing, the feature is defensible. If the fast path would miss clause types that appear only in the long contracts the classifier routes there — which is the most likely failure mode — it is a bug disguised as a performance improvement.",
+              "quality": "best",
+              "competencies": ["taste", "domain_expertise"],
+              "explanation": "This framing correctly identifies that the feature-vs-bug question in contract review is not about latency but about the asymmetric cost of errors. A missed material clause in an enterprise contract review is a legal liability for both the client and the platform. The criterion — disclosed, accepted, and meeting an accuracy threshold on the specific clause types that appear in the routed documents — names the conditions under which the trade-off is defensible rather than treating fast-path routing as a neutral engineering choice.",
+              "framework_hint": "Taste: the distinction between a trade-off (faster with known accuracy cost, disclosed and accepted) and a preference (faster because it feels better) is the heart of the taste competency. Domain Expertise: in legal document review, the worst-case error is a false negative on a high-risk clause in a long, complex contract — precisely the document class the fast path would be designed to handle. The fast path must be evaluated on that specific failure mode, not on average accuracy."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Pre-classification is always a feature in a latency-sensitive system. If the system cannot meet its SLA on demanding inputs, routing those inputs to a faster path is the correct response. Clients who care about accuracy for complex contracts can be offered a premium tier with higher latency. Segmenting clients by latency tolerance and accuracy requirement is a standard product design pattern.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Segmenting clients by latency and accuracy tolerance is a valid product strategy at the roadmap level. The problem here is that the enterprise clients already have a contractual SLA for sub-15-second P99 on their existing service, with no tiering distinction. Routing their most demanding contracts to a lower-fidelity path without renegotiating the accuracy terms of those contracts changes what the clients are receiving without their knowledge or agreement. Calling that a feature ignores that the clients contracted for a specific quality level, not a latency floor.",
+              "framework_hint": "Cognitive Empathy failure: simulating an enterprise client whose legal team has been relying on the system's contract review accuracy to catch liability clauses, and then discovering that the longest and most complex contracts — the highest-stakes ones — were routed to a fast path with lower accuracy. The SLA breach the client complained about was a latency problem; the fast-path solution may create a quality problem that is harder to detect and more damaging."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The feature-vs-bug question is decided by the clients, not the product team. Present the pre-classification approach to enterprise clients, explain the accuracy trade-off, and let them choose whether they want lower latency with acknowledged reduced accuracy or higher latency with full accuracy. Make the choice configurable per client.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Client disclosure and consent is the right ethical and contractual posture, and the instinct to let clients configure their preference is directionally correct. The gap is that clients making this choice need to understand the specific accuracy implications for the specific clause types that appear in their longest contracts — that requires the product team to first characterize the fast path's accuracy profile on those documents. Presenting the choice before that characterization is done asks clients to consent to an unspecified trade-off, which is not adequate disclosure in a legal services context.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that client consent is necessary. Domain Expertise gap: the accuracy characterization must precede the client conversation. A client cannot meaningfully choose between 'full accuracy' and 'fast path' unless they know what clause types the fast path is more likely to miss. That information comes from testing the classifier and fast path on the actual document classes the system routes."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Pre-classification is only worth building if the classifier itself adds less than 500 milliseconds of latency to every request, including the ones it routes to the standard path. If the classifier adds more than 500 milliseconds, it erodes the P50 improvement for average contracts while only helping P99, which may not be a net win.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Classifier latency budget is a real implementation constraint worth specifying. A pre-classification step that adds 2 seconds to every median request would indeed be counterproductive. But framing the entire feature-vs-bug question around classifier overhead misses the more fundamental issue: whether the fast path's accuracy is contractually acceptable. A classifier that adds 200 milliseconds is irrelevant if the fast path it routes to misses material clauses in the documents that reach it. The latency budget question is downstream of the accuracy question in a legal document context.",
+              "framework_hint": "Domain Expertise gap: classifier latency overhead is an implementation detail. The strategic question is whether the routing destination — the lower-fidelity fast path — produces acceptable outputs on the specific input class being routed to it. A fast classifier routing contracts to a broken fast path is not a useful feature regardless of its own latency."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metrics, thresholds, and timeline that prove the optimization strategy worked. Then name the counter-signal that says the fix created a new problem before the enterprise clients or their legal teams surface it.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success condition look like for the latency optimization at 60 days post-deployment?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The optimization succeeds at 60 days if four conditions hold simultaneously. First, P99 latency across all enterprise client contracts is at or below 14 seconds — measured on a rolling 7-day window, not as a point-in-time sample. Second, P50 latency has not regressed — it remains at or below 9 seconds, confirming that timeout and parallelization changes did not add overhead to the median case. Third, the graceful-degradation rate — the fraction of requests where at least one agent returned partial output due to timeout — is below 2%, confirming that the timeout ceilings are set conservatively enough not to fire on normal requests. Fourth, no enterprise client has filed a quality complaint about a missed or misclassified clause in the 60 days following deployment. The counter-signal is: the graceful-degradation rate exceeds 5% in any 7-day window, which indicates timeout ceilings are miscalibrated and the system is degrading quality on requests that are merely at the upper end of normal, not genuinely pathological.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This success condition is falsifiable because each of the four metrics has a specific numeric threshold and a measurement method. The four metrics are also designed to catch different failure modes simultaneously: P99 failure means the optimization did not work; P50 regression means the changes hurt median performance; high graceful-degradation rate means timeout ceilings are too aggressive; quality complaints mean the system is trading accuracy for speed in ways clients experience. The counter-signal specifically targets the graceful-degradation rate because it is the most likely early symptom of a timeout calibration error — it will appear in the product data before clients file complaints.",
+              "framework_hint": "Strategic Thinking: four independent metrics prevent the team from declaring success on the latency dimension while a quality or calibration problem is developing. Domain Expertise: the 2% graceful-degradation threshold reflects the expectation that true pathological inputs — contracts so large they genuinely need special handling — should be rare. A rate above 5% indicates the timeout ceiling is catching normal-range inputs, which is a calibration error that will produce quality degradation at a scale clients will notice."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success at 60 days means no SLA penalty has been invoked by any enterprise client. The SLA is the contractual definition of success. If no penalty fires, the optimization worked. If a penalty fires, it failed.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "SLA compliance is a lagging outcome indicator. An SLA penalty is invoked after a measurement period based on contractual terms — it surfaces a failure that has already occurred over days or weeks, not in real time. By 60 days post-deployment, a team waiting for penalty signals has missed the window to course-correct on any metric that was already trending wrong. The success condition needs leading indicators that surface problems in the data before they become contractual events.",
+              "framework_hint": "Strategic Thinking failure: using a lagging contractual outcome as the primary success metric leaves the team without a signal until it is too late to act. The optimization strategy has multiple intermediate failure modes — P50 regression, timeout miscalibration, quality complaints — that are detectable in product data within days of deployment and require a different response than P99 breach alone."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The optimization succeeds if the engineering team's P99 measurement in staging shows sub-15-second latency on the worst-case test contracts. Staging validation is the authoritative signal because it controls for external variables. If staging passes, production should follow.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Staging validation on worst-case test contracts is a pre-deployment check, not a post-deployment success condition. The scenario asks what success looks like 60 days after deployment. Staging performance also does not capture all the variables that determine production P99 — the actual distribution of enterprise contracts, concurrent request volume, and production infrastructure behavior all differ from staging. A staging pass is necessary but not sufficient for a falsifiable production success condition.",
+              "framework_hint": "Domain Expertise failure: production P99 is not predictable from staging P99 on test contracts because the input distribution in production includes the full range of enterprise contract types, including ones not represented in the test set. The success condition must be measured in production on real traffic over a meaningful time window."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success means the engineering team has shipped the parallelization change and the timeout change within 60 days. Shipping is the milestone. Whether P99 improves is a measurement that takes additional time to evaluate with statistical confidence.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Shipping is a necessary precondition but not a success condition for the optimization. A team that ships both changes within 60 days but finds P99 at 42 seconds has not succeeded on the actual goal. The win step asks for the metric and threshold that confirm the optimization achieved its purpose. Shipping is a leading activity metric; P99 at or below 14 seconds on a rolling 7-day window is the outcome metric that actually answers the question.",
+              "framework_hint": "Strategic Thinking partial credit: delivery timeline is a valid metric to track. Domain Expertise gap: the optimization's success must be evaluated against the latency distribution it was designed to change, not against the delivery milestone that preceded the change taking effect."
+            }
+          ]
+        },
+        {
+          "question_text": "If P99 reaches 13 seconds post-deployment but the graceful-degradation rate — requests where at least one agent returned partial output — rises to 8%, what is the correct interpretation and response?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["taste", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "An 8% graceful-degradation rate with P99 at 13 seconds means the SLA metric improved, but the timeout ceilings are miscalibrated. Eight percent of requests are being forced to partial output — meaning they were cut off before completing a full-quality run — but the right interpretation is not that the optimization worked correctly on those 8%. It is that the timeout ceiling is too aggressive: it is firing on inputs that are not genuinely pathological, just at the upper end of normal. The correct response is to raise the per-agent timeout ceilings until the degradation rate drops below 2%, even if doing so causes P99 to rise from 13 seconds back toward 15. The 15-second SLA is the target; 13 seconds achieved by degrading 8% of outputs is not a compliant result because the clients contracted for full-quality contract review, not partial-quality review that happens to run faster.",
+              "quality": "best",
+              "competencies": ["taste", "domain_expertise"],
+              "explanation": "This interpretation correctly identifies the trade-off that is occurring: the P99 improvement was purchased by forcing 8% of requests into partial output, which means the system is meeting the latency SLA by failing the accuracy implicit in the contract review service. The response — raise the timeout ceilings — is a recalibration that accepts slightly higher P99 in exchange for a much lower degradation rate. The criterion is that the SLA requires both sub-15-second P99 and full-quality output, not a choice between them.",
+              "framework_hint": "Taste: distinguishing between 'P99 is 13 seconds' (true) and 'the optimization succeeded' (false, if 8% of outputs are partial). The P99 improvement is real; the method is not acceptable. Domain Expertise: in legal document review, partial output is not a minor degradation — a summary agent that returned partial output because it hit a timeout may have omitted the summary of the highest-risk clauses, which is precisely the output the client uses."
+            },
+            {
+              "option_label": "B",
+              "option_text": "An 8% degradation rate is within an acceptable range for a contract review system. No software system achieves 100% full-quality output on all requests. The system is meeting the latency SLA and the 8% partial-output rate is a known trade-off that can be disclosed in the next client review. Continue monitoring and adjust if the rate rises further.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Eight percent graceful degradation is not a minor operational footnote in a legal document review system. For every 100 contracts processed, 8 received partial-quality analysis. Enterprise clients using the system to catch liability clauses in commercial contracts are making legal decisions based on outputs that were cut short by a timeout. This is a quality defect that requires correction before disclosure, not disclosure as a substitute for correction.",
+              "framework_hint": "Domain Expertise failure: in legal tech contexts, graceful degradation in contract review means the output omits something — a clause summary, a risk flag, a parsed section — that the client's legal team may rely on. An 8% rate of incomplete outputs is not an acceptable operating steady state; it is a defect signal that the timeout ceiling is set too aggressively for the actual input distribution."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The 8% degradation rate reveals that 8% of contracts are genuinely too complex for the standard four-agent chain to handle within the SLA. These contracts should be routed to an asynchronous review path with a longer SLA and the client notified that full-quality review is available within 60 seconds rather than 15. The 8% is the pre-classification signal the team needed to identify which inputs require the alternate path.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Using the degradation rate as a signal to identify which inputs need different routing is a reasonable secondary intervention. The gap is that the 8% conclusion — these contracts are too complex for the standard chain — is not yet confirmed. The degradation may be a timeout miscalibration affecting inputs that are not genuinely too complex; they are just slower than the current ceiling allows. The correct first step is to determine whether the 8% includes genuinely pathological inputs or normal-range inputs that fall near the tail. Routing them asynchronously before making that determination may send ordinary contracts to a slower path unnecessarily.",
+              "framework_hint": "Strategic Thinking partial credit: creating an asynchronous path for genuinely complex contracts is a sound long-term intervention. Domain Expertise gap: the 8% degradation rate alone does not confirm that those contracts are too complex for the chain — it confirms that they exceeded the current timeout ceiling. The ceiling may be miscalibrated. Diagnose before routing."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The 8% degradation rate combined with 13-second P99 means the optimization overperformed. The team can relax the timeout ceilings slightly to bring the degradation rate down to 4-5%, which reduces quality risk while keeping P99 well below the 15-second SLA. Split the difference and call it stable.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Relaxing the timeout ceilings to hit a 4-5% degradation rate is directionally correct — it moves the calibration toward less degradation — but the logic of 'splitting the difference' treats the degradation rate as a preference dial rather than naming the criterion for where the ceiling should sit. A 4-5% degradation rate in a legal document review system is still one in twenty to twenty-five contracts receiving incomplete analysis. The correct criterion, named in the best answer, is that the degradation rate must reflect only genuinely pathological inputs — not a compromise between speed and quality chosen for convenience.",
+              "framework_hint": "Taste gap: 'split the difference' is a preference expressed as a principle. The correct response names the criterion — what degradation rate corresponds to only the genuinely pathological input class, verified by examining the documents that triggered degradation — and calibrates to that rate. The answer avoids naming the criterion by defaulting to an arbitrary midpoint."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -44,7 +44,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       cooldownKey: 'dashboard',
       source: 'route',
       priority: 2,
-      cta: { label: 'Show me', action: 'open-chat' },
+      cta: { label: 'Show me', action: 'open-chat', prompt: 'Show me the next useful rep and why it fits where I am right now.' },
       autoHideMs: 9000,
     }
   }
@@ -58,7 +58,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       target: 'nav-explore',
       cooldownKey: 'explore',
       source: 'route',
-      cta: { label: 'Ask Hatch', action: 'open-chat' },
+      cta: { label: 'Ask Hatch', action: 'open-chat', prompt: 'I am not sure where to start exploring. Ask me what I need and point me at the right plan.' },
       autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
     }
   }
@@ -72,7 +72,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       target: 'nav-practice',
       cooldownKey: 'practice',
       source: 'route',
-      cta: { label: 'Help me choose', action: 'open-chat' },
+      cta: { label: 'Help me choose', action: 'open-chat', prompt: 'Help me choose the challenge that targets the FLOW move I need the most reps on.' },
       autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
     }
   }
@@ -88,7 +88,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       target: 'nav-progress',
       cooldownKey: 'progress',
       source: 'route',
-      cta: { label: 'Read the pattern', action: 'open-chat' },
+      cta: { label: 'Read the pattern', action: 'open-chat', prompt: 'Read the pattern in my recent scores and tell me what to practice next.' },
       autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
     }
   }
@@ -121,7 +121,7 @@ function routeCue(pathname: string): HatchCueInput | null {
     target: 'nav-dashboard',
     cooldownKey: `app:${pathname}`,
     source: 'route',
-    cta: { label: 'Ask Hatch', action: 'open-chat' },
+    cta: { label: 'Ask Hatch', action: 'open-chat', prompt: 'Tell me the most useful next move from this page.' },
     autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
   }
 }

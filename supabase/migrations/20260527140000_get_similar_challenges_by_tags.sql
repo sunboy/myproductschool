@@ -10,11 +10,11 @@
 -- NOTE: written but reviewed before apply. Apply via the standard migration path.
 
 CREATE OR REPLACE FUNCTION get_similar_challenges_by_tags(
-  p_challenge_id UUID,
+  p_challenge_id TEXT,
   p_max INT DEFAULT 5
 )
 RETURNS TABLE (
-  id UUID,
+  id TEXT,
   slug TEXT,
   title TEXT,
   difficulty TEXT,
@@ -26,11 +26,11 @@ STABLE
 AS $$
   WITH source AS (
     SELECT
-      COALESCE(topic_tags, '{}')     AS topic_tags,
-      COALESCE(technique_tags, '{}') AS technique_tags,
-      COALESCE(move_tags, '{}')      AS move_tags
-    FROM challenges
-    WHERE id = p_challenge_id
+      COALESCE(src.topic_tags, '{}')     AS topic_tags,
+      COALESCE(src.technique_tags, '{}') AS technique_tags,
+      COALESCE(src.move_tags, '{}')      AS move_tags
+    FROM challenges src
+    WHERE src.id = p_challenge_id
   )
   SELECT
     c.id,
@@ -40,9 +40,9 @@ AS $$
     c.challenge_type,
     (
       -- text[] has no intersection operator; count shared elements via unnest.
-      (SELECT COUNT(*) FROM unnest(c.topic_tags)     t WHERE t = ANY(s.topic_tags))     +
-      (SELECT COUNT(*) FROM unnest(c.technique_tags) t WHERE t = ANY(s.technique_tags)) +
-      (SELECT COUNT(*) FROM unnest(c.move_tags)      t WHERE t = ANY(s.move_tags))
+      (SELECT COUNT(*) FROM unnest(c.topic_tags)     AS u(tag) WHERE u.tag = ANY(s.topic_tags))     +
+      (SELECT COUNT(*) FROM unnest(c.technique_tags) AS u(tag) WHERE u.tag = ANY(s.technique_tags)) +
+      (SELECT COUNT(*) FROM unnest(c.move_tags)      AS u(tag) WHERE u.tag = ANY(s.move_tags))
     )::INT AS overlap_count
   FROM challenges c
   CROSS JOIN source s
@@ -57,4 +57,4 @@ AS $$
   LIMIT GREATEST(p_max, 1);
 $$;
 
-GRANT EXECUTE ON FUNCTION get_similar_challenges_by_tags(UUID, INT) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION get_similar_challenges_by_tags(TEXT, INT) TO authenticated, service_role;

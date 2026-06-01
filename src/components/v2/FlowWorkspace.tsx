@@ -339,6 +339,7 @@ export interface QuestionRevealRecord {
   score: number
   gradeLabel: string
   competencySignal: { primary: string; signal: string; framework_hint: string } | null
+  confidence: number | null   // 0-3 index into CONF_LABELS, for the reveal calibration read
 }
 
 interface CompletionData {
@@ -364,6 +365,14 @@ interface SessionRecord {
   canvasPngUrl?: string | null
 }
 
+// Mirrors getGradeLabel() in coding-submit/route.ts so the optimistic history
+// record shows the same label the server will return on refetch.
+function scoreToGradeLabel(score: number): string {
+  if (score >= 4.5) return 'best'
+  if (score >= 3) return 'good'
+  return 'surface'
+}
+
 type FlowWorkspaceProps =
   | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; nextChallengeSlug?: string; returnTo?: string }
   | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; nextChallengeSlug?: string; returnTo?: string }
@@ -385,7 +394,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Always call hooks unconditionally (React rules of hooks)
   const { detail, loading: challengeLoading, error: challengeError, paywallData, startAttempt, reload } = useChallengeV2(challengeId)
-  const { stepData, loading: stepLoading, submitting, error: stepError, clearStepData, loadStep, submitAnswer, fetchCoaching } = useFlowStep(challengeId, currentStep)
+  const { stepData, loading: stepLoading, submitting, error: stepError, clearStepData, loadStep, submitStep, fetchCoaching } = useFlowStep(challengeId, currentStep)
 
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [completedSteps, setCompletedSteps] = useState<FlowStep[]>([])
@@ -408,6 +417,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Confidence state
   const [confidence, setConfidence] = useState<number | null>(null)
+
+  // Per-step drafts: answers are held client-side and editable while the user
+  // moves between a step's questions. Nothing is graded until the step is
+  // submitted as a batch. Keyed by question id (stable across navigation).
+  type QuestionDraft = {
+    selectedOptionId: string | null
+    selectedOptionIds: string[]
+    reasoning: string
+    confidence: number | null
+  }
+  const [stepDrafts, setStepDrafts] = useState<Record<string, QuestionDraft>>({})
+  // Neutral between-questions acknowledgment ("Answer recorded, keep going").
+  const [ackVisible, setAckVisible] = useState(false)
+  const ackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Canvas / interview challenge state
   const [canvasMaximised, setCanvasMaximised] = useState(false)
@@ -443,6 +466,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // dropped the buffer the user just wrote when switching language or part.
   const codingDraftsRef = useRef(codingDrafts)
   useEffect(() => { codingDraftsRef.current = codingDrafts }, [codingDrafts])
+  // Tracks which attempt id we've already hydrated drafts for. Keyed to the
+  // ATTEMPT, not the challenge: "Try Again" starts a fresh attempt on the same
+  // challenge, so a challenge-id guard would never re-run and would bleed the
+  // previous attempt's draft into the new one.
+  const didHydrateDraftRef = useRef<string | null>(null)
   const [outputPanelStatus, setOutputPanelStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle')
   const [outputPanelError, setOutputPanelError] = useState<string | undefined>(undefined)
   const [lastRunResult, setLastRunResult] = useState<RunResult | null>(null)
@@ -648,73 +676,95 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       .finally(() => setHistoryGradeLoading(false))
   }, [apiChallengeType, selectedHistoryIdx, sessionHistory])
 
-  // Load past completed attempts for this challenge from the DB on mount
-  useEffect(() => {
+  // Load past completed attempts for this challenge from the DB. Reusable so it
+  // can run on mount AND after each submit (server-truth reconciliation of the
+  // optimistic record). CRITICAL: on a non-OK response or network failure, leave
+  // the existing sessionHistory untouched — never wipe it to [] — so a transient
+  // /api/attempts error right after a submit can't erase the record the user
+  // just made.
+  const loadSubmissionHistory = useCallback(async () => {
     if (!isApiMode || !challengeId) return
-    fetch(`/api/attempts?limit=20&challenge_id=${encodeURIComponent(challengeId)}`)
-      .then(r => r.ok ? r.json() : [])
-      .then((rows: Array<{
-        id: string
-        challenge_id: string
-        challenge_type: string | null
-        grade_label: string | null
-        score: number | null
-        max_score: number | null
-        submitted_at: string | null
-        canvas_png_url?: string | null
-        feedback_json: {
-          step_breakdown?: Array<{ step: string; score: number; max_score: number }>
-          step_signals?: Array<{ step: string; quality_label: string; hatch_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
-          competency_deltas?: Array<{ competency: string; before: number; after: number; delta?: number }>
-          xp_awarded?: number
-          total_score?: number
-          max_score?: number
-        } | null
-      }>) => {
-        const past = rows
-          .filter(r => r.challenge_id === challengeSlug || r.challenge_id === challengeId)
-          .map((r): SessionRecord => {
-            const fb = r.feedback_json
-            const stepResults: MirrorStepResult[] = (fb?.step_breakdown ?? []).map(s => {
-              // step_breakdown scores are stored as 0-1; PostSessionMirror displays score/3
-              const normalizedScore = s.max_score > 1 ? s.score : s.score * 3
-              const sig = (fb?.step_signals ?? []).find(ss => ss.step === s.step)
-              return {
-                step: s.step as 'frame' | 'list' | 'optimize' | 'win',
-                score: Math.round(normalizedScore * 10) / 10,
-                quality_label: sig?.quality_label ?? (s.score >= 0.75 ? 'best' : s.score >= 0.45 ? 'good_but_incomplete' : 'plausible_wrong'),
-                confidence: null,
-                reasoning: '',
-                competency_signal: undefined,
-                hatchSignal: sig?.hatch_signal ?? null,
-                frameworkHint: sig?.framework_hint ?? null,
-                selectedOptionId: sig?.selected_option_id ?? null,
-              }
-            })
-            const competencyDeltas: MirrorCompetencyDelta[] = (fb?.competency_deltas ?? []).map(d => ({
-              competency: d.competency,
-              before: d.before,
-              after: d.after,
-              direction: d.after > d.before ? 'up' : d.after < d.before ? 'down' : 'flat',
-            } as MirrorCompetencyDelta))
-            return {
-              attemptId: r.id,
-              challengeType: r.challenge_type ?? apiChallengeType ?? null,
-              completedAt: r.submitted_at ? new Date(r.submitted_at) : new Date(),
-              gradeLabel: r.grade_label ?? '',
-              totalScore: fb?.total_score ?? r.score ?? 0,
-              maxScore: fb?.max_score ?? r.max_score ?? 3,
-              xpAwarded: fb?.xp_awarded ?? 0,
-              stepResults,
-              competencyDeltas,
-              canvasPngUrl: (r.canvas_png_url as string | null) ?? null,
-            }
-          })
-        setSessionHistory(past)
+    let rows: Array<{
+      id: string
+      challenge_id: string
+      challenge_type: string | null
+      grade_label: string | null
+      score: number | null
+      max_score: number | null
+      submitted_at: string | null
+      canvas_png_url?: string | null
+      feedback_json: {
+        step_breakdown?: Array<{ step: string; score: number; max_score: number }>
+        step_signals?: Array<{ step: string; quality_label: string; hatch_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
+        competency_deltas?: Array<{ competency: string; before: number; after: number; delta?: number }>
+        xp_awarded?: number
+        total_score?: number
+        max_score?: number
+      } | null
+    }>
+    try {
+      const res = await fetch(`/api/attempts?limit=20&challenge_id=${encodeURIComponent(challengeId)}`)
+      if (!res.ok) return // preserve existing history on 401/5xx
+      rows = await res.json()
+    } catch {
+      return // preserve existing history on network failure
+    }
+    const past = rows
+      .filter(r => r.challenge_id === challengeSlug || r.challenge_id === challengeId)
+      .map((r): SessionRecord => {
+        const fb = r.feedback_json
+        const stepResults: MirrorStepResult[] = (fb?.step_breakdown ?? []).map(s => {
+          // step_breakdown scores are stored as 0-1; PostSessionMirror displays score/3
+          const normalizedScore = s.max_score > 1 ? s.score : s.score * 3
+          const sig = (fb?.step_signals ?? []).find(ss => ss.step === s.step)
+          return {
+            step: s.step as 'frame' | 'list' | 'optimize' | 'win',
+            score: Math.round(normalizedScore * 10) / 10,
+            quality_label: sig?.quality_label ?? (s.score >= 0.75 ? 'best' : s.score >= 0.45 ? 'good_but_incomplete' : 'plausible_wrong'),
+            confidence: null,
+            reasoning: '',
+            competency_signal: undefined,
+            hatchSignal: sig?.hatch_signal ?? null,
+            frameworkHint: sig?.framework_hint ?? null,
+            selectedOptionId: sig?.selected_option_id ?? null,
+          }
+        })
+        const competencyDeltas: MirrorCompetencyDelta[] = (fb?.competency_deltas ?? []).map(d => ({
+          competency: d.competency,
+          before: d.before,
+          after: d.after,
+          direction: d.after > d.before ? 'up' : d.after < d.before ? 'down' : 'flat',
+        } as MirrorCompetencyDelta))
+        return {
+          attemptId: r.id,
+          challengeType: r.challenge_type ?? apiChallengeType ?? null,
+          completedAt: r.submitted_at ? new Date(r.submitted_at) : new Date(),
+          gradeLabel: r.grade_label ?? '',
+          totalScore: fb?.total_score ?? r.score ?? 0,
+          maxScore: fb?.max_score ?? r.max_score ?? 3,
+          xpAwarded: fb?.xp_awarded ?? 0,
+          stepResults,
+          competencyDeltas,
+          canvasPngUrl: (r.canvas_png_url as string | null) ?? null,
+        }
       })
-      .catch(() => {/* silently ignore */})
+    setSessionHistory(past)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApiMode, challengeId, challengeSlug])
+
+  // Load history on mount.
+  useEffect(() => { void loadSubmissionHistory() }, [loadSubmissionHistory])
+
+  // Optimistically prepend a just-completed submission to the history list,
+  // deduped by attemptId (a re-submit reuses the same attempt row). Used by the
+  // coding + canvas submit handlers; the FLOW path has its own inline push.
+  const recordSubmission = useCallback((record: SessionRecord) => {
+    setSessionHistory(prev => {
+      const withoutDupe = prev.filter(r => r.attemptId !== record.attemptId)
+      return [record, ...withoutDupe]
+    })
+    setSelectedHistoryIdx(0)
+  }, [])
 
   // Hint card open/close state (right pane)
   const [hintOpen, setHintOpen] = useState(false)
@@ -1015,6 +1065,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (codingAutosaveTimerRef.current) clearTimeout(codingAutosaveTimerRef.current)
     codingAutosaveTimerRef.current = setTimeout(async () => {
       try {
+        // Merge over ALL existing buckets (codingDraftsRef is the freshest copy)
+        // so multi-part challenges don't lose other parts' code on each save.
+        // Write the current code into the active part's bucket.
+        const partKey = activePartId ?? 'default'
+        const mergedDrafts = {
+          ...codingDraftsRef.current,
+          [partKey]: { ...(codingDraftsRef.current[partKey] ?? {}), [currentLanguage]: currentCode },
+        }
         await fetch('/api/hatch/session/autosave', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -1023,7 +1081,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             draftSnapshot: {
               type: apiChallengeType ?? 'coding',
               language: currentLanguage,
-              drafts: { default: { ...codingDrafts['default'], [currentLanguage]: currentCode } },
+              drafts: mergedDrafts,
             },
             updatedAt: new Date().toISOString(),
           }),
@@ -1031,7 +1089,38 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       } catch { /* fire and forget */ }
     }, 10000)
     return () => { if (codingAutosaveTimerRef.current) clearTimeout(codingAutosaveTimerRef.current) }
-  }, [currentCode, currentLanguage, isCodingChallenge, attemptId, codingDrafts])
+  }, [currentCode, currentLanguage, isCodingChallenge, attemptId, activePartId, apiChallengeType])
+
+  // Autosave MCQ FLOW step drafts every 8s when they change. Without this a
+  // refresh or expired session mid-step silently wipes the user's in-progress
+  // answers (the batch submit only persists on full-step completion). Keyed by
+  // step so navigating to a new step doesn't clobber earlier steps' drafts.
+  const flowAutosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const coachTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (isInterviewChallenge || !isApiMode || !attemptId) return
+    if (Object.keys(stepDrafts).length === 0) return
+    if (flowAutosaveTimerRef.current) clearTimeout(flowAutosaveTimerRef.current)
+    flowAutosaveTimerRef.current = setTimeout(async () => {
+      try {
+        await fetch('/api/hatch/session/autosave', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            attemptId,
+            draftSnapshot: {
+              type: 'flow',
+              step: currentStep,
+              questionIdx,
+              stepDrafts,
+            },
+            updatedAt: new Date().toISOString(),
+          }),
+        })
+      } catch { /* fire and forget */ }
+    }, 8000)
+    return () => { if (flowAutosaveTimerRef.current) clearTimeout(flowAutosaveTimerRef.current) }
+  }, [stepDrafts, questionIdx, currentStep, isInterviewChallenge, isApiMode, attemptId])
 
   // Pick the right default language for coding challenges:
   // - SQL challenges (have sql_schema) → 'sql'
@@ -1055,17 +1144,63 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail?.challenge?.id, isCodingChallenge])
 
-  // Initialize currentCode from starter_code when challenge loads for coding challenges
+  // Initialize currentCode when the challenge loads / language flips. Prefer the
+  // in-memory draft (codingDraftsRef) over the starter, so a hydrated or
+  // in-progress draft survives a language switch. The hydration effect below
+  // populates the ref from draft_snapshot, and clears it for fresh attempts, so
+  // the starter is only used when there's genuinely no saved code.
   useEffect(() => {
     if (!isCodingChallenge || !detail?.challenge) return
     const metadata = detail.challenge.metadata as { starter_code?: Record<string, string> } | null | undefined
     const starterCode = metadata?.starter_code?.[currentLanguage] ?? ''
-    setCurrentCode(starterCode)
+    const partKey = activePartId ?? 'default'
+    const draft = codingDraftsRef.current[partKey]?.[currentLanguage]
+    setCurrentCode(draft ?? starterCode)
     // Open chat panel by default for coding challenges
     setChatPanelOpen(true)
   // Only run when challenge first loads (detail.challenge.id changes) or language flips
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail?.challenge?.id, isCodingChallenge, currentLanguage])
+
+  // Hydrate coding drafts from the persisted draft_snapshot once per attempt.
+  // Keyed to the attempt id: "Try Again" reuses the same challenge but a new
+  // attempt, so this re-runs and either restores that attempt's snapshot or
+  // clears the ref so the starter shows (no stale bleed from the prior attempt).
+  useEffect(() => {
+    if (!isCodingChallenge || !detail?.challenge) return
+    const attemptKey = detail.current_attempt?.id ?? attemptId
+    if (!attemptKey || didHydrateDraftRef.current === attemptKey) return
+
+    const snap = detail.current_attempt?.draft_snapshot as
+      | { type?: string; language?: string; drafts?: Record<string, Partial<Record<SupportedLanguage, string>>> }
+      | undefined
+
+    if (snap?.drafts && Object.keys(snap.drafts).length > 0) {
+      // Restore saved drafts for this attempt.
+      codingDraftsRef.current = snap.drafts
+      setCodingDrafts(snap.drafts)
+      const supported: SupportedLanguage[] = ['python', 'javascript', 'java', 'cpp', 'go', 'sql']
+      const savedLang = snap.language as SupportedLanguage | undefined
+      const normLang = savedLang && supported.includes(savedLang) ? savedLang : currentLanguage
+      if (normLang !== currentLanguage) setCurrentLanguage(normLang)
+      const partKey = activePartId ?? 'default'
+      const metadata = detail.challenge.metadata as { starter_code?: Record<string, string> } | null | undefined
+      const saved = snap.drafts[partKey]?.[normLang]
+      setCurrentCode(saved ?? metadata?.starter_code?.[normLang] ?? '')
+    } else {
+      // Fresh attempt with no saved draft: clear any ref left over from a prior
+      // attempt AND reset the editor to starter. The starter-init effect doesn't
+      // re-run on attempt changes, so without this a same-challenge "Try Again"
+      // would keep the previous attempt's editor text (and autosave it).
+      codingDraftsRef.current = {}
+      setCodingDrafts({})
+      const metadata = detail.challenge.metadata as { starter_code?: Record<string, string> } | null | undefined
+      setCurrentCode(metadata?.starter_code?.[currentLanguage] ?? '')
+    }
+
+    didHydrateDraftRef.current = attemptKey
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail?.current_attempt?.id, attemptId, isCodingChallenge, detail?.challenge?.id])
 
   // useCodeRunner hook - always called (React rules of hooks); only active for coding challenges
   const codeChallenge = (isCodingChallenge && detail?.challenge)
@@ -1176,6 +1311,40 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const currentQuestion = activeStepData?.questions[questionIdx] ?? null
   const activeSubmitting = isApiMode ? submitting : adapterSubmitting
 
+  // Rehydrate MCQ step drafts from the persisted snapshot once per attempt, but
+  // only when the saved snapshot is for the step the server resumed us into.
+  const didHydrateFlowRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (isInterviewChallenge || !isApiMode || !detail?.challenge) return
+    const attemptKey = detail.current_attempt?.id ?? attemptId
+    if (!attemptKey || didHydrateFlowRef.current === attemptKey) return
+    const snap = detail.current_attempt?.draft_snapshot as
+      | { type?: string; step?: FlowStep; questionIdx?: number; stepDrafts?: Record<string, QuestionDraft> }
+      | undefined
+    const hasFlowSnapshot = snap?.type === 'flow' && !!snap.stepDrafts && Object.keys(snap.stepDrafts!).length > 0
+    // If there's no flow draft to restore, mark hydrated immediately so we don't retry.
+    if (!hasFlowSnapshot) {
+      didHydrateFlowRef.current = attemptKey
+      return
+    }
+    // There IS a snapshot, but it may belong to a step the resume hasn't applied
+    // yet (currentStep starts at 'frame' and is updated async). Wait for the step
+    // to match before consuming it — do NOT mark hydrated until it does.
+    if (snap!.step !== currentStep) return
+    setStepDrafts(snap!.stepDrafts!)
+    const idx = typeof snap!.questionIdx === 'number' ? snap!.questionIdx : 0
+    setQuestionIdx(idx)
+    const q = activeStepData?.questions[idx] ?? activeStepData?.questions[0] ?? null
+    const d = q ? snap!.stepDrafts![q.id] : undefined
+    setSelectedOptionId(d?.selectedOptionId ?? null)
+    setSelectedOptionIds(d?.selectedOptionIds ?? [])
+    setReasoning(d?.reasoning ?? '')
+    setElaboration(d?.reasoning ?? '')
+    setConfidence(d?.confidence ?? null)
+    didHydrateFlowRef.current = attemptKey
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail?.current_attempt?.id, attemptId, isInterviewChallenge, isApiMode, currentStep, activeStepData])
+
   // Update Hatch message when step loads
   useEffect(() => {
     if (phase !== 'question' || !activeStepData) return
@@ -1197,6 +1366,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     )
     return () => { tween.kill() }
   }, [phase])
+
+  // Clean up transient timers on unmount (ack beat + coaching-fallback).
+  useEffect(() => () => {
+    if (ackTimerRef.current) clearTimeout(ackTimerRef.current)
+    if (coachTimerRef.current) clearTimeout(coachTimerRef.current)
+  }, [])
+
+  // Cancel a pending coaching-fallback timer when the step changes, so it can't
+  // fire stale against a new step's reveal.
+  useEffect(() => () => {
+    if (coachTimerRef.current) { clearTimeout(coachTimerRef.current); coachTimerRef.current = null }
+  }, [currentStep])
 
   // GSAP: slide-up + green glow pulse when user picks an option; kill on submit/question change
   const prevSelectedOptionRef = useRef<string | null>(null)
@@ -1261,141 +1442,198 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionIdx])
 
-  const canSubmit = selectedOptionId !== null
+  const stepIdx = FLOW_STEPS.indexOf(currentStep)
+  const isLastStep = stepIdx === FLOW_STEPS.length - 1
 
-  const handleSubmit = useCallback(async () => {
-    if (!currentQuestion) return
-    if (!canSubmit) return
-    // Prevent double-submit: lock for the full duration including coaching fetch
+  // ── Draft helpers ─────────────────────────────────────────
+  // A question is "answered" when its draft has the right selection for its type.
+  const isQuestionAnswered = useCallback((q: { id: string; allow_multiple?: boolean } | null): boolean => {
+    if (!q) return false
+    const d = stepDrafts[q.id]
+    if (q.allow_multiple) return (d?.selectedOptionIds.length ?? 0) > 0
+    return !!d?.selectedOptionId
+  }, [stepDrafts])
+
+  const currentQuestionAnswered = isQuestionAnswered(currentQuestion)
+
+  const stepQuestions = useMemo(() => activeStepData?.questions ?? [], [activeStepData])
+  const isLastQuestionInStep = questionIdx === Math.max(0, stepQuestions.length - 1)
+  const allStepQuestionsAnswered = stepQuestions.length > 0 && stepQuestions.every((q) => isQuestionAnswered(q))
+
+  // Load a question's draft into the working state (used on navigation).
+  const loadDraftIntoWorkingState = useCallback((q: { id: string } | null) => {
+    const d = q ? stepDrafts[q.id] : undefined
+    setSelectedOptionId(d?.selectedOptionId ?? null)
+    setSelectedOptionIds(d?.selectedOptionIds ?? [])
+    setReasoning(d?.reasoning ?? '')
+    setElaboration(d?.reasoning ?? '')
+    setConfidence(d?.confidence ?? null)
+    setRevealedOptions([])
+  }, [stepDrafts])
+
+  // ── Navigation: forward within a step (no grading) ─────────
+  const handleNextQuestion = useCallback(() => {
+    if (!currentQuestionAnswered || ackVisible) return
+    const nextIdx = questionIdx + 1
+    const nextQ = stepQuestions[nextIdx] ?? null
+    setAckVisible(true)
+    setHatch('Answer recorded, keep going.', 'idle')
+    if (ackTimerRef.current) clearTimeout(ackTimerRef.current)
+    ackTimerRef.current = setTimeout(() => {
+      setQuestionIdx(nextIdx)
+      loadDraftIntoWorkingState(nextQ)
+      startTimeRef.current = Date.now()
+      setAckVisible(false)
+    }, 500)
+  }, [currentQuestionAnswered, ackVisible, questionIdx, stepQuestions, loadDraftIntoWorkingState, setHatch])
+
+  // ── Navigation: backward within a step (instant, editable) ──
+  const handlePreviousQuestion = useCallback(() => {
+    if (questionIdx === 0 || ackVisible) return
+    const prevIdx = questionIdx - 1
+    const prevQ = stepQuestions[prevIdx] ?? null
+    setQuestionIdx(prevIdx)
+    loadDraftIntoWorkingState(prevQ)
+    startTimeRef.current = Date.now()
+    setHatch('You can change this answer before submitting the step.', 'listening')
+  }, [questionIdx, ackVisible, stepQuestions, loadDraftIntoWorkingState, setHatch])
+
+  // ── Step submit: grade all questions in the step at once ───
+  const handleStepSubmit = useCallback(async () => {
+    if (!allStepQuestionsAnswered) return
     if (handlingSubmitRef.current) return
     handlingSubmitRef.current = true
-
-    setHatch('Reviewing your answer…', 'reviewing')
+    setHatch('Reviewing your step…', 'reviewing')
 
     try {
+      const orderedQuestions = [...stepQuestions].sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0))
+
       if (isApiMode) {
         if (!attemptId) return
         const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
-        const result = await submitAnswer({
-          attemptId,
-          questionId: currentQuestion.id,
-          selectedOptionId,
-          userText: reasoning || null,
-          responseType: currentQuestion.response_type,
-          timespentSeconds: elapsed,
-        })
-        if (!result) return
-        const thisRevealedOptions = result.revealed_options ?? []
-        const thisCompetencySignal = result.competency_signal ?? null
-        setRevealedOptions(thisRevealedOptions)
-        setStepScore(result.score)
-        setStepGrade(result.grade_label)
-        setCompetencySignal(thisCompetencySignal)
-        if (result.step_score !== undefined) setStepTotalScore(result.step_score)
-        // Accumulate per-question reveal record
-        setQuestionRevealHistory((prev) => [...prev, {
-          questionText: currentQuestion.question_text,
-          selectedOptionId,
-          userText: reasoning || null,
-          revealedOptions: thisRevealedOptions,
-          score: result.score,
-          gradeLabel: result.grade_label,
-          competencySignal: thisCompetencySignal,
-        }])
-
-        // Set Hatch message based on result
-        const hasReasoning = reasoning.trim().length > 10
-        const isCorrect = result.grade_label === 'best'
-        let hatchMsg = ''
-        if (isCorrect && hasReasoning) hatchMsg = 'Hatch saw your thinking. Sharp pick.'
-        else if (isCorrect) hatchMsg = 'Nice pick. Reasoning next time will get you tier 2.'
-        else if (confidence === 3) hatchMsg = 'Rock solid - but missed. High-value learning moment.'
-        else if (hasReasoning) hatchMsg = 'Worth looking at. Your reasoning shows the gap.'
-        else hatchMsg = 'One to revisit. Think about why the best option works.'
-        setHatch(hatchMsg, 'speaking')
-
-        // Fetch coaching in parallel - don't block step advancement on it
-        fetchCoaching({
-          attemptId,
-          questionId: currentQuestion.id,
-          optionId: selectedOptionId,
-          roleId: initialRoleId,
-          userText: reasoning || null,
-        }).then((coaching) => {
-          if (coaching) {
-            setRoleContext(coaching.role_context)
-            setCareerSignal(coaching.career_signal)
+        const answers = orderedQuestions.map((q) => {
+          const d = stepDrafts[q.id]
+          return {
+            question_id: q.id,
+            response_type: q.response_type,
+            selected_option_id: q.allow_multiple ? null : (d?.selectedOptionId ?? null),
+            selected_option_ids: q.allow_multiple ? (d?.selectedOptionIds ?? []) : undefined,
+            user_text: d?.reasoning || null,
+            time_spent_seconds: elapsed,
+            confidence: d?.confidence ?? null,
           }
         })
-        if (result.step_complete) {
-          setPhase('reveal')
+        const result = await submitStep({ attemptId, answers })
+        if (!result) return
+
+        // Build per-question reveal history in sequence order.
+        const history: QuestionRevealRecord[] = result.questions.map((qr) => {
+          const q = orderedQuestions.find((x) => x.id === qr.question_id)
+          const d = q ? stepDrafts[q.id] : undefined
+          return {
+            questionText: q?.question_text ?? '',
+            selectedOptionId: d?.selectedOptionId ?? (d?.selectedOptionIds?.[0] ?? null),
+            userText: d?.reasoning || null,
+            revealedOptions: qr.revealed_options,
+            score: qr.score,
+            gradeLabel: qr.grade_label,
+            competencySignal: qr.competency_signal
+              ? { primary: qr.competency_signal.competency, signal: qr.competency_signal.signal, framework_hint: qr.competency_signal.framework_hint ?? '' }
+              : null,
+            confidence: d?.confidence ?? null,
+          }
+        })
+        setQuestionRevealHistory(history)
+        setStepTotalScore(result.step_score)
+        setStepScore(result.step_score)
+        const last = result.questions[result.questions.length - 1]
+        setStepGrade(last?.grade_label ?? 'plausible_wrong')
+        setCompetencySignal(result.competency_signal
+          ? { primary: result.competency_signal.competency, signal: result.competency_signal.signal, framework_hint: result.competency_signal.framework_hint ?? '' }
+          : null)
+
+        // Coaching for the step (uses the first question's pick as anchor).
+        // The reveal shows a skeleton until roleContext lands. Guarantee it
+        // resolves: if the async coach is slow or fails, fall back to the
+        // synchronous competency signal so the reveal never strands on a
+        // perpetual shimmer.
+        const anchor = orderedQuestions[0]
+        const anchorDraft = anchor ? stepDrafts[anchor.id] : undefined
+        const fallbackCoach = result.competency_signal?.signal
+          ?? history.find((h) => h.competencySignal?.signal)?.competencySignal?.signal
+          ?? 'Step graded. Open each question below to see what the strongest answer does differently.'
+        // Timer is held in a ref so a step change / unmount can cancel it
+        // (cleanup effect below). setRoleContext(prev => prev || ...) makes the
+        // late path idempotent: whichever of timer/response wins, the other no-ops.
+        if (coachTimerRef.current) { clearTimeout(coachTimerRef.current); coachTimerRef.current = null }
+        if (anchor) {
+          coachTimerRef.current = setTimeout(() => {
+            coachTimerRef.current = null
+            setRoleContext((prev) => prev || fallbackCoach)
+          }, 6000)
+          fetchCoaching({
+            attemptId,
+            questionId: anchor.id,
+            optionId: anchorDraft?.selectedOptionId ?? (anchorDraft?.selectedOptionIds?.[0] ?? null),
+            roleId: initialRoleId,
+            userText: anchorDraft?.reasoning || null,
+          }).then((coaching) => {
+            if (coachTimerRef.current) { clearTimeout(coachTimerRef.current); coachTimerRef.current = null }
+            if (coaching) {
+              setRoleContext((prev) => prev || coaching.role_context || fallbackCoach)
+              if (coaching.career_signal) setCareerSignal(coaching.career_signal)
+            } else {
+              setRoleContext((prev) => prev || fallbackCoach)
+            }
+          }).catch(() => {
+            if (coachTimerRef.current) { clearTimeout(coachTimerRef.current); coachTimerRef.current = null }
+            setRoleContext((prev) => prev || fallbackCoach)
+          })
         } else {
-          setQuestionIdx((i) => i + 1)
-          setSelectedOptionId(null)
-          setReasoning('')
-          setConfidence(null)
-          setRevealedOptions([])
-          startTimeRef.current = Date.now()
+          setRoleContext(fallbackCoach)
         }
+        setPhase('reveal')
       } else {
+        // Adapter mode: one question per step, grade locally via submitAnswer.
         const adapter = (props as Extract<FlowWorkspaceProps, { mode: 'adapter' }>).adapter
         setAdapterSubmitting(true)
         try {
-          const result = await adapter.submitAnswer({
-            step: currentStep,
-            questionId: currentQuestion.id,
-            selectedOptionId,
-            userText: reasoning || null,
-          })
-          const adapterRevealedOptions = result.revealed_options ?? []
-          setRevealedOptions(adapterRevealedOptions)
-          setStepScore(result.score)
-          setStepGrade(result.grade_label)
-          // Accumulate per-question reveal record
-          if (adapterRevealedOptions.length > 0) {
-            setQuestionRevealHistory((prev) => [...prev, {
-              questionText: currentQuestion.question_text,
-              selectedOptionId,
-              userText: reasoning || null,
-              revealedOptions: adapterRevealedOptions,
+          const history: QuestionRevealRecord[] = []
+          let lastGrade = 'plausible_wrong'
+          let lastScore = 0
+          for (const q of orderedQuestions) {
+            const d = stepDrafts[q.id]
+            const result = await adapter.submitAnswer({
+              step: currentStep,
+              questionId: q.id,
+              selectedOptionId: d?.selectedOptionId ?? null,
+              userText: d?.reasoning || null,
+            })
+            lastGrade = result.grade_label
+            lastScore = result.score
+            history.push({
+              questionText: q.question_text,
+              selectedOptionId: d?.selectedOptionId ?? null,
+              userText: d?.reasoning || null,
+              revealedOptions: result.revealed_options ?? [],
               score: result.score,
               gradeLabel: result.grade_label,
               competencySignal: null,
-            }])
-          }
-
-          // Set Hatch message based on result
-          const hasReasoning = reasoning.trim().length > 10
-          const isCorrect = result.grade_label === 'best'
-          let hatchMsg = ''
-          if (isCorrect && hasReasoning) hatchMsg = 'Hatch saw your thinking. Sharp pick.'
-          else if (isCorrect) hatchMsg = 'Nice pick. Reasoning next time will get you tier 2.'
-          else if (confidence === 3) hatchMsg = 'Rock solid - but missed. High-value learning moment.'
-          else if (hasReasoning) hatchMsg = 'Worth looking at. Your reasoning shows the gap.'
-          else hatchMsg = 'One to revisit. Think about why the best option works.'
-          setHatch(hatchMsg, 'speaking')
-
-          // Fetch coaching without blocking step advancement
-          adapter.fetchCoaching({
-            step: currentStep,
-            optionId: selectedOptionId,
-            userText: reasoning || null,
-          }).then((coaching) => {
+              confidence: d?.confidence ?? null,
+            })
+            const coaching = await adapter.fetchCoaching({ step: currentStep, optionId: d?.selectedOptionId ?? null, userText: d?.reasoning || null }).catch(() => null)
             if (coaching) {
               setRoleContext(coaching.role_context)
               setCareerSignal(coaching.career_signal)
             }
-          })
-          if (result.step_complete) {
-            setPhase('reveal')
-          } else {
-            setQuestionIdx((i) => i + 1)
-            setSelectedOptionId(null)
-            setReasoning('')
-            setConfidence(null)
-            setRevealedOptions([])
-            startTimeRef.current = Date.now()
           }
+          setQuestionRevealHistory(history)
+          setStepScore(lastScore)
+          setStepTotalScore(lastScore)
+          setStepGrade(lastGrade)
+          // Never leave the reveal coaching card on a perpetual skeleton.
+          setRoleContext((prev) => prev || 'Step graded. Open each question below to see what the strongest answer does differently.')
+          setPhase('reveal')
         } finally {
           setAdapterSubmitting(false)
         }
@@ -1403,7 +1641,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       handlingSubmitRef.current = false
     }
-  }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props, setHatch])
+  }, [allStepQuestionsAnswered, stepQuestions, stepDrafts, isApiMode, attemptId, submitStep, fetchCoaching, initialRoleId, currentStep, props, setHatch])
+
+  const primaryButtonLabel = !isLastQuestionInStep
+    ? 'Next question'
+    : (isLastStep ? 'See results' : 'Submit step')
 
   const uploadCanvasPng = useCallback(async (attemptId: string): Promise<string | null> => {
     if (!canvasExportRef.current) return null
@@ -1448,6 +1690,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       playHatchSound('success')
       setInterviewGrade(data.grade)
       setPhase('complete')
+      // Surface this submission in the history tab immediately (canvas types:
+      // system_design / data_modeling). Optimistic; the refetch reconciles the
+      // authoritative grade_label/score from the server.
+      if (attemptId) {
+        const score = typeof data.grade?.overall_score === 'number' ? data.grade.overall_score : 0
+        recordSubmission({
+          attemptId,
+          challengeType: apiChallengeType ?? null,
+          completedAt: new Date(),
+          gradeLabel: scoreToGradeLabel(score),
+          totalScore: score,
+          maxScore: 5,
+          xpAwarded: 0,
+          stepResults: [],
+          competencyDeltas: [],
+          canvasPngUrl: canvasPngUrl ?? null,
+        })
+        void loadSubmissionHistory()
+      }
     } catch (err) {
       playHatchSound('error')
       console.error('Interview submit error:', err)
@@ -1520,7 +1781,27 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }
 
         const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback }
-        if (gradingPayload.grade) setCodingFeedback(gradingPayload.grade)
+        if (gradingPayload.grade) {
+          setCodingFeedback(gradingPayload.grade)
+          // Surface this submission in the history tab immediately (coding types:
+          // sql / algorithm). Optimistic; the refetch reconciles server truth.
+          if (attemptId) {
+            const score = gradingPayload.grade.overall_score ?? 0
+            recordSubmission({
+              attemptId,
+              challengeType: apiChallengeType ?? null,
+              completedAt: new Date(),
+              gradeLabel: scoreToGradeLabel(score),
+              totalScore: score,
+              maxScore: 5,
+              xpAwarded: 0,
+              stepResults: [],
+              competencyDeltas: [],
+              canvasPngUrl: null,
+            })
+            void loadSubmissionHistory()
+          }
+        }
         else setCodingGradingError('Hatch did not return feedback for this submission.')
       } catch (gradingErr) {
         console.error('Coding grading error:', gradingErr)
@@ -1586,19 +1867,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } catch { /* fire and forget */ }
   }, [attemptId, currentLanguage])
 
-  const handleStepClick = useCallback((step: FlowStep) => {
-    if (!completedSteps.includes(step)) return
-    setCurrentStep(step)
-    setPhase('question')
-    setSelectedOptionId(null)
-    setReasoning('')
-    setConfidence(null)
-    setRevealedOptions([])
-    setQuestionIdx(0)
-    setQuestionRevealHistory([])
-    setStepTotalScore(null)
-  }, [completedSteps])
-
   const handleNextStep = useCallback(async () => {
     if (handlingNextRef.current) return
     handlingNextRef.current = true
@@ -1618,10 +1886,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const stepRevealRecord = questionRevealHistory[questionRevealHistory.length - 1]
     const mirrorResult: MirrorStepResult | null = stepRevealRecord ? {
       step: currentStep as 'frame' | 'list' | 'optimize' | 'win',
-      score: stepRevealRecord.score ?? 0,
+      // Use the API-returned weighted step aggregate, not the last question's
+      // individual score (which misrepresents multi-question steps).
+      score: stepTotalScore ?? stepRevealRecord.score ?? 0,
       quality_label: stepRevealRecord.gradeLabel ?? 'plausible_wrong',
-      confidence: confidence,
-      reasoning: reasoning,
+      // Source from the step's reveal record, not transient working state, so
+      // multi-question steps report the representative answer's values.
+      confidence: stepRevealRecord.confidence ?? confidence,
+      reasoning: stepRevealRecord.userText ?? reasoning,
       competency_signal: stepRevealRecord.competencySignal ?? undefined,
       hatchSignal: stepRevealRecord.competencySignal?.signal ?? null,
       frameworkHint: stepRevealRecord.competencySignal?.framework_hint ?? null,
@@ -1755,18 +2027,44 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         completeSession(cd, finalStepResults)
       }
     } else {
-      setCompletedSteps((prev) => [...prev, currentStep])
+      setCompletedSteps((prev) => prev.includes(currentStep) ? prev : [...prev, currentStep])
       setCurrentStep(FLOW_STEPS[stepIdx + 1])
+      setStepDrafts({})       // fresh drafts for the next step
+      setQuestionIdx(0)
+      setSelectedOptionId(null)
+      setSelectedOptionIds([])
+      setReasoning('')
+      setElaboration('')
+      setConfidence(null)
       setPhase('question')
     }
     handlingNextRef.current = false
-  }, [isApiMode, challengeId, currentStep, attemptId, props, questionRevealHistory, confidence, mirrorStepResults])
+  }, [isApiMode, challengeId, currentStep, attemptId, props, questionRevealHistory, confidence, mirrorStepResults, stepTotalScore])
 
-  // Handle option select - update Hatch message
+  // Persist the current question's working values into the step draft map so
+  // they survive navigation between questions in the step.
+  const writeDraft = useCallback((patch: Partial<QuestionDraft>) => {
+    const qid = currentQuestion?.id
+    if (!qid) return
+    setStepDrafts((prev) => ({
+      ...prev,
+      [qid]: {
+        selectedOptionId: prev[qid]?.selectedOptionId ?? null,
+        selectedOptionIds: prev[qid]?.selectedOptionIds ?? [],
+        reasoning: prev[qid]?.reasoning ?? '',
+        confidence: prev[qid]?.confidence ?? null,
+        ...patch,
+      },
+    }))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion?.id])
+
+  // Handle option select - update Hatch message + persist draft
   const handleOptionSelect = useCallback((id: string) => {
     setSelectedOptionId(id)
-    setHatch('Good. Now rate your confidence.', 'listening')
-  }, [setHatch])
+    writeDraft({ selectedOptionId: id })
+    setHatch('Good. Add your reasoning, then keep going.', 'listening')
+  }, [setHatch, writeDraft])
 
   // ── Discussions fetch ──────────────────────────────────────────
 
@@ -1963,6 +2261,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     ])
     hasAnimated.current = false
     handlingNextRef.current = false
+    setStepDrafts({})
+    setQuestionIdx(0)
+    setSelectedOptionId(null)
+    setSelectedOptionIds([])
+    setReasoning('')
+    setElaboration('')
+    setConfidence(null)
+    setRevealedOptions([])
+    setAckVisible(false)
+    if (ackTimerRef.current) clearTimeout(ackTimerRef.current)
     if (isApiMode) {
       setPhase('loading')
       reload()
@@ -1972,9 +2280,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setPhase('question')
     }
   }
-
-  const stepIdx = FLOW_STEPS.indexOf(currentStep)
-  const isLastStep = stepIdx === FLOW_STEPS.length - 1
 
   const STAGE_COLOR: Record<FlowStep, string> = {
     frame:    '#4a7c59',
@@ -3067,7 +3372,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               <FlowStepper
                 currentStep={currentStep}
                 completedSteps={completedSteps}
-                onStepClick={handleStepClick}
+                /* Commit-forward: completed steps are locked. Retake the challenge to redo a step. */
+                onStepClick={undefined}
                 questionIdx={questionIdx}
                 questionCount={activeStepData?.questions.length}
               />
@@ -3171,22 +3477,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       </div>
       {/* Drag handle spacer - matches drag handle visibility */}
       <div style={{ width: leftCollapsed ? 0 : 6, flexShrink: 0 }} />
-      {/* Right side: prev + submit */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px' }}>
-        <button
-          className="btn btn--ghost"
-          style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-          disabled={questionIdx === 0}
-        >
-          <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
-        </button>
+      {/* Right side: prev + next/submit */}
+      <div style={{ flex: 1, display: 'flex', justifyContent: questionIdx > 0 ? 'space-between' : 'flex-end', alignItems: 'center', padding: '10px 16px' }}>
+        {questionIdx > 0 && (
+          <button
+            className="btn btn--ghost"
+            style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+            disabled={activeSubmitting || ackVisible}
+            onClick={handlePreviousQuestion}
+          >
+            <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
+          </button>
+        )}
         <button
           className="btn btn--primary"
           style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderRadius: 99, fontWeight: 600, border: 'none' }}
-          disabled={selectedOptionId === null || activeSubmitting}
-          onClick={handleSubmit}
+          disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
+          onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
         >
-          {activeSubmitting ? 'Grading…' : (isLastStep && questionIdx === (activeStepData?.questions.length ?? 1) - 1 ? 'Finish' : 'Submit')}
+          {activeSubmitting ? 'Grading…' : primaryButtonLabel}
           {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
           {activeSubmitting && <HatchGlyph size={16} state="reviewing" className="text-on-primary" />}
         </button>
@@ -3778,11 +4087,45 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           <div
             ref={workspaceRef}
             key={`${currentStep}-question`}
-            className={`flex-1 overflow-y-auto min-h-0 min-w-0${isInterviewChallenge ? ' hidden' : ''}`}
+            className={`relative flex-1 overflow-y-auto min-h-0 min-w-0${isInterviewChallenge ? ' hidden' : ''}`}
             style={isInterviewChallenge
               ? { display: 'none' }
               : { padding: '20px 24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
+            {/* Neutral between-questions acknowledgment - no grading, just a beat */}
+            {ackVisible && (
+              <div
+                aria-live="polite"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'color-mix(in srgb, var(--color-surface) 72%, transparent)',
+                  backdropFilter: 'blur(2px)',
+                }}
+              >
+                <div
+                  className="animate-step-enter"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    background: 'var(--color-surface-container)',
+                    border: '1px solid var(--color-outline-variant)',
+                    borderRadius: 16,
+                    padding: '16px 22px',
+                    boxShadow: '0 4px 18px -8px rgba(30,27,20,0.25)',
+                  }}
+                >
+                  <HatchGlyph size={34} state="idle" className="text-primary" />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-on-surface)' }}>
+                    Answer recorded, keep going.
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Hint card */}
             {hintOpen && activeStepData?.nudge && (
               <div style={{
@@ -3833,16 +4176,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   revealedOptions={revealedOptions}
                   onOptionSelect={(id) => {
                     if (currentQuestion.allow_multiple) {
-                      setSelectedOptionIds((prev) =>
-                        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-                      )
+                      setSelectedOptionIds((prev) => {
+                        const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                        writeDraft({ selectedOptionIds: next })
+                        return next
+                      })
                     } else {
-                      setSelectedOptionId(id)
-                      setHatch('Good. Now rate your confidence.', 'listening')
+                      handleOptionSelect(id)
                     }
                   }}
-                  onElaborationChange={(text) => { setReasoning(text); setElaboration(text) }}
-                  disabled={activeSubmitting || (revealedOptions.length > 0 && !currentQuestion.allow_multiple)}
+                  onElaborationChange={(text) => { setReasoning(text); setElaboration(text); writeDraft({ reasoning: text }) }}
+                  disabled={activeSubmitting || ackVisible}
                   elaborationRef={reasoningCardRef}
                 />
               </div>
@@ -3865,8 +4209,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     return (
                       <button
                         key={c}
-                        onClick={() => setConfidence(i)}
-                        disabled={selectedOptionId === null}
+                        onClick={() => { setConfidence(i); writeDraft({ confidence: i }) }}
+                        disabled={!currentQuestionAnswered}
                         style={{
                           padding: '9px 8px',
                           borderRadius: 999,
@@ -3875,8 +4219,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                           background: active ? 'var(--color-on-surface)' : 'var(--color-surface-container-low)',
                           color: active ? 'var(--color-inverse-on-surface, #f5f0e8)' : 'var(--color-on-surface-variant)',
                           border: '1px solid ' + (active ? 'transparent' : 'var(--color-outline-faint)'),
-                          opacity: selectedOptionId !== null ? 1 : 0.5,
-                          cursor: selectedOptionId !== null ? 'pointer' : 'not-allowed',
+                          opacity: currentQuestionAnswered ? 1 : 0.5,
+                          cursor: currentQuestionAnswered ? 'pointer' : 'not-allowed',
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',

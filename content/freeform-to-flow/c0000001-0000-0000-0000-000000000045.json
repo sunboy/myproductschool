@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000045",
+  "title": "When to Trust the AI's Answer (and When to Double-Check)",
+  "scenario_role": null,
+  "scenario_context": "An AI-native research tool for management consultants synthesizes answers from uploaded client documents and live web search. The tool is fast and fluent, and consultants have adopted it quickly. User research reveals a pattern that the team did not anticipate: consultants are copying AI-generated statistics, attribution quotes, and market-size figures directly into client deliverables without verifying them against the original sources.",
+  "scenario_trigger": "Two clients have now flagged incorrect statistics in deliverables. In one case, a market-size figure was off by an order of magnitude; in another, a quoted regulatory threshold had been superseded by a more recent ruling the model had not seen. The product team's first instinct is to add a visible 'Warning: verify this information before use' label to every AI-generated output. Early feedback from the sales team is that this blanket warning is already making prospects nervous, and three beta consultants say it 'makes the tool feel unreliable.' The warning is accurate but it may be destroying the core value proposition of a tool consultants trust to do fast synthesis.",
+  "scenario_question": "Identify what the blanket warning gets wrong, enumerate what a calibrated trust signal would need to distinguish, name the tradeoff the product must accept, and define a falsifiable bar for whether a selective flagging approach is working.",
+  "engineer_standout": "A strong answer recognizes that the blanket warning is not wrong in principle but wrong in application: it converts a signal into noise by attaching equal weight to every output regardless of how verifiable it is. The reasoning move is to distinguish what to flag from what not to, so the warning carries information instead of becoming wallpaper. Calibrated trust means flagging specific claims where the model cannot cite a retrievable source, where the figure is a hard number with a known error rate, or where the sourcing confidence is low, and staying quiet where the answer is well-grounded in documents the consultant uploaded. That distinction is what makes the warning legible.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["taste", "cognitive_empathy"],
+  "secondary_competencies": ["motivation_theory", "strategic_thinking"],
+  "topic_tags": ["ai-trust", "product-ethics", "information-quality", "enterprise-saas", "consulting-tools"],
+  "technique_tags": ["calibration", "signal-vs-noise", "selective-flagging"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The blanket warning is not wrong. It is the wrong instrument applied uniformly. What is the actual problem when a signal attaches identical weight to every output?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the problem that the blanket 'verify this' warning reveals?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The blanket warning treats all AI output as equally uncertain, which converts a meaningful signal into noise. Consultants who see the same warning on a well-grounded synthesis of ten uploaded documents and on a hard statistic the model retrieved from an uncited web source learn quickly that the warning predicts nothing. Once the warning predicts nothing, they stop reading it, and the two clients who flagged incorrect statistics are exactly the consultants who already stopped reading it. The real problem is not that the tool lacks a warning; it is that the tool cannot yet communicate when its output is genuinely unverifiable versus when it is drawing on retrievable, checkable sources. Fixing that is a precision problem, not a volume problem.",
+              "quality": "best",
+              "competencies": ["taste", "cognitive_empathy"],
+              "explanation": "This framing correctly names the mechanism: a uniform signal has no information value because it does not distinguish between outputs with different verifiability profiles. Consultants are not ignoring the warning because they are careless; they are ignoring it because it has been conditioned to mean nothing by appearing on every output equally. The two client incidents are the downstream effect of that conditioning, not the root cause. Framing the problem as a precision problem rather than a volume problem opens the right solution space: the product needs to know when to flag, not just that it should flag.",
+              "framework_hint": "Taste: recognizing that a warning applied uniformly fails the taste test because it cannot distinguish between a quality tradeoff (this output is uncertain) and a preference (we are cautious about everything). Cognitive Empathy: simulating the consultant who processes fifty AI outputs a day and learns through repetition that the warning is constant, not diagnostic."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The problem is that consultants are using a research tool as a final-output generator rather than as a starting point for their own verification. The product team should add onboarding that sets better expectations about the tool's role in the workflow. Users who understand that AI synthesis is a first draft, not a finished deliverable, will verify naturally.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Setting accurate expectations is a real product responsibility, and the framing is not wrong about consultant behavior. The gap is that it locates the problem entirely in the user rather than in the product. Consultants are under deadline pressure and use the tool because it is fast. Onboarding that asks them to verify everything is asking them to do the work the tool was supposed to reduce, and that friction is precisely what the sales team is already seeing in beta. A frame that blames user behavior without examining what the product is communicating closes off the solution space prematurely.",
+              "framework_hint": "Cognitive Empathy partial credit: identifies the consultant's workflow correctly. Taste gap: does not examine whether the tool's own output signals are contributing to the behavior. The strongest frame puts the onus on the product to distinguish verifiable from unverifiable output, not on the consultant to assume everything is unverifiable."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is reputational. Two client escalations mean the company is at risk of losing accounts. The immediate priority is a tighter SLA for accuracy, an internal review process before synthesis is returned, and a public commitment to correctness that restores client confidence. The warning is a symptom; the root cause is that the model is producing incorrect information.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Client escalations are a real urgency signal, but framing the problem as a reputational or accuracy issue does not diagnose what needs to change in the product. AI models that synthesize from web search will produce incorrect information on hard numbers and recently changed facts as a structural property, not as a defect that internal review can eliminate at scale. An internal review process for every output defeats the purpose of an AI research tool. The frame needs to distinguish between the class of output the tool can vouch for and the class it cannot, which is the precision problem the best answer names.",
+              "framework_hint": "Motivation Theory failure: treating two client complaints as the primary signal rather than examining the underlying product behavior that made the incidents possible. Framing accuracy as a process problem locates the fix in operations rather than in the product's ability to communicate its own uncertainty."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The real problem is that the AI tool was positioned as a research assistant but is being used as a fact database. The product should be repositioned in marketing as a drafting aid, with explicit language that all figures require verification. This is a go-to-market misalignment, not a product defect.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Go-to-market framing does shape usage expectations, and positioning matters. But repositioning the tool as a drafting aid does not explain why the blanket warning is failing. Consultants who are told the tool is a drafting aid will still encounter the warning on every output and still condition themselves to ignore it if it provides no new information. The frame locates the fix in messaging rather than in the product's ability to communicate uncertainty selectively, which is what would actually change consultant behavior at the moment of reading an output.",
+              "framework_hint": "Strategic Thinking failure: repositioning addresses the expectation gap in sales conversations but does not fix the in-product signal failure. A consultant using the tool under a deadline does not pause to recall the positioning slide; they read the output and the warning. If the warning is uniformly present, it carries no information regardless of how the tool was sold."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "If the warning should be selective, the product needs to know which signals to flag. List what a calibrated trust system would need to distinguish, and what the alternatives to the blanket warning look like.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of output properties most completely defines when a trust flag should fire in an AI research tool used for client deliverables?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three structurally distinct properties determine whether a specific claim needs a flag. First, source retrievability: whether the model can link the claim to a document the consultant uploaded or to a citable, checkable source, because a claim with a linked source is verifiable by the consultant in under a minute while a claim from the model's parametric memory is not. Second, claim type: hard numbers, statistics, percentages, and regulatory thresholds fail in ways that narrative synthesis does not, because a model can produce fluent synthesis of a document's argument without hallucinating, but a market-size figure stated as a specific dollar amount creates a specific, checkable commitment. Third, source recency: for regulatory thresholds and market data in fast-moving sectors, even a retrievable source may be superseded, so recency flags are distinct from retrievability flags. These three properties generate a decision rule: flag claims where the source is not retrievable, where the claim is a hard number, or where the domain changes faster than the model's training horizon.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "creative_execution"],
+              "explanation": "These three properties are structurally distinct because they identify three different failure modes: claims that cannot be traced (retrievability), claims that are precise enough to be precisely wrong (claim type), and claims that may have been accurate at training time but have since changed (recency). The two actual client incidents map directly to the last two: the market-size figure was a hard number, and the regulatory threshold was a recency failure. A decision rule built from these three properties would have flagged both incidents while leaving well-grounded document synthesis unflagged.",
+              "framework_hint": "Cognitive Empathy: thinking through what a consultant needs to verify a claim quickly, which reveals that retrievability is the practical threshold. Creative Execution: generating three structurally distinct categories rather than variations on 'uncertain output', which is what the blanket warning already is."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The flag should fire when the model's confidence score is below a threshold. Most AI systems produce internal confidence metrics; surfacing those to users is the most direct way to communicate uncertainty. Set a threshold at, say, 80% confidence and flag anything below it.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Internal confidence scores are a real signal and some models do produce calibrated probabilities. The gap is that confidence scores on language model outputs do not reliably track the specific failure modes that produced the two client incidents. A model can produce a fluent, high-confidence market-size figure that is nonetheless wrong because it was trained on outdated data, and confidence scores do not distinguish source retrievability from fluency. The list step needs to identify the failure-mode-specific properties, not a proxy metric that may not track the actual risk.",
+              "framework_hint": "Creative Execution partial credit: recognizes that not all output is equally uncertain. Taste gap: confidence scores measure fluency more reliably than factual accuracy, particularly for hard numbers from training data. The failure mode in client deliverables is not low-confidence output; it is high-confidence output that is unverifiable or outdated."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The flag should appear on any output that was generated using web search rather than the consultant's uploaded documents, since web search introduces uncertainty that uploaded documents do not. Mark web-sourced content clearly and leave document-sourced content unflagged.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Source type is a real differentiator and web-versus-document is a useful first-order distinction. But it is incomplete because hard numbers drawn from uploaded documents can still be wrong if the document itself contains an error, and the model can hallucinate statistics in a document-only answer without accessing the web at all. More practically, consultants upload documents partly because they want the model to synthesize across them and web sources simultaneously. A flag rule based only on source type does not address the claim-type failure mode (hard numbers) or the recency failure mode (regulatory thresholds changing after document upload).",
+              "framework_hint": "Cognitive Empathy failure: assumes that consultants treat uploaded documents as ground truth. In practice, documents themselves may contain errors, and the model synthesizing across multiple documents can introduce inconsistencies. Source type alone is not a sufficient decision rule."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The flag should fire on any output that references a specific company, person, or publication by name, since named entities create legal exposure if the AI is wrong about them. Everything else can be treated as general synthesis and left unflagged.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Named entity risk is a real legal concern in some contexts, but it does not describe the failure modes that caused the two client incidents. Neither incident involved a named entity; one was a market-size figure and one was a regulatory threshold. A flag rule built around named entities would have missed both incidents while flagging a large volume of correctly attributed synthesis. The list step needs to identify the properties that track actual claim risk for the consultant use case, and legal exposure from named entities is a different risk category than factual incorrectness of statistics and regulatory data.",
+              "framework_hint": "Domain Expertise failure: legal exposure from named entities is a real risk in media and publishing contexts but is not the primary failure mode in management consulting deliverables. The two flagged incidents were about numerical accuracy and regulatory currency, not attribution to named companies or people."
+            }
+          ]
+        },
+        {
+          "question_text": "Which alternative to the blanket warning best preserves the tool's value proposition while addressing the verification failure that caused the two client incidents?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["creative_execution", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Inline claim-level flagging: specific claims in the synthesis output are marked with a small indicator (a distinct color, underline, or icon) when they meet the flag criteria: no retrievable source, hard number, or domain with known recency risk. The indicator links to a short explanation of why that specific claim was flagged. Claims that are well-grounded in the consultant's uploaded documents and cited to a retrievable source carry no indicator. The consultant who reads a synthesis with three clean paragraphs and one flagged statistic knows exactly where to spend verification effort. The blanket warning is retired; the tool's default posture is trust, with precision signals where trust should pause.",
+              "quality": "best",
+              "competencies": ["creative_execution", "taste"],
+              "explanation": "Inline claim-level flagging solves the signal-to-noise problem directly: by attaching the flag to the specific claim rather than to the full output, the indicator carries information the consultant can act on. A consultant who sees a flag on a market-size figure in an otherwise clean synthesis paragraph knows what to verify and what to skip. The blanket warning carried the same information regardless of what it was attached to; the inline flag carries different information in each context where it appears. The 'default posture is trust' framing is also critical: it restores the tool's value proposition while introducing the verification signal exactly where the value is at risk.",
+              "framework_hint": "Taste: the distinction between a blanket warning (a preference for caution) and an inline flag (a specific tradeoff signal that tells the consultant exactly what to verify) is a taste judgment about what makes a signal legible. Creative Execution: inline claim-level flagging is structurally distinct from the blanket warning rather than a variant of it."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Add a summary confidence panel at the end of each synthesis response, showing the proportion of claims that were sourced from uploaded documents versus web search versus model knowledge. Consultants can see at a glance how much of the output came from each source type and calibrate their verification effort accordingly.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A source-breakdown panel is a real improvement over the blanket warning because it gives the consultant aggregate provenance information. The gap is that it still does not tell the consultant which specific claims to verify. A synthesis with 80% document-sourced content and 20% web-sourced content might have all the risk concentrated in the 20%, or it might have a single hallucinated number buried in the 80%. The consultant needs to know where the risk is, not how big it is in aggregate.",
+              "framework_hint": "Cognitive Empathy partial credit: gives the consultant more information than the blanket warning. Taste gap: aggregate provenance information does not reduce verification effort; it shifts effort from 'verify everything' to 'verify everything in the web-sourced 20%.' The consultant still needs to read the full output to find the web-sourced claims, which is the same amount of work as verifying everything."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Replace the warning with a required verification step: before the consultant can copy a synthesis output, they must check a box confirming they have reviewed it for accuracy. The friction of the checkbox creates a moment of reflection before information enters a client deliverable.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Forced acknowledgment mechanisms are well-documented to produce the behavior they are designed to prevent: users click through without reading. A checkbox that blocks copy-paste will be experienced as friction, not as a verification prompt, and consultants under deadline pressure will check it without pausing. More fundamentally, the checkbox does not help the consultant know what to verify. The underlying problem is that the tool does not communicate where its output is uncertain; adding a gate before copy-paste does not change what the consultant knows about the output's verifiability.",
+              "framework_hint": "Motivation Theory failure: forced acknowledgment changes the interaction pattern without changing the information the consultant has. The verification behavior the product needs to produce (checking specific claims) is not produced by a generic confirmation gate. Motivation Theory applied correctly here would ask what information or friction, precisely placed, would cause the right behavior at the right moment."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Remove the warning entirely and invest in model accuracy instead. If the tool produces fewer incorrect statistics, the verification problem goes away. Allocate engineering resources to retrieval-augmented generation that grounds every claim in a retrievable source.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Improving retrieval grounding is a real engineering investment with real value, and RAG architectures do reduce hallucination on hard numbers when implemented well. The problem is that 'remove the warning and improve accuracy' treats accuracy as a binary property the model either has or does not have. RAG reduces the frequency of ungrounded claims but does not eliminate them, particularly for market data in fast-moving sectors and for regulatory thresholds that change after the training cutoff. A tool that silently produces fewer errors but still produces some, with no signal to the consultant about which outputs to trust, will eventually produce another client incident.",
+              "framework_hint": "Strategic Thinking failure: improved accuracy and a calibrated trust signal are complements, not substitutes. Removing the warning while improving the model assumes the model will eventually be accurate enough to need no verification signal, which is not a realistic property of any synthesis tool operating on live consulting domains. The product needs both."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Inline claim-level flagging requires the product to decide exactly which claims get a flag. Name the criterion that tells you whether the flagging threshold is calibrated correctly, and name what the tool gives up when it flags selectively.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for setting the threshold at which the inline flag fires, and what is the real tradeoff the product must accept by flagging selectively rather than universally?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is flag precision on the claim types that caused the two client incidents: hard statistics, market-size figures, and regulatory thresholds. The flag should fire on those claim types when the model cannot produce a retrievable citation, and it should not fire on narrative synthesis drawn from uploaded documents where the consultant can see the sourcing. The sacrifice this criterion demands is explicit: a selective flagging system will miss some incorrect claims that do not fit the flag criteria, which means the tool is not a guarantee of accuracy on unflagged output. The tool is not promising that unflagged claims are correct; it is promising that flagged claims are the ones where verification effort is highest-value. Consultants who understand this distinction will use the flag as a triage tool, not as an accuracy certificate. The product must communicate this distinction clearly in onboarding, because a consultant who mistakes 'unflagged' for 'verified' is in a worse position than a consultant who sees the blanket warning and knows they should check everything.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion is grounded in the actual failure modes that caused the two client incidents, which makes it specific to this scenario rather than a general observation about calibration. The sacrifice is named precisely: selective flagging creates a new failure mode (trusting unflagged claims without verification) that the blanket warning does not create. Naming that sacrifice does not mean the selective approach is wrong; it means the product must manage the new failure mode through communication rather than through the flag itself. That is a real tradeoff the optimize step is designed to force the team to see.",
+              "framework_hint": "Taste: the distinction between 'unflagged means verified' and 'unflagged means lower verification priority' is a taste judgment about what the flag is communicating. Getting this wrong produces a more dangerous tool than the blanket warning, because the blanket warning at least signals that everything needs checking. Strategic Thinking: naming the sacrifice reveals that the calibration decision has downstream consequences for how the tool is positioned and onboarded."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be user-reported error rate: track which outputs consultants flag as incorrect after the fact and calibrate the inline flag to fire more often in domains where reported errors are highest. The flag threshold adjusts dynamically based on real-world consultant feedback.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "Feedback-driven calibration is a real product mechanism and error-rate tracking is a legitimate signal for where the model's failure rate is highest. The gap is that consultant-reported errors are a lagging indicator: consultants report errors after they appear in deliverables, often after the client has already seen them. The two client incidents are themselves reported errors; the flag calibration system described here would not have prevented either of them, because it requires error data to exist before it can adjust the threshold. The criterion needs to be prospective, not retrospective.",
+              "framework_hint": "Motivation Theory partial credit: correctly identifies that user feedback is a signal about where the tool is failing. Taste gap: a feedback-driven threshold is a preference for data-driven calibration rather than a tradeoff that names what the tool gives up by waiting for error reports to accumulate before flagging the relevant claim types."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be legal defensibility: the flag threshold should be set wherever the company's legal team determines that an incorrect claim creates actionable liability. Flag what legal says to flag, and leave the rest unflagged.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Legal defensibility is a constraint on the flagging system, not a criterion for calibrating it. Legal can define the minimum bar for what must be flagged to reduce liability, but that bar is not necessarily the same as the bar that produces the most useful verification signal for consultants. A flagging system calibrated only to legal's minimum will under-flag claims that are genuinely uncertain but do not create legal exposure, which was the case with the market-size figure in the first client incident. The criterion needs to serve consultant verification behavior, not just legal defensibility.",
+              "framework_hint": "Strategic Thinking failure: conflating the legal constraint with the optimization criterion. The optimize step requires naming a criterion that the product team controls and that maps to the user behavior the product is trying to change, which is consultant verification of specific claims, not the company's legal exposure."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion should be consultant satisfaction with the flagging experience: run a survey asking consultants whether the flags are appearing on the right claims. If consultants say the flags are well-calibrated, the threshold is right. If they say the flags are too frequent or too sparse, adjust the threshold accordingly.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Consultant satisfaction with the flag is a useful secondary signal but cannot be the primary criterion because consultants cannot reliably assess whether a flag should have fired on a claim they did not verify. A consultant who read an unflagged claim and included it in a deliverable without checking cannot know after the fact whether the unflagged claim was actually well-grounded. Satisfaction surveys on a feature designed to surface uncertainty are subject to the same problem as satisfaction surveys on any guardrail: users who are not catching errors will report high satisfaction, which tells the product team nothing about calibration quality.",
+              "framework_hint": "Cognitive Empathy failure: consultants cannot assess the flag's recall (how many risky claims were flagged) from their subjective experience of using the tool. They can assess precision (how often the flag appears on claims that turn out to be wrong) only retrospectively, and only if they verify the flagged claims. A criterion that depends on consultant self-assessment of flag calibration cannot detect the false-negative failure mode that produced the client incidents."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A falsifiable win condition names a metric, a threshold, and a timeline. It also names the counter-signal that tells you the selective flagging approach is making things worse rather than better.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for a selective claim-level flagging system in an AI research tool used by management consultants for client deliverables?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: flagged-claim verification rate among active consultants reaches at least 70% within 60 days of launch, measured by tracking whether consultants click through to the source citation or edit the flagged claim before it appears in a deliverable export. A 70% verification rate on flagged claims means the flag is functioning as a triage signal rather than noise. The second threshold: client-reported delivery errors in the 90 days after launch are no higher than one per 25 active consultants, compared to the two incidents in the prior 90-day period with roughly the same user base. The counter-signal is: unflagged claims appear in client error reports, which would mean the selective threshold is miscalibrated and missing the claim types that actually fail. Both metrics can be measured from the tool's existing event log and the client escalation tracker without new instrumentation.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names two metrics with specific thresholds and the data sources for each, and connects each threshold to a distinct element of the hypothesis. The 70% flagged-claim verification rate tests whether the flag is legible and actionable, not whether consultants feel better about the tool. The client error rate threshold tests whether the selective approach is actually reducing incidents, using the two-incidents-in-90-days baseline from the scenario as the reference point. The counter-signal is non-obvious and critical: if unflagged claims start appearing in error reports, the precision of the flagging threshold is the problem, not the volume.",
+              "framework_hint": "Domain Expertise: a 70% verification rate on flagged claims is a meaningful threshold in a consulting context where deliverable accuracy is a core professional obligation; below that level the flag is not changing consultant behavior. Strategic Thinking: the counter-signal (unflagged claims in error reports) forces the team to distinguish between 'the flag is reducing overall errors' and 'the flag is correctly identifying the claims that need verification,' which are different success conditions."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Win means the tool's NPS among beta consultants improves by 15 points within 90 days of removing the blanket warning and replacing it with selective flags. If consultants rate the tool more favorably, the flagging change is working. Monitor NPS monthly and look for a sustained upward trend.",
+              "quality": "good_but_incomplete",
+              "competencies": ["motivation_theory"],
+              "explanation": "An NPS improvement is a real signal that the change is not making the tool feel less trustworthy, and the beta consultants' complaint that the blanket warning 'makes the tool feel unreliable' gives this metric some face validity. The gap is that an NPS improvement does not distinguish between 'consultants are more satisfied because the flag is legible' and 'consultants are more satisfied because there are fewer warnings and they feel less anxious.' The second scenario is a false positive: consultants who are happier because they see fewer warnings are not necessarily verifying more carefully. The win condition needs to test verification behavior, not satisfaction.",
+              "framework_hint": "Motivation Theory partial credit: NPS tracks how consultants feel about the tool, which is a real product goal. Domain Expertise gap: in a context where incorrect client deliverables are the failure mode, satisfaction without a behavioral verification metric cannot confirm that the product is safer. A consultant who enjoys a warning-reduced experience and ships an incorrect statistic is a failure the NPS metric will not detect."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means zero client escalations about AI-generated statistics in the 6 months after the selective flagging system launches. If no client reports an incorrect statistic, the flagging threshold is correctly calibrated. Track escalations monthly.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Zero escalations in six months is a tempting win condition because it maps directly to the incidents that triggered this work. The problem is that it is a lagging indicator with a high detection threshold: a client escalation requires a client to identify an error, trace it to the AI tool, and surface it to the consulting firm. Many incorrect statistics in deliverables will never produce a client escalation because clients do not fact-check everything. Absence of escalations tells the product team that no error was large or visible enough to trigger a complaint, not that the flagging system is preventing errors.",
+              "framework_hint": "Strategic Thinking failure: zero escalations is an outcome metric that depends on the client's behavior (whether they notice and report), not on the consultant's verification behavior. The win condition must test the product's causal lever, which is whether consultants are verifying flagged claims, not whether clients are catching errors that slip through."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means the sales team closes three new enterprise accounts within 90 days of removing the blanket warning, attributing at least one objection overcome in each deal to the new flagging design. If enterprise sales velocity improves, the product change is validated.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Sales velocity is a real business metric and the blanket warning's effect on prospects is a legitimate concern the scenario names. But attributing a sales close to a single product feature in a multi-stakeholder enterprise deal is not a reliable measurement. More critically, a win condition based on sales outcomes cannot confirm that the selective flagging system is reducing delivery errors for consultants who are already using the tool. The two client incidents are a current-user problem, not a prospect problem. A win condition that looks at new sales is measuring the wrong population.",
+              "framework_hint": "Cognitive Empathy failure: the win condition is designed for the sales team's success metric rather than for the consultant's verification behavior. The stakeholder whose behavior needs to change is the consultant processing fifty AI outputs a day; a sales-based win condition does not test whether their behavior has changed."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

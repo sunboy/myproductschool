@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000030",
+  "title": "Competitor Announces GPT-5 Integration; You're on Claude",
+  "scenario_role": null,
+  "scenario_context": "It is 2025. An AI writing startup has spent the past 18 months building its core product on Claude 3.5. The investment is not superficial: the team has written and iterated layered system prompts tuned to its users' workflows, built a proprietary eval harness that scores outputs across tone consistency, factual grounding, and edit distance from accepted drafts, and completed a fine-tuning run on 40,000 user-accepted completions. The eval harness now runs on every release and is the primary signal used to gate new Claude versions before they go to production. The product has quietly built a quality floor its users trust.",
+  "scenario_trigger": "A competitor announces a GPT-5-powered version of their AI writing product, citing a 12-point improvement on the HELM reasoning benchmark and several public head-to-head comparisons on summarization and instruction-following tasks. The announcement generates significant social media attention. Within 48 hours the board sends a message: 'Should we switch to GPT-5? We can't afford to be the product running the worse model.'",
+  "scenario_question": "Build a decision framework for the board. What is the right question to ask, what do you evaluate before deciding, what is the explicit tradeoff, and what is the falsifiable gate that determines whether to switch?",
+  "engineer_standout": "The non-obvious move is recognizing that the benchmark result and the competitor's announcement are not the inputs to this decision. The inputs are the startup's own eval results on its own users' real tasks. The HELM reasoning benchmark measures GPT-5 against Claude 3.5 on tasks designed by benchmark authors, not on the specific combination of tone consistency, factual grounding, and edit distance that this product's users actually care about. The 18 months of prompt engineering and the fine-tuned completions are not sunk costs to write off; they are a moat the benchmark cannot see. The correct frame is: run GPT-5 through the existing eval harness on a production-representative sample and measure whether it beats Claude 3.5 on those metrics, net of the re-tuning and migration cost. If it does not beat Claude by a meaningful margin on the startup's own evals, the board's question is being answered by the wrong data.",
+  "paradigm": "ai_assisted",
+  "difficulty": "hard",
+  "estimated_minutes": 40,
+  "primary_competencies": ["strategic_thinking", "domain_expertise"],
+  "secondary_competencies": ["taste", "cognitive_empathy"],
+  "topic_tags": ["model-selection", "evals", "ai-strategy", "moat"],
+  "technique_tags": ["eval-harness", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The board is asking 'is GPT-5 better?' That is not the decision-relevant question. What is the question that actually determines whether switching is the right move?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the decision the board is actually facing?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The board is not facing a model quality question. It is facing a product quality question with a model-switching cost inside it. The HELM benchmark measures GPT-5 against Claude 3.5 on tasks benchmark authors chose. It says nothing about whether GPT-5 produces better outputs on tone-consistent, factually grounded completions for this startup's specific user workflows. Eighteen months of prompt tuning and 40,000 fine-tuned completions have built a quality floor that is invisible to any public benchmark. The correct framing is: does GPT-5, run through the existing eval harness on a production-representative sample, beat Claude 3.5 on the metrics that predict user acceptance, net of the migration and re-tuning cost required to replicate the current prompt layer? If not, the board's urgency is responding to a competitor's marketing announcement, not to evidence that the product's quality is at risk.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing does the upstream move correctly. It does not accept the benchmark score as the relevant evidence. It identifies that the startup's own eval harness, built on real user acceptance signals, is the only instrument capable of answering the board's actual question. It also names the switching cost explicitly: the prompt engineering and fine-tuning investment is not sunk cost that makes switching harder to justify emotionally; it is a performance asset that any replacement model would need to match or exceed after re-investment, not before. Reframing the decision this way changes what counts as evidence.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Frame is identifying the friction before designing the fix. The surface friction is 'competitor has GPT-5 and a benchmark edge.' The upstream friction is that the decision is being driven by the wrong data source, and the eval harness the team already built is the correct instrument. Domain Expertise: naming the eval harness as the decision gate, not the HELM benchmark, requires understanding how AI product quality is actually measured at the layer users experience."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The real problem is competitive positioning. If users perceive the competitor's product as higher quality because it runs GPT-5, the startup risks losing customers regardless of whether GPT-5 actually produces better outputs on the startup's specific tasks. The frame should be: how does the startup maintain its quality perception in a market where model announcements are becoming marketing events?",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking", "cognitive_empathy"],
+              "explanation": "Perception risk is a real concern and this framing identifies something the purely technical answer misses: users who read the competitor's announcement may update their quality expectations before running a single comparison. But framing the decision as a perception problem leads to solutions that treat model selection as a branding move rather than an engineering one. The more important question is whether the startup's product actually produces better outputs for its users, because if it does, the correct response is communication and differentiation, not reactive switching. Framing as perception only gets to the right answer if perception and reality happen to align.",
+              "framework_hint": "Cognitive Empathy: this framing correctly simulates what users might feel after seeing the competitor's announcement. It misses the next move: whether that perception is grounded in a real quality gap the eval harness would surface. A problem framed as perception management leads to different solutions than a problem framed as quality validation, and only one of those framings can be answered with evidence."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is that the startup is technically dependent on a single model provider. The right frame is: how does the startup build model-agnostic infrastructure so that it can switch models quickly whenever a better option emerges, rather than being locked into Claude 3.5?",
+              "quality": "surface",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Multi-model infrastructure is a reasonable long-term architectural goal but it is not the framing that makes sense of the immediate decision. The board's question is about whether to switch now, not about how to build switching flexibility for the future. Reframing toward infrastructure investment defers the reasoning move the question asks for: what is the right question to answer before deciding whether GPT-5 should replace Claude 3.5 in production. This frame changes the subject rather than finding the problem behind the problem.",
+              "framework_hint": "Strategic Thinking failure: a framing that converts an immediate quality decision into an infrastructure roadmap question does not help the board evaluate the switching decision. The Frame step requires identifying what is actually at stake in the specific decision on the table, not a different decision that would be easier to make in the future."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The board is right to treat this as urgent. If GPT-5 demonstrably outperforms Claude 3.5 on reasoning tasks, and the startup's product is an AI writing tool that depends on reasoning quality, the frame is straightforward: the startup is running an inferior model and needs to migrate before users notice. Benchmark scores from an independent source are more reliable than internal evals, which can be biased toward the model they were built on.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "This framing treats public benchmark scores as more reliable than internal evals, which inverts the actual relationship. The startup's eval harness is grounded in user acceptance signals on real production tasks. The HELM benchmark is grounded in tasks chosen by benchmark authors for a different purpose. Internal evals can be biased toward the current model, but the correct response to that concern is to design the eval to be model-agnostic, not to defer to a benchmark that measures different tasks entirely. The assertion that benchmark scores are 'more reliable' because they are independent conflates independence with relevance.",
+              "framework_hint": "Domain Expertise failure: this answer mistakes benchmark independence for benchmark relevance. The eval harness the team built measures GPT outputs on the specific tasks users accept or reject, which is a more direct signal of product quality than a general reasoning benchmark. Treating external benchmarks as ground truth is a category error that leads to model-switching decisions driven by marketing announcements rather than product evidence."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Before deciding, what are all the things that need to be evaluated? The benchmark result is one data point. What are the others, and which ones are specific to this startup's situation?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of evaluation dimensions most completely maps what needs to be assessed before making the model-switching decision?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Six dimensions that need evaluation before deciding: (1) real-task eval results, running GPT-5 through the existing eval harness on a production-representative sample and measuring tone consistency, factual grounding, and edit distance against user-accepted completions, not against benchmark tasks; (2) prompt migration cost, assessing how much of the current Claude 3.5 prompt layer transfers directly to GPT-5 and how much needs to be rebuilt from scratch; (3) fine-tuning replaceability, determining whether the 40,000-completion fine-tune can be replicated on GPT-5 via fine-tuning or whether it requires a different approach; (4) cost and latency comparison at the startup's actual usage volume and token profile; (5) multi-model optionality, whether the architecture can serve both models in parallel so the decision is reversible; and (6) the durability of any GPT-5 edge, since model versions iterate quickly and a 12-point HELM advantage in March 2025 may be a 4-point advantage after the next Claude release.",
+              "quality": "best",
+              "competencies": ["creative_execution", "strategic_thinking", "domain_expertise"],
+              "explanation": "This enumeration identifies the six dimensions that are structurally distinct and relevant to this startup's specific situation. The key addition beyond obvious quality and cost comparisons is the durability question: model version gaps close quickly, and a switching decision made on a March 2025 benchmark gap may be obsolete within two quarters. The prompt migration cost and fine-tune replaceability dimensions are specific to the 18-month investment already made, and treating them as inputs to the decision rather than as sunk costs is what separates a complete evaluation from a naive model comparison.",
+              "framework_hint": "Creative Execution: the reasoning move at List is generating structurally distinct evaluation dimensions, not variations on the same quality comparison. Dimensions 1 and 2 are about quality; 3 is about re-investment feasibility; 4 is about economics; 5 is about decision reversibility; 6 is about timing risk. Each of these leads to a different action if it returns a negative result. Domain Expertise: the durability dimension requires understanding how model release cycles work and why a benchmark gap measured in early 2025 is not a stable strategic input."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Three dimensions: (1) model quality on the startup's actual tasks, tested by running both models on the same inputs and comparing outputs; (2) API cost difference at scale; and (3) migration effort, including prompt rewriting and any integration changes. If GPT-5 produces clearly better outputs at similar or lower cost and migration is manageable, the switch is justified.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Quality, cost, and migration effort are the right starting dimensions, but this list omits at least three factors that are specific to this startup's situation. It does not account for the fine-tuning investment and whether it can be replicated on GPT-5. It does not consider multi-model optionality as a way to make the decision reversible. And it does not address the durability of the GPT-5 edge, which matters because a switching decision made on a temporary benchmark lead imposes one-time costs that may not recover if Claude narrows the gap within two quarters. A decision made with three dimensions when six are relevant is underspecified.",
+              "framework_hint": "Creative Execution: a list that captures the most obvious dimensions but misses the ones specific to this startup's invested assets and the timing dynamics of model competition is not a full enumeration. The List step's job is to surface the dimensions the binary framing of the problem obscures, and the fine-tuning replaceability and durability questions are exactly those dimensions here."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The startup should run a user study: show 50 power users outputs from both models on their real tasks without revealing which model produced each, and let their preferences drive the decision. User preference is the most direct signal of product quality and eliminates the need to evaluate internal evals or benchmarks.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "User preference testing is a valid quality signal but it is not an evaluation plan that covers the decision's full scope. A 50-user blind test does not measure cost, latency, migration cost, or the durability of any quality gap it surfaces. It also does not account for the fact that user preference on one task type may not generalize to the full range of workflows the product supports. Substituting a preference test for a multi-dimensional evaluation plan reduces a complex product and infrastructure decision to a single quality signal.",
+              "framework_hint": "Creative Execution failure: proposing a single evaluation method instead of enumerating the dimensions of the decision is not a complete List output. The List step requires mapping the full decision space, not identifying the most user-centered signal within it. User preference testing is one input to dimension 1, not a substitute for dimensions 2 through 6."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The most important evaluation is the competitive one: determine whether the competitor's product is winning customers because of its GPT-5 announcement, and if so, at what rate. If churn or win/loss signals are not yet moving, there is no urgency. If they are moving, the startup needs to respond regardless of its internal eval results.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Monitoring competitive signals for churn or win/loss movement is sensible ongoing product management, but it is not a substitute for evaluating whether a model switch is the right technical and strategic response. If customers are churning to the competitor, the correct response depends on whether the quality gap is real for the startup's specific tasks. If internal evals show no meaningful gap, the competitive response is not model switching but differentiation and communication. Using churn signals as the primary evaluation dimension means the startup's technical decisions are driven by competitor marketing effectiveness, not by product quality evidence.",
+              "framework_hint": "Strategic Thinking failure: churn signals tell you whether the competitive situation is urgent, not what to do about it. An evaluation plan that starts and ends with competitive metrics skips the question the board actually needs answered: is there a real product quality gap, and if so, can switching models close it at acceptable cost? Those questions require internal evidence, not external market signals."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "Name the criterion before deciding. Is the startup optimizing for the highest possible output quality on benchmark tasks, or for the best validated quality per dollar on its users' actual workflows, net of switching cost?",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the explicit criterion and tradeoff that justifies the model-switching decision, or the decision to stay?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is validated real-task quality per dollar for the startup's specific users, net of re-investment cost. If GPT-5, run through the existing eval harness on a production-representative sample, beats Claude 3.5 by a margin that is both statistically meaningful and durable across the eval's key dimensions (tone consistency, factual grounding, edit distance from user-accepted completions), and if the cost of rebuilding the prompt layer and replicating the fine-tune on GPT-5 is recoverable within a defined horizon, switch. The sacrifice is the 18-month prompt engineering and fine-tuning investment, which would need to be substantially rebuilt rather than transferred. That sacrifice is acceptable only if the quality gain on the startup's own evals justifies it, not if the gain exists only on external benchmarks. If GPT-5 does not beat Claude 3.5 on the startup's own evals by a meaningful margin, the correct decision is to stay and use the eval results as the evidence base for the board conversation.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking", "domain_expertise"],
+              "explanation": "This answer names the criterion (validated real-task quality per dollar, net of re-investment cost), names the sacrifice (the prompt and fine-tune investment that cannot transfer directly), and explains why the sacrifice is only acceptable if the gain meets a specific evidentiary standard. The key move is separating the external benchmark result from the internal eval result and making the decision conditional on the latter. This prevents reactive switching driven by competitive announcement and board pressure while creating a clear path to switching if the evidence supports it.",
+              "framework_hint": "Taste: the reasoning move at Optimize is feeling the difference between a tradeoff and a preference. Switching because GPT-5 has a HELM benchmark edge is a preference (it sounds better). Switching because GPT-5 beats Claude 3.5 on the startup's own eval harness by a meaningful margin, net of re-investment, is a tradeoff because both the gain and the sacrifice are measured in the same units that matter to the product. Strategic Thinking: naming 'validated real-task quality per dollar net of switching cost' as the criterion makes the decision testable rather than political."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Switch to GPT-5 if it produces meaningfully better outputs on the startup's real writing tasks at comparable or lower cost. The sacrifice is the prompt engineering work, which will need to be partially redone. That sacrifice is acceptable because better model quality is the product's core value driver, and falling behind on model quality is an existential risk in a market where users compare AI writing tools directly.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "This answer has the right structure: it names a criterion and a sacrifice. But it understates the switching cost by calling the prompt work 'partially redone,' when the 40,000-completion fine-tune and the layered system prompt architecture may need substantial reconstruction, not minor adjustment. It also does not name a specific margin threshold on the startup's own evals that would constitute 'meaningfully better,' which means the decision remains open to interpretation under board pressure. A tradeoff without a specific evidentiary threshold is still somewhat preference-shaped.",
+              "framework_hint": "Taste: the sacrifice is named but underquantified. Calling a 40,000-completion fine-tuning run 'partially redone' is not engaging with the full cost of the tradeoff. The reasoning move at Optimize is naming the sacrifice clearly enough that both sides of the tradeoff are visible and comparable, not minimizing the downside to make the switch feel easier."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Stay on Claude 3.5 for now. The existing prompt layer and fine-tuning represent 18 months of investment that should not be abandoned without strong evidence. The benchmark result is from external tasks, not the startup's use cases. Wait for more evidence from the market before committing to a decision.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Staying is a defensible position, but 'wait for more evidence' is not a decision with a named criterion or a sacrifice. It does not explain what evidence would change the conclusion, how long to wait, or what the cost of waiting is if GPT-5 does produce real quality gains on the startup's tasks. Invoking the investment as a reason to stay without running it through the eval harness treats the investment as an argument rather than as an asset whose quality needs to be validated against the new option.",
+              "framework_hint": "Taste failure: 'wait and see' is not a tradeoff. A tradeoff requires naming what you get and what you give up, with a criterion that explains why the gain justifies the sacrifice. Framing staying as the default because switching feels risky is a preference for the status quo, not a reasoned optimization. The Optimize step requires engaging with both sides."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Switch to GPT-5 immediately and use the transition period to rebuild the prompt layer on the new model. The competitive risk of being perceived as running an inferior model outweighs the transition cost. In AI product markets, model quality signals move user perception quickly, and losing ground on perception is harder to recover from than losing ground on internal benchmarks.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "This answer treats perception risk as decisive without establishing whether a real quality gap exists on the startup's tasks. Switching models immediately, before running the existing eval harness on GPT-5, means making a production infrastructure change based on a competitor's announcement and a public benchmark, not on the startup's own quality evidence. The 'transition period' for rebuilding the prompt layer on a new model is not a minor operational detail: it represents months of re-investment during which the product's quality floor may be lower than it is today. Switching immediately for perception reasons is reactive rather than strategic.",
+              "framework_hint": "Strategic Thinking failure: optimizing for perception before validating whether the quality gap is real on the startup's tasks is responding to the competitor's narrative rather than to the startup's own evidence. The criterion for a model-switching decision in an AI product is validated product quality, not benchmark reputation. Making an immediate production switch without running the eval harness inverts the information order the decision requires."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Write the specific test the team runs before deciding. What does GPT-5 need to achieve on the startup's own eval harness, by what margin, to justify switching? Name the failure condition too.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What is the falsifiable decision gate that determines whether to switch from Claude 3.5 to GPT-5?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Run GPT-5 through the existing eval harness on a sample of 500 production-representative prompts, covering the full distribution of the startup's task types and user tiers. Success gate: GPT-5 beats Claude 3.5 by at least 8 percentage points on the composite eval score (tone consistency, factual grounding, and edit distance from user-accepted completions weighted by their historical contribution to user acceptance rate) at comparable or lower per-token cost, with the gap holding across at least three task subcategories, not just the highest-volume one. Failure gate: if GPT-5 does not clear this threshold, the decision defaults to staying on Claude 3.5, and the board is shown the eval results as evidence that the benchmark gap does not translate to the startup's specific tasks. The 8-point threshold is set to ensure the quality gain is large enough to justify the prompt rebuild and fine-tuning re-investment at current engineering cost rates.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This decision gate is falsifiable in both directions, uses the startup's existing eval infrastructure rather than inventing a new process, and names a specific threshold grounded in the cost of re-investment. The 500-prompt sample size, the composite score weighting, and the three-subcategory consistency requirement are all design choices that prevent the gate from being gamed by GPT-5 performing well on one high-volume task type while underperforming on others. The failure condition is equally specific, which is what makes this a falsifiable test rather than an aspiration.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Win is writing a hypothesis with a falsification condition, not a success condition alone. Naming the failure gate (does not clear 8 points on the composite eval, defaults to staying) is what makes this a decision instrument rather than a confirmation exercise. Domain Expertise: grounding the 8-point threshold in the cost of prompt rebuild and fine-tuning re-investment connects the quality gate to the economic reality of the switching decision, which is what a board conversation requires."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The winning condition is: run a two-week A/B test serving GPT-5 to 20% of production traffic and measure user acceptance rate, session length, and document completion rate against the Claude 3.5 baseline. If GPT-5 outperforms Claude 3.5 on all three metrics at 95% confidence, proceed with full migration. If not, stay.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "A production A/B test is a stronger signal than an offline eval because it measures actual user behavior rather than proxy metrics. But serving an untested model to 20% of production traffic before running it through the offline eval harness first exposes real users to potential quality regressions without the safety net the eval harness provides. The correct sequencing is offline eval first, production A/B if and only if the offline eval clears a threshold. The A/B test conditions (three metrics, 95% confidence) are well-specified, but the absence of the offline eval step in the gate makes this incomplete.",
+              "framework_hint": "Domain Expertise: the sequencing of offline eval before live A/B is a standard practice in AI product development precisely because production A/B tests expose users to untested quality changes. A decision gate that goes directly to live traffic skips the step that protects users and the product's quality reputation during the evaluation period."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The winning condition is: get confirmation from the engineering team that GPT-5's API is stable, latency is acceptable, and migration is feasible within a 6-week sprint. If all three are confirmed, proceed with migration. If not, defer until the migration is feasible.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "API stability, latency, and migration feasibility are necessary conditions for switching, but they are not the decision gate. A model can be stable, fast, and easy to migrate to while still producing lower-quality outputs on the startup's specific tasks. A decision gate built on infrastructure feasibility rather than quality evidence confirms that migration is possible, not that it is worth doing. This winning condition answers a different question than the one the decision requires.",
+              "framework_hint": "Domain Expertise failure: a winning condition that measures operational feasibility rather than product quality evidence cannot determine whether switching is the right decision. The Win step requires a test whose result tells you whether the strategic bet is justified, not whether the engineering team can execute the migration."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The winning condition is: if the competitor's market share grows by more than 5 percentage points in the next quarter, attributable to its GPT-5 announcement, switch immediately. If market share does not move, stay on Claude 3.5. Competitive market response is the most reliable external validation of whether GPT-5 is meaningfully better for users.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Market share movement is a lagging indicator that conflates model quality with marketing effectiveness, sales execution, pricing, and distribution. A competitor gaining 5 points of market share after a GPT-5 announcement tells you their announcement had marketing impact; it does not tell you whether GPT-5 produces better outputs on the startup's specific tasks. A decision gate that triggers model migration based on competitor market share movement produces a decision on a 90-day cycle that is always one quarter behind the quality evidence the eval harness can produce in days.",
+              "framework_hint": "Strategic Thinking failure: a falsifiable condition must measure what the strategy directly produces or prevents. Competitor market share is not observable by the startup, is not attributable to model quality alone, and is not actionable on the timeline the decision requires. A winning condition defined by a competitor's market behavior is not a test the startup can run or control."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

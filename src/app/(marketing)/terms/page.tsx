@@ -97,6 +97,14 @@ const TERMS_SECTIONS = [
       'Some terms survive termination, including billing obligations, intellectual property rights, limitation of liability, dispute provisions, and records retained under the privacy policy.',
     ],
   },
+  {
+    title: 'Changes To These Terms',
+    body: [
+      'These terms may change as the product, pricing, features, and legal requirements evolve.',
+      'Material changes will be surfaced inside the product or by email to the account address before they take effect where required.',
+      'Continued use of HackProduct after a change means the updated terms are accepted.',
+    ],
+  },
 ]
 
 export default function TermsPage() {
@@ -117,10 +125,7 @@ export default function TermsPage() {
             <p className="text-lg leading-8 text-on-surface-variant">
               These terms define account responsibilities, acceptable use, billing rules, content rights, affiliate terms, and the limits of Hatch coaching.
             </p>
-            <div className="mt-6 rounded-lg border border-primary/25 bg-primary-container/40 p-4 text-sm font-semibold leading-6 text-on-surface">
-              Placeholder: needs legal review before public launch.
-            </div>
-            <p className="mt-5 text-sm text-on-surface-variant">Last updated: May 6, 2026</p>
+            <p className="mt-5 text-sm text-on-surface-variant">Last updated: June 1, 2026</p>
           </div>
         </div>
       </section>
@@ -163,8 +168,8 @@ export default function TermsPage() {
             <h2 className="text-2xl font-black text-on-surface">Contact</h2>
             <p className="mt-4 text-sm leading-6 text-on-surface-variant">
               Questions about these terms can be sent to{' '}
-              <a className="font-bold text-primary" href="mailto:legal@hackproduct.dev">
-                legal@hackproduct.dev
+              <a className="font-bold text-primary" href="mailto:founders@hackproduct.com">
+                founders@hackproduct.com
               </a>
               . Include the account email address and the request topic.
             </p>

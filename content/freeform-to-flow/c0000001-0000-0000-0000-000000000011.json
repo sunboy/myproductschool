@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000011",
+  "title": "International Expansion: Which Market First?",
+  "scenario_role": null,
+  "scenario_context": "A US HR software startup, comparable to Lattice or Rippling, has reached $12M ARR with 95% of revenue from North America. The product handles payroll, compliance, and performance management for SMBs. Leadership has approved budget for entering one international market and has narrowed the shortlist to three candidates: the UK (high English adoption, labor laws similar to the US, low localization cost), Brazil (10x more SMBs than the UK, but Portuguese-language requirements and complex payroll compliance as a multi-quarter build), and India (enormous TAM, but entrenched local competitors with deep payroll integration and low-cost pricing).",
+  "scenario_trigger": "Each market has a compelling case on paper. The UK is the safest path but carries the smallest prize. Brazil offers the biggest volume but the highest execution risk. India offers scale but demands competing against incumbents on their home turf. The company has budget and engineering capacity for exactly one market, and the go/no-go decision is due at the next board meeting.",
+  "scenario_question": "Frame the real decision criterion, enumerate what actually needs to be compared, name the tradeoff the team must accept, and define a falsifiable success bar for the chosen market.",
+  "engineer_standout": "A strong answer refuses to treat this as a TAM comparison. HR and payroll software is compliance-heavy, which means localization cost is not a line item but the dominant risk variable. The right first market is the one with the best ratio of winnable revenue to cost-of-entry and learning value. UK's low-localization, similar-law profile makes it the lowest-risk beachhead that validates the international motion before tackling harder markets. Brazil's 10x SMB count is a TAM trap if payroll compliance is a multi-quarter build. India's entrenched competitors mean high customer acquisition cost and slow initial traction regardless of TAM size.",
+  "paradigm": "traditional",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["strategic_thinking", "domain_expertise"],
+  "secondary_competencies": ["cognitive_empathy", "taste"],
+  "topic_tags": ["expansion", "market-entry", "strategy", "prioritization", "growth"],
+  "technique_tags": ["taste-frame", "north-star-cascade"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "TAM is visible but not decisive here. The real problem is upstream: what variable actually governs whether the company wins in any of these markets within the budget window?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the market-selection decision for a compliance-heavy HR software startup at $12M ARR?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The decision is not which market has the biggest TAM but which market produces the best ratio of winnable revenue to cost-of-entry within the available budget window. HR and payroll software is compliance-driven, so localization cost is not a secondary concern but the dominant risk variable: the company cannot sell payroll software in Brazil without meeting Brazilian payroll law, and that compliance build is a multi-quarter investment before the first dollar of revenue. The UK's similar labor-law profile and English-language market effectively removes that variable, making it the one market where the company can test whether its core product travels internationally without first funding a compliance overhaul. The frame is risk-adjusted speed-to-first-win, not raw market size.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This framing correctly identifies that compliance cost is the load-bearing variable for a payroll and HR product. Brazil's 10x SMB count is real but irrelevant if the product cannot legally operate in Brazil without a multi-quarter compliance build. Framing the decision as risk-adjusted speed-to-first-win rather than market size puts the team in the right position to evaluate the three candidates on the variable that actually governs whether they can generate revenue inside the budget window.",
+              "framework_hint": "Domain Expertise: knowing that HR/payroll software operates under strict local compliance regimes (labor law, payroll tax remittance, data residency) transforms the market-selection question from a TAM exercise into a compliance-cost exercise. Strategic Thinking: framing the decision as risk-adjusted speed-to-first-win forces the team to weigh time-to-revenue alongside market potential, which is the correct criterion for a $12M ARR company with a single-market budget."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The decision is fundamentally about TAM and growth potential. With only 5% of revenue from outside North America, the company needs to find the market with the most SMBs and the highest willingness to pay for HR software. Brazil's 10x SMB count relative to the UK makes it the obvious candidate if the team can staff the localization work. India's TAM is similarly attractive. The UK's smaller market may not justify the fixed cost of an international expansion.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "TAM is a real input to the decision and this framing is not wrong to mention it, but treating SMB count as the primary criterion ignores the cost structure of compliance-heavy software. 'If the team can staff the localization work' is doing too much work in one clause: for payroll software entering Brazil, that work is a multi-quarter compliance build before the first customer signs. The framing gets the growth orientation right but misses that localization cost is the variable that governs whether a given TAM is accessible at all within the budget window.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that international expansion should be evaluated against revenue potential and growth. Misses the domain-specific constraint that makes compliance cost the decisive variable rather than a staffing footnote. A strong framing names the variable that governs which options are actually available, not just which options look attractive."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The decision is about brand and competitive positioning. Entering the UK first would establish a premium English-language brand before expanding to larger markets. The UK market will signal to enterprise buyers globally that the company is serious about international growth. India and Brazil should follow once the brand is established.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Brand signaling is not a meaningful decision criterion for a $12M ARR startup entering its first international market. The scenario provides no evidence that enterprise buyers in Brazil or India are watching the UK market, and HR software is typically sold locally by locally-trusted vendors. Framing the decision as a brand-sequencing exercise sidesteps the actual variables: compliance cost, competitive density, and time-to-revenue.",
+              "framework_hint": "Cognitive Empathy failure: the frame assumes international buyers care about which market the company entered first, but HR software buyers select vendors based on compliance coverage and local support, not brand prestige from distant markets. Simulating the actual buyer's goal reveals that this criterion is not load-bearing."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision is a people and partnerships question. The right first market is wherever the company can hire a local sales lead and find a distribution partner fastest. Speed of execution depends on local talent, not on market analysis. Whichever market produces a credible hire in 60 days should be prioritized.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Hiring speed is an execution variable, not a decision criterion for market selection. The scenario specifies that the company has budget for one market: the task is to choose that market on strategic grounds before hiring into it, not to let hiring timelines drive the strategic decision. A hiring-first approach would mean the company's international strategy is governed by recruiter response rates, which is not a durable basis for market selection.",
+              "framework_hint": "Strategic Thinking failure: inverting the decision sequence. Market selection should drive the talent and partnership strategy, not the reverse. Using an operational variable (hiring speed) as the strategic criterion produces a decision that optimizes for execution convenience rather than for the best ratio of winnable revenue to cost-of-entry."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Three markets are on the table but the real enumeration is the decision factors that differentiate them. List the variables that actually need to be compared before any recommendation is possible.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of decision factors most completely covers what needs to be evaluated before recommending a first international market for a compliance-heavy HR software product?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct factors need to be evaluated for each market. First, compliance and localization cost: how many engineering quarters are required before the product is legally sellable (payroll tax remittance, labor law, language)? Second, competitive density: are there entrenched local players with deep payroll integrations and pricing advantages that would require high customer acquisition cost to displace? Third, addressable TAM within the budget window: not total SMB count, but the segment reachable with the company's existing product and sales motion without new feature investment. Fourth, time-to-first-revenue: given compliance build time and sales cycle length, when does the company generate the first dollar of recurring revenue in this market? Fifth, strategic learning value: does winning in this market teach the company something transferable to the next market (playbook, compliance template, partnership model)?",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These five factors are structurally distinct: compliance cost governs feasibility, competitive density governs customer acquisition cost, accessible TAM corrects for the gap between headline market size and reachable market, time-to-first-revenue captures the full sequence from product build to signed customer, and strategic learning value captures whether the first market is a platform for subsequent expansion or a one-off. Each factor produces a different ranking of the three candidates. Listing them separately makes the tradeoffs visible before the optimize step forces a criterion to be named.",
+              "framework_hint": "Creative Execution: generating factors that are mechanistically different, not variations of 'which market is bigger.' Compliance cost and competitive density look similar on a slide but have completely different implications: compliance cost is a fixed investment before revenue, while competitive density is a variable cost that increases the ongoing sales motion. Domain Expertise: including time-to-first-revenue as a distinct factor reflects that compliance builds have lead times, so a market with 10x TAM but a two-quarter compliance build may produce revenue later than a smaller market with no compliance gap."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The evaluation should cover market size, language compatibility, and competitive landscape. UK scores well on language but has a smaller market. Brazil scores on size but requires Portuguese. India has a large market but established players. A weighted scoring model across these three dimensions would surface the right answer.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Language compatibility and competitive landscape are real factors, and this answer gets the directional analysis right for all three markets. The gap is that it omits compliance cost as a distinct variable from language compatibility: Portuguese is one localization cost, but Brazilian payroll compliance is a separate multi-quarter engineering investment that is unrelated to language. It also omits time-to-first-revenue and strategic learning value. A weighted scoring model applied to three factors will produce a different recommendation than one applied to five, and the missing factors favor the UK more strongly than this list reveals.",
+              "framework_hint": "Creative Execution partial credit: identifies three of the five load-bearing factors and correctly characterizes each market's position on those dimensions. Domain Expertise gap: conflates language localization with compliance cost, which are distinct investments with different timelines and risk profiles for payroll software."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The company should evaluate customer interviews in each market before deciding. Speak to 10 SMB HR managers in each country, identify the top three pain points, and assess whether the product already solves them. The market with the highest product-market fit signal should be prioritized.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Customer discovery is a research method, not a set of decision factors. The list step asks for the variables that differentiate the three markets, not for a process to gather more information. More practically, conducting 30 customer interviews across three countries before a board-level go/no-go decision is not realistic in the scenario's timeframe, and the core compliance question (can the product legally operate in Brazil?) cannot be answered by customer interviews.",
+              "framework_hint": "Cognitive Empathy failure: confusing 'what customers say about their pain points' with the structural factors that govern whether the company can enter a market at all. Compliance feasibility and competitive density are observable through desk research; they do not require primary customer interviews to evaluate."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision factors are revenue potential and risk. High revenue potential with low risk is an easy yes; low revenue potential with high risk is an easy no. The UK is low risk, low reward. Brazil is high risk, high reward. India is somewhere in between. The team should decide how risk-tolerant the company is and choose accordingly.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Risk and reward are the conclusion of the analysis, not the input factors. Listing 'revenue potential' and 'risk' as the decision factors skips the step of naming what specifically drives revenue potential (accessible TAM, time-to-revenue) and what specifically constitutes risk (compliance build cost, competitive density). This framing produces a decision that relies on intuition about which market 'feels' riskier rather than a structured comparison that reveals why each market has the risk profile it does.",
+              "framework_hint": "Strategic Thinking failure: using abstract labels (risk, reward) as substitutes for the specific factors that produce them. A list of decision factors should be specific enough that two people evaluating the same three markets against the list would reach similar conclusions. 'Risk' and 'reward' are outputs, not inputs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The UK is the safe-fast path, Brazil is the big-but-hard path. Name the criterion that tells you whether safe-fast is actually the right call for a company at $12M ARR, or whether the sacrifice it demands is too large.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for choosing between the UK (low localization cost, lower TAM) and Brazil (10x SMBs, high compliance cost) as the first international market?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is risk-adjusted speed-to-first-win and playbook transferability. The company should ask: which market produces the first $1M of international ARR soonest, without requiring a compliance build that delays revenue and consumes budget before validating that the international motion works at all? The UK wins on this criterion because similar labor laws mean the product is legally sellable with minimal modification, which means the sales team can start closing customers in quarter one rather than waiting two quarters for a compliance build. The sacrifice this criterion demands is explicit: the company accepts a smaller immediate prize in exchange for proving the international playbook before investing in the compliance cost required to access Brazil's larger market. That is a real tradeoff, not a preference, because the $12M ARR base means the company cannot absorb a failed international expansion that consumed two quarters of engineering capacity.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names what the company is optimizing for (speed to first recurring international ARR) and what it is giving up (larger immediate TAM). It grounds both sides in the specific constraints of the scenario: the 95% North America revenue concentration means the international playbook is unproven, the $12M ARR base means a failed compliance-heavy expansion is a material setback, and Brazil's payroll compliance is a multi-quarter build before revenue rather than a post-launch improvement. Naming the sacrifice explicitly prevents the team from trying to optimize for both speed and size at the same time.",
+              "framework_hint": "Taste: distinguishing between 'Brazil has more SMBs' (a preference for size) and 'the compliance cost of entering Brazil delays first revenue by two or more quarters' (a property that determines whether the investment is recoverable within the budget window). Strategic Thinking: the criterion maps directly to the company's actual competitive position: an unproven international playbook at $12M ARR means the cost of a failed first market is higher than the cost of a smaller first win."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be total addressable market within a two-year horizon. Estimate the revenue achievable in each market by year two, accounting for ramp time and competitive dynamics. The market with the highest two-year revenue ceiling, discounted by execution risk, should win. Brazil's 10x SMB count likely produces a higher two-year ceiling even after discounting for compliance build time.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A two-year discounted revenue model is a legitimate framework and the instinct to discount Brazil's TAM by execution risk is correct. The gap is that this approach treats compliance cost as a discount factor rather than as a go/no-go gate: if Brazilian payroll compliance requires two quarters of engineering before the first customer can sign, the two-year model shows revenue starting in quarter three, not quarter one, and the company's $12M ARR base means those two empty quarters carry real organizational risk. The criterion is directionally right but does not name the binary constraint that compliance cost creates.",
+              "framework_hint": "Strategic Thinking partial credit: identifies a defensible quantitative framework (two-year discounted revenue) and correctly applies execution-risk discounting. Taste gap: treating compliance cost as a discount factor implicitly accepts that the company can fund two pre-revenue quarters in Brazil, which is a business viability assumption, not a strategic preference. The optimize step requires naming this assumption as the sacrifice, not embedding it in a discount rate."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The company should optimize for customer satisfaction potential. UK customers are likely to have similar expectations to North American customers, which means the product can deliver high satisfaction immediately. Satisfied UK customers generate case studies that accelerate sales in other markets. Start where you can delight customers fastest.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Customer satisfaction potential and case study generation are real benefits of the UK path but they are outcomes of the UK's low localization cost, not a decision criterion in their own right. Naming 'delight customers fastest' as the criterion does not force the team to confront the tradeoff: the scenario explicitly frames this as a choice between safe-fast and big-but-hard, and a criterion that always favors the safe-fast option without naming what is being sacrificed is not a criterion but a preference.",
+              "framework_hint": "Taste failure: 'delight customers fastest' is a preference (faster is better) rather than a tradeoff. The optimize step requires naming a criterion that makes the sacrifice visible: what does the company give up by choosing the UK, and why is that sacrifice acceptable given the company's position? A criterion that does not name the sacrifice produces a recommendation that sounds decisive but avoids the hard call."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is competitive moat. The company should enter the market where it is hardest for a competitor to displace it once established. UK market dynamics favor the company because similar compliance requirements mean its existing product is a strong fit and competitors would face the same localization costs to enter. This builds a defensible position faster than a high-TAM market where the company would be a late entrant.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Defensibility is a real strategic concept but applying it here produces the wrong conclusion by the wrong logic. The UK is not defensible because competitors face the same localization costs: those costs are low, which means competitors also face low barriers. The UK is attractive because low localization cost makes it fast and cheap for the company to enter, not because the barriers protect incumbents. More fundamentally, a $12M ARR startup entering its first international market should optimize for speed to validating the international motion, not for building a defensive moat in a small market.",
+              "framework_hint": "Strategic Thinking failure: confusing the reason to enter a market (low cost of entry) with the reason a market is defensible (high barriers to competition). Low localization cost in the UK means both the company and its competitors can enter cheaply, which is the opposite of a moat. The criterion misapplies a real strategic concept to reach a conclusion that the scenario does not support."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "A real bet is falsifiable. Name the metric, the threshold, and the timeline. Name the counter-signal that would tell you the UK-first playbook is failing and needs to be reassessed.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for a UK-first international expansion by a US HR software startup at $12M ARR?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: $1M in UK ARR from at least 30 customers within 18 months of go-live, with an average sales cycle under 60 days and a gross retention rate above 85% at the 12-month mark. The $1M ARR threshold tests whether the international motion is commercially viable at a scale worth expanding. The 30-customer floor prevents a single large contract from masking weak product-market fit. The 60-day sales cycle tests whether the low-localization thesis holds in practice (a longer cycle would signal that UK buyers have compliance or integration requirements not anticipated in the framing). The 85% gross retention at 12 months tests whether the product actually solves UK HR problems or just closes deals by being a familiar brand. The counter-signal is: ARR target reached but gross retention falls below 75% in the first cohort, which would mean the company is selling but not delivering, and the playbook is not transferable to Brazil or India.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names four metrics with specific thresholds and timelines, each connected to a distinct element of the strategic hypothesis. The $1M / 30-customer combination tests commercial viability without allowing a single outlier to distort the signal. The 60-day sales cycle tests the low-localization thesis directly. The 85% gross retention tests whether the product fits the market, not just whether the sales team can close deals. The counter-signal (ARR reached but retention fails) is non-obvious and important: it means the company is learning the wrong lesson from UK success and would over-invest in a playbook that does not transfer.",
+              "framework_hint": "Domain Expertise: $1M ARR from 30 customers implies an average contract value of roughly $33K, which is calibrated to the SMB HR software market and consistent with a $12M ARR base scaling internationally. The 85% gross retention threshold reflects that HR software churn below 85% at 12 months signals serious product-fit problems. Strategic Thinking: naming the counter-signal (revenue success paired with retention failure) forces the company to distinguish between winning in the UK on the terms that make the playbook transferable versus winning in a way that creates a false positive for expansion readiness."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means reaching $500K in UK ARR within 12 months. Track monthly revenue growth. If growth is above 15% month-over-month for the first six months, the expansion is on track. If it falls below 10%, reassess the go-to-market approach before adding headcount.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A specific ARR target with a timeline and a growth-rate early warning signal is better than directional language. The gap is that ARR growth alone does not test the strategic hypothesis: the expansion could hit $500K ARR with three large customers and a failing SMB motion, or it could hit $500K ARR with customers who churn at 18 months because the product does not cover UK compliance edge cases. The win condition needs at least one metric that tests the quality of the revenue, not just its quantity.",
+              "framework_hint": "Domain Expertise partial credit: names a specific threshold ($500K) and a timeline (12 months) with a growth-rate trigger for early reassessment. Strategic Thinking gap: revenue growth does not distinguish between a repeatable international playbook and a lucky first cohort. A win condition that only measures revenue quantity cannot detect the counter-signal (high ARR, low retention) that would signal the playbook is not transferable."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means positive press coverage and a reference customer willing to speak publicly within six months. If the company can secure a recognizable UK brand as a customer and get a quote for the website, the market entry is validated. PR traction indicates product-market fit.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Press coverage and a reference customer are marketing outcomes, not business outcomes. A single reference customer could be an outlier won through heavy sales engineering that is not repeatable. PR traction reflects how well the launch was announced, not whether the product fits the market at commercial scale. The win step requires a metric that is falsifiable: the counter-signal (what would tell you the bet is wrong) cannot be derived from a PR signal.",
+              "framework_hint": "Strategic Thinking failure: defining success as a visibility outcome rather than a business outcome. A win condition must connect to the decision criterion named in the optimize step (risk-adjusted speed-to-first-win and playbook transferability). PR coverage does not test either of those properties."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means achieving UK Net Promoter Score above 50 within 12 months. NPS above 50 in a new market signals strong product-market fit and provides a defensible basis for expanding to Brazil and India. If NPS is below 30, the product needs significant work before expanding further.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "NPS is a satisfaction metric that requires a sufficient customer base to be statistically meaningful: at the scale of a first-year UK launch, NPS from 10 to 30 customers is not representative. More fundamentally, NPS measures how customers feel about the product, not whether the commercial motion is repeatable or whether the playbook is transferable to compliance-heavier markets. A company could achieve NPS 55 from a cohort of enthusiastic early adopters who do not represent the mainstream SMB buyer the expansion is targeting.",
+              "framework_hint": "Domain Expertise failure: NPS as a proxy for international expansion readiness is an imprecise instrument. Customer satisfaction signals are meaningful inputs to product decisions but they cannot substitute for business metrics (ARR, retention, sales cycle length) when the question is whether the company has proven a repeatable international revenue motion."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

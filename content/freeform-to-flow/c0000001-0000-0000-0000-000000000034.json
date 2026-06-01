@@ -1,0 +1,341 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000034",
+  "title": "Agentic Loop is Burning API Tokens on Retries",
+  "scenario_role": null,
+  "scenario_context": "A production system uses an AI agent to manage automated data pipelines. When a pipeline fails, the agent runs a diagnostic loop: it inspects logs, proposes a fix, applies it, and checks whether the pipeline recovers. The design works well for novel failures. The problem is that 30% of all production runs enter a retry spiral: the agent attempts the same failed approach 6 to 8 times before finally giving up, each iteration burning tokens on a conclusion the first attempt already reached. The median incident cost is $2.40 instead of the expected $0.30. An analysis of the past 90 days of incidents reveals that the failures driving the spirals cluster into exactly 3 recurring patterns: malformed schema mismatches, upstream source timeouts, and permission errors on destination tables.",
+  "scenario_trigger": "The operations team flags the spiraling cost after the monthly bill for agent runs comes in at 8x the projected figure. Engineering pulls the logs and confirms the pattern: 30% of runs, same 3 failure types, 6 to 8 identical retry attempts before termination. The agent has no memory of what it already tried within a run, and no stopping criterion beyond a hard iteration cap. The question is not how to reduce the retry count by one or two — it is how to redesign the reasoning loop so the spiral is structurally impossible.",
+  "scenario_question": "Frame the root cause of the retry spiral, list the components a redesigned loop needs, name the tradeoff the team must accept, and define a falsifiable success bar for the new loop design.",
+  "engineer_standout": "A strong answer refuses to frame this as a retry-limit problem. Reducing max retries from 8 to 3 makes the spiral cheaper but does not eliminate it. The root cause is two missing loop properties: state (the loop has no memory of what it already tried, so each iteration is epistemically identical to the first) and early classification (the 3 recurring patterns are known and deterministic, but the agent re-derives the diagnosis from scratch every time instead of matching against a pattern library). The real fix is a stateful loop with a seen-actions log and a fast-path classifier that intercepts the 3 known failure types before the general diagnostic loop runs, plus a human escalation gate for anything the classifier cannot match. The tradeoff: maintaining the pattern library adds operational overhead, and the classifier must be tested against edge-case failures to avoid false-positive matches that skip genuine diagnosis.",
+  "paradigm": "agentic",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["domain_expertise", "strategic_thinking"],
+  "secondary_competencies": ["creative_execution", "taste"],
+  "topic_tags": ["ai-agents", "agentic-loops", "cost-optimization", "pipeline-management", "llm-operations"],
+  "technique_tags": ["state-management", "pattern-matching", "escalation-design"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "The agent retries 6 to 8 times and the cost is $2.40 instead of $0.30. Before proposing a fix, name what is actually broken in the reasoning loop — not the symptom, but the structural property it lacks.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of why 30% of agent runs enter a retry spiral instead of diagnosing the failure and moving on?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The loop lacks two structural properties that together make the spiral inevitable. First, it has no intra-run state: each of the 6 to 8 iterations begins with identical context, so the agent cannot know it already tried a particular approach and failed. Second, it has no fast-path classifier for the 3 known failure patterns — schema mismatches, source timeouts, and permission errors on destination tables — which account for the entire 30% spiral population. Without state, the agent cannot avoid repeating itself. Without pattern classification, it re-derives a diagnosis from scratch on every iteration even when the failure type is one it has seen hundreds of times before. The $2.40 cost per incident is a direct consequence of running 6 to 8 full diagnostic loops where 1 classification lookup and 1 targeted fix attempt would suffice.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This framing correctly identifies two mechanistically distinct root causes. Missing intra-run state explains why the agent repeats failed approaches — it literally cannot tell that the approach already failed. Missing fast-path classification explains why the 3 known failure patterns still consume full diagnostic loops. Together these two gaps explain both the repetition and the cost amplification: $2.40 versus $0.30 means the agent runs roughly 8 full iterations where the correct design would run 1 classifier call plus at most 1 targeted fix attempt. Framing the problem this way points directly at the two components the redesign must add.",
+              "framework_hint": "Domain Expertise: understanding that agentic loops are stateless by default unless explicitly designed otherwise, and that statelessness across iterations is the structural reason for retry spirals. Strategic Thinking: reframing 'reduce retries' (a symptom fix) as 'add state and a pattern classifier' (a structural fix) prevents the team from shipping a solution that makes the spiral cheaper without eliminating it."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The root cause is that the agent's iteration cap is too high. Allowing 6 to 8 retry attempts before termination gives the agent too much latitude to repeat failed approaches. Reducing the cap to 2 or 3 attempts would force faster escalation, cut the cost per incident from $2.40 to under $1.00, and produce faster resolution because failures that cannot be fixed in 2 attempts need human intervention anyway.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Reducing the iteration cap does reduce cost, and the observation that failures unresolved in 2 attempts often need human escalation is directionally correct. The gap is that capping retries at 2 or 3 does not prevent the agent from making the same attempt twice — it just stops it sooner. The framing treats the spiral as a too-many-retries problem when it is actually a no-memory problem. An agent with a cap of 2 but no state tracking will still retry the same failed approach on iteration 2 that failed on iteration 1. The structural fix is missing from this framing.",
+              "framework_hint": "Strategic Thinking partial credit: correctly identifies that the iteration cap shapes cost and escalation timing. Domain Expertise gap: a retry cap is a termination policy, not a loop design. Without intra-run state, capping at 2 retries produces a cheaper spiral, not the absence of a spiral. The framing misses why the repetition happens, which means the proposed fix cannot prevent it."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The problem is that the agent is not using a more capable model. GPT-4o or a frontier reasoning model would diagnose the 3 recurring failure types correctly on the first attempt, eliminating the need for multiple retries. The spirals are a model quality problem: a smarter model would not make the same mistake repeatedly.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Model capability is not the variable driving the spiral. The failures that cause spirals — schema mismatches, source timeouts, and destination table permission errors — are deterministic, not reasoning-hard. They require correct identification and a targeted action, not deeper reasoning. A more capable model running the same stateless loop design would still re-derive the same diagnosis on each iteration because it would have the same missing information: what was already tried. The root cause is loop architecture, not model intelligence.",
+              "framework_hint": "Domain Expertise failure: conflating reasoning capability with loop design. A frontier model running a stateless loop with no seen-actions log will still spiral on the 3 known failure types because the architectural gap is identical regardless of model. More powerful models do not automatically acquire intra-run memory."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The problem is poor failure observability. The agent cannot see the right signals in the pipeline logs, so it cannot diagnose the failure accurately on the first attempt. Enriching the log context passed to the agent on each iteration — including structured error codes, table metadata, and upstream source health — would give it the information it needs to succeed in 1 or 2 attempts instead of 6 to 8.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Better log context would improve first-attempt diagnosis quality, and that is a real improvement worth making. The gap in this framing is that it addresses only one possible failure mode: the agent making the wrong diagnosis because it has incomplete information. It does not explain why the agent makes the same incorrect attempt on iteration 3 that it already made on iteration 1. If log enrichment were the root cause, the agent would diagnose correctly on iteration 2 after the first failure provides feedback — but the logs show 6 to 8 identical attempts, which is consistent only with a loop that has no memory of prior iterations.",
+              "framework_hint": "Domain Expertise gap: enriched inputs improve individual iteration quality but do not address intra-run state. The distinction matters because the spiral pattern — 6 to 8 identical attempts — is inconsistent with a simple information-gap explanation. An agent with richer logs but no seen-actions tracking still has no mechanism to avoid repeating a failed action on the next iteration."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The agent needs to be redesigned so the spiral is structurally impossible. List the components the new loop must have — both the ones that prevent repetition and the ones that handle the 3 known failure patterns and the cases neither path can resolve.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of components most completely covers what the redesigned agentic loop needs to eliminate retry spirals while keeping the system effective on novel failures?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The redesigned loop needs four structurally distinct components. First, a seen-actions log: a per-run data structure that records every (action, outcome) pair so the agent can check before each iteration whether the proposed action has already been tried and failed, and skip it if so. Second, a fast-path pattern classifier: a lightweight matcher that runs before the general diagnostic loop on every new failure, checks the failure signature against the 3 known patterns (schema mismatch, source timeout, destination permission error), and dispatches a deterministic fix if the pattern matches — bypassing the full diagnostic loop entirely. Third, a human escalation gate: triggered when the classifier does not match any known pattern and the seen-actions log shows that 2 or more distinct actions have already failed, signaling a novel failure that the automated loop cannot resolve. Fourth, a pattern library with update policy: a maintained record of known failure signatures and their verified fixes, with a defined process for adding new patterns when a novel failure is resolved by the escalation path.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These four components are mechanistically distinct and together close all three failure modes. The seen-actions log prevents repetition on any failure type, novel or known. The fast-path classifier eliminates the full diagnostic loop for the 3 known patterns, which account for the entire 30% spiral population. The escalation gate provides a defined exit for genuinely novel failures instead of exhausting the iteration cap. The pattern library with an update policy ensures the classifier improves over time rather than becoming stale. Each component addresses a different gap — no single component covers all of them.",
+              "framework_hint": "Creative Execution: generating components that address distinct failure modes rather than variations of the same mechanism (e.g., adding a classifier and a seen-actions log, not two different classifiers). Domain Expertise: the seen-actions log is standard in stateful agent design; the fast-path classifier reflects a common pattern in production agentic systems where known-failure routing precedes general reasoning."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The redesigned loop needs a pattern classifier for the 3 known failure types and a reduced iteration cap. The classifier routes schema mismatches, source timeouts, and permission errors to deterministic fixes. The reduced cap (2 to 3 iterations instead of 6 to 8) limits cost on anything the classifier misses. Together these two changes address the 30% spiral population with pattern matching and bound the cost of everything else with a tighter cap.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "A pattern classifier for the 3 known types is the right primary component, and a tighter iteration cap does reduce cost. The gap is that neither component prevents the agent from repeating a failed action on iteration 2 that failed on iteration 1 for a novel failure not matched by the classifier. Without a seen-actions log, the redesigned loop is still structurally capable of spiraling on novel failures — it just spirals fewer times before termination. The list also omits an escalation gate, leaving no defined path for novel failures other than hitting the cap and giving up.",
+              "framework_hint": "Domain Expertise: correctly identifies the classifier as the primary mechanism for the 3 known patterns. Creative Execution gap: two components address cost and known patterns but leave a structural gap for novel failures. A loop without state can still repeat itself on novel failures; the tighter cap makes it cheaper but does not make it smarter."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The redesigned loop needs better prompting. The system prompt should explicitly instruct the agent not to repeat an approach it has already tried, to consider at least 3 distinct fix strategies before attempting any of them, and to escalate to a human if none of the 3 strategies succeed. Prompt engineering is the lowest-overhead mechanism for shaping loop behavior without architectural changes.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Instructing the agent not to repeat approaches relies on the model accurately tracking its own prior actions across iterations, which is exactly the capability it lacks. Without a structured seen-actions log, the instruction competes with the model's tendency to re-derive the same conclusion when presented with the same context. Prompt instructions also do not produce the fast-path classifier behavior: an LLM prompted to consider 3 strategies will still run full reasoning on a schema mismatch rather than dispatching a deterministic lookup. Prompt shaping is a complement to structural redesign, not a substitute.",
+              "framework_hint": "Domain Expertise failure: treating behavioral instructions as equivalent to state tracking. An LLM that is told not to repeat itself but has no external memory of what it already tried is relying on in-context attention over prior turns, which degrades as the conversation grows and does not constitute reliable state management for a production agentic loop."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The redesigned loop needs a monitoring dashboard that tracks retry counts per run in real time and alerts the operations team when a run exceeds 3 iterations. Human operators can then intervene immediately, stopping the spiral before it reaches 6 to 8 attempts. Automated intervention is too risky for production pipeline management; human oversight is the right stopping criterion.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Real-time monitoring is a useful operational layer and human oversight is appropriate for genuinely novel failures. The gap is that a monitoring alert addressed by human intervention is not a loop redesign — it is a manual escalation process bolted onto the existing broken loop. The alert fires after 3 iterations on the same failed approach, meaning the loop still spiraled 3 times before stopping. The root causes (no state, no pattern classification) remain in place. This component belongs in the system as a safety net, not as the primary mechanism for eliminating spirals.",
+              "framework_hint": "Strategic Thinking gap: monitoring is a detection mechanism, not a prevention mechanism. A loop that requires human intervention after 3 retries to stop spiraling is cheaper than the current loop but is still structurally broken. The list step asks for components that make the spiral impossible, not components that make it detectable."
+            }
+          ]
+        },
+        {
+          "question_text": "What determines whether the fast-path pattern classifier should fire instead of the general diagnostic loop on a given failure?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["domain_expertise", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The classifier should fire when the failure signature matches one of the 3 known patterns with high structural confidence, not semantic similarity. Schema mismatches have deterministic indicators: a specific error code or a field-type conflict in the schema diff. Source timeouts have a specific error class and a timeout duration. Destination permission errors carry a permission-denied code and an affected table identifier. The classifier matches on these structural features, not on free-text log interpretation. If all required structural indicators are present and unambiguous, the classifier fires and dispatches the deterministic fix. If any required indicator is absent or ambiguous — meaning the failure looks like a known pattern but is missing a key structural feature — the classifier declines and the general loop runs. The cost of a false positive (incorrectly classifying a novel failure as a known pattern) is higher than the cost of a false negative (sending a known failure through the general loop), because a false positive applies the wrong fix and may make the situation worse.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "taste"],
+              "explanation": "This framing correctly distinguishes structural matching from semantic matching and explains why that distinction matters for production safety. Structural feature matching (error code, field-type conflict, permission-denied code) is deterministic and testable. Semantic similarity matching (the logs 'look like' a timeout) introduces model judgment into the routing decision, which adds error surface at the point where the system most needs reliability. The asymmetric cost argument — false positives are worse than false negatives — is the key taste judgment: it forces the classifier to be conservative, which is the right call for a system that controls automated fixes to production pipelines.",
+              "framework_hint": "Taste: distinguishing 'looks like a known pattern' (semantic, model-interpreted) from 'has all required structural indicators of the pattern' (deterministic, testable). The cost asymmetry between false positives and false negatives is the reasoning move that determines classifier conservatism. Domain Expertise: production agentic systems that gate on error codes and structured metadata are more auditable and less prone to cascading misclassification than systems that route on natural language similarity."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The classifier should fire whenever the failure log contains keywords associated with the 3 known patterns: words like 'schema,' 'timeout,' or 'permission' indicate the failure type. Keyword matching is fast, deterministic, and does not require training data or a separate model. If a keyword match is found, dispatch the known fix. If not, route to the general loop.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Keyword matching is fast and avoids model dependency, which is a real advantage. The gap is that it is too coarse a discriminator for production use. A log that mentions 'schema' may describe a schema validation step that completed successfully in a run that failed for a different reason. A 'timeout' keyword may appear in a contextual error message rather than as the root cause. Keyword presence is a necessary but not sufficient condition for pattern classification, and treating it as sufficient will produce a false-positive rate that causes the classifier to dispatch the wrong fix on ambiguous failures.",
+              "framework_hint": "Domain Expertise partial credit: keyword matching is lightweight and interpretable. Taste gap: the precision of the classifier determines the safety of the automated fix dispatch. A keyword match that fires on partial evidence applies a fix to a failure that may not fit the pattern, which is the false-positive scenario with the highest cost in a production pipeline context."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The classifier should fire whenever the current failure is semantically similar to a historical failure from the past 90 days that was successfully resolved. Use embedding similarity over resolved-incident descriptions to route new failures. A cosine similarity above 0.85 against any past resolved incident qualifies for fast-path dispatch.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Embedding similarity over resolved-incident descriptions introduces a model-in-the-path at the routing decision, which adds latency and error surface to the component that is supposed to be fast and deterministic. More critically, historical success in resolving a semantically similar incident does not mean the current failure has the same root cause — two failures can produce similar-sounding logs while requiring completely different fixes. The 0.85 cosine similarity threshold is an arbitrary number that does not map to any safety property of the routing decision.",
+              "framework_hint": "Domain Expertise failure: embedding similarity is a retrieval mechanism, not a causal classifier. Two incidents can be semantically similar and causally distinct. Dispatching a fix based on retrieval similarity rather than structural feature matching increases the false-positive rate on exactly the edge cases that matter most: failures that look like known patterns but are not."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The classifier should always fire first on every failure, and the general diagnostic loop should only run if the classifier returns no match. This makes the classifier the mandatory first gate for all runs, not just the 30% that currently spiral. If the classifier is fast and low-cost, adding it as a universal first step adds negligible overhead while capturing the 3 known patterns on every run.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Running the classifier as a universal first gate is a reasonable architectural choice and is not wrong in principle. The gap is that this option does not address the question: what determines whether the classifier fires versus declines. It describes the sequencing (classifier before general loop, always) without specifying the matching criterion that makes the classifier decision reliable. The critical design question is how the classifier decides it has a confident match, not whether it runs first.",
+              "framework_hint": "Strategic Thinking gap: the question is about the matching criterion, not the invocation order. Universal-first-gate is a valid architecture, but the option does not say what the classifier evaluates to produce a match or decline decision. An answer that addresses sequencing without addressing confidence criteria leaves the most important design question unanswered."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The redesigned loop has multiple components: a seen-actions log, a fast-path classifier, a human escalation gate, and a pattern library with an update policy. Name the tradeoff the team must explicitly accept, and identify what the classifier's conservatism costs the system in the short term.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right optimization criterion for tuning the fast-path classifier — specifically, how conservative should it be in claiming a pattern match?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The classifier should optimize for precision over recall, accepting that it will miss some true positives — known-pattern failures it declines to classify — in exchange for a near-zero false-positive rate on production runs. The reasoning: a false positive applies the wrong deterministic fix to a pipeline that needs something else, potentially creating a new failure state and lengthening incident resolution. A false negative sends a known-pattern failure through the general diagnostic loop, which costs more tokens but produces the correct diagnosis eventually. At $0.30 per clean run, the cost of a false negative is bounded and recoverable. The cost of a false positive on a production pipeline is unbounded and may require manual intervention to reverse. The sacrifice this criterion demands is explicit: during the classifier's initial deployment period, a meaningful fraction of the known-pattern failures will still run the general loop and cost more than necessary, because the classifier declines marginal matches. That is the right tradeoff until the team has enough production data to tighten the matching thresholds with confidence.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion correctly identifies the asymmetric cost between false positives and false negatives for a system that applies automated fixes to production pipelines. The precision-over-recall framing names the sacrifice explicitly: some known-pattern failures will still run the general loop during the calibration period, which means cost savings from the classifier will be lower than maximum in the short term. That is the right tradeoff because the downside of a miscategorized fix in production is qualitatively different from the downside of an unnecessarily expensive but correct diagnosis.",
+              "framework_hint": "Taste: the precision-versus-recall tradeoff is not symmetric when the cost of each error type differs. A false positive in a production pipeline fix system causes a second incident; a false negative causes an unnecessary spend. Choosing precision is a taste judgment grounded in the asymmetric consequences, not a generic best practice. Strategic Thinking: naming the sacrifice (some known-pattern failures run the expensive path during calibration) makes the criterion auditable and prevents the team from expanding classifier confidence prematurely."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The classifier should optimize for recall — matching as many known-pattern failures as possible. The 3 known patterns account for all 30% of spiraling runs. Every known-pattern failure that the classifier misses still runs the full diagnostic loop at $2.40 instead of $0.30. Maximum recall minimizes total cost. False positives can be caught by the seen-actions log: if the wrong fix is applied and fails, the log records the failure and prevents the same wrong fix from being tried again.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Maximizing recall does minimize cost over the 30% spiral population, and the observation that the seen-actions log provides a downstream safety net is correct. The gap is that relying on the log to catch false positives treats the wrong fix application as an acceptable step in incident resolution. For a system managing production data pipelines, applying an incorrect automated fix — even one that is then logged and not repeated — may corrupt pipeline state in ways the log cannot reverse. The criterion optimizes for token cost without pricing the operational cost of incorrect fix application.",
+              "framework_hint": "Strategic Thinking partial credit: correctly quantifies the cost reduction benefit of high recall. Taste gap: the seen-actions log prevents repeating a failed fix but cannot undo the damage done by applying the wrong fix in the first place. In a production pipeline context, the cost of an incorrect automated fix is not just a wasted token spend — it may require manual state recovery, which is the scenario the whole redesign was meant to avoid."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The classifier should not have a tunable conservatism setting. Instead, it should always require a human confirmation step before dispatching a fix for any pattern match. This adds a brief delay but eliminates false positives entirely. Human confirmation is the right tradeoff for a system that controls production pipelines.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Requiring human confirmation on every classifier match defeats the purpose of building a fast-path classifier. The 3 known patterns are deterministic: schema mismatches have known fixes, source timeouts have known recovery actions, and permission errors have known remediation paths. Adding a confirmation gate on every one of these reintroduces human latency to the resolution path, eliminating the speed and cost advantage the classifier was designed to provide. Human escalation is the right gate for novel failures that the classifier declines; it is not appropriate for pattern matches the classifier can handle autonomously.",
+              "framework_hint": "Taste failure: the option conflates 'eliminating false positives' with 'always requiring human review,' but these are not equivalent. A conservative precision-focused classifier with high structural-feature requirements achieves near-zero false positives without human confirmation. Human escalation is for genuinely novel cases, not for every pattern match."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The classifier should be tuned against a held-out test set of historical incidents until it reaches 95% accuracy on known patterns. Once it crosses that threshold, deploy it with no further tuning. A 95% accuracy target balances precision and recall adequately for a production system.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Accuracy as a combined metric obscures the precision-recall tradeoff that matters for this system. A classifier with 95% accuracy could achieve that score with very different error profiles: high recall and some false positives, or high precision and some false negatives. In a production pipeline fix system those two profiles have very different consequences. More practically, a test set of historical incidents may not represent the distribution of marginal cases — failures that share some but not all structural features of a known pattern — which is precisely the distribution on which the classifier's conservatism setting matters most.",
+              "framework_hint": "Domain Expertise failure: accuracy as an aggregate metric is appropriate for classification tasks with symmetric error costs. For this system, the error costs are asymmetric (false positive causes an incorrect automated fix; false negative causes a more expensive but correct resolution path), making precision and recall the relevant metrics rather than their combination in an accuracy score."
+            }
+          ]
+        },
+        {
+          "question_text": "How should the team handle the pattern library — the maintained record of known failure signatures and their fixes — as the system encounters novel failures over time?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["strategic_thinking", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The pattern library should grow through a defined promotion process tied to the human escalation gate. When the escalation gate fires and a human engineer resolves a novel failure, the resolution is a candidate for library promotion. Promotion requires two conditions: the failure has recurred at least 3 times with the same structural signature (confirming it is a recurring pattern and not a one-off), and the fix has been applied successfully on at least 2 recurrences after the initial resolution (confirming the fix generalizes). Until both conditions are met, the failure remains in a candidate queue visible to the engineering team. The sacrifice is that a pattern with only 1 or 2 recurrences stays in the general loop even if the team is confident it will recur — because false promotion of a not-yet-confirmed pattern risks adding an untested fix to the classifier's dispatch path.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "cognitive_empathy"],
+              "explanation": "This promotion process correctly gates on recurrence (confirming the pattern is structural and not incidental) and fix generalization (confirming the fix applies beyond the initial case). The 3-recurrence threshold before promotion and the 2-successful-fix threshold before classifier dispatch are conservative but justified: a pattern with 1 recurrence might be coincidental, and a fix that worked once might be context-specific. Naming the sacrifice — confident patterns still run the general loop until promotion criteria are met — makes the policy auditable and prevents premature library expansion driven by engineering intuition rather than empirical evidence.",
+              "framework_hint": "Cognitive Empathy: simulating the engineering team's position — they will want to promote patterns quickly after the first successful resolution. The promotion criteria exist to resist that intuition when the evidence is insufficient. Strategic Thinking: the two-condition gate (recurrence + fix generalization) separates 'we fixed it once' from 'we have a reliable pattern and a reliable fix,' which is the distinction that determines whether classifier dispatch is safe."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The pattern library should be updated by the on-call engineer whenever they resolve a novel failure through the escalation gate. If the engineer believes the failure pattern will recur, they add it to the library immediately. This keeps the library current without bureaucratic overhead. Engineers closest to the failure have the best judgment about whether a pattern is structural.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Engineers closest to the failure do have strong intuition about pattern recurrence, and reducing bureaucratic overhead is a legitimate concern. The gap is that immediate promotion on engineer judgment skips the empirical check: the engineer may correctly identify the failure type but incorrectly generalize the fix. A fix that worked in a specific context — a particular schema version, a particular upstream source configuration — may fail silently when applied to a superficially similar failure with different underlying state. Without a recurrence and fix-generalization gate, the library accumulates untested entries that could produce false positives in the classifier.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that on-call engineers have high-quality intuition about failure patterns. Strategic Thinking gap: engineer intuition is a strong prior but not a sufficient condition for classifier dispatch. The gap between 'I'm confident this pattern will recur' and 'this fix reliably resolves this pattern across different incident contexts' is exactly what the empirical gate is designed to fill."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The pattern library should not be updated manually. Instead, use a machine learning model trained on resolved incident logs to automatically identify new recurring patterns and propose fixes. The model can surface candidates for human review, and an engineer approves or rejects each proposal. This scales better than manual curation as the system encounters more failure types.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "ML-based pattern discovery is a reasonable long-term architecture for a system operating at high incident volume. It is not the right mechanism for a team managing a production pipeline with 3 known patterns and a newly built escalation gate. Introducing a pattern-discovery model adds a second ML system to maintain and debug, and the proposals it generates require the same empirical validation (recurrence, fix generalization) that a manual promotion process would require. The answer solves a scaling problem the team does not yet have while adding complexity to a system that is being redesigned to reduce complexity.",
+              "framework_hint": "Strategic Thinking failure: the current system has 3 known patterns and an escalation gate that handles novel failures. An ML-based pattern discovery model is an appropriate investment at 50 or 500 known patterns, not at 3. Adding complexity to solve a scale problem that does not exist yet is the mistake the agentic loop itself was making — over-engineering the reasoning path for cases it does not encounter in volume."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The pattern library should be locked after the initial 3 patterns are encoded. Adding new patterns introduces maintenance overhead and increases the classifier's attack surface — a library with 20 patterns is harder to audit than one with 3. The escalation gate handles all novel failures adequately, so library expansion is not necessary.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Freezing the library at 3 patterns treats the maintenance cost of a larger library as a reason to leave recoverable incidents in the expensive general loop indefinitely. As the system encounters recurring novel failures that could be promoted to known patterns, a frozen library forces those failures to run full diagnostic loops even after the team has a reliable fix for them. The escalation gate is the right path for genuinely novel failures, but it is not a substitute for promoting confirmed recurring patterns to the fast path.",
+              "framework_hint": "Taste failure: the instinct to minimize library complexity is reasonable, but locking the library conflates 'fewer patterns is simpler' with 'fewer patterns is better.' A library with 10 well-validated patterns is more valuable than a library frozen at 3, even though it requires more maintenance. The maintenance cost of a larger library is much lower than the ongoing token cost of routing confirmed recurring patterns through the general loop."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The redesigned loop is a hypothesis: add state and a pattern classifier, and the 30% spiral population collapses to near zero while novel failures route cleanly to escalation. Name the metric, the threshold, and the timeline that would confirm the hypothesis — and name the counter-signal that would tell you something is wrong before the cost bill arrives.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success bar look like for the redesigned agentic loop, covering both cost reduction and safety?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.55,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet is: within 30 days of deploying the redesigned loop, the per-incident median cost drops from $2.40 to below $0.50, and the fraction of runs exceeding 3 iterations drops from 30% to below 5%. The $0.50 ceiling reflects the expected cost of a classifier call plus at most 1 general-loop iteration on a novel failure — it has slack for the classifier declining a marginal pattern match and routing to the general loop. The 5% threshold allows for a small population of genuinely complex novel failures that require 2 to 3 diagnostic iterations. The counter-signal is: median cost stays below $0.50 but the escalation gate fires on more than 20% of runs within the first two weeks. That signal means the classifier is over-declining — rejecting matches it should accept — and the general loop is compensating, producing correct resolutions at higher cost. The win condition fails if either the cost threshold or the escalation rate threshold is breached, not just one of them.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This win condition names specific thresholds for two different metrics (median cost below $0.50, spiral rate below 5%), grounds both in the scenario's numbers (the current $2.40 median, the 30% spiral rate), and defines a counter-signal that is non-obvious: cost staying low while escalation rate is high would look like success on the cost metric while indicating the classifier is not working as designed. Linking win-condition failure to the conjunction of cost and escalation rate prevents the team from declaring victory on the invoice while the system is quietly misrouting failures.",
+              "framework_hint": "Domain Expertise: the $0.50 ceiling is derived from the expected cost of a classifier call plus 1 loop iteration, not from a round-number target. Strategic Thinking: the counter-signal (low cost + high escalation rate) is important because it is the failure mode that looks like success on the primary metric. Naming it forces the team to monitor a second instrument even when the invoice is improving."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success means the monthly agent-run cost drops below $500 from the current level. Track the monthly bill. If it falls to $500 or below within 60 days, the redesign is working. If it is still above $800 at 45 days, the classifier matching thresholds need to be loosened to capture more known-pattern failures.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A specific cost target with a timeline and an escalation trigger is better than directional language. The gap is that the monthly bill is a lagging indicator with no quality signal attached. The redesign could achieve the cost target by having the classifier over-match — classifying novel failures as known patterns and dispatching wrong fixes — which would reduce loop iterations (and cost) while producing incorrect pipeline resolutions. Without a quality metric — escalation rate, fix success rate, or post-fix pipeline health — the bill alone cannot confirm the redesign is working correctly.",
+              "framework_hint": "Strategic Thinking partial credit: names a specific threshold and a timeline with a tuning trigger. Domain Expertise gap: the monthly bill measures token spend, not loop correctness. A win condition for an agentic system that applies fixes to production infrastructure must include a signal about fix quality, not just cost."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The strategy wins if engineering reports that on-call incident volume for pipeline failures drops by at least 40% within 60 days. Fewer escalations to human engineers means the classifier and general loop are resolving failures autonomously. A 40% reduction in on-call pages is the metric that the operations team cares about most.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "On-call incident volume is a meaningful operational health metric and a 40% reduction would be a real improvement. The gap is that escalation rate is the metric the human escalation gate directly controls — the redesign was built to route only novel failures to human escalation. A low escalation rate could mean the classifier is correctly handling known patterns, or it could mean the classifier is over-matching and applying wrong fixes without triggering escalation (because the seen-actions log prevents a second wrong attempt but does not itself escalate). Without a cost metric or a fix-success metric, a low escalation rate is ambiguous.",
+              "framework_hint": "Domain Expertise gap: escalation rate measures how often human engineers are invoked, not whether the automated paths are producing correct resolutions. The win step requires a metric that confirms the hypothesis (the loop is cheaper and correct), not just a metric that confirms one component of the design is activating."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The strategy wins if the seen-actions log shows zero repeated identical actions across all production runs for 30 consecutive days. Zero repetition confirms the loop has state and is using it. This is the clearest structural confirmation that the redesign eliminated the root cause.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Zero identical-action repetition is a structural confirmation that the seen-actions log is functioning correctly, and it is a useful internal diagnostic. It is not a win condition for the redesign as a whole because it measures only one of the four components and does not connect to the system's outcomes. A loop with zero repeated actions that routes all failures through the general loop (because the classifier is too conservative) would satisfy this metric while still costing $2.40 per incident. The win condition must include the cost and correctness outcomes the redesign was intended to achieve.",
+              "framework_hint": "Strategic Thinking failure: zero repetition in the seen-actions log is a component health check, not a success bar for the redesign. Win conditions measure outcomes, not internal mechanism states. A loop that never repeats an action but still costs $2.40 per incident because the classifier never fires has satisfied the structural check while failing the cost objective."
+            }
+          ]
+        },
+        {
+          "question_text": "When should the team consider expanding the fast-path classifier beyond the initial 3 known patterns, and what gate governs that decision?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.45,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Expansion should be gated on two simultaneous conditions: the candidate pattern has appeared via the escalation gate at least 3 times with an identical structural signature, and the corresponding fix has resolved the pipeline successfully on at least 2 of those recurrences without requiring subsequent manual correction. Both conditions must clear simultaneously — a pattern that recurs reliably but whose fix has only been applied once is still a candidate, not a confirmed library entry. The sacrifice is explicit: during the period when a recurring pattern has cleared the recurrence threshold but not yet the fix-validation threshold, it stays in the general loop even though the team is likely confident it could classify it. That period of excess cost is the right tradeoff for not dispatching an unvalidated fix to a production pipeline.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "The two-condition gate separates pattern recurrence (structural evidence that this failure type is systemic) from fix generalization (empirical evidence that the fix works reliably across instances). Both are necessary and neither is sufficient alone. The sacrifice — leaving a high-confidence candidate in the general loop until the fix-validation threshold clears — is the taste judgment that makes the expansion policy conservative enough for production safety. Naming the sacrifice prevents the team from rationalizing early promotion when the cost of remaining in the general loop is visible and the cost of a miscategorized fix is less salient.",
+              "framework_hint": "Taste: the distinction between 'we are confident this is pattern X' and 'we have confirmed the fix for pattern X generalizes across instances' is the reasoning move that prevents premature promotion. Strategic Thinking: the two-condition gate is concrete enough that the team can apply it consistently without judgment calls, which makes the expansion policy auditable and resistant to deadline pressure."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Expansion should happen whenever the on-call engineer who resolved a novel failure recommends adding it to the library. Engineers have direct context on failure root causes and can assess whether a pattern is structural and whether the fix is reliable. Requiring multiple recurrences before promotion delays cost savings from patterns that are clearly recurring.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Engineer judgment is a valuable input and the concern about delayed cost savings from clearly recurring patterns is real. The gap is that 'clearly recurring' in the engineer's assessment is not the same as 'recurred and fix has been validated on multiple instances.' Engineers resolving escalated failures are working under time pressure and may generalize a fix from a single successful application without testing it against the variation in that failure type's surface conditions. The recurrence gate exists to make that validation empirical rather than intuition-based.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly accounts for the on-call engineer's context advantage. Taste gap: engineer confidence after a single successful resolution is a necessary but not sufficient condition for promotion. The gate is not a bureaucratic obstacle to engineer judgment — it is the check that converts engineer judgment into validated library entries the classifier can dispatch autonomously on production traffic."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The classifier should never expand beyond the 3 initial patterns. The current 30% spiral population is caused entirely by those 3 failure types. Expanding the library adds maintenance burden and increases the attack surface for false positives. The escalation gate handles all novel failures adequately, so library growth is unnecessary.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Freezing the library at 3 patterns is a defensible initial position but not a permanent policy. As the system runs in production and the escalation gate captures novel failures, some of those failures will become recurring patterns with validated fixes. Leaving them in the general loop indefinitely — paying full diagnostic loop cost on every instance — when the team has a reliable fix and a clear pattern signature is a choice to accept ongoing excess cost for the sake of library simplicity. That tradeoff may be acceptable at 1 or 2 new pattern candidates; it becomes indefensible at 10.",
+              "framework_hint": "Strategic Thinking failure: treating 'maintain 3 patterns' as a permanent policy ignores that the distribution of pipeline failures will evolve over time. A library that does not grow as the system learns is a static artifact in a dynamic environment. The question is not whether to expand but when and under what conditions, which is exactly what a promotion policy answers."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Expand the classifier whenever the monthly agent-run cost starts rising again after the initial reduction. Cost growth signals that new failure patterns are emerging at volume. At that point, audit the escalation gate logs, identify the most frequent novel failures, and add the top 2 to 3 to the classifier immediately. Cost is the right trigger for expansion.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Using cost growth as the expansion trigger is reactive rather than proactive. By the time monthly cost is rising, the new patterns have already been generating escalations and running through the general loop at full cost for some period. The promotion policy should add patterns as they accumulate sufficient evidence via the escalation gate, not wait for cost growth to surface them as a billing signal. More critically, 'add immediately' skips the fix-validation gate that prevents unvalidated fixes from reaching the classifier's dispatch path.",
+              "framework_hint": "Strategic Thinking failure: billing signals are lagging indicators. A reactive expansion policy triggered by cost growth leaves money on the table during the accumulation period and creates pressure to promote patterns quickly without the validation gates that make classifier dispatch safe. The promotion policy should be continuous and evidence-gated, not periodic and cost-triggered."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

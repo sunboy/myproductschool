@@ -1,0 +1,215 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000001",
+  "title": "Spotify's 15% Session Drop",
+  "scenario_role": null,
+  "scenario_context": "Spotify's growth team shipped a Share to Story button inside the Now Playing screen two weeks ago. The feature went to 100% of users globally. Click-through rate settled at 3%, and satisfaction surveys are flat.",
+  "scenario_trigger": "Daily active session count has dropped 15% globally since the launch. The PM pings the engineer who shipped it asking what's going on.",
+  "scenario_question": "Diagnose why sessions dropped, determine whether the Share to Story button is the cause, and decide what to do about it.",
+  "engineer_standout": "A strong answer treats the 3% CTR and 15% drop as a contradiction worth explaining, not a confirmation. The button touches 100% of Now Playing users on every play; the 97% who never tap it are the more interesting population. The key move is separating what the button does to tappers from what its presence does to everyone else, and then designing a test that isolates causation from coincidence.",
+  "paradigm": "traditional",
+  "difficulty": "standard",
+  "estimated_minutes": 20,
+  "primary_competencies": ["strategic_thinking", "taste"],
+  "secondary_competencies": ["cognitive_empathy", "domain_expertise"],
+  "topic_tags": ["retention", "growth", "north-star"],
+  "technique_tags": ["retention-cohorts", "taste-frame"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "A 3% click rate cannot directly cause a 15% session drop. Find the discrepancy in that math before blaming the button.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the session drop given a 3% CTR and flat satisfaction surveys?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "taste"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The button's presence in the Now Playing screen is adding friction for all users, not just the 3% who tap it. A button that adds a tap target, shifts layout, or interrupts the listening flow affects every session that passes through Now Playing, making the 97% non-tappers the more plausible source of the drop than the tappers themselves.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "taste"],
+              "explanation": "This is the correct framing because it resolves the math: 3% CTR cannot produce a 15% session decline unless the button affects non-tappers too. The button is present on every Now Playing view, so any layout shift, extra tap surface, or attention interrupt hits the full user base. Flat satisfaction surveys don't rule this out because users often abandon sessions without consciously noting why.",
+              "framework_hint": "Taste: the reasoning move here is distinguishing between a tradeoff and a preference. The button adds a visible exit ramp to a passive listening experience; the cost is paid by everyone who sees it, not just those who use it. Strategic Thinking: the 3% CTR vs 15% drop mismatch is the diagnostic signal, not the CTA performance."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The 3% of users who tap Share to Story are leaving Spotify to post on social platforms and not returning to their listening session, and that exit behavior is large enough to account for the 15% session drop.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Exit-without-return by tappers is a real hypothesis and worth testing, but the math is shaky: 3% of sessions exiting would need a near-zero return rate to produce a 15% aggregate drop. This framing doesn't account for the 97% non-tappers and ignores the possibility that the button affects the broader Now Playing experience.",
+              "framework_hint": "Strategic Thinking: the framing is directionally correct but the causal chain is fragile. It treats the 3% as the whole story when the 15% signal is too large to explain without involving the non-tapper population."
+            },
+            {
+              "option_label": "C",
+              "option_text": "User satisfaction surveys are flat, which means users aren't bothered by the button. The session drop is likely caused by a separate, unrelated change that shipped around the same time, and the button is a coincidence.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Flat satisfaction surveys are weak evidence of no impact. Users rarely connect a vague session feeling to a specific UI element, and satisfaction surveys lag behavioral data by days or weeks. The two-week window correlation is worth investigating before declaring coincidence, not after.",
+              "framework_hint": "Taste failure: using a lagging, low-resolution signal (survey) to dismiss a high-resolution behavioral signal (session count) is the opposite of the reasoning move. Flat NPS does not equal no friction."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The feature shipped globally two weeks ago, and session drops often take time to materialize as users gradually form new habits. This is a normal adoption curve reaction and will self-correct as the Share to Story behavior becomes routine.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Adoption curve reasoning applies to features that ask users to do something new. A button that most users ignore doesn't produce an adoption curve; it either creates friction immediately or doesn't. A 15% global session drop in two weeks is too fast and too large to explain as habit formation lag.",
+              "framework_hint": "Motivation Theory failure: adoption curves describe the spread of a behavior, not the cost of a UI element's presence. This conflates user onboarding dynamics with the friction cost of a layout change. The signal here is a drop, not slow uptake."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Before running a test, enumerate every plausible cause. At least one should not involve the button at all.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of hypotheses most completely accounts for the 15% session drop?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "creative_execution"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four structurally distinct hypotheses: (1) the button adds a layout shift or tap-target on Now Playing, raising accidental taps or attention cost for all 100% of users who see it; (2) the 3% who tap it navigate away to social and don't return, shortening sessions for that cohort; (3) a concurrent release in the same two-week window is the actual cause and the button is a coincidence; (4) a platform or algorithm change (e.g., playlist recommendations degraded) reduced session depth independently.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "creative_execution"],
+              "explanation": "This set covers the full hypothesis space: button impact on non-tappers, button impact on tappers, confounding release, and unrelated platform change. Each is structurally distinct and falsifiable with different data. Missing any one of them leaves a blind spot that could lead to the wrong fix or an unnecessary rollback.",
+              "framework_hint": "Creative Execution: the reasoning move at List is generating structurally distinct options, not variations on a theme. Hypotheses 1 and 2 are both button-related but through different mechanisms and different populations. Hypothesis 3 is the confound check, which is what separates a rigorous diagnosis from a scapegoat."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Two hypotheses: users who tap Share leave Spotify mid-session, and users who see the button without tapping find it distracting and close the app. The button is the cause in both cases.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Both mechanisms are plausible and worth testing, but listing only button-attributed hypotheses skips the confound check. If a separate change also shipped in the same two-week window, this hypothesis set will lead to a wrong conclusion even if the tests are run correctly.",
+              "framework_hint": "Strategic Thinking: a good hypothesis list always includes at least one null hypothesis or confound. Omitting it isn't humility, it's analytical risk."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The Share to Story button increased load time on the Now Playing screen, and slower screens always hurt engagement. Check the P95 load time before and after the release.",
+              "quality": "surface",
+              "competencies": ["domain_expertise"],
+              "explanation": "Load time is a legitimate signal to check and should be on the diagnostic list, but it's a single mechanism hypothesis. Presenting one narrow technical cause as the list skips the structural work of enumerating the space. It also doesn't explain why satisfaction surveys stayed flat if load time degraded.",
+              "framework_hint": "Creative Execution failure: a list with one item isn't a list, it's a guess. The reasoning move at List is to map the full solution space before committing to any branch."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The button is fine. The two-week timing is a coincidence. The session drop is seasonal because Spotify always sees engagement dips in this calendar window due to reduced commute activity.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Seasonal patterns are a real confound worth checking, but dismissing the button before comparing year-over-year session trends is premature closure. The two-week correlation with a specific feature launch is too specific to wave off without data. This answer skips the diagnostic step entirely.",
+              "framework_hint": "Cognitive Empathy failure: the PM who asked the question has a legitimate concern. Dismissing it without evidence doesn't model their success metric, which is a defensible explanation for the drop. Seasonal is a hypothesis to test, not a conclusion to assert."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "There's a tradeoff between certainty and speed here. Name the criterion you're optimizing for before choosing the test design.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "How do you determine whether the Share to Story button is the actual cause of the session drop, and what is the key tradeoff in your chosen approach?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Run a holdback: immediately re-expose a 10% control group to the pre-button Now Playing UI while keeping 90% on the new version. If the holdback group recovers session count within 72 hours, causation is confirmed. The tradeoff is that 90% of users remain on a potentially harmful surface during the test window, but this preserves the feature for most users if it turns out not to be the cause.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "A holdback directly tests the causal question without a full rollback. The 72-hour window is tight enough to limit exposure if the button is harmful, and the 10% holdback size is large enough to detect a 15% session difference with high confidence. Naming the tradeoff explicitly (90% continued exposure vs causal certainty) is the taste move: this is a real sacrifice, not a preference.",
+              "framework_hint": "Taste: the reasoning move at Optimize is naming the sacrifice. The holdback approach gets causal signal at the cost of keeping most users on a potentially harmful version during the window. Strategic Thinking: the criterion being optimized is causal certainty, not shipping speed, and that choice is explicit and defensible."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Roll back the button immediately for all users, wait 72 hours to see if sessions recover, and then re-ship if they do. This gives the clearest causal signal and eliminates ongoing harm if the button is the cause.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Full rollback is the simplest causal test and minimizes ongoing exposure risk, but it's a binary decision that discards all data from the partial holdback alternative. If sessions don't recover, the rollback hasn't told you what the actual cause is. It also creates a second launch event that may introduce its own noise.",
+              "framework_hint": "Taste: full rollback is decisive but doesn't name the sacrifice clearly. Losing two weeks of behavioral data and re-traumatizing the deploy cycle are real costs. The question is whether causal certainty without holdback comparison is worth them."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Segment the existing data by users who tapped Share vs users who didn't, and compare their session lengths. If tappers have shorter sessions, the button is the cause.",
+              "quality": "surface",
+              "competencies": ["domain_expertise"],
+              "explanation": "Retrospective segmentation is a useful diagnostic step but cannot establish causation. Tappers are self-selected: users who were already going to end their session may be more likely to tap Share. The comparison is confounded by intent, not controlled for it. This is correlation, not an experiment.",
+              "framework_hint": "Taste failure: treating observational segmentation as causal evidence is the most common error in growth diagnostics. The reasoning move at Optimize is to name the criterion and the sacrifice. Using existing data skips the sacrifice (doing nothing) but also skips the causal certainty the question demands."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Increase the Share to Story button's visibility with a tooltip or animation to push CTR from 3% to 10%, and then check if session count recovers. If more engagement with the feature improves sessions, the original implementation was just poorly designed.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "This inverts the diagnostic logic. Increasing engagement with a feature suspected of causing harm is not a test of the feature's impact; it's an escalation of exposure. If the button is harmful, more prominent placement makes the problem worse. This answer mistakes CTR optimization for causal diagnosis.",
+              "framework_hint": "Strategic Thinking failure: the criterion here is undefined. Optimizing CTR during a regression investigation treats the wrong signal as the goal. The criterion should be 'can I confirm or rule out the button as the cause of the 15% session drop' not 'can I improve the button's own metrics'."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "What number, at what threshold, by when, would tell you this is fixed? Write the falsifiable version.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "How do you define success for the holdback experiment, and what does a falsifiable winning condition look like?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Success is: the holdback group (pre-button Now Playing) shows a statistically significant recovery in daily session count of at least 10 percentage points relative to the treatment group within 72 hours of the experiment starting. Failure is: session count in the holdback group is within 2% of the treatment group, which would rule out the button as the primary cause and redirect investigation to the concurrent-release or platform hypothesis.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This is falsifiable in both directions. A 10-point recovery in the holdback group confirms the button caused the drop. A near-zero delta rules it out and redirects effort without wasted time. The 72-hour window is specific and the metric is the same session count that triggered the investigation. Both the positive and the negative result are actionable.",
+              "framework_hint": "Strategic Thinking: the reasoning move at Win is writing a hypothesis with a because-Z, not just a because. The falsification condition (holdback within 2% of treatment) is what separates a real win criterion from wishful thinking. Domain Expertise: anchoring on session count recovery, the same metric that flagged the problem, maintains measurement coherence."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success is: overall daily active session count returns to pre-launch levels within one week after the holdback experiment concludes and the button is removed for all users.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Returning to pre-launch levels is the right directional goal, but this definition lacks a falsification condition. If sessions recover only partially, it's unclear whether the button is still the cause, whether a confound is masking recovery, or whether the baseline has shifted. One week is also long enough for other variables to enter.",
+              "framework_hint": "Strategic Thinking: a winning condition without a losing condition is not falsifiable. The reasoning move at Win is naming the metric, the threshold, the timeline, and the signal that would say 'we got it wrong'."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Success is: user satisfaction survey scores improve after the button is removed and the team gets positive qualitative feedback in app store reviews.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Survey scores and app store reviews lag the behavioral signal by days to weeks, are low-volume, and conflate many signals. The investigation started with session count data; measuring success with a slower, noisier signal creates a feedback loop that won't detect partial recovery or confounds. This is the wrong metric for this question.",
+              "framework_hint": "Domain Expertise failure: choosing a lagging qualitative metric to confirm a behavioral fix is a category mismatch. If session count is the canary, session count is the instrument. Satisfaction surveys measure brand sentiment, not session mechanics."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success is: the Share to Story feature reaches a 10% CTR after redesign, proving that the original implementation was just underperforming and the session drop was a separate issue.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "CTR improvement on the feature is not a proxy for session count recovery. A redesigned button could hit 10% CTR while sessions remain depressed, or sessions could fully recover while CTR stays at 3%. These are independent signals. This win condition answers a different question than the one the PM asked.",
+              "framework_hint": "Strategic Thinking failure: the winning condition must be for the hypothesis being tested, not a different hypothesis entirely. Using CTR as the success metric for a session-count investigation conflates what the feature does (drive shares) with what the investigation is asking (is the feature harming session depth)."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

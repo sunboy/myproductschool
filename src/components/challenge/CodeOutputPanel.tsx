@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { TestResult, RunResult } from '@/lib/coding/types'
 
 interface CodeOutputPanelProps {
@@ -421,14 +421,7 @@ export function CodeOutputPanel({
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {/* Running state */}
-        {isRunning && (
-          <div className="flex items-center gap-3 px-4 py-6">
-            <span className="material-symbols-outlined text-primary text-xl animate-spin">
-              progress_activity
-            </span>
-            <span className="text-sm text-on-surface-variant font-label">Running tests...</span>
-          </div>
-        )}
+        {isRunning && <RunningIndicator />}
 
         {/* Idle state */}
         {isIdle && (
@@ -480,6 +473,64 @@ export function CodeOutputPanel({
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * Visible progress for a run in flight. A code run can take a few seconds (the
+ * runner submits to a shared sandbox, then polls for results), and under load
+ * it can take longer. A static spinner reads as "hung"; this advances a staged
+ * message and an elapsed counter so the user always sees motion, plus a
+ * reassurance line once a run runs long.
+ */
+function RunningIndicator() {
+  const [elapsedMs, setElapsedMs] = useState(0)
+
+  useEffect(() => {
+    const startedAt = Date.now()
+    const interval = setInterval(() => setElapsedMs(Date.now() - startedAt), 250)
+    return () => clearInterval(interval)
+  }, [])
+
+  const seconds = Math.floor(elapsedMs / 1000)
+  // Staged copy advances with elapsed time so progress is felt, not just spun.
+  const stage =
+    seconds < 2
+      ? 'Submitting your code…'
+      : seconds < 6
+        ? 'Running tests…'
+        : seconds < 14
+          ? 'Still running, almost there…'
+          : 'The sandbox is busy. Hang tight, this will finish or time out shortly.'
+
+  return (
+    <div className="flex flex-col gap-2 px-4 py-6">
+      <div className="flex items-center gap-3">
+        <span className="material-symbols-outlined text-primary text-xl animate-spin">
+          progress_activity
+        </span>
+        <span className="text-sm text-on-surface-variant font-label">{stage}</span>
+        {seconds >= 1 && (
+          <span className="ml-auto text-xs text-on-surface-variant/70 font-label tabular-nums">
+            {seconds}s
+          </span>
+        )}
+      </div>
+      {/* Indeterminate progress bar — pure motion, no fake percentage. */}
+      <div className="h-1 w-full overflow-hidden rounded-full bg-surface-container-high">
+        <div className="h-full w-1/3 animate-[codeRunSlide_1.2s_ease-in-out_infinite] rounded-full bg-primary" />
+      </div>
+      <style jsx>{`
+        @keyframes codeRunSlide {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(400%);
+          }
+        }
+      `}</style>
     </div>
   )
 }

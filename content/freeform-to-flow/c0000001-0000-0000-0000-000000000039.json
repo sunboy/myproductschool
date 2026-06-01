@@ -1,0 +1,341 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000039",
+  "title": "Building Trust for a Fully Autonomous Financial Agent",
+  "scenario_role": null,
+  "scenario_context": "A fintech startup is six weeks from publicly launching a fully autonomous financial management agent. The agent can do four things without asking for permission each time: categorize transactions, negotiate with service providers to lower bills, cancel unused subscriptions, and move money between accounts. The premise of the product is radical autonomy — users connect their accounts once and the agent acts on their behalf continuously. The value prop collapses the moment every action requires a confirmation tap.",
+  "scenario_trigger": "As launch approaches, three teams have submitted conflicting constraints. Legal says the product needs 'meaningful human oversight' before it can be marketed responsibly. UX says confirmation dialogs on every action will destroy the core experience and drive churn before users see value. Security wants a full audit trail of every action taken, with rollback capability on anything that can be reversed. The PM needs to design the trust architecture — the policy that governs when the agent acts freely, when it pauses for confirmation, and what the audit record captures.",
+  "scenario_question": "Design the trust architecture: determine which of the four agent actions should run autonomously, which require human confirmation, what the audit trail must capture, and how to frame the policy so that legal, UX, and security all regard it as adequate.",
+  "engineer_standout": "A strong answer recognizes that the four actions are not equivalent risk. Transaction categorization is effectively read-only — wrong categories are correctable with no external consequence. Subscription cancellation is low-stakes and typically reversible within a grace period. Bill negotiation with a service provider is externally consequential and hard to undo once committed. Moving money between accounts is high-stakes and irreversible in the same session. The insight is that 'meaningful human oversight' and 'don't kill the value prop' are reconcilable only when oversight is tiered by consequence rather than applied uniformly. The trust architecture should let categorization and cancellation run freely with an undo window and audit trail, require asynchronous confirmation (push notification with approve/reject) for negotiations, and require synchronous in-app confirmation with a spend limit for money movement. This satisfies legal's meaningful oversight requirement, keeps UX's confirmation burden minimal, and gives security a complete event log.",
+  "paradigm": "agentic",
+  "difficulty": "hard",
+  "estimated_minutes": 45,
+  "primary_competencies": ["strategic_thinking", "cognitive_empathy", "domain_expertise"],
+  "secondary_competencies": ["taste", "creative_execution"],
+  "topic_tags": ["fintech", "agentic-ai", "trust-architecture", "product-strategy", "autonomy"],
+  "technique_tags": ["consequence-tiering", "stakeholder-reconciliation", "risk-segmentation"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Legal, UX, and security each want something different. Before trying to satisfy all three, ask what the product is actually promising users — and what breaks first if the trust architecture is wrong.",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the design problem the trust architecture needs to solve?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The design problem is not 'how much oversight is enough' but 'which of the four actions carries enough external consequence that oversight is worth the friction cost.' Transaction categorization and subscription cancellation are low-consequence and largely reversible. Bill negotiation commits the agent to an agreement with a third party. Moving money between accounts transfers real value and cannot be recalled in the same session. Legal's 'meaningful human oversight,' UX's confirmation aversion, and security's audit trail requirement are all reconcilable if oversight is proportional to consequence — confirmation gates on money movement and negotiation, autonomous operation with undo windows on categorization and cancellation.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "cognitive_empathy"],
+              "explanation": "This framing correctly identifies that the tension between legal, UX, and security is a false conflict. The three constraints are reconcilable because the four agent actions sit at different points on the consequence-reversibility spectrum. Treating confirmation as a binary policy (either require it always or never) is what makes the constraints appear irreconcilable. Once the frame shifts to consequence-tiered oversight, legal's requirement is satisfied where it matters most, UX's friction concern is addressed where it matters most, and security's audit trail applies everywhere. The framing names the reasoning move the architecture must make.",
+              "framework_hint": "Strategic Thinking: reframing 'how do we satisfy three conflicting constraints' as 'the constraints are not actually in conflict if applied at the right tier.' Cognitive Empathy: simulating both the user's tolerance for friction on routine low-stakes actions and their expectation of control over high-stakes irreversible ones."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The design problem is stakeholder alignment. Legal, UX, and security have legitimate but competing requirements. The PM needs to run a cross-functional workshop to agree on a shared definition of 'meaningful human oversight' before any architecture can be designed. Without that shared definition, any architecture will satisfy one team and be rejected by the others.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Recognizing that 'meaningful human oversight' is undefined and contested is a real insight, and the instinct to surface a shared definition is not wrong. The gap is that calling for a workshop defers the framing problem to a process rather than solving it. A PM who can articulate why the constraints are reconcilable — because oversight can be tiered by consequence — does not need a workshop to produce alignment. The workshop is a tool for getting buy-in on a solution, not a substitute for forming the frame.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that the three teams are using the same words to mean different things. Strategic Thinking gap: the frame step requires naming what is actually at stake, not scheduling the next meeting. The insight that oversight can be consequence-tiered resolves the definitional disagreement without requiring consensus on an abstract term first."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The design problem is a legal compliance gap. The product cannot launch without satisfying the 'meaningful human oversight' requirement. The PM should work with legal to identify the minimum confirmation requirement that clears the regulatory bar, then implement exactly that. UX concerns about friction are secondary to launch viability.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Treating the legal requirement as the binding constraint and everything else as secondary inverts the product problem. The value proposition of a fully autonomous agent is that it acts without per-action confirmation — a product that adds confirmation gates across all four actions to satisfy a minimum legal bar may clear the regulatory threshold while eliminating the core user benefit. The frame step requires identifying what actually breaks if the architecture is wrong, which is the product experience, not just the legal exposure.",
+              "framework_hint": "Strategic Thinking failure: optimizing for the minimum viable compliance posture ignores that the architecture must also be commercially viable. A confirmation-on-everything policy satisfies legal but delivers a product no different from manually approving each action, which eliminates the reason users adopted the agent in the first place."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The design problem is a UX problem. Confirmation dialogs kill conversion and retention, and the data on confirmation fatigue is well-established. The PM should advocate for an opt-in trust model where users choose their own confirmation level during onboarding. Users who want full autonomy get it. Users who want confirmations on every action get that. The architecture serves both by being configurable.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "User-configurable trust levels sound user-centered but they transfer the architecture problem to the user without solving it. Most users will not understand the consequence difference between categorizing a transaction and moving money between accounts when they set a blanket preference at onboarding. A user who selects 'full autonomy' has not meaningfully consented to unsupervised money movement — they have clicked through a settings screen. Legal's 'meaningful oversight' requirement is not satisfied by an onboarding toggle that most users skip or misunderstand. The architecture problem requires the product to know which actions warrant confirmation regardless of blanket user preference.",
+              "framework_hint": "Cognitive Empathy failure: inferring that users can make informed trust-level choices at onboarding about action categories they haven't experienced yet. 'Meaningful oversight' for moving money between accounts requires a moment of decision at the point of the action, not a preference set weeks earlier. User-configurable trust transfers liability without providing the user the information they'd need to set the preference responsibly."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "The four agent actions are the raw material of the architecture. List the dimensions that determine where each action sits on the trust spectrum, and then map each action to its tier.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of dimensions most completely captures what determines whether an agent action should run autonomously or require confirmation?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Four dimensions govern the tiering decision for each action. First, external consequence: does the action commit the agent to an obligation with a third party, or does it only affect internal state? Moving money and negotiating with service providers are externally consequential; categorization is not. Second, reversibility: can the action be undone within a short time window without contacting a third party? Canceling a subscription within a grace period is reversible; a completed money transfer typically is not. Third, financial magnitude: does the action move or commit real currency, and if so, above what threshold does the risk profile change? Fourth, user expectation asymmetry: would a typical user be surprised to learn this action happened without their knowledge? A user who expected the agent to sort transactions would not be surprised; a user who expected the agent to transfer $500 to a savings account might be, even if they technically consented at onboarding.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These four dimensions cut across different risk axes rather than restating the same variable. External consequence and reversibility together determine the blast radius if the action is wrong. Financial magnitude sets a concrete threshold below which even externally consequential actions may be acceptable autonomously. User expectation asymmetry captures a softer but important variable: an action that is technically permitted but emotionally surprising erodes trust even when it causes no harm. Together these four produce a tiering policy that is defensible to legal (consequence and reversibility), to UX (expectation asymmetry shapes where friction is tolerable), and to security (financial magnitude drives the audit depth required).",
+              "framework_hint": "Creative Execution: generating four structurally distinct dimensions rather than variations on 'how risky is it.' Domain Expertise: the distinction between external consequence (commits an obligation with a third party) and reversibility (can be undone without third-party involvement) reflects how fintech products model liability — legally, a negotiation agreement with a provider is a commitment regardless of whether the user wanted it; reversibility is an operational property separate from legal consequence."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The key dimension is financial impact. Actions that move, commit, or risk real money should require confirmation. Actions that are informational or organizational should not. Moving money between accounts clearly requires confirmation; categorizing transactions clearly does not. Subscription cancellation and negotiation fall in the middle and should each be evaluated by the dollar amount at stake.",
+              "quality": "good_but_incomplete",
+              "competencies": ["domain_expertise"],
+              "explanation": "Financial impact is the most important single dimension and reaching it quickly is correct. The gap is that financial impact alone cannot fully tier the four actions. A bill negotiation that saves the user $8 per month has low financial magnitude but is still an externally consequential commitment — the agent has agreed to a contract modification with a third party on behalf of the user. Treating it as low-risk because the dollar amount is small misses the external-consequence dimension. Similarly, a subscription cancellation with a $200 annual fee is high-magnitude but highly reversible within a grace period. One dimension cannot produce a complete tiering policy.",
+              "framework_hint": "Domain Expertise partial credit: correctly identifies money movement as the clearest high-oversight case and categorization as the clearest autonomous case. Creative Execution gap: a single dimension collapses the middle two actions (negotiation and cancellation) into an ambiguous zone rather than distinguishing them on the dimensions that actually differ between them — external consequence and reversibility."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The dimension that matters is user intent clarity. If the user explicitly set up the agent to perform a specific action type, the agent should perform it autonomously. If the action type is one the user did not anticipate when configuring the agent, confirmation is required. The trust architecture is essentially a question of whether the action is within the scope of what the user signed up for.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "User intent clarity is not a workable tiering dimension because all four actions are within the general scope of what users sign up for when they adopt an autonomous financial agent. The onboarding flow presumably explains that the agent categorizes, negotiates, cancels, and moves money. Framing confirmation as a function of whether the user 'anticipated' the action type at onboarding reduces to 'did they read the terms,' which satisfies no one's definition of meaningful oversight on high-consequence actions.",
+              "framework_hint": "Cognitive Empathy failure: 'user intent clarity' conflates blanket consent at onboarding with genuine awareness at the moment of a consequential action. A user who consented to the agent moving money between accounts during a ten-step onboarding flow has not meaningfully reviewed the specific $800 transfer that is about to happen. Consent at enrollment is not the same as oversight at execution."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The right dimension is error frequency in production. Actions the agent gets wrong more often than others should require confirmation because the cost of errors is higher in aggregate. Run the agent in shadow mode for 30 days before launch, measure error rates across the four action types, and use those rates to set the confirmation policy. Data-driven thresholds are more defensible than intuition.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Error frequency in shadow mode is a useful calibration tool but not a valid tiering dimension. The framework for deciding which actions require oversight cannot depend on 30 days of pre-launch data because the trust architecture must be in place at launch, not derived from post-launch observations. More fundamentally, an action can have a low error rate and still warrant confirmation because the consequence of a single error is severe — moving money to the wrong account with 99% accuracy still requires oversight for the 1% case when real funds are misplaced. Error rate and consequence severity are orthogonal variables.",
+              "framework_hint": "Strategic Thinking failure: substituting empirical calibration for architectural reasoning. The trust architecture must be designed based on the structural properties of each action (consequence, reversibility, magnitude, expectation), not on the statistical frequency of errors in a 30-day pilot. A low error rate on money movement does not reduce the user's legitimate expectation of oversight over each individual transfer."
+            }
+          ]
+        },
+        {
+          "question_text": "How should the four specific agent actions — categorize transactions, negotiate with service providers, cancel unused subscriptions, and move money between accounts — map to trust tiers?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["domain_expertise", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The four actions split into three tiers. Tier one — fully autonomous with undo window and audit log: transaction categorization. This is read-only from a financial perspective, affects no third parties, is immediately correctable by the user at any time, and carries no consequence if wrong beyond a miscategorized expense row. Tier two — asynchronous confirmation via push notification (user has 24 hours to reject before the action executes): bill negotiation with service providers and subscription cancellation. Both involve third-party commitments or account changes, but neither involves transferring funds in real time, and both can be deferred without time pressure while the user reviews. Tier three — synchronous in-app confirmation with a per-session spend limit: moving money between accounts. This action is externally consequential, involves real currency transfer, and is irreversible without initiating a new transaction. No money moves without an explicit in-session approval.",
+              "quality": "best",
+              "competencies": ["domain_expertise", "strategic_thinking"],
+              "explanation": "This mapping correctly distinguishes between the three structurally different trust tiers based on the dimensions identified above. Placing negotiation and cancellation in the same asynchronous tier reflects that both involve third-party commitments but neither requires real-time user presence — the 24-hour window satisfies legal's meaningful oversight requirement while keeping UX friction low for the majority of autonomous actions. Separating money movement into its own synchronous tier reflects its unique combination of real currency transfer, irreversibility within a session, and user expectation of explicit control. The architecture satisfies all three stakeholders by tiering correctly rather than by compromising uniformly.",
+              "framework_hint": "Domain Expertise: the distinction between asynchronous confirmation (action queued, user approves or it auto-executes) and synchronous confirmation (action blocked until user approves) reflects how fintech products handle regulatory consent — asynchronous is adequate for soft commitments; synchronous is required for fund transfers under most consumer financial protection frameworks. Strategic Thinking: the three-tier architecture satisfies legal with tier-two and tier-three oversight, satisfies UX by limiting friction to tier two and three actions, and satisfies security with an audit log at every tier."
+            },
+            {
+              "option_label": "B",
+              "option_text": "All four actions should run autonomously by default, but the user should receive a daily digest summarizing everything the agent did. For money movement specifically, add an account-level daily spend limit. If the agent stays within the limit, no confirmation is required. If a single transaction would exceed the limit, it is queued for manual approval. The digest and the limit together constitute meaningful oversight.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A daily spend limit for money movement is a real and useful control that many fintech products use. The gap is that applying the same autonomous-with-digest policy to bill negotiation conflates two structurally different action types. Negotiating a new contract with a service provider is a third-party commitment that goes into effect regardless of whether the user read the digest, not a reversible internal state change. A daily digest that surfaces a completed negotiation after the fact does not constitute oversight of that negotiation — the commitment was already made. The architecture needs differentiated oversight for third-party commitments, not just a spending cap.",
+              "framework_hint": "Domain Expertise partial credit: the spend limit on money movement is a concrete and defensible control mechanism. Cognitive Empathy gap: simulating the user discovering in their morning digest that the agent negotiated a new 12-month contract with their internet provider at a rate they find worse than expected reveals why post-hoc notification is insufficient oversight for externally consequential commitments."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Categorization and cancellation can run autonomously. Negotiation and money movement should both require confirmation before execution. This gives users full control over the two actions with direct financial consequences while preserving the autonomous experience for the two lower-stakes actions.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Grouping negotiation and money movement into the same confirmation tier is closer to correct than applying uniform policy to all four actions, but it loses the important distinction between the two. Negotiation is externally consequential but is not time-sensitive in the same way as money movement, and does not transfer funds. Money movement is time-sensitive, irreversible, and involves real currency. A single confirmation-required tier for both implies they receive the same friction experience, when a 24-hour push notification window is appropriate for negotiation and an in-session blocking confirmation is appropriate for money movement. The tiering is directionally right but not specific enough to be actionable.",
+              "framework_hint": "Strategic Thinking partial: correctly separates the four actions into higher and lower oversight categories. Taste gap: lumping negotiation and money movement into the same undifferentiated confirmation tier ignores that their consequence profiles require different oversight mechanics. A policy that applies one confirmation UX to both will either under-protect money movement or over-protect negotiation."
+            },
+            {
+              "option_label": "D",
+              "option_text": "All four actions should require confirmation because the product is a financial agent with access to real accounts. The bar for autonomous action in fintech is much higher than in other domains. Users who want less friction can reduce confirmation requirements incrementally as they build trust in the agent over time. Start with maximum oversight and relax it through demonstrated reliability.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Maximum oversight at launch with progressive trust relaxation sounds prudent but it destroys the product's core value proposition before users ever experience it. An agent that requires confirmation on every transaction categorization delivers nothing a manual personal finance app does not already deliver. Incremental trust relaxation based on reliability assumes users will actively revisit their settings after experiencing enough correct categorizations to lower the bar — which most users will not do. The tiering architecture should be correct at launch, not built on a user-driven trust-earning model that most users will not engage with.",
+              "framework_hint": "Cognitive Empathy failure: simulating the user experience of a fully autonomous financial agent that requires confirmation on every categorization reveals that the product has not delivered its core promise at all. The architecture must be correct at launch. Asking users to build trust through accumulated positive interactions before they can access the product's central feature treats the launch experience as a trial for something better that comes later."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The tiering architecture satisfies the three teams in principle. Now name the single criterion that tells you where to draw the line between asynchronous and synchronous confirmation — and what the architecture sacrifices to hold that line.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for deciding whether an action in the gray zone — like a large subscription cancellation or a small money transfer — belongs in the asynchronous confirmation tier or the synchronous in-app confirmation tier?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is irreversibility within the user's session window. An action belongs in the synchronous tier if the user cannot undo it through the app within the same session without initiating a new external process. Moving $500 from a checking account to a savings account is synchronous-tier because reversing it requires a new transfer, not an undo button. Canceling a subscription that offers a 30-day reinstatement window is asynchronous-tier because the user can reverse it through the app within that window. A large subscription cancellation with no grace period would move to the synchronous tier on this criterion, not because of the dollar amount but because irreversibility is the variable that determines whether the user's ability to exercise oversight after the fact is real or nominal. The sacrifice this criterion demands is explicit: some actions will be over-confirmed relative to their dollar amount, and some will be under-confirmed relative to user anxiety. The criterion accepts both in exchange for a rule that is architecturally consistent and legally defensible.",
+              "quality": "best",
+              "competencies": ["taste", "domain_expertise"],
+              "explanation": "Irreversibility within the session window is the right criterion because it directly maps to whether oversight before the action is meaningfully different from oversight after it. If the user can undo through the app, post-hoc notification is genuine oversight. If they cannot, pre-action confirmation is the only real oversight available. This criterion handles the gray zone correctly without requiring a dollar threshold that would create edge cases, and it explains why a $10 subscription with no grace period is more oversight-worthy than a $200 subscription with a 30-day reinstatement window.",
+              "framework_hint": "Taste: distinguishing between 'the dollar amount is large so we should confirm' (a preference based on magnitude) and 'the action is irreversible within the session window' (a structural property that determines whether oversight is real). Domain Expertise: fintech products that handle reversibility correctly avoid the failure mode where users think they can undo an action because the app shows an undo button, but the underlying transaction has already settled externally."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be a dollar threshold. Actions above $100 belong in the synchronous confirmation tier; actions below belong in the asynchronous tier. This is simple to communicate to users, simple to implement, and aligns with common fintech fraud protection thresholds that users already have mental models for. The threshold can be user-adjustable within a range set by the product.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A dollar threshold is operationally simple and user-communicable, which are real advantages. The gap is that dollar amount is not the variable that determines whether oversight is meaningful. A $5 subscription cancellation with no grace period and no in-app reinstatement is more oversight-worthy than a $500 money movement between accounts the same user owns at the same bank. The dollar threshold produces sensible results for money movement but miscategorizes edge cases in negotiation and cancellation. The correct criterion distinguishes those edge cases correctly; dollar amount does not.",
+              "framework_hint": "Taste gap: a dollar threshold is a preference for simplicity, not a tradeoff. The structural distinction — irreversibility within the session window — produces a more defensible outcome in edge cases and is not more complex to implement than a dollar threshold. Accepting the dollar threshold for simplicity means accepting miscategorized edge cases as a feature rather than naming them as the sacrifice."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be frequency. Recurring actions the agent has performed correctly before should move toward autonomous operation over time. First-time actions of any type should require synchronous confirmation. This builds user trust incrementally and reduces friction as the agent's track record develops.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Frequency-based trust escalation has appeal as a user experience model but it is not a safe tiering criterion for a financial agent. A money movement the agent has made correctly 20 times is not inherently less risky on the 21st attempt — the consequence of an incorrect 21st transfer is exactly the same as an incorrect first transfer. The criterion also creates a perverse edge case: an agent that has always moved money correctly may eventually move funds without synchronous confirmation, which eliminates meaningful oversight on the highest-consequence action precisely when users have stopped paying attention.",
+              "framework_hint": "Domain Expertise failure: in fintech contexts, frequency-based trust escalation is appropriate for fraud detection thresholds (a transaction pattern the user has established is lower risk) but not for oversight policy on high-consequence actions. The oversight requirement for money movement is not a function of how often the action has been performed correctly — it is a function of what happens when it is performed incorrectly once."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion should be what legal defines as 'meaningful.' Schedule a review with legal counsel to get a written definition of the threshold between asynchronous and synchronous confirmation. Once legal signs off on a specific policy, implement it. Any tiering criterion that does not have legal's explicit approval leaves the company exposed.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Getting legal sign-off on the final policy is necessary but asking legal to define the criterion substitutes legal's liability concern for a product architecture decision. Legal can validate whether a proposed criterion satisfies 'meaningful oversight'; legal cannot determine which criterion correctly maps to the user experience and technical reversibility constraints of the four specific actions. The PM's job is to arrive at a criterion based on the product's architecture and then verify it with legal, not to outsource the criterion design to legal.",
+              "framework_hint": "Strategic Thinking failure: conflating the need for legal validation with the assumption that legal is the right author of the criterion. Legal's 'meaningful human oversight' standard is an output constraint, not a design input. The criterion must come from the product team's understanding of what reversibility and consequence mean in the context of these four specific actions, then be presented to legal for review."
+            }
+          ]
+        },
+        {
+          "question_text": "How should the audit trail be designed so that it satisfies security's requirement without adding meaningful friction to the user experience?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["cognitive_empathy", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The audit trail should be structured around action tiers rather than action types. Every action at every tier gets a timestamped event log entry with four fields: action type, action parameters (amount transferred, provider negotiated, subscription canceled, category assigned), outcome, and reversibility status (reversible for N days / irreversible). Tier-two and tier-three actions additionally log the confirmation timestamp and the channel through which it was received (push notification accepted, in-app confirmation tapped). The trail is append-only, surfaced in the user's activity feed as plain-language summaries, and available to security as a structured event stream. No user-facing friction is added because the log is a side effect of the action, not a gate. Security gets the structured event stream it needs for anomaly detection. The user gets a readable history of everything the agent has done. Legal gets a confirmation timestamp on every tier-two and tier-three action.",
+              "quality": "best",
+              "competencies": ["cognitive_empathy", "strategic_thinking"],
+              "explanation": "This audit trail design satisfies all three stakeholders without adding friction because the log is a side effect of action execution, not a user interaction requirement. The four-field structure per event is specific enough to be useful for security anomaly detection and legal review without requiring the product to capture more data than the action itself produces. Surfacing the trail as plain-language summaries in the activity feed gives users genuine oversight without requiring them to navigate a raw event log. Logging the confirmation timestamp and channel for tier-two and tier-three actions provides the evidence legal needs that confirmation occurred.",
+              "framework_hint": "Cognitive Empathy: designing the audit trail to serve three distinct consumers (security engineers who need structured event data, users who need readable summaries, legal who needs confirmation timestamps) without requiring any of them to parse a format designed for another. Strategic Thinking: append-only, confirmation-timestamped event logs are a standard pattern in fintech compliance — the design imports a known solution and applies it to the specific four-tier architecture rather than inventing an audit format from scratch."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The audit trail should require the user to review and sign off on a weekly summary of all agent actions. This ensures users stay engaged with what the agent is doing, provides a confirmation record for legal, and gives security a regular review checkpoint. Users who miss the weekly review are prompted to complete it before the agent can take any new actions.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A weekly mandatory review with a gate on new agent actions reintroduces the confirmation friction the trust architecture is designed to minimize, and does so in an even more disruptive form — blocking the agent entirely if the user does not complete the review. Users who adopted a fully autonomous agent specifically to avoid managing their finances will experience the weekly review as a failure mode, not a safety feature. Legal's oversight requirement is for meaningful human engagement with specific consequential actions, not for retrospective blanket review of every categorization.",
+              "framework_hint": "Cognitive Empathy failure: simulating the user who adopted a fully autonomous financial agent to reduce cognitive load, then receiving a weekly gate that requires reviewing every transaction categorization before the agent can proceed. The product has replaced the per-action confirmation tax with a weekly per-batch confirmation tax. The user experience is worse and the oversight is less targeted."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Log only the tier-three actions (money movement) in a detailed audit trail. Tier-one and tier-two actions are lower consequence and do not require detailed logging. Keeping the audit trail narrow reduces storage costs, simplifies security monitoring, and avoids surfacing a wall of transaction categorizations that users and security teams will ignore.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Logging only money movement satisfies a narrow version of security's requirement but ignores that the audit trail serves multiple purposes: it is also the evidence base for resolving disputes about agent behavior, the source of data for anomaly detection on negotiation actions, and the user's primary visibility into what the agent has done autonomously. A dispute about whether the agent correctly canceled a subscription cannot be resolved from an audit trail that only logs money movement. The audit trail needs to cover all four action types with appropriate depth, not only the highest-tier ones.",
+              "framework_hint": "Strategic Thinking failure: framing the audit trail as a cost to minimize rather than a capability to design. Security's requirement is for a full audit trail precisely because anomalous behavior can appear across all action types, not only money movement. A subscription cancellation pattern that is slightly off — wrong subscriptions, wrong timing — is an anomaly security needs to detect, and that detection requires a log of cancellation events."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The audit trail should be a screenshot or screen recording of every action the agent takes, stored for 90 days. Visual records are more interpretable by users and legal teams than structured event logs, and they eliminate ambiguity about what the agent actually did versus what the log says it did.",
+              "quality": "good_but_incomplete",
+              "competencies": [],
+              "explanation": "Visual evidence of agent actions is interpretable and reduces ambiguity, which are real advantages. The gap is that screenshot or screen recording archives of every agent action are operationally expensive at scale, create significant storage and privacy obligations (each screenshot contains account data), and are not searchable or parseable by security monitoring systems. A structured event log with a plain-language UI layer on top gives users the interpretability advantage without the storage, privacy, and monitoring limitations of visual archives.",
+              "framework_hint": "Domain Expertise gap: structured event logs with human-readable summaries are the standard audit pattern in fintech because they are queryable, parseable by anomaly detection systems, and auditable by legal without requiring humans to watch recordings. Visual archives are a verification tool for specific disputed events, not a scalable audit trail design for an autonomous agent executing thousands of actions across a user base."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "The trust architecture is a hypothesis about what 'meaningful human oversight' means in practice for an autonomous financial agent. Name the metric, threshold, and timeline that confirm the architecture is working — and the counter-signal that says it is not, before a regulator or a user surfaces it first.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success condition look like for the trust architecture at three months post-launch?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The architecture succeeds at three months if all three of the following conditions hold simultaneously. First, the tier-three synchronous confirmation rate on money movement is above 85% — meaning users who are shown the in-app confirmation actually complete it rather than abandoning the session, which would indicate the friction level is acceptable rather than flow-breaking. Second, the tier-two asynchronous rejection rate on negotiations and cancellations is below 15% — users are accepting the agent's queued actions rather than repeatedly overriding them, indicating the agent is proposing actions users agree with. Third, no money movement action results in a dispute filed within 30 days of execution. The counter-signal is: tier-three abandonment rate exceeds 30% at any week in months two or three, indicating the synchronous confirmation UX is too heavy for users to complete on money movement, and the architecture is creating a failure mode where users cannot access a core feature. That signal requires reducing friction on tier-three without removing confirmation — not eliminating the gate.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This success condition is falsifiable because it names three specific metrics with numeric thresholds and a timeline. The three conditions are designed to detect different failure modes simultaneously: low tier-three completion indicates UX friction is too high; high tier-two rejection indicates the agent is proposing unwanted actions; money movement disputes indicate the confirmation gate is not preventing harm. The counter-signal specifically targets tier-three abandonment, which is the failure mode that is most likely to appear first and most likely to be misdiagnosed as a UX problem when it is actually an architecture problem in the confirmation flow.",
+              "framework_hint": "Strategic Thinking: defining success across three independent metrics rather than one prevents the team from declaring the architecture successful because one metric looks good while another signals a problem. Domain Expertise: the 85% tier-three completion threshold reflects fintech UX benchmarks for friction-acceptable confirmation flows — below 70% indicates the confirmation step is a conversion drop-off, not a deliberate user choice to abandon the transaction."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Success at three months means zero regulatory or legal complaints about the oversight model. If no consumer protection agency flags the product and no user files a formal complaint about unauthorized agent action, the trust architecture is functioning adequately. Monitor legal exposure through monthly legal reviews.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Absence of regulatory complaints is a lagging signal that confirms nothing about whether the architecture is working as designed. A trust architecture can be failing — users abandoning money movement because confirmations are too heavy, or users overriding tier-two actions because the agent is proposing things they did not want — without generating a regulatory complaint in the first 90 days. By the time a regulator acts, the architecture has been broken long enough to affect users at scale. The win condition must include leading indicators that surface architectural problems before they become compliance problems.",
+              "framework_hint": "Strategic Thinking failure: using a lagging indicator (regulatory complaints) as the primary success metric for an architecture that has multiple early-warning signals available. The absence of complaints at 90 days tells the team very little about whether the tier-two rejection rate is sustainable or whether the tier-three UX is creating abandonment. Those signals are available in the product data and do not require a regulatory review to surface."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The architecture works at three months if user retention is above industry average for fintech apps. Retention is the aggregate signal of whether users find the product valuable and trustworthy. If users are staying, the trust architecture is not driving them away. If churn is above average, the architecture may be creating too much friction or not enough confidence.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Retention is a relevant outcome metric and tracking it is correct. The gap is that retention is an aggregate signal that cannot diagnose which aspect of the trust architecture is working or failing. A product with high retention could have a trust architecture where tier-three money movement is abandoned by 40% of users who attempt it — those users simply never attempt money movement again, which does not show up in retention until they churn for a different reason. The win condition needs metrics that are specific to the trust architecture's mechanisms, not aggregate product health.",
+              "framework_hint": "Strategic Thinking partial credit: retention is connected to the product's health and the trust architecture contributes to it. Taste gap: using a downstream aggregate as the primary success metric for an architectural decision means the team cannot distinguish architecture success from other product variables that also affect retention. The win condition should include metrics that only the trust architecture can move."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Success means the agent completes more actions per week per user than the prior version of the product. If the autonomous architecture is driving more agent activity, users trust the system enough to let it act. If action volume is flat or declining, the architecture is not enabling the autonomy it promised.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Total agent actions per user is not a trust architecture metric — it is a product engagement metric that is influenced by the number of accounts connected, the user's financial complexity, and the agent's action recommendation engine, as well as by trust. More fundamentally, a high action count is consistent with an architecture that is failing: if tier-three money movement is generating disputes at high volume, the architecture is broken even though actions per user is high. The win condition must distinguish between healthy autonomous action (categorization, accepted negotiations) and problematic autonomous action (disputed money movements).",
+              "framework_hint": "Domain Expertise failure: action volume conflates actions the agent performed correctly and actions the user is satisfied with. In a trust architecture, volume is a vanity metric unless it is decomposed by tier and outcome. The meaningful measure is not 'how many actions did the agent take' but 'how many tier-three actions completed with user confirmation and no subsequent dispute.'"
+            }
+          ]
+        },
+        {
+          "question_text": "If the trust architecture is approved by legal but UX reports that tier-three synchronous confirmation is causing 35% abandonment on money movement, what is the correct response?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.50,
+          "target_competencies": ["taste", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The 35% abandonment rate indicates the confirmation UX is poorly implemented, not that the synchronous confirmation requirement is wrong. The gate on money movement is architecturally correct — it is the only action that is externally consequential, real-currency, and irreversible in session — so the response is to improve the confirmation experience rather than remove the confirmation requirement. Specifically: reduce the number of steps in the confirmation flow to a single screen showing amount, source, and destination with one confirm tap; add a biometric shortcut so returning users can confirm with Face ID rather than typing; and surface the confirmation via push notification for pre-scheduled transfers rather than requiring in-app presence. These changes reduce friction without eliminating the gate. The goal is to get abandonment below 15% within 60 days while keeping the confirmation requirement intact.",
+              "quality": "best",
+              "competencies": ["taste", "cognitive_empathy"],
+              "explanation": "This response correctly diagnoses 35% abandonment as a UX implementation problem rather than an architecture problem. Synchronous confirmation on money movement is not optional — it is the structural requirement that makes the architecture legally defensible and consequentially appropriate. The response improves the friction experience without compromising the oversight requirement. Naming the target (below 15% abandonment) and the timeline (60 days) makes the UX improvement measurable rather than directional.",
+              "framework_hint": "Taste: distinguishing between 'the confirmation requirement is creating friction' (true) and 'therefore the confirmation requirement should be removed' (wrong inference). The requirement is correct; the implementation is poor. Cognitive Empathy: simulating the user who wants to transfer money between their own accounts and is asked to go through four confirmation steps on a mobile screen — the friction is in the flow, not in the act of confirming."
+            },
+            {
+              "option_label": "B",
+              "option_text": "35% abandonment is a critical conversion problem that threatens the product's viability on a core feature. The synchronous confirmation requirement on money movement should be replaced with the asynchronous model used for tier two — queue the transfer, notify the user, execute if not rejected within 4 hours. This preserves a confirmation step while dramatically reducing abandonment. Legal approved the architecture in principle; the specific mechanism within tier three can be adjusted without requiring re-approval.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Moving money movement to an asynchronous model removes the meaningful oversight that distinguishes it from negotiation and cancellation. A money transfer that executes automatically if not rejected within 4 hours is not synchronous confirmation — it is an opt-out model on a real-currency irreversible transaction. A user who is asleep, traveling, or does not check notifications within 4 hours has their money moved without explicit approval. Legal approved 'meaningful human oversight' on money movement specifically because of its irreversibility; a 4-hour execute-unless-rejected window does not satisfy that requirement for real-currency transfers.",
+              "framework_hint": "Domain Expertise failure: the asynchronous model is appropriate for tier two because those actions (negotiation, cancellation) do not transfer funds in real time and have some reversibility path. Money movement is synchronous-tier precisely because the user's explicit consent at the moment of transfer is what distinguishes an authorized transfer from an unauthorized one. A 4-hour opt-out window does not create that distinction."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The abandonment rate reveals that users do not trust the agent's money movement decisions enough to complete the confirmation flow. The solution is to improve the agent's money movement accuracy first — only propose transfers the user is highly likely to want, based on stated savings goals and historical patterns. Once the agent's suggestions are more aligned with user intent, users will confirm at higher rates. The abandonment is a signal about agent quality, not about UX.",
+              "quality": "good_but_incomplete",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Improving the quality of agent suggestions to reduce unwanted confirmations is a genuinely useful intervention and the instinct to read abandonment as a signal about proposal quality is partially correct. The gap is that 35% abandonment at launch is more likely to reflect a confusing or lengthy confirmation UX than a pattern of users deliberately rejecting bad proposals — users who find the proposal objectionable would complete the flow to reject it, not abandon it mid-way. The response is useful as a secondary intervention but should not be the primary diagnosis before the confirmation UX is examined.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly distinguishes between 'user is abandoning because the suggestion is wrong' and 'user is abandoning because the confirmation flow is too hard.' The diagnostic step is to check where in the confirmation flow abandonment occurs — if it drops at screen one (viewing the proposed transfer), the suggestion is wrong; if it drops at screen two or three (confirming it), the UX is too complex. Without that diagnostic, improving proposal quality is a guess."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Remove the money movement feature from the product at launch. The 35% abandonment rate combined with the architectural complexity of synchronous confirmation indicates the feature is not ready. Launch with the three lower-consequence actions (categorization, negotiation, cancellation) and re-introduce money movement once the confirmation UX is fully validated. A phased launch reduces risk.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "A phased launch that defers money movement until the confirmation UX is validated is not unreasonable as a release strategy, but it is an overreaction to a UX problem that can be diagnosed and fixed before launch. A 35% abandonment rate on a confirmation flow is a solvable UX problem, not a signal that the feature itself is unready. Removing the feature deprives users of the highest-value autonomous action the agent can take and changes the product's scope claim at launch without resolving the underlying UX question.",
+              "framework_hint": "Strategic Thinking gap: treating a UX implementation problem as an architectural signal that the feature should be deferred conflates 'the confirmation flow has too many steps' with 'money movement is too complex for the agent to handle at launch.' The feature is architecturally correct and legally approved. The abandonment rate is a fixable UX problem. Deferring the feature does not produce the diagnostic data needed to fix it."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

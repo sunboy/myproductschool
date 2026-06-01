@@ -1,0 +1,257 @@
+{
+  "id": "c0000001-0000-0000-0000-000000000046",
+  "title": "Pricing an AI-Native Product With Unpredictable Usage",
+  "scenario_role": null,
+  "scenario_context": "An AI-native legal research tool is launching commercially after a closed beta. The product runs AI queries on behalf of lawyers: surface case law, summarize precedents, flag conflicts. Two usage patterns have solidified. Power users, typically litigators with active caseloads, run more than 200 queries per month; at current LLM costs, each of those accounts costs $12 per month to serve. Casual users, mostly transactional lawyers who consult the tool occasionally, run around 15 queries per month and cost $0.90 to serve. Both groups report that the tool saves them meaningful time relative to their usage volume. Neither segment is getting disproportionate value per query; they are just using it at very different rates.",
+  "scenario_trigger": "Three voices are shaping the pricing conversation. The VC leading the round says 'just do $99 per month flat rate, it is easy to sell and easy to forecast.' The engineer who built the cost model says 'at $99 flat, a power user costs us $12 to serve and that margin math works, but if we sign 40 power users and 10 casuals we will lose money on the mix.' The champion customer, a managing partner at a mid-size firm, says 'I need to put this in the firm budget; I cannot have a line item that fluctuates month to month.' The three positions feel incompatible, but only if pricing is treated as a single lever.",
+  "scenario_question": "Frame what the pricing decision is actually forcing the team to resolve, enumerate what needs to be evaluated before committing to a structure, name the tradeoff the team must consciously accept, and define a falsifiable success condition for the model chosen.",
+  "engineer_standout": "A strong answer recognizes that the three voices are not asking for the same thing to be ignored: the VC wants simplicity, the engineer wants margin protection, and the customer wants predictability. A flat $99 rate satisfies none of them fully: it overcharges the $0.90 casual user, bleeds margin if the power-user mix is high, and does give the customer predictability but only by accident. The reasoning move is that a tiered or hybrid structure, such as a base tier covering a query allowance with overage pricing above it, or usage tiers anchored around the $12-cost threshold, can give the customer a predictable floor, protect margin on heavy usage, and remain simple to sell. The crux is not choosing a side among the three voices but designing a structure that makes all three positions compatible.",
+  "paradigm": "ai_native",
+  "difficulty": "medium",
+  "estimated_minutes": 35,
+  "primary_competencies": ["strategic_thinking", "cognitive_empathy"],
+  "secondary_competencies": ["taste", "domain_expertise"],
+  "topic_tags": ["pricing", "monetization", "ai-products", "strategy", "unit-economics"],
+  "technique_tags": ["tiered-pricing", "customer-segmentation", "margin-analysis"],
+  "move_tags": ["frame", "list", "optimize", "win"],
+  "steps": [
+    {
+      "step": "frame",
+      "step_nudge": "Three people want three different things. Before choosing a model, name what the conflict actually is and whether the three voices are truly incompatible or are talking past each other.",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "What is the most accurate framing of the pricing decision facing this AI-native legal research tool?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The conflict among the three voices is not a values disagreement; it is a design problem. The VC wants forecast simplicity, the engineer wants margin protection on the $12-cost power users, and the champion customer wants a predictable budget line. A flat $99 rate partially addresses each concern but fully satisfies none: it is simple but leaves the casual user overcharged at $0.90 cost and creates a margin risk if the power-user mix dominates. The real decision is whether a pricing structure can be designed that gives the customer a predictable monthly commitment, keeps the average blended cost per account below the chosen price floor, and remains simple enough to sell. Tiered models with an included query allowance and overage above a threshold, or usage tiers anchored around the 200-query breakpoint, can reconcile all three without treating any voice as the loser.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "cognitive_empathy"],
+              "explanation": "This framing correctly identifies that the three voices are not structurally incompatible: they each describe a real constraint (forecast simplicity, margin protection, budget predictability) that a thoughtfully structured pricing model can address simultaneously. The flat $99 is correctly diagnosed as a false resolution: it only appears simple because it ignores the $12 cost exposure on power users and the overcharge on $0.90 casual users. Naming the design problem as 'can one structure satisfy all three constraints' is the right frame because it opens the solution space to hybrid models rather than forcing a binary choice.",
+              "framework_hint": "Cognitive Empathy: simulating each stakeholder's actual constraint rather than their stated position. The VC does not need flat pricing per se; the VC needs forecast confidence. That constraint can be met by a tiered model with a predictable base. Strategic Thinking: pricing is a structural bet about which constraints are load-bearing. Identifying the 200-query threshold and $12 cost as the structural facts the model must accommodate, rather than treating the three voices as negotiating positions, opens the solution space."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The decision is a customer segmentation question. Power users and casual users have fundamentally different economics and should be served by different products or tiers. The company should build two separate plans: a Professional plan for power users priced to cover the $12 cost with margin, and a Starter plan for casual users priced affordably near the $0.90 cost. Letting the two segments exist in a single flat tier is the mistake.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Segmenting by usage and pricing accordingly is directionally correct and aligns with the economic reality the scenario describes. The gap is that this framing treats the segmentation as a product architecture decision without addressing what the three voices are actually asking for. The champion customer's predictability requirement is not solved by having two tiers; it is solved by any tier that has a fixed monthly floor. The VC's simplicity concern is addressed by having clear, easy-to-communicate tiers, but the framing does not name whether separate plans solve or compound the sales complexity. The frame is useful but incomplete because it resolves the margin problem while leaving the predictability and simplicity constraints underspecified.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that power users and casual users have different economic profiles and that pricing should reflect that. Strategic Thinking gap: treating segmentation as the primary frame misses that the three voices are each naming a constraint the pricing model must satisfy, not a segment definition the product must create. The champion customer's predictability need is not a segment attribute; it is a procurement behavior that any well-designed tier can accommodate."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The decision is primarily a competitive positioning question. Legal research tools like Westlaw and LexisNexis use subscription pricing at scale. Deviating from the subscription norm creates buyer confusion and lengthens sales cycles in a market where procurement teams expect annual contracts. The company should adopt $99 per month to match market expectations and iterate from there.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Competitive pricing norms are a real input but they do not determine the right structure. The scenario provides concrete cost data ($12 for power users, $0.90 for casual users) and a specific stakeholder constraint (budget predictability). Neither of those facts is addressed by observing what Westlaw and LexisNexis charge. Matching a market norm is a shortcut that skips the structural analysis the decision requires; it also conflates the pricing models of established players, who have different cost structures and customer bases, with the economics of an early-stage AI tool where LLM costs are a live margin variable.",
+              "framework_hint": "Strategic Thinking failure: letting a market convention substitute for structural analysis. Competitive pricing norms describe what has worked for incumbents with known cost structures and established customer relationships. They do not address why $12-cost power users and $0.90-cost casual users should pay the same flat rate, or how the champion customer's predictability requirement should be met."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The decision is an engineering prioritization question. Consumption-based pricing requires usage metering and real-time billing infrastructure that the team has not built. Per-seat pricing at $99 can launch immediately without additional infrastructure. The company should launch with flat pricing to preserve engineering capacity for product features, then revisit pricing architecture after reaching $500K ARR.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Implementation complexity is a real consideration but framing the pricing decision primarily around engineering capacity inverts the reasoning sequence. Pricing strategy determines what the business model is; infrastructure work follows from that decision. More practically, the company already has query-level cost accounting (the $12 and $0.90 per-account cost figures come from counting queries), which means basic usage metering is already in place. The framing also defers a $12-cost exposure problem indefinitely: launching at $99 flat while acquiring power users at scale turns the margin math into a compounding problem that becomes harder to fix after customers have anchored to the flat rate.",
+              "framework_hint": "Strategic Thinking failure: letting an operational variable (infrastructure timeline) govern a pricing structure decision. The $12-cost figure for power users already assumes the company is tracking per-account query volume, so the metering infrastructure exists in some form. The frame also ignores that the pricing structure chosen at launch shapes customer expectations and contract terms; repricing after $500K ARR requires renegotiating with existing customers, not just updating a config."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "list",
+      "step_nudge": "Before designing a model, enumerate what actually needs to be evaluated. The $12 power-user cost and $0.90 casual cost are the structural facts. What else matters before the structure can be specified?",
+      "grading_weight": 0.25,
+      "questions": [
+        {
+          "question_text": "Which set of factors most completely covers what the team must evaluate before committing to a pricing structure for this legal research tool?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["creative_execution", "cognitive_empathy"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Five structurally distinct factors need to be evaluated before the structure can be specified. First, expected customer mix: if the beta cohort skews toward power users, a flat $99 model bleeds margin regardless of headline appeal; the blended average cost per account must be modeled against the expected mix, not the average. Second, the predictability threshold: the champion customer said 'no fluctuating line items,' which means the floor of any hybrid model must be fixed and invoiceable in advance. Third, the overage tolerance of the buyer: legal firms will accept usage-based overage charges if they are predictable and capped, but not if they are unbounded; the overage design must fit how legal procurement actually works. Fourth, LLM cost trajectory: if inference costs drop over the next 12 months, the $12 per-user cost may compress, which changes the urgency of margin protection. Fifth, competitive price anchoring: Westlaw and LexisNexis charge per-seat at rates that set the buyer's reference price; any model above that reference requires a clear value differentiation story.",
+              "quality": "best",
+              "competencies": ["creative_execution", "cognitive_empathy"],
+              "explanation": "These five factors are mechanistically different from each other. Customer mix and blended cost address the margin exposure the engineer raised. Predictability threshold and overage tolerance translate the champion customer's requirement into a product design constraint: not 'no variable pricing' but 'predictable floor, capped upside.' LLM cost trajectory introduces a time dimension that changes how urgently the current margin problem needs to be solved. Competitive price anchoring captures the buyer's reference frame, which determines what price levels are achievable without requiring extended justification. Listing them separately forces the team to address each constraint rather than collapsing them into a single 'what does the customer want' question.",
+              "framework_hint": "Creative Execution: generating factors that reveal structurally different dimensions of the decision rather than variations of 'what will customers pay.' Overage tolerance is not the same as price sensitivity; it is a procurement behavior that determines which pricing structures are administratively viable in a law firm budget. Cognitive Empathy: the champion customer's 'no fluctuating line items' is not a preference for per-seat pricing; it is a procurement constraint that can be satisfied by any model with a fixed monthly floor, including a tiered model with an included allowance."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The team should evaluate three things: customer willingness to pay, competitor pricing, and the cost of the metering infrastructure needed for any consumption-based model. If willingness to pay surveys suggest $99 is in range, and competitors are charging similar amounts, and metering is too expensive to build quickly, per-seat at $99 is the pragmatic choice.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Willingness to pay and competitive pricing are real inputs, and infrastructure cost is a legitimate operational constraint. The gap is that this list omits the factors that are specific to the structural problem the scenario describes: the blended cost exposure from a power-user-heavy mix, the buyer's predictability requirement as a design constraint rather than a preference, and LLM cost trajectory as a variable that changes the margin math over time. A list of three generic factors will produce a recommendation that fits the surface description of the decision without being grounded in the specific $12/$0.90 cost asymmetry that makes the decision genuinely hard.",
+              "framework_hint": "Cognitive Empathy partial credit: acknowledges that the customer's pricing expectations matter and that infrastructure costs are a real operational input. Creative Execution gap: the list does not distinguish between buyer predictability as a preference ('I like knowing what I will pay') and buyer predictability as a procurement constraint ('my firm budget process requires a fixed monthly line item'). That distinction determines whether a hybrid model is viable or whether the customer truly needs a flat price."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The team should survey the power users and casual users separately to understand how much each group would pay before switching to a competitor. The maximum willingness to pay from each group defines the price ceiling for each tier. The team should set prices just below those ceilings to maximize revenue while minimizing churn risk.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Willingness-to-pay research is a legitimate method but it is not a list of decision factors; it is a data collection method for one input. The list step asks what needs to be evaluated before committing to a structure, not what data should be gathered. More practically, willingness-to-pay surveys for pricing decisions in professional services tools are unreliable: lawyers will report lower willingness to pay than their actual switching cost implies, and the survey conflates price sensitivity with the structural cost exposure the scenario describes. The factor that matters is not the ceiling but the floor: what is the minimum price that keeps the account margin-positive?",
+              "framework_hint": "Cognitive Empathy failure: treating buyer-reported willingness to pay as the primary input ignores that the champion customer's stated constraint (no fluctuating line items) is not a willingness-to-pay signal; it is a procurement behavior. The list step requires identifying the structural facts that constrain the design space, not designing a research study."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The team should evaluate which pricing model produces the simplest contract. Flat $99 per month means one line item, one renewal date, and no usage disputes. Consumption-based models create contract complexity: what counts as a query, how overages are calculated, and what happens if a user hits the cap mid-month. The factor that matters most is legal and operational simplicity, which strongly favors flat pricing.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Contract simplicity is a real operational factor in legal markets where procurement teams review vendor agreements carefully. But treating it as the primary or only factor ignores the margin exposure the engineer described and the predictability requirement the champion customer stated. The champion customer did not say 'I need a simple contract'; the champion said 'I need budget predictability.' Those constraints can both be satisfied by a tiered model with a fixed floor and a clearly defined overage policy. Framing the decision as flat versus complex also sets up a false binary: a two-tier model with a clear included-queries allowance is not more complex than flat pricing in any meaningful sense for legal procurement.",
+              "framework_hint": "Strategic Thinking failure: using an operational preference (contract simplicity) as the primary criterion without naming the sacrifice. Contract simplicity has real value in legal markets, but naming it as the decisive factor requires acknowledging what is being given up: margin protection on $12-cost power users and the ability to price to value for accounts that generate 200+ queries per month."
+            }
+          ]
+        },
+        {
+          "question_text": "Which structural pricing approaches are most worth evaluating given the specific cost and usage profile in this scenario?",
+          "question_nudge": null,
+          "sequence": 2,
+          "grading_weight_within_step": 0.5,
+          "target_competencies": ["creative_execution", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "Three structurally distinct models are worth evaluating against the cost and usage profile. Model one is a usage-tiered structure: a Starter tier at $49 per month for up to 30 queries and a Professional tier at $129 per month for up to 250 queries, with per-query overage at $0.20 above the included allowance. This anchors the casual user at a margin-positive rate ($0.90 cost against $49 price) and protects margin on power users by pricing the 200-query threshold explicitly. Model two is a hybrid flat-plus-overage structure: $79 per month includes 150 queries, and additional queries are billed at $0.08 per query, which matches the actual LLM cost and recovers margin without punishing the casual user. Model three is a pure consumption model at $0.08 to $0.12 per query with a monthly minimum of $30, which satisfies the margin constraint but requires the champion customer to accept a variable top-line above the minimum.",
+              "quality": "best",
+              "competencies": ["creative_execution", "domain_expertise"],
+              "explanation": "These three models are structurally distinct in how they allocate margin risk and predictability. The tiered model fixes both floor and ceiling for each segment, which matches how legal procurement budgets work. The hybrid model gives the customer a predictable floor while recovering margin on heavy usage at cost-pass-through rates. The pure consumption model with a minimum protects the company from zero-revenue accounts but exposes the customer to variable costs above the minimum. Listing them separately with specific numbers tied to the $12 and $0.90 cost figures makes the tradeoffs visible before the optimize step.",
+              "framework_hint": "Domain Expertise: the $0.08 overage rate in the hybrid model is not arbitrary; it is the actual LLM cost, which makes it defensible to a cost-conscious buyer ('we pass through our actual cost') and ensures the company is never margin-negative on overage queries. Creative Execution: the three models differ in where the margin risk sits, not just in their price points. The tiered model puts risk on usage estimation (did you pick the right tier?); the hybrid model distributes risk between a fixed floor and variable top-line; the consumption model moves most risk to the customer."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The two models worth evaluating are per-seat at $99 (the VC's proposal) and consumption-based at $0.08 per query (the engineer's cost-aligned alternative). A direct comparison of these two models against the expected customer mix should be enough to determine which one wins on projected margin and customer satisfaction.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "Comparing the two initially proposed models is a reasonable starting point, but the list step should surface models that were not on the original table, not just evaluate what was already proposed. The $99 flat rate and pure consumption model are the two endpoints of the pricing spectrum. The more interesting question is what structures exist between those endpoints that could simultaneously satisfy the champion customer's predictability requirement, protect margin on power users, and remain simple enough to sell. A list that only covers the two original proposals does not expand the solution space the optimize step needs to work with.",
+              "framework_hint": "Creative Execution partial credit: correctly identifies the two proposals as starting points. Domain Expertise gap: the optimize step cannot name a decisive tradeoff if the list step has not surfaced a model that reconciles the three competing constraints. Hybrid models (tiered, flat-plus-overage, minimum-plus-consumption) represent the real design space; listing only the two extremes forces the optimize step to pick a loser rather than find a reconciling structure."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The company should evaluate freemium as a model. A free tier for casual users (up to 10 queries per month) and a paid Professional tier at $99 for unlimited queries would address the casual user overcharge concern and keep the VC's forecast simplicity on the paid side. Freemium is standard for AI tools and creates a natural conversion funnel.",
+              "quality": "surface",
+              "competencies": [],
+              "explanation": "Freemium is a legitimate model in consumer AI products, but it introduces a structural problem in this scenario: the casual user at 15 queries per month and $0.90 cost is already a viable paying customer at a lower price point. Putting them on a free tier removes a revenue stream and increases the cost-to-serve ratio of free users. In legal markets where the product is a professional tool, not a consumer utility, freemium also creates procurement complexity: law firms generally do not adopt professional tools in a free tier first. The model does not address the margin exposure on power users at $99 flat, which was the engineer's core concern.",
+              "framework_hint": "Domain Expertise failure: freemium works when the free tier creates network effects or lowers acquisition cost for a large addressable market. Legal research is a professional procurement decision with relatively long sales cycles; the conversion mechanism of freemium does not apply cleanly. The casual user at 15 queries and $0.90 cost is a margin-positive customer at almost any reasonable price point; making that segment free eliminates a revenue stream without a clear payoff."
+            },
+            {
+              "option_label": "D",
+              "option_text": "The company should evaluate annual contracts with a monthly equivalent of $79. Annual contracts reduce churn risk and allow the company to offer a discount (say, 20% off the monthly rate of $99) while collecting cash upfront. This addresses the VC's forecast concern because ARR becomes visible and countable, and it satisfies the customer's predictability need because the annual rate is fixed.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Annual contracts are a legitimate sales and cash-flow tool, but contract duration is orthogonal to pricing structure. A customer can sign an annual contract for a flat rate, a tiered rate, or a consumption model. The question asks which pricing structures are worth evaluating given the cost and usage profile; contract length is not a pricing structure. More specifically, offering an annual contract at a fixed monthly equivalent does not resolve the margin problem: if a power user signs a $79 per month annual contract and runs 300 queries per month at $12 cost, the margin math is the same whether the contract is monthly or annual.",
+              "framework_hint": "Strategic Thinking failure: conflating contract duration (annual versus monthly) with pricing structure (how usage is priced). Annual contracts improve cash flow and reduce churn risk, but they do not change the per-account economics. The engineer's concern was that a flat rate loses money on high-usage accounts; that concern is not addressed by locking in the same flat rate for 12 months instead of one."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "optimize",
+      "step_nudge": "The three voices want different things, but only one structure has to be chosen. Name the criterion that determines which constraint is load-bearing and what the company consciously gives up by satisfying it.",
+      "grading_weight": 0.30,
+      "questions": [
+        {
+          "question_text": "What is the right criterion for choosing a pricing structure for this AI-native legal research tool, given the $12 power-user cost, the $0.90 casual-user cost, and the three stakeholder constraints?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["taste", "strategic_thinking"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The criterion is margin protection on the actual cost exposure, subject to a predictability floor that satisfies enterprise procurement. The company must ensure that no pricing structure allows an account to be margin-negative at any expected usage level; the $12 cost per power user defines the minimum viable price for the Professional segment regardless of what the VC prefers. The champion customer's predictability requirement is not a constraint on whether to use variable pricing; it is a constraint on the design of the variable component: any model with a fixed monthly floor and a capped or transparent overage satisfies 'no fluctuating budget line.' The sacrifice the criterion demands is explicit: the company gives up the apparent simplicity of a single flat rate in exchange for a structure that is margin-positive across the usage distribution and predictable for the buyer. That is a real tradeoff because adding a second tier or an overage policy introduces sales complexity, contract language, and customer service questions that a flat rate avoids.",
+              "quality": "best",
+              "competencies": ["taste", "strategic_thinking"],
+              "explanation": "This criterion names the primary constraint (margin protection at the actual cost threshold), shows how the secondary constraint (buyer predictability) can be satisfied within a non-flat structure, and names the sacrifice (sales and contract complexity) without treating it as disqualifying. The $12 cost figure is used as the load-bearing structural fact: it is the point below which any pricing structure becomes self-defeating regardless of its other properties. The tradeoff is correctly framed as real rather than a preference: a flat rate is genuinely simpler to sell and support, and giving it up has measurable costs.",
+              "framework_hint": "Taste: distinguishing 'flat pricing is simpler to explain' (a preference) from 'flat pricing is margin-negative at the expected power-user cost of $12 per account' (a structural property). The criterion makes the sacrifice visible: simplicity is given up in exchange for margin integrity. Strategic Thinking: the criterion correctly identifies which constraint is load-bearing. Margin protection is not optional; it determines whether the business model is viable. Buyer predictability is a design constraint on the variable component, not a veto on variable pricing altogether."
+            },
+            {
+              "option_label": "B",
+              "option_text": "The criterion should be blended gross margin at 60% or higher across the expected customer mix. If the expected mix produces a blended cost per account that keeps gross margin above 60%, the pricing structure works. If a flat $99 rate and a power-user-heavy mix compress margin below 60%, a tiered or hybrid model should be adopted. The 60% threshold is the standard SaaS benchmark and provides a clear, investable target.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "A specific gross margin threshold grounded in the actual cost data is more rigorous than a directional preference. The 60% benchmark is a real reference point for SaaS pricing conversations with investors. The gap is that this criterion does not name the sacrifice: what does the company give up by adopting the tiered or hybrid structure required to hit 60% margin? The optimize step requires naming a criterion that forces a real tradeoff to be acknowledged, not just a metric that tells the team when to switch models. The criterion is complete on the margin side but silent on what the buyer-predictability constraint requires and what complexity is accepted by moving away from flat pricing.",
+              "framework_hint": "Domain Expertise partial credit: names a specific margin threshold tied to the SaaS benchmark and correctly uses it as a decision trigger. Taste gap: 60% gross margin as a criterion does not force the team to name what it is giving up. The sacrifice of pricing complexity, sales friction, and contract language must be named explicitly for the criterion to constitute a real tradeoff rather than a measurement target."
+            },
+            {
+              "option_label": "C",
+              "option_text": "The criterion should be the option that the champion customer would sign first. The champion customer is the one with real budget authority and a firm that can become a reference customer. If the champion customer would not sign a consumption-based or tiered model, the company should adopt whatever structure that customer would approve, and optimize pricing for the broader market from the reference customer's base.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "The champion customer's preferences are a real input, but letting a single customer's signing preference determine the pricing structure for the entire market inverts the reasoning sequence. The champion customer said 'I need budget predictability,' which is a procurement constraint that can be satisfied by multiple structures, including a tiered model with a fixed floor. The option treats the customer's inferred preference (probably flat pricing because it is predictable) as the criterion rather than unpacking what the customer actually requires (a predictable monthly commitment). The criterion does not address margin protection, which is not optional if power users cost $12 to serve.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly centers the champion customer's constraint as a real input. Taste failure: the criterion does not distinguish between what the customer prefers (simplicity) and what the customer requires (budget predictability). A tiered model with a fixed floor satisfies the requirement without requiring the customer to prefer it; the criterion should be 'does this structure satisfy the procurement constraint,' not 'will the customer instinctively choose it.'"
+            },
+            {
+              "option_label": "D",
+              "option_text": "The criterion is the model that maximizes revenue from power users. Power users at 200+ queries represent the highest-value segment and the most defensible customer base for a legal research tool. Pricing should be set to capture as much value as possible from power users, even if it means a higher price that some casual users find unattractive. Casual users who cannot justify the price will self-select out, and the company will have a more concentrated, higher-value customer base.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "Maximizing revenue from power users is a coherent business strategy, but it is not a decision criterion for the pricing structure question: it is a segment strategy that presupposes the pricing decision has already been made. More practically, the scenario does not establish that casual users are unprofitable or strategically unimportant; at $0.90 cost and any reasonable price point above $10 per month, casual users are highly margin-positive. A criterion that deliberately prices out casual users to concentrate on power users accepts a structural risk: if power users churn or if LLM costs rise above $12, the entire revenue base is exposed. Concentration is a risk, not a strategy.",
+              "framework_hint": "Strategic Thinking failure: treating 'maximize revenue from one segment' as a pricing criterion without naming the risk that concentration in that segment creates. The optimize step requires naming what is sacrificed by the chosen criterion; maximizing power-user revenue as the criterion does not force the team to name the margin exposure if that segment churns or the cost basis rises."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "win",
+      "step_nudge": "Name the metric, the threshold, and the timeline. Then name the counter-signal: what would tell you the chosen structure is producing a margin problem or the wrong customer mix before it becomes a crisis?",
+      "grading_weight": 0.20,
+      "questions": [
+        {
+          "question_text": "What does a falsifiable success condition look like for the pricing model this legal research tool chooses at commercial launch?",
+          "question_nudge": null,
+          "sequence": 1,
+          "grading_weight_within_step": 1.0,
+          "target_competencies": ["strategic_thinking", "domain_expertise"],
+          "response_type": "mcq_plus_elaboration",
+          "options": [
+            {
+              "option_label": "A",
+              "option_text": "The bet for a tiered model with a Professional tier at $129 and a Starter tier at $49 is: blended gross margin per paying account reaches 65% or higher within four months of launch, with at least 30% of accounts on the Professional tier. The 65% margin floor tests whether the pricing structure is protecting against the $12 power-user cost exposure across the real customer mix, not just in a modeled scenario. The 30% Professional tier floor tests whether the company is acquiring the high-value segment it priced for or whether adoption is clustering at the lower tier in a way that compresses blended margin. The counter-signal is: blended ARPU falls below $60 per month by month three, which at the expected mix of tiers would indicate that casual-user adoption is dominating and the Professional tier is not converting the power-user segment that justified its price point.",
+              "quality": "best",
+              "competencies": ["strategic_thinking", "domain_expertise"],
+              "explanation": "This win condition names two metrics with specific thresholds (65% gross margin, 30% Professional tier adoption) tied directly to the cost facts in the scenario: the $12 power-user cost implies that the Professional tier at $129 must achieve margin above 90% on casual usage within that tier and around 65% on power usage, so 65% blended is a reasonable floor that accounts for mix. The 30% tier adoption floor prevents the success condition from being gamed by a customer mix that looks healthy on total ARPU but is actually margin-compressed. The counter-signal (ARPU below $60) connects back to the $12/$0.90 cost asymmetry and flags a specific measurable problem before it compounds.",
+              "framework_hint": "Domain Expertise: the 65% gross margin threshold is calibrated to the cost structure: a Professional tier at $129 with $12 cost per power user produces 91% gross margin on power-user accounts, so a blended 65% threshold allows for significant Starter-tier adoption while still protecting against a power-user-heavy mix. Strategic Thinking: the counter-signal (ARPU below $60) is non-obvious; it detects a customer mix problem rather than a revenue volume problem. ARPU can fall below $60 even while total MRR is growing, which is the dangerous scenario where volume growth masks a deteriorating margin structure."
+            },
+            {
+              "option_label": "B",
+              "option_text": "Win means reaching $30K in monthly recurring revenue within six months of commercial launch. Track MRR monthly; if growth falls below 15% month-over-month for two consecutive months, revisit the price point. If the company reaches $30K MRR with gross margin above 50%, the pricing model is validated.",
+              "quality": "good_but_incomplete",
+              "competencies": ["strategic_thinking"],
+              "explanation": "A specific MRR target with a timeline and a margin floor is better than directional language, and the 50% gross margin condition adds a quality filter to the revenue metric. The gap is that MRR and blended gross margin alone cannot detect a customer mix problem: the company could reach $30K MRR with 50% blended margin while the power-user share of accounts is growing in a way that will compress margin below the viable threshold at higher volume. The win condition needs at least one metric that tests the composition of the customer base, not just the total revenue and margin output.",
+              "framework_hint": "Domain Expertise partial credit: names a specific MRR target and a gross margin floor, which correctly tests two of the three dimensions the pricing model must satisfy. Strategic Thinking gap: neither metric tests whether the tier mix or customer composition is healthy. A success condition for a tiered model must include at least one distribution metric (tier adoption rate, average queries per account, or concentration by account) to detect a mix problem before it appears as a margin compression in the aggregated numbers."
+            },
+            {
+              "option_label": "C",
+              "option_text": "Win means the champion customer renews at the end of month 12 and refers at least one other firm. A renewal signals that the pricing felt fair over a full year of usage, and a referral signals that the customer is willing to stake their professional reputation on the recommendation. If the champion customer churns, the pricing model is broken regardless of other metrics.",
+              "quality": "surface",
+              "competencies": ["cognitive_empathy"],
+              "explanation": "Champion customer renewal is a real signal, but it tests only one data point. A single customer's renewal decision is influenced by factors beyond pricing: product quality, relationship with the account team, and switching costs. A win condition anchored to one customer's behavior cannot detect a structural pricing problem that affects the broader customer base. More specifically, if the champion customer renews but the rest of the customer base is churning because the price is too high relative to value at their usage levels, the renewal metric will show green while the business is failing.",
+              "framework_hint": "Cognitive Empathy partial credit: correctly identifies that the champion customer's renewal is meaningful feedback and that a referral indicates genuine satisfaction. Strategic Thinking failure: a falsifiable win condition must be measurable at the population level, not anchored to one account. The win step requires a metric, a threshold, and a timeline that would hold or fail regardless of any individual customer's behavior."
+            },
+            {
+              "option_label": "D",
+              "option_text": "Win means that power users (200+ queries per month) represent at least 60% of the paying customer base by month six. This tests whether the pricing structure is attracting the segment the company priced for. If the power-user share is below 60%, the pricing is not converting the right buyers and should be adjusted downward on the Professional tier to increase conversion.",
+              "quality": "plausible_wrong",
+              "competencies": [],
+              "explanation": "A customer mix metric is a useful addition to a win condition, but making power-user share the primary success metric encodes the wrong objective. The goal of the pricing structure is not to maximize the power-user share of accounts; it is to be margin-positive across the actual customer mix and to give buyers a predictable commitment structure. A company with 60% power users and a margin-negative Professional tier fails on the primary criterion even while hitting this metric. More subtly, the proposed correction (lower the Professional tier price to drive conversion) is the wrong response to low power-user adoption; if power users are not converting, the issue is likely product value perception or sales motion, not price level.",
+              "framework_hint": "Strategic Thinking failure: treating customer mix composition as the primary success metric rather than a leading indicator within a broader win condition. Margin protection is the load-bearing criterion established in the optimize step; the win condition must test whether that criterion is being satisfied, with customer mix as one of the inputs, not the outcome variable. Lowering price to improve tier conversion also assumes the cause of low adoption is price sensitivity rather than product-market fit, which the metric cannot distinguish."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
