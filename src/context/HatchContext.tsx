@@ -43,6 +43,8 @@ export interface HatchCueCta {
   action?: HatchCueAction
   href?: string
   event?: string
+  /** First-person message pre-filled into the Hatch input when an open-chat CTA fires outside the workspace. */
+  prompt?: string
 }
 
 export interface HatchCue {

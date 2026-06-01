@@ -250,17 +250,24 @@ export function FloatingHatch() {
         window.dispatchEvent(new CustomEvent('open-hatch-workspace', { detail: { cue } }))
         hatchCtx?.clearCue()
         return
-      case 'open-chat':
+      case 'open-chat': {
         if (isInWorkspace) {
           window.dispatchEvent(new CustomEvent('open-hatch-workspace', { detail: { cue } }))
           hatchCtx?.clearCue()
           return
+        }
+        const prompt = cta?.prompt?.trim()
+        // Only prime a fresh conversation; never overwrite text the user is mid-typing
+        // or an existing thread.
+        if (prompt && messages.length === 0 && input.trim().length === 0) {
+          setInput(prompt)
         }
         play('open')
         setOpen(true)
         setBubble(false)
         hatchCtx?.clearCue()
         return
+      }
       default:
         if (isInWorkspace) {
           window.dispatchEvent(new CustomEvent('open-hatch-workspace', { detail: { cue } }))
