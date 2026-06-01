@@ -5,6 +5,7 @@ import { preGenerateCoaching } from './coaching-warmer'
 import { coerceDifficulty } from '@/lib/practice/difficulty'
 import { validateChallengeTags } from '@/lib/practice/policy'
 import { slugifyIndustry } from '@/lib/practice/slugify'
+import { isValidDomain, DEFAULT_DOMAIN_SLUG } from '@/lib/data/taxonomy'
 
 // Map dirty free-text framework values to canonical technique slugs.
 function normalizeFrameworkToTechnique(raw: string): string {
@@ -82,6 +83,19 @@ export async function publishDraft(draftId: string): Promise<string> {
     throw new Error(`Tag policy violation, cannot publish: ${tagCheck.errors.join('; ')}`)
   }
 
+  // Resolve the theme domain. The taxonomy step picks a domain_slug from the
+  // canonical DOMAINS vocab; fall back to the default if it's missing/invalid
+  // so a new challenge is never left without a domain (the explore page groups
+  // by domain). A reviewer can correct it later via the admin tag editor.
+  const rawDomainSlug = json.metadata.domain_slug
+  const domainSlug = rawDomainSlug && isValidDomain(rawDomainSlug) ? rawDomainSlug : DEFAULT_DOMAIN_SLUG
+  const { data: domainRow } = await supabase
+    .from('domains')
+    .select('id')
+    .eq('slug', domainSlug)
+    .maybeSingle()
+  const domainId = domainRow?.id ?? null
+
   // Insert challenge
   // slug is NOT NULL (added in migration 031); for HP-* ids there is no c{N}- prefix to strip,
   // so slug === challengeId
@@ -104,6 +118,7 @@ export async function publishDraft(draftId: string): Promise<string> {
     topic_tags: topicTags,
     technique_tags: techniqueTags,
     industry_tags: industryTags,
+    domain_id: domainId,
     is_real_interview: json.metadata.is_real_interview ?? false,
     source_url: json.metadata.source_url ?? null,
     is_published: true,

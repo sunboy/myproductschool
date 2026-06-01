@@ -136,6 +136,8 @@ One nudge per FLOW step. Must be a question, max 40 words, must not share key te
 
 Tags: `paradigm` (traditional/ai_assisted/agentic/ai_native), `industry`, `relevant_roles[]`, `frameworks[]`, `company_tags[]`
 
+**Domain (required).** Every challenge MUST be assigned exactly one `domain_slug` from the canonical `DOMAINS` vocab in `src/lib/data/taxonomy.ts`. Domains are the theme axis ("what is this about") that powers the explore page grouping — distinct from `challenge_type` (the format, already surfaced on the practice page). Pick the single best theme: `ai-agents` for autonomy/tool-use/orchestration, `llms` for prompting/RAG/model behavior, else the closest of `product-strategy`, `metrics-analytics`, `conversions-growth`, `system-design`, `databases-data`, `algorithms`. The taxonomy prompt asks for it; `publishDraft()` resolves the slug to `domain_id`. A missing/invalid slug falls back to the default domain, but do not rely on the fallback — classify deliberately. Reviewers can correct a domain via the admin tag editor (`PATCH /api/admin/content/challenges/{id}` accepts `domain_slug` or `domain_id`).
+
 ## Competency Tagging
 
 2-3 primary + 1-2 secondary from: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise

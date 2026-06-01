@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { logAdminAction } from '@/lib/admin/audit-log'
 import { checkAdminSecret } from '@/lib/content/admin-auth'
 import { slugifyIndustry } from '@/lib/practice/slugify'
+import { isValidDomain } from '@/lib/data/taxonomy'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const deny = checkAdminSecret(req)
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       'is_published', 'is_premium', 'is_calibration', 'challenge_type',
       'topic_tags', 'technique_tags', 'industry_tags',
       'topic_tags_suggested', 'technique_tags_suggested',
-      'is_real_interview', 'source_url',
+      'is_real_interview', 'source_url', 'domain_id',
     ].join(','))
     .eq('id', id)
     .single()
@@ -43,11 +44,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     'relevant_roles', 'company_tags', 'is_premium', 'is_published',
     'topic_tags', 'technique_tags', 'industry_tags',
     'topic_tags_suggested', 'technique_tags_suggested',
-    'is_real_interview', 'source_url',
+    'is_real_interview', 'source_url', 'domain_id',
   ]
   const update: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) update[key] = body[key]
+  }
+
+  // Accept domain_slug as a convenience: resolve it to domain_id so reviewers
+  // can re-theme a challenge by slug from the canonical DOMAINS vocab.
+  if (!('domain_id' in body) && typeof body.domain_slug === 'string' && isValidDomain(body.domain_slug)) {
+    const supabaseForDomain = createAdminClient()
+    const { data: domainRow } = await supabaseForDomain
+      .from('domains')
+      .select('id')
+      .eq('slug', body.domain_slug)
+      .maybeSingle()
+    if (domainRow?.id) update.domain_id = domainRow.id
   }
 
   // Dual-accept legacy → canonical column normalization (R3.A contract window)

@@ -1243,6 +1243,8 @@ export interface ChallengeJsonMetadata {
   topic_tags?: string[]
   /** Controlled-vocabulary technique slugs from taxonomy.ts (e.g. 'consistent-hashing', 'two-pointers') */
   technique_tags?: string[]
+  /** Theme-based domain slug from taxonomy.ts DOMAINS (e.g. 'ai-agents', 'system-design'). Resolved to domain_id at publish. */
+  domain_slug?: string
   /** True when the source is a confirmed real interview question */
   is_real_interview?: boolean
   /** URL of the source that confirmed this is a real interview question */
