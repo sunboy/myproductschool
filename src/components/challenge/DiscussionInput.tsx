@@ -160,9 +160,9 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
           ))}
         </div>
         <textarea
-          className="w-full border-none bg-transparent focus:ring-0 text-sm py-2 placeholder:text-on-surface-variant/60 text-on-surface focus:outline-none resize-y min-h-[44px]"
+          className="w-full border border-outline-variant rounded-xl bg-surface-container-low focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm leading-relaxed px-3 py-2.5 placeholder:text-on-surface-variant/60 text-on-surface focus:outline-none resize-y min-h-[120px] transition-colors"
           placeholder="Add to the discussion… markdown supported (**bold**, `code`, lists)"
-          rows={2}
+          rows={5}
           ref={textarea}
           value={content}
           onChange={e => {
@@ -178,7 +178,7 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
             }
           }}
         />
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 mt-1.5">
           <p className="text-[11px] font-medium text-on-surface-variant/80">
             Direct, specific, no slop. Markdown supported. <span className="opacity-70">⌘/Ctrl+Enter to post</span>
           </p>

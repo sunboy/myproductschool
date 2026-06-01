@@ -189,19 +189,27 @@ function absoluteAssetUrl(appUrl: string, assetPath: string): string {
 
 export function getCheckoutBrandingSettings(
   appUrl: string,
+  opts: { embedded?: boolean } = {},
   env: StripeEnv = process.env
 ): Stripe.Checkout.SessionCreateParams.BrandingSettings {
+  const base: Stripe.Checkout.SessionCreateParams.BrandingSettings = {
+    display_name: 'HackProduct',
+    background_color: '#f8f3ea',
+    button_color: '#2d5a3d',
+    border_style: 'rounded',
+    font_family: 'inter',
+  }
+
+  // Stripe rejects `logo` and `icon` on embedded checkout sessions.
+  if (opts.embedded) return base
+
   const logoUrl = trimEnv(env.STRIPE_BRANDING_LOGO_URL)
     ?? absoluteAssetUrl(appUrl, '/images/wordmark.png')
   const iconUrl = trimEnv(env.STRIPE_BRANDING_ICON_URL)
     ?? absoluteAssetUrl(appUrl, '/images/logo.png')
 
   return {
-    display_name: 'HackProduct',
-    background_color: '#f8f3ea',
-    button_color: '#2d5a3d',
-    border_style: 'rounded',
-    font_family: 'inter',
+    ...base,
     icon: { type: 'url', url: iconUrl },
     logo: { type: 'url', url: logoUrl },
   }

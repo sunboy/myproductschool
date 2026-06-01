@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { StoryTile, StoryRow } from './StoryTile';
+import { StoryTile } from './StoryTile';
 import { StoryVisual } from '@/components/showcase/StoryVisual';
 import { CompanyArt } from '@/components/showcase/CompanyArt';
 import type { ReadingPath } from '@/lib/showcase/reading-paths';
@@ -60,7 +60,6 @@ export function ShowcaseIndexExperience({
     return map;
   }, [stories]);
 
-  const editorStories = stories.filter(story => story.featured || ['buffer-fake-landing-page-mvp', 'gmail-undo-send', 'airbnb-decoded'].includes(story.slug));
   const teardownStories = stories.filter(story => story.storyType === 'company_teardown');
   const featureStories = stories.filter(story => story.storyType === 'feature_autopsy');
 
@@ -97,37 +96,26 @@ export function ShowcaseIndexExperience({
         onOpenSearch={() => setSearchOpen(true)}
       />
 
+      <CompanyBrowseStrip
+        companies={companies}
+        companyStories={companyStories}
+        onOpenDrawer={() => setDrawerOpen(true)}
+      />
+
+      {teardownStories.length > 0 && (
+        <CompanyTeardownStrip stories={teardownStories} companyMap={companyMap} />
+      )}
+
+      {/* Hidden until stories carry reading-path tags */}
+      {/* {readingPaths.length > 0 && (
+        <ReadingPathShelf readingPaths={readingPaths} stories={stories} companyMap={companyMap} />
+      )} */}
+
       <div className="sc-index-shelves">
-        {editorStories.length > 0 && (
-          <StoryShelf
-            eyebrow="Curated"
-            title="Editor's pick"
-            subtitle="Stories the team keeps coming back to."
-            density="compact"
-          >
-            {editorStories.slice(0, 6).map(story => {
-              const company = companyMap.get(story.companySlug);
-              return (
-                <StoryTile
-                  key={story.slug}
-                  story={story}
-                  companyName={company?.name ?? story.companySlug}
-                  companyAccent={company?.accent}
-                  size="compact"
-                />
-              );
-            })}
-          </StoryShelf>
-        )}
-
-        {readingPaths.length > 0 && (
-          <ReadingPathShelf readingPaths={readingPaths} stories={stories} companyMap={companyMap} />
-        )}
-
         {featureStories.length > 0 && (
           <StoryShelf
             eyebrow="One specific feature"
-            title="Feature autopsies"
+            title="Featured autopsies"
             subtitle="Decisions, mechanisms, evidence, one feature deep."
           >
             {featureStories.slice(0, 8).map(story => {
@@ -144,16 +132,6 @@ export function ShowcaseIndexExperience({
           </StoryShelf>
         )}
       </div>
-
-      <CompanyBrowseStrip
-        companies={companies}
-        companyStories={companyStories}
-        onOpenDrawer={() => setDrawerOpen(true)}
-      />
-
-      {teardownStories.length > 0 && (
-        <CompanyTeardownStrip stories={teardownStories} companyMap={companyMap} />
-      )}
 
       <section className="sc-firehose">
         <div className="sc-section-heading">
@@ -181,11 +159,12 @@ export function ShowcaseIndexExperience({
           {visibleStories.map(story => {
             const company = companyMap.get(story.companySlug);
             return (
-              <StoryRow
+              <StoryTile
                 key={story.slug}
                 story={story}
                 companyName={company?.name ?? story.companySlug}
                 companyAccent={company?.accent}
+                size="compact"
               />
             );
           })}
