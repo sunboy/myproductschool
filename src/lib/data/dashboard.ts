@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   IS_MOCK,
   MOCK_HOT_CHALLENGES,
@@ -50,11 +52,18 @@ export async function getDashboardPreferences(userId: string): Promise<Dashboard
 
 // ── Hot challenges ───────────────────────────────────────────
 
+// Trending challenges are identical for every user and change slowly, so the
+// computed result is cached for 5 minutes (tag: 'hot-challenges'). The cached
+// worker uses the admin client — unstable_cache callbacks must not touch
+// request-scoped cookies, which the cookie-based server client reads.
 export async function getHotChallenges(): Promise<HotChallenge[]> {
   if (IS_MOCK) return MOCK_HOT_CHALLENGES
+  return getHotChallengesCached()
+}
 
-  const { createClient } = await import('@/lib/supabase/server')
-  const supabase = await createClient()
+const getHotChallengesCached = unstable_cache(
+  async (): Promise<HotChallenge[]> => {
+    const supabase = createAdminClient()
 
   // Sample recent 500 attempts — bounded to avoid full-table scan at scale
   const { data: attemptData } = await supabase
@@ -108,7 +117,10 @@ export async function getHotChallenges(): Promise<HotChallenge[]> {
     avgScore: 0,
     domain: ((c.domains as unknown as { title: string } | null))?.title ?? 'General',
   }))
-}
+  },
+  ['hot-challenges'],
+  { revalidate: 300, tags: ['hot-challenges'] }
+)
 
 // ── Latest discussions ───────────────────────────────────────
 
@@ -154,7 +166,13 @@ export async function getLatestDiscussions(): Promise<DiscussionPreview[]> {
 
 // ── Leaderboard peek ─────────────────────────────────────────
 
-export async function getLeaderboardPeek(userId: string): Promise<LeaderboardEntry[]> {
+export async function getLeaderboardPeek(
+  userId: string,
+  // The dashboard already loads the current user's profile. Passing the known
+  // display_name + xp_total here lets us skip the extra single-row lookup and
+  // go straight to the (now index-backed) rank count.
+  currentUser?: { display_name: string | null; xp_total: number },
+): Promise<LeaderboardEntry[]> {
   if (IS_MOCK) return MOCK_LEADERBOARD
 
   const { createClient } = await import('@/lib/supabase/server')
@@ -176,14 +194,18 @@ export async function getLeaderboardPeek(userId: string): Promise<LeaderboardEnt
   // Add current user if not in top 3
   const isInTop3 = entries.some(e => e.isCurrentUser)
   if (!isInTop3) {
-    const { data: user } = await supabase
-      .from('profiles')
-      .select('display_name, xp_total')
-      .eq('id', userId)
-      .single()
+    let user = currentUser ?? null
+    if (!user) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('display_name, xp_total')
+        .eq('id', userId)
+        .single()
+      user = data
+    }
 
     if (user) {
-      // Approximate rank by counting users with more XP
+      // Rank = number of users with more XP, +1. Backed by idx_profiles_xp_total.
       const { count } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })

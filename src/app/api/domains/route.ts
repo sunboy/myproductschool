@@ -1,8 +1,30 @@
 import { NextResponse } from 'next/server'
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { DomainWithProgress } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
+
+// Published domains + the (id, domain_id) map of published challenges are global
+// and change only when content is published. Cache them for 5 minutes so each
+// dashboard/explore visit doesn't re-scan them; the per-user attempts read below
+// stays live. Invalidate with revalidateTag('domains') on content publish.
+const getDomainsStatic = unstable_cache(
+  async () => {
+    const adminClient = createAdminClient()
+    const [domainsResult, challengesResult] = await Promise.all([
+      adminClient.from('domains').select('*').eq('is_published', true).order('order_index'),
+      adminClient.from('challenges').select('id, domain_id').eq('is_published', true),
+    ])
+    return {
+      domains: domainsResult.data ?? null,
+      domainsError: domainsResult.error?.message ?? null,
+      challenges: challengesResult.data ?? [],
+    }
+  },
+  ['domains-static'],
+  { revalidate: 300, tags: ['domains'] }
+)
 
 const MOCK_DOMAINS: DomainWithProgress[] = [
   {
@@ -46,18 +68,17 @@ export async function GET() {
 
   const adminClient = createAdminClient()
 
-  const [domainsResult, challengesResult, attemptsResult] = await Promise.all([
-    adminClient.from('domains').select('*').eq('is_published', true).order('order_index'),
-    adminClient.from('challenges').select('id, domain_id').eq('is_published', true),
+  const [staticData, attemptsResult] = await Promise.all([
+    getDomainsStatic(),
     adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).eq('status', 'completed'),
   ])
 
-  if (domainsResult.error) return NextResponse.json({ error: domainsResult.error.message }, { status: 500 })
+  if (staticData.domainsError) return NextResponse.json({ error: staticData.domainsError }, { status: 500 })
 
-  const challenges = challengesResult.data ?? []
+  const challenges = staticData.challenges
   const completedPromptIds = new Set((attemptsResult.data ?? []).map((a: { challenge_id: string }) => a.challenge_id))
 
-  const domains: DomainWithProgress[] = (domainsResult.data ?? []).map((d: { id: string; slug: string; title: string; description: string | null; icon: string | null; order_index: number; is_published: boolean; created_at: string }) => {
+  const domains: DomainWithProgress[] = (staticData.domains ?? []).map((d: { id: string; slug: string; title: string; description: string | null; icon: string | null; order_index: number; is_published: boolean; created_at: string }) => {
     const domainChallenges = challenges.filter((c: { domain_id: string }) => c.domain_id === d.id)
     const completed = domainChallenges.filter((c: { id: string }) => completedPromptIds.has(c.id)).length
     return {

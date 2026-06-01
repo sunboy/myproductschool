@@ -9,47 +9,48 @@ import { UpgradeModal } from '@/components/shell/UpgradeModal'
 import { IdleTimer } from '@/components/auth/IdleTimer'
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { HatchProvider } from '@/context/HatchContext'
-import { UsageProvider } from '@/context/UsageContext'
-import { createClient } from '@/lib/supabase/client'
+import { SessionProvider, useSession } from '@/context/SessionContext'
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+function AppShell({ children }: { children: React.ReactNode }) {
   const [upgradeOpen, setUpgradeOpen] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
+  // userId comes from the session fetched once by SessionProvider — no extra
+  // client-side getUser() round-trip on every navigation.
+  const { userId } = useSession()
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id ?? null)
-    })
-
     const upgradeHandler = () => setUpgradeOpen(true)
     window.addEventListener('open-upgrade-modal', upgradeHandler)
-
     return () => {
       window.removeEventListener('open-upgrade-modal', upgradeHandler)
     }
   }, [])
 
   return (
+    <div className="min-h-screen min-w-0 bg-background">
+      <TopNav />
+      <main className="min-w-0 pb-20 md:pb-8">
+        {children}
+      </main>
+      <BottomTabs />
+      <HatchDirector />
+      <FloatingHatch />
+      <FeedbackWidget />
+      <IdleTimer />
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        userId={userId}
+      />
+    </div>
+  )
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
     <HatchProvider>
-      <UsageProvider>
-        <div className="min-h-screen min-w-0 bg-background">
-          <TopNav />
-          <main className="min-w-0 pb-20 md:pb-8">
-            {children}
-          </main>
-          <BottomTabs />
-          <HatchDirector />
-          <FloatingHatch />
-          <FeedbackWidget />
-          <IdleTimer />
-          <UpgradeModal
-            open={upgradeOpen}
-            onClose={() => setUpgradeOpen(false)}
-            userId={userId}
-          />
-        </div>
-      </UsageProvider>
+      <SessionProvider>
+        <AppShell>{children}</AppShell>
+      </SessionProvider>
     </HatchProvider>
   )
 }
