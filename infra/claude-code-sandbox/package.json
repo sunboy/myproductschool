@@ -1,0 +1,14 @@
+{
+  "name": "hackproduct-cc-sandbox-pty",
+  "version": "1.0.0",
+  "description": "WSS PTY bridge for HackProduct Claude Code sandbox",
+  "private": true,
+  "main": "entrypoint-pty.js",
+  "dependencies": {
+    "node-pty": "^1.0.0",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -449,6 +449,8 @@ All Hatch AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropi
 | `hackproduct-enricher` | `~/.claude/skills/hackproduct-enricher/SKILL.md` | Generating MCQ options + framework hints |
 | `hackproduct-coaching` | `~/.claude/skills/hackproduct-coaching/SKILL.md` | Role-specific coaching output |
 | `hackproduct-nudger` | `~/.claude/skills/hackproduct-nudger/SKILL.md` | Step-aware in-context nudges |
+| `hackproduct-analytics-coach` | `~/.claude/skills/hackproduct-analytics-coach/SKILL.md` | Coaching a live Claude Code Analytics session (terminal + BigQuery); verdict on marked findings |
+| `hackproduct-analytics-grader` | `~/.claude/skills/hackproduct-analytics-grader/SKILL.md` | Grading a finished Claude Code Analytics session against the analyst_v1 rubric |
 
 ---
 

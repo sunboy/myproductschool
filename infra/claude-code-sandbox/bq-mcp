@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# bq-mcp — wrapper that launches the Node MCP server.
+# The Node server is in /usr/local/bin/bq-mcp-server.js and shells out to the
+# `bq` CLI (gcloud SDK, already installed). Reads BQ_PROJECT and BQ_DATASET
+# from env; both are set by the orchestrator at machine create time.
+#
+# Users register this MCP server with one line in the terminal:
+#   claude mcp add bigquery -- bq-mcp
+exec node /usr/local/bin/bq-mcp-server.js "$@"

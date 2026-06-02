@@ -1,0 +1,33 @@
+# LiteLLM gateway config for Claude Code Analytics per-session virtual keys.
+#
+# The gateway holds the ONE real Anthropic key (master). Per session, the
+# orchestrator mints a short-lived virtual key with a hard spend cap via the
+# /key/generate admin API. The sandbox container talks to this gateway
+# (ANTHROPIC_BASE_URL) with its virtual key and never sees the real key.
+
+model_list:
+  # Expose the Claude models the sandbox uses. The Anthropic master key comes
+  # from the ANTHROPIC_API_KEY env on the gateway service (never per-session).
+  - model_name: claude-opus-4-6
+    litellm_params:
+      model: anthropic/claude-opus-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: anthropic/claude-haiku-4-5-20251001
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+litellm_settings:
+  # Block requests once a virtual key exceeds its budget (the whole point).
+  max_budget_enforcement: true
+  drop_params: true
+
+general_settings:
+  # Admin key (LITELLM_MASTER_KEY) authorizes the orchestrator to mint virtual
+  # keys. Virtual-key + budget state persists in Postgres (DATABASE_URL).
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL

@@ -1,0 +1,158 @@
+// POST /api/claude-code/session/[id]/finalize
+//
+// Called when the user clicks Submit, or by the reaper when a session expires.
+// Tears down the sandbox, runs the analyst_v1 grader (stub when not yet wired),
+// writes grades to challenge_attempts so they appear in Submissions history,
+// and marks the session terminated.
+
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getSandbox } from '@/lib/sandbox'
+import { gradeAnalystSession } from '@/lib/coding-grading/analytics-grader'
+import { getUserPlanForBudget } from '@/lib/usage/ai-budget'
+
+export const dynamic = 'force-dynamic'
+// Grading invokes an AI model — budget headroom.
+export const maxDuration = 60
+
+// ---------------------------------------------------------------------------
+// POST handler
+// ---------------------------------------------------------------------------
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id: sessionId } = await params
+
+  if (!sessionId) {
+    return NextResponse.json({ error: 'Missing session id' }, { status: 400 })
+  }
+
+  // --- Auth: user cookie (or service-role reaper) ---
+  // The reaper path uses an internal service-role call (no cookie). Detect it
+  // via the X-Service-Role-Reaper header signed with the same secret. For now
+  // we only support the user path; the reaper can be added later.
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const admin = createAdminClient()
+
+  // --- Load session and verify ownership ---
+  const { data: session } = await admin
+    .from('claude_code_sessions')
+    .select('id, user_id, challenge_id, attempt_id, host_instance_id, status, transcript_uri')
+    .eq('id', sessionId)
+    .maybeSingle()
+
+  if (!session || session.user_id !== user.id) {
+    return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+  }
+
+  if (session.status === 'terminated') {
+    // Already finalized — return the stored grade from the attempt.
+    const { data: attempt } = await admin
+      .from('challenge_attempts')
+      .select('total_score, grade_label')
+      .eq('id', session.attempt_id as string)
+      .single()
+
+    return NextResponse.json({
+      session_id: sessionId,
+      total_score: attempt?.total_score ?? 0,
+      grade_label: attempt?.grade_label ?? 'ungraded',
+      already_finalized: true,
+    })
+  }
+
+  // --- Best-effort sandbox teardown ---
+  if (session.host_instance_id) {
+    const sandbox = getSandbox()
+    sandbox.destroySession(session.host_instance_id as string).catch((err) => {
+      console.error('[cc/finalize] destroySession failed (best-effort):', err)
+    })
+  }
+
+  // --- Run analyst grader (analyst_v1) ---
+  const { data: challenge } = await admin
+    .from('challenges')
+    .select('title, prompt_text')
+    .eq('id', session.challenge_id as string)
+    .maybeSingle()
+
+  const userPlan = await getUserPlanForBudget(user.id).catch(() => 'free')
+
+  let gradeResult
+  try {
+    gradeResult = await gradeAnalystSession({
+      sessionId,
+      transcriptUri: session.transcript_uri as string | null,
+      challengeTitle: challenge?.title ?? 'Analytics challenge',
+      challengePrompt: challenge?.prompt_text ?? '',
+      budget: { userId: user.id, userPlan, route: 'claude_code_analytics_grade' },
+    })
+  } catch (err) {
+    // Budget/plan caps surface as 402 (per project_ai_budget_blocks_grading);
+    // the session stays active so the user can retry once under budget.
+    const isCap = (err as { isLimitError?: boolean })?.isLimitError
+      || /budget|limit/i.test((err as Error)?.message ?? '')
+    if (isCap) {
+      return NextResponse.json(
+        { error: 'AI budget reached. Try again next cycle.', reason: 'ai_cap_hit' },
+        { status: 402 },
+      )
+    }
+    throw err
+  }
+
+  // --- Write grade to session row ---
+  await admin.from('claude_code_sessions').update({
+    status: 'terminated',
+    ended_at: new Date().toISOString(),
+    final_artifact: gradeResult.final_artifact,
+  }).eq('id', sessionId)
+
+  // --- Complete challenge_attempts with grade so it shows in Submissions history ---
+  // total_score + grade_label are the two fields the Submissions page reads
+  // (per project memory: project_submissions_history_gap).
+  await admin.from('challenge_attempts').update({
+    status: 'completed',
+    completed_at: new Date().toISOString(),
+    total_score: gradeResult.total_score,
+    grade_label: gradeResult.grade_label,
+    max_score: 100,
+  }).eq('id', session.attempt_id as string)
+
+  // --- Fire-and-forget: embed the session transcript ---
+  // Do NOT await — per project memory (project_embed_blocks_submit).
+  void (async () => {
+    try {
+      const embedUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/hatch/embed`
+      await fetch(embedUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'claude_code_session',
+          session_id: sessionId,
+          attempt_id: session.attempt_id,
+          transcript_uri: session.transcript_uri,
+        }),
+      })
+    } catch {
+      // Embedding failure must not affect the finalize response.
+    }
+  })()
+
+  return NextResponse.json({
+    session_id: sessionId,
+    total_score: gradeResult.total_score,
+    grade_label: gradeResult.grade_label,
+    final_artifact: gradeResult.final_artifact,
+  })
+}

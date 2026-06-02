@@ -1348,4 +1348,24 @@ export interface CanvasInterpretResponse {
   message: string
   actions: CanvasAction[]
   annotations?: CanvasAnnotationHint[]
+  /** Only present on analytics challenges when asserted_finding is set. */
+  verdict?: 'pass' | 'partial' | 'retry'
+}
+
+// ── Analytics challenge Hatch payload types ────────────────────────────────
+
+export type { AnalyticsSubProblem, MarkedFinding, MarkVerdict } from '@/components/v2/mediums/types'
+
+/** Hatch context payload sent for analytics challenges. */
+export interface AnalyticsHatchContext {
+  mcpConnected: boolean
+  terminalTail?: string | null
+  skillsWritten: string[]
+  activeSubProblemId?: string | null
+  activeSubProblemSequence?: number
+  activeSubProblemTitle?: string | null
+  activeSubProblemObjective?: string | null
+  activeSubProblemSuccessCriterion?: string | null
+  markedFindings?: Array<{ id: string; text: string; verdict: 'pass' | 'partial' | 'retry' }>
+  assertedFinding?: string | null
 }
