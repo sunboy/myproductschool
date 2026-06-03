@@ -10,6 +10,7 @@ import { SuggestedPromptRail } from './SuggestedPromptRail'
 import { AnalyticsOnboardingOverlay, shouldShowOnboarding } from './AnalyticsOnboardingOverlay'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { mergeArc } from './analyticsArc'
 import type {
   MediumProps,
   AnalyticsSubProblem,
@@ -25,60 +26,6 @@ const USE_DEV_STUB = process.env.NODE_ENV === 'development' && process.env.NEXT_
 
 const MOCK_WSS_URL = 'wss://echo.websocket.org/'
 
-const MOCK_SUB_PROBLEMS: AnalyticsSubProblem[] = [
-  {
-    id: 'connect',
-    sequence: 1,
-    title: 'Connect the data',
-    objective: 'Get BigQuery MCP connected and verify you can query the checkout funnel dataset.',
-    successCriterion: 'Paste the output of a SELECT COUNT(*) query from the funnel table.',
-    suggestedPrompts: [
-      'mcp add bigquery --project hackproduct',
-      'SELECT COUNT(*) FROM `hackproduct.case_001_checkout_funnel.events`',
-    ],
-    kind: 'connect',
-    rubricDimension: 'data_connection',
-  },
-  {
-    id: 'analyze',
-    sequence: 2,
-    title: 'Find the overall drop',
-    objective: 'Measure the step-by-step funnel conversion rates and identify where the biggest drop happens.',
-    successCriterion: 'State the step with the highest drop and the percentage, e.g. "Cart to checkout: 42% drop".',
-    suggestedPrompts: [
-      'Analyze the checkout funnel and show me conversion rates for each step',
-      'Which funnel step has the biggest drop-off?',
-    ],
-    kind: 'analyze',
-    rubricDimension: 'exploratory_analysis',
-  },
-  {
-    id: 'segment',
-    sequence: 3,
-    title: 'Break it by device',
-    objective: 'Segment the worst-performing funnel step by device type to find where mobile drops.',
-    successCriterion: 'State the mobile vs desktop conversion rate at the key drop step.',
-    suggestedPrompts: [
-      'Break the cart-to-checkout step by device type',
-      'Compare mobile vs desktop conversion at each funnel step',
-    ],
-    kind: 'segment',
-    rubricDimension: 'segmentation',
-  },
-  {
-    id: 'skill',
-    sequence: 4,
-    title: 'Write a skill',
-    objective: 'Teach Claude how to analyze checkout funnels by writing a reusable .claude/skills file.',
-    successCriterion: 'Confirm the file name of the skill you wrote.',
-    suggestedPrompts: [
-      'Write a .claude/skills/checkout-funnel-analyst.md skill that captures what you learned',
-      'Create a skill file with the funnel analysis steps you just ran',
-    ],
-    kind: 'skill',
-    rubricDimension: 'skill_construction',
-  },
-]
 
 const IDLE_THRESHOLD_MS = 18000 // 18s
 
@@ -89,7 +36,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
   const sessionStartRef = useRef<number>(Date.now())
 
   const [wssUrl, setWssUrl] = useState<string | null>(USE_DEV_STUB ? MOCK_WSS_URL : null)
-  const [subProblems, setSubProblems] = useState<AnalyticsSubProblem[]>(USE_DEV_STUB ? MOCK_SUB_PROBLEMS : [])
+  // The arc is the default analyst course (tiered by difficulty), with any
+  // per-challenge overrides merged on top once the start route returns them.
+  const [subProblems, setSubProblems] = useState<AnalyticsSubProblem[]>(
+    () => mergeArc(challenge.difficulty, undefined),
+  )
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
 
@@ -98,6 +49,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
   const [markedFindings, setMarkedFindings] = useState<MarkedFinding[]>([])
   const [mcpConnected, setMcpConnected] = useState(false)
   const [skillsWritten, setSkillsWritten] = useState<string[]>([])
+  const [reportPath, setReportPath] = useState<string | null>(null)
   const [terminalTail, setTerminalTail] = useState('')
   const [proactiveNudge, setProactiveNudge] = useState<string | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -153,7 +105,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
         }
         setSessionId(data.session_id)
         setWssUrl(data.wss_url)
-        if (data.sub_problems?.length) setSubProblems(data.sub_problems)
+        // Per-challenge sub_problems are OVERRIDES merged onto the default arc
+        // by id, so the generic MCP/EDA/report teaching copy stays consistent.
+        if (data.sub_problems?.length) {
+          setSubProblems(mergeArc(challenge.difficulty, data.sub_problems))
+        }
         sessionStartRef.current = Date.now()
       } catch (err) {
         setSessionError(String(err))
@@ -195,6 +151,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
           active_sub_problem_id: activeSubProblem.id,
           active_sub_problem_title: activeSubProblem.title,
           active_sub_problem_objective: activeSubProblem.objective,
+          active_sub_problem_kind: activeSubProblem.kind,
+          active_sub_problem_teaching_note: activeSubProblem.teachingNote ?? null,
+          report_written: !!reportPath,
           time_elapsed_seconds: Math.round((Date.now() - sessionStartRef.current) / 1000),
         }),
       })
@@ -222,6 +181,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
 
   const handleSkillWritten = useCallback((filename: string) => {
     setSkillsWritten(prev => prev.includes(filename) ? prev : [...prev, filename])
+  }, [])
+
+  const handleReportWritten = useCallback((path: string) => {
+    setReportPath(path)
   }, [])
 
   async function handleMark(finding: string): Promise<MarkVerdict> {
@@ -428,6 +391,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
                 totalSteps={subProblems.length}
                 mcpConnected={mcpConnected}
                 skillsWritten={skillsWritten}
+                reportWritten={!!reportPath}
                 onMark={handleMark}
               />
             )}
@@ -459,6 +423,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
                   onActivity={handleActivity}
                   onMcpStatusChange={handleMcpStatusChange}
                   onSkillWritten={handleSkillWritten}
+                  onReportWritten={handleReportWritten}
                 />
               ) : (
                 <div style={{

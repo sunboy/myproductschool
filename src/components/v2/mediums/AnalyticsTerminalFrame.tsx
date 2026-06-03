@@ -12,6 +12,7 @@ interface AnalyticsTerminalFrameProps {
   onActivity?: () => void
   onMcpStatusChange?: (connected: boolean) => void
   onSkillWritten?: (filename: string) => void
+  onReportWritten?: (path: string) => void
 }
 
 export function AnalyticsTerminalFrame({
@@ -21,6 +22,7 @@ export function AnalyticsTerminalFrame({
   onActivity,
   onMcpStatusChange,
   onSkillWritten,
+  onReportWritten,
 }: AnalyticsTerminalFrameProps) {
   return (
     <div style={{
@@ -80,6 +82,7 @@ export function AnalyticsTerminalFrame({
           onActivity={onActivity}
           onMcpStatusChange={onMcpStatusChange}
           onSkillWritten={onSkillWritten}
+          onReportWritten={onReportWritten}
         />
       </div>
     </div>

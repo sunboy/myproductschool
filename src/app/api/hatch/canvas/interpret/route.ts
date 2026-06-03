@@ -96,6 +96,9 @@ const RequestSchema = z.object({
   active_sub_problem_title: z.string().max(1000).nullable().optional(),
   active_sub_problem_objective: z.string().max(2000).nullable().optional(),
   active_sub_problem_success_criterion: z.string().max(2000).nullable().optional(),
+  active_sub_problem_kind: z.string().max(40).nullable().optional(),
+  active_sub_problem_teaching_note: z.string().max(2000).nullable().optional(),
+  report_written: z.boolean().optional(),
   skills_written: z.array(z.string().max(200)).max(50).optional(),
   marked_findings: z.array(MarkedFindingSchema).max(20).optional(),
   asserted_finding: z.string().max(2000).nullable().optional(),
@@ -390,9 +393,11 @@ function buildAnalyticsUserContent(body: InterpretBody): string {
     const seq = body.active_sub_problem_sequence ? `Step ${body.active_sub_problem_sequence}` : 'Active step'
     parts.push(
       `# Active step — scope your coaching to this unless the user asks otherwise\n` +
-      `## ${seq}: ${body.active_sub_problem_title}\n` +
+      `## ${seq}: ${body.active_sub_problem_title}` +
+      (body.active_sub_problem_kind ? ` (phase: ${body.active_sub_problem_kind})` : '') + `\n` +
       (body.active_sub_problem_objective ? `Objective: ${body.active_sub_problem_objective}` : '') +
-      (body.active_sub_problem_success_criterion ? `\nDone when: ${body.active_sub_problem_success_criterion}` : '')
+      (body.active_sub_problem_success_criterion ? `\nDone when: ${body.active_sub_problem_success_criterion}` : '') +
+      (body.active_sub_problem_teaching_note ? `\nWhat this phase teaches: ${body.active_sub_problem_teaching_note}` : '')
     )
   } else {
     parts.push(

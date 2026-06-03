@@ -12,17 +12,27 @@ interface SubProblemStepperProps {
 }
 
 const KIND_ICONS: Record<SubProblemKind, string> = {
-  connect:  'database',
-  analyze:  'query_stats',
-  segment:  'splitscreen',
-  skill:    'construction',
+  mcp_setup:      'cable',
+  explore_schema: 'table_view',
+  data_layout:    'storage',
+  analyze:        'query_stats',
+  segment:        'splitscreen',
+  answer:         'lightbulb',
+  report:         'description',
+  skill:          'construction',
+  connect:        'database', // back-compat alias for mcp_setup
 }
 
 const KIND_COLORS: Record<SubProblemKind, string> = {
-  connect: '#4a7c59',
-  analyze: '#1565c0',
-  segment: '#ad1457',
-  skill:   '#705c30',
+  mcp_setup:      '#4a7c59',
+  explore_schema: '#1565c0',
+  data_layout:    '#00796b',
+  analyze:        '#1565c0',
+  segment:        '#ad1457',
+  answer:         '#6a1b9a',
+  report:         '#705c30',
+  skill:          '#705c30',
+  connect:        '#4a7c59',
 }
 
 export function SubProblemStepper({

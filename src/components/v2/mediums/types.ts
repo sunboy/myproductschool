@@ -60,13 +60,26 @@ export interface ClaudeCodeTerminalProps {
   onMcpStatusChange?: (connected: boolean) => void
   /** Fires when the user writes a .claude/skills/<name>.md file. */
   onSkillWritten?: (filename: string) => void
+  /** Fires when the agent writes a report file under /workspace (e.g. report.md). */
+  onReportWritten?: (path: string) => void
 }
 
 // ---------------------------------------------------------------------------
 // Sub-problem stepper (guided structure for an analytics challenge)
 // ---------------------------------------------------------------------------
 
-export type SubProblemKind = 'connect' | 'analyze' | 'segment' | 'skill'
+// The full analyst-course arc. `connect` is kept as a back-compat alias for
+// `mcp_setup` (older seeded challenges may still use it).
+export type SubProblemKind =
+  | 'mcp_setup'
+  | 'explore_schema'
+  | 'data_layout'
+  | 'analyze'
+  | 'segment'
+  | 'answer'
+  | 'report'
+  | 'skill'
+  | 'connect'
 
 export interface AnalyticsSubProblem {
   id: string
@@ -81,6 +94,10 @@ export interface AnalyticsSubProblem {
   kind: SubProblemKind
   /** Analyst-rubric dimension this step feeds, if any (e.g. 'skill_construction'). */
   rubricDimension?: string
+  /** "Why this move matters" — 1-3 sentences of course content shown above the prompts. */
+  teachingNote?: string
+  /** Optional orientation list: "what you should learn here" (not interactive). */
+  learnChecklist?: string[]
 }
 
 export type MarkVerdict = 'pass' | 'partial' | 'retry'

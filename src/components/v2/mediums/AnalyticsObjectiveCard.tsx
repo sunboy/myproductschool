@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { AnalyticsSubProblem, MarkVerdict } from './types'
 
 interface AnalyticsObjectiveCardProps {
@@ -9,6 +10,7 @@ interface AnalyticsObjectiveCardProps {
   totalSteps: number
   mcpConnected: boolean
   skillsWritten: string[]
+  reportWritten?: boolean
   onMark: (finding: string) => Promise<MarkVerdict>
 }
 
@@ -18,21 +20,36 @@ export function AnalyticsObjectiveCard({
   totalSteps,
   mcpConnected,
   skillsWritten,
+  reportWritten = false,
   onMark,
 }: AnalyticsObjectiveCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [finding, setFinding] = useState('')
   const [loading, setLoading] = useState(false)
   const [lastVerdict, setLastVerdict] = useState<MarkVerdict | null>(null)
+  const [teachDismissed, setTeachDismissed] = useState(false)
+
+  // Per-step teaching note: dismissible, remembered so it does not nag on revisit.
+  useEffect(() => {
+    try {
+      setTeachDismissed(localStorage.getItem(`cc-teach-${subProblem.id}`) === '1')
+    } catch { /* SSR / no storage */ }
+  }, [subProblem.id])
+  function dismissTeach() {
+    setTeachDismissed(true)
+    try { localStorage.setItem(`cc-teach-${subProblem.id}`, '1') } catch { /* ignore */ }
+  }
 
   const canMark =
-    subProblem.kind === 'connect' ? mcpConnected
+    (subProblem.kind === 'mcp_setup' || subProblem.kind === 'connect') ? mcpConnected
     : subProblem.kind === 'skill' ? skillsWritten.length > 0
+    : subProblem.kind === 'report' ? reportWritten
     : true
 
   const gateHint =
-    subProblem.kind === 'connect' ? 'Connect BigQuery MCP first'
+    (subProblem.kind === 'mcp_setup' || subProblem.kind === 'connect') ? 'Connect BigQuery MCP first'
     : subProblem.kind === 'skill' ? 'Write a .claude/skills/*.md file first'
+    : subProblem.kind === 'report' ? 'Have Claude write the report file first'
     : null
 
   async function handleSubmit() {
@@ -111,6 +128,35 @@ export function AnalyticsObjectiveCard({
         </p>
       </div>
 
+      {/* Teaching note — why this move matters (dismissible course content) */}
+      {subProblem.teachingNote && !teachDismissed && (
+        <div style={{
+          display: 'flex', gap: 8, alignItems: 'flex-start',
+          background: 'var(--color-primary-fixed)',
+          borderRadius: 10, padding: '8px 10px',
+          borderLeft: '3px solid var(--color-primary)',
+        }}>
+          <HatchGlyph size={20} state="speaking" />
+          <p style={{
+            flex: 1, margin: 0,
+            fontSize: 11.5, lineHeight: 1.55,
+            color: 'var(--color-on-surface)',
+          }}>
+            {subProblem.teachingNote}
+          </p>
+          <button
+            onClick={dismissTeach}
+            aria-label="Dismiss tip"
+            style={{
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              color: 'var(--color-on-surface-variant)', padding: 0, lineHeight: 1,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+          </button>
+        </div>
+      )}
+
       {/* Success criterion */}
       <div style={{
         fontSize: 11, lineHeight: 1.5,
@@ -122,6 +168,31 @@ export function AnalyticsObjectiveCard({
         <span style={{ fontWeight: 700, color: 'var(--color-primary)', marginRight: 4 }}>Done when:</span>
         {subProblem.successCriterion}
       </div>
+
+      {/* Learn checklist — orientation for EDA-style steps (not interactive) */}
+      {subProblem.learnChecklist && subProblem.learnChecklist.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{
+            fontSize: 9.5, fontWeight: 800, letterSpacing: '0.07em',
+            textTransform: 'uppercase', color: 'var(--color-on-surface-variant)',
+            fontFamily: 'var(--font-label)',
+          }}>
+            What you should learn here
+          </span>
+          {subProblem.learnChecklist.map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+              <span className="material-symbols-outlined" style={{
+                fontSize: 14, color: 'var(--color-on-surface-variant)', marginTop: 1,
+              }}>
+                radio_button_unchecked
+              </span>
+              <span style={{ fontSize: 11.5, lineHeight: 1.5, color: 'var(--color-on-surface-variant)' }}>
+                {item}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Mark CTA */}
       {!expanded && (

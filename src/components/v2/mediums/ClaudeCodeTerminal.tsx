@@ -8,12 +8,14 @@ import type { ClaudeCodeTerminalProps, ClaudeCodeTerminalHandle } from './types'
 
 const MCP_CONNECTED_RE = /MCP.*connected|bigquery.*mcp.*ready|mcp.*bigquery.*✓/i
 const SKILL_WRITTEN_RE = /Wrote?\s+\.claude\/skills\/([^\s]+\.md)/i
+// A report artifact landing in the workspace (e.g. "Wrote /workspace/report.md").
+const REPORT_WRITTEN_RE = /Wrote?\s+(\/workspace\/[^\s]*report[^\s]*\.md)/i
 
 const TAIL_MAX_BYTES = 4000
 
 export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCodeTerminalProps>(
   function ClaudeCodeTerminal(
-    { wssUrl, onOutput, onActivity, onMcpStatusChange, onSkillWritten },
+    { wssUrl, onOutput, onActivity, onMcpStatusChange, onSkillWritten, onReportWritten },
     ref
   ) {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -143,6 +145,12 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           const match = SKILL_WRITTEN_RE.exec(text)
           if (match?.[1]) {
             onSkillWritten?.(match[1])
+          }
+
+          // Detect a report artifact written to the workspace
+          const reportMatch = REPORT_WRITTEN_RE.exec(text)
+          if (reportMatch?.[1]) {
+            onReportWritten?.(reportMatch[1])
           }
         }
 
