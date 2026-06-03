@@ -54,6 +54,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
   const [proactiveNudge, setProactiveNudge] = useState<string | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showMirror, setShowMirror] = useState(false)
+  // Set from the finalize response once the attempt has a share_id (the public
+  // share page reuses the existing /workspace/challenges/[id]/share/[shareId]
+  // route). Null until then, so the mirror shows Download but not Share.
+  const [shareUrl] = useState<string | null>(null)
   const [usage, setUsage] = useState<{ spent_usd: number; budget_usd: number; input_tokens: number; output_tokens: number } | null>(null)
 
   const activeSubProblem = subProblems[activeSubProblemIdx] ?? null
@@ -249,6 +253,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
         sessionDurationSeconds={Math.round((Date.now() - sessionStartRef.current) / 1000)}
         skillsWritten={skillsWritten}
         xpAwarded={50 + markedFindings.filter(f => f.verdict === 'pass').length * 25}
+        reportPath={reportPath}
+        reportDownloadUrl={sessionId && reportPath ? `/api/claude-code/session/report?session=${encodeURIComponent(sessionId)}` : null}
+        shareUrl={shareUrl}
         onDashboard={() => { window.location.href = '/dashboard' }}
         onRunAnother={() => { window.location.reload() }}
       />

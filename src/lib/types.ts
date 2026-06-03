@@ -379,6 +379,14 @@ export interface StudyPlanChapterChallenge {
   paradigm?: string | null
 }
 
+export interface StudyPlanChapterLesson {
+  id: string
+  slug: string
+  title: string
+  module_slug: string
+  est_minutes?: number | null
+}
+
 export interface StudyPlanChapter {
   id: string
   plan_id: string
@@ -386,6 +394,9 @@ export interface StudyPlanChapter {
   order_index: number
   challenge_ids: string[]
   challenges?: StudyPlanChapterChallenge[]
+  /** When set, this chapter is a Learn lesson (mdx) rather than a challenge list. */
+  learn_chapter_id?: string | null
+  lesson?: StudyPlanChapterLesson | null
   created_at: string
 }
 
@@ -811,6 +822,13 @@ export interface TopicWithProgress extends Topic {
 }
 
 // ── StudyPlanWithItems (used by study plan detail page) ────
+export interface StudyPlanItemLesson {
+  slug: string
+  title: string
+  module_slug: string
+  is_completed?: boolean
+}
+
 export interface StudyPlanItem {
   id: string
   plan_id: string
@@ -821,6 +839,8 @@ export interface StudyPlanItem {
   order_index: number
   challenge?: ChallengeWithDomain
   concept?: Concept
+  /** Present when item_type is 'concept' and it points at a Learn chapter (mdx lesson). */
+  lesson?: StudyPlanItemLesson
 }
 
 export interface StudyPlanWithItems extends StudyPlan {

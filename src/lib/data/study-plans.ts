@@ -214,19 +214,35 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
 
   if (!plan) return null
 
-  // study_plan_chapters stores challenge_ids as an array per chapter
+  // study_plan_chapters stores either challenge_ids (challenge chapters) OR a
+  // learn_chapter_id (lesson chapters that render the mdx reader).
   const { data: chapters } = await supabase
     .from('study_plan_chapters')
-    .select('id, title, order_index, challenge_ids, topic_tags')
+    .select('id, title, order_index, challenge_ids, topic_tags, learn_chapter_id')
     .eq('plan_id', plan.id)
     .order('order_index')
 
   // Collect all challenge IDs across chapters
   const allChallengeIds: string[] = []
   const allTopicSlugs: string[] = []
+  const allLessonIds: string[] = []
   for (const ch of chapters ?? []) {
     for (const cid of ch.challenge_ids ?? []) allChallengeIds.push(cid)
     for (const slug of ch.topic_tags ?? []) allTopicSlugs.push(slug)
+    if (ch.learn_chapter_id) allLessonIds.push(ch.learn_chapter_id)
+  }
+
+  // Resolve lesson chapters (mdx) + their module slug for reader links.
+  const lessonMap: Record<string, { slug: string; title: string; module_slug: string }> = {}
+  if (allLessonIds.length > 0) {
+    const { data: lessons } = await supabase
+      .from('learn_chapters')
+      .select('id, slug, title, learn_modules(slug)')
+      .in('id', allLessonIds)
+    for (const l of (lessons ?? []) as Array<{ id: string; slug: string; title: string; learn_modules: { slug: string } | { slug: string }[] | null }>) {
+      const mod = Array.isArray(l.learn_modules) ? l.learn_modules[0] : l.learn_modules
+      lessonMap[l.id] = { slug: l.slug, title: l.title, module_slug: mod?.slug ?? '' }
+    }
   }
 
   // Resolve topic labels for tag-aware section headers
@@ -285,10 +301,41 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
     }
   }
 
-  // Build StudyPlanItem rows from chapters
+  // Which lesson chapters has the user already completed (user_learn_progress)?
+  const completedLessonIds = new Set<string>()
+  if (allLessonIds.length > 0) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: progress } = await supabase
+        .from('user_learn_progress')
+        .select('chapter_id')
+        .eq('user_id', user.id)
+        .in('chapter_id', allLessonIds)
+      for (const p of progress ?? []) completedLessonIds.add(p.chapter_id)
+    }
+  }
+
+  // Build StudyPlanItem rows from chapters. A lesson chapter emits one lesson
+  // item; a challenge chapter emits one item per challenge.
   let orderIndex = 0
-  const enrichedItems = (chapters ?? []).flatMap(ch =>
-    (ch.challenge_ids ?? []).map((cid: string) => {
+  const enrichedItems = (chapters ?? []).flatMap(ch => {
+    if (ch.learn_chapter_id) {
+      const lesson = lessonMap[ch.learn_chapter_id]
+      orderIndex++
+      return [{
+        id: `${ch.id}-lesson`,
+        plan_id: plan.id,
+        item_type: 'concept' as const,
+        challenge_id: null,
+        concept_id: ch.learn_chapter_id,
+        chapter_title: ch.title,
+        order_index: orderIndex,
+        lesson: lesson
+          ? { ...lesson, is_completed: completedLessonIds.has(ch.learn_chapter_id) }
+          : undefined,
+      }]
+    }
+    return (ch.challenge_ids ?? []).map((cid: string) => {
       const c = challengeMap[cid]
       orderIndex++
       return {
@@ -313,9 +360,11 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
         } : undefined,
       }
     })
-  )
+  })
 
-  const completedCount = enrichedItems.filter(i => i.challenge?.is_completed).length
+  const completedCount = enrichedItems.filter(
+    i => i.challenge?.is_completed || (i.lesson as { is_completed?: boolean } | undefined)?.is_completed,
+  ).length
 
   return {
     ...plan,

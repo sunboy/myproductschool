@@ -97,7 +97,8 @@ export async function inspectWorkspace(transcriptUri: string | null): Promise<Wo
       // Skills the user wrote — the skill_construction evidence.
       if (lower.includes('.claude/skills/') && lower.endsWith('.md')) {
         skills.push({ filename: e.name.replace(/^.*\.claude\/skills\//, '.claude/skills/'), preview: preview(e.content) })
-      } else if (lower.endsWith('.sql') || lower.endsWith('notes.md') || lower.endsWith('.py')) {
+      } else if (lower.endsWith('.sql') || lower.endsWith('.md') || lower.endsWith('.py')) {
+        // SQL, notes, and report markdown are all analyst artifacts.
         artifacts.push({ filename: e.name.replace(/^.*workspace\//, ''), preview: preview(e.content) })
       }
     }
@@ -105,5 +106,33 @@ export async function inspectWorkspace(transcriptUri: string | null): Promise<Wo
     return { skills, artifacts, fileCount: entries.length, ok: true }
   } catch {
     return EMPTY
+  }
+}
+
+/**
+ * Read the FULL content of one workspace file from the latest snapshot tarball
+ * (the inspector previews are truncated). Returns the matched file's name +
+ * full text, or null. Used to serve/share the report.md.
+ */
+export async function readWorkspaceFile(
+  transcriptUri: string | null,
+  match: (name: string) => boolean,
+): Promise<{ filename: string; content: string } | null> {
+  if (!transcriptUri) return null
+  try {
+    const admin = createAdminClient()
+    const { data, error } = await admin.storage.from('cc-sessions').download(transcriptUri)
+    if (error || !data) return null
+    const gz = Buffer.from(await data.arrayBuffer())
+    const tarBuf = gunzipSync(gz)
+    const entries = readTar(tarBuf)
+    const hit = entries.find((e) => match(e.name.toLowerCase()))
+    if (!hit) return null
+    return {
+      filename: hit.name.replace(/^.*workspace\//, ''),
+      content: hit.content.toString('utf8'),
+    }
+  } catch {
+    return null
   }
 }

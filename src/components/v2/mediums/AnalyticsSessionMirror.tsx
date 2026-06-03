@@ -59,6 +59,12 @@ interface AnalyticsSessionMirrorProps {
   sessionDurationSeconds: number
   skillsWritten: string[]
   xpAwarded: number
+  /** Path of the report the agent wrote (e.g. /workspace/report.md), if any. */
+  reportPath?: string | null
+  /** Endpoint to download the full report, if a report was written. */
+  reportDownloadUrl?: string | null
+  /** A shareable URL for the report/score card, if generated. */
+  shareUrl?: string | null
   onDashboard: () => void
   onRunAnother?: () => void
 }
@@ -68,6 +74,9 @@ export function AnalyticsSessionMirror({
   sessionDurationSeconds,
   skillsWritten,
   xpAwarded,
+  reportPath = null,
+  reportDownloadUrl = null,
+  shareUrl = null,
   onDashboard,
   onRunAnother,
 }: AnalyticsSessionMirrorProps) {
@@ -302,6 +311,65 @@ export function AnalyticsSessionMirror({
                   {name}
                 </span>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Report strip — the deliverable: path + download + share */}
+        {reportPath && (
+          <div style={{
+            background: 'var(--color-primary-fixed)',
+            borderRadius: 12, padding: '12px 14px',
+            display: 'flex', flexDirection: 'column', gap: 8,
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 11, fontWeight: 800,
+              textTransform: 'uppercase', letterSpacing: '0.07em',
+              color: 'var(--color-primary)',
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1, 'wght' 400" }}>
+                description
+              </span>
+              Report generated
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 600,
+              padding: '3px 8px', borderRadius: 6, alignSelf: 'flex-start',
+              background: 'rgba(255,255,255,0.5)',
+              color: 'var(--color-on-surface)',
+              fontFamily: 'monospace',
+            }}>
+              {reportPath}
+            </span>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <a
+                href={reportDownloadUrl ?? '#'}
+                download
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '6px 12px', borderRadius: 99,
+                  background: 'var(--color-primary)', color: 'var(--color-on-primary)',
+                  textDecoration: 'none', fontSize: 12, fontWeight: 700,
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 15 }}>download</span>
+                Download
+              </a>
+              {shareUrl && (
+                <button
+                  onClick={() => { navigator.clipboard?.writeText(shareUrl).catch(() => {}) }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    padding: '6px 12px', borderRadius: 99,
+                    background: 'var(--color-secondary-container)', color: 'var(--color-on-secondary-container)',
+                    border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 15 }}>share</span>
+                  Copy share link
+                </button>
+              )}
             </div>
           </div>
         )}

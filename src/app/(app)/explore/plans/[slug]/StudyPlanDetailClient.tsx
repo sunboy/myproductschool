@@ -150,18 +150,23 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug, nextItemId }: Chapt
 
       <PresencePanel isOpen={open} style={{ borderTop: '1px solid #e7dfc9' }}>
           {items.map((item, itemIdx) => {
-            const typeLabel = ITEM_TYPE_LABEL[item.item_type] ?? item.item_type
-            const title = item.challenge?.title ?? (item as { concept?: { title?: string } }).concept?.title ?? 'Untitled'
+            const lesson = item.lesson
+            const typeLabel = lesson ? 'Lesson' : (ITEM_TYPE_LABEL[item.item_type] ?? item.item_type)
+            const title = item.challenge?.title ?? lesson?.title ?? (item as { concept?: { title?: string } }).concept?.title ?? 'Untitled'
             const href =
               item.item_type === 'challenge' && item.challenge_id
                 ? `/workspace/challenges/${item.challenge_id}?from_plan=${slug}`
+                : lesson
+                ? `/explore/modules/${lesson.module_slug}?chapter=${lesson.slug}`
                 : item.item_type === 'concept' && item.concept_id
                 ? `/vocabulary/${item.concept_id}`
                 : '#'
-            const isCompleted = item.challenge?.is_completed ?? false
+            const isCompleted = item.challenge?.is_completed ?? lesson?.is_completed ?? false
             const isInProgress = item.challenge?.is_in_progress ?? false
             const isNext = item.id === nextItemId && !isCompleted
-            const actionLabel = isCompleted ? 'Review' : isInProgress ? 'Continue' : 'Start'
+            const actionLabel = lesson
+              ? (isCompleted ? 'Reread' : 'Read')
+              : isCompleted ? 'Review' : isInProgress ? 'Continue' : 'Start'
 
             const typeBadgeStyle: React.CSSProperties =
               item.item_type === 'challenge'
