@@ -7,7 +7,7 @@ import { SITE_NAME, SITE_URL } from '@/lib/seo/site'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSharedAttemptScorecard, type MoveKey } from '@/lib/share/attempt-scorecard'
 import { getSharedAnalyticsReport } from '@/lib/share/analytics-report'
-import { Md } from '@/components/ui/Md'
+import { SharedAnalyticsArtifact } from '@/components/analytics/SharedAnalyticsArtifact'
 
 interface PublicSharePageProps {
   params: Promise<{ id: string; shareId: string }>
@@ -100,9 +100,11 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
               {report.gradeLabel ? `Graded ${report.gradeLabel}` : 'Driven on a live BigQuery dataset with Claude Code.'}
             </p>
           </div>
-          <article className="rounded-xl bg-[#f8f3ea] p-6 text-[#233028] shadow-2xl">
-            <Md variant="default">{report.reportMarkdown}</Md>
-          </article>
+          <SharedAnalyticsArtifact
+            reportMarkdown={report.reportMarkdown}
+            dimensions={report.dimensions}
+            overallNote={report.overallNote}
+          />
           <div className="flex flex-col gap-3 sm:flex-row">
             <a href={reportLinkedIn} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-[#0a66c2] px-5 py-3 text-sm font-bold text-white">Share to LinkedIn</a>
             <a href={reportTwitter} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-[#1f2a23]">Share to X</a>

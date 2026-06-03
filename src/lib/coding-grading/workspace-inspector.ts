@@ -30,6 +30,18 @@ export interface WorkspaceEvidence {
   ok: boolean
 }
 
+/** A skill the user has accumulated across sessions (from cc-user-state). */
+export interface UserSkill {
+  /** Normalized to '.claude/skills/<name>.md'. */
+  filename: string
+  /** First H1 / frontmatter name / filename stem. */
+  title: string
+  /** First ~600 chars. */
+  preview: string
+  /** Full file content (so the client can recreate it in a new session). */
+  content: string
+}
+
 const EMPTY: WorkspaceEvidence = { skills: [], artifacts: [], fileCount: 0, ok: false }
 
 interface TarEntry {
@@ -75,8 +87,13 @@ function readTar(buf: Buffer): TarEntry[] {
 
     if (typeFlag === '0' || typeFlag === '\0' || typeFlag === '') {
       const name = pendingLongName ?? (prefix ? `${prefix}/${rawName}` : rawName)
-      const content = buf.subarray(offset, offset + size)
-      if (name) entries.push({ name, content: Buffer.from(content) })
+      // Skip AppleDouble sidecar files (._foo) a macOS `tar` may inject — they
+      // hold xattrs, not content, and must never be mistaken for the real file.
+      const base = name.replace(/^.*\//, '')
+      if (name && !base.startsWith('._')) {
+        const content = buf.subarray(offset, offset + size)
+        entries.push({ name, content: Buffer.from(content) })
+      }
     }
     pendingLongName = null
     offset += blocks
@@ -89,6 +106,30 @@ function preview(content: Buffer, max = 600): string {
 }
 
 /**
+ * Download + gunzip + parse a `.tar.gz` from any Supabase Storage bucket/path.
+ * Shared by the session-workspace inspector (cc-sessions) and the per-user skills
+ * reader (cc-user-state). Returns [] on any failure (missing/corrupt/not gzipped).
+ */
+export async function readTarEntries(bucket: string, path: string | null): Promise<TarEntry[]> {
+  if (!path) return []
+  try {
+    const admin = createAdminClient()
+    const { data, error } = await admin.storage.from(bucket).download(path)
+    if (error || !data) return []
+    const gz = Buffer.from(await data.arrayBuffer())
+    let tarBuf: Buffer
+    try {
+      tarBuf = gunzipSync(gz)
+    } catch {
+      return [] // not gzipped / corrupt
+    }
+    return readTar(tarBuf)
+  } catch {
+    return []
+  }
+}
+
+/**
  * Downloads and inspects the latest workspace snapshot for a session.
  * @param transcriptUri storage path within the `cc-sessions` bucket
  *   (e.g. "<sessionId>/workspace-<ts>.tar.gz"), from claude_code_sessions.transcript_uri.
@@ -97,19 +138,8 @@ export async function inspectWorkspace(transcriptUri: string | null): Promise<Wo
   if (!transcriptUri) return EMPTY
 
   try {
-    const admin = createAdminClient()
-    const { data, error } = await admin.storage.from('cc-sessions').download(transcriptUri)
-    if (error || !data) return EMPTY
-
-    const gz = Buffer.from(await data.arrayBuffer())
-    let tarBuf: Buffer
-    try {
-      tarBuf = gunzipSync(gz)
-    } catch {
-      return EMPTY // not gzipped / corrupt
-    }
-
-    const entries = readTar(tarBuf)
+    const entries = await readTarEntries('cc-sessions', transcriptUri)
+    if (entries.length === 0) return EMPTY
     const skills: WorkspaceSkill[] = []
     const artifacts: WorkspaceArtifact[] = []
 
@@ -146,12 +176,7 @@ export async function readWorkspaceFile(
 ): Promise<{ filename: string; content: string } | null> {
   if (!transcriptUri) return null
   try {
-    const admin = createAdminClient()
-    const { data, error } = await admin.storage.from('cc-sessions').download(transcriptUri)
-    if (error || !data) return null
-    const gz = Buffer.from(await data.arrayBuffer())
-    const tarBuf = gunzipSync(gz)
-    const entries = readTar(tarBuf)
+    const entries = await readTarEntries('cc-sessions', transcriptUri)
     const hit = entries.find((e) => match(e.name.toLowerCase()))
     if (!hit) return null
     return {
@@ -161,4 +186,39 @@ export async function readWorkspaceFile(
   } catch {
     return null
   }
+}
+
+/** Pull a human title from a skill file: first markdown H1, then YAML `name:`, then the filename stem. */
+function skillTitle(filename: string, content: string): string {
+  const h1 = /^#\s+(.+)$/m.exec(content)
+  if (h1) return h1[1].trim()
+  const fm = /^name:\s*(.+)$/m.exec(content)
+  if (fm) return fm[1].trim().replace(/^["']|["']$/g, '')
+  const stem = filename.replace(/^.*\//, '').replace(/\.md$/i, '')
+  return stem.replace(/[-_]/g, ' ').trim() || filename
+}
+
+/**
+ * List the skills a user has accumulated across sessions, read from their
+ * persisted ~/.claude state tarball (cc-user-state/<userId>/claude.tar.gz, pointer
+ * in profiles.cc_claude_state_uri). Returns full content so the caller can
+ * recreate the skill in a new session without a second round-trip. [] on no state.
+ */
+export async function listUserSkills(claudeStateUri: string | null): Promise<UserSkill[]> {
+  if (!claudeStateUri) return []
+  const entries = await readTarEntries('cc-user-state', claudeStateUri)
+  const skills: UserSkill[] = []
+  for (const e of entries) {
+    const lower = e.name.toLowerCase()
+    if (!lower.includes('.claude/skills/') || !lower.endsWith('.md')) continue
+    const content = e.content.toString('utf8')
+    const filename = e.name.replace(/^.*\.claude\/skills\//, '.claude/skills/')
+    skills.push({
+      filename,
+      title: skillTitle(filename, content),
+      preview: content.slice(0, 600),
+      content,
+    })
+  }
+  return skills
 }

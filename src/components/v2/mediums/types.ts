@@ -58,6 +58,10 @@ export interface ClaudeCodeTerminalProps {
   onActivity?: () => void
   /** True once the BigQuery MCP server is connected in the session. */
   onMcpStatusChange?: (connected: boolean) => void
+  /** Fires when the `claude` REPL launches (its version banner / prompt appears).
+   *  The mcp_setup step only completes once the MCP is connected AND the REPL is
+   *  running, so the user is never advanced into bash with REPL-only prompts. */
+  onReplStatusChange?: (running: boolean) => void
   /** Fires when the user writes a .claude/skills/<name>.md file. */
   onSkillWritten?: (filename: string) => void
   /** Fires when the agent writes a report file under /workspace (e.g. report.md). */
@@ -114,7 +118,17 @@ export interface MarkedFinding {
 
 import type { ChallengePrompt } from '@/lib/types'
 
+/** The challenge brief for analytics challenges. prompt_text is empty for this
+ *  type; the narrative lives in these scenario_* columns and is composed by the
+ *  page, then rendered in the medium's left panel. */
+export interface AnalyticsScenario {
+  context: string
+  trigger: string
+  question: string
+}
+
 export interface MediumProps {
   challenge: ChallengePrompt
   attemptId: string
+  scenario?: AnalyticsScenario
 }

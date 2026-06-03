@@ -1,8 +1,11 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { ReportCharts } from '@/components/analytics/ReportCharts'
+import { AnalystDimensionChart } from '@/components/analytics/AnalystDimensionChart'
+import type { AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 import type { MarkedFinding } from './types'
 
 interface AnalystDimension {
@@ -58,6 +61,8 @@ interface AnalyticsSessionMirrorProps {
   markedFindings: MarkedFinding[]
   sessionDurationSeconds: number
   skillsWritten: string[]
+  /** analyst_v1 per-dimension scores from the finalize grade, for the scorecard chart. */
+  dimensions?: AnalystDimensionView[] | null
   xpAwarded: number
   /** Path of the report the agent wrote (e.g. /workspace/report.md), if any. */
   reportPath?: string | null
@@ -73,6 +78,7 @@ export function AnalyticsSessionMirror({
   markedFindings,
   sessionDurationSeconds,
   skillsWritten,
+  dimensions = null,
   xpAwarded,
   reportPath = null,
   reportDownloadUrl = null,
@@ -83,6 +89,20 @@ export function AnalyticsSessionMirror({
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const headerRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
+
+  // The mirror has the report path but not its content. Fetch the markdown from
+  // the existing download endpoint (fetch().text() reads the body despite the
+  // attachment header) so we can chart the tables the analyst wrote.
+  const [reportMarkdown, setReportMarkdown] = useState<string | null>(null)
+  useEffect(() => {
+    if (!reportDownloadUrl) return
+    let cancelled = false
+    fetch(reportDownloadUrl)
+      .then(r => r.ok ? r.text() : null)
+      .then(t => { if (!cancelled && t) setReportMarkdown(t) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [reportDownloadUrl])
 
   const passCount = markedFindings.filter(f => f.verdict === 'pass').length
 
@@ -280,6 +300,14 @@ export function AnalyticsSessionMirror({
             )
           })}
         </div>
+
+        {/* Analyst scorecard — the graded analyst_v1 dimensions. */}
+        {dimensions && dimensions.length > 0 && (
+          <AnalystDimensionChart dimensions={dimensions} variant="mirror" />
+        )}
+
+        {/* Charts from the report's tables (funnel, time series, breakdowns). */}
+        {reportMarkdown && <ReportCharts markdown={reportMarkdown} variant="mirror" />}
 
         {/* Skills strip */}
         {skillsWritten.length > 0 && (

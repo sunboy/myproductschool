@@ -1,7 +1,9 @@
 import 'server-only'
 
+import { cache } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { readWorkspaceFile } from '@/lib/coding-grading/workspace-inspector'
+import { toDimensionViews, type AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 
 export interface SharedAnalyticsReport {
   attemptId: string
@@ -12,6 +14,18 @@ export interface SharedAnalyticsReport {
   scoreLabel: string
   /** The full report.md the agent wrote, as markdown. */
   reportMarkdown: string
+  /** analyst_v1 per-dimension scores, or null when the artifact lacks them. */
+  dimensions: AnalystDimensionView[] | null
+  /** The grader's two-sentence overall note, if present. */
+  overallNote: string | null
+}
+
+/** Lightweight header for the OG image — no tarball download (grade + title + dimensions only). */
+export interface SharedAnalyticsHeader {
+  challengeTitle: string
+  gradeLabel: string | null
+  scoreLabel: string
+  dimensions: AnalystDimensionView[] | null
 }
 
 /**
@@ -20,7 +34,7 @@ export interface SharedAnalyticsReport {
  * artifact is found. Mirrors getSharedAttemptScorecard but pulls the report.md
  * from the session's workspace snapshot instead of FLOW move levels.
  */
-export async function getSharedAnalyticsReport(
+export const getSharedAnalyticsReport = cache(async function getSharedAnalyticsReport(
   admin: SupabaseClient,
   input: { challengeId: string; shareId: string },
 ): Promise<SharedAnalyticsReport | null> {
@@ -41,10 +55,10 @@ export async function getSharedAnalyticsReport(
     .maybeSingle()
   if (!challenge || challenge.challenge_type !== 'claude_code_analytics') return null
 
-  // Find the session for this attempt and pull its report from the snapshot.
+  // Find the session for this attempt and pull its report + graded dimensions.
   const { data: session } = await admin
     .from('claude_code_sessions')
-    .select('transcript_uri')
+    .select('transcript_uri, final_artifact')
     .eq('attempt_id', attempt.id)
     .maybeSingle()
 
@@ -58,6 +72,10 @@ export async function getSharedAnalyticsReport(
   const max = Number(attempt.max_score) || 100
   const scoreLabel = Number.isFinite(total) ? `${Math.round((total / max) * 100)}%` : 'Not scored'
 
+  const fa = (session?.final_artifact ?? null) as { overall_note?: unknown } | null
+  const dimensions = toDimensionViews(session?.final_artifact)
+  const overallNote = fa && typeof fa.overall_note === 'string' ? fa.overall_note : null
+
   return {
     attemptId: attempt.id,
     challengeId: input.challengeId,
@@ -66,5 +84,49 @@ export async function getSharedAnalyticsReport(
     gradeLabel: (attempt.grade_label as string | null) ?? null,
     scoreLabel,
     reportMarkdown: report.content,
+    dimensions,
+    overallNote,
   }
-}
+})
+
+/**
+ * Header-only resolver for the OG image: grade + title + dimensions from the DB,
+ * with NO tarball download (the OG card never renders the report.md body). Keeps
+ * the social-preview path cheap even on a hot public share URL.
+ */
+export const getSharedAnalyticsHeader = cache(async function getSharedAnalyticsHeader(
+  admin: SupabaseClient,
+  input: { challengeId: string; shareId: string },
+): Promise<SharedAnalyticsHeader | null> {
+  const { data: attempt } = await admin
+    .from('challenge_attempts')
+    .select('id, total_score, max_score, grade_label')
+    .eq('challenge_id', input.challengeId)
+    .eq('share_id', input.shareId)
+    .maybeSingle()
+  if (!attempt) return null
+
+  const { data: challenge } = await admin
+    .from('challenges')
+    .select('title, challenge_type')
+    .eq('id', input.challengeId)
+    .maybeSingle()
+  if (!challenge || challenge.challenge_type !== 'claude_code_analytics') return null
+
+  const { data: session } = await admin
+    .from('claude_code_sessions')
+    .select('final_artifact')
+    .eq('attempt_id', attempt.id)
+    .maybeSingle()
+
+  const total = Number(attempt.total_score)
+  const max = Number(attempt.max_score) || 100
+  const scoreLabel = Number.isFinite(total) ? `${Math.round((total / max) * 100)}%` : 'Not scored'
+
+  return {
+    challengeTitle: (challenge.title as string) ?? 'Analytics challenge',
+    gradeLabel: (attempt.grade_label as string | null) ?? null,
+    scoreLabel,
+    dimensions: toDimensionViews(session?.final_artifact),
+  }
+})

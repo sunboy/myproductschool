@@ -7,10 +7,13 @@ import { AnalyticsConnectionStrip } from './AnalyticsConnectionStrip'
 import { UsageMeter } from './UsageMeter'
 import { AnalyticsTerminalFrame } from './AnalyticsTerminalFrame'
 import { SuggestedPromptRail } from './SuggestedPromptRail'
+import { SkillsLibraryPanel } from './SkillsLibraryPanel'
 import { AnalyticsOnboardingOverlay, shouldShowOnboarding } from './AnalyticsOnboardingOverlay'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { mergeArc } from './analyticsArc'
+import { toDimensionViews, type AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 import type {
   MediumProps,
   AnalyticsSubProblem,
@@ -29,7 +32,7 @@ const MOCK_WSS_URL = 'wss://echo.websocket.org/'
 
 const IDLE_THRESHOLD_MS = 18000 // 18s
 
-export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps) {
+export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: MediumProps) {
   const terminalRef = useRef<ClaudeCodeTerminalHandle | null>(null)
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastActivityRef = useRef<number>(Date.now())
@@ -48,9 +51,17 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
   const [markedFindings, setMarkedFindings] = useState<MarkedFinding[]>([])
   const [mcpConnected, setMcpConnected] = useState(false)
+  // True once the `claude` REPL has launched (its banner/prompt appeared). Step 1
+  // gates on this so we never advance the user into bash with REPL-only prompts.
+  const [replRunning, setReplRunning] = useState(false)
   const [skillsWritten, setSkillsWritten] = useState<string[]>([])
   const [reportPath, setReportPath] = useState<string | null>(null)
+  // analyst_v1 per-dimension scores from the finalize grade, for the mirror chart.
+  const [dimensions, setDimensions] = useState<AnalystDimensionView[] | null>(null)
   const [terminalTail, setTerminalTail] = useState('')
+  // AI-generated "Try next" chips, contextual to the live terminal + state.
+  // Empty → the rail shows the step's static arc prompts (the fallback).
+  const [aiPrompts, setAiPrompts] = useState<string[]>([])
   const [proactiveNudge, setProactiveNudge] = useState<string | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showMirror, setShowMirror] = useState(false)
@@ -61,6 +72,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
   // route). Null until then, so the mirror shows Download but not Share.
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [usage, setUsage] = useState<{ spent_usd: number; budget_usd: number; input_tokens: number; output_tokens: number } | null>(null)
+  // The floating Hatch dock: closed by default, opens to a bubble the user can
+  // dock to the right. Hatch sees the live session (terminal tail, active step,
+  // MCP + skills state) on every turn via the analytics context props below.
+  const [hatchOpen, setHatchOpen] = useState(false)
 
   const activeSubProblem = subProblems[activeSubProblemIdx] ?? null
 
@@ -96,7 +111,13 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
         const res = await fetch('/api/claude-code/session/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ challenge_id: challenge.id, attempt_id: attemptId }),
+          // Only send attempt_id when we actually have one. An empty string
+          // fails the route's z.string().uuid() check (400); omitting it lets
+          // the route find-or-create the attempt itself.
+          body: JSON.stringify({
+            challenge_id: challenge.id,
+            ...(attemptId ? { attempt_id: attemptId } : {}),
+          }),
         })
         if (!res.ok) {
           const err = await res.json().catch(() => ({})) as { error?: string }
@@ -181,22 +202,90 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
     setTerminalTail(tail)
   }, [])
 
+  // ── Contextual "Try next" chips ─────────────────────────────────────────────
+  // Hatch (Haiku) reads the live terminal + current step and writes 2-3 bespoke
+  // next prompts. Refetched when the step or MCP/REPL state changes (immediate)
+  // and after terminal activity settles (debounced). Falls back to the step's
+  // static arc prompts whenever the call is empty/in-flight/failed, so the rail
+  // is never blank. Skipped in the dev stub (no real session).
+  const chipsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fetchSuggestedPrompts = useCallback(async () => {
+    if (USE_DEV_STUB) return
+    const step = subProblems[activeSubProblemIdx]
+    if (!step) return
+    try {
+      const res = await fetch('/api/hatch/canvas/suggest-prompts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: challenge.id,
+          challengeType: 'claude_code_analytics',
+          mcp_connected: mcpConnected,
+          repl_running: replRunning,
+          terminal_tail: terminalTail.slice(-3000),
+          active_sub_problem_id: step.id,
+          active_sub_problem_kind: step.kind,
+          active_sub_problem_title: step.title,
+          active_sub_problem_objective: step.objective,
+          active_sub_problem_success_criterion: step.successCriterion,
+          fallback_prompts: step.suggestedPrompts,
+        }),
+      })
+      if (!res.ok) { setAiPrompts([]); return }
+      const data = await res.json() as { prompts?: string[] }
+      setAiPrompts(Array.isArray(data.prompts) ? data.prompts : [])
+    } catch {
+      setAiPrompts([]) // fall back to static prompts
+    }
+  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail])
+
+  // Refetch immediately when the step or connection state changes (clear stale
+  // chips first so we never show a previous step's suggestions).
+  useEffect(() => {
+    if (USE_DEV_STUB) return
+    setAiPrompts([])
+    void fetchSuggestedPrompts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSubProblemIdx, mcpConnected, replRunning])
+
+  // Debounced refetch after the terminal output changes (the user ran something
+  // and saw a result) — wait for it to settle so we react to the final output.
+  useEffect(() => {
+    if (USE_DEV_STUB || !terminalTail) return
+    if (chipsTimerRef.current) clearTimeout(chipsTimerRef.current)
+    chipsTimerRef.current = setTimeout(() => { void fetchSuggestedPrompts() }, 4000)
+    return () => { if (chipsTimerRef.current) clearTimeout(chipsTimerRef.current) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [terminalTail])
+
+  // The terminal callbacks only flip state — the advance decision lives in an
+  // effect below so it always reads the current mcpConnected/replRunning (the
+  // two signals arrive in either order across separate renders, so deciding
+  // inside a callback closure would race on a stale value).
   const handleMcpStatusChange = useCallback((connected: boolean) => {
     setMcpConnected(connected)
-    // Returning users carry their BigQuery MCP registration forward (rehydrated
-    // ~/.claude state), so the connection lights up on its own. When that happens
-    // while the mcp_setup step is active, auto-complete it and advance — no need
-    // to make them re-run a setup they already did. Compute from current state
-    // and call the setters separately (no setState inside a setState updater).
-    if (!connected) return
+  }, [])
+
+  const handleReplStatusChange = useCallback((running: boolean) => {
+    setReplRunning(running)
+  }, [])
+
+  // Step 1 (mcp_setup) completes only once BOTH are true: the BigQuery MCP is
+  // registered AND the `claude` REPL is running. Advancing on MCP alone dumped
+  // the user on step 2 still in bash, where step 2's natural-language prompts
+  // are "command not found". Gating on both makes the bash→REPL handoff
+  // explicit. A returning user's MCP is pre-registered, so this still waits for
+  // them to launch claude once before advancing.
+  useEffect(() => {
+    if (!mcpConnected || !replRunning) return
     const step = subProblems[activeSubProblemIdx]
-    if (step && step.kind === 'mcp_setup') {
+    if (step && (step.kind === 'mcp_setup' || step.kind === 'connect')) {
       setCompletedIds(prev => new Set([...prev, step.id]))
       if (activeSubProblemIdx + 1 < subProblems.length) {
         setActiveSubProblemIdx(activeSubProblemIdx + 1)
       }
     }
-  }, [subProblems, activeSubProblemIdx])
+  }, [mcpConnected, replRunning, subProblems, activeSubProblemIdx])
 
   const handleSkillWritten = useCallback((filename: string) => {
     setSkillsWritten(prev => prev.includes(filename) ? prev : [...prev, filename])
@@ -219,8 +308,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
     try {
       const res = await fetch(`/api/claude-code/session/${sessionId}/finalize`, { method: 'POST' })
       if (res.ok) {
-        const data = await res.json() as { share_url?: string | null }
+        const data = await res.json() as { share_url?: string | null; final_artifact?: unknown }
         if (data.share_url) setShareUrl(data.share_url)
+        const views = toDimensionViews(data.final_artifact)
+        if (views) setDimensions(views)
       }
     } catch {
       // Grading failure must not block the user from seeing their session summary.
@@ -240,9 +331,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
         body: JSON.stringify({
           message: `Mark this step: ${finding}`,
           challengeId: challenge.id,
-          attemptId,
+          ...(attemptId ? { attemptId } : {}),
           challengeType: 'claude_code_analytics',
-          scene: { entities: [], connections: [] }, // not a canvas but schema requires it
+          // No canvas in analytics. `scene` is optional in the interpret schema;
+          // sending a partial scene ({entities,connections} only) fails the full
+          // CanvasSceneSchema (elementCount/groups/freeText/foreignKeys) → 400.
+          // Omit it entirely.
           history: [],
           mcp_connected: mcpConnected,
           terminal_tail: terminalTail.slice(-3000),
@@ -291,6 +385,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
         markedFindings={markedFindings}
         sessionDurationSeconds={Math.round((Date.now() - sessionStartRef.current) / 1000)}
         skillsWritten={skillsWritten}
+        dimensions={dimensions}
         xpAwarded={50 + markedFindings.filter(f => f.verdict === 'pass').length * 25}
         reportPath={reportPath}
         reportDownloadUrl={sessionId && reportPath ? `/api/claude-code/session/report?session=${encodeURIComponent(sessionId)}` : null}
@@ -378,8 +473,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
           )}
         </div>
 
-        {/* Body split */}
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+        {/* Body split. position: relative so the floating Hatch bubble anchors
+            to this workspace row (its closed/floating modes use `absolute
+            bottom-4 right-4`), and it's a flex row so the docked panel sits as
+            the right column — exactly how FlowWorkspace mounts the same panel. */}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden', position: 'relative' }}>
 
           {/* LEFT — scenario + dataset */}
           <div style={{
@@ -397,12 +495,53 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
             }}>
               Challenge scenario
             </div>
+            {/* Title */}
             <div style={{
-              fontSize: 13, lineHeight: 1.7,
-              color: 'var(--color-on-surface)',
+              fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700,
+              lineHeight: 1.3, color: 'var(--color-on-surface)',
             }}>
-              {challenge.prompt_text || challenge.title || 'Analytics challenge'}
+              {challenge.title || 'Analytics challenge'}
             </div>
+
+            {/* Scenario brief — context, the trigger, and the question to answer.
+                For analytics challenges prompt_text is empty; the narrative is in
+                the scenario_* columns passed down as `scenario`. */}
+            {scenario && (scenario.context || scenario.trigger || scenario.question) ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {scenario.context && (
+                  <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--color-on-surface)', margin: 0 }}>
+                    {scenario.context}
+                  </p>
+                )}
+                {scenario.trigger && (
+                  <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--color-on-surface)', margin: 0 }}>
+                    {scenario.trigger}
+                  </p>
+                )}
+                {scenario.question && (
+                  <div style={{
+                    padding: '10px 12px', borderRadius: 10,
+                    background: 'var(--color-surface-container-high)',
+                    borderLeft: '3px solid var(--color-primary)',
+                  }}>
+                    <div style={{
+                      fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
+                      textTransform: 'uppercase', color: 'var(--color-on-surface-variant)',
+                      marginBottom: 4,
+                    }}>
+                      The question
+                    </div>
+                    <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0, fontWeight: 600 }}>
+                      {scenario.question}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--color-on-surface)' }}>
+                {challenge.prompt_text || 'Drive the analyst session to answer the business question.'}
+              </div>
+            )}
 
             {/* Dataset badge */}
             <div style={{
@@ -419,6 +558,14 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
                 BigQuery · read-only
               </span>
             </div>
+
+            {/* Skills library — browse + reload skills built across past sessions. */}
+            <SkillsLibraryPanel
+              terminalRef={terminalRef}
+              sessionSkills={skillsWritten}
+              replRunning={replRunning}
+              onLoaded={handleSkillWritten}
+            />
           </div>
 
           {/* RIGHT — live session */}
@@ -436,6 +583,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
                 stepIdx={activeSubProblemIdx}
                 totalSteps={subProblems.length}
                 mcpConnected={mcpConnected}
+                replRunning={replRunning}
                 skillsWritten={skillsWritten}
                 reportWritten={!!reportPath}
                 onMark={handleMark}
@@ -468,6 +616,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
                   onOutput={handleOutput}
                   onActivity={handleActivity}
                   onMcpStatusChange={handleMcpStatusChange}
+                  onReplStatusChange={handleReplStatusChange}
                   onSkillWritten={handleSkillWritten}
                   onReportWritten={handleReportWritten}
                 />
@@ -492,44 +641,57 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
               )}
             </div>
 
-            {/* Suggested prompt rail */}
-            {activeSubProblem?.suggestedPrompts?.length && (
-              <SuggestedPromptRail
-                prompts={activeSubProblem.suggestedPrompts}
-                terminalRef={terminalRef}
-              />
-            )}
+            {/* Suggested prompt rail. Prefer the AI-generated contextual chips
+                (driven by the live terminal); fall back to the step's static
+                arc prompts whenever those are empty (loading / failed / budget). */}
+            {(() => {
+              const railPrompts = aiPrompts.length ? aiPrompts : (activeSubProblem?.suggestedPrompts ?? [])
+              return railPrompts.length ? (
+                <SuggestedPromptRail
+                  prompts={railPrompts}
+                  terminalRef={terminalRef}
+                  contextual={aiPrompts.length > 0}
+                />
+              ) : null
+            })()}
 
-            {/* Proactive nudge */}
-            {proactiveNudge && (
-              <div style={{
-                display: 'flex', gap: 8, alignItems: 'flex-start',
-                padding: '10px 12px',
-                background: 'var(--color-primary-fixed)',
-                borderRadius: 10, border: '1px solid rgba(74,124,89,0.2)',
-              }}>
-                <HatchGlyph size={22} state="speaking" className="text-primary" />
-                <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0, flex: 1 }}>
-                  {proactiveNudge}
-                </p>
-                <button
-                  onClick={() => setProactiveNudge(null)}
-                  style={{
-                    background: 'transparent', border: 'none',
-                    cursor: 'pointer', padding: 2,
-                    color: 'var(--color-on-surface-variant)',
-                    flexShrink: 0,
-                  }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
-                    close
-                  </span>
-                </button>
-              </div>
-            )}
+            {/* Proactive idle nudges now surface through the floating Hatch
+                dock (mounted as the last child of this row), not as a separate
+                inline panel, so the user has one coaching surface to also ask. */}
           </div>
+
+          {/* Floating / dockable Hatch coach — mounted as the last flex child of
+              the workspace row, the same way FlowWorkspace mounts it. Closed and
+              floating modes anchor bottom-right of this (relative) row; docked
+              mode becomes the right column. Hatch is fully aware of the live
+              Claude Code session: every turn sends the terminal tail, the active
+              sub-problem, the MCP connection, and the skills written, so it can
+              step in and help on demand, not just nudge on idle. */}
+          <CanvasChatPanel
+            attemptId={attemptId}
+            challengeId={challenge.id}
+            challengeType="claude_code_analytics"
+            // Analytics has no canvas, but the prop is required. Empty scene;
+            // all real context flows through the analytics fields below.
+            scene={{ elementCount: 0, entities: [], connections: [], groups: [], freeText: [], foreignKeys: [] }}
+            isOpen={hatchOpen}
+            onToggle={() => setHatchOpen((v) => !v)}
+            proactiveNudge={proactiveNudge ? { id: 'idle', text: proactiveNudge } : null}
+            onDismissNudge={() => setProactiveNudge(null)}
+            terminalTail={terminalTail.slice(-3000)}
+            mcpConnected={mcpConnected}
+            skillsWritten={skillsWritten}
+            activeSubProblemId={activeSubProblem?.id ?? null}
+            activeSubProblemSequence={activeSubProblem?.sequence}
+            activeSubProblemTitle={activeSubProblem?.title ?? null}
+            activeSubProblemObjective={activeSubProblem?.objective ?? null}
+            activeSubProblemSuccessCriterion={activeSubProblem?.successCriterion ?? null}
+            markedFindings={markedFindings}
+            challengeTitle={challenge.title}
+          />
         </div>
       </div>
+
     </>
   )
 }

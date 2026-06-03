@@ -120,3 +120,43 @@ export function analystGradeLabel(total: number): string {
   if (total >= 30) return 'Surface'
   return 'Missed'
 }
+
+/**
+ * Serializable, display-ready view of one graded dimension. Joins the grader's
+ * raw score/note with the rubric's label + weight. Used by the session mirror,
+ * the share page, and the OG image so they render dimensions identically.
+ */
+export interface AnalystDimensionView {
+  key: string
+  label: string
+  weight: number
+  score: DimensionScore
+  note: string
+}
+
+/**
+ * Turn a final_artifact's `dimensions` map into ordered, labeled views. Returns
+ * null when the artifact isn't analyst_v1 or has no dimensions, so callers can
+ * cleanly omit the chart. Tolerant of partial/missing dimension entries.
+ */
+export function toDimensionViews(finalArtifact: unknown): AnalystDimensionView[] | null {
+  const fa = (finalArtifact ?? {}) as { rubric?: unknown; dimensions?: unknown }
+  if (fa.rubric !== 'analyst_v1') return null
+  const dims = (fa.dimensions ?? {}) as Record<string, { score?: unknown; note?: unknown }>
+  if (!dims || typeof dims !== 'object') return null
+  const views: AnalystDimensionView[] = []
+  for (const d of ANALYST_DIMENSIONS) {
+    const entry = dims[d.key]
+    if (!entry) continue
+    const raw = typeof entry.score === 'number' ? entry.score : Number(entry.score)
+    const score: DimensionScore = raw >= 0.75 ? 1 : raw >= 0.25 ? 0.5 : 0
+    views.push({
+      key: d.key,
+      label: d.label,
+      weight: d.weight,
+      score,
+      note: String(entry.note ?? ''),
+    })
+  }
+  return views.length ? views : null
+}
