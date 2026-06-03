@@ -36,6 +36,21 @@ if [[ -n "${CLAUDE_MD:-}" ]]; then
   printf '%s' "$CLAUDE_MD" > /workspace/CLAUDE.md
 fi
 
+# ─── 2a. Rehydrate the user's prior ~/.claude state ──────────────────────────
+# Per-user snapshot of ~/.claude (their .mcp.json MCP registrations + the skills
+# they wrote in earlier sessions). Pulled BEFORE step 3a so the platform-curated
+# settings.json still wins, but the user's registered MCP servers and authored
+# skills carry forward. This is what lets a returning user skip the MCP setup
+# step and compounds the skills they build across challenges.
+if [[ -n "${USER_CLAUDE_STATE_URL:-}" ]]; then
+  echo "[entrypoint] Rehydrating prior ~/.claude state…"
+  mkdir -p "$HOME/.claude"
+  # The snapshot is tarred relative to $HOME (paths like .mcp.json,
+  # .claude/skills/...), so extract into $HOME.
+  curl -fsSL "$USER_CLAUDE_STATE_URL" | tar -xz -C "$HOME" 2>/dev/null \
+    || echo "[entrypoint] no prior user state (first session)"
+fi
+
 # ─── 3. Re-export Anthropic key (passed at machine create time) ─────────────
 # ANTHROPIC_API_KEY is already in the env; just ensure it is exported.
 export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
@@ -191,10 +206,17 @@ EOF
 # ─── 4. 30-second autosave loop (background) ─────────────────────────────────
 # POSTs a tarball of /workspace to ORCHESTRATOR_SNAPSHOT_URL every 30 s.
 # The orchestrator passes a shared secret via SNAPSHOT_AUTH_TOKEN.
+#
+# It also POSTs a per-user ~/.claude snapshot (the portable bits: .mcp.json MCP
+# registrations + the skills/ the user wrote) to USER_STATE_SNAPSHOT_URL, so the
+# next session rehydrates it (see step 2a). We snapshot only the portable subset,
+# not the whole ~/.claude (which includes the bulky plugins cache).
 if [[ -n "${ORCHESTRATOR_SNAPSHOT_URL:-}" ]]; then
   (
     while true; do
       sleep 30
+
+      # Workspace snapshot (per-session, graded)
       TARBALL_PATH=$(mktemp /tmp/snapshot-XXXXXX.tar.gz)
       tar -czf "$TARBALL_PATH" -C / workspace 2>/dev/null || true
       curl -fsSL -X POST \
@@ -203,6 +225,26 @@ if [[ -n "${ORCHESTRATOR_SNAPSHOT_URL:-}" ]]; then
         --data-binary "@$TARBALL_PATH" \
         "${ORCHESTRATOR_SNAPSHOT_URL}" 2>/dev/null || true
       rm -f "$TARBALL_PATH"
+
+      # Per-user ~/.claude snapshot (portable: .mcp.json + skills + .claude.json)
+      if [[ -n "${USER_STATE_SNAPSHOT_URL:-}" ]]; then
+        STATE_PATH=$(mktemp /tmp/userstate-XXXXXX.tar.gz)
+        # -C $HOME so paths are relative (.mcp.json, .claude/skills, ...) for a
+        # clean extract into ~/.claude on the next boot.
+        tar -czf "$STATE_PATH" -C "$HOME" \
+          $( [[ -f "$HOME/.mcp.json" ]] && echo .mcp.json ) \
+          $( [[ -d "$HOME/.claude/skills" ]] && echo .claude/skills ) \
+          $( [[ -f "$HOME/.claude.json" ]] && echo .claude.json ) \
+          2>/dev/null || true
+        if [[ -s "$STATE_PATH" ]]; then
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer ${SNAPSHOT_AUTH_TOKEN:-}" \
+            -H "Content-Type: application/gzip" \
+            --data-binary "@$STATE_PATH" \
+            "${USER_STATE_SNAPSHOT_URL}" 2>/dev/null || true
+        fi
+        rm -f "$STATE_PATH"
+      fi
     done
   ) &
   AUTOSAVE_PID=$!

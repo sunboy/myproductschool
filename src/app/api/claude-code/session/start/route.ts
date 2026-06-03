@@ -114,13 +114,14 @@ export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subProblems: unknown[] = (claudeCodeMeta.sub_problems ?? meta.sub_problems ?? []) as any[]
 
-  // --- Load user plan for usage gate ---
+  // --- Load user plan for usage gate + prior Claude Code state pointer ---
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan')
+    .select('plan, cc_claude_state_uri')
     .eq('id', user.id)
     .single()
   const userPlan = (profile?.plan as string) ?? 'free'
+  const priorClaudeStateUri = (profile?.cc_claude_state_uri as string | null) ?? null
 
   // --- Usage gate ---
   const usageResult = await checkUsageLimit(user.id, 'challenges', userPlan)
@@ -212,6 +213,18 @@ export async function POST(req: NextRequest) {
     process.env.VERCEL_URL ??
     'http://localhost:3000'
   const orchestratorSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/snapshot`
+  const userStateSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/user-state`
+
+  // Presign a download of the user's prior ~/.claude state (MCP regs + skills),
+  // so the container rehydrates it and MCP setup becomes one-time. Best-effort:
+  // a missing/expired object just means a first session.
+  let userClaudeStateUrl: string | undefined
+  if (priorClaudeStateUri) {
+    const { data: signed } = await admin.storage
+      .from('cc-user-state')
+      .createSignedUrl(priorClaudeStateUri, ttlSeconds + 120)
+    userClaudeStateUrl = signed?.signedUrl
+  }
 
   const { error: upsertErr } = await admin.from('claude_code_sessions').upsert(
     {
@@ -260,6 +273,8 @@ export async function POST(req: NextRequest) {
     CLAUDE_MD: claudeMd,
     ORCHESTRATOR_SNAPSHOT_URL: orchestratorSnapshotUrl,
     SNAPSHOT_AUTH_TOKEN: snapshotToken,
+    USER_STATE_SNAPSHOT_URL: userStateSnapshotUrl,
+    ...(userClaudeStateUrl ? { USER_CLAUDE_STATE_URL: userClaudeStateUrl } : {}),
   }
 
   // --- Provision sandbox ---

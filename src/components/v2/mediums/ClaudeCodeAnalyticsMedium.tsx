@@ -181,7 +181,21 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
 
   const handleMcpStatusChange = useCallback((connected: boolean) => {
     setMcpConnected(connected)
-  }, [])
+    // Returning users carry their BigQuery MCP registration forward (rehydrated
+    // ~/.claude state), so the connection lights up on its own. When that happens
+    // while the mcp_setup step is active, auto-complete it and advance — no need
+    // to make them re-run a setup they already did.
+    if (connected) {
+      setActiveSubProblemIdx(idx => {
+        const step = subProblems[idx]
+        if (step && step.kind === 'mcp_setup') {
+          setCompletedIds(prev => new Set([...prev, step.id]))
+          return idx + 1 < subProblems.length ? idx + 1 : idx
+        }
+        return idx
+      })
+    }
+  }, [subProblems])
 
   const handleSkillWritten = useCallback((filename: string) => {
     setSkillsWritten(prev => prev.includes(filename) ? prev : [...prev, filename])

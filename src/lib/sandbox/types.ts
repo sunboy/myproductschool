@@ -52,6 +52,10 @@ export interface SessionEnv {
   ORCHESTRATOR_SNAPSHOT_URL?: string
   /** Bearer token the autosave POST authenticates with. */
   SNAPSHOT_AUTH_TOKEN?: string
+  /** Presigned download of the user's prior ~/.claude state (MCP regs + skills). */
+  USER_CLAUDE_STATE_URL?: string
+  /** Endpoint the autosave loop POSTs the per-user ~/.claude snapshot to. */
+  USER_STATE_SNAPSHOT_URL?: string
 }
 
 export interface CreateSessionInput {
