@@ -149,7 +149,10 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
 const BEGINNER_KINDS = new Set(['mcp_setup', 'explore_schema', 'analyze', 'answer'])
 
 export function arcForDifficulty(difficulty?: string | null): AnalyticsSubProblem[] {
-  const isBeginner = (difficulty ?? '').toLowerCase() === 'beginner'
+  // The DB uses both vocabularies (beginner/intermediate/advanced AND
+  // easy/medium/hard); treat the lowest tier of either as the beginner subset.
+  const d = (difficulty ?? '').toLowerCase()
+  const isBeginner = d === 'beginner' || d === 'easy'
   const steps = isBeginner
     ? DEFAULT_ANALYTICS_ARC.filter((s) => BEGINNER_KINDS.has(s.kind))
     : DEFAULT_ANALYTICS_ARC

@@ -64,6 +64,13 @@ const DISCIPLINES: Array<{
     accent: '#4a7c59',
   },
   {
+    key: 'analytics',
+    label: 'Analytics',
+    description: 'Drive a live Claude Code agent against a real dataset to answer a business question.',
+    icon: 'analytics',
+    accent: '#1565c0',
+  },
+  {
     key: 'system_design',
     label: 'System design',
     description: 'Architecture prompts, tradeoffs, scale, and context.',
@@ -159,7 +166,8 @@ function getDiscipline(searchParams: SearchParamGetter): Discipline {
 
 function matchesDiscipline(challenge: ChallengeWithDomain, discipline: Discipline) {
   if (discipline === 'all') return true
-  if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take', 'claude_code_analytics'].includes(challenge.challenge_type ?? '')
+  if (discipline === 'analytics') return challenge.challenge_type === 'claude_code_analytics'
+  if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(challenge.challenge_type ?? '')
   return challenge.challenge_type === discipline
 }
 
@@ -502,9 +510,10 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
           </div>
         ) : discipline === 'all' ? (
           <div className="flex flex-col gap-8">
-            {(['product_sense', 'system_design', 'data_modeling', 'sql', 'algorithm'] as const).map((disc) => {
+            {(['product_sense', 'analytics', 'system_design', 'data_modeling', 'sql', 'algorithm'] as const).map((disc) => {
               const labels: Record<string, string> = {
                 product_sense: 'Product Sense',
+                analytics: 'Analytics',
                 system_design: 'System Design',
                 data_modeling: 'Data Modeling',
                 sql: 'SQL',
@@ -512,13 +521,15 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
               }
               const colors: Record<string, string> = {
                 product_sense: 'text-primary',
+                analytics: 'text-[#1565c0]',
                 system_design: 'text-tertiary',
                 data_modeling: 'text-secondary',
                 sql: 'text-[#5a3a7c]',
                 algorithm: 'text-[#3a5a7c]',
               }
               const discChallenges = filteredChallenges.filter((c) => {
-                if (disc === 'product_sense') return ['flow', 'freeform', 'quick_take', 'claude_code_analytics'].includes(c.challenge_type ?? '')
+                if (disc === 'analytics') return c.challenge_type === 'claude_code_analytics'
+                if (disc === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(c.challenge_type ?? '')
                 return c.challenge_type === disc
               })
               if (discChallenges.length === 0) return null
