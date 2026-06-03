@@ -38,9 +38,9 @@ export const OUTCOME_PAGES: OutcomePageEntry[] = [
     metaTitle: 'Product and Technical Interview Prep | HackProduct',
     metaDescription:
       'Prepare for product sense, system design, SQL, data modeling, coding, and live interview loops with Hatch coaching and FLOW-scored practice reps.',
-    hero: 'Ace product and technical interviews with sharper judgment.',
+    hero: 'You know the material. Interviews test whether you can show it while someone watches.',
     summary:
-      'Train the exact moments interviews test: clarifying ambiguity, structuring options, defending trade-offs, and landing a recommendation under pressure.',
+      'Train the exact moments interviews test: clarifying ambiguity, structuring options, defending trade-offs, and landing a recommendation under pressure, until the pressure stops being the thing that loses you the offer.',
     proofPoint: 'Build a readiness trail across FLOW moves, disciplines, and live follow-up pressure.',
     ctaLabel: 'Start an interview rep',
     ctaHref: '/login?returnTo=/challenges',
@@ -69,7 +69,7 @@ export const OUTCOME_PAGES: OutcomePageEntry[] = [
     ],
     proofArtifacts: ['Interview readiness map', 'Weak-move drill queue', 'Recorded Hatch follow-ups', 'FLOW score receipts'],
     hatchNudge:
-      'You do not need another list of questions. You need reps that expose where your answer loses signal.',
+      'Your interview anxiety is not a flaw to fix. It is untrained reps. Run them here where a miss costs nothing.',
   },
   {
     slug: 'role-transitions',

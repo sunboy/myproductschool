@@ -1370,10 +1370,10 @@ export default function SessionPage({
   // ─── Ready - modal overlay ───
   if (interviewPhase === 'ready') {
     const readyCopy = discipline && DISCIPLINE_META[discipline].artifact === 'canvas'
-      ? 'Hatch will interview you while watching the canvas. Start with the first useful artifact, then talk through the tradeoffs.'
+      ? 'The first move is just the first useful artifact on the canvas. Talk through the tradeoffs as you go, no need to have the whole shape figured out first.'
       : discipline && DISCIPLINE_META[discipline].artifact === 'editor'
-        ? 'Hatch will interview you while watching the editor. Use the code or SQL pane as your working surface, then explain the choices you make.'
-        : 'Hatch will play the role of your interviewer. Speak naturally, make your reasoning visible, and commit to a clear answer.'
+        ? 'The first move is just starting in the editor and saying what you see. Use the pane as your working surface and explain the choices out loud as you make them.'
+        : 'The first two minutes are just you saying what you see. No heroics. The best candidates spend the wait deciding how they will think out loud, not what the final answer is.'
 
     return (
       <div
@@ -1431,7 +1431,7 @@ export default function SessionPage({
 
           <div className="space-y-2">
             <h2 className="font-headline text-xl font-bold" style={{ color: 'rgba(243,237,224,0.95)' }}>
-              Ready to begin?
+              Your interviewer is spinning up. Breathe.
             </h2>
             {scenarioTitle && (
               <p className="font-label text-sm font-semibold" style={{ color: 'rgba(126,224,153,0.85)' }}>
@@ -1441,6 +1441,17 @@ export default function SessionPage({
             <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.52)' }}>
               {readyCopy}
             </p>
+          </div>
+
+          {/* Readiness reframe */}
+          <div
+            className="flex items-center gap-2 rounded-xl px-3 py-2 w-full"
+            style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(126,224,153,0.18)' }}
+          >
+            <span className="material-symbols-outlined text-[16px]" style={{ color: 'rgba(126,224,153,0.7)' }}>visibility</span>
+            <span className="font-body text-xs" style={{ color: 'rgba(243,237,224,0.6)' }}>
+              I am scoring how you reason, not whether you are instantly right.
+            </span>
           </div>
 
           {error && (
@@ -1470,7 +1481,7 @@ export default function SessionPage({
               className="w-full rounded-full py-3 font-label font-semibold text-base transition-opacity hover:opacity-90"
               style={{ background: '#4a7c59', color: '#ffffff' }}
             >
-              Start Interview
+              I&apos;m ready
             </button>
             <button
               onClick={() => router.push('/live-interviews')}
