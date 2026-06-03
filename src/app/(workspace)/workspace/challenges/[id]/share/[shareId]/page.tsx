@@ -6,6 +6,8 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { SITE_NAME, SITE_URL } from '@/lib/seo/site'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSharedAttemptScorecard, type MoveKey } from '@/lib/share/attempt-scorecard'
+import { getSharedAnalyticsReport } from '@/lib/share/analytics-report'
+import { Md } from '@/components/ui/Md'
 
 interface PublicSharePageProps {
   params: Promise<{ id: string; shareId: string }>
@@ -26,6 +28,19 @@ function formatDuration(seconds: number | null) {
 
 export async function generateMetadata({ params }: PublicSharePageProps): Promise<Metadata> {
   const { id, shareId } = await params
+
+  const report = await getSharedAnalyticsReport(createAdminClient(), { challengeId: id, shareId })
+  if (report) {
+    const title = `Data analysis: ${report.challengeTitle}`
+    const description = 'An analytics report produced by driving Claude Code on a live dataset with HackProduct.'
+    const url = `${SITE_URL}/workspace/challenges/${id}/share/${shareId}`
+    return {
+      title, description, alternates: { canonical: url },
+      openGraph: { title, description, url, siteName: SITE_NAME, type: 'website' },
+      twitter: { card: 'summary_large_image', title, description, creator: '@hackproduct' },
+    }
+  }
+
   const scorecard = await getSharedAttemptScorecard(createAdminClient(), { challengeId: id, shareId })
   if (!scorecard) {
     return {
@@ -60,6 +75,44 @@ export async function generateMetadata({ params }: PublicSharePageProps): Promis
 
 export default async function PublicShareScoreCardPage({ params }: PublicSharePageProps) {
   const { id, shareId } = await params
+
+  // Claude Code Analytics shares render the generated report, not the FLOW scorecard.
+  const report = await getSharedAnalyticsReport(createAdminClient(), { challengeId: id, shareId })
+  if (report) {
+    const reportShareUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? SITE_URL}/workspace/challenges/${id}/share/${shareId}`
+    const reportShareText = `My data analysis on ${report.challengeTitle}, done by driving Claude Code on HackProduct.`
+    const reportLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(reportShareUrl)}`
+    const reportTwitter = `https://twitter.com/intent/tweet?url=${encodeURIComponent(reportShareUrl)}&text=${encodeURIComponent(reportShareText)}`
+    return (
+      <main className="min-h-screen bg-[#1f2a23] px-5 py-8 text-white">
+        <div className="mx-auto w-full max-w-3xl space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <HatchGlyph size={32} state="celebrating" className="text-primary" />
+              <span className="font-headline text-lg font-bold">HackProduct</span>
+            </div>
+            <span className="rounded-full bg-[#dfe8d8] px-3 py-1 text-xs font-bold text-[#2d5a3d]">Analytics report</span>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#c4a66a]">Shared analysis</p>
+            <h1 className="mt-2 font-headline text-3xl font-black leading-tight md:text-4xl">{report.challengeTitle}</h1>
+            <p className="mt-2 text-sm text-white/72">
+              {report.gradeLabel ? `Graded ${report.gradeLabel}` : 'Driven on a live BigQuery dataset with Claude Code.'}
+            </p>
+          </div>
+          <article className="rounded-xl bg-[#f8f3ea] p-6 text-[#233028] shadow-2xl">
+            <Md variant="default">{report.reportMarkdown}</Md>
+          </article>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <a href={reportLinkedIn} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-[#0a66c2] px-5 py-3 text-sm font-bold text-white">Share to LinkedIn</a>
+            <a href={reportTwitter} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-[#1f2a23]">Share to X</a>
+            <Link href="/signup" className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-sm font-bold text-white">Try HackProduct</Link>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   const scorecard = await getSharedAttemptScorecard(createAdminClient(), { challengeId: id, shareId })
   if (!scorecard) notFound()
 
