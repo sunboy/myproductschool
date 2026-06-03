@@ -1,10 +1,25 @@
-import { getChallenges, getFeaturedChallenges } from '@/lib/data/challenges'
+import {
+  getChallenges,
+  getChallengePreviews,
+  getFeaturedChallenges,
+  getChallengeCounts,
+  getChallengeDescriptions,
+  isCountDiscipline,
+  type ChallengeListFilters,
+  type CountDiscipline,
+} from '@/lib/data/challenges'
 import { ChallengeCard } from './ChallengeCard'
 import { ChallengeSearch } from './ChallengeSearch'
 import { HatchPick } from './HatchPick'
 import { FilteredChallengesView } from './FilteredChallengesView'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
+import { challengeTaskSummary } from '@/lib/challenges/presentation'
+
+/** How many preview cards each discipline section shows in the "All practice" overview. */
+const PREVIEW_PER_DISCIPLINE = 6
+/** Page size for a single-discipline first load. */
+const DISCIPLINE_PAGE_SIZE = 30
 
 export interface FreePracticeContentProps {
   searchParams: Promise<{
@@ -40,21 +55,6 @@ function getParadigmLabel(paradigm?: string | null): string {
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {
   const resolvedSearchParams = await searchParams
   const { q } = resolvedSearchParams
-  const hasActiveFilters = Boolean(
-    q ||
-    resolvedSearchParams.paradigm ||
-    resolvedSearchParams.role ||
-    resolvedSearchParams.difficulty ||
-    resolvedSearchParams.company ||
-    resolvedSearchParams.tag ||
-    resolvedSearchParams.scope ||
-    resolvedSearchParams.topic ||
-    resolvedSearchParams.technique ||
-    resolvedSearchParams.real_interview ||
-    resolvedSearchParams.move ||
-    (resolvedSearchParams.discipline && resolvedSearchParams.discipline !== 'all') ||
-    (resolvedSearchParams.type && resolvedSearchParams.type !== 'all')
-  )
 
   // Featured row is suppressed when any non-discipline filter is active
   const hasNonDisciplineFilter = Boolean(
@@ -63,12 +63,9 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     resolvedSearchParams.role ||
     resolvedSearchParams.difficulty ||
     resolvedSearchParams.company ||
-    resolvedSearchParams.tag ||
-    resolvedSearchParams.scope ||
     resolvedSearchParams.topic ||
     resolvedSearchParams.technique ||
     resolvedSearchParams.real_interview ||
-    resolvedSearchParams.move ||
     (resolvedSearchParams.type && resolvedSearchParams.type !== 'all')
   )
 
@@ -78,28 +75,59 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   // while still returning a relevant first page.
   const firstOf = (v: string | undefined) => v?.split(',')[0]?.trim() || undefined
 
-  const [challenges, featuredChallenges] = await Promise.all([
-    getChallenges({
-      q,
-      topic: firstOf(resolvedSearchParams.topic),
-      technique: firstOf(resolvedSearchParams.technique),
-      difficulty: resolvedSearchParams.difficulty,
-      paradigm: resolvedSearchParams.paradigm,
-      role: resolvedSearchParams.role,
-      company: resolvedSearchParams.company,
-      // Client URL writer uses '1' (see writeFilterValues in FilteredChallengesView);
-      // accept both '1' and 'true' for forward compat with any external link or test.
-      real_interview: resolvedSearchParams.real_interview === '1' || resolvedSearchParams.real_interview === 'true',
-      move_tag: firstOf(resolvedSearchParams.move),
-      type: resolvedSearchParams.type,
-    }),
+  const disciplineParam = resolvedSearchParams.discipline ?? resolvedSearchParams.type
+  const discipline: CountDiscipline =
+    disciplineParam && isCountDiscipline(disciplineParam) ? disciplineParam : 'all'
+
+  const filters: ChallengeListFilters = {
+    q,
+    topic: firstOf(resolvedSearchParams.topic),
+    technique: firstOf(resolvedSearchParams.technique),
+    difficulty: resolvedSearchParams.difficulty,
+    paradigm: resolvedSearchParams.paradigm,
+    role: resolvedSearchParams.role,
+    company: resolvedSearchParams.company,
+    // Client URL writer uses '1' (see writeFilterValues in FilteredChallengesView);
+    // accept both '1' and 'true' for forward compat with any external link or test.
+    real_interview: resolvedSearchParams.real_interview === '1' || resolvedSearchParams.real_interview === 'true',
+  }
+
+  // Discipline tab counts (cheap HEAD counts — no row payload) + featured row.
+  // The initial challenge slice is bounded: the "All practice" overview needs a
+  // small preview PER discipline (fetched independently so every section fills,
+  // not a global newest-N which skews to recently-authored types); a single
+  // discipline fetches its first page. The client lazy-loads the rest.
+  const isAll = discipline === 'all'
+
+  const [counts, initialChallenges, featuredChallenges] = await Promise.all([
+    getChallengeCounts(filters),
+    isAll
+      ? getChallengePreviews(filters, PREVIEW_PER_DISCIPLINE)
+      : getChallenges({ ...filters, type: discipline }, { limit: DISCIPLINE_PAGE_SIZE, offset: 0 }),
     getFeaturedChallenges(),
   ])
 
   const paradigmMap: Record<string, string> = {}
-  challenges.forEach((c) => {
+  initialChallenges.forEach((c) => {
     paradigmMap[c.id] = getParadigmLabel(c.paradigm ?? undefined)
   })
+  featuredChallenges.forEach((c) => {
+    paradigmMap[c.id] = getParadigmLabel(c.paradigm ?? undefined)
+  })
+
+  // Grid-view preview cards (and featured cards) show a 2-line blurb via
+  // challengeTaskSummary, which needs the description columns the lean list query
+  // omits. Fetch them only for the rows actually on screen, then precompute the
+  // summary so the client receives a plain string map (no heavy text in props).
+  const previewIds = Array.from(
+    new Set([...initialChallenges.map(c => c.id), ...featuredChallenges.map(c => c.id)]),
+  )
+  const descriptions = await getChallengeDescriptions(previewIds)
+  const summaryMap: Record<string, string> = {}
+  for (const [id, d] of Object.entries(descriptions)) {
+    const summary = challengeTaskSummary(d)
+    if (summary) summaryMap[id] = summary
+  }
 
   return (
     <div>
@@ -115,7 +143,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
           <h1 className="font-headline text-3xl font-bold leading-tight text-on-surface">
             Practice
           </h1>
-          <ChallengeSearch total={challenges.length} />
+          <ChallengeSearch total={counts.all} />
         </div>
       </div>
 
@@ -140,6 +168,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
                 key={`featured-${challenge.id}`}
                 challenge={challenge}
                 paradigm={getParadigmLabel(challenge.paradigm)}
+                summary={summaryMap[challenge.id]}
               />
             ))}
           </div>
@@ -148,7 +177,15 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
       )}
 
       {/* Discipline tabs + contextual filter dropdowns + challenge grid */}
-      <FilteredChallengesView challenges={challenges} paradigms={paradigmMap} />
+      <FilteredChallengesView
+        initialChallenges={initialChallenges}
+        initialDiscipline={discipline}
+        counts={counts}
+        paradigms={paradigmMap}
+        summaries={summaryMap}
+        previewPerDiscipline={PREVIEW_PER_DISCIPLINE}
+        pageSize={DISCIPLINE_PAGE_SIZE}
+      />
     </div>
   )
 }

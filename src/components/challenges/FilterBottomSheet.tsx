@@ -32,11 +32,9 @@ const DISCIPLINE_CHIPS: { key: Discipline; label: string }[] = [
 
 const STATIC_GROUPS: { key: ArrayFilterKey; label: string; options: string[]; disciplines: Discipline[] }[] = [
   { key: 'paradigm', label: 'Paradigm', options: ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'], disciplines: [] },
-  { key: 'scope', label: 'Scope', options: ['Single Service', 'Distributed', 'Multi-Region'], disciplines: ['system_design'] },
   { key: 'difficulty', label: 'Difficulty', options: PRACTICE_DIFFICULTY_OPTIONS.map(o => o.label), disciplines: [] },
   { key: 'role', label: 'Role', options: ['SWE', 'Tech Lead', 'EM', 'ML Eng', 'Data Eng', 'DevOps', 'Founding Eng', 'PM', 'Designer', 'Data Scientist'], disciplines: [] },
   { key: 'company', label: 'Company', options: ['Google', 'Meta', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Amazon', 'Apple'], disciplines: [] },
-  { key: 'move', label: 'FLOW Move', options: ['Frame', 'List', 'Optimize', 'Win'], disciplines: ['product_sense'] },
 ]
 
 interface Props {
