@@ -85,14 +85,17 @@ const getHotChallengesCached = unstable_cache(
 
     const { data: challenges } = await supabase
       .from('challenges')
-      .select('id, title, domains(title)')
+      .select('id, slug, title, challenge_type, display_number, domains(title)')
       .in('id', topIds)
       .eq('is_published', true)
 
     if (challenges && challenges.length > 0) {
       return challenges.map(c => ({
         id: c.id,
+        slug: c.slug,
         title: c.title,
+        challenge_type: c.challenge_type,
+        display_number: c.display_number,
         attempts: counts[c.id] ?? 0,
         avgScore: 0,
         domain: ((c.domains as unknown as { title: string } | null))?.title ?? 'General',
@@ -103,7 +106,7 @@ const getHotChallengesCached = unstable_cache(
   // Fallback: 5 most recently inserted published challenges
   const { data } = await supabase
     .from('challenges')
-    .select('id, title, domains(title)')
+    .select('id, slug, title, challenge_type, display_number, domains(title)')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
     .limit(5)
@@ -112,7 +115,10 @@ const getHotChallengesCached = unstable_cache(
 
   return data.map(c => ({
     id: c.id,
+    slug: c.slug,
     title: c.title,
+    challenge_type: c.challenge_type,
+    display_number: c.display_number,
     attempts: 0,
     avgScore: 0,
     domain: ((c.domains as unknown as { title: string } | null))?.title ?? 'General',

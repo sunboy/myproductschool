@@ -9,9 +9,10 @@ interface NextChallengeCardProps {
   challengeId: string
   hatchInsight?: string | null
   activePlanSlug?: string | null
+  catalogNumber?: string | null
 }
 
-export function NextChallengeCard({ title, domain, difficulty, challengeId, hatchInsight, activePlanSlug }: NextChallengeCardProps) {
+export function NextChallengeCard({ title, domain, difficulty, challengeId, hatchInsight, activePlanSlug, catalogNumber }: NextChallengeCardProps) {
   const href = activePlanSlug
     ? `/workspace/challenges/${challengeId}?from_plan=${encodeURIComponent(activePlanSlug)}`
     : `/workspace/challenges/${challengeId}`
@@ -25,6 +26,11 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, hatc
       <div className="flex-1 flex flex-col gap-2.5">
         <h3 className="font-headline font-semibold text-[15px] text-on-surface leading-snug">{title}</h3>
         <div className="flex items-center gap-1.5 flex-wrap">
+          {catalogNumber && (
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant">
+              {catalogNumber}
+            </span>
+          )}
           <span className="bg-tertiary-fixed/80 text-on-tertiary-fixed-variant rounded-full text-[11px] px-2.5 py-0.5 font-label font-semibold">
             {difficultyLabel(difficulty)}
           </span>

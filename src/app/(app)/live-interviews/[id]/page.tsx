@@ -30,6 +30,9 @@ const MonacoCodeEditor = dynamic(
 
 import type { PasteEvent } from '@/components/challenge/MonacoCodeEditor'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { TourRunner } from '@/components/shell/TourRunner'
+import { INTERVIEW_TOUR, interviewTourSeen } from '@/lib/tours/interviewTour'
+import { setCursor } from '@/lib/tours/shepherdEngine'
 import {
   AnimatedProgress,
   CollapsiblePanel,
@@ -54,6 +57,46 @@ import {
 import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
 import { IS_MOCK } from '@/lib/mock'
+
+// First-entry tour for the live-interview workspace. Fires once when the
+// interview goes active (desktop only), and on demand via `start-interview-tour`.
+// `ready` is true once Hatch's opening turn has landed, so the tour never talks
+// over the opening message. A max fallback fires anyway if the opening stalls.
+function InterviewTourMount({ active: phaseActive, ready }: { active: boolean; ready: boolean }) {
+  const [run, setRun] = useState(false)
+  const startedRef = useRef(false)
+
+  // Seed the cursor BEFORE activating — TourRunner no-ops when the cursor is null.
+  const beginTour = () => {
+    if (startedRef.current) return
+    startedRef.current = true
+    setCursor(INTERVIEW_TOUR.id, 0)
+    setRun(true)
+  }
+
+  useEffect(() => {
+    if (startedRef.current || !phaseActive) return
+    if (typeof window === 'undefined') return
+    if (window.matchMedia('(max-width: 1023px)').matches) return // panels are lg+
+    if (interviewTourSeen()) return
+
+    // Prefer to start ~800ms after Hatch's opening message lands, so the tour
+    // never talks over it. If the opening stalls, a 3.5s fallback starts anyway.
+    // The latch is set inside beginTour (not before the timer) so a cancelled
+    // timer can't permanently block a later start.
+    const delay = ready ? 800 : 3500
+    const t = window.setTimeout(beginTour, delay)
+    return () => window.clearTimeout(t)
+  }, [phaseActive, ready])
+
+  useEffect(() => {
+    const handler = () => beginTour()
+    window.addEventListener('start-interview-tour', handler)
+    return () => window.removeEventListener('start-interview-tour', handler)
+  }, [])
+
+  return <TourRunner config={INTERVIEW_TOUR} active={run} onFinish={() => setRun(false)} />
+}
 
 class AvatarErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
@@ -1540,6 +1583,7 @@ export default function SessionPage({
       className="fixed inset-0 flex flex-col overflow-hidden"
       style={{ background: '#0d1410', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200 }}
     >
+      <InterviewTourMount active={interviewPhase === 'active'} ready={turns.length > 0} />
       <style jsx global>{`
         @keyframes orbRingAnim {
           0% { transform: scale(1); opacity: 0.6; }
@@ -1667,6 +1711,16 @@ export default function SessionPage({
               LIVE
             </span>
           </div>
+
+          {/* Replay the interview tour */}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('start-interview-tour'))}
+            aria-label="Tour this screen"
+            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
+          >
+            <span className="material-symbols-outlined text-[16px]">help</span>
+          </button>
         </div>
 
         {/* Center - Timer */}
@@ -1753,7 +1807,7 @@ export default function SessionPage({
       <div className="flex min-h-0 flex-1 overflow-hidden">
 
         {/* LEFT: Transcript (320px) */}
-        <PresencePanel isOpen={showTranscriptPanel} className="hidden shrink-0 lg:flex">
+        <PresencePanel isOpen={showTranscriptPanel} data-tour-target="interview-transcript" className="hidden shrink-0 lg:flex">
           <CollapsiblePanel
             open
             onOpenChange={setIsTranscriptOpen}
@@ -1786,6 +1840,7 @@ export default function SessionPage({
         <div
           className="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
           data-testid="live-interview-workspace"
+          data-tour-target="interview-stage"
           style={{ minWidth: 0 }}
         >
           {/* Ambient radial glow - always visible */}
@@ -1919,7 +1974,7 @@ export default function SessionPage({
         </div>
 
         {/* RIGHT: FLOW HUD (280px) */}
-        <PresencePanel isOpen={showFlowPanel} className="hidden shrink-0 lg:flex">
+        <PresencePanel isOpen={showFlowPanel} data-tour-target="interview-flow" className="hidden shrink-0 lg:flex">
           <CollapsiblePanel
             open
             onOpenChange={setIsFlowPanelOpen}

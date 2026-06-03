@@ -290,6 +290,8 @@ export interface AnalyticsSummary {
 export interface RecentAttempt {
   id: string
   challenge_title: string
+  challenge_type?: string | null
+  display_number?: number | null
   domain: string
   score: number
   status: 'completed' | 'in_progress'

@@ -70,7 +70,7 @@ export function StudyPlansClient({ studyPlans }: Props) {
       />
 
       {/* ── Hero ── */}
-      <div style={{
+      <div data-tour-target="study-plans-hero" style={{
         borderRadius: 32,
         overflow: 'hidden',
         marginBottom: 32,

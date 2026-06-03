@@ -44,11 +44,17 @@ export function OnboardingModal() {
 
   const illustrationSrc = screenToIllustration(currentScreen)
 
-  function handleComplete(path: 'challenge' | 'plan' | 'flow', slug?: string | null) {
+  function handleComplete(path: 'challenge' | 'plan' | 'flow' | 'tour', slug?: string | null) {
     markCompleted()
     if (path === 'flow') {
       closeModal()
       window.dispatchEvent(new CustomEvent('open-flow-explorer'))
+      return
+    }
+    if (path === 'tour') {
+      closeModal()
+      router.push('/dashboard')
+      window.dispatchEvent(new Event('start-intro-tour'))
       return
     }
     if (path === 'plan' && slug) {
@@ -155,7 +161,7 @@ function CalibrationFlowWrapper({
   onComplete,
 }: {
   onScreenChange: (screen: CalScreen) => void
-  onComplete: (path: 'challenge' | 'plan' | 'flow', slug?: string | null) => void
+  onComplete: (path: 'challenge' | 'plan' | 'flow' | 'tour', slug?: string | null) => void
 }) {
   useEffect(() => {
     function handler(e: Event) {

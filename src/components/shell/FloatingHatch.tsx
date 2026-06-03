@@ -132,12 +132,6 @@ export function FloatingHatch() {
     return () => clearTimeout(timer)
   }, [activeCue?.autoHideMs, activeCue?.id, clearCue])
 
-  // Play a soft "nudge" sound when a tour cue with a target activates.
-  // Marker/highlight rendering is owned by <HatchTargetPointer />.
-  useEffect(() => {
-    if (activeCue?.source === 'tour' && activeCue?.target) play('nudge')
-  }, [activeCue?.id, activeCue?.source, activeCue?.target, play])
-
   // Focus input when opened
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 80)
@@ -230,22 +224,6 @@ export function FloatingHatch() {
     }
 
     switch (cta?.action) {
-      case 'start-tour':
-        play('open')
-        setOpen(false)
-        setBubble(false)
-        hatchCtx?.startTour()
-        return
-      case 'next-tour-step':
-        hatchCtx?.nextTourStep()
-        return
-      case 'complete-tour':
-        play('success')
-        hatchCtx?.completeTour()
-        return
-      case 'skip-tour':
-        hatchCtx?.skipTour()
-        return
       case 'open-workspace-chat':
         window.dispatchEvent(new CustomEvent('open-hatch-workspace', { detail: { cue } }))
         hatchCtx?.clearCue()
@@ -288,10 +266,6 @@ export function FloatingHatch() {
 
   function dismissCue(e: React.MouseEvent) {
     e.stopPropagation()
-    if (activeCue?.source === 'tour') {
-      hatchCtx?.skipTour()
-      return
-    }
     hatchCtx?.dismissCue({ snooze: true })
   }
 
@@ -311,16 +285,13 @@ export function FloatingHatch() {
   const currentGlyphState = open ? 'listening' : activeCue?.state ?? glyphState
   const currentPageType = parseHatchPageContext(pathname).pageType
 
-  // Target resolved at emit time but vanished mid-step. For a tour, advance so the
-  // director re-validates the next target (and applies its own fallback); for other
-  // cues, clear so the marker never lingers on a dead target. Memoized so it doesn't
-  // refire on unrelated parent rerenders while `missing` stays true.
-  // MUST be declared before any early return so hook order stays stable across
-  // renders (the workspace early-return below would otherwise drop this hook).
+  // Target resolved at emit time but vanished mid-cue. Clear so the marker never
+  // lingers on a dead target. Memoized so it doesn't refire on unrelated parent
+  // rerenders while `missing` stays true. MUST be declared before any early return
+  // so hook order stays stable across renders.
   const handleMissing = useCallback(() => {
     if (!activeCue) return
-    if (activeCue.source === 'tour') hatchCtx?.nextTourStep()
-    else hatchCtx?.clearCue()
+    hatchCtx?.clearCue()
   }, [activeCue, hatchCtx])
 
   if (isInWorkspace && !activeCue) return null
@@ -331,7 +302,7 @@ export function FloatingHatch() {
       <HatchTargetPointer
         targetId={activeCue?.target}
         highlightInset={activeCue?.highlightInset}
-        keepVisible={activeCue?.source === 'tour'}
+        keepVisible={false}
         onMissing={handleMissing}
       />
       <div
@@ -415,7 +386,7 @@ export function FloatingHatch() {
                     onClick={() => {
                       setOpen(false)
                       setBubble(false)
-                      hatchCtx?.startTour()
+                      window.dispatchEvent(new Event('start-intro-tour'))
                     }}
                     className="mt-1 inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1.5 text-[11px] font-label font-bold text-primary hover:bg-primary-fixed"
                   >
