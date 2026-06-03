@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
+import { logger } from '@/lib/log'
 
 type ApiErrorDetails = Record<string, unknown> | unknown[] | string | number | boolean | null
 
@@ -39,8 +41,28 @@ export function apiError(
   message: string,
   details?: ApiErrorDetails
 ) {
-  if (MASK_ERRORS) {
-    console.error(`[apiError] ${status} ${code}: ${message}`, details ?? '')
+  // Server-side errors (5xx) are real failures the user shouldn't have to
+  // report for us to know about. Log them structured (with redaction) and
+  // forward to Sentry so they surface as issues, not just console noise.
+  // 4xx are client/validation errors — log only when masking is on, never
+  // forwarded (they'd drown out real failures).
+  if (status >= 500) {
+    logger.error(`[apiError] ${status} ${code}: ${message}`, {
+      status,
+      code,
+      ...(details !== undefined ? { details } : {}),
+    })
+    Sentry.captureMessage(`API ${status} ${code}: ${message}`, {
+      level: 'error',
+      tags: { api_error_code: code, status: String(status) },
+      extra: { details },
+    })
+  } else if (MASK_ERRORS) {
+    logger.error(`[apiError] ${status} ${code}: ${message}`, {
+      status,
+      code,
+      ...(details !== undefined ? { details } : {}),
+    })
   }
 
   const exposedDetails = details !== undefined && shouldExposeDetails(status) ? details : undefined
