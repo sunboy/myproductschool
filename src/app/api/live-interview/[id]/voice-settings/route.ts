@@ -41,10 +41,15 @@ function voiceThinkOrigin(request: Request): {
     return { origin, needsPublicCallback: false, source: 'env-var' }
   }
 
-  // 2. The request's own origin. Every deployment (prod, preview, custom domain)
-  //    then calls back to the exact host serving it — no cross-host redirect, which
-  //    is what broke prod (apex NEXT_PUBLIC_APP_URL 307-redirected to www).
-  const requestOrigin = new URL(request.url).origin
+  // 2. The public host that actually served this request. On Vercel, the function's
+  //    own `request.url` does NOT reliably resolve to the canonical public host —
+  //    it can be an internal/deployment origin — so Deepgram's server-to-server
+  //    callback to that URL never lands (voice-settings logs a 200 but voice-think
+  //    is never hit). Resolve from the forwarded host header instead, mirroring the
+  //    working chat route. `request.url` stays only as a last-resort fallback.
+  const host = request.headers.get('host')
+  const proto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ?? 'https'
+  const requestOrigin = host ? `${proto}://${host}` : new URL(request.url).origin
   if (!isLocalOrigin(requestOrigin)) {
     return { origin: requestOrigin, needsPublicCallback: false, source: 'request-origin' }
   }
@@ -101,6 +106,7 @@ export async function GET(
     requestId,
     sessionId: id,
     requestOrigin: new URL(request.url).origin,
+    hostHeader: request.headers.get('host'),
     originSource: callback.source,
     callbackOrigin: callback.origin,
     needsPublicCallback: callback.needsPublicCallback,
