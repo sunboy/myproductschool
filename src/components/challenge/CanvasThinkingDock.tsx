@@ -9,6 +9,7 @@ interface CanvasThinkingDockProps {
   challengeType: CanvasChallengeType
   scene: CanvasScene
   contextPackFilledCount: number
+  contextPackTotal: number
   contextPackText: string
   expanded: boolean
   onAskHatch: (prompt: string, autoSend?: boolean) => void
@@ -98,6 +99,7 @@ export function CanvasThinkingDock({
   challengeType,
   scene,
   contextPackFilledCount,
+  contextPackTotal,
   contextPackText,
   expanded,
   onAskHatch,
@@ -122,9 +124,10 @@ export function CanvasThinkingDock({
         <button
           type="button"
           data-testid="canvas-context-loop-toggle"
+          data-tour-target="canvas-context-loop"
           onClick={onToggleExpanded}
           aria-expanded={expanded}
-          aria-label={`${expanded ? 'Collapse' : 'Expand'} Context loop. ${contextPackFilledCount} of 4 notes. ${canvasSummary}.`}
+          aria-label={`${expanded ? 'Collapse' : 'Expand'} Context loop. ${contextPackFilledCount} of ${contextPackTotal} notes. ${canvasSummary}.`}
           className="inline-flex h-8 shrink-0 items-center rounded-lg border px-3 font-label text-[11px] font-black text-on-surface transition-colors hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/30"
           style={{
             background: expanded ? copy.soft : 'var(--color-surface-container-low)',
@@ -149,12 +152,13 @@ export function CanvasThinkingDock({
       >
         <div className="flex min-w-max items-center gap-0.5">
           <AppTooltip
-            label={`Open the Context Pack. Hatch currently sees ${contextPackFilledCount} of 4 note fields alongside ${canvasSummary}.`}
+            label={`Open the Context Pack. Hatch currently sees ${contextPackFilledCount} of ${contextPackTotal} note fields alongside ${canvasSummary}.`}
             side="bottom"
             className="shrink-0"
           >
             <button
               type="button"
+              data-tour-target="canvas-notes"
               onClick={onOpenContextPack}
               tabIndex={expanded ? 0 : -1}
               className="inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-md border border-transparent bg-transparent px-2 font-label text-[10.5px] font-black text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
