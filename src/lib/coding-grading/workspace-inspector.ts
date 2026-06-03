@@ -37,28 +37,49 @@ interface TarEntry {
   content: Buffer
 }
 
-/** Minimal POSIX/ustar tar reader. Handles regular files; skips the rest. */
+/**
+ * Minimal tar reader for the snapshots GNU `tar -czf` produces. Handles regular
+ * files, the ustar `prefix` field (paths up to 255 bytes split across
+ * prefix+name), and GNU `L` long-name blocks (paths > 255 bytes), so deeply
+ * nested skill files are not silently truncated and lost from the evidence.
+ */
 function readTar(buf: Buffer): TarEntry[] {
   const entries: TarEntry[] = []
   let offset = 0
+  let pendingLongName: string | null = null
+
   while (offset + 512 <= buf.length) {
     const header = buf.subarray(offset, offset + 512)
-    // End of archive: two zero blocks.
-    if (header.every((b) => b === 0)) break
+    if (header.every((b) => b === 0)) break // end-of-archive (zero block)
 
-    const name = header.subarray(0, 100).toString('utf8').replace(/\0.*$/, '')
+    const rawName = header.subarray(0, 100).toString('utf8').replace(/\0.*$/, '')
+    const prefix = header.subarray(345, 500).toString('utf8').replace(/\0.*$/, '')
     const sizeStr = header.subarray(124, 136).toString('utf8').replace(/\0.*$/, '').trim()
     const size = parseInt(sizeStr, 8) || 0
     const typeFlag = String.fromCharCode(header[156])
+    const blocks = Math.ceil(size / 512) * 512
 
     offset += 512
+
+    if (typeFlag === 'L') {
+      // GNU long-name: this block's content IS the next entry's full name.
+      pendingLongName = buf.subarray(offset, offset + size).toString('utf8').replace(/\0.*$/, '')
+      offset += blocks
+      continue
+    }
+    if (typeFlag === 'x' || typeFlag === 'g' || typeFlag === 'K') {
+      // PAX extended / GNU long-link headers — skip their payload.
+      offset += blocks
+      continue
+    }
+
     if (typeFlag === '0' || typeFlag === '\0' || typeFlag === '') {
-      // Regular file.
+      const name = pendingLongName ?? (prefix ? `${prefix}/${rawName}` : rawName)
       const content = buf.subarray(offset, offset + size)
       if (name) entries.push({ name, content: Buffer.from(content) })
     }
-    // Advance past the file content, padded to a 512-byte boundary.
-    offset += Math.ceil(size / 512) * 512
+    pendingLongName = null
+    offset += blocks
   }
   return entries
 }
@@ -97,8 +118,13 @@ export async function inspectWorkspace(transcriptUri: string | null): Promise<Wo
       // Skills the user wrote — the skill_construction evidence.
       if (lower.includes('.claude/skills/') && lower.endsWith('.md')) {
         skills.push({ filename: e.name.replace(/^.*\.claude\/skills\//, '.claude/skills/'), preview: preview(e.content) })
-      } else if (lower.endsWith('.sql') || lower.endsWith('.md') || lower.endsWith('.py')) {
-        // SQL, notes, and report markdown are all analyst artifacts.
+      } else if (
+        (lower.endsWith('.sql') || lower.endsWith('.py') || lower.endsWith('.md'))
+        // Exclude the seeded brief (CLAUDE.md) so the grader sees the user's
+        // OWN artifacts (queries, notes, report), not the instructions it was given.
+        && !lower.endsWith('/claude.md')
+        && lower !== 'claude.md'
+      ) {
         artifacts.push({ filename: e.name.replace(/^.*workspace\//, ''), preview: preview(e.content) })
       }
     }

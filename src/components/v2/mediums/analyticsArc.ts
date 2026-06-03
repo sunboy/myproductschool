@@ -170,6 +170,15 @@ export function mergeArc(
   const base = arcForDifficulty(difficulty)
   if (!overrides?.length) return base
   const byId = new Map(overrides.filter((o) => o.id).map((o) => [o.id as string, o]))
+  const baseIds = new Set(base.map((s) => s.id))
+  // Warn when an override targets a step not in this difficulty's arc (e.g. a
+  // 'report' override on a beginner challenge whose arc omits it) — it would
+  // otherwise be silently dropped.
+  for (const id of byId.keys()) {
+    if (!baseIds.has(id)) {
+      console.warn(`[analyticsArc] sub_problem override "${id}" has no matching step in the ${difficulty ?? 'default'} arc; ignored`)
+    }
+  }
   return base.map((step) => {
     const ov = byId.get(step.id)
     return ov ? { ...step, ...ov, kind: step.kind, sequence: step.sequence } : step

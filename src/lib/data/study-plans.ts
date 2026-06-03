@@ -321,6 +321,9 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
   const enrichedItems = (chapters ?? []).flatMap(ch => {
     if (ch.learn_chapter_id) {
       const lesson = lessonMap[ch.learn_chapter_id]
+      // Skip a lesson chapter whose Learn chapter could not be resolved (deleted
+      // or RLS-blocked) rather than render a contentless ghost row.
+      if (!lesson) return []
       orderIndex++
       return [{
         id: `${ch.id}-lesson`,
@@ -330,9 +333,7 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
         concept_id: ch.learn_chapter_id,
         chapter_title: ch.title,
         order_index: orderIndex,
-        lesson: lesson
-          ? { ...lesson, is_completed: completedLessonIds.has(ch.learn_chapter_id) }
-          : undefined,
+        lesson: { ...lesson, is_completed: completedLessonIds.has(ch.learn_chapter_id) },
       }]
     }
     return (ch.challenge_ids ?? []).map((cid: string) => {

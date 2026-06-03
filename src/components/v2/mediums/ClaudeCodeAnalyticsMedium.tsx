@@ -54,10 +54,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
   const [proactiveNudge, setProactiveNudge] = useState<string | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showMirror, setShowMirror] = useState(false)
+  const [finalizing, setFinalizing] = useState(false)
+  const finalizedRef = useRef(false)
   // Set from the finalize response once the attempt has a share_id (the public
   // share page reuses the existing /workspace/challenges/[id]/share/[shareId]
   // route). Null until then, so the mirror shows Download but not Share.
-  const [shareUrl] = useState<string | null>(null)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [usage, setUsage] = useState<{ spent_usd: number; budget_usd: number; input_tokens: number; output_tokens: number } | null>(null)
 
   const activeSubProblem = subProblems[activeSubProblemIdx] ?? null
@@ -184,18 +186,17 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
     // Returning users carry their BigQuery MCP registration forward (rehydrated
     // ~/.claude state), so the connection lights up on its own. When that happens
     // while the mcp_setup step is active, auto-complete it and advance — no need
-    // to make them re-run a setup they already did.
-    if (connected) {
-      setActiveSubProblemIdx(idx => {
-        const step = subProblems[idx]
-        if (step && step.kind === 'mcp_setup') {
-          setCompletedIds(prev => new Set([...prev, step.id]))
-          return idx + 1 < subProblems.length ? idx + 1 : idx
-        }
-        return idx
-      })
+    // to make them re-run a setup they already did. Compute from current state
+    // and call the setters separately (no setState inside a setState updater).
+    if (!connected) return
+    const step = subProblems[activeSubProblemIdx]
+    if (step && step.kind === 'mcp_setup') {
+      setCompletedIds(prev => new Set([...prev, step.id]))
+      if (activeSubProblemIdx + 1 < subProblems.length) {
+        setActiveSubProblemIdx(activeSubProblemIdx + 1)
+      }
     }
-  }, [subProblems])
+  }, [subProblems, activeSubProblemIdx])
 
   const handleSkillWritten = useCallback((filename: string) => {
     setSkillsWritten(prev => prev.includes(filename) ? prev : [...prev, filename])
@@ -204,6 +205,30 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
   const handleReportWritten = useCallback((path: string) => {
     setReportPath(path)
   }, [])
+
+  // Finalize the session: tears down the sandbox, runs the analyst grader, marks
+  // the attempt completed (so it reaches Submissions history), and returns the
+  // grade + a share link. Runs once. Then shows the mirror.
+  const finalizeSession = useCallback(async () => {
+    if (finalizedRef.current || !sessionId || USE_DEV_STUB) {
+      setShowMirror(true)
+      return
+    }
+    finalizedRef.current = true
+    setFinalizing(true)
+    try {
+      const res = await fetch(`/api/claude-code/session/${sessionId}/finalize`, { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json() as { share_url?: string | null }
+        if (data.share_url) setShareUrl(data.share_url)
+      }
+    } catch {
+      // Grading failure must not block the user from seeing their session summary.
+    } finally {
+      setFinalizing(false)
+      setShowMirror(true)
+    }
+  }, [sessionId])
 
   async function handleMark(finding: string): Promise<MarkVerdict> {
     if (!activeSubProblem) return 'retry'
@@ -247,8 +272,8 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId }: MediumProps)
         if (nextIdx < subProblems.length) {
           setActiveSubProblemIdx(nextIdx)
         } else {
-          // All steps done — show mirror
-          setShowMirror(true)
+          // All steps done — finalize (grade + mark attempt complete) then mirror.
+          void finalizeSession()
         }
       }
 

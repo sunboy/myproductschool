@@ -5,6 +5,7 @@
 // writes grades to challenge_attempts so they appear in Submissions history,
 // and marks the session terminated.
 
+import { randomUUID } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -120,14 +121,31 @@ export async function POST(
 
   // --- Complete challenge_attempts with grade so it shows in Submissions history ---
   // total_score + grade_label are the two fields the Submissions page reads
-  // (per project memory: project_submissions_history_gap).
-  await admin.from('challenge_attempts').update({
+  // (per project memory: project_submissions_history_gap). Also mint a share_id
+  // so the report can be shared via the existing public share route.
+  const shareId = randomUUID()
+  const attemptUpdate: Record<string, unknown> = {
     status: 'completed',
     completed_at: new Date().toISOString(),
     total_score: gradeResult.total_score,
     grade_label: gradeResult.grade_label,
     max_score: 100,
-  }).eq('id', session.attempt_id as string)
+    share_id: shareId,
+  }
+  let shareUrl: string | null = null
+  const { error: attemptErr } = await admin
+    .from('challenge_attempts')
+    .update(attemptUpdate)
+    .eq('id', session.attempt_id as string)
+  if (attemptErr) {
+    // Some DBs may not have the share_id column yet — retry without it so the
+    // grade still lands (the share link is a nice-to-have, the grade is not).
+    delete attemptUpdate.share_id
+    await admin.from('challenge_attempts').update(attemptUpdate).eq('id', session.attempt_id as string)
+  } else {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    shareUrl = `${baseUrl}/workspace/challenges/${session.challenge_id}/share/${shareId}`
+  }
 
   // --- Fire-and-forget: embed the session transcript ---
   // Do NOT await — per project memory (project_embed_blocks_submit).
@@ -154,5 +172,6 @@ export async function POST(
     total_score: gradeResult.total_score,
     grade_label: gradeResult.grade_label,
     final_artifact: gradeResult.final_artifact,
+    share_url: shareUrl,
   })
 }
