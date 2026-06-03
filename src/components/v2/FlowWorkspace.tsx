@@ -112,7 +112,7 @@ const CHALLENGE_TYPE_FILTER_COPY: Record<string, { label: string; discipline: st
   flow: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
   freeform: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
   quick_take: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
-  claude_code_analytics: { label: 'Analytics', discipline: 'product_sense', icon: 'analytics' },
+  claude_code_analytics: { label: 'Analytics', discipline: 'analytics', icon: 'analytics' },
   system_design: { label: 'System design', discipline: 'system_design', icon: 'hub' },
   data_modeling: { label: 'Data modeling', discipline: 'data_modeling', icon: 'account_tree' },
   sql: { label: 'SQL', discipline: 'sql', icon: 'database' },

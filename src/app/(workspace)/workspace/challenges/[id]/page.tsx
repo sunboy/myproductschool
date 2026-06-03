@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import type { UserRoleV2 } from '@/lib/types'
 import { FlowWorkspaceShellClient } from './FlowWorkspaceShellClient'
+import { AnalyticsWorkspaceClient } from './AnalyticsWorkspaceClient'
 import { IS_MOCK } from '@/lib/mock'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
@@ -130,14 +131,29 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
   // slug (e.g. "sql-2001"), the text slug, or the raw id, and returns challenge_type.
   let challengeId = id
   let challengeSlug = id
+  let challengeType: string | undefined
   if (!IS_MOCK) {
     const identity = await resolveChallengeIdentity(id, createAdminClient())
     if (identity?.id) {
       challengeId = identity.id
       challengeSlug = identity.slug ?? identity.id
     }
+    challengeType = identity?.challenge_type ?? undefined
     // Quick takes don't have FLOW steps - send to challenges hub
-    if (identity?.challenge_type === 'quick_take') redirect('/challenges')
+    if (challengeType === 'quick_take') redirect('/challenges')
+  }
+
+  // Claude Code Analytics challenges use a dedicated live-terminal medium, not
+  // the FLOW MCQ workspace. Route them to the analytics shell with the full row.
+  if (challengeType === 'claude_code_analytics') {
+    const { data: challengeRow } = await createAdminClient()
+      .from('challenges')
+      .select('id, slug, title, prompt_text, difficulty, challenge_type, domain_id, estimated_minutes, is_published, created_at')
+      .eq('id', challengeId)
+      .maybeSingle()
+    if (challengeRow) {
+      return <AnalyticsWorkspaceClient challenge={challengeRow as never} returnTo={sanitizeReturnTo(returnTo)} />
+    }
   }
 
   // Compute next challenge: prefer plan order, fall back to same-category
