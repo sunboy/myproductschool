@@ -7,6 +7,7 @@ import { FlowWorkspaceShellClient } from './FlowWorkspaceShellClient'
 import { AnalyticsWorkspaceClient } from './AnalyticsWorkspaceClient'
 import { IS_MOCK } from '@/lib/mock'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
+import { getAnalyticsAccess } from '@/lib/flags/analytics'
 
 async function getNextChallengeInPlan(
   planSlug: string,
@@ -146,13 +147,38 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
   // Claude Code Analytics challenges use a dedicated live-terminal medium, not
   // the FLOW MCQ workspace. Route them to the analytics shell with the full row.
   if (challengeType === 'claude_code_analytics') {
+    // Entitlement + feature-flag gate. The feature ships dark: if the user has no
+    // access, send them to the gated pricing tier (when the feature is enabled) or
+    // fully hide it (redirect to Practice) when it's still off and they're not
+    // allowlisted. Mock mode bypasses (no auth/admin client).
+    if (!IS_MOCK && user) {
+      const access = await getAnalyticsAccess(createAdminClient(), user.id)
+      if (!access.hasAccess) {
+        redirect(access.enabled ? '/pricing?tier=analytics' : '/challenges')
+      }
+    }
     const { data: challengeRow } = await createAdminClient()
       .from('challenges')
-      .select('id, slug, title, prompt_text, difficulty, challenge_type, domain_id, estimated_minutes, is_published, created_at')
+      .select('id, slug, title, prompt_text, difficulty, challenge_type, domain_id, estimated_minutes, is_published, created_at, scenario_context, scenario_trigger, scenario_question')
       .eq('id', challengeId)
       .maybeSingle()
     if (challengeRow) {
-      return <AnalyticsWorkspaceClient challenge={challengeRow as never} returnTo={sanitizeReturnTo(returnTo)} />
+      // The analytics challenge's narrative lives in the scenario_* columns
+      // (prompt_text is empty for this type). Compose them into the scenario the
+      // left panel renders so the user actually sees the brief.
+      const row = challengeRow as Record<string, unknown>
+      const scenario = {
+        context: (row.scenario_context as string) ?? '',
+        trigger: (row.scenario_trigger as string) ?? '',
+        question: (row.scenario_question as string) ?? '',
+      }
+      return (
+        <AnalyticsWorkspaceClient
+          challenge={challengeRow as never}
+          scenario={scenario}
+          returnTo={sanitizeReturnTo(returnTo)}
+        />
+      )
     }
   }
 

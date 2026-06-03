@@ -123,13 +123,22 @@ export async function POST(
   // total_score + grade_label are the two fields the Submissions page reads
   // (per project memory: project_submissions_history_gap). Also mint a share_id
   // so the report can be shared via the existing public share route.
+  //
+  // The grader works on a 0-100 scale, but challenge_attempts.max_score is
+  // DECIMAL(4,2) (cap 99.99) and the whole product renders attempt scores on the
+  // FLOW 0-5 scale (migration 078). Writing max_score: 100 overflowed the column
+  // and silently rolled back the entire UPDATE, leaving the attempt in_progress
+  // with null score. Rescale to 0-5 here; the full 0-100 per-dimension detail is
+  // preserved in final_artifact for the report page.
+  const FLOW_MAX = 5
+  const scaledScore = Math.round((gradeResult.total_score / 100) * FLOW_MAX * 10) / 10
   const shareId = randomUUID()
   const attemptUpdate: Record<string, unknown> = {
     status: 'completed',
     completed_at: new Date().toISOString(),
-    total_score: gradeResult.total_score,
+    total_score: scaledScore,
     grade_label: gradeResult.grade_label,
-    max_score: 100,
+    max_score: FLOW_MAX,
     share_id: shareId,
   }
   let shareUrl: string | null = null
@@ -141,7 +150,16 @@ export async function POST(
     // Some DBs may not have the share_id column yet — retry without it so the
     // grade still lands (the share link is a nice-to-have, the grade is not).
     delete attemptUpdate.share_id
-    await admin.from('challenge_attempts').update(attemptUpdate).eq('id', session.attempt_id as string)
+    const { error: retryErr } = await admin
+      .from('challenge_attempts')
+      .update(attemptUpdate)
+      .eq('id', session.attempt_id as string)
+    if (retryErr) {
+      // Don't swallow — a failed grade write means the attempt stays in_progress
+      // and never reaches Submissions. Surface it instead of returning a grade
+      // the user can't see persisted.
+      console.error('[cc/finalize] attempt grade write failed:', retryErr)
+    }
   } else {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     shareUrl = `${baseUrl}/workspace/challenges/${session.challenge_id}/share/${shareId}`

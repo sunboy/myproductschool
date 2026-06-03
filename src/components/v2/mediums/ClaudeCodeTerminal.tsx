@@ -2,28 +2,66 @@
 
 import { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import type { ClaudeCodeTerminalProps, ClaudeCodeTerminalHandle } from './types'
+// xterm's required stylesheet. Without it the renderer can't size correctly and
+// the off-screen accessibility helper (the screen-reader probe text) renders
+// VISIBLY as rows of W/K/$ characters instead of being clipped. Import once.
+import 'xterm/css/xterm.css'
 
 // xterm@5.3.0 is installed (not @xterm/xterm)
 // Dynamically imported to avoid SSR issues
 
-const MCP_CONNECTED_RE = /MCP.*connected|bigquery.*mcp.*ready|mcp.*bigquery.*✓/i
+// Detect a successful BigQuery MCP registration in the terminal output. The
+// `claude mcp add bigquery -- bq-mcp` command prints "Added stdio MCP server
+// bigquery ..."; `claude mcp list` shows "bigquery: ... ✓ Connected". Match any
+// of these so the connection strip flips to Connected and step 1 auto-advances.
+const MCP_CONNECTED_RE = /added\s+(?:stdio\s+)?mcp\s+server\s+bigquery|bigquery.*(?:✓|connected|ready)|mcp.*bigquery.*✓|MCP.*connected/i
+// Detect that the `claude` REPL has launched. On start the CLI prints a version
+// banner ("Claude Code v2.1.x") and an `❯` input prompt with "accept edits on".
+// Matching the version banner is the most stable signal across CLI versions.
+const CLAUDE_REPL_RE = /Claude\s+Code\s+v\d|accept edits on|❯\s/i
 const SKILL_WRITTEN_RE = /Wrote?\s+\.claude\/skills\/([^\s]+\.md)/i
 // A report artifact landing in the workspace (e.g. "Wrote /workspace/report.md").
 const REPORT_WRITTEN_RE = /Wrote?\s+(\/workspace\/[^\s]*report[^\s]*\.md)/i
 
 const TAIL_MAX_BYTES = 4000
 
+// The container PTY bridge spawns the shell LAZILY on the first resize message
+// (it waits for real terminal dimensions so the banner paints at the right
+// width). The client MUST send this on open, or no shell is ever spawned and
+// the terminal stays blank. Protocol: `\x1b[?resize=` + JSON {cols, rows}.
+// Mirrors RESIZE_PREFIX in infra/claude-code-sandbox/entrypoint-pty.js.
+const RESIZE_PREFIX = '\x1b[?resize='
+
 export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCodeTerminalProps>(
   function ClaudeCodeTerminal(
-    { wssUrl, onOutput, onActivity, onMcpStatusChange, onSkillWritten, onReportWritten },
+    { wssUrl, onOutput, onActivity, onMcpStatusChange, onReplStatusChange, onSkillWritten, onReportWritten },
     ref
   ) {
+    // Latch so we only emit the REPL-running signal once per launch.
+    const replSignalledRef = useRef(false)
     const containerRef = useRef<HTMLDivElement>(null)
     const termRef = useRef<import('xterm').Terminal | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
     const tailRef = useRef<string>('')
     const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const mountedRef = useRef(true)
+    const fitRef = useRef<() => void>(() => {})
+    // True once a WS has successfully opened at least once. A drop after a
+    // successful open is a real reconnect (Cloud Run 60-min cap, network blip).
+    // A connect that NEVER opened means the instance isn't serving yet — retry
+    // with backoff instead of a tight 3s loop so we don't hammer the lone
+    // concurrency-limited instance into a "no available instance" storm.
+    const everOpenedRef = useRef(false)
+    const connectAttemptsRef = useRef(0)
+    // Send the current terminal size to the PTY using the resize protocol.
+    // This is what triggers the lazy shell spawn in the container.
+    const sendResizeRef = useRef<() => void>(() => {
+      const term = termRef.current
+      const ws = wsRef.current
+      if (!term || ws?.readyState !== WebSocket.OPEN) return
+      const payload = RESIZE_PREFIX + JSON.stringify({ cols: term.cols, rows: term.rows })
+      try { ws.send(payload) } catch { /* socket not ready — ignore */ }
+    })
     const [handshaking, setHandshaking] = useState(true)
     const [wsError, setWsError] = useState<string | null>(null)
 
@@ -44,11 +82,35 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
       let term: import('xterm').Terminal
       let fitAddon: import('xterm-addon-fit').FitAddon
 
+      // Wait until the container has a real, nonzero size before opening xterm.
+      // Opening (or fitting) xterm on a 0×0 element makes its renderer leave
+      // `_renderService.dimensions` undefined; the next refresh then throws
+      // "Cannot read properties of undefined (reading 'dimensions')" and the
+      // display renders garbage (the W/] measurement probes leak as text).
+      function waitForSize(el: HTMLElement): Promise<void> {
+        return new Promise((resolve) => {
+          if (el.clientWidth > 0 && el.clientHeight > 0) return resolve()
+          const obs = new ResizeObserver(() => {
+            if (el.clientWidth > 0 && el.clientHeight > 0) {
+              obs.disconnect()
+              resolve()
+            }
+          })
+          obs.observe(el)
+          // Safety net: resolve after 3s even if the observer never fires.
+          setTimeout(() => { obs.disconnect(); resolve() }, 3000)
+        })
+      }
+
       async function initTerminal() {
         if (!containerRef.current || !mountedRef.current) return
 
         const { Terminal } = await import('xterm')
         const { FitAddon } = await import('xterm-addon-fit')
+
+        // Gate xterm.open() on a measurable container.
+        await waitForSize(containerRef.current)
+        if (!containerRef.current || !mountedRef.current) return
 
         term = new Terminal({
           theme: {
@@ -68,21 +130,33 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
         fitAddon = new FitAddon()
         term.loadAddon(fitAddon)
         term.open(containerRef.current!)
-        fitAddon.fit()
         termRef.current = term
 
-        const ro = new ResizeObserver(() => {
-          try { fitAddon.fit() } catch { /* ignore */ }
-        })
+        // Only fit once the container has a real, nonzero size. Calling fit()
+        // (or letting xterm's Viewport refresh run) before the element is laid
+        // out makes xterm read `_renderService.dimensions` while it's still
+        // undefined and throw "Cannot read properties of undefined (reading
+        // 'dimensions')". Guard every fit and skip zero-size passes.
+        const safeFit = () => {
+          const el = containerRef.current
+          if (!el || el.clientWidth === 0 || el.clientHeight === 0) return
+          try { fitAddon.fit() } catch { /* renderer not ready yet — ignore */ }
+          // Tell the container PTY the current size so it can spawn/resize.
+          sendResizeRef.current()
+        }
+        // Expose the fit so the WS open handler can re-fit + send dimensions
+        // once the socket is live (the open may land before/after the first fit).
+        fitRef.current = safeFit
+        // Defer the initial fit to the next frame so layout has settled.
+        requestAnimationFrame(safeFit)
+
+        const ro = new ResizeObserver(() => safeFit())
         ro.observe(containerRef.current!)
 
-        term.onKey(({ key }) => {
-          onActivity?.()
-          if (wsRef.current?.readyState === WebSocket.OPEN) {
-            wsRef.current.send(key)
-          }
-        })
-
+        // onData is the canonical xterm input event: it covers typed
+        // characters, pasted text, and control sequences. We must NOT also
+        // forward onKey — both fire for a single keystroke, so sending from
+        // both doubled every character to the PTY (each char appeared twice).
         term.onData((data) => {
           onActivity?.()
           if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -119,9 +193,16 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
 
         ws.onopen = () => {
           if (!mountedRef.current) return
+          everOpenedRef.current = true
+          connectAttemptsRef.current = 0
           setHandshaking(false)
           setWsError(null)
           termRef.current?.focus()
+          // Re-fit + send dimensions now that the socket is live. The PTY
+          // bridge spawns the shell lazily on the first resize message, so
+          // without this the terminal connects but never produces a prompt.
+          fitRef.current()
+          sendResizeRef.current()
         }
 
         ws.onmessage = (event) => {
@@ -130,7 +211,21 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           if (!text) return
 
           onActivity?.()
-          termRef.current?.write(text)
+          // Ensure the renderer is sized before writing. If xterm hasn't
+          // measured yet, write() triggers a Viewport refresh that reads the
+          // undefined `dimensions` and throws (corrupting the display with
+          // W/] measurement probes). A safeFit first, and a guarded write,
+          // make this resilient to data arriving before layout settles.
+          fitRef.current()
+          try {
+            termRef.current?.write(text)
+          } catch {
+            // Renderer not ready — re-fit and retry once on the next frame.
+            requestAnimationFrame(() => {
+              fitRef.current()
+              try { termRef.current?.write(text) } catch { /* drop this chunk */ }
+            })
+          }
 
           // Rolling tail (~4KB)
           tailRef.current = (tailRef.current + text).slice(-TAIL_MAX_BYTES)
@@ -139,6 +234,14 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           // Detect MCP connection
           if (MCP_CONNECTED_RE.test(text)) {
             onMcpStatusChange?.(true)
+          }
+
+          // Detect the `claude` REPL launching. Test the rolling tail (not just
+          // this chunk) since the banner can arrive split across frames. Latch
+          // so we signal once per launch.
+          if (!replSignalledRef.current && CLAUDE_REPL_RE.test(tailRef.current)) {
+            replSignalledRef.current = true
+            onReplStatusChange?.(true)
           }
 
           // Detect skill file writes
@@ -156,27 +259,38 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
 
         ws.onerror = () => {
           if (!mountedRef.current) return
+          // Don't flash the error panel on a transient connect failure — the
+          // onclose handler immediately schedules a backoff reconnect and keeps
+          // the spinner up. Only surface a hard error if we never connect.
+          if (everOpenedRef.current || connectAttemptsRef.current < 5) return
           setWsError('Connection error')
         }
 
         ws.onclose = (ev) => {
           if (!mountedRef.current) return
-          setHandshaking(false)
           onMcpStatusChange?.(false)
 
-          // Auto-reconnect for Cloud Run 60-min cap (code 1006 = abnormal closure)
-          if (ev.code !== 1000 && ev.code !== 1001) {
-            const delay = 3000
-            termRef.current?.writeln('\r\n\x1b[33m[Reconnecting in 3s…]\x1b[0m')
-            reconnectTimerRef.current = setTimeout(() => {
-              if (mountedRef.current) {
-                setHandshaking(true)
-                connectWS()
-              }
-            }, delay)
-          } else {
+          // Clean close — nothing to do.
+          if (ev.code === 1000 || ev.code === 1001) {
+            setHandshaking(false)
             termRef.current?.writeln('\r\n\x1b[90m[Session closed]\x1b[0m')
+            return
           }
+
+          // Reconnect. If we never opened, the instance is still coming up —
+          // back off (3s, 6s, 9s, capped 12s) so the lone instance is not
+          // hammered. After a successful open, reconnect promptly (60-min cap).
+          connectAttemptsRef.current += 1
+          const delay = everOpenedRef.current
+            ? 2000
+            : Math.min(3000 * connectAttemptsRef.current, 12000)
+          const secs = Math.round(delay / 1000)
+          // Keep the spinner up while we wait, instead of flashing the error.
+          setHandshaking(true)
+          termRef.current?.writeln(`\r\n\x1b[33m[Reconnecting in ${secs}s…]\x1b[0m`)
+          reconnectTimerRef.current = setTimeout(() => {
+            if (mountedRef.current) connectWS()
+          }, delay)
         }
       } catch (err) {
         setWsError(String(err))

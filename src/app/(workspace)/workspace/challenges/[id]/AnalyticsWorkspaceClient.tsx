@@ -4,8 +4,15 @@ import { useRouter } from 'next/navigation'
 import { MediumRenderer } from '@/components/v2/mediums/MediumRenderer'
 import type { ChallengePrompt } from '@/lib/types'
 
+export interface AnalyticsScenario {
+  context: string
+  trigger: string
+  question: string
+}
+
 interface Props {
   challenge: ChallengePrompt
+  scenario?: AnalyticsScenario
   returnTo?: string
 }
 
@@ -13,7 +20,7 @@ interface Props {
 // the guided analytics medium (live terminal + sub-problem stepper + Hatch).
 // The medium owns its own session lifecycle (it creates the attempt via
 // /api/claude-code/session/start), so no attemptId needs to be passed in.
-export function AnalyticsWorkspaceClient({ challenge, returnTo }: Props) {
+export function AnalyticsWorkspaceClient({ challenge, scenario, returnTo }: Props) {
   const router = useRouter()
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
@@ -28,7 +35,7 @@ export function AnalyticsWorkspaceClient({ challenge, returnTo }: Props) {
         <span className="font-headline text-on-surface truncate">{challenge.title}</span>
       </header>
       <div className="flex-1 min-h-0">
-        <MediumRenderer challenge={challenge} attemptId="" />
+        <MediumRenderer challenge={challenge} attemptId="" scenario={scenario} />
       </div>
     </div>
   )

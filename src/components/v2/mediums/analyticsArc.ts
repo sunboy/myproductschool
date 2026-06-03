@@ -14,16 +14,16 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
     sequence: 1,
     title: 'Connect the data tools',
     objective: 'Give Claude the BigQuery tools it needs to list, inspect, and query the dataset.',
-    successCriterion: 'The connection shows Connected, and you paste the line confirming the bigquery server is registered.',
+    successCriterion: 'The BigQuery MCP shows Connected and the Claude Code session is running.',
     suggestedPrompts: [
       'claude mcp add bigquery -- bq-mcp',
-      'What MCP servers are connected right now?',
-      'Use the bigquery tools to confirm you can reach the dataset',
+      'claude',
+      'What tables are in the dataset?',
     ],
     kind: 'mcp_setup',
     rubricDimension: 'connection_setup',
     teachingNote:
-      'MCP is the protocol that gives Claude real tools instead of guesses. Adding the BigQuery MCP lets it list tables, read schemas, and run SQL against the live dataset. You run the add command once, then every step after this uses those tools.',
+      'Two moves get you set up. First, in the shell, register the BigQuery tool with the add command. Then start the analyst by typing claude. Once the session is running, everything after this is plain language: you ask, Claude runs the queries.',
   },
   {
     id: 'explore_schema',

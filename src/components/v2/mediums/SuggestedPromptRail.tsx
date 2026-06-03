@@ -6,9 +6,12 @@ import type { RefObject } from 'react'
 interface SuggestedPromptRailProps {
   prompts: string[]
   terminalRef: RefObject<ClaudeCodeTerminalHandle | null>
+  /** True when these chips were generated from the live session (vs the step's
+   *  static defaults) — surfaces a subtle label so the user knows they adapt. */
+  contextual?: boolean
 }
 
-export function SuggestedPromptRail({ prompts, terminalRef }: SuggestedPromptRailProps) {
+export function SuggestedPromptRail({ prompts, terminalRef, contextual = false }: SuggestedPromptRailProps) {
   if (!prompts.length) return null
 
   function handleInsert(prompt: string) {
@@ -28,7 +31,7 @@ export function SuggestedPromptRail({ prompts, terminalRef }: SuggestedPromptRai
         <span className="material-symbols-outlined" style={{ fontSize: 13, fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
           tips_and_updates
         </span>
-        Try next
+        {contextual ? 'Try next · from your session' : 'Try next'}
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {prompts.map((prompt, i) => (

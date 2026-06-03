@@ -11,6 +11,7 @@ interface AnalyticsTerminalFrameProps {
   onOutput?: (tail: string) => void
   onActivity?: () => void
   onMcpStatusChange?: (connected: boolean) => void
+  onReplStatusChange?: (running: boolean) => void
   onSkillWritten?: (filename: string) => void
   onReportWritten?: (path: string) => void
 }
@@ -21,6 +22,7 @@ export function AnalyticsTerminalFrame({
   onOutput,
   onActivity,
   onMcpStatusChange,
+  onReplStatusChange,
   onSkillWritten,
   onReportWritten,
 }: AnalyticsTerminalFrameProps) {
@@ -81,6 +83,7 @@ export function AnalyticsTerminalFrame({
           onOutput={onOutput}
           onActivity={onActivity}
           onMcpStatusChange={onMcpStatusChange}
+          onReplStatusChange={onReplStatusChange}
           onSkillWritten={onSkillWritten}
           onReportWritten={onReportWritten}
         />

@@ -4,12 +4,12 @@ import { pickMedium } from './types'
 import type { MediumProps } from './types'
 import { ClaudeCodeAnalyticsMedium } from './ClaudeCodeAnalyticsMedium'
 
-export function MediumRenderer({ challenge, attemptId }: MediumProps) {
+export function MediumRenderer({ challenge, attemptId, scenario }: MediumProps) {
   const kind = pickMedium(challenge.challenge_type ?? 'flow')
 
   switch (kind) {
     case 'claude_code_analytics':
-      return <ClaudeCodeAnalyticsMedium challenge={challenge} attemptId={attemptId} />
+      return <ClaudeCodeAnalyticsMedium challenge={challenge} attemptId={attemptId} scenario={scenario} />
 
     case 'flow_stepper':
       return (

@@ -9,6 +9,7 @@ interface AnalyticsObjectiveCardProps {
   stepIdx: number
   totalSteps: number
   mcpConnected: boolean
+  replRunning?: boolean
   skillsWritten: string[]
   reportWritten?: boolean
   onMark: (finding: string) => Promise<MarkVerdict>
@@ -19,6 +20,7 @@ export function AnalyticsObjectiveCard({
   stepIdx,
   totalSteps,
   mcpConnected,
+  replRunning = false,
   skillsWritten,
   reportWritten = false,
   onMark,
@@ -40,14 +42,23 @@ export function AnalyticsObjectiveCard({
     try { localStorage.setItem(`cc-teach-${subProblem.id}`, '1') } catch { /* ignore */ }
   }
 
+  const isSetupStep = subProblem.kind === 'mcp_setup' || subProblem.kind === 'connect'
+
   const canMark =
-    (subProblem.kind === 'mcp_setup' || subProblem.kind === 'connect') ? mcpConnected
+    isSetupStep ? (mcpConnected && replRunning)
     : subProblem.kind === 'skill' ? skillsWritten.length > 0
     : subProblem.kind === 'report' ? reportWritten
     : true
 
+  // Setup-step hint names the NEXT move so the bash→REPL handoff is never tribal
+  // knowledge: register the MCP, then start the analyst (`claude`).
   const gateHint =
-    (subProblem.kind === 'mcp_setup' || subProblem.kind === 'connect') ? 'Connect BigQuery MCP first'
+    isSetupStep
+      ? (!mcpConnected
+          ? 'Register the BigQuery MCP first'
+          : !replRunning
+            ? 'Now start the analyst: type claude'
+            : null)
     : subProblem.kind === 'skill' ? 'Write a .claude/skills/*.md file first'
     : subProblem.kind === 'report' ? 'Have Claude write the report file first'
     : null
