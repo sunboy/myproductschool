@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { RecentAttempt } from '@/lib/types'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 
 interface Props {
   attempts: RecentAttempt[]
@@ -65,6 +66,12 @@ export function RecentChallengesTable({ attempts }: Props) {
                           </span>
                         </div>
                         <span className="font-bold text-on-background">{attempt.challenge_title}</span>
+                        {(() => {
+                          const numberLabel = formatChallengeNumber(attempt.challenge_type, attempt.display_number)
+                          return numberLabel ? (
+                            <span className="font-mono text-[10px] px-1.5 py-px rounded-full bg-surface-container-highest text-on-surface-variant shrink-0">{numberLabel}</span>
+                          ) : null
+                        })()}
                       </div>
                     </td>
 

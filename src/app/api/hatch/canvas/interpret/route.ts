@@ -9,6 +9,9 @@ import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budg
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
+import { withRoute } from '@/lib/api/withRoute'
+import { logger } from '@/lib/log'
+import * as Sentry from '@sentry/nextjs'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
 
 const ROUTE_KEY = 'hatch_canvas_interpret'
@@ -74,6 +77,10 @@ const RequestSchema = z.object({
   challengeType: z.enum(['system_design', 'data_modeling', 'coding', 'claude_code_analytics']).optional(),
   attemptId: z.string().max(200).optional(),
   context_pack: z.string().max(50000).nullable().optional(),
+  guidance_phase: z
+    .enum(['empty', 'sketching', 'has_canvas_no_notes', 'notes_no_tradeoffs', 'ready'])
+    .nullable()
+    .optional(),
   current_code: z.string().max(200000).nullable().optional(),
   current_language: z.string().max(40).nullable().optional(),
   last_run_result: z.unknown().optional(),
@@ -163,7 +170,8 @@ Rules:
 const COACH_PERSONA = `You are Hatch, a system design and data modeling interview coach for HackProduct.
 Voice: direct, opinionated, slightly Shreyas-Doshi-tweet-thread. Never academic. Never corporate.
 Never write "you are a [role]" or "as a senior engineer" - drop into the situation.
-Never use em dashes. Never use AI slop ("delve", "leverage", "utilize", "holistic", "robust", "seamlessly").`
+Never use em dashes. Never use AI slop ("delve", "leverage", "utilize", "holistic", "robust", "seamlessly").
+Honest, not soft: lead with what the design gets right before the concern, frame a gap as the next move not a failure, and never use pressure or guilt. Catching a weakness on the canvas beats catching it in the room.`
 
 const ROUTING_RULES = `You will look at the user's message AND the canvas state, then decide ONE of three intents:
 
@@ -465,11 +473,31 @@ function buildUserContent(body: InterpretBody): string {
   return [
     `# Canvas state\n${sceneText}`,
     body.context_pack?.trim() ? `# Context Pack\n${body.context_pack.trim()}` : null,
+    body.guidance_phase ? `# Guidance phase\n${guidancePhaseHint(body.guidance_phase)}` : null,
     historyText ? `# Recent conversation\n${historyText}` : null,
     `# User's latest message\n${body.message}`,
   ]
     .filter(Boolean)
     .join('\n\n')
+}
+
+/**
+ * Tells the model where the user is in the draw → notes → ask → submit loop so
+ * it can nudge the right next move. Never name the phase to the user.
+ */
+function guidancePhaseHint(phase: NonNullable<InterpretBody['guidance_phase']>): string {
+  switch (phase) {
+    case 'empty':
+      return 'The canvas and notes are empty. Help them place a first concrete element or name a first assumption. Keep it to one move.'
+    case 'sketching':
+      return 'They have started drawing but the shape is thin. Push them to add one more element and connect it before going deep.'
+    case 'has_canvas_no_notes':
+      return 'There is a diagram but no written reasoning. Steer them to write assumptions and constraints so the design can be judged, not just the picture.'
+    case 'notes_no_tradeoffs':
+      return 'They have a design and notes but no clear tradeoff. Press for the one decision they are betting on: what they gained, what they gave up, and why it is acceptable.'
+    case 'ready':
+      return 'Design, notes, and a tradeoff are present. Do a final gap check: surface the single highest-risk weakness before they submit.'
+  }
 }
 
 function normalizeResponse(raw: unknown): CanvasInterpretResponse {
@@ -561,7 +589,7 @@ async function callClaude(
   return normalizeResponse(parsed)
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withRoute(async (req: NextRequest) => {
   const supabase = await createClient()
   const {
     data: { user },
@@ -638,11 +666,18 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    console.error('Canvas interpret error:', error)
+    // This route degrades gracefully (returns a coach fallback, not a 5xx), so
+    // the error never reaches withRoute's catch or onRequestError. Forward it
+    // explicitly so a broken AI path is still visible instead of silently
+    // serving "I had trouble with that" to every user.
+    logger.error('[hatch.canvas.interpret] interpret error', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    Sentry.captureException(error, { tags: { route: 'hatch.canvas.interpret' } })
     return NextResponse.json({
       intent: 'coach' as const,
       message: "I had trouble with that. Can you try rephrasing?",
       actions: [],
     } satisfies CanvasInterpretResponse)
   }
-}
+}, { name: 'hatch.canvas.interpret' })

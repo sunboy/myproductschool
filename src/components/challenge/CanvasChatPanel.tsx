@@ -6,6 +6,7 @@ import { Md } from '@/components/ui/Md'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { VoiceInputButton } from './VoiceInputButton'
 import type { CanvasScene } from '@/lib/hatch/canvas-scene'
+import type { GuidancePhase, GuidanceLabels } from '@/lib/hatch/canvasGuidance'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
@@ -70,12 +71,39 @@ interface CanvasChatPanelProps {
   activeSubProblemSuccessCriterion?: string | null
   markedFindings?: Array<{ id: string; text: string; verdict: 'pass' | 'partial' | 'retry' }>
   assertedFinding?: string | null
+  // Guidance phase (canvas types only) — keeps Hatch aware of where the user is
+  // in the draw → notes → ask → submit loop, per CLAUDE.md Hatch-awareness.
+  guidancePhase?: GuidancePhase
+  guidanceLabels?: GuidanceLabels
 }
 
-function getInitialMessage(challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics'): string {
+function getInitialMessage(
+  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics',
+  phase?: GuidancePhase,
+  labels?: GuidanceLabels,
+): string {
   if (challengeType === 'coding') {
     return "I'm watching your code. Ask about your approach, edge cases, complexity, or why something isn't working."
   }
+
+  // Phase-aware opener for canvas types. Falls back to the per-type default when
+  // phase is not yet known at mount.
+  if (phase && labels) {
+    const entity = labels.entity
+    switch (phase) {
+      case 'empty':
+        return `Let's design this. Draw a first ${entity} or tell me what to draw, then we make your case in notes and pressure-test it together.`
+      case 'sketching':
+        return `Good start. Add one more ${entity} and connect it, then I can tell you what is missing.`
+      case 'has_canvas_no_notes':
+        return 'The shape is there. Open notes and write your assumptions so I can judge the reasoning, not just the picture.'
+      case 'notes_no_tradeoffs':
+        return 'Solid. Tell me the tradeoff you are betting on and I will try to break it.'
+      case 'ready':
+        return 'This holds together. Ask me for a final gap check before you submit.'
+    }
+  }
+
   if (challengeType === 'data_modeling') {
     return "Let's model this data together. Draw your entities and relationships, or describe them and I'll add them to the canvas."
   }
@@ -159,15 +187,19 @@ export function CanvasChatPanel({
   activeSubProblemSuccessCriterion,
   markedFindings,
   assertedFinding,
+  guidancePhase,
+  guidanceLabels,
 }: CanvasChatPanelProps) {
   const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
   const { muted, toggleMuted, play } = useHatchSonics()
   const { startUpgrade } = useUpgrade()
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  // One-shot: capture the phase-aware opener at mount only. Not reactive to
+  // later phase changes, which would clobber an in-progress conversation.
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       role: 'hatch',
-      content: getInitialMessage(challengeType),
+      content: getInitialMessage(challengeType, guidancePhase, guidanceLabels),
       kind: 'chat',
     },
   ])
@@ -251,6 +283,7 @@ export function CanvasChatPanel({
         challengeType,
         attemptId,
         context_pack: contextPack,
+        guidance_phase: guidancePhase ?? null,
       }
 
       const codingBody = challengeType === 'coding' ? {
@@ -364,6 +397,8 @@ export function CanvasChatPanel({
       activeSubProblemId, activeSubProblemSequence, activeSubProblemTitle,
       activeSubProblemObjective, activeSubProblemSuccessCriterion,
       markedFindings, assertedFinding,
+      // Canvas guidance context
+      guidancePhase,
       play, isThrottled])
 
   useEffect(() => {

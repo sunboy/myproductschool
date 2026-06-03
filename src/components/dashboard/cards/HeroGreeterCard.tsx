@@ -8,7 +8,7 @@ import { useOnboardingModal } from '@/context/OnboardingModalContext'
 const lines = [
   "I lined up challenges that build on where you left off.",
   'Your Frame move is leveling up. Keep going.',
-  "Consistent practice compounds. Keep the streak alive.",
+  'Every rep banks judgment you keep, whether or not the counter does.',
 ]
 
 function timeOfDay(): string {

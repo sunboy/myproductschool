@@ -219,12 +219,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
   // Determine score descriptor text
   const scoreDescriptor = overallScoreNum >= 90
-    ? 'Excellent performance'
+    ? "That's the run that gets the offer"
     : overallScoreNum >= 75
-      ? 'Strong performance with room to grow'
+      ? 'Strong run. One sharpening move below and this is yours for good'
       : overallScoreNum >= 60
-        ? 'Good foundation, focus on the areas below'
-        : 'Keep practicing, review the suggestions below'
+        ? 'The shape is there. The gap below is the rep that closes it'
+        : "Better to miss it here than in the room. Here's exactly where"
 
   // Format submission date
   const formattedDate = submissionDate

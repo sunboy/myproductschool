@@ -8,6 +8,7 @@ import { AppTooltip } from '@/components/ui/AppTooltip'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { formatScore } from '@/lib/format/score'
+import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 
 /* ── Event label map for activity feed ────────────────────────────── */
 
@@ -31,6 +32,8 @@ const FLOW_MOVES = [
 interface RecentAttempt {
   challenge_id: string
   challenge_title: string
+  challenge_type?: string | null
+  display_number?: number | null
   pattern_name: string | null
   submitted_at: string
 }
@@ -1055,6 +1058,7 @@ export default function ProgressPage() {
                         const attemptN = (idSeen.get(a.challenge_id) ?? 0) + 1
                         idSeen.set(a.challenge_id, attemptN)
                         const attemptSuffix = repeatTotal > 1 ? ` · Attempt ${attemptN}` : ''
+                        const numberLabel = formatChallengeNumber(a.challenge_type, a.display_number)
                         return (
                           <Link
                             key={i}
@@ -1071,6 +1075,9 @@ export default function ProgressPage() {
                                 {a.challenge_title}{attemptSuffix}
                               </div>
                               <div style={{ fontSize: 10.5, color: 'var(--color-on-surface-variant)', marginTop: 1 }}>
+                                {numberLabel ? (
+                                  <span className="font-mono" style={{ fontSize: 10, padding: '0 5px', borderRadius: 9999, background: 'var(--color-surface-container-highest)', marginRight: 5 }}>{numberLabel}</span>
+                                ) : null}
                                 {a.pattern_name ? `${a.pattern_name} · ` : ''}
                                 {new Date(a.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                               </div>

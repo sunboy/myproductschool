@@ -22,11 +22,8 @@ export interface FilterState {
   difficulty: string[]
   role: string[]
   company: string[]
-  tag: string[]
-  scope: string[]       // system design only
   topic: string[]       // controlled-vocabulary topic slugs
   technique: string[]   // controlled-vocabulary technique slugs
-  move: string[]        // FLOW move - product_sense only
   real_interview: boolean
 }
 
@@ -36,11 +33,9 @@ export type ArrayFilterKey = Exclude<keyof FilterState, 'real_interview'>
 export type FilterKey = keyof FilterState
 
 const PARADIGM_OPTIONS = ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native']
-const FLOW_MOVE_OPTIONS = ['Frame', 'List', 'Optimize', 'Win']
 const DIFFICULTY_OPTIONS = PRACTICE_DIFFICULTY_OPTIONS.map(o => o.label)
 const ROLE_OPTIONS = ['SWE', 'Tech Lead', 'EM', 'ML Eng', 'Data Eng', 'DevOps', 'Founding Eng', 'PM', 'Designer', 'Data Scientist']
 const COMPANY_OPTIONS = ['Google', 'Meta', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Amazon', 'Apple']
-const SCOPE_OPTIONS = ['Single Service', 'Distributed', 'Multi-Region']
 
 interface DropdownDef {
   key: ArrayFilterKey
@@ -52,13 +47,11 @@ interface DropdownDef {
 
 const DROPDOWNS: DropdownDef[] = [
   { key: 'paradigm', label: 'Paradigm', options: PARADIGM_OPTIONS, disciplines: [] },
-  { key: 'scope', label: 'Scope', options: SCOPE_OPTIONS, disciplines: ['system_design'] },
   { key: 'difficulty', label: 'Difficulty', options: DIFFICULTY_OPTIONS, disciplines: [] },
   { key: 'role', label: 'Role', options: ROLE_OPTIONS, disciplines: [] },
   { key: 'company', label: 'Company', options: COMPANY_OPTIONS, disciplines: [] },
   { key: 'topic', label: 'Topic', options: undefined, disciplines: [] },
   { key: 'technique', label: 'Technique', options: undefined, disciplines: [] },
-  { key: 'move', label: 'FLOW Move', options: FLOW_MOVE_OPTIONS, disciplines: ['product_sense'] },
 ]
 
 const DROPDOWN_HELP: Record<FilterKey, string> = {
@@ -66,11 +59,8 @@ const DROPDOWN_HELP: Record<FilterKey, string> = {
   difficulty: 'Match the rep to your current energy: Easy, Medium, or Hard.',
   role: 'Show scenarios calibrated to the job you are aiming for.',
   company: 'Practice with the product and systems style of specific companies.',
-  tag: 'Narrow practice to a topic tag from a challenge.',
-  scope: 'System design only: narrow the architecture scale before you start.',
   topic: 'Filter by a specific topic area (e.g. caching, arrays, pricing).',
   technique: 'Filter by a problem-solving technique (e.g. two-pointers, cache-aside).',
-  move: 'Filter by FLOW move: Frame, List, Optimize, or Win.',
   real_interview: 'Show only challenges sourced from confirmed real interview questions.',
 }
 

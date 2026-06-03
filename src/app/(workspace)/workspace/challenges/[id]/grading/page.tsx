@@ -11,22 +11,22 @@ type GradingStage = 'queued' | 'reviewing' | 'saving' | 'complete'
 
 const GRADING_STAGES: Record<GradingStage, { title: string; body: string; progress: number }> = {
   queued: {
-    title: 'Preparing your review',
-    body: 'Hatch is lining up the rubric and your response.',
+    title: 'Reading your reasoning the way a hiring panel would',
+    body: 'The part they care about is not whether you got it. It is how you got there.',
     progress: 18,
   },
   reviewing: {
-    title: 'Hatch is reviewing your answer',
-    body: 'Analysing your thinking across all 4 dimensions.',
+    title: 'Reading your reasoning the way a hiring panel would',
+    body: 'Following the moves you made, in the order you made them.',
     progress: 58,
   },
   saving: {
-    title: 'Writing the feedback',
-    body: 'Turning the signals into a readable coaching review.',
+    title: 'Finding the move you made well',
+    body: 'And the one rep that would sharpen it.',
     progress: 82,
   },
   complete: {
-    title: 'Review ready',
+    title: 'Ready',
     body: 'Opening your feedback now.',
     progress: 100,
   },

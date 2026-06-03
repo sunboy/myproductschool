@@ -104,21 +104,21 @@ export function V3Hero() {
           <AnnouncementPill />
 
           <h1 className="hero-display">
-            The AI-native practice system for product and technical judgment.
+            You&rsquo;re not bad at this. You&rsquo;re bad at it while someone&rsquo;s watching.
           </h1>
 
           <ul className="hero-bullets">
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>One connected loop.</b> Live interviews, Hatch coaching, scoring, autopsies, study plans, code, and canvas practice.</span>
+              <span><b>Interviews are a performance, not a knowledge test.</b> Practice the artifacts, tradeoffs, and thinking out loud that real loops actually score.</span>
             </li>
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>Real reps, not flashcards.</b> Practice the artifacts, tradeoffs, and communication that real loops actually score.</span>
+              <span><b>Real reps under real pressure.</b> Live interviews, scoring, autopsies, study plans, code, and canvas practice in one connected loop.</span>
             </li>
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>Hatch, your AI coach.</b> Reads your work, catches blind spots, and helps human judgment compound.</span>
+              <span><b>Hatch, your AI coach.</b> Reads your work, names the gap honestly, and turns the dread into trained reps.</span>
             </li>
           </ul>
 

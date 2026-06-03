@@ -36,7 +36,7 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
           {/* Speech Bubble */}
           <div className="bg-white border border-outline-variant rounded-xl p-3 mb-6 relative">
             <p className="text-xs text-on-surface-variant text-center leading-relaxed">
-              &ldquo;Your skills didn&apos;t reset, just the counter. Let&apos;s get your streak back.&rdquo;
+              &ldquo;Prep isn&apos;t a streak you keep. It&apos;s reps you bank, and you&apos;ve still got every one of them.&rdquo;
             </p>
             {/* Tooltip arrow */}
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-t border-l border-outline-variant rotate-45" />
@@ -45,8 +45,8 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
           {/* Typography Header */}
           <div className="text-center mb-6">
             <h1 className="font-headline text-2xl font-bold text-on-surface mb-2">Welcome back.</h1>
-            <p className="text-base text-on-surface-variant leading-tight">Your 7-day streak ended.</p>
-            <p className="text-[13px] text-outline mt-1">Streaks reset at midnight. You can start a new one right now.</p>
+            <p className="text-base text-on-surface-variant leading-tight">The counter reset. The judgment you built didn&apos;t.</p>
+            <p className="text-[13px] text-outline mt-1">Pick up where it stings most. The next rep is the only one that matters.</p>
           </div>
 
           {/* Last Session Card */}
@@ -68,11 +68,11 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
               onClick={() => { onClose(); router.push('/challenges') }}
               className="w-full h-[52px] bg-primary hover:bg-primary-container text-white rounded-full font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
             >
-              Start today&apos;s Quick Take
+              Pick up where it stings
               <span className="material-symbols-outlined text-lg">arrow_forward</span>
             </button>
             <p className="text-[11px] text-outline mt-2 font-medium">
-              90 seconds &middot; Restarts your streak immediately
+              One 90-second take is a full rep. No catching up to do.
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
               onClick={onClose}
               className="text-outline text-sm font-medium hover:text-on-surface-variant"
             >
-              Remind me tonight
+              I&apos;ll come back when I can
             </button>
           </div>
 
@@ -103,7 +103,7 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
               >
                 shield
               </span>
-              Earn a Streak Shield after 7 days, and it&apos;ll protect you next time.
+              Seven days of reps earns a Shield. Life happens, your progress holds.
             </span>
           </div>
         </div>

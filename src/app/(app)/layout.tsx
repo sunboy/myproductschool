@@ -5,6 +5,7 @@ import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { HatchDirector } from '@/components/shell/HatchDirector'
+import { IntroTourController } from '@/components/shell/IntroTourController'
 import { UpgradeModal } from '@/components/shell/UpgradeModal'
 import { IdleTimer } from '@/components/auth/IdleTimer'
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
@@ -36,6 +37,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         </main>
         <BottomTabs />
         <HatchDirector />
+        <IntroTourController />
         <FloatingHatch />
         <FeedbackWidget />
         <IdleTimer />

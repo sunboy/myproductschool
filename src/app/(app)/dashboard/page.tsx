@@ -10,7 +10,7 @@ import {
 } from '@/lib/data/dashboard'
 import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
-import { challengePath } from '@/lib/challenges/challengeNumber'
+import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
@@ -565,6 +565,7 @@ export default async function DashboardPage() {
                   domain={nextChallenge.domainName}
                   difficulty={nextChallenge.difficulty ?? 'standard'}
                   challengeId={nextChallenge.slug ?? nextChallenge.id}
+                  catalogNumber={formatChallengeNumber(nextChallenge.challenge_type, nextChallenge.display_number)}
                   hatchInsight={nextChallenge.hatch_insight ?? null}
                   activePlanSlug={activePlanSlug}
                 />

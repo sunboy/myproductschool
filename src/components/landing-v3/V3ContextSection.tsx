@@ -53,7 +53,7 @@ const tickerLoops = [tickerCompanies, tickerCompanies]
 const cards = [
   {
     title: 'Solo Grind',
-    body: 'Scattered drills make practice feel busy, but keep the signal fragmented.',
+    body: 'Solving in silence trains the wrong skill. The room asks you to think out loud while someone watches.',
     image: '/landing-v3/section-2/solo-grid.png',
     alt: 'Abstract scattered practice tiles for interview disciplines.',
     width: 1254,
@@ -108,9 +108,9 @@ export function V3ContextSection() {
 
         <div className="context-copy">
           <h2 id="context-heading">
-            Prep breaks when practice, blind spots, and feedback stay fragmented.
+            Your interview anxiety isn&rsquo;t a flaw to fix. It&rsquo;s untrained reps.
           </h2>
-          <p>HackProduct brings the rep, rubric, artifact, and coach into one AI-native loop.</p>
+          <p>HackProduct gives you the reps under pressure, with a coach that names the gap honestly so confidence compounds instead of dread.</p>
         </div>
 
         <div className="context-map">

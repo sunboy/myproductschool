@@ -8,6 +8,7 @@ import type { SessionEvent } from '@/lib/coding-grading/grader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
+import { withRoute } from '@/lib/api/withRoute'
 
 const TestResultSchema = z.object({
   id: z.string().min(1).max(200),
@@ -196,10 +197,10 @@ function serializeTestResults(correctnessPayload: RunResult) {
 // POST handler
 // ---------------------------------------------------------------------------
 
-export async function POST(
+export const POST = withRoute(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -446,4 +447,4 @@ export async function POST(
   })
 
   return NextResponse.json({ grade })
-}
+}, { name: 'challenges.coding-submit' })

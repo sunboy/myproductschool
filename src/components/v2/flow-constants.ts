@@ -15,7 +15,7 @@ export const VERDICT_BG: Record<Verdict, string> = {
 export const VERDICT_LABEL: Record<Verdict, string> = {
   pass:    'CLEAN',
   partial: 'PARTIAL',
-  miss:    'MISSED',
+  miss:    'CAUGHT IT',
 }
 
 export const VERDICT_ICON: Record<Verdict, string> = {

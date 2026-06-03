@@ -200,7 +200,7 @@ function HeroHybrid({
 
   return (
     <div className="sc-hero-hybrid">
-      <section className="sc-hero-ink">
+      <section data-tour-target="autopsies-hero" className="sc-hero-ink">
         <div className="sc-hero-ink-dotgrid" />
         <div className="sc-hero-ink-glow-green" />
         <div className="sc-hero-ink-glow-amber" />

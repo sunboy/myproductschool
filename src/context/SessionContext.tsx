@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { identifyUser } from '@/lib/posthog/client'
 
 // Session-scoped profile + usage, fetched ONCE per session from /api/profile
 // (which already returns profile fields, subscription, dunning, and usage).
@@ -19,6 +20,7 @@ export interface SessionProfile {
   avatar_url: string | null
   plan: string | null
   onboarding_completed_at: string | null
+  has_seen_hatch_intro: boolean
   daily_attempts_today?: number
   subscription?: {
     status?: string | null
@@ -86,6 +88,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       })
       .then(data => {
         if (data) {
+          // Tie PostHog events (client + server) to this user. No-ops until the
+          // user has consented and PostHog has initialized.
+          if (data.id) {
+            identifyUser(data.id, { plan: data.plan ?? null })
+          }
           setProfile({
             id: data.id,
             streak_days: data.streak_days ?? 0,
@@ -94,6 +101,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             avatar_url: data.avatar_url ?? null,
             plan: data.plan ?? null,
             onboarding_completed_at: data.onboarding_completed_at ?? null,
+            has_seen_hatch_intro: data.has_seen_hatch_intro ?? false,
             daily_attempts_today: data.daily_attempts_today ?? 0,
             subscription: data.subscription ?? null,
             dunning: data.dunning ?? null,
