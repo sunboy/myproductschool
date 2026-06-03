@@ -129,8 +129,23 @@ export class CloudRunProvider implements HostProvider {
       template: {
         revision: revisionName,
         serviceAccount: cfg.runtimeServiceAccount,
-        scaling: { minInstanceCount: 0, maxInstanceCount: 1 },
-        maxInstanceRequestConcurrency: 1,
+        // This revision carries 0% production traffic, so Cloud Run will NOT
+        // hold an instance for it via traffic routing. A WebSocket session must
+        // keep one warm instance for its whole lifetime, otherwise the instance
+        // scales to zero between the readiness poll and the browser's WS connect
+        // and the upgrade fails with "no available instance" (HTTP 500). Pin
+        // minInstanceCount=1 so the session's instance stays up; the instance is
+        // released when finalize deletes the revision (or the TTL expires).
+        scaling: { minInstanceCount: 1, maxInstanceCount: 1 },
+        // One session is one user, but a single WS lifecycle overlaps several
+        // requests: the orchestrator's /health readiness probe, the browser's
+        // WS, and any reconnect attempt. With concurrency=1 those starve each
+        // other on the lone instance ("no available instance" on the tagged
+        // route), so the first browser connect fails and triggers a reconnect
+        // storm. Allow a few concurrent requests so the probe + WS + a reconnect
+        // coexist on the same instance. The PTY bridge still scopes one shell
+        // per connection, so this does not multiplex sessions.
+        maxInstanceRequestConcurrency: 6,
         timeout: `${input.ttlSeconds}s`,
         containers: [
           {

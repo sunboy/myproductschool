@@ -25,8 +25,18 @@
 const { spawn } = require('child_process')
 const readline = require('readline')
 
+// PROJECT/DATASET are the DATA coordinates (where the tables live). For a public
+// dataset these are e.g. bigquery-public-data / thelook_ecommerce.
 const PROJECT = process.env.BQ_PROJECT || 'hackproduct'
 const DATASET = process.env.BQ_DATASET || 'case_001_checkout_funnel'
+// BILLING_PROJECT is where query JOBS run and bill. It must be a project our SA can
+// run jobs in (bigquery.jobUser) — never the public-data project. This split is what
+// lets a challenge point at bigquery-public-data.* while billing to our own project.
+const BILLING_PROJECT =
+  process.env.BQ_BILLING_PROJECT || process.env.GCP_PROJECT || 'hackproduct'
+// Hard cap on bytes a single query may bill, so a learner aiming Claude at a huge
+// public table (GA4 shards, crypto, github) cannot surprise-scan. 2 GB default.
+const MAX_BYTES_BILLED = process.env.BQ_MAX_BYTES_BILLED || String(2 * 1024 * 1024 * 1024)
 
 // ---------------------------------------------------------------------------
 // JSON-RPC plumbing
@@ -66,8 +76,9 @@ function bqExec(args, options = {}) {
 }
 
 async function listTables() {
+  // ls reads metadata of the data project's dataset; bill/run as BILLING_PROJECT.
   const out = await bqExec([
-    '--project_id', PROJECT,
+    '--project_id', BILLING_PROJECT,
     '--format', 'json',
     'ls', `${PROJECT}:${DATASET}`,
   ])
@@ -76,7 +87,7 @@ async function listTables() {
 
 async function describeTable(tableName) {
   const out = await bqExec([
-    '--project_id', PROJECT,
+    '--project_id', BILLING_PROJECT,
     '--format', 'json',
     'show', `${PROJECT}:${DATASET}.${tableName}`,
   ])
@@ -84,11 +95,14 @@ async function describeTable(tableName) {
 }
 
 async function runQuery(sql, maxRows = 100) {
+  // Job runs/bills in BILLING_PROJECT; the SQL itself references the data project's
+  // fully-qualified tables (project.dataset.table). maximum_bytes_billed caps scan.
   const out = await bqExec([
-    '--project_id', PROJECT,
+    '--project_id', BILLING_PROJECT,
     '--format', 'json',
     'query',
     '--use_legacy_sql=false',
+    `--maximum_bytes_billed=${MAX_BYTES_BILLED}`,
     `--max_rows=${maxRows}`,
     sql,
   ])
@@ -210,4 +224,4 @@ rl.on('line', async (line) => {
 })
 
 // Don't write logs to stdout (it's the MCP transport)
-process.stderr.write(`[bq-mcp] started for ${PROJECT}.${DATASET}\n`)
+process.stderr.write(`[bq-mcp] started for ${PROJECT}.${DATASET} (billing: ${BILLING_PROJECT})\n`)

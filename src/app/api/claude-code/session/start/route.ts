@@ -10,6 +10,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
+import { getAnalyticsAccess } from '@/lib/flags/analytics'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 import { getSandbox } from '@/lib/sandbox'
 import type { SessionEnv } from '@/lib/sandbox/types'
@@ -36,7 +38,11 @@ const BodySchema = z.object({
 // ---------------------------------------------------------------------------
 
 const READINESS_INTERVAL_MS = 200
-const READINESS_DEADLINE_MS = 12_000
+// A cold Cloud Run revision create + tag-route propagation + container boot can
+// take ~15-25s, especially when a prior session's instance is being torn down.
+// 12s was too tight and 503'd healthy cold starts. Keep this comfortably under
+// the route's maxDuration (30s) so the poll, not the platform, owns the timeout.
+const READINESS_DEADLINE_MS = 25_000
 
 /**
  * Polls `http(s)://<host>/health` until it returns 204 (or until the deadline).
@@ -77,7 +83,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { challenge_id } = body
+  // The incoming id may be a number-slug (cca-8001), a text slug, or the raw id.
+  // Resolve it to the canonical challenge id so attempts/sessions key consistently.
+  const identity = await resolveChallengeIdentity(body.challenge_id, createAdminClient())
+  const challenge_id = identity?.id ?? body.challenge_id
 
   // --- Load challenge (RLS: user can read any published challenge) ---
   const { data: challenge } = await supabase
@@ -109,6 +118,11 @@ export async function POST(req: NextRequest) {
   const bqDataset =
     claudeCodeMeta.dataset_id ?? claudeCodeMeta.BQ_DATASET ??
     meta.dataset_id ?? meta.BQ_DATASET ?? ''
+  // Where query jobs bill. For a public dataset (bqProject=bigquery-public-data)
+  // this stays our own project so our SA can run the job. Defaults to GCP_PROJECT.
+  const bqBillingProject =
+    claudeCodeMeta.dataset_billing_project ?? meta.dataset_billing_project ??
+    process.env.GCP_PROJECT ?? 'hackproduct'
   const claudeMd = claudeCodeMeta.claude_md ?? meta.claude_md ?? ''
   const ttlSeconds = parseInt(process.env.CC_SESSION_TTL_SECONDS ?? '1800', 10)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,8 +137,26 @@ export async function POST(req: NextRequest) {
   const userPlan = (profile?.plan as string) ?? 'free'
   const priorClaudeStateUri = (profile?.cc_claude_state_uri as string | null) ?? null
 
-  // --- Usage gate ---
-  const usageResult = await checkUsageLimit(user.id, 'challenges', userPlan)
+  const admin = createAdminClient()
+
+  // --- Entitlement gate (the special analytics tier) ---
+  // The feature ships dark behind NEXT_PUBLIC_CC_ANALYTICS_ENABLED. Access needs
+  // either the per-user allowlist (beta) or an active analytics-tier subscription.
+  // Holds even if a URL is hand-crafted while the feature is hidden.
+  const access = await getAnalyticsAccess(admin, user.id)
+  if (!access.hasAccess) {
+    return NextResponse.json(
+      {
+        error: 'analytics_locked',
+        feature: 'claude_code_analytics',
+        upgrade_url: '/pricing?tier=analytics',
+      },
+      { status: 402 },
+    )
+  }
+
+  // --- Usage gate (analytics session cap for the tier) ---
+  const usageResult = await checkUsageLimit(user.id, 'claude_code_sessions', userPlan)
   if (!usageResult.allowed) {
     return NextResponse.json(
       {
@@ -132,12 +164,11 @@ export async function POST(req: NextRequest) {
         upgrade_url: '/pricing',
         used: usageResult.used,
         limit: usageResult.limit,
+        feature: 'claude_code_sessions',
       },
       { status: 402 },
     )
   }
-
-  const admin = createAdminClient()
 
   // --- Find or create challenge_attempts row ---
   let attemptId: string = body.attempt_id ?? ''
@@ -270,6 +301,7 @@ export async function POST(req: NextRequest) {
     GOOGLE_APPLICATION_CREDENTIALS_JSON: process.env.CC_BIGQUERY_SA_JSON ?? '',
     BQ_PROJECT: bqProject,
     BQ_DATASET: bqDataset,
+    BQ_BILLING_PROJECT: bqBillingProject,
     CLAUDE_MD: claudeMd,
     ORCHESTRATOR_SNAPSHOT_URL: orchestratorSnapshotUrl,
     SNAPSHOT_AUTH_TOKEN: snapshotToken,
@@ -331,8 +363,8 @@ export async function POST(req: NextRequest) {
     started_at: new Date().toISOString(),
   }).eq('id', sessionId)
 
-  // --- Record usage event ---
-  await recordUsageEvent(user.id, 'challenges', 1, {
+  // --- Record usage event (analytics session counter) ---
+  await recordUsageEvent(user.id, 'claude_code_sessions', 1, {
     challenge_id,
     session_id: sessionId,
     provider: provision.provider,

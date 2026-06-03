@@ -42,8 +42,12 @@ export interface SessionEnv {
   SESSION_TOKEN_SECRET: string
   /** Read-only BigQuery service-account JSON for the in-container MCP server. */
   GOOGLE_APPLICATION_CREDENTIALS_JSON?: string
+  /** Data coordinates — where the tables live (e.g. bigquery-public-data). */
   BQ_PROJECT?: string
   BQ_DATASET?: string
+  /** Project that query jobs run/bill in (our SA has jobUser here). Lets a
+   *  challenge point BQ_PROJECT at a public-data project while we pay. */
+  BQ_BILLING_PROJECT?: string
   /** Presigned URL the container pulls the challenge starter tarball from. */
   CHALLENGE_TARBALL_URL?: string
   /** CLAUDE.md content seeded into /workspace. */
