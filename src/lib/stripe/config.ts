@@ -1,8 +1,10 @@
 import Stripe from 'stripe'
 import {
   BILLING_PLANS,
+  ANALYTICS_PLANS,
+  isAnalyticsPlanId,
   type BillingPlanConfig,
-  type BillingPlanId,
+  type AnyPlanId,
 } from '../billing/plans'
 
 export const STRIPE_API_VERSION = '2026-02-25.clover'
@@ -139,13 +141,20 @@ export function getStripeRuntimeConfig(
   }
 }
 
+// Maps each plan id to its live + test env-var names for the Stripe price id.
+const PRICE_ENV_KEYS: Record<AnyPlanId, { live: string; test: string }> = {
+  monthly: { live: 'STRIPE_PRICE_MONTHLY', test: 'STRIPE_TEST_PRICE_MONTHLY' },
+  annual: { live: 'STRIPE_PRICE_ANNUAL', test: 'STRIPE_TEST_PRICE_ANNUAL' },
+  analytics_monthly: { live: 'STRIPE_PRICE_ANALYTICS_MONTHLY', test: 'STRIPE_TEST_PRICE_ANALYTICS_MONTHLY' },
+  analytics_annual: { live: 'STRIPE_PRICE_ANALYTICS_ANNUAL', test: 'STRIPE_TEST_PRICE_ANALYTICS_ANNUAL' },
+}
+
 function getPriceIdForPlan(
-  planId: BillingPlanId,
+  planId: AnyPlanId,
   mode: StripeRuntimeMode,
   env: StripeEnv
 ): string | null {
-  const liveKey = planId === 'monthly' ? 'STRIPE_PRICE_MONTHLY' : 'STRIPE_PRICE_ANNUAL'
-  const testKey = planId === 'monthly' ? 'STRIPE_TEST_PRICE_MONTHLY' : 'STRIPE_TEST_PRICE_ANNUAL'
+  const { live: liveKey, test: testKey } = PRICE_ENV_KEYS[planId]
 
   if (mode === 'test') {
     const explicitTestPrice = trimEnv(env[testKey])
@@ -161,12 +170,15 @@ function getPriceIdForPlan(
 }
 
 export function getStripePlanConfig(
-  planId: BillingPlanId,
+  planId: AnyPlanId,
   env: StripeEnv = process.env
 ): StripePlanRuntimeConfig {
   const mode = getStripeMode(env)
+  const base: BillingPlanConfig = isAnalyticsPlanId(planId)
+    ? ANALYTICS_PLANS[planId]
+    : BILLING_PLANS[planId]
   return {
-    ...BILLING_PLANS[planId],
+    ...base,
     priceId: getPriceIdForPlan(planId, mode, env),
   }
 }

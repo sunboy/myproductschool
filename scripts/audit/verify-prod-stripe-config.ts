@@ -30,6 +30,8 @@
  *  13. RESEND_FROM_EMAIL / RESEND_REPLY_TO are set
  *  14. NEXT_PUBLIC_APP_URL is set and looks like a real prod URL
  *  15. No STRIPE_TEST_* env vars present (clean prod env)
+ *  16. STRIPE_PRICE_ANALYTICS_MONTHLY / STRIPE_PRICE_ANALYTICS_ANNUAL are valid
+ *      live recurring prices (only required when enabling Claude Code Analytics)
  *
  * Limitations:
  *   - Cannot verify the webhook signing secret value (Stripe API does not expose it)
@@ -160,6 +162,7 @@ async function main() {
   }
 
   const stripe = new Stripe(sk, { apiVersion: '2026-02-25.clover' })
+  const analyticsEnabled = process.env.NEXT_PUBLIC_CC_ANALYTICS_ENABLED === 'true'
 
   // 8 — Monthly price
   const monthlyId = process.env.STRIPE_PRICE_MONTHLY
@@ -222,6 +225,43 @@ async function main() {
       // already reported above
     }
   }
+
+  // Claude Code Analytics prices — only required when enabling Claude Code Analytics.
+  async function checkAnalyticsPrice(
+    envKey: 'STRIPE_PRICE_ANALYTICS_MONTHLY' | 'STRIPE_PRICE_ANALYTICS_ANNUAL',
+    interval: 'month' | 'year'
+  ) {
+    const priceId = process.env[envKey]
+    if (!priceId) {
+      if (analyticsEnabled) {
+        fail(`${envKey} set`, '<unset> — required because NEXT_PUBLIC_CC_ANALYTICS_ENABLED=true')
+      } else {
+        pass(`${envKey} optional`, 'not set — only required when enabling Claude Code Analytics')
+      }
+      return
+    }
+
+    try {
+      const price = await stripe.prices.retrieve(priceId)
+      const checks = [
+        price.active ? 'active=true' : `active=${price.active} ❌`,
+        price.recurring?.interval === interval ? `interval=${interval}` : `interval=${price.recurring?.interval} ❌`,
+        price.currency === 'usd' ? 'currency=usd' : `currency=${price.currency} (verify)`,
+        `unit_amount=$${(price.unit_amount ?? 0) / 100}`,
+      ]
+      const anyFail = checks.some((c) => c.includes('❌'))
+      if (anyFail) {
+        fail(envKey, `${priceId}: ${checks.join(', ')}`)
+      } else {
+        pass(envKey, `${priceId}: ${checks.join(', ')}, product=${price.product}`)
+      }
+    } catch (e) {
+      fail(envKey, `lookup failed: ${(e as Error).message}`)
+    }
+  }
+
+  await checkAnalyticsPrice('STRIPE_PRICE_ANALYTICS_MONTHLY', 'month')
+  await checkAnalyticsPrice('STRIPE_PRICE_ANALYTICS_ANNUAL', 'year')
 
   // 11 — Webhook endpoint exists for app URL
   if (appUrl) {

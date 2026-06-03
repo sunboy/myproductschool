@@ -7,16 +7,19 @@ import { FloatingNav } from '@/components/marketing/FloatingNav'
 import { GradientFooter } from '@/components/marketing/GradientFooter'
 import {
   BILLING_PLANS,
+  ANALYTICS_PLANS,
   annualSavingsPercent,
   formatPlanPrice,
   type BillingInterval,
   type BillingPlanId,
+  type AnyPlanId,
 } from '@/lib/billing/plans'
+import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
 
 type BillingCycle = BillingPlanId
 
 interface PlanPrice {
-  id: BillingPlanId
+  id: AnyPlanId
   priceId: string | null
   unitAmount: number
   currency: string
@@ -78,8 +81,10 @@ const FEATURE_ROWS = [
   },
 ]
 
-function fallbackPrice(planId: BillingPlanId): PlanPrice {
-  const plan = BILLING_PLANS[planId]
+function fallbackPrice(planId: AnyPlanId): PlanPrice {
+  const plan = planId === 'analytics_monthly' || planId === 'analytics_annual'
+    ? ANALYTICS_PLANS[planId]
+    : BILLING_PLANS[planId]
   return {
     id: plan.id,
     priceId: null,
@@ -138,10 +143,20 @@ const INITIAL_PRICES: BillingPrices = {
 }
 
 export function PricingClient() {
+  const analyticsEnabled = isAnalyticsFeatureEnabled()
   const [billing, setBilling] = useState<BillingCycle>('annual')
   const [prices, setPrices] = useState<BillingPrices>(INITIAL_PRICES)
-  const [loadingPlan, setLoadingPlan] = useState<BillingPlanId | null>(null)
+  // Analytics tier has its own monthly/annual sub-toggle, independent of Pro's.
+  const [analyticsBilling, setAnalyticsBilling] = useState<BillingCycle>('annual')
+  const [loadingPlan, setLoadingPlan] = useState<AnyPlanId | null>(null)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+
+  // Static fallback prices for the analytics tier (no live fetch needed for the
+  // card; the checkout route resolves the real Stripe price at purchase).
+  const analyticsPrices = {
+    analytics_monthly: fallbackPrice('analytics_monthly'),
+    analytics_annual: fallbackPrice('analytics_annual'),
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -178,7 +193,7 @@ export function PricingClient() {
   const annualSavings = useMemo(() => savingsPercent(prices), [prices])
   const annualMonthly = monthlyEquivalent(prices.annual)
 
-  async function startCheckout(plan: BillingPlanId) {
+  async function startCheckout(plan: AnyPlanId) {
     if (loadingPlan) return
     setCheckoutError(null)
     setLoadingPlan(plan)
@@ -272,7 +287,7 @@ export function PricingClient() {
         </section>
 
         <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className={`grid gap-6 ${analyticsEnabled ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
             <article className="flex min-h-[560px] flex-col rounded-lg border border-outline-variant/60 bg-white p-7 shadow-[0_16px_34px_rgba(46,50,48,0.06)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -386,6 +401,100 @@ export function PricingClient() {
                 </p>
               </div>
             </article>
+
+            {/* Claude Code Analytics — special tier. Only rendered when the
+                feature flag is on; never visible while the feature ships dark. */}
+            {analyticsEnabled && (() => {
+              const aPrice = analyticsPrices[analyticsBilling === 'monthly' ? 'analytics_monthly' : 'analytics_annual']
+              const aPlanId: AnyPlanId = analyticsBilling === 'monthly' ? 'analytics_monthly' : 'analytics_annual'
+              const aAnnualMonthly = monthlyEquivalent(analyticsPrices.analytics_annual)
+              const aSavings = Math.round(
+                ((analyticsPrices.analytics_monthly.unitAmount * 12 - analyticsPrices.analytics_annual.unitAmount) /
+                  (analyticsPrices.analytics_monthly.unitAmount * 12)) * 100,
+              )
+              return (
+                <article className="flex min-h-[560px] flex-col rounded-lg border border-tertiary/40 bg-white p-7 shadow-[0_20px_44px_rgba(112,92,48,0.13)]">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <h2 className="font-headline text-3xl font-extrabold text-on-surface">Analytics</h2>
+                      <p className="mt-3 text-on-surface-variant">
+                        Everything in Pro, plus live Claude Code analytics sessions on real datasets.
+                      </p>
+                    </div>
+                    <span className="rounded-lg bg-tertiary-container px-3 py-1 text-sm font-bold text-tertiary">
+                      Includes Pro
+                    </span>
+                  </div>
+
+                  <div className="mt-7 grid gap-2 rounded-lg bg-[#f0ece4] p-1 sm:grid-cols-2">
+                    {(['monthly', 'annual'] as BillingCycle[]).map((cycle) => {
+                      const selected = analyticsBilling === cycle
+                      const price = analyticsPrices[cycle === 'monthly' ? 'analytics_monthly' : 'analytics_annual']
+                      return (
+                        <button
+                          key={cycle}
+                          type="button"
+                          aria-pressed={selected}
+                          onClick={() => setAnalyticsBilling(cycle)}
+                          className={`rounded-lg px-4 py-3 text-left transition-colors ${
+                            selected
+                              ? 'bg-white text-on-surface shadow-[0_1px_8px_rgba(46,50,48,0.12)]'
+                              : 'text-on-surface-variant hover:bg-white/60'
+                          }`}
+                        >
+                          <span className="block text-sm font-bold capitalize">{cycle}</span>
+                          <span className="mt-1 block text-lg font-extrabold">
+                            {displayPrice(price)}
+                            <span className="text-sm font-semibold text-on-surface-variant">
+                              {' '}/ {price.interval === 'year' ? 'yr' : 'mo'}
+                            </span>
+                          </span>
+                          {cycle === 'annual' && aSavings > 0 && (
+                            <span className="mt-1 block text-xs font-bold text-tertiary">
+                              Save {aSavings}% at {aAnnualMonthly}/mo
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  <ul className="mt-8 space-y-4">
+                    {[
+                      'Everything in Pro',
+                      'Live Claude Code sessions on real BigQuery data',
+                      'Hatch coaching inside the terminal',
+                      'Reusable skills and shareable analyst reports',
+                    ].map((feature) => (
+                      <li key={feature} className="flex gap-3 text-on-surface">
+                        <span
+                          className="material-symbols-outlined mt-0.5 text-[20px] text-tertiary"
+                          style={{ fontVariationSettings: "'FILL' 1" }}
+                        >
+                          verified
+                        </span>
+                        <span className="font-semibold">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-auto pt-8">
+                    <button
+                      type="button"
+                      onClick={() => startCheckout(aPlanId)}
+                      disabled={loadingPlan !== null}
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-tertiary px-6 py-3 font-bold text-white shadow-[0_14px_28px_rgba(112,92,48,0.20)] transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {loadingPlan === aPlanId ? 'Opening Stripe...' : 'Get Analytics'}
+                      <span className="material-symbols-outlined text-[19px]">arrow_forward</span>
+                    </button>
+                    <p className="mt-3 text-center text-sm font-semibold text-on-surface-variant">
+                      {displayPrice(aPrice)} / {aPrice.interval === 'year' ? 'year' : 'month'}. Cancel anytime.
+                    </p>
+                  </div>
+                </article>
+              )
+            })()}
           </div>
         </section>
 

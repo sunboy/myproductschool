@@ -14,6 +14,7 @@ import { getTopicLabelAny } from '@/lib/data/taxonomy'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { coerceDifficulty, expandDifficultyForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
+import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
 
 interface Props {
   challenges: ChallengeWithDomain[]
@@ -239,7 +240,17 @@ function matchesSecondaryFilters(challenge: ChallengeWithDomain, filters: Filter
   return true
 }
 
-export function FilteredChallengesView({ challenges, paradigms }: Props) {
+export function FilteredChallengesView({ challenges: allChallenges, paradigms }: Props) {
+  // Claude Code Analytics ships dark behind the feature flag. When off, drop
+  // analytics challenges entirely (so they never appear in "All" or counts) and
+  // hide the Analytics discipline tab below. NEXT_PUBLIC_* is inlined client-side.
+  const analyticsEnabled = isAnalyticsFeatureEnabled()
+  const challenges = useMemo(
+    () => analyticsEnabled
+      ? allChallenges
+      : allChallenges.filter((c) => c.challenge_type !== 'claude_code_analytics'),
+    [allChallenges, analyticsEnabled],
+  )
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
@@ -377,11 +388,16 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
     ? 'grid grid-cols-1 gap-2'
     : 'grid grid-cols-1 sm:grid-cols-3 gap-3'
 
+  // Hide the Analytics tab entirely while the feature is dark.
+  const visibleDisciplines = analyticsEnabled
+    ? DISCIPLINES
+    : DISCIPLINES.filter((d) => d.key !== 'analytics')
+
   return (
     <div className="-mx-4 flex min-w-0 flex-col sm:-mx-6">
       <section className="px-4 pb-4 sm:px-6">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
-          {DISCIPLINES.map((entry) => {
+          {visibleDisciplines.map((entry) => {
             const active = discipline === entry.key
             const count = disciplineCounts.get(entry.key) ?? 0
 
@@ -510,7 +526,9 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
           </div>
         ) : discipline === 'all' ? (
           <div className="flex flex-col gap-8">
-            {(['product_sense', 'analytics', 'system_design', 'data_modeling', 'sql', 'algorithm'] as const).map((disc) => {
+            {(['product_sense', 'analytics', 'system_design', 'data_modeling', 'sql', 'algorithm'] as const)
+              .filter((disc) => analyticsEnabled || disc !== 'analytics')
+              .map((disc) => {
               const labels: Record<string, string> = {
                 product_sense: 'Product Sense',
                 analytics: 'Analytics',

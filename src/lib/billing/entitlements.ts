@@ -46,15 +46,18 @@ export function isWithinGracePeriod(
   return now < graceEnd
 }
 
-export function subscriptionEntitlesPro(
+/**
+ * Status/grace gate for a subscription, independent of which plan it is for.
+ * `planMatches` decides whether the subscription's plan counts (Pro uses an
+ * exact 'pro' match; the analytics tier matches its analytics_* plan ids).
+ */
+export function subscriptionEntitlesPlan(
   subscription: SubscriptionEntitlementRow | null | undefined,
+  planMatches: (plan: string | null | undefined) => boolean,
   now = new Date(),
-  // past_due_since lives on the `profiles` row, not `subscriptions`. Callers that
-  // have the profile (effectivePlanFromRows) pass it here. When a test/caller sets
-  // it directly on the subscription row that value is used as a fallback.
   pastDueSinceOverride?: string | null
-) {
-  if (!subscription || subscription.plan !== 'pro') return false
+): boolean {
+  if (!subscription || !planMatches(subscription.plan)) return false
 
   if (subscription.status === 'active' || subscription.status === 'trialing') {
     if (subscription.status === 'trialing' && isPastIso(subscription.current_period_end, now)) return false
@@ -69,6 +72,17 @@ export function subscriptionEntitlesPro(
 
   // cancelled, unpaid, paused, incomplete_expired → not entitled
   return false
+}
+
+export function subscriptionEntitlesPro(
+  subscription: SubscriptionEntitlementRow | null | undefined,
+  now = new Date(),
+  // past_due_since lives on the `profiles` row, not `subscriptions`. Callers that
+  // have the profile (effectivePlanFromRows) pass it here. When a test/caller sets
+  // it directly on the subscription row that value is used as a fallback.
+  pastDueSinceOverride?: string | null
+) {
+  return subscriptionEntitlesPlan(subscription, (p) => p === 'pro', now, pastDueSinceOverride)
 }
 
 export function effectivePlanFromRows(

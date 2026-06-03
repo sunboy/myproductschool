@@ -39,6 +39,24 @@ Code + UI defaults in the repo are **$39/month** (see `src/lib/billing/plans.ts`
 
 **Recommendation**: Option A for launch — match code to reality. Tweak pricing post-launch when you have real conversion data.
 
+## Step 1A — Create Claude Code Analytics prices (only required when enabling Claude Code Analytics)
+
+Skip this step unless `NEXT_PUBLIC_CC_ANALYTICS_ENABLED=true` is part of the launch.
+
+Stripe Dashboard → **Product catalog → Add product** (live mode):
+
+- [ ] Product name: `HackProduct Analytics`
+- [ ] Monthly recurring price: `$49.99/month` → save the `price_...` ID as `STRIPE_PRICE_ANALYTICS_MONTHLY`
+- [ ] Annual recurring price: `$254.99/year` → save the `price_...` ID as `STRIPE_PRICE_ANALYTICS_ANNUAL`
+
+Then add these production env vars before deploying the analytics launch:
+
+```env
+STRIPE_PRICE_ANALYTICS_MONTHLY=price_...
+STRIPE_PRICE_ANALYTICS_ANNUAL=price_...
+NEXT_PUBLIC_CC_ANALYTICS_ENABLED=true
+```
+
 ---
 
 ## Step 2 — Register the live webhook endpoint (10 min)

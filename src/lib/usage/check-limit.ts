@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export type UsageFeature = 'challenges' | 'interviews' | 'hatch_ai_cents'
+export type UsageFeature = 'challenges' | 'interviews' | 'hatch_ai_cents' | 'claude_code_sessions'
 export type UsageUnit = 'count' | 'cents'
 export type BillingPlan = 'free' | 'pro'
 
@@ -56,6 +56,15 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       description: 'Free Hatch AI spend budget in cents per rolling month',
       costCeilingCents: 35,
     },
+    claude_code_sessions: {
+      // Free users never reach this (the analytics tier gate blocks them first),
+      // but the fallback must be complete. 0 = no analytics sessions.
+      limitValue: 0,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Claude Code Analytics sessions per rolling month (not included)',
+      costCeilingCents: null,
+    },
   },
   pro: {
     challenges: {
@@ -78,6 +87,15 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       unit: 'cents',
       description: 'Pro Hatch AI spend budget in cents per rolling month',
       costCeilingCents: 600,
+    },
+    claude_code_sessions: {
+      // Analytics tier resolves to plan='pro', so the analytics session cap lives
+      // on the pro row. Seeded authoritatively in plan_limits; this is the fallback.
+      limitValue: 40,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Claude Code Analytics sessions per rolling month',
+      costCeilingCents: null,
     },
   },
 }
