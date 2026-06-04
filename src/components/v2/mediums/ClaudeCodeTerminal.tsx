@@ -46,6 +46,14 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
     const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const mountedRef = useRef(true)
     const fitRef = useRef<() => void>(() => {})
+    // Incoming PTY data that arrived before xterm's renderer finished measuring.
+    // Writing before the renderer has dimensions makes xterm's Viewport refresh
+    // throw "reading 'dimensions'" (async, so a try/catch on write() can't catch
+    // it) and leaks measurement probes ($$$$) into the display. Buffer until the
+    // renderer is ready, then flush in order.
+    const renderReadyRef = useRef(false)
+    const writeBufferRef = useRef<string[]>([])
+    const safeWriteRef = useRef<(text: string) => void>(() => {})
     // True once a WS has successfully opened at least once. A drop after a
     // successful open is a real reconnect (Cloud Run 60-min cap, network blip).
     // A connect that NEVER opened means the instance isn't serving yet — retry
@@ -79,6 +87,20 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
 
     useEffect(() => {
       mountedRef.current = true
+      // Per-effect-run cancellation flag. React 18/19 StrictMode mounts the
+      // effect, runs its cleanup, then mounts AGAIN in dev. xterm 5.x's
+      // Viewport schedules a refresh via requestAnimationFrame but does NOT
+      // cancel that frame on dispose() — so if the first (doomed) instance has
+      // already called term.open() and queued a Viewport rAF, disposing it
+      // leaves that frame to fire afterward. The frame's _innerRefresh reads
+      // `_renderService.dimensions`, whose backing `_renderer.value` was
+      // cleared by dispose → "Cannot read properties of undefined (reading
+      // 'dimensions')" (it throws once per queued frame, hence the pair of
+      // errors). A shared ref can't distinguish runs, so each run gets its own
+      // `cancelled` closure: the first run's cleanup flips ITS flag before the
+      // async init reaches open(), so only the surviving instance ever opens
+      // and no rAF outlives a dispose.
+      let cancelled = false
       let term: import('xterm').Terminal
       let fitAddon: import('xterm-addon-fit').FitAddon
 
@@ -102,15 +124,42 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
         })
       }
 
+      // xterm measures a single cell from the configured font the moment
+      // `term.open()` runs. If that font ("JetBrains Mono") hasn't loaded yet,
+      // the first measure uses the fallback metrics, then the real font load
+      // fires a SECOND char-size change + render-service refresh on a later
+      // tick. That second async refresh is exactly the window where the
+      // RenderService's renderer (`_renderer.value`) / `dimensions` can be read
+      // while transiently undefined — the "Cannot read properties of undefined
+      // (reading 'dimensions')" throw. Waiting for fonts to settle before open
+      // makes the in-open measure final, so the renderer + dimensions are
+      // established synchronously within a single open() pass.
+      function waitForFonts(): Promise<void> {
+        return new Promise((resolve) => {
+          const fonts = (document as Document & { fonts?: FontFaceSet }).fonts
+          if (!fonts || typeof fonts.ready?.then !== 'function') return resolve()
+          let settled = false
+          const done = () => { if (!settled) { settled = true; resolve() } }
+          fonts.ready.then(done).catch(done)
+          // Safety net: never block open longer than 2s on a font that stalls.
+          setTimeout(done, 2000)
+        })
+      }
+
       async function initTerminal() {
-        if (!containerRef.current || !mountedRef.current) return
+        if (cancelled || !containerRef.current || !mountedRef.current) return
 
         const { Terminal } = await import('xterm')
         const { FitAddon } = await import('xterm-addon-fit')
+        if (cancelled || !mountedRef.current) return
 
-        // Gate xterm.open() on a measurable container.
+        // Gate xterm.open() on a measurable container AND a settled font so the
+        // in-open char measure is final (no second async re-measure that races
+        // the renderer attach — see waitForFonts).
         await waitForSize(containerRef.current)
-        if (!containerRef.current || !mountedRef.current) return
+        if (cancelled || !containerRef.current || !mountedRef.current) return
+        await waitForFonts()
+        if (cancelled || !containerRef.current || !mountedRef.current) return
 
         term = new Terminal({
           theme: {
@@ -122,7 +171,12 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           fontFamily: '"JetBrains Mono", "Fira Mono", monospace',
           fontSize: 13,
           lineHeight: 1.45,
-          cursorBlink: true,
+          // cursorBlink schedules an internal Viewport refresh on a timer the
+          // moment the terminal opens — before the renderer has measured the
+          // container, that refresh reads `_renderService.dimensions` while it's
+          // still undefined and throws. Start with blink OFF and enable it only
+          // after the first successful fit (below), once dimensions exist.
+          cursorBlink: false,
           scrollback: 2000,
           allowProposedApi: true,
         })
@@ -132,23 +186,97 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
         term.open(containerRef.current!)
         termRef.current = term
 
-        // Only fit once the container has a real, nonzero size. Calling fit()
-        // (or letting xterm's Viewport refresh run) before the element is laid
-        // out makes xterm read `_renderService.dimensions` while it's still
-        // undefined and throw "Cannot read properties of undefined (reading
-        // 'dimensions')". Guard every fit and skip zero-size passes.
+        // The crash ("Cannot read properties of undefined (reading
+        // 'dimensions')" inside Viewport._innerRefresh) happens when ANY
+        // resize/refresh runs before xterm's renderer has measured a cell. The
+        // addon itself exposes the only reliable readiness signal:
+        // `proposeDimensions()` returns `undefined` the moment
+        // `_renderService.dimensions.css.cell.width/height` is 0 (see
+        // xterm-addon-fit source). So instead of calling `fitAddon.fit()`
+        // (which internally calls resize() and can trip the async refresh) or
+        // poking `_core` internals, we gate on a DEFINED propose result with
+        // finite cols/rows. Until that's true, no fit/resize runs at all and
+        // incoming PTY data stays buffered.
+        const proposeReady = (): { cols: number; rows: number } | null => {
+          try {
+            const dims = fitAddon.proposeDimensions()
+            if (
+              dims &&
+              Number.isFinite(dims.cols) &&
+              Number.isFinite(dims.rows) &&
+              dims.cols > 0 &&
+              dims.rows > 0
+            ) {
+              return dims
+            }
+          } catch {
+            /* renderer not measured yet — ignore */
+          }
+          return null
+        }
+
+        const flushBuffer = () => {
+          if (!writeBufferRef.current.length) return
+          const pending = writeBufferRef.current.join('')
+          writeBufferRef.current = []
+          try { term.write(pending) } catch { /* ignore */ }
+        }
+
+        // Write through the readiness gate: buffer until the renderer is ready,
+        // then flush. Once ready, write straight through.
+        safeWriteRef.current = (text: string) => {
+          if (renderReadyRef.current) {
+            try { term.write(text) } catch { /* ignore */ }
+            return
+          }
+          writeBufferRef.current.push(text)
+        }
+
+        let firstFitDone = false
         const safeFit = () => {
+          if (cancelled) return
           const el = containerRef.current
           if (!el || el.clientWidth === 0 || el.clientHeight === 0) return
-          try { fitAddon.fit() } catch { /* renderer not ready yet — ignore */ }
+          // Gate on the addon's own readiness signal. If the renderer hasn't
+          // measured a cell yet, proposeDimensions() is undefined — do NOT call
+          // fit()/resize() (that's what throws + leaks $$$$ probes). Bail and
+          // let the rAF pump retry on a later frame.
+          const dims = proposeReady()
+          if (!dims) return
+          // Renderer is measured: a fit/resize is now safe.
+          try { fitAddon.fit() } catch { /* defensive — ignore */ }
+          // First successful real fit: mark ready, enable cursor blink (its
+          // refresh timer reads dimensions, now defined), and flush any buffered
+          // PTY data in order.
+          if (!renderReadyRef.current) {
+            renderReadyRef.current = true
+            if (!firstFitDone && term) {
+              firstFitDone = true
+              try { term.options.cursorBlink = true } catch { /* ignore */ }
+            }
+            flushBuffer()
+          }
           // Tell the container PTY the current size so it can spawn/resize.
           sendResizeRef.current()
         }
         // Expose the fit so the WS open handler can re-fit + send dimensions
         // once the socket is live (the open may land before/after the first fit).
         fitRef.current = safeFit
-        // Defer the initial fit to the next frame so layout has settled.
-        requestAnimationFrame(safeFit)
+        // Fit now (container is known-nonzero from waitForSize), then keep
+        // retrying on frames until the async renderer measure completes and we
+        // flip renderReady (flushing any banner that arrived first).
+        safeFit()
+        let readyTries = 0
+        const pumpReady = () => {
+          // Keep retrying until the renderer reports a measured cell via
+          // proposeDimensions() (safeFit flips renderReady). Cap generously
+          // (~600 frames ≈ 10s) to cover slow cold-start layout; the
+          // ResizeObserver below is the backstop if the cap is ever hit.
+          if (cancelled || renderReadyRef.current || !mountedRef.current || readyTries++ > 600) return
+          safeFit()
+          requestAnimationFrame(pumpReady)
+        }
+        requestAnimationFrame(pumpReady)
 
         const ro = new ResizeObserver(() => safeFit())
         ro.observe(containerRef.current!)
@@ -175,6 +303,12 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
       const cleanup = initTerminal()
 
       return () => {
+        // Flip the per-run flag FIRST and synchronously. If this run's async
+        // init hasn't reached term.open() yet (the common StrictMode case for
+        // the first, doomed mount), it now bails before opening — so no xterm
+        // Viewport rAF is ever scheduled for an instance that's about to be
+        // disposed, which is what was throwing the "dimensions" TypeError.
+        cancelled = true
         mountedRef.current = false
         cleanup.then(fn => fn?.())
         wsRef.current?.close()
@@ -211,21 +345,11 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           if (!text) return
 
           onActivity?.()
-          // Ensure the renderer is sized before writing. If xterm hasn't
-          // measured yet, write() triggers a Viewport refresh that reads the
-          // undefined `dimensions` and throws (corrupting the display with
-          // W/] measurement probes). A safeFit first, and a guarded write,
-          // make this resilient to data arriving before layout settles.
-          fitRef.current()
-          try {
-            termRef.current?.write(text)
-          } catch {
-            // Renderer not ready — re-fit and retry once on the next frame.
-            requestAnimationFrame(() => {
-              fitRef.current()
-              try { termRef.current?.write(text) } catch { /* drop this chunk */ }
-            })
-          }
+          // Route through the readiness gate: if xterm's renderer hasn't measured
+          // yet, this buffers the data and flushes it once dimensions exist. This
+          // is what prevents the async Viewport-refresh "dimensions" throw + the
+          // $$$$ probe-leak that a plain write()+try/catch can't catch.
+          safeWriteRef.current(text)
 
           // Rolling tail (~4KB)
           tailRef.current = (tailRef.current + text).slice(-TAIL_MAX_BYTES)
