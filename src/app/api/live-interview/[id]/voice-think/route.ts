@@ -95,25 +95,38 @@ function transcriptRole(role: string) {
 // the session stays alive.
 const VOICE_THINK_EMPTY_FALLBACK = "Sorry, I lost my train of thought. Could you say that again?"
 
+// Deepgram's custom open_ai think endpoint requires a STREAMED response
+// (Server-Sent Events of OpenAI chat.completion.chunk objects), not a single
+// JSON chat.completion. Returning plain JSON makes Deepgram fail to read the
+// provider response → THINK_REQUEST_FAILED → FAILED_TO_THINK. We already have
+// the full reply, so we emit it as one content delta chunk + the [DONE]
+// sentinel, which satisfies the SSE contract without true token streaming.
 function openAiCompletion(content: string) {
   const safeContent = content.trim() ? content : VOICE_THINK_EMPTY_FALLBACK
-  return Response.json({
-    id: `chatcmpl_${Date.now()}`,
-    object: 'chat.completion',
-    created: Math.floor(Date.now() / 1000),
-    model: 'hatch-live-interview',
-    choices: [{
-      index: 0,
-      message: {
-        role: 'assistant',
-        content: safeContent,
-      },
-      finish_reason: 'stop',
-    }],
-    usage: {
-      prompt_tokens: 0,
-      completion_tokens: 0,
-      total_tokens: 0,
+  const id = `chatcmpl_${Date.now()}`
+  const created = Math.floor(Date.now() / 1000)
+  const model = 'hatch-live-interview'
+
+  const chunk = (delta: Record<string, unknown>, finishReason: string | null) =>
+    `data: ${JSON.stringify({
+      id,
+      object: 'chat.completion.chunk',
+      created,
+      model,
+      choices: [{ index: 0, delta, finish_reason: finishReason }],
+    })}\n\n`
+
+  const body =
+    chunk({ role: 'assistant' }, null) +
+    chunk({ content: safeContent }, null) +
+    chunk({}, 'stop') +
+    'data: [DONE]\n\n'
+
+  return new Response(body, {
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
     },
   })
 }
