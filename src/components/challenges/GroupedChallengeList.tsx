@@ -18,11 +18,24 @@ import type { FilterState } from './FilterDropdownBar'
  * API. Static mode (domain pages): a pre-fetched challenge array grouped in
  * memory, no server fetch. Discriminated by the presence of `discipline`.
  */
+/**
+ * Opens each challenge inside the 3-panel workspace shell with a persistent left
+ * index (study plan or domain). Emits `?{key}={slug}&cid={challengeId}` on the
+ * href, which `(workspace)/layout.tsx` reads to render the index panel. Distinct
+ * from `returnHref` (a plain `?returnTo=` back button).
+ */
+export interface CollectionParam {
+  key: 'from_plan' | 'from_domain'
+  slug: string
+}
+
 interface ServerProps {
   discipline: Discipline
   filters: FilterState
   /** When set, appended to each challenge href as ?returnTo= so the workspace back button returns here. */
   returnHref?: string
+  /** When set, opens challenges in the 3-panel shell with a persistent left index. */
+  collectionParam?: CollectionParam
   /** Current URL query string — drives the server count/list fetches. */
   searchString: string
   /** Rows fetched per section page. */
@@ -38,6 +51,7 @@ interface StaticProps {
   /** Record<topicSlug, topicTitle>. */
   topicLabels: Record<string, string>
   returnHref?: string
+  collectionParam?: CollectionParam
   enforceLimit?: boolean
 }
 
@@ -80,14 +94,19 @@ function sectionQuery(opts: { searchString: string; discipline: Discipline; topi
   return p.toString()
 }
 
-function ChallengeRow({ challenge, locked = false, returnHref }: { challenge: ChallengeWithDomain; locked?: boolean; returnHref?: string }) {
+function ChallengeRow({ challenge, locked = false, returnHref, collectionParam }: { challenge: ChallengeWithDomain; locked?: boolean; returnHref?: string; collectionParam?: CollectionParam }) {
   const difficulty = coerceDifficulty(challenge.difficulty)
   const pillClass = difficulty ? DIFFICULTY_PILL_CLASSES[difficulty] : 'bg-surface-container text-on-surface-variant'
   const topicLabel = challenge.topic_tags?.[0] ? getTopicLabelAny(challenge.topic_tags[0]) : undefined
   const techLabel = challenge.technique_tags?.[0] ? getTechniqueLabelAny(challenge.technique_tags[0]) : undefined
   const isReal = challenge.is_real_interview && (challenge.company_tags ?? []).length > 0
   const numberLabel = formatChallengeNumber(challenge.challenge_type, challenge.display_number)
-  const href = appendReturnTo(challengePath(challenge), returnHref)
+  // collectionParam opens the 3-panel shell (left index); otherwise fall back to
+  // a plain returnTo back-button.
+  const basePath = challengePath(challenge)
+  const href = collectionParam
+    ? `${basePath}${basePath.includes('?') ? '&' : '?'}${collectionParam.key}=${encodeURIComponent(collectionParam.slug)}&cid=${encodeURIComponent(challenge.id)}`
+    : appendReturnTo(basePath, returnHref)
   const status = deriveChallengeStatus(challenge)
 
   const rowClass = 'flex items-center gap-3 px-4 py-3 group transition-colors'
@@ -328,12 +347,14 @@ function StaticTopicSection({
   defaultExpanded = false,
   locked = false,
   returnHref,
+  collectionParam,
 }: {
   title: string
   challenges: ChallengeWithDomain[]
   defaultExpanded?: boolean
   locked?: boolean
   returnHref?: string
+  collectionParam?: CollectionParam
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const completedCount = challenges.filter(c => c.is_completed).length
@@ -364,7 +385,7 @@ function StaticTopicSection({
       {expanded && (
         <div className="bg-surface divide-y divide-outline-variant/10">
           {sorted.map(c => (
-            <ChallengeRow key={c.id} challenge={c} locked={locked} returnHref={returnHref} />
+            <ChallengeRow key={c.id} challenge={c} locked={locked} returnHref={returnHref} collectionParam={collectionParam} />
           ))}
         </div>
       )}
@@ -373,7 +394,7 @@ function StaticTopicSection({
 }
 
 /** Static client-side grouping for domain pages (small, pre-fetched lists). */
-function StaticGroupedList({ challenges, groupBy, topicLabels, returnHref, enforceLimit = true }: StaticProps) {
+function StaticGroupedList({ challenges, groupBy, topicLabels, returnHref, collectionParam, enforceLimit = true }: StaticProps) {
   const atLimit = useIsAtLimit('challenges')
   const locked = enforceLimit && atLimit
 
@@ -385,7 +406,7 @@ function StaticGroupedList({ challenges, groupBy, topicLabels, returnHref, enfor
     const sorted = sortChallenges(challenges)
     return (
       <div className="border border-outline-variant rounded-xl overflow-hidden bg-surface divide-y divide-outline-variant/10">
-        {sorted.map(c => <ChallengeRow key={c.id} challenge={c} locked={locked} returnHref={returnHref} />)}
+        {sorted.map(c => <ChallengeRow key={c.id} challenge={c} locked={locked} returnHref={returnHref} collectionParam={collectionParam} />)}
       </div>
     )
   }
@@ -421,6 +442,7 @@ function StaticGroupedList({ challenges, groupBy, topicLabels, returnHref, enfor
           defaultExpanded={idx === 0}
           locked={locked}
           returnHref={returnHref}
+          collectionParam={collectionParam}
         />
       ))}
       {ungrouped.length > 0 && (
@@ -430,6 +452,7 @@ function StaticGroupedList({ challenges, groupBy, topicLabels, returnHref, enfor
           defaultExpanded={topicEntries.length === 0}
           locked={locked}
           returnHref={returnHref}
+          collectionParam={collectionParam}
         />
       )}
     </div>

@@ -35,25 +35,33 @@ export async function GET(
   const [challengesResult, attemptsResult] = await Promise.all([
     adminClient
       .from('challenges')
-      .select('id, title, prompt_text, difficulty, topic_tags, technique_tags, industry_tags, estimated_minutes, is_published, move_tags, paradigm, relevant_roles')
+      .select('id, slug, title, prompt_text, difficulty, topic_tags, technique_tags, industry_tags, estimated_minutes, is_published, move_tags, paradigm, relevant_roles')
       .eq('domain_id', domain.id)
       .eq('is_published', true)
       .neq('challenge_type', 'freeform')
       .order('created_at'),
     adminClient
       .from('challenge_attempts')
-      .select('challenge_id, total_score')
+      .select('challenge_id, total_score, status')
       .eq('user_id', user.id)
-      .eq('status', 'completed'),
+      .in('status', ['completed', 'in_progress']),
   ])
 
   const completedMap = new Map<string, number | null>(
-    (attemptsResult.data ?? []).map((a: { challenge_id: string; total_score: number | null }) => [a.challenge_id, a.total_score])
+    (attemptsResult.data ?? [])
+      .filter((a: { status: string }) => a.status === 'completed')
+      .map((a: { challenge_id: string; total_score: number | null }) => [a.challenge_id, a.total_score])
+  )
+  const inProgressIds = new Set<string>(
+    (attemptsResult.data ?? [])
+      .filter((a: { status: string }) => a.status === 'in_progress')
+      .map((a: { challenge_id: string }) => a.challenge_id)
   )
 
   const challenges = (challengesResult.data ?? []).map((c: { id: string; [key: string]: unknown }) => ({
     ...c,
     is_completed: completedMap.has(c.id),
+    is_in_progress: !completedMap.has(c.id) && inProgressIds.has(c.id),
     best_score: completedMap.get(c.id) ?? null,
     attempt_count: completedMap.has(c.id) ? 1 : 0,
   }))
