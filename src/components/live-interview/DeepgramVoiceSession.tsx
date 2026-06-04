@@ -23,6 +23,13 @@ interface DeepgramVoiceSessionProps {
 const TTS_SAMPLE_RATE = 16000
 const TTS_PREBUFFER_SECONDS = 0.04
 const TTS_FADE_SECONDS = 0.004
+// Deepgram closes an idle agent socket if it sees no audio/keepalive for ~10s.
+// Send a KeepAlive well inside that window so a thinking pause never drops voice.
+const KEEPALIVE_INTERVAL_MS = 5000
+// Silent auto-reconnect: how many times to transparently rebuild the socket on a
+// benign drop before falling back to chat, and the backoff between attempts.
+const MAX_RECONNECT_ATTEMPTS = 2
+const RECONNECT_BACKOFF_MS = [400, 1200]
 
 function canSend(ws: WebSocket | null): ws is WebSocket {
   return !!ws && ws.readyState === WebSocket.OPEN
@@ -99,10 +106,76 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
       if (disabled) return
 
       let intentionallyClosed = false
+      let reconnectAttempts = 0
+      let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+      let keepAliveTimer: ReturnType<typeof setInterval> | null = null
+      // Per-connection state. Reset on every (re)connect so a rebuilt socket
+      // starts clean.
       let micStarted = false
       let settingsSent = false
       let settings: unknown = null
       let deepgramToken = ''
+
+      const clearKeepAlive = () => {
+        if (keepAliveTimer) {
+          clearInterval(keepAliveTimer)
+          keepAliveTimer = null
+        }
+      }
+
+      const startKeepAlive = () => {
+        clearKeepAlive()
+        keepAliveTimer = setInterval(() => {
+          // Mic audio normally keeps the socket alive, but during a thinking pause
+          // the mic is near-silent; a KeepAlive guarantees Deepgram won't time out.
+          sendJson({ type: 'KeepAlive' })
+        }, KEEPALIVE_INTERVAL_MS)
+      }
+
+      // Tear down the audio graph + socket for the current connection without
+      // ending the whole session, so a reconnect can rebuild from scratch.
+      const teardownConnection = () => {
+        clearKeepAlive()
+        stopScheduledAudio()
+
+        const ws = wsRef.current
+        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+          try { ws.close() } catch { /* already closing */ }
+        }
+        wsRef.current = null
+
+        workletNodeRef.current?.disconnect()
+        workletNodeRef.current = null
+
+        micCtxRef.current?.close().catch(() => {})
+        micCtxRef.current = null
+
+        onAnalyserReady?.(null)
+        ttsAnalyserRef.current?.disconnect()
+        ttsAnalyserRef.current = null
+        ttsCtxRef.current?.close().catch(() => {})
+        ttsCtxRef.current = null
+
+        streamRef.current?.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
+
+      // Decide whether a close is benign-and-recoverable (reconnect) or terminal
+      // (surface the chat fallback). Mirrors the close-handler classification.
+      const handleRecoverableClose = () => {
+        if (intentionallyClosed) return
+        if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+          if (connectedRef.current) onError('Voice connection closed. Using chat mode.')
+          return
+        }
+        const backoff = RECONNECT_BACKOFF_MS[reconnectAttempts] ?? 1200
+        reconnectAttempts += 1
+        teardownConnection()
+        reconnectTimer = setTimeout(() => {
+          if (intentionallyClosed) return
+          void startVoice()
+        }, backoff)
+      }
 
       const startMic = async () => {
         const ws = wsRef.current
@@ -208,6 +281,11 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
       }
 
       const startVoice = async () => {
+        // Reset per-connection state so a reconnect rebuilds cleanly.
+        micStarted = false
+        settingsSent = false
+        settings = null
+        deepgramToken = ''
         try {
           const settingsResponse = await fetch(`/api/live-interview/${sessionId}/voice-settings`)
           if (!settingsResponse.ok) {
@@ -269,12 +347,16 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
               }
 
               if (payload.type === 'SettingsApplied') {
+                startKeepAlive()
                 void startMic()
                 return
               }
 
               if (payload.type === 'ConversationText' && payload.content) {
                 hasReceivedTranscriptRef.current = true
+                // A healthy turn flowed — reset the reconnect budget so a later
+                // transient drop gets its full retry allowance again.
+                reconnectAttempts = 0
                 if (payload.role === 'agent') {
                   const idx = suppressedAgentMessagesRef.current.findIndex((msg) => msg === payload.content)
                   if (idx !== -1) {
@@ -321,7 +403,8 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
           })
 
           ws.addEventListener('error', () => {
-            if (!intentionallyClosed) onError('Voice connection error. Using chat mode.')
+            // A socket error is followed by a `close` event; let the close handler
+            // own the reconnect/fallback decision so we don't double-fire.
           })
 
           ws.addEventListener('close', (event) => {
@@ -347,9 +430,9 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
             const isNormalClose = event.code === 1000
             const hadActivity = hasReceivedTranscriptRef.current
             if (isNormalClose && hadActivity) return
-            if (connectedRef.current) {
-              onError('Voice connection closed. Using chat mode.')
-            }
+            // Abnormal close (or a session that never produced a transcript): try to
+            // silently rebuild the socket before falling back to chat.
+            handleRecoverableClose()
           })
         } catch {
           if (!intentionallyClosed) onError('Voice mode is unavailable. Use chat mode.')
@@ -362,6 +445,12 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
         intentionallyClosed = true
         connectedRef.current = false
         hasReceivedTranscriptRef.current = false
+
+        clearKeepAlive()
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer)
+          reconnectTimer = null
+        }
 
         stopScheduledAudio()
 
