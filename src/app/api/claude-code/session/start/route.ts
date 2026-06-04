@@ -20,8 +20,10 @@ import { mintSessionVirtualKey } from '@/lib/sandbox/llm-gateway'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
-// Provisioning can take up to 12s for the readiness poll + Cloud Run spin-up.
-export const maxDuration = 30
+// Provisioning = create a tagged revision + tag-route propagation + cold container
+// boot, then poll /health. A cold deploy can exceed 25s, so give the whole route
+// room (60s, the platform max) with the readiness poll set just under it.
+export const maxDuration = 60
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -34,33 +36,14 @@ const BodySchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
-// Readiness poll — GET /health → 204 on the wss host
+// Readiness deadline
 // ---------------------------------------------------------------------------
 
-const READINESS_INTERVAL_MS = 200
-// A cold Cloud Run revision create + tag-route propagation + container boot can
-// take ~15-25s, especially when a prior session's instance is being torn down.
-// 12s was too tight and 503'd healthy cold starts. Keep this comfortably under
-// the route's maxDuration (30s) so the poll, not the platform, owns the timeout.
-const READINESS_DEADLINE_MS = 25_000
-
-/**
- * Polls `http(s)://<host>/health` until it returns 204 (or until the deadline).
- * The WSS host may be `wss://` — convert to `https://` for the health probe.
- */
-async function waitForHealth(wssHost: string, deadline: number): Promise<boolean> {
-  const healthUrl = `https://${wssHost}/health`
-  while (Date.now() < deadline) {
-    try {
-      const res = await fetch(healthUrl, { cache: 'no-store' })
-      if (res.status === 204) return true
-    } catch {
-      // not up yet — keep polling
-    }
-    await new Promise((r) => setTimeout(r, READINESS_INTERVAL_MS))
-  }
-  return false
-}
+// Readiness is now the REVISION Ready condition (see sandbox.awaitReady), which
+// flips in ~5s — NOT the tagged HTTP route (whose propagation lag caused 503s).
+// Keep a generous ceiling under the route's maxDuration (60s); a healthy revision
+// resolves well within it. Override via CC_READINESS_DEADLINE_MS.
+const READINESS_DEADLINE_MS = parseInt(process.env.CC_READINESS_DEADLINE_MS ?? '45000', 10)
 
 // ---------------------------------------------------------------------------
 // POST handler
@@ -209,9 +192,15 @@ export async function POST(req: NextRequest) {
   // --- Idempotency: check for an active/provisioning session on this attempt ---
   const { data: existingSession } = await admin
     .from('claude_code_sessions')
-    .select('id, status, wss_url, expires_at')
+    .select('id, status, wss_url, expires_at, transcript_uri')
     .eq('attempt_id', attemptId)
     .maybeSingle()
+
+  // Latest workspace autosave to restore on RESUME. When a prior session for this
+  // attempt was reaped (status 'idle') or expired, its transcript_uri points at
+  // the newest /workspace tarball — we rehydrate a fresh container from it so the
+  // user does NOT start over. (active/provisioning reconnects below skip this.)
+  let resumeSnapshotUri: string | null = null
 
   if (existingSession) {
     const sessionId = existingSession.id as string
@@ -229,6 +218,9 @@ export async function POST(req: NextRequest) {
         sub_problems: subProblems,
       })
     }
+
+    // Reaped/expired/terminated prior session: carry its workspace forward.
+    resumeSnapshotUri = (existingSession.transcript_uri as string | null) ?? null
   }
 
   // --- Insert provisioning row (upsert on attempt_id) ---
@@ -255,6 +247,18 @@ export async function POST(req: NextRequest) {
       .from('cc-user-state')
       .createSignedUrl(priorClaudeStateUri, ttlSeconds + 120)
     userClaudeStateUrl = signed?.signedUrl
+  }
+
+  // Resume: presign the prior session's latest workspace snapshot so the new
+  // container rehydrates /workspace from it (entrypoint extracts with
+  // --strip-components=1). Best-effort — a missing object just yields a fresh
+  // workspace.
+  let workspaceRestoreUrl: string | undefined
+  if (resumeSnapshotUri) {
+    const { data: signed } = await admin.storage
+      .from('cc-sessions')
+      .createSignedUrl(resumeSnapshotUri, ttlSeconds + 120)
+    workspaceRestoreUrl = signed?.signedUrl
   }
 
   const { error: upsertErr } = await admin.from('claude_code_sessions').upsert(
@@ -307,6 +311,7 @@ export async function POST(req: NextRequest) {
     SNAPSHOT_AUTH_TOKEN: snapshotToken,
     USER_STATE_SNAPSHOT_URL: userStateSnapshotUrl,
     ...(userClaudeStateUrl ? { USER_CLAUDE_STATE_URL: userClaudeStateUrl } : {}),
+    ...(workspaceRestoreUrl ? { WORKSPACE_RESTORE_URL: workspaceRestoreUrl } : {}),
   }
 
   // --- Provision sandbox ---
@@ -330,15 +335,15 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // --- Readiness poll: GET /health → 204 ---
-  const deadline = Date.now() + READINESS_DEADLINE_MS
-  const ready = await waitForHealth(
-    new URL(provision.wssUrl.replace(/^wss:\/\//, 'https://')).host,
-    deadline,
-  )
+  // --- Readiness: wait for the REVISION to be Ready (control-plane truth that
+  // the container is up, ~5s) rather than polling the tagged HTTP /health URL,
+  // whose route propagation lags and intermittently 404s past the deadline even
+  // for a healthy revision (the cause of the prior 503 storms). The browser's WS
+  // connect has its own reconnect backoff to absorb any residual tag-route lag.
+  const ready = await sandbox.awaitReady(provision.hostInstanceId, READINESS_DEADLINE_MS)
 
   if (!ready) {
-    console.error('[cc/session/start] Sandbox did not become healthy within', READINESS_DEADLINE_MS, 'ms')
+    console.error('[cc/session/start] Sandbox revision not Ready within', READINESS_DEADLINE_MS, 'ms')
     // Mark failed; best-effort teardown
     await admin
       .from('claude_code_sessions')

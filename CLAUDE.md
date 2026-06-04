@@ -44,6 +44,22 @@ The script exits 0 on green, 1 on red. It validates 13 checks across env shape a
 
 For test-mode hygiene (CI / dev), run `scripts/audit/audit-stripe-config.ts` — same idea but enforces sk_test_ shape.
 
+## Claude Code Analytics — infra & scaling
+
+The analytics feature runs **one pinned Cloud Run instance per active session**
+(`cc-sandbox`, 1 vCPU), with all Claude traffic funneled through a single LiteLLM
+gateway (`cc-llm-gateway`) + Cloud SQL (`cc-llm-db`). Concurrency is bounded by
+those shared funnels, not the sandbox.
+
+**Realistic ceiling today: ~20–40 concurrent users** (gateway-DB-bound). To raise it,
+follow the scaling runbook: [`docs/runbooks/cc-analytics-scaling.md`](./docs/runbooks/cc-analytics-scaling.md).
+It documents the bottleneck order and the exact `gcloud` commands — most importantly the
+**`cc-llm-db` tier right-size** (Cloud SQL compute does NOT autoscale; it's a manual
+`gcloud sql instances patch --tier ...` + brief restart, e.g. `db-f1-micro` →
+`db-custom-1-3840`). The gateway was raised to maxScale=10 on 2026-06-03; the DB is the
+next wall. Also note: there is **no idle reaper** yet — abandoned sessions hold an
+instance until the 30-min TTL; implement it before real load.
+
 ## Reference Archive
 
 - **Stitch v2 project**: https://stitch.withgoogle.com/projects/12072135267645366200 — **canonical design reference** for all screens. This supersedes the old `material-*.html` files.

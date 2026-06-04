@@ -48,8 +48,14 @@ export interface SessionEnv {
   /** Project that query jobs run/bill in (our SA has jobUser here). Lets a
    *  challenge point BQ_PROJECT at a public-data project while we pay. */
   BQ_BILLING_PROJECT?: string
-  /** Presigned URL the container pulls the challenge starter tarball from. */
+  /** Presigned URL the container pulls the challenge starter tarball from.
+   *  Authored flat (relative to /workspace); extracted with `-C /workspace`. */
   CHALLENGE_TARBALL_URL?: string
+  /** Presigned URL of a prior session's workspace AUTOSAVE snapshot, used to
+   *  rehydrate /workspace on resume so a returning user doesn't start over. The
+   *  autosave tarball is rooted at `workspace/`, so the entrypoint extracts it
+   *  with `--strip-components=1` (distinct from CHALLENGE_TARBALL_URL). */
+  WORKSPACE_RESTORE_URL?: string
   /** CLAUDE.md content seeded into /workspace. */
   CLAUDE_MD?: string
   /** Orchestrator endpoint the 30s autosave loop POSTs the workspace tarball to. */
@@ -89,6 +95,14 @@ export interface HostProvider {
   readonly name: SandboxProviderName
   /** Provision a sandbox for a session and return the connection info. */
   createSession(input: CreateSessionInput): Promise<CreateSessionResult>
+  /**
+   * Wait until the session's compute is actually serving, returning true if it
+   * became ready before the deadline. For Cloud Run this polls the revision's
+   * Ready condition (fast, ~5s) rather than the tagged HTTP route (whose
+   * propagation lags and caused readiness 503s). hostInstanceId is the value
+   * returned as CreateSessionResult.hostInstanceId.
+   */
+  awaitReady(hostInstanceId: string, deadlineMs: number): Promise<boolean>
   /** Tear a session sandbox down. Best-effort; must not throw on already-gone. */
   destroySession(hostInstanceId: string): Promise<void>
 }

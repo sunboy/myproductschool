@@ -90,8 +90,13 @@ export async function POST(
   const outputTokens = parseInt(req.headers.get('x-output-tokens') ?? '', 10) || undefined
 
   // --- Update session row ---
+  // transcript_uri is the LATEST autosave tarball (overwritten each 30s loop) —
+  // it doubles as the workspace-restore pointer on resume. An autosave is also a
+  // liveness signal, so refresh last_activity_at to keep the reaper from killing
+  // an actively-working session.
   const updatePayload: Record<string, unknown> = {
     last_snapshot_at: new Date().toISOString(),
+    last_activity_at: new Date().toISOString(),
     transcript_uri: storagePath,
   }
   if (promptCount !== undefined) updatePayload.prompt_count = promptCount

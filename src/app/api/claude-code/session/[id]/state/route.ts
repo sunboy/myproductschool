@@ -58,6 +58,13 @@ export async function GET(
       .from('claude_code_sessions')
       .update({ status: 'terminated', ended_at: new Date().toISOString() })
       .eq('id', sessionId)
+  } else if (status === 'active') {
+    // The medium polls this every ~15s while the tab is open — a liveness signal.
+    // Refresh last_activity_at so the idle reaper backs off an open, in-use tab.
+    await admin
+      .from('claude_code_sessions')
+      .update({ last_activity_at: new Date().toISOString() })
+      .eq('id', sessionId)
   }
 
   // --- Read sub_problems from challenge metadata ---

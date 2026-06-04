@@ -23,7 +23,7 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
     kind: 'mcp_setup',
     rubricDimension: 'connection_setup',
     teachingNote:
-      'Two moves get you set up. First, in the shell, register the BigQuery tool with the add command. Then start the analyst by typing claude. Once the session is running, everything after this is plain language: you ask, Claude runs the queries.',
+      'Click Start sandbox to spin up your environment. Once the shell is live, two moves get you set up: first register the BigQuery tool with the add command, then start the analyst by typing claude. After that everything is plain language: you ask, Claude runs the queries.',
   },
   {
     id: 'explore_schema',

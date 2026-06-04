@@ -31,6 +31,18 @@ if [[ -n "${CHALLENGE_TARBALL_URL:-}" ]]; then
   curl -fsSL "$CHALLENGE_TARBALL_URL" | tar -xz -C /workspace
 fi
 
+# ─── 2b. Restore a prior session's workspace on RESUME ───────────────────────
+# When a reaped/expired session is resumed, the orchestrator presigns the latest
+# autosave snapshot as WORKSPACE_RESTORE_URL. The autosave was made with
+# `tar -C / workspace` (entries rooted at `workspace/...`), so strip the leading
+# `workspace/` component to land files directly in /workspace. Runs AFTER the
+# challenge tarball so restored work wins over the (empty) starter.
+if [[ -n "${WORKSPACE_RESTORE_URL:-}" ]]; then
+  echo "[entrypoint] Restoring prior workspace snapshot…"
+  curl -fsSL "$WORKSPACE_RESTORE_URL" | tar -xz --strip-components=1 -C /workspace 2>/dev/null \
+    || echo "[entrypoint] workspace restore skipped (missing/unreadable snapshot)"
+fi
+
 # Write CLAUDE.md to workspace if provided via env
 if [[ -n "${CLAUDE_MD:-}" ]]; then
   printf '%s' "$CLAUDE_MD" > /workspace/CLAUDE.md

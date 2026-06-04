@@ -151,6 +151,16 @@ export class CloudRunProvider implements HostProvider {
           {
             image: cfg.image,
             ports: [{ containerPort: 7681 }],
+            // 1 vCPU is throttled at idle by default, which makes the per-session
+            // cold boot slow + highly variable (16s–>50s observed → readiness
+            // 503s). startupCpuBoost gives extra CPU during boot (fast, reliable
+            // start), and cpuIdle:false keeps the vCPU unthrottled for the whole
+            // session so the PTY bridge + `claude` stay responsive (mirrors the
+            // gateway's cpu-throttling=false).
+            resources: {
+              startupCpuBoost: true,
+              cpuIdle: false,
+            },
             // HOST_ID lets the in-container PTY bridge cross-check the token's
             // host segment (generalizes the old FLY_MACHINE_ID check).
             env: [
@@ -191,22 +201,98 @@ export class CloudRunProvider implements HostProvider {
     }
   }
 
+  // Poll the REVISION's Ready condition (control-plane truth that the container
+  // is up + healthy), NOT the tagged HTTP URL. The tagged `<tag>---host` route
+  // propagates on a slower path and 404s for a variable time after the revision
+  // is already Ready (~5s) — polling it caused the readiness 503s. The browser's
+  // WS connect (with its own reconnect backoff) absorbs any residual route lag.
+  async awaitReady(hostInstanceId: string, deadlineMs: number): Promise<boolean> {
+    let cfg: CloudRunConfig
+    try {
+      cfg = loadConfig()
+    } catch {
+      return false
+    }
+    const token = await getToken(cfg)
+    const revName = `${cfg.serviceName}-${hostInstanceId}`
+    const revPath = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}/revisions/${revName}`
+    const deadline = Date.now() + deadlineMs
+
+    while (Date.now() < deadline) {
+      try {
+        const res = await fetch(`${RUN_API}/${revPath}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (res.ok) {
+          const rev = await res.json()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const conds: any[] = Array.isArray(rev?.conditions) ? rev.conditions : []
+          const ready = conds.find((c) => c?.type === 'Ready')
+          if (ready?.state === 'CONDITION_SUCCEEDED' || ready?.status === 'True') return true
+          // A terminal failure → stop early.
+          if (ready?.state === 'CONDITION_FAILED') return false
+        }
+      } catch {
+        // transient — keep polling
+      }
+      await new Promise((r) => setTimeout(r, 1000))
+    }
+    return false
+  }
+
   async destroySession(hostInstanceId: string): Promise<void> {
-    // hostInstanceId is the revision tag. A tagged revision can't be deleted
-    // while the tag still references it, so this is best-effort: deleting the
-    // revision also drops its tag from the traffic config (per Cloud Run docs).
-    // The revision scales to zero on idle/timeout regardless, so leaking one is
-    // not a cost concern — teardown just tidies up.
+    // hostInstanceId is the revision tag. Teardown is two steps and ORDER MATTERS:
+    //   1. Remove this tag from the service's traffic array (read-modify-write
+    //      PATCH, keeping every OTHER live session's tag).
+    //   2. Delete the revision.
+    // A tagged revision CANNOT be deleted while the tag still references it, so
+    // skipping step 1 silently leaks the tag — and because each tagged revision
+    // pins minInstanceCount=1, leaked tags accumulate into a bloated traffic
+    // config (slow PATCH reconciles → readiness timeouts) AND held warm instances
+    // (real cost). This must succeed, not be fire-and-forget-and-hope.
     let cfg: CloudRunConfig
     try {
       cfg = loadConfig()
     } catch {
       return // unconfigured: nothing to destroy
     }
+
+    const token = await getToken(cfg)
+    const servicePath = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}`
+    const revName = `${cfg.serviceName}-${hostInstanceId}`
+
+    // Step 1: drop this session's tag from traffic (keep all others + LATEST).
     try {
-      const token = await getToken(cfg)
-      const revName = `${cfg.serviceName}-${hostInstanceId}`
-      const revPath = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}/revisions/${revName}`
+      const getRes = await fetch(`${RUN_API}/${servicePath}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (getRes.ok) {
+        const svc = await getRes.json()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const existing: any[] = Array.isArray(svc.traffic) ? svc.traffic : []
+        const keptTagged = existing.filter(
+          (t) => t?.type === 'TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION' && t?.tag && t.tag !== hostInstanceId,
+        )
+        const traffic = [
+          { type: 'TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST', percent: 100 },
+          ...keptTagged,
+        ]
+        // updateMask=traffic scopes the PATCH to the traffic field only, so Cloud
+        // Run doesn't re-validate the template's serviceAccount (which would need
+        // iam.serviceAccounts.actAs and 403 for the orchestrator SA).
+        await fetch(`${RUN_API}/${servicePath}?updateMask=traffic`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ traffic }),
+        })
+      }
+    } catch {
+      // Best-effort: if the traffic PATCH fails, still try the revision delete.
+    }
+
+    // Step 2: delete the now-untagged revision (releases its pinned instance).
+    try {
+      const revPath = `${servicePath}/revisions/${revName}`
       await fetch(`${RUN_API}/${revPath}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },

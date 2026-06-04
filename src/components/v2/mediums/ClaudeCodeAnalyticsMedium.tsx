@@ -8,6 +8,7 @@ import { UsageMeter } from './UsageMeter'
 import { AnalyticsTerminalFrame } from './AnalyticsTerminalFrame'
 import { SuggestedPromptRail } from './SuggestedPromptRail'
 import { SkillsLibraryPanel } from './SkillsLibraryPanel'
+import { IdleReapModal } from './IdleReapModal'
 import { AnalyticsOnboardingOverlay, shouldShowOnboarding } from './AnalyticsOnboardingOverlay'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
@@ -32,13 +33,32 @@ const MOCK_WSS_URL = 'wss://echo.websocket.org/'
 
 const IDLE_THRESHOLD_MS = 18000 // 18s
 
+// Idle-reap warning. The server cron reaps an active session after ~15 min of no
+// activity; the client warns the (still-present) user a bit BEFORE that with a
+// countdown so they can keep their warm instance. WARN fires at 13 min idle, with
+// a 90s countdown → if ignored, ~14.5 min, just under the server's 15 min sweep.
+const REAP_WARN_MS = 13 * 60 * 1000
+const REAP_COUNTDOWN_SECONDS = 90
+
 export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: MediumProps) {
   const terminalRef = useRef<ClaudeCodeTerminalHandle | null>(null)
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastActivityRef = useRef<number>(Date.now())
   const sessionStartRef = useRef<number>(Date.now())
+  // Real terminal activity timestamp (NOT reset by the nudge loop) — drives the
+  // idle-reap warning independently of nudges.
+  const reapActivityRef = useRef<number>(Date.now())
 
   const [wssUrl, setWssUrl] = useState<string | null>(USE_DEV_STUB ? MOCK_WSS_URL : null)
+  // The sandbox (a live Cloud Run container) is provisioned only when the user
+  // explicitly starts it, not on page load — so we incur infra cost only once
+  // they commit to working the challenge. The dev stub skips the gate.
+  const [started, setStarted] = useState<boolean>(USE_DEV_STUB)
+  // True once a prior session for this attempt was reaped/expired and its work
+  // can be restored — flips the start CTA to "Resume". Shown the idle-reap modal
+  // when idle near the reap threshold.
+  const [wasReaped, setWasReaped] = useState(false)
+  const [showReapModal, setShowReapModal] = useState(false)
   // The arc is the default analyst course (tiered by difficulty), with any
   // per-challenge overrides merged on top once the start route returns them.
   const [subProblems, setSubProblems] = useState<AnalyticsSubProblem[]>(
@@ -104,7 +124,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
 
   // Start session on mount
   useEffect(() => {
-    if (USE_DEV_STUB) return
+    // Provision only after the user clicks "Start sandbox" (started=true). The
+    // dev stub sets started=true up front so the UX renders without real infra.
+    if (USE_DEV_STUB || !started) return
 
     async function startSession() {
       try {
@@ -145,7 +167,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
 
     startSession()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [started])
 
   // Idle detection — mirrors CanvasChatPanel:~189 setInterval pattern
   useEffect(() => {
@@ -195,8 +217,47 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
 
   const handleActivity = useCallback(() => {
     lastActivityRef.current = Date.now()
+    reapActivityRef.current = Date.now()
     setProactiveNudge(null)
+    setShowReapModal((open) => (open ? false : open))
   }, [])
+
+  // Idle-reap watcher: while a live session is running, show the warning modal
+  // once activity has been stale for REAP_WARN_MS. "Keep working" resets it.
+  useEffect(() => {
+    if (!wssUrl || showMirror || USE_DEV_STUB) return
+    const t = setInterval(() => {
+      if (Date.now() - reapActivityRef.current >= REAP_WARN_MS) {
+        setShowReapModal(true)
+      }
+    }, 10000)
+    return () => clearInterval(t)
+  }, [wssUrl, showMirror])
+
+  // User chose to keep the session alive: reset idle + ping the server so its
+  // reaper backs off (the /state poll refreshes last_activity_at).
+  const handleKeepWorking = useCallback(() => {
+    reapActivityRef.current = Date.now()
+    setShowReapModal(false)
+    if (sessionId) {
+      void fetch(`/api/claude-code/session/${sessionId}/state`).catch(() => {})
+    }
+    terminalRef.current?.focus()
+  }, [sessionId])
+
+  // Modal ignored for the full countdown → drop back to the (now "Resume") start
+  // card. The server cron frees the instance; work is safe in the last autosave,
+  // and re-starting rehydrates /workspace from it.
+  useEffect(() => {
+    if (!showReapModal) return
+    const t = setTimeout(() => {
+      setShowReapModal(false)
+      setWasReaped(true)
+      setStarted(false)
+      setWssUrl(null)
+    }, REAP_COUNTDOWN_SECONDS * 1000)
+    return () => clearTimeout(t)
+  }, [showReapModal])
 
   const handleOutput = useCallback((tail: string) => {
     setTerminalTail(tail)
@@ -608,18 +669,63 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             )}
 
             {/* Terminal frame */}
-            <div style={{ flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column', position: 'relative' }}>
               {wssUrl ? (
-                <AnalyticsTerminalFrame
-                  wssUrl={wssUrl}
-                  terminalRef={terminalRef}
-                  onOutput={handleOutput}
-                  onActivity={handleActivity}
-                  onMcpStatusChange={handleMcpStatusChange}
-                  onReplStatusChange={handleReplStatusChange}
-                  onSkillWritten={handleSkillWritten}
-                  onReportWritten={handleReportWritten}
-                />
+                <>
+                  <AnalyticsTerminalFrame
+                    wssUrl={wssUrl}
+                    terminalRef={terminalRef}
+                    onOutput={handleOutput}
+                    onActivity={handleActivity}
+                    onMcpStatusChange={handleMcpStatusChange}
+                    onReplStatusChange={handleReplStatusChange}
+                    onSkillWritten={handleSkillWritten}
+                    onReportWritten={handleReportWritten}
+                  />
+                  {showReapModal && (
+                    <IdleReapModal
+                      countdownSeconds={REAP_COUNTDOWN_SECONDS}
+                      onKeepWorking={handleKeepWorking}
+                    />
+                  )}
+                </>
+              ) : !started ? (
+                // Pre-start: the sandbox is NOT provisioned yet. The user starts
+                // it explicitly so we only spin a live container once they commit.
+                <div style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: '#1c1f1e', borderRadius: 12,
+                  flexDirection: 'column', gap: 14, padding: 24, textAlign: 'center',
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 34, color: '#8ecf9e', fontVariationSettings: "'FILL' 0, 'wght' 300" }}>
+                    terminal
+                  </span>
+                  <div style={{ maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#e8e4dc' }}>
+                      {wasReaped ? 'Resume your analyst sandbox' : 'Start your analyst sandbox'}
+                    </span>
+                    <span style={{ fontSize: 12.5, lineHeight: 1.55, color: 'rgba(232,228,220,0.7)' }}>
+                      {wasReaped
+                        ? 'The idle sandbox was shut down to free resources. Resuming restores your previous work right where you left off.'
+                        : 'This spins up a live environment with Claude Code and read-only BigQuery access. It starts when you are ready to work, and stays open while you do.'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setStarted(true)}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 8,
+                      background: '#8ecf9e', color: '#1c1f1e',
+                      border: 'none', borderRadius: 999,
+                      padding: '10px 20px', fontSize: 13, fontWeight: 700,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
+                      {wasReaped ? 'restart_alt' : 'play_arrow'}
+                    </span>
+                    {wasReaped ? 'Resume sandbox' : 'Start sandbox'}
+                  </button>
+                </div>
               ) : (
                 <div style={{
                   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
