@@ -15,7 +15,7 @@ import type { ChallengeWithDomain } from '@/lib/types'
 import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
 
 /** Discipline keys that have a per-discipline count. Mirrors CountDiscipline in challenges.ts. */
-type CountDiscipline = 'all' | 'product_sense' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm'
+type CountDiscipline = 'all' | 'product_sense' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm' | 'analytics'
 
 interface Props {
   /** SSR seed: preview rows (all view) or first page (single discipline). */
@@ -226,16 +226,6 @@ export function FilteredChallengesView({
     [seedChallenges, analyticsEnabled],
   )
 
-  // Count badge for the Analytics tab + its All-view section. The server's
-  // CountDiscipline has no `analytics` key (analytics folds into product_sense
-  // server-side), so derive it client-side from the seed rows.
-  const analyticsCount = useMemo(
-    () => analyticsEnabled
-      ? seedChallenges.filter((c) => c.challenge_type === 'claude_code_analytics').length
-      : 0,
-    [seedChallenges, analyticsEnabled],
-  )
-
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
@@ -306,10 +296,9 @@ export function FilteredChallengesView({
     window.history.replaceState(null, '', nextSearch ? `${pathname}?${nextSearch}` : pathname)
   }
 
-  // Resolve a discipline's count badge: server counts cover the CountDiscipline
-  // keys; analytics is derived client-side (see analyticsCount).
-  const countFor = (key: Discipline): number =>
-    key === 'analytics' ? analyticsCount : (counts[key as CountDiscipline] ?? 0)
+  // Resolve a discipline's count badge from the server counts (analytics is now a
+  // real CountDiscipline key, returned only when the feature flag is enabled).
+  const countFor = (key: Discipline): number => counts[key as CountDiscipline] ?? 0
 
   const totalForDiscipline = countFor(discipline)
 
@@ -421,7 +410,6 @@ export function FilteredChallengesView({
             initialChallenges={initialChallenges}
             initialDiscipline={initialDiscipline}
             counts={counts}
-            analyticsCount={analyticsCount}
             analyticsEnabled={analyticsEnabled}
             paradigms={paradigms}
             summaries={summaries}
@@ -508,7 +496,6 @@ function TopicChipCloudLoader({
 function AllPracticeView({
   initialChallenges,
   counts,
-  analyticsCount,
   analyticsEnabled,
   paradigms,
   summaries,
@@ -522,7 +509,6 @@ function AllPracticeView({
   initialChallenges: ChallengeWithDomain[]
   initialDiscipline: CountDiscipline
   counts: Record<CountDiscipline, number>
-  analyticsCount: number
   analyticsEnabled: boolean
   paradigms: Record<string, string>
   summaries: Record<string, string>
@@ -548,10 +534,10 @@ function AllPracticeView({
     return map
   }, [initialChallenges, previewPerDiscipline])
 
-  // Per-section total: server counts for CountDiscipline keys; analytics derived
-  // client-side. Analytics is dropped entirely when the feature is dark.
+  // Per-section total from the server counts (analytics is a real key now, and is
+  // 0 / absent when the feature is dark, so it's dropped by the >0 filter below).
   const totalFor = (disc: (typeof ALL_VIEW_DISCIPLINES)[number]): number =>
-    disc === 'analytics' ? analyticsCount : (counts[disc as CountDiscipline] ?? 0)
+    counts[disc as CountDiscipline] ?? 0
 
   const visibleDisciplines = ALL_VIEW_DISCIPLINES
     .filter((d) => analyticsEnabled || d !== 'analytics')
@@ -726,7 +712,10 @@ function DisciplineView({
   pageSize: number
   searchString: string
 }) {
-  const flat = filters.topic.length > 0 || filters.technique.length > 0
+  // Analytics challenges have no topic/technique taxonomy, so the topic-grouped
+  // view would render empty. Always show them as a flat list (same as the
+  // chip-filtered case). Otherwise group by topic when no chip filter is active.
+  const flat = discipline === 'analytics' || filters.topic.length > 0 || filters.technique.length > 0
 
   if (flat) {
     return (

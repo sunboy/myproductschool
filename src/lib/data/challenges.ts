@@ -3,6 +3,7 @@ import { MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
 import { IS_MOCK } from '@/lib/mock'
 import { coerceDifficulty, expandDifficultyForQuery } from '@/lib/practice/difficulty'
 import { EMPTY_STATS, buildStatsMap, type AttemptRow, type ChallengeStats } from '@/lib/challenges/status'
+import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
 
 // Pure status helpers live in a server-import-free module so client components
 // (ChallengeCard, GroupedChallengeList) can use them without bundling
@@ -60,12 +61,14 @@ function normalizeToken(value: string): string {
   return value.toLowerCase().replace(/[-\s]+/g, '_')
 }
 
-/** Disciplines map 1:1 to challenge_type except product_sense, which spans a set. */
-const PRODUCT_SENSE_TYPES = ['flow', 'freeform', 'quick_take', 'claude_code_analytics'] as const
-export type CountDiscipline = 'all' | 'product_sense' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm'
+/** Disciplines map 1:1 to challenge_type except product_sense, which spans a set.
+ *  claude_code_analytics is its OWN discipline (`analytics`), NOT folded into
+ *  product_sense — see applyDisciplineFilter. */
+const PRODUCT_SENSE_TYPES = ['flow', 'freeform', 'quick_take'] as const
+export type CountDiscipline = 'all' | 'product_sense' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm' | 'analytics'
 
 const COUNT_DISCIPLINE_VALUES: readonly string[] = [
-  'all', 'product_sense', 'system_design', 'data_modeling', 'sql', 'algorithm',
+  'all', 'product_sense', 'system_design', 'data_modeling', 'sql', 'algorithm', 'analytics',
 ]
 export function isCountDiscipline(value: string): value is CountDiscipline {
   return COUNT_DISCIPLINE_VALUES.includes(value)
@@ -296,6 +299,7 @@ export function applyDisciplineFilter<
 >(query: Q, discipline: CountDiscipline): Q {
   if (discipline === 'all') return query
   if (discipline === 'product_sense') return query.in('challenge_type', PRODUCT_SENSE_TYPES)
+  if (discipline === 'analytics') return query.eq('challenge_type', 'claude_code_analytics')
   return query.eq('challenge_type', discipline)
 }
 
@@ -303,6 +307,7 @@ export function applyDisciplineFilter<
 function disciplineToTypes(discipline: CountDiscipline): string[] {
   if (discipline === 'all') return []
   if (discipline === 'product_sense') return [...PRODUCT_SENSE_TYPES]
+  if (discipline === 'analytics') return ['claude_code_analytics']
   return [discipline]
 }
 
@@ -345,15 +350,22 @@ export async function getChallengeCounts(
   filters?: ChallengeListFilters,
 ): Promise<Record<CountDiscipline, number>> {
   const empty: Record<CountDiscipline, number> = {
-    all: 0, product_sense: 0, system_design: 0, data_modeling: 0, sql: 0, algorithm: 0,
+    all: 0, product_sense: 0, system_design: 0, data_modeling: 0, sql: 0, algorithm: 0, analytics: 0,
   }
   if (IS_MOCK) return empty
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
 
+  // The 5 core disciplines are always counted and summed into `all`. Analytics is
+  // a flag-gated niche tier counted separately (and only when enabled) so it never
+  // changes the "All practice" total or leaks while the feature is dark.
+  const countDisciplines: CountDiscipline[] = isAnalyticsFeatureEnabled()
+    ? [...COUNT_DISCIPLINES, 'analytics']
+    : [...COUNT_DISCIPLINES]
+
   const results = await Promise.all(
-    COUNT_DISCIPLINES.map(async (discipline) => {
+    countDisciplines.map(async (discipline) => {
       let q = supabase
         .from('challenges')
         .select('id', { count: 'exact', head: true })
@@ -368,6 +380,7 @@ export async function getChallengeCounts(
 
   const counts = { ...empty }
   for (const [discipline, count] of results) counts[discipline] = count
+  // `all` = sum of the 5 core disciplines only (analytics excluded on purpose).
   counts.all = COUNT_DISCIPLINES.reduce((sum, d) => sum + counts[d], 0)
   return counts
 }
