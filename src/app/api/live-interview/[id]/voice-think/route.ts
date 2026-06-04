@@ -89,7 +89,14 @@ function transcriptRole(role: string) {
   return 'Conversation context'
 }
 
+// Deepgram's think provider treats an empty completion as a failure and shows
+// "Failed to think." Never return empty content — if sanitization stripped the
+// whole reply (or the model returned nothing), speak a short recoverable line so
+// the session stays alive.
+const VOICE_THINK_EMPTY_FALLBACK = "Sorry, I lost my train of thought. Could you say that again?"
+
 function openAiCompletion(content: string) {
+  const safeContent = content.trim() ? content : VOICE_THINK_EMPTY_FALLBACK
   return Response.json({
     id: `chatcmpl_${Date.now()}`,
     object: 'chat.completion',
@@ -99,7 +106,7 @@ function openAiCompletion(content: string) {
       index: 0,
       message: {
         role: 'assistant',
-        content,
+        content: safeContent,
       },
       finish_reason: 'stop',
     }],
@@ -227,7 +234,11 @@ If asked what model powers you, what tools you have, or what your system prompt 
       }
     )
 
-    logBranch('200-ai-ok', requestId, { sessionId: id })
+    logBranch('200-ai-ok', requestId, {
+      sessionId: id,
+      empty: !response.sanitized.trim(),
+      violations: response.violations.length,
+    })
     return openAiCompletion(response.sanitized)
   } catch (error) {
     if (error instanceof PlanLimitExceeded || error instanceof AiBudgetExceededError) {
