@@ -109,15 +109,18 @@ export async function assertAiBudget(
   userPlan: string,
   estimatedCostCents: number
 ): Promise<void> {
+  // The AI dollar spend no longer gates users — freemium is metered by reps
+  // (challenges + interviews), not by an invisible per-user dollar cap. We still
+  // check so over-budget usage is observable in logs, but we never block: the
+  // spend is recorded separately via recordAnthropicUsage for backend monitoring.
   const nextQuantity = Math.max(1, estimatedCostCents)
   const result = await checkUsageLimit(userId, 'hatch_ai_cents', userPlan, nextQuantity)
 
   if (!result.allowed) {
-    throw new AiBudgetExceededError({
-      used: result.used,
-      limit: result.limit,
-      windowDays: result.windowDays,
-    })
+    console.warn(
+      `[ai-budget] user ${userId} (${userPlan}) over hatch_ai_cents soft cap: ` +
+        `${result.used}/${result.limit}c in ${result.windowDays}d — allowing (rep-metered freemium).`
+    )
   }
 }
 

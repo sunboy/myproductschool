@@ -50,11 +50,14 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       costCeilingCents: null,
     },
     hatch_ai_cents: {
-      limitValue: 35,
+      // Not a user-facing gate. Freemium is metered by reps (challenges + interviews);
+      // assertAiBudget observes-but-never-blocks. Kept high as an abuse backstop only,
+      // while per-user spend is still recorded for backend monitoring.
+      limitValue: 5000,
       windowDays: 30,
       unit: 'cents',
-      description: 'Free Hatch AI spend budget in cents per rolling month',
-      costCeilingCents: 35,
+      description: 'Free Hatch AI spend backstop in cents per rolling month (not a gate)',
+      costCeilingCents: 5000,
     },
     claude_code_sessions: {
       // Free users never reach this (the analytics tier gate blocks them first),

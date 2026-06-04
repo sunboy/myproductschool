@@ -25,17 +25,17 @@ export async function GET() {
   const { plan } = await getEffectiveUserPlan(admin, user.id)
   const usage = await getUsageForUser(user.id, plan)
 
-  // Derive AI spend display values from hatchAiCents (stored in cents)
-  const aiSpendCents = usage.hatchAiCents.used
-  const aiCapCents = usage.hatchAiCents.limit
-  const aiSpendUsd = aiSpendCents / 100
-  const aiCapUsd = aiCapCents / 100
-  const pctConsumed = aiCapCents > 0 ? Math.min(aiSpendCents / aiCapCents, 1) : 0
+  // The usage meter measures free reps (challenges + interviews), not AI dollar
+  // spend. Severity is driven by whichever rep type is closest to its cap, so the
+  // user is nudged to upgrade the moment either runs out. The hatch_ai_cents spend
+  // is still recorded in the backend for monitoring, but never shown or used to gate.
+  const ratio = (used: number, cap: number) => (cap > 0 ? Math.min(used / cap, 1) : 0)
+  const challPct = ratio(usage.challenges.used, usage.challenges.limit)
+  const intPct = ratio(usage.interviews.used, usage.interviews.limit)
+  const pctConsumed = Math.max(challPct, intPct)
 
-  // Compute reset date: window is rolling 30 days from oldest event boundary
-  // Use a simple approximation: now + (windowDays - used days) — just show
-  // the end of the rolling window as "resets in ~windowDays"
-  const windowDays = usage.hatchAiCents.windowDays
+  // Reset date reflects the rep window (rolling 30 days).
+  const windowDays = usage.challenges.windowDays
   const periodResetsAt = new Date(Date.now() + windowDays * 24 * 60 * 60 * 1000).toISOString()
 
   return NextResponse.json({
@@ -43,9 +43,7 @@ export async function GET() {
     challenges: usage.challenges,
     interviews: usage.interviews,
     hatchAiCents: usage.hatchAiCents,
-    // Extended spend-indicator fields
-    ai_spend_usd: aiSpendUsd,
-    ai_spend_cap_usd: aiCapUsd,
+    // Extended usage-indicator fields (rep-based)
     pct_consumed: pctConsumed,
     period_resets_at: periodResetsAt,
     severity: computeSeverity(pctConsumed),
