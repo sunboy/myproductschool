@@ -12,6 +12,7 @@ import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { urlForChallenge, urlForStudyPlan } from '@/lib/hatch/urls'
+import { buildCareerContext } from '@/lib/hatch/career-context'
 
 const ROUTE_KEY = 'hatch_chat'
 const MessageSchema = z.object({
@@ -234,6 +235,7 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
     practice: 'User is on the Practice hub - browsing FLOW challenges to attempt.',
     progress: 'User is on the Progress & Analytics page - reviewing their FLOW skill levels, archetype, and certification progress.',
     live_interviews: 'User is on Live Interviews - preparing for or reviewing interview practice sessions.',
+    career: 'User is in CareerOps - their job search: discovery feed, fit scores, application pipeline, résumé tailoring, and interview stories.',
     learning_module: 'User is reading a learning module.',
     challenge_workspace: 'User is working inside a challenge workspace.',
     general: 'User is somewhere inside HackProduct.',
@@ -487,8 +489,11 @@ export async function POST(req: NextRequest) {
 
     const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
+    // On the CareerOps surface, ground Hatch in the learner's real job-search state.
+    const onCareerSurface = pageContext?.pathname?.startsWith('/career-ops') ?? false
+
     // Build all context blocks in parallel
-    const [contextBlock, pageContextBlock, recommendedBlock] = await Promise.all([
+    const [contextBlock, pageContextBlock, recommendedBlock, careerBlock] = await Promise.all([
       buildSkillContextPrompt(user.id, {
         surface: 'chat',
         challengeType: challengeType === 'coding' ? 'algorithm' : (challengeType ?? null),
@@ -498,6 +503,7 @@ export async function POST(req: NextRequest) {
       }).catch(() => ''),
       pageContext ? buildPageContextBlock(pageContext) : Promise.resolve(''),
       buildRecommendedChallengesBlock(user.id),
+      onCareerSurface ? buildCareerContext(user.id) : Promise.resolve(''),
     ])
 
     const basePrompt = challengeId ? HATCH_CHAT_SYSTEM_PROMPT : HATCH_GLOBAL_CHAT_SYSTEM_PROMPT
@@ -506,6 +512,7 @@ export async function POST(req: NextRequest) {
     if (contextBlock) systemPrompt += '\n\n## Learner Context\n' + contextBlock
     if (pageContextBlock) systemPrompt += '\n\n' + pageContextBlock
     if (recommendedBlock) systemPrompt += '\n\n' + recommendedBlock
+    if (careerBlock) systemPrompt += '\n\n' + careerBlock
 
     if (challengeType === 'system_design' || challengeType === 'data_modeling') {
       const canvasAddendum = `\n\n--- CANVAS COACHING MODE ---
