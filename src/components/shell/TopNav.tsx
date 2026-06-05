@@ -11,14 +11,16 @@ import { FreemiumUsageSummary, SpendIndicator } from '@/components/billing/Freem
 import { TrialBanner } from '@/components/billing/TrialBanner'
 import { DunningBanner } from '@/components/billing/DunningBanner'
 import { HackProductWordmark } from '@/components/brand/HackProductBrand'
+import { isCareerOpsFeatureEnabled } from '@/lib/careerops/flags'
 
 const NAV_ITEMS = [
   { id: 'home',       href: '/',               icon: 'home',          label: 'Home'       },
   { id: 'explore',    href: '/explore',         icon: 'explore',       label: 'Explore'    },
   { id: 'practice',   href: '/challenges',      icon: 'track_changes', label: 'Practice'   },
   { id: 'interviews', href: '/live-interviews', icon: 'graphic_eq',    label: 'Interviews' },
+  { id: 'career',     href: '/career-ops',      icon: 'work',          label: 'Career'     },
   { id: 'progress',   href: '/progress',        icon: 'bar_chart',     label: 'Progress'   },
-]
+].filter(item => item.id !== 'career' || isCareerOpsFeatureEnabled('master'))
 
 const AFFILIATES_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
 
@@ -128,6 +130,7 @@ export function TopNav() {
                 label={
                   item.id === 'practice' ? 'Find the right rep by discipline, role, company, and difficulty.'
                     : item.id === 'interviews' ? 'Run Hatch-led mock loops across product, systems, data, SQL, and coding.'
+                    : item.id === 'career' ? 'Score job fits, track applications, and turn gaps into practice reps.'
                     : item.id === 'progress' ? 'See your FLOW levels, discipline coverage, and readiness signals.'
                     : item.id === 'explore' ? 'Browse study plans, guides, autopsies, and learning domains.'
                     : 'Return to your personalized dashboard.'

@@ -4,14 +4,16 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { HackProductLogoMark } from '@/components/brand/HackProductBrand'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { isCareerOpsFeatureEnabled } from '@/lib/careerops/flags'
 
 const navItems = [
   { href: '/dashboard',       icon: 'home',           label: 'Home'       },
   { href: '/explore',         icon: 'explore',        label: 'Explore'    },
   { href: '/challenges',      icon: 'track_changes', label: 'Practice'   },
   { href: '/live-interviews', icon: 'mic',            label: 'Interviews' },
+  { href: '/career-ops',      icon: 'work',           label: 'Career'     },
   { href: '/progress',        icon: 'bar_chart',      label: 'Progress'   },
-]
+].filter(item => item.href !== '/career-ops' || isCareerOpsFeatureEnabled('master'))
 
 interface NavRailProps {
   onAskHatch?: () => void
