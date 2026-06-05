@@ -230,7 +230,7 @@ ALTER TABLE plan_limits
   CHECK (feature IN (
     'challenges','interviews','hatch_ai_cents','hatch_chat_msgs','hatch_nudges',
     'hatch_canvas_interprets','simulation_turns','live_interview_turns',
-    'quick_takes','ai_grading_runs',
+    'quick_takes','ai_grading_runs','claude_code_sessions',
     'careerops_fit_scores','careerops_feed_scores','careerops_resume_tailors'
   ));
 
