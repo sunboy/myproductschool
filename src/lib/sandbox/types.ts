@@ -36,6 +36,11 @@ export interface SessionEnv {
   /** When set, the `claude` CLI routes through the LiteLLM gateway (per-session
    *  virtual key + hard spend cap) instead of calling Anthropic directly. */
   ANTHROPIC_BASE_URL?: string
+  /** Pin the CLI's main model so it requests a model the gateway serves natively
+   *  (avoids the opus-4-7→Sonnet remap + Opus-only param 400s). */
+  ANTHROPIC_MODEL?: string
+  /** The CLI's small/fast model (background tasks). */
+  ANTHROPIC_SMALL_FAST_MODEL?: string
   ANTHROPIC_BUDGET_USD?: string
   SESSION_ID: string
   /** HMAC secret the in-container WSS bridge validates the connection token against. */
@@ -105,4 +110,22 @@ export interface HostProvider {
   awaitReady(hostInstanceId: string, deadlineMs: number): Promise<boolean>
   /** Tear a session sandbox down. Best-effort; must not throw on already-gone. */
   destroySession(hostInstanceId: string): Promise<void>
+  /**
+   * Derive the hostInstanceId a session WOULD get, without provisioning. Lets the
+   * orchestrator tear down a partially-created sandbox in createSession's error
+   * path (where no CreateSessionResult exists yet) without knowing provider
+   * internals. For Cloud Run this is the deterministic per-session revision tag.
+   * Optional: providers without a deterministic id may omit it.
+   */
+  deriveHostInstanceId?(sessionId: string): string
+  /**
+   * List the hostInstanceIds of all CURRENTLY-LIVE per-session sandboxes the
+   * provider is holding (Cloud Run: every per-session tagged revision that still
+   * exists). The reaper diffs this against the session table to find ORPHANS —
+   * live compute with no active session row — and tears them down. This is the
+   * backstop that self-heals any teardown a writer dropped. Optional: providers
+   * that can't enumerate live sessions may omit it (the reaper then skips the
+   * orphan sweep). Returns [] on error, never throws.
+   */
+  listSessionHostIds?(): Promise<string[]>
 }

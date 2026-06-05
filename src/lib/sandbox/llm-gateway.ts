@@ -34,6 +34,15 @@ export function isGatewayConfigured(): boolean {
 export async function mintSessionVirtualKey(
   sessionId: string,
   ttlSeconds: number,
+  /**
+   * Models this key may access. Default `['all-proxy-models']` = whatever the
+   * gateway currently serves — so the key never 403s when the CLI requests a
+   * model name (e.g. claude-opus-4-7) that the gateway remaps. Pass a narrowed
+   * list (e.g. ['claude-haiku-4-5']) to force a degraded tier for the future
+   * monthly-cap downgrade. (project_cc_gateway_model_mismatch: a stale per-key
+   * allowlist re-introduced the 403 even after the gateway model_list was fixed.)
+   */
+  models: string[] = ['all-proxy-models'],
 ): Promise<VirtualKey | null> {
   if (!isGatewayConfigured()) return null
 
@@ -52,7 +61,7 @@ export async function mintSessionVirtualKey(
       max_budget: budgetUsd,
       // Hard duration so a key can't be reused indefinitely; matches session TTL.
       duration: `${Math.max(60, ttlSeconds)}s`,
-      models: ['claude-opus-4-6', 'claude-sonnet-4-6', 'claude-haiku-4-5'],
+      models,
       metadata: { feature: 'claude_code_analytics', session_id: sessionId },
     }),
   })

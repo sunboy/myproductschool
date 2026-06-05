@@ -79,10 +79,98 @@ export async function GET(request: NextRequest) {
 
   if (failures.length) console.error('[cc-reap] partial failures:', failures)
 
+  // --- Orphan reconciliation sweep ---
+  // The idle sweep above only sees `active` sessions. But a revision can be
+  // orphaned (live compute, no active row) by any teardown a writer dropped:
+  // a createSession that threw after the PATCH landed, a state-route expiry flip
+  // whose destroySession failed, a finalize that died mid-flight. Once the row
+  // leaves `active`, nothing else frees that instance — it bills until someone
+  // notices. This sweep is the backstop: list every live per-session revision
+  // and delete any whose session row is NOT active/provisioning (i.e. has no
+  // business holding compute). Self-heals leaks regardless of root cause.
+  let orphansReaped = 0
+  let orphansScanned = 0
+  let orphansSkipped = 0
+  const orphanFailures: string[] = []
+  // A stuck orphan (latest-created revision) costs a base bump + ~10-25s poll to
+  // tear down. With maxDuration 60s, a backlog could blow the budget mid-loop, so
+  // bound wall-clock per run; leftovers are caught on the next 10-min sweep.
+  const SWEEP_BUDGET_MS = 45_000
+  const sweepStart = Date.now()
+  if (typeof sandbox.listSessionHostIds === 'function') {
+    try {
+      const liveHostIds = await sandbox.listSessionHostIds()
+      orphansScanned = liveHostIds.length
+      if (liveHostIds.length) {
+        // Which of these host ids belong to a session that's legitimately live?
+        // CRITICAL — FAIL CLOSED: if this query errors (transient DB failure, URL
+        // too long), `keep` would be empty and we'd destroy EVERY live revision,
+        // including active user sessions. Never delete on an inconclusive read.
+        // Batch the .in() so a large liveHostIds set can't blow the URL length.
+        const keep = new Set<string>()
+        let lookupFailed = false
+        const BATCH = 100
+        for (let i = 0; i < liveHostIds.length && !lookupFailed; i += BATCH) {
+          const batch = liveHostIds.slice(i, i + BATCH)
+          const { data: liveRows, error: lookupErr } = await admin
+            .from('claude_code_sessions')
+            .select('host_instance_id, status')
+            .in('host_instance_id', batch)
+            .in('status', ['active', 'provisioning'])
+          if (lookupErr) {
+            lookupFailed = true
+            orphanFailures.push(`lookup: ${lookupErr.message}`)
+            break
+          }
+          for (const r of liveRows ?? []) {
+            const h = r.host_instance_id as string | null
+            if (h) keep.add(h)
+          }
+        }
+        if (lookupFailed) {
+          // Abort the sweep entirely — better to leak an orphan for 10 more
+          // minutes than to kill a live session on a bad read.
+          console.error('[cc-reap] orphan lookup failed; skipping sweep (fail-closed)')
+          return NextResponse.json({
+            scanned: sessions.length,
+            reaped,
+            failures: failures.length,
+            idle_cutoff_seconds: IDLE_REAP_SECONDS,
+            orphans_scanned: orphansScanned,
+            orphans_reaped: 0,
+            orphans_skipped: 0,
+            orphan_failures: orphanFailures.length,
+            orphan_sweep_aborted: true,
+          })
+        }
+        for (const hostId of liveHostIds) {
+          if (keep.has(hostId)) continue
+          if (Date.now() - sweepStart > SWEEP_BUDGET_MS) {
+            orphansSkipped++ // out of budget — next sweep gets it
+            continue
+          }
+          try {
+            await sandbox.destroySession(hostId)
+            orphansReaped++
+          } catch (err) {
+            orphanFailures.push(`${hostId}: ${String(err)}`)
+          }
+        }
+      }
+    } catch (err) {
+      orphanFailures.push(`sweep: ${String(err)}`)
+    }
+  }
+  if (orphanFailures.length) console.error('[cc-reap] orphan sweep failures:', orphanFailures)
+
   return NextResponse.json({
     scanned: sessions.length,
     reaped,
     failures: failures.length,
     idle_cutoff_seconds: IDLE_REAP_SECONDS,
+    orphans_scanned: orphansScanned,
+    orphans_reaped: orphansReaped,
+    orphans_skipped: orphansSkipped,
+    orphan_failures: orphanFailures.length,
   })
 }

@@ -86,6 +86,14 @@ async function getToken(cfg: CloudRunConfig): Promise<string> {
 export class CloudRunProvider implements HostProvider {
   readonly name = 'cloud_run' as const
 
+  // The per-session revision tag is a pure function of the session id, so the
+  // orchestrator can reconstruct it for cleanup even when createSession threw
+  // before returning a result (a partially-created revision still pins an
+  // instance and must be deleted). Mirrors the module-level revisionTag().
+  deriveHostInstanceId(sessionId: string): string {
+    return revisionTag(sessionId)
+  }
+
   async createSession(input: CreateSessionInput): Promise<CreateSessionResult> {
     const cfg = loadConfig()
     const token = await getToken(cfg)
@@ -291,14 +299,164 @@ export class CloudRunProvider implements HostProvider {
     }
 
     // Step 2: delete the now-untagged revision (releases its pinned instance).
+    const revPath = `${servicePath}/revisions/${revName}`
+    let deleted = false
     try {
-      const revPath = `${servicePath}/revisions/${revName}`
-      await fetch(`${RUN_API}/${revPath}`, {
+      const delRes = await fetch(`${RUN_API}/${revPath}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
-    } catch {
-      // already gone / scaled to zero — fine.
+      // 404 = already gone (fine). 2xx = deleted. Anything else we must NOT
+      // swallow blindly: the prior code ignored the response and a silent
+      // failure here leaked a pinned minScale=1 instance indefinitely.
+      if (delRes.ok || delRes.status === 404) {
+        deleted = true
+      } else {
+        const detail = await delRes.text().catch(() => '')
+        // The one expected, recoverable failure: a per-session revision becomes
+        // the service's `latestCreatedRevision`, and Cloud Run refuses to delete
+        // the latest-created revision ("FAILED_PRECONDITION: The latest created
+        // Revision ... cannot be directly deleted"). Its instance is still pinned
+        // (minScale=1) and billing. Recover by bumping the base service to make a
+        // NEW latest-created revision, which un-blocks the delete.
+        if (delRes.status === 400 && /latest created Revision/i.test(detail)) {
+          await this.bumpLatestRevision(cfg, token, hostInstanceId)
+          const retry = await fetch(`${RUN_API}/${revPath}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          deleted = retry.ok || retry.status === 404
+          if (!deleted) {
+            console.error(
+              `[cloud-run] revision delete still failed after base bump (${retry.status}): ${revName}`,
+            )
+          }
+        } else {
+          console.error(`[cloud-run] revision delete failed (${delRes.status}): ${detail.slice(0, 300)}`)
+        }
+      }
+    } catch (err) {
+      console.error('[cloud-run] revision delete threw:', err)
     }
+    if (!deleted) {
+      // Surface so the reaper counts it as a failure (not a phantom success) and
+      // retries on the next sweep, rather than reporting orphans_reaped for an
+      // instance that is in fact still billing.
+      throw new Error(`Failed to delete session revision ${revName}`)
+    }
+  }
+
+  // Bump the base service to mint a fresh latest-created revision, so a stuck
+  // per-session revision (which had become latestCreatedRevision and was thus
+  // undeletable) can be deleted. The bump revision is minScale=0 (no instance,
+  // no cost) and becomes deletable itself once a later session/bump supersedes
+  // it. Scoped via updateMask=template so we don't touch traffic. Idempotent
+  // label toggle keeps the change minimal.
+  private async bumpLatestRevision(cfg: CloudRunConfig, token: string, stuckHostId: string): Promise<void> {
+    const servicePath = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}`
+    try {
+      const getRes = await fetch(`${RUN_API}/${servicePath}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!getRes.ok) return
+      const svc = await getRes.json()
+      // Build a STERILE base template from scratch rather than cloning svc.template
+      // — after a createSession PATCH the service template still carries that
+      // session's env (incl. ANTHROPIC_API_KEY, HOST_ID, BigQuery creds), pinned
+      // scaling, and per-session timeout. Cloning it would bake a user session's
+      // secrets into a base bump revision. Instead emit only what a no-op base
+      // revision needs: the image, minScale=0 (no instance → no cost), and a
+      // toggled marker label to force a new (latest) revision. No `revision` field
+      // so Cloud Run auto-names it (cc-sandbox-NNNNN-xxx, the base pattern) instead
+      // of 409ing on the pinned per-session name.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const existing: any = svc.template ?? {}
+      const bumpFlag = existing?.labels?.['cc-reap-bump'] === '1' ? '0' : '1'
+      const template = {
+        labels: { 'cc-reap-bump': bumpFlag },
+        scaling: { minInstanceCount: 0 },
+        serviceAccount: cfg.runtimeServiceAccount,
+        containers: [{ image: cfg.image, ports: [{ containerPort: 7681 }] }],
+      }
+      const patchRes = await fetch(`${RUN_API}/${servicePath}?updateMask=template`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template }),
+      })
+      if (!patchRes.ok) {
+        console.error(`[cloud-run] base bump PATCH failed (${patchRes.status}):`, (await patchRes.text()).slice(0, 300))
+        return
+      }
+      // The new revision is created asynchronously; the retry DELETE only
+      // succeeds once latestCreatedRevision has moved OFF the stuck revision.
+      // Poll briefly until it changes (or give up after a short budget — the
+      // reaper will retry the whole teardown on its next sweep).
+      const stuckName = `${servicePath}/revisions/${cfg.serviceName}-${stuckHostId}`
+      const deadline = Date.now() + 25_000
+      while (Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 2000))
+        const chk = await fetch(`${RUN_API}/${servicePath}`, { headers: { Authorization: `Bearer ${token}` } })
+        if (!chk.ok) continue
+        const cur = await chk.json()
+        const latest: string = cur?.latestCreatedRevision ?? ''
+        if (latest && latest !== stuckName) break
+      }
+    } catch (err) {
+      console.error('[cloud-run] base bump failed:', err)
+    }
+  }
+
+  // Enumerate live PER-SESSION revisions so the reaper can find orphans (a live
+  // revision whose session row is no longer active). Per-session revisions are
+  // named `${serviceName}-${tag}` where tag = revisionTag(sessionId) = `s` + up
+  // to 20 [a-z0-9]. Base-service revisions are named `${serviceName}-NNNNN-xxx`
+  // (a 5-digit generation + suffix), which we exclude. We return the TAG
+  // (hostInstanceId) for each, matching what destroySession expects.
+  async listSessionHostIds(): Promise<string[]> {
+    let cfg: CloudRunConfig
+    try {
+      cfg = loadConfig()
+    } catch {
+      return []
+    }
+    let token: string
+    try {
+      token = await getToken(cfg)
+    } catch {
+      return []
+    }
+    const parent = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}`
+    const prefix = `${cfg.serviceName}-`
+    // Base-service auto revisions: `${serviceName}-<5+ digits>-<suffix>`.
+    const baseRevision = /^\d{5,}-/
+    const hostIds: string[] = []
+    let pageToken: string | undefined
+    try {
+      do {
+        const url = new URL(`${RUN_API}/${parent}/revisions`)
+        url.searchParams.set('pageSize', '500')
+        if (pageToken) url.searchParams.set('pageToken', pageToken)
+        const res = await fetch(url.toString(), {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) break
+        const data = await res.json()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const revs: any[] = Array.isArray(data?.revisions) ? data.revisions : []
+        for (const rev of revs) {
+          const full: string = rev?.name ?? ''
+          const short = full.split('/').pop() ?? ''
+          if (!short.startsWith(prefix)) continue
+          const tail = short.slice(prefix.length)
+          if (baseRevision.test(tail)) continue // base-service auto revision
+          if (!tail.startsWith('s')) continue // not a per-session tag
+          hostIds.push(tail)
+        }
+        pageToken = data?.nextPageToken || undefined
+      } while (pageToken)
+    } catch {
+      return hostIds
+    }
+    return hostIds
   }
 }
