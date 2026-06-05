@@ -35,11 +35,20 @@ export function disciplineIcon(discipline: LiveInterviewDiscipline): string {
 // correct hrefs filled in from this module (never trusting the model for URLs).
 // When `routingEnabled` is false we still return the rows (score-only mode) but
 // blank the hrefs so the UI hides the deep-link CTAs.
+interface RawReadinessRow {
+  discipline?: string
+  demanded?: boolean
+  bar?: string
+  user_readiness?: string
+  top_gap?: string | null
+  recommended_rep?: string | null
+}
+
 export function buildReadinessMap(
-  rawRows: Array<Partial<ReadinessRow> & { discipline?: string }>,
+  rawRows: RawReadinessRow[],
   routingEnabled: boolean,
 ): ReadinessRow[] {
-  const byDiscipline = new Map<LiveInterviewDiscipline, Partial<ReadinessRow>>()
+  const byDiscipline = new Map<LiveInterviewDiscipline, RawReadinessRow>()
 
   for (const row of rawRows ?? []) {
     const discipline = normalizeDiscipline(row.discipline)

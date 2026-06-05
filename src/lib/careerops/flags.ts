@@ -22,9 +22,27 @@ function readBool(value: string | undefined): boolean {
   return value === 'true'
 }
 
+export type RawCareerOpsFlags = Record<CareerOpsFeature, boolean>
+
+// Apply the dependency edges: master → {scorer, tracker, resume, stories},
+// scorer → {routing, discovery}. A feature is only "enabled" when its whole chain
+// is on. Pure so it can be unit-tested without env/import gymnastics.
+export function deriveCareerOpsFlags(raw: RawCareerOpsFlags): Record<CareerOpsFeature, boolean> {
+  return {
+    master: raw.master,
+    scorer: raw.master && raw.scorer,
+    // discovery reuses the scorer for its Stage-B auto-scoring, so it requires it.
+    discovery: raw.master && raw.scorer && raw.discovery,
+    routing: raw.master && raw.scorer && raw.routing,
+    tracker: raw.master && raw.tracker,
+    resume: raw.master && raw.resume,
+    stories: raw.master && raw.stories,
+  }
+}
+
 // Raw env reads. Must reference the literal `process.env.NEXT_PUBLIC_*` keys so
 // Next.js can statically inline them into the client bundle.
-const RAW = {
+const RAW: RawCareerOpsFlags = {
   master: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS),
   scorer: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_SCORER),
   discovery: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_DISCOVERY),
@@ -32,20 +50,9 @@ const RAW = {
   tracker: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_TRACKER),
   resume: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_RESUME),
   stories: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_STORIES),
-} as const
-
-// Dependency edges: master → {scorer, tracker, resume, stories}, scorer →
-// {routing, discovery}. A feature is only "enabled" when its whole chain is on.
-export const careeropsFlags: Record<CareerOpsFeature, boolean> = {
-  master: RAW.master,
-  scorer: RAW.master && RAW.scorer,
-  // discovery reuses the scorer for its Stage-B auto-scoring, so it requires it.
-  discovery: RAW.master && RAW.scorer && RAW.discovery,
-  routing: RAW.master && RAW.scorer && RAW.routing,
-  tracker: RAW.master && RAW.tracker,
-  resume: RAW.master && RAW.resume,
-  stories: RAW.master && RAW.stories,
 }
+
+export const careeropsFlags: Record<CareerOpsFeature, boolean> = deriveCareerOpsFlags(RAW)
 
 export function isCareerOpsFeatureEnabled(key: CareerOpsFeature): boolean {
   return careeropsFlags[key]

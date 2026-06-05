@@ -121,7 +121,9 @@ export async function scoreJob(input: ScoreJobInput): Promise<FitEvaluation> {
     level_strategy: typeof parsed.level_strategy === 'string' ? parsed.level_strategy : '',
     report_md: typeof parsed.report_md === 'string' ? parsed.report_md : '',
     readiness_map: buildReadinessMap(
-      Array.isArray(parsed.readiness_map) ? (parsed.readiness_map as Array<Record<string, unknown>>) : [],
+      Array.isArray(parsed.readiness_map)
+        ? (parsed.readiness_map as Parameters<typeof buildReadinessMap>[0])
+        : [],
       input.routingEnabled,
     ),
   }
