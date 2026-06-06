@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { type Discipline } from '@/components/challenges/DisciplineTabStrip'
 import { FilterDropdownBar, type FilterState } from '@/components/challenges/FilterDropdownBar'
@@ -10,14 +10,27 @@ import { MotionList } from '@/components/motion'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { TopicChipCloud } from '@/components/challenges/TopicChipCloud'
 import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
-import { getTopicLabelAny } from '@/lib/data/taxonomy'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
 import type { ChallengeWithDomain } from '@/lib/types'
-import { coerceDifficulty, expandDifficultyForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
+import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
+
+/** Discipline keys that have a per-discipline count. Mirrors CountDiscipline in challenges.ts. */
+type CountDiscipline = 'all' | 'product_sense' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm' | 'analytics'
 
 interface Props {
-  challenges: ChallengeWithDomain[]
+  /** SSR seed: preview rows (all view) or first page (single discipline). */
+  initialChallenges: ChallengeWithDomain[]
+  /** Discipline the server rendered for (drives the seed shape). */
+  initialDiscipline: CountDiscipline
+  /** Per-discipline counts from the server (HEAD count queries). */
+  counts: Record<CountDiscipline, number>
   paradigms: Record<string, string>
+  /** Precomputed grid-blurb summaries keyed by challenge id (preview/featured rows). */
+  summaries: Record<string, string>
+  /** Preview cards per discipline in the "All practice" overview. */
+  previewPerDiscipline: number
+  /** Page size for single-discipline "load more". */
+  pageSize: number
 }
 
 const EMPTY_FILTERS: FilterState = {
@@ -25,16 +38,12 @@ const EMPTY_FILTERS: FilterState = {
   difficulty: [],
   role: [],
   company: [],
-  tag: [],
-  scope: [],
   topic: [],
   technique: [],
-  move: [],
   real_interview: false,
 }
 
 type FilterKey = keyof FilterState
-/** Filter keys whose value is string[] (all except real_interview). */
 type ArrayFilterKey = Exclude<FilterKey, 'real_interview'>
 type SearchParamReader = Pick<URLSearchParams, 'get' | 'getAll'>
 type SearchParamGetter = Pick<URLSearchParams, 'get'>
@@ -62,6 +71,13 @@ const DISCIPLINES: Array<{
     description: 'MCQs and judgment drills for product-quality thinking.',
     icon: 'psychology',
     accent: '#4a7c59',
+  },
+  {
+    key: 'analytics',
+    label: 'Analytics',
+    description: 'Drive a live Claude Code agent against a real dataset to answer a business question.',
+    icon: 'analytics',
+    accent: '#1565c0',
   },
   {
     key: 'system_design',
@@ -93,32 +109,22 @@ const DISCIPLINES: Array<{
   },
 ]
 
-const ROLE_VALUE_MAP: Record<string, string> = {
-  SWE: 'swe',
-  'Tech Lead': 'tech_lead',
-  EM: 'em',
-  'ML Eng': 'ml_eng',
-  'Data Eng': 'data_eng',
-  DevOps: 'devops',
-  'Founding Eng': 'founding_eng',
-  PM: 'pm',
-  Designer: 'designer',
-  'Data Scientist': 'data_scientist',
+const ALL_VIEW_DISCIPLINES = ['product_sense', 'analytics', 'system_design', 'data_modeling', 'sql', 'algorithm'] as const
+const DISCIPLINE_LABELS: Record<string, string> = {
+  product_sense: 'Product Sense',
+  analytics: 'Analytics',
+  system_design: 'System Design',
+  data_modeling: 'Data Modeling',
+  sql: 'SQL',
+  algorithm: 'Coding',
 }
-
-// Map UI label → canonical PracticeDifficulty bucket. The actual row match
-// happens via expandDifficultyForQuery() so legacy DB strings still filter
-// correctly until R2 rewrites the column.
-const DIFFICULTY_LABEL_TO_BUCKET: Record<string, PracticeDifficulty> = {
-  Easy: 'easy',
-  Medium: 'medium',
-  Hard: 'hard',
-}
-
-const SCOPE_VALUE_MAP: Record<string, string> = {
-  'Single Service': 'single_service',
-  Distributed: 'distributed',
-  'Multi-Region': 'multi_region',
+const DISCIPLINE_COLORS: Record<string, string> = {
+  product_sense: 'text-primary',
+  analytics: 'text-[#1565c0]',
+  system_design: 'text-tertiary',
+  data_modeling: 'text-secondary',
+  sql: 'text-[#5a3a7c]',
+  algorithm: 'text-[#3a5a7c]',
 }
 
 function isDiscipline(value: string | null): value is Discipline {
@@ -140,98 +146,86 @@ function writeFilterValues(params: URLSearchParams, key: FilterKey, values: stri
     params.delete(key)
     return
   }
-
   params.set(key, values.join(','))
-}
-
-function normalizeValue(value: string) {
-  return value.toLowerCase().replace(/[-\s]+/g, '_')
 }
 
 function getDiscipline(searchParams: SearchParamGetter): Discipline {
   const discipline = searchParams.get('discipline')
   const legacyType = searchParams.get('type')
-
   if (isDiscipline(discipline)) return discipline
   if (isDiscipline(legacyType)) return legacyType
   return 'all'
 }
 
-function matchesDiscipline(challenge: ChallengeWithDomain, discipline: Discipline) {
+/**
+ * Whether `challenge_type` belongs to a discipline. product_sense spans a set;
+ * the others map 1:1. Mirrors applyDisciplineFilter on the server.
+ *
+ * Claude Code Analytics is its OWN discipline (`analytics` → claude_code_analytics)
+ * and is NOT folded into product_sense here, so the All-view overview groups it
+ * under its own section rather than under Product Sense.
+ */
+function challengeMatchesDiscipline(type: string | null | undefined, discipline: Discipline) {
   if (discipline === 'all') return true
-  if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take', 'claude_code_analytics'].includes(challenge.challenge_type ?? '')
-  return challenge.challenge_type === discipline
+  if (discipline === 'analytics') return type === 'claude_code_analytics'
+  if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(type ?? '')
+  return type === discipline
 }
 
-function matchesSecondaryFilters(challenge: ChallengeWithDomain, filters: FilterState) {
-  if (filters.paradigm.length > 0) {
-    const selectedParadigms = filters.paradigm.map(normalizeValue)
-    const challengeParadigm = normalizeValue(challenge.paradigm ?? '')
-    if (!selectedParadigms.includes(challengeParadigm)) return false
-  }
-
-  if (filters.difficulty.length > 0) {
-    const selectedBuckets = filters.difficulty
-      .map((label) => DIFFICULTY_LABEL_TO_BUCKET[label] ?? coerceDifficulty(label))
-      .filter((b): b is PracticeDifficulty => b != null)
-    const acceptedDbValues = new Set<string>()
-    for (const b of selectedBuckets) for (const v of expandDifficultyForQuery(b)) acceptedDbValues.add(v)
-    if (!acceptedDbValues.has(challenge.difficulty)) return false
-  }
-
-  if (filters.role.length > 0) {
-    const selectedRoles = filters.role.map((role) => ROLE_VALUE_MAP[role] ?? normalizeValue(role))
-    const challengeRoles = (challenge.relevant_roles ?? []).map(normalizeValue)
-    if (!selectedRoles.some((role) => challengeRoles.includes(role))) return false
-  }
-
-  if (filters.company.length > 0) {
-    const selectedCompanies = filters.company.map(normalizeValue)
-    const challengeCompanies = (challenge.company_tags ?? []).map(normalizeValue)
-    if (!selectedCompanies.some((company) => challengeCompanies.includes(company))) return false
-  }
-
-  if (filters.tag.length > 0) {
-    const selectedTags = filters.tag.map(normalizeValue)
-    const challengeTags = Array.from(new Set([
-      ...(challenge.topic_tags ?? []),
-      ...(challenge.technique_tags ?? []),
-    ])).map(normalizeValue)
-    if (!selectedTags.some((tag) => challengeTags.includes(tag))) return false
-  }
-
-  if (filters.scope.length > 0) {
-    if (challenge.challenge_type !== 'system_design') return false
-
-    const selectedScopes = filters.scope.map((scope) => SCOPE_VALUE_MAP[scope] ?? normalizeValue(scope))
-    const challengeScope = (challenge as unknown as { metadata?: Record<string, unknown> | null }).metadata?.scope
-    if (typeof challengeScope !== 'string' || !selectedScopes.includes(challengeScope)) return false
-  }
-
-  if (filters.topic.length > 0) {
-    const challengeTopics = challenge.topic_tags ?? []
-    if (!filters.topic.some((t) => challengeTopics.includes(t))) return false
-  }
-
-  if (filters.technique.length > 0) {
-    const challengeTechniques = challenge.technique_tags ?? []
-    if (!filters.technique.some((t) => challengeTechniques.includes(t))) return false
-  }
-
-  if (filters.move.length > 0) {
-    const challengeMoves = (challenge.move_tags ?? []) as string[]
-    const selectedMoves = filters.move.map(m => m.toLowerCase())
-    if (!selectedMoves.some((m) => challengeMoves.includes(m))) return false
-  }
-
-  if (filters.real_interview) {
-    if (!challenge.is_real_interview) return false
-  }
-
-  return true
+/** Build the /api/challenges query string from the active filters + discipline + page.
+ *  Multi-select values are passed comma-joined; the API splits them and applies OR. */
+function buildListQuery(opts: {
+  discipline: Discipline
+  filters: FilterState
+  /** When set, overrides the topic filter (used by a topic-scoped section fetch). */
+  topic?: string
+  page: number
+  limit: number
+}): string {
+  const p = new URLSearchParams()
+  if (opts.discipline !== 'all') p.set('discipline', opts.discipline)
+  const setMulti = (key: string, values: string[]) => { if (values.length > 0) p.set(key, values.join(',')) }
+  setMulti('paradigm', opts.filters.paradigm)
+  setMulti('difficulty', opts.filters.difficulty)
+  setMulti('role', opts.filters.role)
+  setMulti('company', opts.filters.company)
+  setMulti('technique', opts.filters.technique)
+  // A section fetch scopes to one topic; otherwise pass the selected topic(s).
+  if (opts.topic) p.set('topic', opts.topic)
+  else setMulti('topic', opts.filters.topic)
+  if (opts.filters.real_interview) p.set('real_interview', '1')
+  p.set('page', String(opts.page))
+  p.set('limit', String(opts.limit))
+  return p.toString()
 }
 
-export function FilteredChallengesView({ challenges, paradigms }: Props) {
+interface ListResponse {
+  challenges: ChallengeWithDomain[]
+  total: number
+  has_more: boolean
+}
+
+export function FilteredChallengesView({
+  initialChallenges: seedChallenges,
+  initialDiscipline,
+  counts,
+  paradigms,
+  summaries,
+  previewPerDiscipline,
+  pageSize,
+}: Props) {
+  // Claude Code Analytics ships dark behind the feature flag. When off, drop
+  // analytics challenges entirely (so they never appear in "All" or the seed)
+  // and hide the Analytics discipline tab below. NEXT_PUBLIC_* is inlined
+  // client-side. When on, analytics rows + tab show normally.
+  const analyticsEnabled = isAnalyticsFeatureEnabled()
+  const initialChallenges = useMemo(
+    () => analyticsEnabled
+      ? seedChallenges
+      : seedChallenges.filter((c) => c.challenge_type !== 'claude_code_analytics'),
+    [seedChallenges, analyticsEnabled],
+  )
+
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
@@ -246,11 +240,8 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
     difficulty: readFilterValues(parsedParams, 'difficulty'),
     role: readFilterValues(parsedParams, 'role'),
     company: readFilterValues(parsedParams, 'company'),
-    tag: readFilterValues(parsedParams, 'tag'),
-    scope: readFilterValues(parsedParams, 'scope'),
     topic: readFilterValues(parsedParams, 'topic'),
     technique: readFilterValues(parsedParams, 'technique'),
-    move: readFilterValues(parsedParams, 'move'),
     real_interview: parsedParams.get('real_interview') === '1',
   }), [parsedParams])
 
@@ -260,7 +251,6 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   function updateParams(mutator: (params: URLSearchParams) => void) {
     const params = new URLSearchParams(searchString)
     mutator(params)
-
     const nextSearch = params.toString()
     router.push(nextSearch ? `${pathname}?${nextSearch}` : pathname, { scroll: false })
   }
@@ -268,15 +258,10 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   function handleDisciplineChange(nextDiscipline: Discipline) {
     updateParams((params) => {
       params.delete('type')
-      // Topic and technique chip clouds are discipline-scoped (TopicChipCloud
-      // hides for `all` and switches its vocab per type). Clear them on type
-      // change so stale slugs from another discipline don't linger in the URL.
       params.delete('topic')
       params.delete('technique')
       if (nextDiscipline === 'all') params.delete('discipline')
       else params.set('discipline', nextDiscipline)
-
-      if (nextDiscipline !== 'system_design') params.delete('scope')
     })
   }
 
@@ -285,61 +270,8 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
       ARRAY_FILTER_KEYS.forEach((key) => writeFilterValues(params, key, nextFilters[key] as string[]))
       if (nextFilters.real_interview) params.set('real_interview', '1')
       else params.delete('real_interview')
-      if (getDiscipline(params) !== 'system_design') params.delete('scope')
     })
   }
-
-  const filteredChallenges = useMemo(() => {
-    return challenges.filter((challenge) => (
-      matchesDiscipline(challenge, discipline) && matchesSecondaryFilters(challenge, filters)
-    ))
-  }, [challenges, discipline, filters])
-
-  const disciplineCounts = useMemo(() => {
-    const counts = new Map<Discipline, number>()
-    const SUB_DISCIPLINES = DISCIPLINES.filter(e => e.key !== 'all')
-
-    SUB_DISCIPLINES.forEach((entry) => {
-      counts.set(
-        entry.key,
-        challenges.filter((challenge) => (
-          matchesDiscipline(challenge, entry.key) && matchesSecondaryFilters(challenge, filters)
-        )).length,
-      )
-    })
-
-    // "All practice" total = sum of categorised sub-disciplines (avoids orphaned types inflating count)
-    const subTotal = SUB_DISCIPLINES.reduce((sum, e) => sum + (counts.get(e.key) ?? 0), 0)
-    counts.set('all', subTotal)
-
-    return counts
-  }, [challenges, filters])
-
-  // Live chip counts: tally topic/technique tags over the discipline-scoped set
-  // (NOT the secondary-filtered set, so counts stay stable as the user toggles
-  // chips). Drives which chips render and their count badges.
-  const chipCounts = useMemo(() => {
-    const topics: Record<string, number> = {}
-    const techniques: Record<string, number> = {}
-    for (const c of challenges) {
-      if (!matchesDiscipline(c, discipline)) continue
-      for (const slug of c.topic_tags ?? []) topics[slug] = (topics[slug] ?? 0) + 1
-      for (const slug of c.technique_tags ?? []) techniques[slug] = (techniques[slug] ?? 0) + 1
-    }
-    return { topics, techniques }
-  }, [challenges, discipline])
-
-  // Resolve display labels for every topic slug present in the discipline set,
-  // so GroupedChallengeList can render real section headers (e.g. "Window Functions").
-  const topicLabels = useMemo(() => {
-    const labels: Record<string, string> = {}
-    for (const c of filteredChallenges) {
-      for (const slug of c.topic_tags ?? []) {
-        if (!labels[slug]) labels[slug] = getTopicLabelAny(slug) ?? slug
-      }
-    }
-    return labels
-  }, [filteredChallenges])
 
   function handleRemoveFilter(key: keyof FilterState, value: string) {
     if (key === 'real_interview') {
@@ -360,30 +292,31 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
     const params = new URLSearchParams(searchString)
     if (listView) params.set('view', 'grid')
     else params.delete('view')
-
     const nextSearch = params.toString()
     window.history.replaceState(null, '', nextSearch ? `${pathname}?${nextSearch}` : pathname)
   }
 
-  const resultsLayoutClass = listView
-    ? 'grid grid-cols-1 gap-2'
-    : 'grid grid-cols-1 sm:grid-cols-3 gap-3'
+  // Resolve a discipline's count badge from the server counts (analytics is now a
+  // real CountDiscipline key, returned only when the feature flag is enabled).
+  const countFor = (key: Discipline): number => counts[key as CountDiscipline] ?? 0
+
+  const totalForDiscipline = countFor(discipline)
+
+  // Hide the Analytics tab entirely while the feature is dark.
+  const visibleDisciplines = analyticsEnabled
+    ? DISCIPLINES
+    : DISCIPLINES.filter((d) => d.key !== 'analytics')
 
   return (
     <div className="-mx-4 flex min-w-0 flex-col sm:-mx-6">
-      <section className="px-4 pb-4 sm:px-6">
+      <section data-tour-target="practice-filters" className="px-4 pb-4 sm:px-6">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
-          {DISCIPLINES.map((entry) => {
+          {visibleDisciplines.map((entry) => {
             const active = discipline === entry.key
-            const count = disciplineCounts.get(entry.key) ?? 0
+            const count = countFor(entry.key)
 
             return (
-              <AppTooltip
-                key={entry.key}
-                label={entry.description}
-                side="bottom"
-                className="flex"
-              >
+              <AppTooltip key={entry.key} label={entry.description} side="bottom" className="flex">
                 <button
                   type="button"
                   onClick={() => handleDisciplineChange(entry.key)}
@@ -430,13 +363,13 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         </div>
       </section>
 
-      {/* Topic chip cloud — discipline-scoped topic/technique quick filters */}
-      <TopicChipCloud
+      {/* Topic chip cloud — discipline-scoped topic/technique quick filters.
+          Counts come from the server (groupBy=topic|technique). */}
+      <TopicChipCloudLoader
         discipline={discipline}
         filters={filters}
         onChange={handleFilterChange}
-        topicCounts={chipCounts.topics}
-        techniqueCounts={chipCounts.techniques}
+        searchString={searchString}
       />
 
       {/* Secondary filter bar */}
@@ -444,7 +377,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         discipline={discipline}
         filters={filters}
         onChange={handleFilterChange}
-        resultCount={filteredChallenges.length}
+        resultCount={totalForDiscipline}
         onOpenMobileSheet={() => setMobileSheetOpen(true)}
         listView={listView}
         onToggleView={handleToggleView}
@@ -463,7 +396,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         open={mobileSheetOpen}
         discipline={discipline}
         filters={filters}
-        resultCount={filteredChallenges.length}
+        resultCount={totalForDiscipline}
         onChange={handleFilterChange}
         onClose={() => setMobileSheetOpen(false)}
         onClearAll={handleClearAll}
@@ -472,97 +405,431 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
 
       {/* Results */}
       <div className="px-4 pt-4 sm:px-6">
-        {listView && filteredChallenges.length > 0 && discipline !== 'all' && (
-          <p className="mb-2 text-[11px] font-label text-on-surface-variant">
-            <span className="inline-flex items-center gap-1">
-              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 0" }}>radio_button_unchecked</span>
-              Not started
-            </span>
-            {' · '}
-            <span className="inline-flex items-center gap-1">
-              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 0" }}>change_history</span>
-              Attempted
-            </span>
-            {' · '}
-            <span className="inline-flex items-center gap-1">
-              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-              Completed
-            </span>
-          </p>
-        )}
-        {filteredChallenges.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <p className="font-headline text-base font-bold text-on-surface">No challenges match those filters</p>
-            <button
-              onClick={handleClearAll}
-              className="text-sm text-primary font-bold hover:underline font-label"
-            >
-              Clear all filters
-            </button>
-          </div>
-        ) : discipline === 'all' ? (
-          <div className="flex flex-col gap-8">
-            {(['product_sense', 'system_design', 'data_modeling', 'sql', 'algorithm'] as const).map((disc) => {
-              const labels: Record<string, string> = {
-                product_sense: 'Product Sense',
-                system_design: 'System Design',
-                data_modeling: 'Data Modeling',
-                sql: 'SQL',
-                algorithm: 'Coding',
-              }
-              const colors: Record<string, string> = {
-                product_sense: 'text-primary',
-                system_design: 'text-tertiary',
-                data_modeling: 'text-secondary',
-                sql: 'text-[#5a3a7c]',
-                algorithm: 'text-[#3a5a7c]',
-              }
-              const discChallenges = filteredChallenges.filter((c) => {
-                if (disc === 'product_sense') return ['flow', 'freeform', 'quick_take', 'claude_code_analytics'].includes(c.challenge_type ?? '')
-                return c.challenge_type === disc
-              })
-              if (discChallenges.length === 0) return null
-              const discParadigms: Record<string, string> = {}
-              discChallenges.forEach((c) => { discParadigms[c.id] = paradigms[c.id] ?? 'Traditional' })
-              const preview = discChallenges.slice(0, 6)
-              const previewParadigms: Record<string, string> = {}
-              preview.forEach((c) => { previewParadigms[c.id] = paradigms[c.id] ?? 'Traditional' })
-              return (
-                <section key={disc} className="flex flex-col gap-3">
-                  <div className={`font-label font-bold text-sm flex items-center gap-2 ${colors[disc]}`}>
-                    {labels[disc]}
-                    <button
-                      type="button"
-                      onClick={() => handleDisciplineChange(disc as Discipline)}
-                      className="font-label text-xs text-on-surface-variant font-normal hover:underline"
-                    >
-                      see all {discChallenges.length} →
-                    </button>
-                  </div>
-                  <MotionList
-                    layoutKey={`practice-${disc}`}
-                    className={resultsLayoutClass}
-                  >
-                    <LockedChallengeGrid
-                      challenges={preview}
-                      paradigms={previewParadigms}
-                      listView={listView}
-                      returnHref={returnHref}
-                    />
-                  </MotionList>
-                </section>
-              )
-            })}
-          </div>
-        ) : (
-          <GroupedChallengeList
-            challenges={filteredChallenges}
-            groupBy={filters.topic.length > 0 ? 'none' : 'primaryTopic'}
-            topicLabels={topicLabels}
+        {discipline === 'all' ? (
+          <AllPracticeView
+            initialChallenges={initialChallenges}
+            initialDiscipline={initialDiscipline}
+            counts={counts}
+            analyticsEnabled={analyticsEnabled}
+            paradigms={paradigms}
+            summaries={summaries}
+            filters={filters}
+            listView={listView}
             returnHref={returnHref}
+            previewPerDiscipline={previewPerDiscipline}
+            pageSize={pageSize}
+            onSeeAll={handleDisciplineChange}
+          />
+        ) : (
+          <DisciplineView
+            key={`${discipline}-${searchString}`}
+            discipline={discipline}
+            filters={filters}
+            initialChallenges={initialDiscipline === discipline ? initialChallenges : []}
+            initialTotal={totalForDiscipline}
+            returnHref={returnHref}
+            pageSize={pageSize}
+            searchString={searchString}
           />
         )}
       </div>
+    </div>
+  )
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Topic chip cloud loader — fetches topic/technique counts for the active
+ * discipline from the server (no full-row payload) and feeds TopicChipCloud.
+ * ────────────────────────────────────────────────────────────────────────── */
+function TopicChipCloudLoader({
+  discipline,
+  filters,
+  onChange,
+  searchString,
+}: {
+  discipline: Discipline
+  filters: FilterState
+  onChange: (f: FilterState) => void
+  searchString: string
+}) {
+  const [topicCounts, setTopicCounts] = useState<Record<string, number>>({})
+  const [techniqueCounts, setTechniqueCounts] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    if (discipline === 'all') {
+      setTopicCounts({})
+      setTechniqueCounts({})
+      return
+    }
+    let cancelled = false
+    const base = new URLSearchParams(searchString)
+    base.set('discipline', discipline)
+    const topicQs = new URLSearchParams(base); topicQs.set('groupBy', 'topic')
+    const techQs = new URLSearchParams(base); techQs.set('groupBy', 'technique')
+    Promise.all([
+      fetch(`/api/challenges/count?${topicQs.toString()}`).then(r => r.ok ? r.json() : { counts: {} }),
+      fetch(`/api/challenges/count?${techQs.toString()}`).then(r => r.ok ? r.json() : { counts: {} }),
+    ]).then(([t, k]) => {
+      if (cancelled) return
+      setTopicCounts(t.counts ?? {})
+      setTechniqueCounts(k.counts ?? {})
+    }).catch(() => { if (!cancelled) { setTopicCounts({}); setTechniqueCounts({}) } })
+    return () => { cancelled = true }
+  }, [discipline, searchString])
+
+  return (
+    <TopicChipCloud
+      discipline={discipline}
+      filters={filters}
+      onChange={onChange}
+      topicCounts={topicCounts}
+      techniqueCounts={techniqueCounts}
+    />
+  )
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * "All practice" overview — discipline preview sections (capped), each with a
+ * "see all N" link. Preview rows come from the SSR seed; each section can
+ * "load more" via /api/challenges without leaving the overview.
+ * ────────────────────────────────────────────────────────────────────────── */
+function AllPracticeView({
+  initialChallenges,
+  counts,
+  analyticsEnabled,
+  paradigms,
+  summaries,
+  filters,
+  listView,
+  returnHref,
+  previewPerDiscipline,
+  pageSize,
+  onSeeAll,
+}: {
+  initialChallenges: ChallengeWithDomain[]
+  initialDiscipline: CountDiscipline
+  counts: Record<CountDiscipline, number>
+  analyticsEnabled: boolean
+  paradigms: Record<string, string>
+  summaries: Record<string, string>
+  filters: FilterState
+  listView: boolean
+  returnHref: string
+  previewPerDiscipline: number
+  pageSize: number
+  onSeeAll: (d: Discipline) => void
+}) {
+  const resultsLayoutClass = listView
+    ? 'grid grid-cols-1 gap-2'
+    : 'grid grid-cols-1 sm:grid-cols-3 gap-3'
+
+  // Seed each section from the SSR preview rows grouped by their discipline.
+  const seeded = useMemo(() => {
+    const map: Record<string, ChallengeWithDomain[]> = {}
+    for (const disc of ALL_VIEW_DISCIPLINES) {
+      map[disc] = initialChallenges
+        .filter((c) => challengeMatchesDiscipline(c.challenge_type, disc as Discipline))
+        .slice(0, previewPerDiscipline)
+    }
+    return map
+  }, [initialChallenges, previewPerDiscipline])
+
+  // Per-section total from the server counts (analytics is a real key now, and is
+  // 0 / absent when the feature is dark, so it's dropped by the >0 filter below).
+  const totalFor = (disc: (typeof ALL_VIEW_DISCIPLINES)[number]): number =>
+    counts[disc as CountDiscipline] ?? 0
+
+  const visibleDisciplines = ALL_VIEW_DISCIPLINES
+    .filter((d) => analyticsEnabled || d !== 'analytics')
+    .filter((d) => totalFor(d) > 0)
+
+  if (visibleDisciplines.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+        <p className="font-headline text-base font-bold text-on-surface">No challenges match those filters</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-8">
+      {visibleDisciplines.map((disc) => (
+        <AllPracticeSection
+          key={disc}
+          discipline={disc as Discipline}
+          total={totalFor(disc)}
+          seed={seeded[disc] ?? []}
+          filters={filters}
+          paradigms={paradigms}
+          summaries={summaries}
+          listView={listView}
+          returnHref={returnHref}
+          resultsLayoutClass={resultsLayoutClass}
+          previewPerDiscipline={previewPerDiscipline}
+          pageSize={pageSize}
+          onSeeAll={() => onSeeAll(disc as Discipline)}
+        />
+      ))}
+    </div>
+  )
+}
+
+function AllPracticeSection({
+  discipline,
+  total,
+  seed,
+  filters,
+  paradigms,
+  summaries,
+  listView,
+  returnHref,
+  resultsLayoutClass,
+  previewPerDiscipline,
+  pageSize,
+  onSeeAll,
+}: {
+  discipline: Discipline
+  total: number
+  seed: ChallengeWithDomain[]
+  filters: FilterState
+  paradigms: Record<string, string>
+  summaries: Record<string, string>
+  listView: boolean
+  returnHref: string
+  resultsLayoutClass: string
+  previewPerDiscipline: number
+  pageSize: number
+  onSeeAll: () => void
+}) {
+  const [rows, setRows] = useState<ChallengeWithDomain[]>(seed)
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
+
+  // Keep rows in sync with the seed when filters change.
+  useEffect(() => {
+    setRows(seed)
+    setPage(1)
+  }, [seed])
+
+  const loadMore = useCallback(async () => {
+    setLoading(true)
+    try {
+      const nextPage = page + 1
+      const qs = buildListQuery({ discipline, filters, page: nextPage, limit: pageSize })
+      const res = await fetch(`/api/challenges?${qs}`)
+      if (res.ok) {
+        const data: ListResponse = await res.json()
+        setRows((prev) => {
+          const seen = new Set(prev.map((c) => c.id))
+          return [...prev, ...data.challenges.filter((c) => !seen.has(c.id))]
+        })
+        setPage(nextPage)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [discipline, filters, page, pageSize])
+
+  // Page 1 from the API holds `pageSize` rows; the seed only had
+  // previewPerDiscipline. The first "load more" jumps to page 2 (offset
+  // pageSize), which would skip rows between previewPerDiscipline and pageSize.
+  // Guard: if still showing only the preview, the first expand fetches page 1.
+  const expandToFull = useCallback(async () => {
+    setLoading(true)
+    try {
+      const qs = buildListQuery({ discipline, filters, page: 1, limit: pageSize })
+      const res = await fetch(`/api/challenges?${qs}`)
+      if (res.ok) {
+        const data: ListResponse = await res.json()
+        setRows(data.challenges)
+        setPage(1)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [discipline, filters, pageSize])
+
+  const showingPreview = rows.length <= previewPerDiscipline
+
+  const previewParadigms: Record<string, string> = {}
+  rows.forEach((c) => { previewParadigms[c.id] = paradigms[c.id] ?? 'Traditional' })
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className={`font-label font-bold text-sm flex items-center gap-2 ${DISCIPLINE_COLORS[discipline] ?? 'text-primary'}`}>
+        {DISCIPLINE_LABELS[discipline] ?? discipline}
+        <button
+          type="button"
+          onClick={onSeeAll}
+          className="font-label text-xs text-on-surface-variant font-normal hover:underline"
+        >
+          see all {total} →
+        </button>
+      </div>
+      <MotionList layoutKey={`practice-${discipline}`} className={resultsLayoutClass}>
+        <LockedChallengeGrid
+          challenges={rows}
+          paradigms={previewParadigms}
+          listView={listView}
+          returnHref={returnHref}
+          summaries={summaries}
+        />
+      </MotionList>
+      {total > rows.length && (
+        <button
+          type="button"
+          onClick={showingPreview ? expandToFull : loadMore}
+          disabled={loading}
+          className="self-start font-label text-xs font-semibold text-primary hover:underline disabled:opacity-50"
+        >
+          {loading ? 'Loading…' : `Load more (${total - rows.length} more)`}
+        </button>
+      )}
+    </section>
+  )
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Single-discipline view. Two sub-modes:
+ *  - chip-filtered (topic/technique selected): flat list, "Load more" 30/page.
+ *  - grouped (no topic): topic sections from server tag-counts; rows lazy-load
+ *    on expand (handled inside GroupedChallengeList).
+ * ────────────────────────────────────────────────────────────────────────── */
+function DisciplineView({
+  discipline,
+  filters,
+  initialChallenges,
+  initialTotal,
+  returnHref,
+  pageSize,
+  searchString,
+}: {
+  discipline: Discipline
+  filters: FilterState
+  initialChallenges: ChallengeWithDomain[]
+  initialTotal: number
+  returnHref: string
+  pageSize: number
+  searchString: string
+}) {
+  // Analytics challenges have no topic/technique taxonomy, so the topic-grouped
+  // view would render empty. Always show them as a flat list (same as the
+  // chip-filtered case). Otherwise group by topic when no chip filter is active.
+  const flat = discipline === 'analytics' || filters.topic.length > 0 || filters.technique.length > 0
+
+  if (flat) {
+    return (
+      <FlatDisciplineList
+        discipline={discipline}
+        filters={filters}
+        initialChallenges={initialChallenges}
+        initialTotal={initialTotal}
+        returnHref={returnHref}
+        pageSize={pageSize}
+      />
+    )
+  }
+
+  return (
+    <GroupedChallengeList
+      discipline={discipline}
+      filters={filters}
+      returnHref={returnHref}
+      searchString={searchString}
+      pageSize={pageSize}
+    />
+  )
+}
+
+/** Flat list (chip-filtered): seeded by SSR rows, "Load more" 30 at a time. */
+function FlatDisciplineList({
+  discipline,
+  filters,
+  initialChallenges,
+  initialTotal,
+  returnHref,
+  pageSize,
+}: {
+  discipline: Discipline
+  filters: FilterState
+  initialChallenges: ChallengeWithDomain[]
+  initialTotal: number
+  returnHref: string
+  pageSize: number
+}) {
+  const [rows, setRows] = useState<ChallengeWithDomain[]>(initialChallenges)
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(initialTotal)
+  const [hasMore, setHasMore] = useState(initialTotal > initialChallenges.length)
+  const [loading, setLoading] = useState(false)
+
+  // Stable string keys so the refetch effect fires when ANY selected topic/
+  // technique changes (not just the first). buildListQuery passes the full
+  // arrays, so multi-topic selections are all applied (OR).
+  const topicKey = filters.topic.join(',')
+  const techniqueKey = filters.technique.join(',')
+
+  // The SSR seed is filtered only on the primary filters; for a chip-filtered
+  // view we (re)fetch page 1 with the topic/technique applied to be exact.
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    const qs = buildListQuery({ discipline, filters, page: 1, limit: pageSize })
+    fetch(`/api/challenges?${qs}`)
+      .then((r) => (r.ok ? r.json() : { challenges: [], total: 0, has_more: false }))
+      .then((data: ListResponse) => {
+        if (cancelled) return
+        setRows(data.challenges)
+        setTotal(data.total)
+        setPage(1)
+        setHasMore(data.has_more)
+      })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discipline, topicKey, techniqueKey])
+
+  const loadMore = useCallback(async () => {
+    setLoading(true)
+    try {
+      const nextPage = page + 1
+      const qs = buildListQuery({ discipline, filters, page: nextPage, limit: pageSize })
+      const res = await fetch(`/api/challenges?${qs}`)
+      if (res.ok) {
+        const data: ListResponse = await res.json()
+        setRows((prev) => {
+          const seen = new Set(prev.map((c) => c.id))
+          return [...prev, ...data.challenges.filter((c) => !seen.has(c.id))]
+        })
+        setPage(nextPage)
+        setHasMore(data.has_more)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [discipline, filters, page, pageSize])
+
+  if (!loading && rows.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+        <p className="font-headline text-base font-bold text-on-surface">No challenges match those filters</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <GroupedChallengeList.FlatRows challenges={rows} returnHref={returnHref} />
+      {hasMore && (
+        <button
+          type="button"
+          onClick={loadMore}
+          disabled={loading}
+          className="self-center font-label text-xs font-semibold text-primary hover:underline disabled:opacity-50"
+        >
+          {loading ? 'Loading…' : `Load more (${total - rows.length} more)`}
+        </button>
+      )}
     </div>
   )
 }

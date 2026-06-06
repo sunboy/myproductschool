@@ -10,6 +10,7 @@ import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
 import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
+import { checkAndGrantAchievements } from '@/lib/achievements/check'
 import { FLOW_MAX_SCORE, MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
 import { buildCompletedAttemptResult } from '@/lib/scoring/completed-attempt-result'
 import {
@@ -18,6 +19,9 @@ import {
   type CompetencySignalInput,
 } from '@/lib/scoring/competency-rollup'
 import { createCommunitySubmissionCandidate, recordCommunityCompletion } from '@/lib/data/community'
+import { withRoute } from '@/lib/api/withRoute'
+import { captureServerImmediate } from '@/lib/posthog/server'
+import { EVENT_CHALLENGE_COMPLETED } from '@/lib/posthog/events'
 
 const RequestSchema = z.object({
   attempt_id: z.string().uuid(),
@@ -31,10 +35,10 @@ function validationIssues(error: ZodError) {
   }))
 }
 
-export async function POST(
+export const POST = withRoute(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const isMock = IS_MOCK
 
   const supabase = await createClient()
@@ -267,6 +271,11 @@ export async function POST(
   }
   await applyMoveLevelXp(userId, moveScores, 'challenge')
 
+  // Grant any newly earned achievements (fire-and-forget so it never blocks/fails completion)
+  checkAndGrantAchievements(userId, admin).catch(err =>
+    console.error('[challenge-complete] achievement check failed:', err)
+  )
+
   const step_breakdown = stepResults.map((s) => ({
     step: s.step,
     score: s.step_score,
@@ -419,6 +428,19 @@ export async function POST(
     created_at: new Date().toISOString(),
   })
 
+  await captureServerImmediate({
+    distinctId: userId,
+    event: EVENT_CHALLENGE_COMPLETED,
+    properties: {
+      challenge_id: challengeId,
+      grade_label,
+      total_score,
+      max_score,
+      xp_awarded: xp_earned,
+      from_plan: from_plan ?? null,
+    },
+  })
+
   return NextResponse.json({
     total_score,
     max_score,
@@ -431,4 +453,4 @@ export async function POST(
     primary_competency: competencyRollup.primaryCompetency,
     weakest_competency: competencyRollup.weakestCompetency,
   })
-}
+}, { name: 'challenges.complete' })

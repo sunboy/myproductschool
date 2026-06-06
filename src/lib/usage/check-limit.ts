@@ -1,6 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export type UsageFeature = 'challenges' | 'interviews' | 'hatch_ai_cents'
+export type UsageFeature =
+  | 'challenges'
+  | 'interviews'
+  | 'hatch_ai_cents'
+  | 'claude_code_sessions'
+  | 'cc_claude_spend_cents'
 export type UsageUnit = 'count' | 'cents'
 export type BillingPlan = 'free' | 'pro'
 
@@ -50,11 +55,33 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       costCeilingCents: null,
     },
     hatch_ai_cents: {
-      limitValue: 35,
+      // Not a user-facing gate. Freemium is metered by reps (challenges + interviews);
+      // assertAiBudget observes-but-never-blocks. Kept high as an abuse backstop only,
+      // while per-user spend is still recorded for backend monitoring.
+      limitValue: 5000,
       windowDays: 30,
       unit: 'cents',
-      description: 'Free Hatch AI spend budget in cents per rolling month',
-      costCeilingCents: 35,
+      description: 'Free Hatch AI spend backstop in cents per rolling month (not a gate)',
+      costCeilingCents: 5000,
+    },
+    claude_code_sessions: {
+      // Free users never reach this (the analytics tier gate blocks them first),
+      // but the fallback must be complete. 0 = no analytics sessions.
+      limitValue: 0,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Claude Code Analytics sessions per rolling month (not included)',
+      costCeilingCents: null,
+    },
+    cc_claude_spend_cents: {
+      // OBSERVABILITY ONLY (not a gate yet). Per-user CC Analytics Claude spend in
+      // cents/30d, recorded from the gateway. High value so checkUsageLimit never
+      // blocks; alerts read the rolling sum directly via getUsedQuantity.
+      limitValue: 100000,
+      windowDays: 30,
+      unit: 'cents',
+      description: 'CC Analytics Claude spend in cents per rolling month (observed, not gated)',
+      costCeilingCents: 100000,
     },
   },
   pro: {
@@ -78,6 +105,23 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       unit: 'cents',
       description: 'Pro Hatch AI spend budget in cents per rolling month',
       costCeilingCents: 600,
+    },
+    claude_code_sessions: {
+      // Analytics tier resolves to plan='pro', so the analytics session cap lives
+      // on the pro row. Seeded authoritatively in plan_limits; this is the fallback.
+      limitValue: 40,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Claude Code Analytics sessions per rolling month',
+      costCeilingCents: null,
+    },
+    cc_claude_spend_cents: {
+      // OBSERVABILITY ONLY (not a gate yet). The future $10/mo cap will tighten this.
+      limitValue: 100000,
+      windowDays: 30,
+      unit: 'cents',
+      description: 'CC Analytics Claude spend in cents per rolling month (observed, not gated)',
+      costCeilingCents: 100000,
     },
   },
 }
@@ -131,7 +175,7 @@ async function getPlanLimit(
   return record
 }
 
-async function getUsedQuantity(
+export async function getUsedQuantity(
   userId: string,
   feature: UsageFeature,
   windowStart: string
@@ -145,9 +189,21 @@ async function getUsedQuantity(
     .eq('feature', feature)
     .gte('created_at', windowStart)
 
+  // Cents features store a dollar amount in `quantity`; a count is meaningless for
+  // them. Count features (challenges/interviews/sessions) default a null qty to 1.
+  const isCentsFeature = feature === 'hatch_ai_cents' || feature === 'cc_claude_spend_cents'
+
   if (!error && data) {
-    return data.reduce((sum, row) => sum + (Number(row.quantity) || 1), 0)
+    return data.reduce(
+      (sum, row) => sum + (Number(row.quantity) || (isCentsFeature ? 0 : 1)),
+      0,
+    )
   }
+
+  // Sum query failed. For cents features, falling back to a ROW COUNT would turn
+  // e.g. 1060 cents into "1" and silently suppress spend alerts — so return 0
+  // (treat as "unknown, not over") rather than a bogus count. (Codex review.)
+  if (isCentsFeature) return 0
 
   const { count } = await admin
     .from('usage_events')
@@ -156,7 +212,7 @@ async function getUsedQuantity(
     .eq('feature', feature)
     .gte('created_at', windowStart)
 
-  return feature === 'hatch_ai_cents' ? 0 : (count ?? 0)
+  return count ?? 0
 }
 
 async function getFeatureUsage(

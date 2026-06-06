@@ -7,6 +7,7 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
 import { getTechniqueLabelAny, getTopicLabelAny } from '@/lib/data/taxonomy'
 import { challengePath } from '@/lib/challenges/challengeNumber'
+import { DomainAnalyticsMount } from '@/components/analytics/DomainAnalyticsMount'
 
 export default async function DomainDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -71,14 +72,17 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
   const completedCount = Object.keys(scoreMap).length
   const progressPct = challenges.length > 0 ? Math.round((completedCount / challenges.length) * 100) : 0
   const firstIncomplete = challenges.find(c => !(c.id in scoreMap))
-  const ctaHref = firstIncomplete
-    ? `/workspace/challenges/${firstIncomplete.id}`
-    : `/workspace/challenges/${challenges[0]?.id ?? '#'}`
+  const ctaChallenge = firstIncomplete ?? challenges[0]
+  // Open the primary entry in the 3-panel shell so the domain index stays visible.
+  const ctaHref = ctaChallenge
+    ? `/workspace/challenges/${(ctaChallenge as { slug?: string }).slug ?? ctaChallenge.id}?from_domain=${slug}&cid=${ctaChallenge.id}`
+    : '#'
 
   const avatarColors = Array.from({ length: 5 }, (_, i) => `hsl(${i * 67 + 110}, 45%, 52%)`)
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 64px' }}>
+      <DomainAnalyticsMount slug={slug} theme={(domain as { theme?: string | null }).theme ?? null} />
 
       {/* ── Hero ── */}
       <div style={{
@@ -279,7 +283,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
                 {realInterviewChallenges.slice(0, 5).map(c => (
                   <Link
                     key={c.id}
-                    href={challengePath(c)}
+                    href={`${challengePath(c)}${challengePath(c).includes('?') ? '&' : '?'}from_domain=${slug}&cid=${c.id}`}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-container transition-colors group"
                   >
                     <span className="material-symbols-outlined text-[14px] text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
@@ -310,6 +314,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
             challenges={annotated}
             groupBy="primaryTopic"
             topicLabels={topicLabels}
+            collectionParam={{ key: 'from_domain', slug }}
             enforceLimit={false}
           />
         </div>

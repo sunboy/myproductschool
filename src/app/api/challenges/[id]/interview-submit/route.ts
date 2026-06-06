@@ -6,6 +6,8 @@ import { gradeInterviewSession } from '@/lib/v2/skills/interview-grading'
 import type { ChallengeType } from '@/lib/types'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { withRoute } from '@/lib/api/withRoute'
+import { captureServerImmediate } from '@/lib/posthog/server'
 
 const RequestSchema = z.object({
   attemptId: z.string().uuid(),
@@ -52,10 +54,10 @@ function aiLimitResponse(error: unknown) {
   return null
 }
 
-export async function POST(
+export const POST = withRoute(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -180,5 +182,15 @@ export async function POST(
     canvas_annotations: grade.canvas_annotations,
   })
 
+  await captureServerImmediate({
+    distinctId: user.id,
+    event: 'interview_submitted',
+    properties: {
+      challenge_id: id,
+      challenge_type: challengeType,
+      overall_score: grade.overall_score,
+    },
+  })
+
   return NextResponse.json({ grade })
-}
+}, { name: 'challenges.interview-submit' })

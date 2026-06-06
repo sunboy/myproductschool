@@ -1,7 +1,7 @@
 'use client'
 
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
+import { BILLING_PLANS, ANALYTICS_PLANS, formatPlanPrice } from '@/lib/billing/plans'
 
 const FEATURES = [
   { icon: 'fitness_center', text: '80 challenge starts each month' },
@@ -10,6 +10,16 @@ const FEATURES = [
   { icon: 'school',         text: 'All study plans and autopsies' },
   { icon: 'mic',            text: '12 AI interview starts each month' },
 ]
+
+// Shown when the gate is for the Claude Code Analytics tier (super-set of Pro).
+const ANALYTICS_FEATURES = [
+  { icon: 'verified',  text: 'Everything in Pro' },
+  { icon: 'terminal',  text: 'Live Claude Code sessions on real data' },
+  { icon: 'database',  text: 'BigQuery analysis with Hatch coaching' },
+  { icon: 'construction', text: 'Reusable skills and shareable reports' },
+]
+
+const ANALYTICS_FEATURE_KEYS = new Set(['claude_code_analytics', 'claude_code_sessions'])
 
 interface ChallengePaywallGateProps {
   used: number
@@ -63,6 +73,18 @@ const FEATURE_COPY: Record<string, { icon: string; eyebrow: string; headline: st
     headline: 'You have used your free Hatch reviews.',
     detail: 'Pro keeps grading and debriefs available across your practice.',
   },
+  claude_code_analytics: {
+    icon: 'terminal',
+    eyebrow: 'HackProduct Analytics',
+    headline: 'Claude Code Analytics is a special tier.',
+    detail: 'Unlock live analyst sessions on real datasets, on top of everything in Pro.',
+  },
+  claude_code_sessions: {
+    icon: 'terminal',
+    eyebrow: 'Analytics session limit',
+    headline: 'You have used your analytics sessions this month.',
+    detail: 'Your monthly Claude Code Analytics sessions reset on a rolling 30-day window.',
+  },
 }
 
 function copyForFeature(feature?: string) {
@@ -79,7 +101,11 @@ export function ChallengePaywallGate({
 
   const safeLimit = Math.max(limit, 1)
   const progressPct = Math.min((used / safeLimit) * 100, 100)
-  const monthlyPlan = BILLING_PLANS.monthly
+  const isAnalytics = feature ? ANALYTICS_FEATURE_KEYS.has(feature) : false
+  const planForCopy = isAnalytics ? ANALYTICS_PLANS.analytics_monthly : BILLING_PLANS.monthly
+  const featureList = isAnalytics ? ANALYTICS_FEATURES : FEATURES
+  const ctaLabel = isAnalytics ? 'Get Analytics' : 'Unlock Pro'
+  const planLabel = isAnalytics ? 'Analytics monthly' : 'Monthly plan'
   const featureCopy = copyForFeature(feature)
   const eyebrow = featureCopy?.eyebrow ?? 'HackProduct Pro'
   const headline = featureCopy?.headline ?? `You've used ${used} of ${limit} free challenges.`
@@ -132,7 +158,7 @@ export function ChallengePaywallGate({
 
           <div className="px-7 pt-5 pb-7 space-y-5">
             <ul className="space-y-2.5">
-              {FEATURES.map(({ icon, text }) => (
+              {featureList.map(({ icon, text }) => (
                 <li key={text} className="flex items-center gap-3">
                   <span
                     className="material-symbols-outlined text-primary text-[17px] shrink-0"
@@ -149,9 +175,9 @@ export function ChallengePaywallGate({
               style={{ background: '#f0ece4', border: '1px solid rgba(196,200,188,0.4)' }}
             >
               <div>
-                <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">Monthly plan</p>
+                <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">{planLabel}</p>
                 <p className="font-headline font-bold text-on-surface text-lg" style={{ letterSpacing: '-0.02em' }}>
-                  {formatPlanPrice(monthlyPlan)} <span className="text-sm font-body font-normal text-on-surface-variant">/ mo</span>
+                  {formatPlanPrice(planForCopy)} <span className="text-sm font-body font-normal text-on-surface-variant">/ mo</span>
                 </p>
                 <p className="font-label text-[10px] text-primary font-semibold">Backend-configured fair use</p>
               </div>
@@ -174,7 +200,7 @@ export function ChallengePaywallGate({
               >
                 workspace_premium
               </span>
-              Unlock Pro
+              {ctaLabel}
             </button>
             <p className="text-center font-body text-[11px] text-on-surface-variant">
               7-day free trial. Secure checkout via Stripe. Cancel anytime.

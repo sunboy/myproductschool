@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
+import { getAnalyticsAccess } from '@/lib/flags/analytics'
 
 type FlowMove = 'frame' | 'list' | 'optimize' | 'win'
 type DisciplineKey = 'product_sense' | 'system_design' | 'data_modeling' | 'sql' | 'coding'
 type Trend = 'improving' | 'declining' | 'steady' | 'insufficient_data'
-type SourceType = 'challenge' | 'workspace' | 'live_interview' | 'interview_loop'
+type SourceType = 'challenge' | 'workspace' | 'live_interview' | 'interview_loop' | 'analytics'
 
 interface ChallengeJoin {
   title?: string | null
@@ -40,6 +41,14 @@ interface InterviewGradeRow {
   top_strength: string | null
   top_improvement: string | null
   graded_at: string | null
+}
+
+interface AnalyticsSessionRow {
+  id: string
+  challenge_id: string | null
+  attempt_id: string | null
+  ended_at: string | null
+  final_artifact: unknown
 }
 
 interface LiveSessionRow {
@@ -152,6 +161,20 @@ function mapRubricKeyToMove(key: string): FlowMove {
   if (normalized.includes('schema') || normalized.includes('index') || normalized.includes('scal') || normalized.includes('correct') || normalized.includes('complex') || normalized.includes('evolution')) return 'optimize'
   if (normalized.includes('narr') || normalized.includes('clarity') || normalized.includes('collaboration') || normalized.includes('explain') || normalized.includes('communication')) return 'win'
   return 'optimize'
+}
+
+// Claude Code Analytics sessions are graded against analyst_v1 (7 dimensions on a
+// 0/0.5/1 scale), not FLOW steps. Each dimension maps to the FLOW move it actually
+// exercises so the session feeds the same trajectory matrix as every other rep.
+// Analytics is a SQL/data activity, so its signals land in the `sql` discipline.
+const ANALYST_DIMENSION_MOVE: Record<string, FlowMove> = {
+  problem_framing: 'frame',
+  connection_setup: 'frame',
+  segmentation: 'list',
+  query_rigor: 'optimize',
+  evidence: 'optimize',
+  communication: 'win',
+  skill_construction: 'win',
 }
 
 function extractRubricScore(value: unknown): number | null {
@@ -324,7 +347,13 @@ export async function GET() {
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
-  const [{ data: profile }, { data: attempts, error: attemptsError }, { data: sessions, error: sessionsError }] = await Promise.all([
+
+  // Claude Code Analytics contributes to the trajectory only when the feature is
+  // enabled AND this user is entitled. When dark/unentitled, no analytics query
+  // runs and no analytics signal appears — the page is identical to today.
+  const analyticsAccess = await getAnalyticsAccess(admin, user.id)
+
+  const [{ data: profile }, { data: attempts, error: attemptsError }, { data: sessions, error: sessionsError }, { data: analyticsSessions, error: analyticsError }] = await Promise.all([
     admin.from('profiles').select('preferred_role').eq('id', user.id).maybeSingle(),
     admin.from('challenge_attempts')
       .select('id, challenge_id, total_score, max_score, completed_at, feedback_json, challenges(title, challenge_type)')
@@ -338,16 +367,32 @@ export async function GET() {
       .in('status', ['completed', 'abandoned'])
       .order('ended_at', { ascending: false })
       .limit(30),
+    analyticsAccess.hasAccess
+      ? admin.from('claude_code_sessions')
+          .select('id, challenge_id, attempt_id, ended_at, final_artifact')
+          .eq('user_id', user.id)
+          .eq('status', 'terminated')
+          .not('final_artifact', 'is', null)
+          .order('ended_at', { ascending: false })
+          .limit(30)
+      : Promise.resolve({ data: [] as AnalyticsSessionRow[], error: null }),
   ])
 
   if (attemptsError) return NextResponse.json({ error: attemptsError.message }, { status: 500 })
   if (sessionsError) return NextResponse.json({ error: sessionsError.message }, { status: 500 })
+  // Analytics is additive; a query error must not break the whole trajectory page.
+  if (analyticsError) console.error('[reasoning-trajectory] analytics sessions query failed:', analyticsError)
 
   const attemptRows = ((attempts ?? []) as AttemptRow[]).reverse()
   const sessionRows = ((sessions ?? []) as LiveSessionRow[]).reverse()
+  const analyticsRows = ((analyticsSessions ?? []) as AnalyticsSessionRow[]).reverse()
   const attemptIds = attemptRows.map(row => row.id)
   const sessionIds = sessionRows.map(row => row.id)
-  const sessionChallengeIds = sessionRows.map(row => row.challenge_id).filter((id): id is string => Boolean(id))
+  const analyticsChallengeIds = analyticsRows.map(row => row.challenge_id).filter((id): id is string => Boolean(id))
+  const sessionChallengeIds = [
+    ...sessionRows.map(row => row.challenge_id),
+    ...analyticsChallengeIds,
+  ].filter((id): id is string => Boolean(id))
 
   const [stepRows, interviewGradeRows, loopRoundRows, sessionChallengeRows] = await Promise.all([
     attemptIds.length > 0
@@ -495,6 +540,49 @@ export async function GET() {
         evidence: null,
         href: session.status === 'completed' ? `/live-interviews/${session.id}/debrief` : '/live-interviews',
         occurredAt: round?.completed_at ?? session.ended_at ?? session.started_at ?? new Date().toISOString(),
+      }
+      events.push(event)
+      pushEvent(buckets, event)
+    }
+  }
+
+  // Claude Code Analytics sessions: each terminated session carries an analyst_v1
+  // final_artifact with per-dimension 0/0.5/1 scores. Map each dimension to its
+  // FLOW move and emit a signal in the `sql` discipline. Gated above by access.
+  for (const session of analyticsRows) {
+    const artifact = toRecord(session.final_artifact)
+    if (artifact.rubric !== 'analyst_v1') continue
+    const dimensions = toRecord(artifact.dimensions)
+    const title = challengeTitleById.get(session.challenge_id ?? '') ?? 'Analytics session'
+    const overallNote = typeof artifact.overall_note === 'string' ? artifact.overall_note : null
+    const occurredAt = session.ended_at ?? new Date().toISOString()
+    // Average the dimensions that share a FLOW move into one event per move.
+    const byMove = new Map<FlowMove, { scores: number[]; note: string | null }>()
+    for (const [key, value] of Object.entries(dimensions)) {
+      const move = ANALYST_DIMENSION_MOVE[key]
+      if (!move) continue
+      const score = extractRubricScore(value)
+      if (score === null) continue
+      const entry = byMove.get(move) ?? { scores: [], note: null }
+      entry.scores.push(score)
+      const dimNote = toRecord(value).note
+      if (!entry.note && typeof dimNote === 'string' && dimNote.trim()) entry.note = dimNote
+      byMove.set(move, entry)
+    }
+    for (const [move, entry] of byMove.entries()) {
+      const score = average(entry.scores)
+      if (score === null) continue
+      const event: SignalEvent = {
+        id: `analytics-${session.id}-${move}`,
+        discipline: 'sql',
+        move,
+        score: Math.round(score),
+        source: 'analytics',
+        sourceLabel: 'Analytics',
+        title,
+        evidence: entry.note ?? overallNote,
+        href: session.challenge_id ? `/challenges/${session.challenge_id}` : '/challenges',
+        occurredAt,
       }
       events.push(event)
       pushEvent(buckets, event)

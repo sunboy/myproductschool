@@ -1,0 +1,73 @@
+# LiteLLM gateway config for Claude Code Analytics per-session virtual keys.
+#
+# The gateway holds the ONE real Anthropic key (master). Per session, the
+# orchestrator mints a short-lived virtual key with a hard spend cap via the
+# /key/generate admin API. The sandbox container talks to this gateway
+# (ANTHROPIC_BASE_URL) with its virtual key and never sees the real key.
+#
+# MODEL POLICY (2026-06-05): NO Opus for CC Analytics — Sonnet + Haiku only.
+# The deployed `claude` CLI defaults to a model name the gateway must accept or
+# every prompt 403s. The CLI was observed requesting `claude-opus-4-7`, which is
+# NOT a real served model here. So:
+#   - Serve real Sonnet (claude-sonnet-4-6) + Haiku (claude-haiku-4-5).
+#   - REMAP any Opus request (claude-opus-*, incl. 4-7/4-8) to Sonnet so default
+#     prompts succeed transparently instead of 403-ing. Robust to CLI version bumps.
+# (project_cc_gateway_model_mismatch)
+
+model_list:
+  # --- Real served models (Sonnet + Haiku) ---
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: anthropic/claude-haiku-4-5-20251001
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # --- Opus REMAP → Sonnet (no real Opus; absorb whatever Opus version the CLI
+  #     asks for so default prompts don't 403). Explicit known versions + wildcard. ---
+  - model_name: claude-opus-4-7
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-opus-4-6
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-opus-4-8
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: "claude-opus-*"
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # --- Passthrough wildcards so future Sonnet/Haiku point releases the CLI may
+  #     request still resolve (map to the current served generation). ---
+  - model_name: "claude-sonnet-*"
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: "claude-haiku-*"
+    litellm_params:
+      model: anthropic/claude-haiku-4-5-20251001
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+litellm_settings:
+  # Block requests once a virtual key exceeds its budget (the whole point).
+  max_budget_enforcement: true
+  # The CLI defaults to claude-opus-4-7 (remapped to Sonnet here). It sends
+  # Opus-specific params Sonnet rejects — notably `effort: xhigh` (Opus thinking
+  # effort; Sonnet only supports high/low/max/medium). drop_params + an explicit
+  # drop of `effort`/`thinking` strips them so the remapped request succeeds.
+  # (project_cc_gateway_model_mismatch)
+  drop_params: true
+  additional_drop_params: ["effort", "thinking"]
+
+general_settings:
+  # Admin key (LITELLM_MASTER_KEY) authorizes the orchestrator to mint virtual
+  # keys. Virtual-key + budget state persists in Postgres (DATABASE_URL).
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL

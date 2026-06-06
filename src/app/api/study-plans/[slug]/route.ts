@@ -90,10 +90,28 @@ export async function GET(
     }
   }
 
-  // Enrich chapters with challenge details
-  const enrichedChapters = chapters.map((ch: { challenge_ids: string[]; [key: string]: unknown }) => ({
+  // Enrich lesson chapters (those referencing a Learn chapter via learn_chapter_id)
+  // with the lesson's slug/title/module so the detail UI can link to the reader.
+  const lessonIds = chapters
+    .map((ch: { learn_chapter_id?: string | null }) => ch.learn_chapter_id)
+    .filter((id: string | null | undefined): id is string => !!id)
+  const lessonMap: Record<string, { id: string; slug: string; title: string; module_slug: string }> = {}
+  if (lessonIds.length > 0) {
+    const { data: lessonRows } = await adminClient
+      .from('learn_chapters')
+      .select('id, slug, title, module_id, learn_modules(slug)')
+      .in('id', lessonIds)
+    for (const row of (lessonRows ?? []) as Array<{ id: string; slug: string; title: string; learn_modules: { slug: string } | { slug: string }[] | null }>) {
+      const mod = Array.isArray(row.learn_modules) ? row.learn_modules[0] : row.learn_modules
+      lessonMap[row.id] = { id: row.id, slug: row.slug, title: row.title, module_slug: mod?.slug ?? '' }
+    }
+  }
+
+  // Enrich chapters with challenge details (and lesson details where present)
+  const enrichedChapters = chapters.map((ch: { challenge_ids: string[]; learn_chapter_id?: string | null; [key: string]: unknown }) => ({
     ...ch,
     challenges: (ch.challenge_ids ?? []).map((id: string) => challengeMap[id] ?? { id, title: 'Unknown Challenge', difficulty: 'intermediate' }),
+    lesson: ch.learn_chapter_id ? (lessonMap[ch.learn_chapter_id] ?? null) : null,
   }))
 
   return NextResponse.json({

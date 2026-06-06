@@ -44,6 +44,22 @@ The script exits 0 on green, 1 on red. It validates 13 checks across env shape a
 
 For test-mode hygiene (CI / dev), run `scripts/audit/audit-stripe-config.ts` — same idea but enforces sk_test_ shape.
 
+## Claude Code Analytics — infra & scaling
+
+The analytics feature runs **one pinned Cloud Run instance per active session**
+(`cc-sandbox`, 1 vCPU), with all Claude traffic funneled through a single LiteLLM
+gateway (`cc-llm-gateway`) + Cloud SQL (`cc-llm-db`). Concurrency is bounded by
+those shared funnels, not the sandbox.
+
+**Realistic ceiling today: ~20–40 concurrent users** (gateway-DB-bound). To raise it,
+follow the scaling runbook: [`docs/runbooks/cc-analytics-scaling.md`](./docs/runbooks/cc-analytics-scaling.md).
+It documents the bottleneck order and the exact `gcloud` commands — most importantly the
+**`cc-llm-db` tier right-size** (Cloud SQL compute does NOT autoscale; it's a manual
+`gcloud sql instances patch --tier ...` + brief restart, e.g. `db-f1-micro` →
+`db-custom-1-3840`). The gateway was raised to maxScale=10 on 2026-06-03; the DB is the
+next wall. Also note: there is **no idle reaper** yet — abandoned sessions hold an
+instance until the 30-min TTL; implement it before real load.
+
 ## Reference Archive
 
 - **Stitch v2 project**: https://stitch.withgoogle.com/projects/12072135267645366200 — **canonical design reference** for all screens. This supersedes the old `material-*.html` files.
@@ -130,6 +146,20 @@ Verification before claiming a feature is done:
 - If Hatch falls back to "I can only see what's in your editor" or asks the user to paste context the platform already has, the integration is incomplete.
 
 This is not optional. A feature without Hatch-awareness is half-shipped.
+
+## Intro Tour (Shepherd.js)
+
+The product tours are **decoupled from the AI Hatch interface**. The old AI-driven tour (which rode `HatchContext` tour state + `HatchDirector` step validation + `FloatingHatch` cue bubbles) was removed on 2026-06-02 and replaced by a deterministic Shepherd.js engine. If you need to reference or roll back the old implementation, it lived in `HATCH_TOUR_STEPS`/`HATCH_TOUR_STORAGE`/`startTour`/`nextTourStep` in `src/context/HatchContext.tsx` and the two tour effects in `src/components/shell/HatchDirector.tsx` — see the removal commit (search git log for "decouple" / "shepherd" tour around 2026-06-02).
+
+Architecture:
+- **Generic engine**: `src/lib/tours/shepherdEngine.ts` + `src/components/shell/TourRunner.tsx` (cursor in sessionStorage, per-route rebuild, cross-page navigation). Driven by a `TourConfig` (`src/lib/tours/types.ts`).
+- **Main intro tour**: `src/lib/tours/mainTour.ts`, 9 steps: a centered "Meet Hatch" intro (anchorless, plays the large waving `MaskoAvatar` mascot) then 6 areas (dashboard → explore → autopsies → study plans → practice → interviews → dashboard wrap). Auto-starts once after onboarding (`profiles.has_seen_hatch_intro`), or via the TopNav `tour` button / the "Take me around" button on the calibration results screen. Final step has a "Start a rep" CTA → `/challenges`. Driven by `src/components/shell/IntroTourController.tsx` (mounted in `(app)/layout.tsx`).
+- **Interview tour**: `src/lib/tours/interviewTour.ts`, single-route, fires on first `interviewPhase === 'active'` in `src/app/(app)/live-interviews/[id]/page.tsx` (localStorage `interview-tour:v1:done`). Waits for Hatch's opening transcript turn (with a 3.5s fallback) so it never talks over the intro. Step list is a superset across discipline modes; the engine auto-skips steps whose anchor is absent (canvas/editor by mode, transcript/FLOW below `lg`).
+- **Popovers**: most steps render the real `HatchGlyph` in the header (mounted via `react-dom/client` `createRoot` on Shepherd's `show` hook); a `mascot: true` step mounts the large `MaskoAvatar` video in the body instead. An anchorless step (`anchor` omitted) renders **centered** (no green ring). A step's optional `primaryCta` (`TourStep`) replaces Finish and navigates after ending. The highlight is a **pulsing green ring** on the target (`useModalOverlay: false`, no dimming mask). `prefers-reduced-motion` drops smooth scroll + ring pulse.
+- **Anchors**: dashboard reuses `data-hatch-target`; hubs use `data-tour-target` on the sharpest "look here" element (Explore path cards, Practice discipline tabs, hub heroes); interview reuses existing `data-testid` where available.
+- **Triggers**: window events `start-intro-tour` (main) and `start-interview-tour` (interview).
+
+`AppTooltip` was also rewritten to controlled state (300ms show, immediate hide) to fix lingering nav tooltips.
 
 ## Architecture
 
@@ -449,6 +479,8 @@ All Hatch AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropi
 | `hackproduct-enricher` | `~/.claude/skills/hackproduct-enricher/SKILL.md` | Generating MCQ options + framework hints |
 | `hackproduct-coaching` | `~/.claude/skills/hackproduct-coaching/SKILL.md` | Role-specific coaching output |
 | `hackproduct-nudger` | `~/.claude/skills/hackproduct-nudger/SKILL.md` | Step-aware in-context nudges |
+| `hackproduct-analytics-coach` | `~/.claude/skills/hackproduct-analytics-coach/SKILL.md` | Coaching a live Claude Code Analytics session (terminal + BigQuery); verdict on marked findings |
+| `hackproduct-analytics-grader` | `~/.claude/skills/hackproduct-analytics-grader/SKILL.md` | Grading a finished Claude Code Analytics session against the analyst_v1 rubric |
 
 ---
 

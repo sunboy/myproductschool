@@ -214,6 +214,17 @@ export function TopNav() {
             </button>
           </AppTooltip>
 
+          <AppTooltip label="Take the tour." side="bottom" className="hidden sm:inline-flex">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('start-intro-tour'))}
+              aria-label="Take the tour"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant/60 bg-surface-container-low text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <span className="material-symbols-outlined text-[17px]">tour</span>
+            </button>
+          </AppTooltip>
+
           {/* Live AI spend indicator — only visible when not pro */}
           {!isPro && (
             <div className="hidden sm:flex">

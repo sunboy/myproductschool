@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_CHALLENGE_STARTED, EVENT_CHALLENGE_STEP_ADVANCED } from '@/lib/posthog/events'
 import gsap from 'gsap'
 import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
 import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
@@ -17,10 +19,16 @@ import type { StepCalibration } from './CalibrationPreview'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useHatchContext } from '@/context/HatchContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
-import { CanvasHintCard } from '@/components/challenge/CanvasHintCard'
+import { CanvasCoachCard } from '@/components/challenge/CanvasCoachCard'
+import { CanvasReadinessMeter } from '@/components/challenge/CanvasReadinessMeter'
 import { CanvasThinkingDock } from '@/components/challenge/CanvasThinkingDock'
+import { TourRunner } from '@/components/shell/TourRunner'
+import { CANVAS_TOUR, canvasTourSeen } from '@/lib/tours/canvasTour'
+import { setCursor } from '@/lib/tours/shepherdEngine'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { summarizeScene, type CanvasScene } from '@/lib/hatch/canvas-scene'
+import { useCanvasGuidance } from '@/hooks/useCanvasGuidance'
+import type { CanvasChallengeType } from '@/lib/hatch/canvasGuidance'
 import { executeActions } from '@/components/challenge/canvasActionExecutor'
 import type { CanvasAction } from '@/lib/types'
 import { InterviewFeedback } from '@/components/v2/InterviewFeedback'
@@ -66,53 +74,80 @@ function applyDiscussionUpvoteState(
   return { ...discussion, upvoted_by: next, viewer_has_upvoted: upvoted }
 }
 
-type ContextPackKey = 'assumptions' | 'constraints' | 'interfaces' | 'risks'
-type ContextPackState = Record<ContextPackKey, string>
-
-const CONTEXT_PACK_FIELDS: Array<{
-  key: ContextPackKey
+export interface ContextPackField {
+  id: string
   label: string
+  helper: string
   icon: string
   placeholder: string
-}> = [
-  {
-    key: 'assumptions',
-    label: 'Assumptions',
-    icon: 'fact_check',
-    placeholder: 'Traffic, tenant model, data freshness, user roles...',
-  },
-  {
-    key: 'constraints',
-    label: 'Constraints',
-    icon: 'rule',
-    placeholder: 'Latency, privacy, consistency, compliance, storage limits...',
-  },
-  {
-    key: 'interfaces',
-    label: 'APIs, events, queries',
-    icon: 'hub',
-    placeholder: 'Key endpoints, event streams, read/write paths, access patterns...',
-  },
-  {
-    key: 'risks',
-    label: 'Open questions',
-    icon: 'help',
-    placeholder: 'What you would clarify, monitor, defer, or validate next...',
-  },
-]
-
-const EMPTY_CONTEXT_PACK: ContextPackState = {
-  assumptions: '',
-  constraints: '',
-  interfaces: '',
-  risks: '',
+  value: string
+  removable: boolean
 }
+
+type ContextPackState = ContextPackField[]
+
+function buildDefaultContextPackFields(challengeType?: string): ContextPackField[] {
+  const isDataModeling = challengeType === 'data_modeling'
+  return [
+    {
+      id: 'assumptions',
+      label: 'Assumptions',
+      helper: 'What you are taking as given: traffic shape, tenant model, who the users are.',
+      icon: 'fact_check',
+      placeholder: 'e.g. ~10k tenants, read-heavy, data can be a few minutes stale',
+      value: '',
+      removable: false,
+    },
+    {
+      id: 'constraints',
+      label: 'Constraints',
+      helper: 'Hard limits the design must respect.',
+      icon: 'rule',
+      placeholder: 'latency budget, privacy, consistency, storage, compliance',
+      value: '',
+      removable: false,
+    },
+    {
+      id: 'interfaces',
+      label: isDataModeling ? 'Access patterns' : 'APIs & events',
+      helper: isDataModeling
+        ? 'The queries this schema must serve fast.'
+        : 'The endpoints, events, and read/write paths.',
+      icon: 'hub',
+      placeholder: isDataModeling
+        ? '"top posts per user, last 7 days"'
+        : 'POST /publish, fan-out event, read path for feed',
+      value: '',
+      removable: false,
+    },
+    {
+      id: 'tradeoffs',
+      label: 'Tradeoffs',
+      helper: 'The decision you are betting on: what you gained, what you gave up, and why that is acceptable.',
+      icon: 'balance',
+      placeholder: 'chose eventual consistency for write throughput; stale reads acceptable because feeds tolerate lag',
+      value: '',
+      removable: false,
+    },
+    {
+      id: 'risks',
+      label: 'Open questions',
+      helper: 'What you would clarify, monitor, or validate next.',
+      icon: 'help',
+      placeholder: 'what is the SLA on fan-out? how do we backfill?',
+      value: '',
+      removable: false,
+    },
+  ]
+}
+
+const EMPTY_CONTEXT_PACK_FIELDS: ContextPackField[] = buildDefaultContextPackFields()
 
 const CHALLENGE_TYPE_FILTER_COPY: Record<string, { label: string; discipline: string; icon: string }> = {
   flow: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
   freeform: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
   quick_take: { label: 'Product sense', discipline: 'product_sense', icon: 'psychology' },
-  claude_code_analytics: { label: 'Analytics', discipline: 'product_sense', icon: 'analytics' },
+  claude_code_analytics: { label: 'Analytics', discipline: 'analytics', icon: 'analytics' },
   system_design: { label: 'System design', discipline: 'system_design', icon: 'hub' },
   data_modeling: { label: 'Data modeling', discipline: 'data_modeling', icon: 'account_tree' },
   sql: { label: 'SQL', discipline: 'sql', icon: 'database' },
@@ -142,10 +177,10 @@ function practiceFilterHref(key: 'company' | 'difficulty' | 'discipline' | 'tag'
 type QueuedHatchPrompt = { id: string; text: string; autoSend?: boolean }
 type ContextPackIntent = 'clarify' | 'build' | 'stress'
 
-function formatContextPack(pack: ContextPackState): string {
-  return CONTEXT_PACK_FIELDS
+function formatContextPack(fields: ContextPackState): string {
+  return fields
     .map((field) => {
-      const value = pack[field.key].trim()
+      const value = field.value.trim()
       return value ? `${field.label}:\n${value}` : null
     })
     .filter(Boolean)
@@ -377,6 +412,40 @@ type FlowWorkspaceProps =
   | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; nextChallengeSlug?: string; returnTo?: string }
   | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; nextChallengeSlug?: string; returnTo?: string }
 
+// First-entry tour for the canvas workspace. Auto-fires once when a canvas
+// challenge is interactive (desktop only), and on demand via 'start-canvas-tour'.
+// Mirrors InterviewTourMount in live-interviews/[id]/page.tsx.
+function CanvasTourMount({ active: canvasActive }: { active: boolean }) {
+  const [run, setRun] = useState(false)
+  const autoRef = useRef(false)
+
+  useEffect(() => {
+    if (autoRef.current || !canvasActive) return
+    if (typeof window === 'undefined') return
+    if (window.matchMedia('(max-width: 1023px)').matches) return // anchors are desktop layout
+    if (canvasTourSeen()) return
+    autoRef.current = true
+    const t = window.setTimeout(() => {
+      // Seed the cursor BEFORE activating — TourRunner no-ops when it is null.
+      setCursor(CANVAS_TOUR.id, 0)
+      setRun(true)
+    }, 600)
+    return () => window.clearTimeout(t)
+  }, [canvasActive])
+
+  useEffect(() => {
+    const handler = () => {
+      autoRef.current = true
+      setCursor(CANVAS_TOUR.id, 0)
+      setRun(true)
+    }
+    window.addEventListener('start-canvas-tour', handler)
+    return () => window.removeEventListener('start-canvas-tour', handler)
+  }, [])
+
+  return <TourRunner config={CANVAS_TOUR} active={run} onFinish={() => setRun(false)} />
+}
+
 export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isApiMode = props.mode === 'api'
   const challengeId = isApiMode ? props.challengeId : ''
@@ -450,7 +519,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [historyGradeLoading, setHistoryGradeLoading] = useState(false)
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
   const [contextPackOpen, setContextPackOpen] = useState(true)
-  const [contextPack, setContextPack] = useState<ContextPackState>(EMPTY_CONTEXT_PACK)
+  const [contextPack, setContextPack] = useState<ContextPackState>(EMPTY_CONTEXT_PACK_FIELDS)
   const [isSubmittingInterview, setIsSubmittingInterview] = useState(false)
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const contextPackRef = useRef<HTMLDivElement>(null)
@@ -834,7 +903,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     [canvasScene]
   )
   const contextPackText = useMemo(() => formatContextPack(contextPack), [contextPack])
-  const contextPackFieldCount = CONTEXT_PACK_FIELDS.filter((field) => contextPack[field.key].trim().length > 0).length
+  const contextPackFieldCount = contextPack.filter((field) => field.value.trim().length > 0).length
+
+  // Single source of truth for the draw → notes → ask → submit phase. Consumed
+  // by the coach card, readiness meter, and Hatch opener (later tasks).
+  const guidance = useCanvasGuidance({
+    challengeType: apiChallengeType === 'data_modeling' ? 'data_modeling' : 'system_design',
+    scene,
+    fields: contextPack,
+  })
 
   // Excalidraw API + library refs (for canvas action execution)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -877,6 +954,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       autoSend,
     })
   }, [])
+
+  // Seed type-specific default field labels when challenge type is known
+  useEffect(() => {
+    if (!isCanvasChallenge) return
+    setContextPack((prev) => {
+      const seeded = buildDefaultContextPackFields(apiChallengeType)
+      // Preserve any values already typed; update only label/helper/placeholder for defaults
+      return seeded.map((seededField) => {
+        const existing = prev.find((f) => f.id === seededField.id && !f.removable)
+        return existing ? { ...seededField, value: existing.value } : seededField
+      }).concat(prev.filter((f) => f.removable))
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiChallengeType, isCanvasChallenge])
 
   useEffect(() => {
     function handleOpenWorkspaceHatch(event: Event) {
@@ -1261,6 +1352,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             setAttemptId(attempt.id)
             setCurrentStep('frame')
             setPhase('question')
+            trackEvent(EVENT_CHALLENGE_STARTED, { challenge_id: challengeId, attempt_id: attempt.id })
           }
         })
       }
@@ -2069,6 +2161,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               window.dispatchEvent(new CustomEvent('challenge-completed', { detail: { challengeId, fromPlan } }))
             }
             completeSession(cd, finalStepResults)
+            // Reconcile the optimistic inline record (pushed above) with the full
+            // server record — step breakdown, competency deltas, XP — so the
+            // Submissions tab matches without a manual reload.
+            void loadSubmissionHistory()
           } else {
             completeSession(null, finalStepResults)
           }
@@ -2092,7 +2188,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       }
     } else {
       setCompletedSteps((prev) => prev.includes(currentStep) ? prev : [...prev, currentStep])
-      setCurrentStep(FLOW_STEPS[stepIdx + 1])
+      const nextStep = FLOW_STEPS[stepIdx + 1]
+      trackEvent(EVENT_CHALLENGE_STEP_ADVANCED, {
+        challenge_id: challengeId,
+        attempt_id: attemptId ?? '',
+        step: nextStep,
+      })
+      setCurrentStep(nextStep)
       setStepDrafts({})       // fresh drafts for the next step
       setQuestionIdx(0)
       setSelectedOptionId(null)
@@ -2132,7 +2234,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // ── Discussions fetch ──────────────────────────────────────────
 
-  async function fetchDiscussions() {
+  const fetchDiscussions = useCallback(async () => {
     if (!challengeId) return
     setDiscussionsLoading(true)
     try {
@@ -2146,14 +2248,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setDiscussionsLoading(false)
     }
-  }
+  }, [challengeId, currentUserId, deriveDiscussionUpvotes])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Optimistic post: render the user's just-created discussion immediately, then
+  // reconcile in the background (ordering, expert picks, joined display name).
+  // Edits/deletes/replies pass no row and just trigger the background refetch.
+  const handleDiscussionSubmitted = useCallback((created?: ChallengeDiscussion) => {
+    if (created) {
+      setDiscussions(prev =>
+        prev.some(d => d.id === created.id) ? prev : [created, ...prev]
+      )
+    }
+    void fetchDiscussions()
+  }, [fetchDiscussions])
+
   useEffect(() => {
     if (leftTab === 'Discussions' && !discussionsLoaded) {
-      fetchDiscussions()
+      void fetchDiscussions()
     }
-  }, [leftTab])
+  }, [leftTab, discussionsLoaded, fetchDiscussions])
 
   useEffect(() => {
     let cancelled = false
@@ -2524,7 +2637,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   Context Pack
                 </span>
                 <span style={{ fontFamily: 'var(--font-label)', fontSize: 10.5, fontWeight: 700, color: contextPackFieldCount > 0 ? 'var(--color-primary)' : 'var(--color-on-surface-variant)' }}>
-                  {contextPackFieldCount}/4 filled
+                  {contextPackFieldCount}/{contextPack.length} filled
                 </span>
               </div>
               <p style={{ margin: '2px 0 0', fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
@@ -2540,53 +2653,106 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </button>
           {contextPackOpen && (
             <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {CONTEXT_PACK_FIELDS.map((field) => (
-                <div key={field.key} style={{ display: 'block' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 5 }}>
-                    <label
-                      htmlFor={`context-pack-${field.key}`}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: 'var(--color-on-surface-variant)', letterSpacing: '0.04em', textTransform: 'uppercase' }}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: 13 }}>{field.icon}</span>
-                      {field.label}
-                    </label>
-                    {contextPack[field.key].trim().length > 0 && (
-                      <AppTooltip label="Ask Hatch to compare this note to your canvas." side="left">
+              {contextPack.map((field, fieldIdx) => (
+                <div key={field.id} style={{ display: 'block' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: field.helper ? 2 : 5 }}>
+                    {field.removable ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 13, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>{field.icon}</span>
+                        <input
+                          type="text"
+                          value={field.label}
+                          maxLength={40}
+                          onChange={(event) => setContextPack((prev) => prev.map((f, i) => i === fieldIdx ? { ...f, label: event.target.value } : f))}
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            fontFamily: 'var(--font-label)',
+                            fontSize: 11,
+                            fontWeight: 800,
+                            color: 'var(--color-on-surface-variant)',
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            background: 'transparent',
+                            border: 'none',
+                            borderBottom: '1px dashed var(--color-outline-variant)',
+                            outline: 'none',
+                            padding: '0 2px',
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor={`context-pack-${field.id}`}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: 'var(--color-on-surface-variant)', letterSpacing: '0.04em', textTransform: 'uppercase' }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 13 }}>{field.icon}</span>
+                        {field.label}
+                      </label>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      {field.value.trim().length > 0 && (
+                        <AppTooltip label="Ask Hatch to compare this note to your canvas." side="left">
+                          <button
+                            type="button"
+                            onClick={() => queueHatchPrompt(buildContextFieldPrompt(apiChallengeType, field.label), true)}
+                            style={{
+                              border: '1px solid rgba(74,124,89,0.22)',
+                              background: 'rgba(255,255,255,0.76)',
+                              color: 'var(--color-primary)',
+                              borderRadius: 999,
+                              padding: '2px 7px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontFamily: 'var(--font-label)',
+                              fontSize: 10.5,
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: 13 }}>auto_awesome</span>
+                            Check
+                          </button>
+                        </AppTooltip>
+                      )}
+                      {field.removable && (
                         <button
                           type="button"
-                          onClick={() => queueHatchPrompt(buildContextFieldPrompt(apiChallengeType, field.label), true)}
+                          aria-label="Remove this field"
+                          onClick={() => setContextPack((prev) => prev.filter((_, i) => i !== fieldIdx))}
                           style={{
-                            border: '1px solid rgba(74,124,89,0.22)',
-                            background: 'rgba(255,255,255,0.76)',
-                            color: 'var(--color-primary)',
-                            borderRadius: 999,
-                            padding: '2px 7px',
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--color-on-surface-variant)',
+                            cursor: 'pointer',
+                            padding: '2px 3px',
+                            lineHeight: 1,
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: 4,
-                            fontFamily: 'var(--font-label)',
-                            fontSize: 10.5,
-                            fontWeight: 800,
-                            cursor: 'pointer',
                           }}
                         >
-                          <span className="material-symbols-outlined" style={{ fontSize: 13 }}>auto_awesome</span>
-                          Check
+                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>close</span>
                         </button>
-                      </AppTooltip>
-                    )}
+                      )}
+                    </div>
                   </div>
+                  {field.helper ? (
+                    <p style={{ margin: '0 0 5px', fontFamily: 'var(--font-label)', fontSize: 10.5, lineHeight: 1.4, color: 'var(--color-on-surface-variant)' }}>
+                      {field.helper}
+                    </p>
+                  ) : null}
                   <textarea
-                    id={`context-pack-${field.key}`}
-                    value={contextPack[field.key]}
-                    onChange={(event) => setContextPack((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                    id={`context-pack-${field.id}`}
+                    value={field.value}
+                    onChange={(event) => setContextPack((prev) => prev.map((f, i) => i === fieldIdx ? { ...f, value: event.target.value } : f))}
                     placeholder={field.placeholder}
-                    rows={field.key === 'interfaces' ? 3 : 2}
+                    rows={field.id === 'interfaces' ? 3 : 2}
                     style={{
                       width: '100%',
                       boxSizing: 'border-box',
                       resize: 'vertical',
-                      minHeight: field.key === 'interfaces' ? 78 : 58,
+                      minHeight: field.id === 'interfaces' ? 78 : 58,
                       borderRadius: 12,
                       border: '1px solid var(--color-outline-variant)',
                       background: 'rgba(255,255,255,0.72)',
@@ -2600,6 +2766,42 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   />
                 </div>
               ))}
+              {contextPack.filter((f) => f.removable).length < 6 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newField: ContextPackField = {
+                      id: `custom-${Date.now()}`,
+                      label: 'Custom note',
+                      helper: '',
+                      icon: 'sticky_note_2',
+                      placeholder: '',
+                      value: '',
+                      removable: true,
+                    }
+                    setContextPack((prev) => [...prev, newField])
+                  }}
+                  style={{
+                    alignSelf: 'flex-start',
+                    border: '1px dashed var(--color-outline-variant)',
+                    background: 'transparent',
+                    color: 'var(--color-on-surface-variant)',
+                    borderRadius: 999,
+                    padding: '5px 10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    fontFamily: 'var(--font-label)',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    marginTop: 2,
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 13 }}>add</span>
+                  Add a note field
+                </button>
+              )}
               <div
                 style={{
                   display: 'flex',
@@ -2615,7 +2817,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                   <HatchGlyph size={22} state="listening" className="text-primary shrink-0" />
                   <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 11.5, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
-                    Hatch sees these notes with your canvas: {contextPackFieldCount}/4 notes, {scene.entities.length} {apiChallengeType === 'data_modeling' ? 'tables' : 'nodes'}, {scene.connections.length} {apiChallengeType === 'data_modeling' ? 'links' : 'flows'}.
+                    Hatch sees these notes with your canvas: {contextPackFieldCount}/{contextPack.length} notes, {scene.entities.length} {apiChallengeType === 'data_modeling' ? 'tables' : 'nodes'}, {scene.connections.length} {apiChallengeType === 'data_modeling' ? 'links' : 'flows'}.
                   </p>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -3075,7 +3277,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   ) : (
     <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {discussionsLoading && (
+        {discussionsLoading && !discussionsLoaded && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[1, 2, 3].map(i => (
               <div
@@ -3091,7 +3293,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             ))}
           </div>
         )}
-        {!discussionsLoading && expertPicks.length > 0 && (
+        {discussionsLoaded && expertPicks.length > 0 && (
           <div>
             <p style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 700, color: 'var(--color-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
               Expert picks
@@ -3112,7 +3314,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             ))}
           </div>
         )}
-        {!discussionsLoading && restDiscussions.length === 0 && expertPicks.length === 0 && discussionsLoaded && (
+        {discussionsLoaded && restDiscussions.length === 0 && expertPicks.length === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20 }}>
             <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'var(--color-outline)' }}>forum</span>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
@@ -3120,7 +3322,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </p>
           </div>
         )}
-        {!discussionsLoading && restDiscussions.map(d => (
+        {discussionsLoaded && restDiscussions.map(d => (
           <DiscussionThread
             key={d.id}
             discussion={d}
@@ -3135,7 +3337,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         ))}
       </div>
       <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid var(--color-outline-variant)' }}>
-        <DiscussionInput challengeId={challengeId} onSubmitted={fetchDiscussions} />
+        <DiscussionInput challengeId={challengeId} onSubmitted={handleDiscussionSubmitted} />
       </div>
     </div>
   )
@@ -3389,6 +3591,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
                 scene={scene}
                 contextPackFilledCount={contextPackFieldCount}
+                contextPackTotal={contextPack.length}
                 contextPackText={contextPackText}
                 expanded={canvasLoopExpanded}
                 onAskHatch={queueHatchPrompt}
@@ -3398,10 +3601,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <button
-                onClick={() => setHintForceOpen((v) => !v)}
+                onClick={() => {
+                  window.dispatchEvent(new Event('start-canvas-tour'))
+                  setHintForceOpen(true)
+                  window.setTimeout(() => setHintForceOpen(false), 400)
+                }}
                 className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface text-xs font-semibold"
-                title="How to use this canvas"
-                aria-label="Show canvas hint"
+                title="How this canvas works"
+                aria-label="How this canvas works"
               >?</button>
               <button
                 onClick={() => setCanvasMaximised((v) => !v)}
@@ -3827,7 +4034,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               }>
               {/* Canvas column - top chrome owns the guide so canvas stays clear. */}
               <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative' }}>
+                <div data-tour-target="canvas-surface" style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative' }}>
                   <ExcalidrawCanvas
                     sessionId={attemptId ?? 'draft'}
                     onSnapshot={setCanvasScene}
@@ -3835,10 +4042,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     apiRef={excalidrawApiRef}
                     exportRef={canvasExportRef}
                   />
-                  <CanvasHintCard
-                    challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
+                  <CanvasTourMount active={isCanvasChallenge && !isSubmittingInterview} />
+                  <CanvasCoachCard
+                    challengeType={apiChallengeType as CanvasChallengeType}
+                    guidance={guidance}
                     forceOpen={hintForceOpen}
-                    onDismiss={() => setHintForceOpen(false)}
+                    onOpenNotes={openContextPack}
+                    onAskHatch={queueHatchPrompt}
                   />
                   {/* Exit fullscreen - only visible when maximised, since the
                       topChrome (which holds the toggle in the unmaximised view)
@@ -3870,6 +4080,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 proactiveNudge={proactiveNudge}
                 onDismissNudge={() => setProactiveNudge(null)}
                 canvasDrawFailure={canvasDrawFailure}
+                guidancePhase={guidance.phase}
+                guidanceLabels={guidance.labels}
               />
             </div>
           )}
@@ -4344,7 +4556,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
       {/* Submit bar for canvas interview challenge types */}
       {isCanvasChallenge && (
-        <div style={{
+        <div data-tour-target="canvas-submit" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -4354,16 +4566,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           flexShrink: 0,
           padding: '10px 16px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, color: 'var(--color-on-surface-variant)', fontFamily: 'var(--font-label)', fontSize: 11.5, fontWeight: 700 }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'var(--color-primary)' }}>visibility</span>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              Hatch grades the canvas plus {contextPackFieldCount > 0 ? `${contextPackFieldCount} context notes` : 'any context notes you add'}.
-            </span>
-          </div>
+          <CanvasReadinessMeter guidance={guidance} />
           <button
             onClick={handleInterviewSubmit}
             disabled={isSubmittingInterview}
-            className="rounded-full bg-primary text-on-primary font-label font-semibold px-6 py-2 disabled:opacity-60 hover:opacity-90 transition-opacity"
+            className="rounded-full bg-primary text-on-primary font-label font-semibold px-6 py-2 disabled:opacity-60 hover:opacity-90 transition-opacity shrink-0"
           >
             {isSubmittingInterview ? 'Submitting…' : 'Submit'}
           </button>

@@ -1,0 +1,11 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '--no-cache', '-t', 'us-central1-docker.pkg.dev/hackproduct/cc/sandbox:mvp', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/hackproduct/cc/sandbox:mvp']
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: bash
+    args:
+      - -c
+      - 'docker run --rm --entrypoint sh us-central1-docker.pkg.dev/hackproduct/cc/sandbox:mvp -c "grep -c WORKSPACE_RESTORE_URL /entrypoint.sh" && echo RESTORE_BLOCK_PRESENT'
+images: ['us-central1-docker.pkg.dev/hackproduct/cc/sandbox:mvp']

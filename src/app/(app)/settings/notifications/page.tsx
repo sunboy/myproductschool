@@ -16,6 +16,7 @@ const DEFAULT_PREFS: NotificationPrefs = {
   weekly_digest: true,
   completion_email: true,
   marketing: false,
+  lifecycle: true,
   push_enabled: false,
   discussion_reply: true,
   billing_alerts: true,
@@ -44,6 +45,12 @@ const PREF_ITEMS: Array<{
     label: 'Completion emails',
     detail: 'Challenge results and feedback links after practice.',
     icon: 'task_alt',
+  },
+  {
+    key: 'lifecycle',
+    label: 'Reminders and tips',
+    detail: 'Nudges to pick up something you started and ways to get more out of HackProduct.',
+    icon: 'lightbulb',
   },
   {
     key: 'discussion_reply',

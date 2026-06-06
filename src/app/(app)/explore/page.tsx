@@ -225,7 +225,7 @@ export default async function ExplorePage() {
         ]}
       />
 
-      <header className="relative mb-8 grid overflow-hidden rounded-[26px] border border-outline-variant/35 bg-surface-container-low/85 p-5 shadow-[0_24px_70px_-58px_rgba(46,50,48,0.7)] backdrop-blur-sm sm:p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+      <header data-tour-target="explore-hero" className="relative mb-8 grid overflow-hidden rounded-[26px] border border-outline-variant/35 bg-surface-container-low/85 p-5 shadow-[0_24px_70px_-58px_rgba(46,50,48,0.7)] backdrop-blur-sm sm:p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
         <ExploreHeroPattern />
         <div className="relative">
           <h1 className="font-headline text-[36px] font-bold leading-tight text-on-surface sm:text-[44px]">
@@ -268,7 +268,7 @@ export default async function ExplorePage() {
         </AppTooltip>
       </header>
 
-      <section className="mb-9 grid grid-cols-1 gap-3 md:grid-cols-3">
+      <section data-tour-target="explore-paths" className="mb-9 grid grid-cols-1 gap-3 md:grid-cols-3">
         {PRIMARY_PATHS.map((path, index) => (
           <CompactPathCard key={path.title} {...path} index={index} />
         ))}

@@ -18,6 +18,9 @@ export interface HotChallenge {
   attempts: number
   avgScore: number
   domain: string
+  challenge_type?: string | null
+  display_number?: number | null
+  slug?: string | null
 }
 
 export interface DiscussionPreview {

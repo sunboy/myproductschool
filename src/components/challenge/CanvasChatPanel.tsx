@@ -6,6 +6,7 @@ import { Md } from '@/components/ui/Md'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { VoiceInputButton } from './VoiceInputButton'
 import type { CanvasScene } from '@/lib/hatch/canvas-scene'
+import type { GuidancePhase, GuidanceLabels } from '@/lib/hatch/canvasGuidance'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
@@ -29,7 +30,7 @@ interface LimitErrorPayload {
 interface CanvasChatPanelProps {
   attemptId: string
   challengeId: string
-  challengeType: 'system_design' | 'data_modeling' | 'coding'
+  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics'
   scene: CanvasScene
   contextPack?: string
   queuedPrompt?: { id: string; text: string; autoSend?: boolean } | null
@@ -58,19 +59,61 @@ interface CanvasChatPanelProps {
   activePartPrompt?: string | null
   activePartResponseType?: string
   activePartWeightPct?: number
+  // Analytics-mode context fields (only used when challengeType === 'claude_code_analytics')
+  // Do NOT use currentCode for analytics — use these dedicated fields.
+  terminalTail?: string | null
+  mcpConnected?: boolean
+  skillsWritten?: string[]
+  activeSubProblemId?: string | null
+  activeSubProblemSequence?: number
+  activeSubProblemTitle?: string | null
+  activeSubProblemObjective?: string | null
+  activeSubProblemSuccessCriterion?: string | null
+  markedFindings?: Array<{ id: string; text: string; verdict: 'pass' | 'partial' | 'retry' }>
+  assertedFinding?: string | null
+  // Guidance phase (canvas types only) — keeps Hatch aware of where the user is
+  // in the draw → notes → ask → submit loop, per CLAUDE.md Hatch-awareness.
+  guidancePhase?: GuidancePhase
+  guidanceLabels?: GuidanceLabels
 }
 
-function getInitialMessage(challengeType: 'system_design' | 'data_modeling' | 'coding'): string {
+function getInitialMessage(
+  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics',
+  phase?: GuidancePhase,
+  labels?: GuidanceLabels,
+): string {
   if (challengeType === 'coding') {
     return "I'm watching your code. Ask about your approach, edge cases, complexity, or why something isn't working."
   }
+
+  // Phase-aware opener for canvas types. Falls back to the per-type default when
+  // phase is not yet known at mount.
+  if (phase && labels) {
+    const entity = labels.entity
+    switch (phase) {
+      case 'empty':
+        return `Let's design this. Draw a first ${entity} or tell me what to draw, then we make your case in notes and pressure-test it together.`
+      case 'sketching':
+        return `Good start. Add one more ${entity} and connect it, then I can tell you what is missing.`
+      case 'has_canvas_no_notes':
+        return 'The shape is there. Open notes and write your assumptions so I can judge the reasoning, not just the picture.'
+      case 'notes_no_tradeoffs':
+        return 'Solid. Tell me the tradeoff you are betting on and I will try to break it.'
+      case 'ready':
+        return 'This holds together. Ask me for a final gap check before you submit.'
+    }
+  }
+
   if (challengeType === 'data_modeling') {
     return "Let's model this data together. Draw your entities and relationships, or describe them and I'll add them to the canvas."
+  }
+  if (challengeType === 'claude_code_analytics') {
+    return "I can see your session, the dataset connection, and the skills you have written. Ask me how to push the analysis further."
   }
   return "I'm here to help you design this system. You can draw by hand, type here, or speak - I'll help build and critique your diagram."
 }
 
-function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' | 'coding', language?: string): string[] {
+function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics', language?: string): string[] {
   if (challengeType === 'coding') {
     if (language === 'sql') {
       return [
@@ -90,6 +133,13 @@ function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' |
       "What's the strongest schema move I'm missing?",
       'Compare my model to a top response.',
       "What's the trade-off in this relationship?",
+    ]
+  }
+  if (challengeType === 'claude_code_analytics') {
+    return [
+      "Why is my query returning nothing?",
+      'How do I segment this by device?',
+      'Is this finding strong enough to mark the step?',
     ]
   }
   return [
@@ -127,15 +177,29 @@ export function CanvasChatPanel({
   activePartPrompt,
   activePartResponseType,
   activePartWeightPct,
+  terminalTail,
+  mcpConnected,
+  skillsWritten,
+  activeSubProblemId,
+  activeSubProblemSequence,
+  activeSubProblemTitle,
+  activeSubProblemObjective,
+  activeSubProblemSuccessCriterion,
+  markedFindings,
+  assertedFinding,
+  guidancePhase,
+  guidanceLabels,
 }: CanvasChatPanelProps) {
   const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
   const { muted, toggleMuted, play } = useHatchSonics()
   const { startUpgrade } = useUpgrade()
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  // One-shot: capture the phase-aware opener at mount only. Not reactive to
+  // later phase changes, which would clobber an in-progress conversation.
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       role: 'hatch',
-      content: getInitialMessage(challengeType),
+      content: getInitialMessage(challengeType, guidancePhase, guidanceLabels),
       kind: 'chat',
     },
   ])
@@ -147,7 +211,8 @@ export function CanvasChatPanel({
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
   const lastQueuedPromptIdRef = useRef<string | null>(null)
   const hasContextPack = Boolean(contextPack?.trim())
-  const canvasStatusLabel = challengeType === 'coding'
+  const isAnalyticsMode = challengeType === 'claude_code_analytics'
+  const canvasStatusLabel = (challengeType === 'coding' || isAnalyticsMode)
     ? null
     : `${scene.entities.length} ${challengeType === 'data_modeling' ? 'tables' : 'nodes'} · ${scene.connections.length} ${challengeType === 'data_modeling' ? 'links' : 'flows'}`
   const suggestionPrompts = getSuggestionPrompts(challengeType, currentLanguage)
@@ -157,7 +222,9 @@ export function CanvasChatPanel({
     ? `Slow down. Try again in ${retryAfter}s.`
     : challengeType === 'coding'
       ? "Ask Hatch about your code…"
-      : "Ask Hatch, or tell it what to draw from your notes…"
+      : isAnalyticsMode
+        ? "Ask Hatch about the session…"
+        : "Ask Hatch, or tell it what to draw from your notes…"
 
   // Suppress unused variable warnings - grade is reserved for future use; isOpen kept for callers
   void grade
@@ -216,6 +283,7 @@ export function CanvasChatPanel({
         challengeType,
         attemptId,
         context_pack: contextPack,
+        guidance_phase: guidancePhase ?? null,
       }
 
       const codingBody = challengeType === 'coding' ? {
@@ -232,6 +300,21 @@ export function CanvasChatPanel({
         active_part_prompt: activePartPrompt ?? undefined,
         active_part_response_type: activePartResponseType,
         active_part_weight_pct: activePartWeightPct,
+      } : isAnalyticsMode ? {
+        // Analytics context — dedicated fields, never overloads currentCode.
+        mcp_connected: mcpConnected,
+        terminal_tail: terminalTail,
+        active_sub_problem_id: activeSubProblemId,
+        active_sub_problem_sequence: activeSubProblemSequence,
+        active_sub_problem_title: activeSubProblemTitle,
+        active_sub_problem_objective: activeSubProblemObjective,
+        active_sub_problem_success_criterion: activeSubProblemSuccessCriterion,
+        skills_written: skillsWritten,
+        marked_findings: markedFindings,
+        asserted_finding: assertedFinding,
+        time_elapsed_seconds: timeElapsed,
+        challenge_title: challengeTitle,
+        problem_statement: problemStatement,
       } : {}
 
       const res = await fetch('/api/hatch/canvas/interpret', {
@@ -308,7 +391,15 @@ export function CanvasChatPanel({
       currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
       challengeTitle, problemStatement,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
-      activePartResponseType, activePartWeightPct, play, isThrottled])
+      activePartResponseType, activePartWeightPct,
+      // Analytics context
+      isAnalyticsMode, terminalTail, mcpConnected, skillsWritten,
+      activeSubProblemId, activeSubProblemSequence, activeSubProblemTitle,
+      activeSubProblemObjective, activeSubProblemSuccessCriterion,
+      markedFindings, assertedFinding,
+      // Canvas guidance context
+      guidancePhase,
+      play, isThrottled])
 
   useEffect(() => {
     if (!queuedPrompt || queuedPrompt.id === lastQueuedPromptIdRef.current) return
@@ -495,7 +586,7 @@ export function CanvasChatPanel({
             <div className="flex gap-2">
               <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
               <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
-                {challengeType === 'coding' ? 'Hatch is thinking…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
+                {challengeType === 'coding' ? 'Hatch is thinking…' : isAnalyticsMode ? 'Hatch is reading the session…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
               </div>
             </div>
           )}
@@ -671,7 +762,7 @@ export function CanvasChatPanel({
           <div className="flex gap-2">
             <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
             <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
-              {challengeType === 'coding' ? 'Hatch is thinking…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
+              {challengeType === 'coding' ? 'Hatch is thinking…' : isAnalyticsMode ? 'Hatch is reading the session…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
             </div>
           </div>
         )}

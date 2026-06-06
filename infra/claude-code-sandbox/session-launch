@@ -1,0 +1,26 @@
+#!/bin/sh
+# session-launch — deprioritize the analyst's terminal session vs the PTY bridge.
+#
+# Invoked by entrypoint-pty.js as the PTY's leader process:
+#   session-launch <shell> [shell args...]
+#
+# - Marks this process tree most-OOM-killable so a runaway user process is
+#   reaped before the daemon (best-effort; ignored if /proc isn't writable).
+# - Lowers CPU priority (nice).
+# - exec's the shell so the PID stays the PTY leader (resize/signal still work).
+#
+# Mirrors E2B envd's per-exec hardening, but uses only tools that work inside a
+# gVisor container with no cgroup access. NOTE: ionice is deliberately NOT used:
+# gVisor (Cloud Run) blocks the ioprio_set syscall, so `ionice` fails, and since
+# this process is exec'd as the PTY leader its failure would kill the session
+# before the shell starts. CPU `nice` is honored under gVisor and is enough.
+
+echo 1000 > /proc/self/oom_score_adj 2>/dev/null || true
+
+# Guard nice too: if it is somehow unavailable, fall back to exec'ing directly
+# rather than failing the session.
+if command -v nice >/dev/null 2>&1; then
+  exec nice -n 10 "$@"
+else
+  exec "$@"
+fi

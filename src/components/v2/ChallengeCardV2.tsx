@@ -3,6 +3,7 @@
 import type { Challenge, ParadigmV2 } from '@/lib/types'
 import { PARADIGM_V2_LABELS } from '@/lib/types'
 import { DIFFICULTY_LABELS, coerceDifficulty } from '@/lib/practice/difficulty'
+import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 
 interface ChallengeCardV2Props {
   challenge: Challenge & {
@@ -17,6 +18,7 @@ export function ChallengeCardV2({ challenge, onStart }: ChallengeCardV2Props) {
   const paradigmLabel = challenge.paradigm ? (PARADIGM_V2_LABELS[challenge.paradigm as ParadigmV2] ?? challenge.paradigm) : null
   const coerced = coerceDifficulty(challenge.difficulty)
   const difficultyLabel = coerced ? DIFFICULTY_LABELS[coerced] : challenge.difficulty
+  const numberLabel = formatChallengeNumber(challenge.challenge_type, challenge.display_number)
 
   return (
     <div
@@ -28,6 +30,11 @@ export function ChallengeCardV2({ challenge, onStart }: ChallengeCardV2Props) {
         <div className="flex-1 min-w-0 space-y-2">
           {/* Badges */}
           <div className="flex flex-wrap items-center gap-1.5">
+            {numberLabel && (
+              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant">
+                {numberLabel}
+              </span>
+            )}
             {paradigmLabel && (
               <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-3 py-0.5 font-label">
                 {paradigmLabel}

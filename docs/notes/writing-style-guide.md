@@ -20,6 +20,8 @@ These are enforced by the content generation validator and must be observed ever
 
 **Coherent sentences, not fragments.** Short fragment-style prose (*"Four moves. Real problem is upstream. Best option was not on the list."*) reads like a bulleted speech rather than writing. Combine related ideas into full flowing sentences that connect to one another. Exception: closing aphorisms in UI chrome (buttons, badges, tags) where terseness is correct.
 
+**Honest, not soft, and never manipulative.** Interview prep is one of the most emotionally loaded domains there is: anxiety, impostor syndrome, the dread before a mock, the sting of a wrong answer. Anxious job-seekers are easy to exploit with streak-guilt, countdown pressure, and "you're falling behind" nudges. Never use them. They are dark patterns and they are dead against an honest-coach brand. The test every piece of copy has to pass: does it leave the user calmer and more capable, or just more hooked and more anxious? Ship only the first kind. A wrong answer is the product working, frame it that way ("better to miss it here than in the room"), name the specific gap, and point at the next rep. A lapse is reps banked, not a streak lost. This is not the same as going soft: never flatter a weak answer, never hedge a real gap. Honest about the gap, calm about the person. It also happens to be the version that retains, because confidence compounds and anxiety churns.
+
 ## What good looks like
 
 ### Scenario context

@@ -9,6 +9,7 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { Md } from '@/components/ui/Md'
 import { useSteps } from '@/hooks/useSteps'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
+import { MediumRenderer } from '@/components/v2'
 
 /* ── Types ───────────────────────────────────────────────── */
 
@@ -327,6 +328,30 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   )
 
   /* ── Render ── */
+
+  // Claude Code Analytics challenges use a dedicated guided medium (live
+  // terminal + sub-problem stepper + Hatch coach) instead of the quick/guided/
+  // freeform answer modes. Render a minimal shell around it; the medium owns its
+  // own session lifecycle and creates the attempt via /api/claude-code/session/start.
+  if (challenge.challenge_type === 'claude_code_analytics') {
+    return (
+      <div className="flex flex-col h-screen bg-background overflow-hidden">
+        <header className="h-12 w-full bg-background border-b border-outline-variant flex items-center gap-4 px-6 z-30 flex-shrink-0">
+          <button
+            onClick={() => router.back()}
+            className="p-1 hover:bg-surface-container-high rounded-full transition-colors"
+            aria-label="Back"
+          >
+            <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+          </button>
+          <span className="font-headline text-on-surface truncate">{challenge.title}</span>
+        </header>
+        <div className="flex-1 min-h-0">
+          <MediumRenderer challenge={challenge} attemptId="" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">

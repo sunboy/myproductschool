@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { AFFILIATE_COOKIE_NAME, affiliatesEnabled } from '@/lib/affiliate/config'
 import { applyReferralAttribution } from '@/lib/affiliate/server'
+import { sendWelcomeEmail } from '@/lib/email/transactional'
+import { captureServerImmediate } from '@/lib/posthog/server'
+import { EVENT_USER_SIGNED_UP } from '@/lib/posthog/events'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -32,6 +35,31 @@ export async function GET(request: NextRequest) {
   }
 
   const admin = createAdminClient()
+
+  // Fire-and-forget welcome email. The `welcome:${userId}` dedupeKey guarantees
+  // it sends only once per user, so repeat confirmations / magic-link logins /
+  // OAuth sign-ins never trigger a second send. Never await — email must not
+  // block the redirect.
+  void sendWelcomeEmail(admin, {
+    userId: data.user.id,
+    name:
+      (data.user.user_metadata?.display_name as string | undefined) ??
+      (data.user.user_metadata?.name as string | undefined) ??
+      null,
+  })
+
+  // Fire-and-forget signup event. The welcome email dedupeKey ensures once-only
+  // delivery; we match that pattern here — the provider identifies OAuth vs email.
+  const oauthProvider = (data.user.app_metadata?.provider as string | undefined) ?? 'oauth'
+  void captureServerImmediate({
+    distinctId: data.user.id,
+    event: EVENT_USER_SIGNED_UP,
+    properties: {
+      method: 'oauth' as const,
+      provider: oauthProvider,
+    },
+  })
+
   if (affiliatesEnabled()) {
     await applyReferralAttribution(
       admin,

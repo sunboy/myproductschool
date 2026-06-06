@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StudyPlanCard } from '@/components/explore/StudyPlanCard'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import type { StudyPlanWithItems } from '@/lib/types'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_STUDY_PLAN_VIEWED } from '@/lib/posthog/events'
 
 const DIFFICULTY_FILTERS = ['All', 'Beginner', 'Intermediate', 'Advanced'] as const
 type DifficultyFilter = typeof DIFFICULTY_FILTERS[number]
@@ -35,6 +37,10 @@ interface Props {
 
 export function StudyPlansClient({ studyPlans }: Props) {
   const [activeFilter, setActiveFilter] = useState<DifficultyFilter>('All')
+
+  useEffect(() => {
+    trackEvent(EVENT_STUDY_PLAN_VIEWED, { plan_slug: 'all' })
+  }, [])
 
   const enrolledPlans = studyPlans.filter(p => p.is_enrolled && p.progress_percentage > 0)
   const firstEnrolled = enrolledPlans[0]
@@ -70,7 +76,7 @@ export function StudyPlansClient({ studyPlans }: Props) {
       />
 
       {/* ── Hero ── */}
-      <div style={{
+      <div data-tour-target="study-plans-hero" style={{
         borderRadius: 32,
         overflow: 'hidden',
         marginBottom: 32,

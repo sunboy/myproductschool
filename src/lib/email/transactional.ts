@@ -2,9 +2,11 @@ import 'server-only'
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { sanitizeAiOutput } from '@/lib/ai/sanitize'
+import { EMAIL_ART, EMAIL_BRAND } from '@/lib/email/art'
 import { configuredFromEmail, configuredReplyTo, getResendClient } from '@/lib/email/client'
 
 type TransactionalEmailKind =
+  | 'welcome'
   | 'verification'
   | 'magic_link'
   | 'password_reset'
@@ -24,6 +26,11 @@ type TransactionalEmailKind =
   | 'account_deleted'
   | 'abuse_report'
   | 'product_feedback'
+  | 'resume_challenge'
+  | 'upgrade_nudge'
+  | 'resume_article'
+  | 'promotion'
+  | 'paid_insight'
 
 interface BaseTransactionalInput {
   dedupeKey: string
@@ -35,6 +42,10 @@ interface BaseTransactionalInput {
 
 interface LinkEmailInput extends BaseTransactionalInput {
   url: string
+}
+
+interface WelcomeInput extends Omit<BaseTransactionalInput, 'dedupeKey'> {
+  userId: string
 }
 
 interface StreakReminderInput extends BaseTransactionalInput {
@@ -89,6 +100,47 @@ interface ProductFeedbackEmailInput extends BaseTransactionalInput {
   message?: string | null
 }
 
+interface ResumeChallengeInput extends BaseTransactionalInput {
+  challengeTitle: string
+  currentStep?: string | null
+  resumeUrl: string
+}
+
+interface UpgradeNudgeInput extends BaseTransactionalInput {
+  url?: string | null
+}
+
+interface ResumeArticleInput extends BaseTransactionalInput {
+  articleTitle: string
+  articleUrl: string
+}
+
+interface PromotionInput extends BaseTransactionalInput {
+  heading: string
+  body: string
+  ctaLabel: string
+  ctaUrl: string
+  valueBullets?: string[] | null
+  heroImageUrl?: string | null
+  eyebrow?: string | null
+}
+
+interface PaidInsightInput extends BaseTransactionalInput {
+  strongestCompetency?: string | null
+  strongestLabel?: string | null
+  focusCompetency?: string | null
+  focusLabel?: string | null
+  recentWins?: string[] | null
+  url?: string | null
+}
+
+type EmailTone = 'default' | 'celebratory' | 'urgent'
+
+interface SecondaryCta {
+  label: string
+  url: string
+}
+
 interface TransactionalEmailPayload extends BaseTransactionalInput {
   kind: TransactionalEmailKind
   subject: string
@@ -99,6 +151,14 @@ interface TransactionalEmailPayload extends BaseTransactionalInput {
   ctaLabel?: string | null
   ctaUrl?: string | null
   aiDynamic?: boolean
+  from?: string
+  /** Presentation extras — all optional, default to the plain card when unset. */
+  heroImageUrl?: string | null
+  heroAlt?: string | null
+  accentImageUrl?: string | null
+  valueBullets?: string[] | null
+  secondaryCta?: SecondaryCta | null
+  tone?: EmailTone
 }
 
 function appUrl(path = '/') {
@@ -138,13 +198,73 @@ function formatDate(value: string | null | undefined) {
   }).format(date)
 }
 
-function actionButton(href: string | null | undefined, label: string | null | undefined) {
+// Terra palette, email-safe hex (no CSS vars in mail clients).
+const COLOR = {
+  bg: '#f8f3ea',
+  card: '#ffffff',
+  border: '#d7d2c8',
+  ink: '#233028',
+  muted: '#4f5a51',
+  faint: '#74796e',
+  primary: '#2d5a3d',
+  primaryText: '#ffffff',
+  amber: '#705c30',
+}
+
+function toneHeader(tone: EmailTone | undefined) {
+  // Header bar background + eyebrow accent per tone. Default = forest green.
+  switch (tone) {
+    case 'celebratory':
+      // Forest green with a warm amber eyebrow to feel like a win.
+      return { bar: COLOR.primary, eyebrow: '#e7c98c' }
+    case 'urgent':
+      // Deeper, warmer green-brown to read as "needs attention" without alarm red.
+      return { bar: '#5e4a2e', eyebrow: 'rgba(255,255,255,.7)' }
+    default:
+      return { bar: COLOR.primary, eyebrow: 'rgba(255,255,255,.62)' }
+  }
+}
+
+function pillButton(href: string | null | undefined, label: string | null | undefined, variant: 'primary' | 'secondary' = 'primary') {
   if (!href || !label) return ''
+  const styles =
+    variant === 'primary'
+      ? `background:${COLOR.primary};color:${COLOR.primaryText};border:1px solid ${COLOR.primary};`
+      : `background:#ffffff;color:${COLOR.primary};border:1px solid ${COLOR.border};`
+  return `<a href="${escapeHtml(href)}" style="display:inline-block;${styles}text-decoration:none;border-radius:999px;padding:12px 22px;font-weight:700;font-size:14px;line-height:1;">${escapeHtml(label)}</a>`
+}
+
+function heroImage(url: string | null | undefined, alt: string | null | undefined) {
+  if (!url) return ''
   return `
-    <a href="${escapeHtml(href)}" style="display:inline-block;background:#2d5a3d;color:#ffffff;text-decoration:none;border-radius:999px;padding:12px 18px;font-weight:700;font-size:14px;">
-      ${escapeHtml(label)}
-    </a>
-  `
+          <div style="text-align:center;padding:26px 24px 0;">
+            <img src="${escapeHtml(url)}" alt="${escapeHtml(alt ?? 'Hatch')}" width="132" style="width:132px;height:auto;display:inline-block;" />
+          </div>`
+}
+
+function valueBulletList(bullets: string[] | null | undefined) {
+  if (!bullets || bullets.length === 0) return ''
+  const rows = bullets
+    .map(
+      bullet => `
+            <tr>
+              <td valign="top" style="padding:6px 10px 6px 0;color:${COLOR.primary};font-size:15px;font-weight:800;line-height:1.5;">&#10003;</td>
+              <td valign="top" style="padding:6px 0;color:${COLOR.ink};font-size:15px;line-height:1.5;">${escapeHtml(bullet)}</td>
+            </tr>`
+    )
+    .join('')
+  return `
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0 0;width:100%;">
+              ${rows}
+            </table>`
+}
+
+function accentImage(url: string | null | undefined) {
+  if (!url) return ''
+  return `
+            <div style="text-align:center;margin-top:22px;">
+              <img src="${escapeHtml(url)}" alt="Hatch" width="96" style="width:96px;height:auto;display:inline-block;opacity:.95;" />
+            </div>`
 }
 
 function cleanAiDynamicText(input: TransactionalEmailPayload) {
@@ -169,34 +289,55 @@ function cleanAiDynamicText(input: TransactionalEmailPayload) {
   return { ...input, body, detail }
 }
 
+/**
+ * Render an email payload to HTML + text without sending. Pure; used by the
+ * template preview script (scripts/preview-emails.ts). Not part of the send path.
+ */
+export function renderEmailForPreview(input: TransactionalEmailPayload) {
+  return { html: renderHtmlEmail(input), text: renderTextEmail(input) }
+}
+
 function renderHtmlEmail(input: TransactionalEmailPayload) {
   const name = input.name?.trim()
   const greeting = name ? `Hi ${escapeHtml(name)},` : 'Hi,'
+  const header = toneHeader(input.tone)
   const detail = input.detail
-    ? `<p style="margin:16px 0 0;color:#4f5a51;font-size:14px;line-height:1.6;">${escapeHtml(input.detail)}</p>`
+    ? `<p style="margin:16px 0 0;color:${COLOR.muted};font-size:14px;line-height:1.6;">${escapeHtml(input.detail)}</p>`
     : ''
 
+  const ctaBlock =
+    input.ctaUrl || input.secondaryCta
+      ? `
+            <div style="margin-top:26px;">
+              ${input.ctaUrl ? pillButton(input.ctaUrl, input.ctaLabel, 'primary') : ''}
+              ${input.secondaryCta ? `<span style="display:inline-block;width:10px;">&nbsp;</span>${pillButton(input.secondaryCta.url, input.secondaryCta.label, 'secondary')}` : ''}
+            </div>`
+      : ''
+
   return `
-    <div style="margin:0;padding:0;background:#f8f3ea;font-family:Inter,Arial,sans-serif;color:#233028;">
+    <div style="margin:0;padding:0;background:${COLOR.bg};font-family:Inter,Arial,sans-serif;color:${COLOR.ink};">
       <div style="max-width:560px;margin:0 auto;padding:36px 20px;">
-        <div style="margin-bottom:20px;">
-          <img src="${appUrl('/images/wordmark.png')}" alt="HackProduct" style="height:40px;width:auto;" />
+        <div style="margin-bottom:20px;text-align:left;">
+          <img src="${EMAIL_BRAND.wordmark}" alt="HackProduct" style="height:40px;width:auto;" />
         </div>
-        <div style="background:#ffffff;border:1px solid #d7d2c8;border-radius:18px;overflow:hidden;">
-          <div style="background:#2d5a3d;padding:22px 24px;color:#ffffff;">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:rgba(255,255,255,.62);">${escapeHtml(input.eyebrow)}</div>
+        <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:18px;overflow:hidden;">
+          ${heroImage(input.heroImageUrl, input.heroAlt)}
+          <div style="background:${header.bar};padding:22px 24px;color:#ffffff;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:${header.eyebrow};">${escapeHtml(input.eyebrow)}</div>
             <h1 style="margin:8px 0 0;font-size:25px;line-height:1.15;letter-spacing:-.02em;">${escapeHtml(input.heading)}</h1>
           </div>
           <div style="padding:24px;">
-            <p style="margin:0 0 14px;color:#233028;font-size:15px;line-height:1.7;">${greeting}</p>
-            <p style="margin:0;color:#4f5a51;font-size:15px;line-height:1.7;">${escapeHtml(input.body)}</p>
+            <p style="margin:0 0 14px;color:${COLOR.ink};font-size:15px;line-height:1.7;">${greeting}</p>
+            <p style="margin:0;color:${COLOR.muted};font-size:15px;line-height:1.7;">${escapeHtml(input.body)}</p>
             ${detail}
-            ${input.ctaUrl ? `<div style="margin-top:24px;">${actionButton(input.ctaUrl, input.ctaLabel)}</div>` : ''}
+            ${valueBulletList(input.valueBullets)}
+            ${ctaBlock}
+            ${accentImage(input.accentImageUrl)}
           </div>
         </div>
-        <p style="margin:18px 0 0;color:#74796e;font-size:12px;line-height:1.6;">
+        <p style="margin:18px 0 0;color:${COLOR.faint};font-size:12px;line-height:1.6;">
           You are receiving this because you have a HackProduct account.
-          ${input.unsubscribeUrl ? `<br /><a href="${escapeHtml(input.unsubscribeUrl)}" style="color:#2d5a3d;text-decoration:underline;">Unsubscribe</a>` : ''}
+          ${input.unsubscribeUrl ? `<br /><a href="${escapeHtml(input.unsubscribeUrl)}" style="color:${COLOR.primary};text-decoration:underline;">Unsubscribe</a>` : ''}
         </p>
       </div>
     </div>
@@ -204,14 +345,21 @@ function renderHtmlEmail(input: TransactionalEmailPayload) {
 }
 
 function renderTextEmail(input: TransactionalEmailPayload) {
+  const bullets =
+    input.valueBullets && input.valueBullets.length > 0
+      ? input.valueBullets.map(b => `- ${b}`).join('\n')
+      : null
+
   const parts = [
     input.heading,
     '',
     input.name?.trim() ? `Hi ${input.name.trim()},` : 'Hi,',
     input.body,
     input.detail ?? null,
-    input.ctaUrl && input.ctaLabel ? `${input.ctaLabel}: ${input.ctaUrl}` : null,
-    input.unsubscribeUrl ? `Unsubscribe: ${input.unsubscribeUrl}` : null,
+    bullets ? `\n${bullets}` : null,
+    input.ctaUrl && input.ctaLabel ? `\n${input.ctaLabel}: ${input.ctaUrl}` : null,
+    input.secondaryCta ? `${input.secondaryCta.label}: ${input.secondaryCta.url}` : null,
+    input.unsubscribeUrl ? `\nUnsubscribe: ${input.unsubscribeUrl}` : null,
   ].filter(Boolean)
 
   return parts.join('\n')
@@ -254,7 +402,7 @@ async function sendTransactionalEmail(admin: SupabaseClient, payload: Transactio
     const emailPayload = cleanAiDynamicText({ ...payload, to })
     const { data, error } = await resend.emails.send(
       {
-        from: configuredFromEmail(),
+        from: payload.from ?? configuredFromEmail(),
         to,
         replyTo: configuredReplyTo(),
         subject: payload.subject,
@@ -301,6 +449,30 @@ async function sendTransactionalEmail(admin: SupabaseClient, payload: Transactio
       })
     }
   }
+}
+
+export function sendWelcomeEmail(admin: SupabaseClient, input: WelcomeInput) {
+  const greeting = input.name ? `Welcome, ${input.name}.` : 'Welcome to HackProduct.'
+  return sendTransactionalEmail(admin, {
+    ...input,
+    dedupeKey: `welcome:${input.userId}`,
+    kind: 'welcome',
+    from: 'HackProduct <founders@hackproduct.com>',
+    subject: 'Welcome to HackProduct',
+    eyebrow: "You're in",
+    heading: greeting,
+    heroImageUrl: EMAIL_ART['hatch-wave'],
+    heroAlt: 'Hatch, your HackProduct coach, waving hello',
+    body: 'HackProduct is where you practice the kinds of product and judgment questions that come up in interviews and on the job. You work through a real decision, write your answer, and Hatch, your coach, reviews it and shows you what a stronger answer looks like. Try one and see where you stand.',
+    valueBullets: [
+      'Work through real product decisions from companies you already know',
+      'Get specific feedback on your answer, not a generic score',
+      'See how experienced people break down the same problem',
+    ],
+    ctaLabel: 'Try your first one',
+    ctaUrl: appUrl('/challenges'),
+    secondaryCta: { label: 'See how it works', url: appUrl('/flow') },
+  })
 }
 
 export function sendVerificationEmail(admin: SupabaseClient, input: LinkEmailInput) {
@@ -601,5 +773,100 @@ export function sendProductFeedbackEmail(admin: SupabaseClient, input: ProductFe
     detail,
     ctaLabel: input.path ? 'Open surface' : null,
     ctaUrl: input.path ? appUrl(input.path) : null,
+  })
+}
+
+// ─── Lifecycle / conversion senders (free users) ──────────────────────────────
+
+export function sendResumeChallengeEmail(admin: SupabaseClient, input: ResumeChallengeInput) {
+  const stepNote = input.currentStep
+    ? `You were on the ${input.currentStep} part of ${input.challengeTitle}. `
+    : `You started ${input.challengeTitle} but did not finish it. `
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'resume_challenge',
+    subject: `Pick up where you left off: ${input.challengeTitle}`,
+    eyebrow: 'Still in progress',
+    heading: 'Pick up where you left off',
+    heroImageUrl: EMAIL_ART['hatch-point'],
+    heroAlt: 'Hatch pointing back to your unfinished work',
+    body: `${stepNote}It takes a few minutes to finish, and Hatch will review your answer the moment you are done.`,
+    ctaLabel: 'Continue',
+    ctaUrl: input.resumeUrl,
+  })
+}
+
+export function sendUpgradeNudgeEmail(admin: SupabaseClient, input: UpgradeNudgeInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'upgrade_nudge',
+    subject: 'Get more out of HackProduct',
+    eyebrow: 'More practice, more feedback',
+    heading: 'Ready for more?',
+    heroImageUrl: EMAIL_ART['hatch-unlock'],
+    heroAlt: 'Hatch unlocking more practice',
+    body: 'You have been getting through the free practice. Pro opens up a lot more of it, plus the parts people find most useful when they are preparing seriously.',
+    valueBullets: [
+      'Practice 80 questions a month instead of 3',
+      'Run full live interview sessions with spoken feedback',
+      'See your strengths and gaps across everything you have done',
+      'Read 40+ deep breakdowns of real product decisions',
+    ],
+    ctaLabel: 'See Pro',
+    ctaUrl: input.url ?? appUrl('/pricing'),
+  })
+}
+
+export function sendResumeArticleEmail(admin: SupabaseClient, input: ResumeArticleInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'resume_article',
+    subject: `You were partway through ${input.articleTitle}`,
+    eyebrow: 'Saved for you',
+    heading: `Finish reading ${input.articleTitle}`,
+    heroImageUrl: EMAIL_ART['hatch-read'],
+    heroAlt: 'Hatch reading',
+    body: 'You started this one but did not get to the end. The most useful part, what the team got right and wrong and why, is in the back half. Here is where you left off.',
+    ctaLabel: 'Keep reading',
+    ctaUrl: input.articleUrl,
+  })
+}
+
+export function sendPromotionEmail(admin: SupabaseClient, input: PromotionInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'promotion',
+    subject: input.heading,
+    eyebrow: input.eyebrow ?? 'News from HackProduct',
+    heading: input.heading,
+    heroImageUrl: input.heroImageUrl ?? EMAIL_ART['hatch-wave'],
+    heroAlt: 'Hatch',
+    body: input.body,
+    valueBullets: input.valueBullets ?? null,
+    ctaLabel: input.ctaLabel,
+    ctaUrl: input.ctaUrl,
+  })
+}
+
+export function sendPaidInsightEmail(admin: SupabaseClient, input: PaidInsightInput) {
+  const detailParts = [
+    input.strongestLabel ? `Strongest right now: ${input.strongestLabel}` : null,
+    input.focusLabel ? `Worth a look next: ${input.focusLabel}` : null,
+  ].filter(Boolean)
+
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'paid_insight',
+    tone: 'celebratory',
+    subject: 'Your week on HackProduct',
+    eyebrow: 'Your progress',
+    heading: 'Here is what stood out this week',
+    heroImageUrl: EMAIL_ART['hatch-insight'],
+    heroAlt: 'Hatch with a chart',
+    body: 'A quick read on where your answers are getting sharper and where a little more practice would pay off.',
+    detail: detailParts.length > 0 ? detailParts.join(' | ') : null,
+    valueBullets: input.recentWins && input.recentWins.length > 0 ? input.recentWins : null,
+    ctaLabel: 'See your progress',
+    ctaUrl: input.url ?? appUrl('/progress'),
   })
 }

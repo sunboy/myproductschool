@@ -10,6 +10,12 @@ import { ReaderRail } from '@/components/showcase/reader/ReaderRail'
 import { ReaderDock } from '@/components/showcase/reader/ReaderDock'
 import { ResumeBanner } from '@/components/showcase/reader/ResumeBanner'
 import { useReaderResume } from '@/hooks/useReaderResume'
+import { trackEvent } from '@/lib/posthog/client'
+import {
+  EVENT_AUTOPSY_OPENED,
+  EVENT_AUTOPSY_SECTION_VIEWED,
+  EVENT_AUTOPSY_FINISHED,
+} from '@/lib/posthog/events'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -642,6 +648,12 @@ export function AutopsyReaderClient({
     gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
   }, [])
 
+  // ── Analytics: autopsy_opened ─────────────────────────────────────────────
+  useEffect(() => {
+    trackEvent(EVENT_AUTOPSY_OPENED, { slug: product.slug })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     if (!heroRef.current) return
     const ctx = gsap.context(() => {
@@ -670,6 +682,7 @@ export function AutopsyReaderClient({
 
   useEffect(() => {
     if (sectionRefs.current.length === 0) return
+    const slug = product.slug
     const ctx = gsap.context(() => {
       sectionRefs.current.forEach((el, idx) => {
         if (!el) return
@@ -677,7 +690,18 @@ export function AutopsyReaderClient({
           trigger: el,
           start: 'top center',
           end: 'bottom center',
-          onEnter: () => setActiveStageIdx(idx),
+          onEnter: (self) => {
+            setActiveStageIdx(idx)
+            // self.progress is 0 at start of overall page scroll body — capture current body progress
+            const bodyTrigger = ScrollTrigger.getById('autopsy-body')
+            const pct = bodyTrigger ? Math.round(bodyTrigger.progress * 100) : 0
+            trackEvent(EVENT_AUTOPSY_SECTION_VIEWED, {
+              slug,
+              section_index: idx,
+              pct,
+            })
+            void self
+          },
           onEnterBack: () => setActiveStageIdx(idx),
         })
       })
@@ -688,10 +712,14 @@ export function AutopsyReaderClient({
           start: 'top top',
           end: 'bottom bottom',
           onUpdate: self => setScrollProgress(self.progress),
+          onLeave: () => {
+            trackEvent(EVENT_AUTOPSY_FINISHED, { slug })
+          },
         })
       }
     })
     return () => ctx.revert()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stages.length])
 
   useEffect(() => {
@@ -796,8 +824,10 @@ export function AutopsyReaderClient({
 
       {/* Layout wrapper */}
       <div ref={scrollBodyRef} style={{ display: 'flex', alignItems: 'flex-start' }}>
-        {/* Left sticky rail (desktop only) — shared across autopsy + teardown readers */}
-        <div ref={railRef} className="hidden lg:block">
+        {/* Left sticky rail (desktop only) — shared across autopsy + teardown readers.
+            alignSelf:stretch grows this wrapper to the full flex-row height so the inner
+            sticky <aside> has scroll runway (parent sets align-items:flex-start). */}
+        <div ref={railRef} className="hidden lg:block" style={{ alignSelf: 'stretch' }}>
           <ReaderRail
             variant="aarrr"
             items={railItems}

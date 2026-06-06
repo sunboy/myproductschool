@@ -359,7 +359,7 @@ function TapOption({
 export function CalibrationFlow({
   onComplete,
 }: {
-  onComplete?: (path: 'challenge' | 'plan' | 'flow', slug?: string | null) => void
+  onComplete?: (path: 'challenge' | 'plan' | 'flow' | 'tour', slug?: string | null) => void
 }) {
   const [screen, setScreen] = useState<CalScreen>('intro')
   const [hatchState, setHatchState] = useState<HatchState>('celebrating')
@@ -643,7 +643,7 @@ export function CalibrationFlow({
     setTimeout(() => transitionTo(NEXT[screen]), 1050)
   }
 
-  async function handleComplete(path: 'challenge' | 'plan' | 'flow') {
+  async function handleComplete(path: 'challenge' | 'plan' | 'flow' | 'tour') {
     try {
       await fetch('/api/onboarding/complete', { method: 'POST' })
       await clearOnboardingState()
@@ -1093,6 +1093,15 @@ export function CalibrationFlow({
                 className="w-full font-label font-semibold rounded-full py-2.5 text-[13px] text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 transition-all duration-150 border border-outline-variant"
               >
                 Explore what FLOW is
+              </button>
+
+              {/* Guided tour: routes to the dashboard and starts the intro tour */}
+              <button
+                onClick={() => handleComplete('tour')}
+                className="flex w-full items-center justify-center gap-1.5 font-label font-semibold rounded-full py-2.5 text-[13px] text-on-surface-variant hover:text-primary active:scale-95 transition-all duration-150"
+              >
+                <span className="material-symbols-outlined text-[16px]">tour</span>
+                Take me around
               </button>
             </div>
           </div>

@@ -145,7 +145,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
   const verdict = qualityToVerdict(result.quality_label)
   const verdictColor = VERDICT_COLOR[verdict]
   const coaching = result.hatchSignal ?? result.competency_signal?.signal
-    ?? (verdict === 'pass' ? 'Strong reasoning on this move.' : verdict === 'partial' ? 'Partially on track - room to sharpen.' : 'The key move was missed here.')
+    ?? (verdict === 'pass' ? 'You made this move well. That is the one a panel scores.' : verdict === 'partial' ? 'The move is there, one rep would sharpen it.' : "Caught it here, which beats catching it in the room. This is the move to run again.")
   // Transitional fallback: post-migration rows store `competency`; pre-migration rows store `primary`.
   const competencyKey = result.competency_signal?.competency ?? result.competency_signal?.primary
   const competency = competencyKey
@@ -467,10 +467,10 @@ export function PostSessionMirror({
   const missCount = uniqueStepResults.filter(r => qualityToVerdict(r.quality_label) === 'miss').length
 
   const summaryLine = passCount === 4
-    ? 'Clean run. Every move landed.'
+    ? "That's the run that gets the offer. Now do it under a harder prompt and it's yours for good."
     : passCount >= 2
-    ? `You framed the right problem, but ${missCount > 0 ? 'your Win needed a metric' : 'room to sharpen the final move'}.`
-    : 'Partial run - the coaching below shows where each move went.'
+    ? `You framed the right problem. ${missCount > 0 ? 'The gap was the Win: it needed a real metric, which is the move that turns a good answer into a defensible one' : 'One move below would sharpen the whole answer'}.`
+    : "Better to find this here than in the room. The coaching below shows the move to run again while it's fresh."
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -552,7 +552,7 @@ export function PostSessionMirror({
             <div style={{ display: 'flex', gap: 6 }}>
               <MiniStat label="Clean" value={`${passCount}/${uniqueStepResults.length}`} color="#2f7a4a" />
               {partialCount > 0 && <MiniStat label="Partial" value={String(partialCount)} color="#c9933a" />}
-              {missCount > 0 && <MiniStat label="Miss" value={String(missCount)} color="#b23a2a" />}
+              {missCount > 0 && <MiniStat label="Caught" value={String(missCount)} color="#b23a2a" />}
             </div>
           </div>
         </div>

@@ -183,6 +183,7 @@ export function ChallengeCard({
   locked = false,
   returnHref,
   layoutId,
+  summary,
 }: {
   challenge: ChallengeWithDomain
   paradigm: string
@@ -190,6 +191,13 @@ export function ChallengeCard({
   locked?: boolean
   returnHref?: string
   layoutId?: string
+  /**
+   * Precomputed 2-line blurb. The Practice list query omits the heavy
+   * scenario and prompt_text columns, so the server passes the summary in for
+   * preview/grid cards. When absent, fall back to deriving it from whatever
+   * description fields the challenge object happens to carry (e.g. detail pages).
+   */
+  summary?: string
 }) {
   const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
   const bucket = coerceDifficulty(challenge.difficulty)
@@ -198,7 +206,7 @@ export function ChallengeCard({
     : { label: challenge.difficulty, dot: '#74796e' }
   const attempts = challenge.attempt_count ?? 0
   const title = cleanDisplayCopy(challenge.title) || challenge.title
-  const promptText = challengeTaskSummary(challenge as ChallengeWithDomain & {
+  const promptText = summary ?? challengeTaskSummary(challenge as ChallengeWithDomain & {
     scenario_context?: string | null
     scenario_trigger?: string | null
     scenario_question?: string | null

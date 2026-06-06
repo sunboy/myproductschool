@@ -7,6 +7,13 @@ import {
 
 let client: Anthropic | null = null
 
+// Hard cap on a single Anthropic request. Without this the SDK can wait
+// indefinitely on a stalled connection, which surfaces to the user as a hung
+// "processing" screen with no error anywhere. On timeout the SDK throws
+// Anthropic.APIConnectionTimeoutError, which the calling route catches and
+// reports (via apiError / withRoute) instead of hanging forever.
+const ANTHROPIC_TIMEOUT_MS = Number(process.env.ANTHROPIC_REQUEST_TIMEOUT_MS ?? '60000')
+
 export interface CachedMessageOptions {
   model: string
   max_tokens: number
@@ -39,19 +46,22 @@ export async function createCachedMessage(
     await assertAiBudget(options.budget.userId, options.budget.userPlan, preflightCostCents)
   }
 
-  const message = await getAnthropicClient().messages.create({
-    model: options.model,
-    max_tokens: options.max_tokens,
-    ...(options.thinking ? { thinking: options.thinking } : {}),
-    system: [
-      {
-        type: 'text' as const,
-        text: systemPrompt,
-        cache_control: { type: 'ephemeral' as const },
-      },
-    ],
-    messages: [{ role: 'user' as const, content: userContent }],
-  })
+  const message = await getAnthropicClient().messages.create(
+    {
+      model: options.model,
+      max_tokens: options.max_tokens,
+      ...(options.thinking ? { thinking: options.thinking } : {}),
+      system: [
+        {
+          type: 'text' as const,
+          text: systemPrompt,
+          cache_control: { type: 'ephemeral' as const },
+        },
+      ],
+      messages: [{ role: 'user' as const, content: userContent }],
+    },
+    { timeout: ANTHROPIC_TIMEOUT_MS }
+  )
 
   if (options.budget) {
     await recordAnthropicUsage({
@@ -86,23 +96,26 @@ export async function createCachedMessageMultiSystem(
     await assertAiBudget(options.budget.userId, options.budget.userPlan, preflightCostCents)
   }
 
-  const message = await getAnthropicClient().messages.create({
-    model: options.model,
-    max_tokens: options.max_tokens,
-    ...(options.thinking ? { thinking: options.thinking } : {}),
-    system: [
-      {
-        type: 'text' as const,
-        text: cachedPrefix,
-        cache_control: { type: 'ephemeral' as const },
-      },
-      {
-        type: 'text' as const,
-        text: dynamicContext,
-      },
-    ],
-    messages: [{ role: 'user' as const, content: userContent }],
-  })
+  const message = await getAnthropicClient().messages.create(
+    {
+      model: options.model,
+      max_tokens: options.max_tokens,
+      ...(options.thinking ? { thinking: options.thinking } : {}),
+      system: [
+        {
+          type: 'text' as const,
+          text: cachedPrefix,
+          cache_control: { type: 'ephemeral' as const },
+        },
+        {
+          type: 'text' as const,
+          text: dynamicContext,
+        },
+      ],
+      messages: [{ role: 'user' as const, content: userContent }],
+    },
+    { timeout: ANTHROPIC_TIMEOUT_MS }
+  )
 
   if (options.budget) {
     await recordAnthropicUsage({

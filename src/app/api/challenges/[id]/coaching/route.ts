@@ -141,7 +141,7 @@ export async function POST(
     const scenarioTrigger = challenge?.scenario_trigger ?? ''
     const hatchContext = await getHatchContext(user.id, challengeId, step)
 
-    const systemPrompt = `You are Hatch, a coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+    const systemPrompt = `You are Hatch, a coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking. Honest, not soft: lead with what their answer gets right, frame a gap as the next move to build rather than a failure, and never use pressure or guilt. Calm about the person, exact about the gap.`
     let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
 Question: ${questionText}

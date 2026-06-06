@@ -12,6 +12,7 @@ import { apiError } from '@/lib/api/error'
 import { buildCompletedQuickTakeResult } from '@/lib/scoring/completed-attempt-result'
 import { buildEmptyStateResponse, buildSkillContextPrompt, detectSubmissionQuality } from '@/lib/hatch/skill-context'
 import { checkAndGrantAchievements } from '@/lib/achievements/check'
+import { captureServerImmediate } from '@/lib/posthog/server'
 
 // XP base for quick-takes (lower than full challenges)
 const QUICK_TAKE_XP_BASE = 20
@@ -69,6 +70,8 @@ async function gradeWithHaiku(
   const systemPrompt = `You are Hatch, a product thinking coach. Grade a quick-take response and give direct, specific coaching.
 
 Never use em dashes. Short sentences. No filler like "Great job" or "Certainly". Be honest, don't soften weak answers.
+
+Honest, not soft: this is a 90-second rep, a low-stakes moment to build confidence. Lead with the one thing they got right in what_worked before naming the gap. Frame what_to_improve as the next move, not a failure. Never use pressure, guilt, or "you're behind." Calm about the person, exact about the thinking. This holds across any discipline.
 
 Scoring:
 - 0.8-1.0 (Sharp): Frames the problem clearly, names a specific diagnosis or insight, shows reasoning not just description
@@ -290,6 +293,12 @@ export async function POST(req: NextRequest) {
   checkAndGrantAchievements(user.id, adminClient).catch(err =>
     console.error('[quick-take] achievement check failed:', err)
   )
+
+  await captureServerImmediate({
+    distinctId: user.id,
+    event: 'quick_take_submitted',
+    properties: { challenge_id, move: primaryMove, score, xp_earned },
+  })
 
   return NextResponse.json({ score, xp_earned, feedback_summary: feedback })
 }

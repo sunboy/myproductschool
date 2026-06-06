@@ -312,6 +312,9 @@ WIN × motivation_theory: Satisfaction: what does success look like after the fi
 WIN × cognitive_empathy: Phrase it so the decision-maker feels heard, not blocked
 
 IMPORTANT: Never attribute these concepts to named experts. Present as reasoning patterns.
+
+HONEST, NOT SOFT (framing for any signal, explanation, or coaching you generate):
+A grade is a charged moment in a high-anxiety domain. Leave the learner calmer and more capable, never more anxious. This is not the same as going soft: stay exact about the gap, never flatter a weak answer, never inflate the score. Lead with the move they made well before the gap. Frame a gap as the next rep to build, not a failure. For a low score, the honest reframe is that the miss is the product working, better to find it here than in the room. Never use streak-guilt, pressure, or "you're falling behind." The framing is discipline-agnostic.
 `
 
 export const STEP_PRIMARY_COMPETENCIES: Record<string, string[]> = {

@@ -21,9 +21,54 @@ import {
   sendSubscriptionReactivatedEmail,
   sendTrialEndingEmail,
 } from '@/lib/email/transactional'
+import { subscriptionEntitlesPlan, type SubscriptionEntitlementRow } from '@/lib/billing/entitlements'
+import { isAnalyticsPlanId } from '@/lib/billing/plans'
+import { captureServerImmediate } from '@/lib/posthog/server'
+import { EVENT_UPGRADED } from '@/lib/posthog/events'
 
 function subscriptionPlanForStatus(status: Stripe.Subscription.Status): 'free' | 'pro' {
   return status === 'active' || status === 'trialing' || status === 'past_due' ? 'pro' : 'free'
+}
+
+function metadataAnalyticsPlan(metadata?: Stripe.Metadata | null) {
+  const plan = metadata?.plan
+  return isAnalyticsPlanId(plan) ? plan : null
+}
+
+function isProEntitlingPlan(plan: string | null | undefined) {
+  return plan === 'pro' || isAnalyticsPlanId(plan)
+}
+
+async function userHasOtherProEntitlingSubscription(
+  supabase: ReturnType<typeof createAdminClient>,
+  userId: string,
+  excludedSubscriptionId: string
+) {
+  const [profileResult, subscriptionsResult] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('past_due_since')
+      .eq('id', userId)
+      .maybeSingle(),
+    supabase
+      .from('subscriptions')
+      .select('stripe_subscription_id, plan, status, current_period_end, cancel_at_period_end')
+      .eq('user_id', userId),
+  ])
+
+  const subscriptions = (subscriptionsResult.data ?? []) as Array<
+    SubscriptionEntitlementRow & { stripe_subscription_id?: string | null }
+  >
+  const pastDueSince = (profileResult.data as { past_due_since?: string | null } | null)?.past_due_since
+
+  return subscriptions
+    .filter((subscription) => subscription.stripe_subscription_id !== excludedSubscriptionId)
+    .some((subscription) => subscriptionEntitlesPlan(
+      subscription,
+      isProEntitlingPlan,
+      new Date(),
+      pastDueSince
+    ))
 }
 
 async function findUserIdForStripeObject(
@@ -87,7 +132,7 @@ function checkoutInvoiceId(session: Stripe.Checkout.Session) {
 }
 
 function checkoutPlanLabel(session: Stripe.Checkout.Session) {
-  return session.metadata?.plan === 'annual'
+  return session.metadata?.plan === 'annual' || session.metadata?.plan === 'analytics_annual'
     ? planLabelFromInterval('year')
     : planLabelFromInterval('month')
 }
@@ -181,25 +226,41 @@ export async function POST(req: NextRequest) {
       if (!userId) break
       const invoiceId = checkoutInvoiceId(session)
       const invoice = invoiceId ? await stripe.invoices.retrieve(invoiceId) : null
-
-      await supabase.from('profiles').update({
+      const analyticsPlan = metadataAnalyticsPlan(session.metadata)
+      const profileUpdates: Record<string, unknown> = {
         plan: 'pro',
         pro_access: true,
         subscription_status: 'active',
         payment_failures: 0,
         past_due_since: null,
-      }).eq('id', userId)
+      }
+      if (analyticsPlan) profileUpdates.cc_analytics_access = true
+
+      await supabase.from('profiles').update(profileUpdates).eq('id', userId)
 
       await supabase.from('subscriptions').upsert({
         user_id: userId,
         stripe_customer_id: checkoutCustomerId(session),
         stripe_subscription_id: checkoutSubscriptionId(session),
-        plan: 'pro',
+        plan: analyticsPlan ?? 'pro',
         status: 'active',
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
 
       await upsertAffiliateReferralFromCheckoutSession(supabase, session)
+
+      // PostHog: track successful upgrade (fire-and-forget, never throws)
+      const upgradePlan = analyticsPlan ?? session.metadata?.plan ?? 'pro'
+      const upgradeInterval = (session.metadata?.plan === 'annual' || session.metadata?.plan === 'analytics_annual') ? 'year' : 'month'
+      void captureServerImmediate({
+        distinctId: userId,
+        event: EVENT_UPGRADED,
+        properties: {
+          plan: upgradePlan,
+          interval: upgradeInterval,
+          currency: session.currency ?? 'usd',
+        },
+      })
 
       await sendPaymentReceiptEmail(supabase, {
         dedupeKey: `${event.id}:payment_receipt`,
@@ -241,35 +302,55 @@ export async function POST(req: NextRequest) {
       const interval = item?.plan?.interval ?? null
       const priceId = item?.price?.id ?? null
       const plan = subscriptionPlanForStatus(subscription.status)
+      const analyticsPlan = metadataAnalyticsPlan(subscription.metadata)
+      const analyticsRevoked = Boolean(analyticsPlan && plan === 'free')
+      const hasOtherProEntitlingSubscription = analyticsRevoked
+        ? await userHasOtherProEntitlingSubscription(supabase, userId, subscription.id)
+        : false
 
-      await supabase.from('subscriptions').upsert({
-        user_id: userId,
-        stripe_customer_id: subscription.customer as string,
-        stripe_subscription_id: subscription.id,
-        stripe_price_id: priceId,
-        billing_interval: interval,
-        plan,
-        status: subscription.status,
-        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-        cancel_at_period_end: subscription.cancel_at_period_end ?? false,
-        cancel_at: unixToIso(subscription.cancel_at),
-        canceled_at: unixToIso(subscription.canceled_at),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      if (!(analyticsRevoked && hasOtherProEntitlingSubscription)) {
+        await supabase.from('subscriptions').upsert({
+          user_id: userId,
+          stripe_customer_id: subscription.customer as string,
+          stripe_subscription_id: subscription.id,
+          stripe_price_id: priceId,
+          billing_interval: interval,
+          plan: analyticsPlan ?? plan,
+          // subscriptions.status does not accept 'unpaid' / 'incomplete_expired'.
+          // Store analytics revocations as canceled so entitlement helpers do not grant grace.
+          status: analyticsRevoked ? 'canceled' : subscription.status,
+          current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+          cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+          cancel_at: unixToIso(subscription.cancel_at),
+          canceled_at: unixToIso(subscription.canceled_at),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+      }
 
       // Sync profile entitlement flags so dashboards / dunning / entitlements
       // layer all see the same state.
-      const profileUpdates: Record<string, unknown> = { plan }
-      if (plan === 'pro' && (subscription.status === 'active' || subscription.status === 'trialing')) {
+      const profileUpdates: Record<string, unknown> = {}
+      if (analyticsRevoked) {
+        profileUpdates.cc_analytics_access = false
+        profileUpdates.subscription_status = subscription.status
+        if (!hasOtherProEntitlingSubscription) {
+          profileUpdates.plan = 'free'
+          profileUpdates.pro_access = false
+        }
+      } else {
+        profileUpdates.plan = plan
+        if (analyticsPlan) profileUpdates.cc_analytics_access = true
+      }
+      if (!analyticsRevoked && plan === 'pro' && (subscription.status === 'active' || subscription.status === 'trialing')) {
         profileUpdates.pro_access = true
         profileUpdates.subscription_status = 'active'
         profileUpdates.payment_failures = 0
         profileUpdates.past_due_since = null
-      } else if (plan === 'free') {
+      } else if (!analyticsRevoked && plan === 'free') {
         // Cancelled / incomplete_expired / etc → no Pro access.
         profileUpdates.pro_access = false
         profileUpdates.subscription_status = subscription.status
-      } else {
+      } else if (!analyticsRevoked) {
         // plan === 'pro' but status is past_due → user is in the billing grace
         // window. Leave pro_access alone (they keep access for GRACE_DAYS). The
         // invoice.payment_failed handler owns past_due_since / payment_failures.
@@ -325,17 +406,40 @@ export async function POST(req: NextRequest) {
 
       if (!userId) break
 
-      await supabase.from('subscriptions').upsert({
-        user_id: userId,
-        plan: 'free',
-        status: 'canceled',
-        cancel_at_period_end: false,
-        cancel_at: null,
-        canceled_at: unixToIso(subscription.canceled_at),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      const { data: existingSubscription } = await supabase
+        .from('subscriptions')
+        .select('plan')
+        .eq('stripe_subscription_id', subscription.id)
+        .maybeSingle()
+      const existingPlan = (existingSubscription as { plan?: string | null } | null)?.plan
+      const analyticsPlan = metadataAnalyticsPlan(subscription.metadata)
+        ?? (isAnalyticsPlanId(existingPlan) ? existingPlan : null)
+      const hasOtherProEntitlingSubscription = analyticsPlan
+        ? await userHasOtherProEntitlingSubscription(supabase, userId, subscription.id)
+        : false
 
-      await supabase.from('profiles').update({ plan: 'free' }).eq('id', userId)
+      if (!(analyticsPlan && hasOtherProEntitlingSubscription)) {
+        await supabase.from('subscriptions').upsert({
+          user_id: userId,
+          plan: analyticsPlan ?? 'free',
+          status: 'canceled',
+          cancel_at_period_end: false,
+          cancel_at: null,
+          canceled_at: unixToIso(subscription.canceled_at),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+      }
+
+      const profileUpdates: Record<string, unknown> = analyticsPlan
+        ? { cc_analytics_access: false }
+        : { plan: 'free' }
+      if (analyticsPlan && !hasOtherProEntitlingSubscription) {
+        profileUpdates.plan = 'free'
+        profileUpdates.pro_access = false
+        profileUpdates.subscription_status = 'canceled'
+      }
+
+      await supabase.from('profiles').update(profileUpdates).eq('id', userId)
 
       await sendCancellationConfirmedEmail(supabase, {
         dedupeKey: `${event.id}:cancellation_confirmed`,

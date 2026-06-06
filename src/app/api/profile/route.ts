@@ -64,7 +64,7 @@ export async function GET() {
   const adminClient = createAdminClient()
 
   const [profileResult, subscriptionResult, attemptsResult] = await Promise.all([
-    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, preferred_role, streak_days, streak_shield_count, xp_total, onboarding_completed_at, archetype, archetype_description, created_at, updated_at, pro_access, subscription_status, payment_failures, past_due_since').eq('id', user.id).single(),
+    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, preferred_role, streak_days, streak_shield_count, xp_total, onboarding_completed_at, has_seen_hatch_intro, archetype, archetype_description, created_at, updated_at, pro_access, subscription_status, payment_failures, past_due_since').eq('id', user.id).single(),
     adminClient
       .from('subscriptions')
       .select('plan, status, current_period_end, billing_interval, stripe_price_id, cancel_at_period_end, cancel_at, canceled_at')

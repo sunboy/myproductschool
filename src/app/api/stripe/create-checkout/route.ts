@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { isBillingPlanId } from '@/lib/billing/plans'
+import { isAnalyticsPlanId, isAnyPlanId, type AnyPlanId } from '@/lib/billing/plans'
+import { getAnalyticsAccess } from '@/lib/flags/analytics'
 import {
   createStripeClient,
   getCheckoutBrandingSettings,
@@ -36,20 +37,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  let plan: 'monthly' | 'annual' = 'monthly'
+  let plan: AnyPlanId = 'monthly'
   let embedded = false
   try {
     const body = await req.json()
-    if (isBillingPlanId(body.plan)) plan = body.plan
+    if (isAnyPlanId(body.plan)) plan = body.plan
     if (body.embedded === true) embedded = true
   } catch {
     // fall back to defaults
   }
 
+  const admin = createAdminClient()
+  const isAnalyticsPlan = isAnalyticsPlanId(plan)
+  if (isAnalyticsPlan) {
+    // Hard gate: the Analytics tier is only SELLABLE when the global feature flag
+    // is on. The per-user allowlist (cc_analytics_access) grants feature ACCESS
+    // for beta users, but must NOT open a checkout while the tier is unlaunched —
+    // otherwise an allowlisted user could buy a tier with no live Stripe price
+    // (create-checkout would fall back to inline price_data). Gate on `enabled`
+    // alone here, independent of the allowlist. (Stripe audit finding.)
+    const { enabled } = await getAnalyticsAccess(admin, user.id)
+    if (!enabled) {
+      return NextResponse.json({ error: 'Claude Code Analytics is not available yet' }, { status: 400 })
+    }
+  }
+
   const config = getStripePlanConfig(plan)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const affiliate = await resolveAffiliateForCheckout(createAdminClient(), req, user.id)
+  const affiliate = await resolveAffiliateForCheckout(admin, req, user.id)
   const referralMetadata = affiliateCheckoutMetadata(affiliate)
+  const metadata = {
+    user_id: user.id,
+    plan,
+    stripe_mode: stripeRuntime.mode,
+    ...referralMetadata,
+    ...(isAnalyticsPlan ? { tier: 'analytics' } : {}),
+  }
 
   const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = config.priceId
     ? { price: config.priceId, quantity: 1 }
@@ -73,10 +96,10 @@ export async function POST(req: NextRequest) {
     line_items: [lineItem],
     customer_email: user.email,
     client_reference_id: user.id,
-    metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode, ...referralMetadata },
+    metadata,
     subscription_data: {
       trial_period_days: PRO_TRIAL_DAYS,
-      metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode, ...referralMetadata },
+      metadata,
     },
     billing_address_collection: 'required',
     automatic_tax: { enabled: true },

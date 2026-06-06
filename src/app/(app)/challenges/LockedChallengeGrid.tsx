@@ -10,9 +10,11 @@ interface LockedChallengeGridProps {
   paradigms: Record<string, string>
   listView: boolean
   returnHref?: string
+  /** Precomputed grid-blurb summaries keyed by challenge id. */
+  summaries?: Record<string, string>
 }
 
-export function LockedChallengeGrid({ challenges, paradigms, listView, returnHref }: LockedChallengeGridProps) {
+export function LockedChallengeGrid({ challenges, paradigms, listView, returnHref, summaries }: LockedChallengeGridProps) {
   const isAtLimit = useIsAtLimit('challenges')
 
   return (
@@ -31,6 +33,7 @@ export function LockedChallengeGrid({ challenges, paradigms, listView, returnHre
             locked={isAtLimit}
             returnHref={returnHref}
             layoutId={`challenge-card-${challenge.id}`}
+            summary={summaries?.[challenge.id]}
           />
         </MotionListItem>
       ))}

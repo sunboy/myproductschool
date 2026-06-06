@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og'
 import { SITE_NAME } from '@/lib/seo/site'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSharedAttemptScorecard, type MoveKey } from '@/lib/share/attempt-scorecard'
+import { getSharedAnalyticsHeader } from '@/lib/share/analytics-report'
 
 export const alt = 'HackProduct practice scorecard'
 export const size = {
@@ -23,7 +24,56 @@ export default async function Image({
   params: Promise<{ id: string; shareId: string }>
 }) {
   const { id, shareId } = await params
-  const scorecard = await getSharedAttemptScorecard(createAdminClient(), { challengeId: id, shareId })
+  const admin = createAdminClient()
+
+  // Analytics shares get their own card (grade + dimensions, no tarball read). The
+  // FLOW scorecard path owns everything else. recharts/SVG charts do NOT render in
+  // next/og, so this uses plain divs only.
+  const analytics = await getSharedAnalyticsHeader(admin, { challengeId: id, shareId })
+  if (analytics) {
+    const dims = (analytics.dimensions ?? []).slice(0, 5)
+    return new ImageResponse(
+      (
+        <div style={{ width: '100%', height: '100%', display: 'flex', background: '#1f2a23', color: '#f8f3ea', fontFamily: 'Arial, sans-serif', padding: 56 }}>
+          <div style={{ display: 'flex', width: '100%', height: '100%', border: '2px solid rgba(248, 243, 234, 0.2)', borderRadius: 32, overflow: 'hidden' }}>
+            <div style={{ width: 440, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: '#f8f3ea', color: '#233028', padding: 42 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 18, background: '#4a7c59', color: '#f8f3ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 900 }}>H</div>
+                <div style={{ fontSize: 26, fontWeight: 900, color: '#4a7c59' }}>{SITE_NAME}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ fontSize: 88, lineHeight: 0.9, fontWeight: 900, color: '#4a7c59' }}>
+                  {analytics.gradeLabel ?? analytics.scoreLabel}
+                </div>
+                <div style={{ fontSize: 28, lineHeight: 1.15, fontWeight: 800 }}>{analytics.challengeTitle}</div>
+                <div style={{ fontSize: 20, color: '#647064', fontWeight: 700 }}>Live data analysis</div>
+              </div>
+              <div style={{ display: 'flex', fontSize: 18, color: '#647064', fontWeight: 700 }}>hackproduct.com</div>
+            </div>
+            <div style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 30, padding: 54 }}>
+              <div style={{ color: '#c4a66a', fontSize: 22, fontWeight: 900, letterSpacing: 3, display: 'flex' }}>ANALYST SCORECARD</div>
+              <div style={{ fontSize: 50, lineHeight: 1.05, fontWeight: 900, display: 'flex' }}>
+                Driven on live BigQuery with Claude Code.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {dims.map((d) => (
+                  <div key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ width: 240, fontSize: 18, fontWeight: 800 }}>{d.label}</div>
+                    <div style={{ flex: 1, height: 16, borderRadius: 99, background: 'rgba(248, 243, 234, 0.18)', display: 'flex' }}>
+                      <div style={{ width: `${d.score * 100}%`, height: '100%', borderRadius: 99, background: d.score >= 1 ? '#8ecf9e' : d.score >= 0.5 ? '#c4a66a' : 'rgba(248,243,234,0.4)' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      size,
+    )
+  }
+
+  const scorecard = await getSharedAttemptScorecard(admin, { challengeId: id, shareId })
   const levels = MOVE_ORDER.map(move => (
     scorecard?.moveLevels.find(level => level.move === move) ?? { move, level: 1, progressPct: 0 }
   ))

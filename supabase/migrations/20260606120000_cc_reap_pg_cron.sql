@@ -1,0 +1,36 @@
+-- Move the CC Analytics reaper + spend snapshot off the Vercel cron onto Supabase
+-- pg_cron. The Vercel plan limits cron FREQUENCY (sub-daily schedules trip the
+-- cron usage/pricing cap and fail the deploy build), but the reaper needs to run
+-- every ~10 min to free idle sandboxes and capture spend. pg_cron has no such
+-- frequency limit, so it drives the existing /api/cron/cc-reap HTTP endpoint
+-- directly via pg_net. (The Vercel-side cc-reap entry was removed from vercel.json.)
+--
+-- One-time setup that is NOT in this migration (run once, out of band, because it
+-- needs the secret value which must not live in version control):
+--
+--   1. enable extensions:
+--        create extension if not exists pg_cron;
+--        create extension if not exists pg_net;
+--   2. store the cron bearer in Vault (value = the prod CRON_SECRET env):
+--        select vault.create_secret('<CRON_SECRET>', 'cc_cron_secret',
+--                                    'Bearer for /api/cron/cc-reap');
+--   3. schedule the job (this is the reproducible part):
+--        select cron.schedule(
+--          'cc-reap-10min', '*/10 * * * *',
+--          $cmd$
+--            select net.http_get(
+--              url := 'https://www.hackproduct.com/api/cron/cc-reap',
+--              headers := jsonb_build_object(
+--                'Authorization',
+--                'Bearer ' || (select decrypted_secret from vault.decrypted_secrets
+--                              where name = 'cc_cron_secret')
+--              ),
+--              timeout_milliseconds := 55000
+--            );
+--          $cmd$
+--        );
+--
+-- Applied to the live project on 2026-06-06 (job 'cc-reap-10min', every 10 min).
+-- This file documents it for reproducibility; it intentionally performs no DDL so
+-- it can't fail a `db push` if pg_cron/Vault state already exists or differs.
+select 1;

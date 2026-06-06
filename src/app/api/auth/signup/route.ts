@@ -11,6 +11,9 @@ import {
 import { protectedSignupSchema } from '@/lib/auth/validation'
 import { isHoneypotFilled, turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
 import { apiError } from '@/lib/api/error'
+import { sendWelcomeEmail } from '@/lib/email/transactional'
+import { captureServerImmediate } from '@/lib/posthog/server'
+import { EVENT_USER_SIGNED_UP } from '@/lib/posthog/events'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = protectedSignupSchema.extend({
@@ -74,12 +77,28 @@ export async function POST(request: NextRequest) {
     return apiError(400, 'signup_failed', error.message)
   }
 
-  if (data.user?.id && affiliatesEnabled()) {
-    await applyReferralAttribution(
-      createAdminClient(),
-      data.user.id,
-      request.cookies.get(AFFILIATE_COOKIE_NAME)?.value
-    )
+  if (data.user?.id) {
+    const admin = createAdminClient()
+    if (affiliatesEnabled()) {
+      await applyReferralAttribution(
+        admin,
+        data.user.id,
+        request.cookies.get(AFFILIATE_COOKIE_NAME)?.value
+      )
+    }
+    // Fire-and-forget welcome email. With email confirmation disabled, signups
+    // land here with a session and never pass through /auth/callback, so this is
+    // the welcome hook for email/password users. The `welcome:${userId}`
+    // dedupeKey makes it once-only and safe alongside the OAuth callback send.
+    void sendWelcomeEmail(admin, {
+      userId: data.user.id,
+      name: name ?? null,
+    })
+    void captureServerImmediate({
+      distinctId: data.user.id,
+      event: EVENT_USER_SIGNED_UP,
+      properties: { method: 'email_password' },
+    })
   }
 
   return NextResponse.json({

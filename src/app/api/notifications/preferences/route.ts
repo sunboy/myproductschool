@@ -8,6 +8,7 @@ const DEFAULT_PREFS: Record<NotificationPreferenceKey, boolean> = {
   weekly_digest: true,
   completion_email: true,
   marketing: false,
+  lifecycle: true,
   push_enabled: false,
   discussion_reply: true,
   billing_alerts: true,
@@ -45,7 +46,7 @@ export async function GET() {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('notification_prefs')
-    .select('user_id, streak_reminder, weekly_digest, completion_email, marketing, push_enabled, discussion_reply, billing_alerts, updated_at')
+    .select('user_id, streak_reminder, weekly_digest, completion_email, marketing, lifecycle, push_enabled, discussion_reply, billing_alerts, updated_at')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -79,7 +80,7 @@ export async function PATCH(request: Request) {
       ...updates,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' })
-    .select('user_id, streak_reminder, weekly_digest, completion_email, marketing, push_enabled, discussion_reply, billing_alerts, updated_at')
+    .select('user_id, streak_reminder, weekly_digest, completion_email, marketing, lifecycle, push_enabled, discussion_reply, billing_alerts, updated_at')
     .single()
 
   if (error) return NextResponse.json({ error: 'Could not update notification preferences.' }, { status: 500 })

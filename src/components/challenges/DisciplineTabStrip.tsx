@@ -1,10 +1,11 @@
 'use client'
 
-export type Discipline = 'all' | 'product_sense' | 'system_design' | 'data_modeling' | 'algorithm' | 'sql'
+export type Discipline = 'all' | 'product_sense' | 'analytics' | 'system_design' | 'data_modeling' | 'algorithm' | 'sql'
 
 const TABS: { key: Discipline; label: string; mobileLabel: string; disabled?: boolean }[] = [
   { key: 'all', label: 'All', mobileLabel: 'All' },
   { key: 'product_sense', label: 'Product Sense', mobileLabel: 'Product' },
+  { key: 'analytics', label: 'Analytics', mobileLabel: 'Analytics' },
   { key: 'system_design', label: 'System Design', mobileLabel: 'Sys Design' },
   { key: 'data_modeling', label: 'Data Modeling', mobileLabel: 'Data' },
   { key: 'algorithm', label: 'Coding', mobileLabel: 'Coding' },

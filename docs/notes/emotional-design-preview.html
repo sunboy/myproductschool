@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackProduct — Emotional Design Pass (Before / After Preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+  :root{
+    --primary:#4a7c59; --on-primary:#ffffff; --primary-container:#78a886; --on-primary-container:#d8f0de;
+    --secondary-container:#f0e8db; --on-secondary-container:#5e5548;
+    --tertiary:#705c30; --tertiary-container:#c4a66a;
+    --background:#faf6f0; --on-background:#2e3230;
+    --surface-low:#f5f1ea; --surface:#f0ece4; --surface-high:#eae6de; --surface-highest:#e4e0d8;
+    --on-surface:#2e3230; --on-surface-variant:#4a4e4a;
+    --outline:#74796e; --outline-variant:#c4c8bc;
+    --inverse-surface:#2e3230; --inverse-on-surface:#f5f0e8; --inverse-primary:#8ecf9e;
+    --error:#b83230; --primary-fixed:#c8e8d0;
+    --headline:'Literata',Georgia,serif; --body:'Nunito Sans',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--body);background:var(--background);color:var(--on-background);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;line-height:1;vertical-align:middle}
+  .wrap{max-width:1120px;margin:0 auto;padding:48px 24px 96px}
+
+  /* Masthead */
+  .masthead{text-align:center;padding:40px 0 8px}
+  .masthead .kicker{font-family:var(--body);font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--primary);margin-bottom:14px}
+  .masthead h1{font-family:var(--headline);font-size:40px;line-height:1.15;font-weight:600;max-width:780px;margin:0 auto 16px}
+  .masthead .grad{background:linear-gradient(90deg,var(--primary),var(--tertiary));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .masthead p{font-size:17px;color:var(--on-surface-variant);max-width:660px;margin:0 auto}
+  .principle{margin:28px auto 0;max-width:720px;background:var(--surface);border:1px solid var(--outline-variant);border-radius:16px;padding:18px 22px;font-size:15px;color:var(--on-surface-variant)}
+  .principle b{color:var(--on-surface)}
+
+  /* TOC */
+  .toc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:32px auto 0;max-width:820px}
+  .toc a{font-size:13px;font-weight:700;text-decoration:none;color:var(--on-secondary-container);background:var(--secondary-container);padding:7px 14px;border-radius:999px}
+  .toc a:hover{background:var(--primary-fixed)}
+
+  /* Section */
+  section{margin-top:64px;scroll-margin-top:24px}
+  .sec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .sec-num{flex:none;width:34px;height:34px;border-radius:10px;background:var(--primary);color:var(--on-primary);font-weight:800;font-size:15px;display:grid;place-items:center;font-family:var(--body)}
+  .sec-head h2{font-family:var(--headline);font-size:25px;font-weight:600;line-height:1.2}
+  .sec-why{margin:6px 0 22px 48px;color:var(--on-surface-variant);font-size:15px;max-width:760px}
+  .sec-where{margin:0 0 22px 48px;font-size:12.5px;color:var(--outline);font-family:var(--body)}
+  .sec-where code{background:var(--surface-high);padding:2px 6px;border-radius:5px;font-size:11.5px}
+
+  /* Before/After grid */
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:820px){.ba{grid-template-columns:1fr}}
+  .ba-col{display:flex;flex-direction:column;gap:10px}
+  .ba-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+  .ba-label.before{color:var(--outline)}
+  .ba-label.after{color:var(--primary)}
+  .ba-label .dot{width:8px;height:8px;border-radius:50%}
+  .before .dot{background:var(--outline)}
+  .after .dot{background:var(--primary)}
+
+  /* Mock device frames */
+  .mock{border-radius:18px;padding:0;overflow:hidden;border:1px solid var(--outline-variant);background:var(--surface-low);flex:1;display:flex;flex-direction:column}
+  .mock.dim{opacity:.92}
+  .mock-body{padding:26px 24px;flex:1;display:flex;flex-direction:column}
+  .mock.after-frame{border-color:var(--primary-container);box-shadow:0 1px 0 rgba(74,124,89,.08)}
+
+  /* Hatch avatar */
+  .hatch{width:44px;height:44px;border-radius:14px;background:var(--primary-fixed);display:grid;place-items:center;flex:none}
+  .hatch .material-symbols-outlined{font-size:26px;color:var(--primary)}
+  .hatch.sm{width:34px;height:34px;border-radius:11px}
+  .hatch.sm .material-symbols-outlined{font-size:20px}
+
+  /* generic bits inside mocks */
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--primary)}
+  .mtitle{font-family:var(--headline);font-size:21px;font-weight:600;margin:8px 0 6px}
+  .mtext{font-size:14.5px;color:var(--on-surface-variant)}
+  .progress{height:8px;border-radius:999px;background:var(--surface-highest);overflow:hidden;margin:18px 0 10px}
+  .progress > span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--primary-container))}
+  .btn{align-self:flex-start;background:var(--primary);color:var(--on-primary);border:none;border-radius:999px;padding:11px 22px;font-family:var(--body);font-weight:700;font-size:14px;cursor:default}
+  .btn.ghost{background:var(--secondary-container);color:var(--on-secondary-container)}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--secondary-container);color:var(--on-secondary-container);border-radius:999px;font-size:12px;font-weight:700;padding:5px 11px}
+  .bubble{background:var(--surface);border:1px solid var(--outline-variant);border-radius:14px;border-top-left-radius:4px;padding:13px 15px;font-size:14px;color:var(--on-surface)}
+  .scorebadge{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:18px;font-family:var(--headline);font-weight:600;font-size:24px}
+  .scorebadge .u{font-size:13px;opacity:.6;font-weight:400}
+  .verdict{display:inline-flex;align-items:center;gap:6px;border-radius:999px;font-size:12px;font-weight:800;padding:5px 12px;text-transform:uppercase;letter-spacing:.05em}
+  .v-miss{background:#f7dedd;color:var(--error)}
+  .v-partial{background:#f3e6cf;color:var(--tertiary)}
+  .v-clean{background:var(--primary-fixed);color:var(--primary)}
+  .row{display:flex;align-items:center;gap:12px}
+  .spread{justify-content:space-between}
+  .mt-a{margin-top:auto}
+  .small{font-size:12.5px;color:var(--outline)}
+  .pill-rot{display:inline-flex;gap:6px;align-items:center;background:var(--surface);border:1px solid var(--outline-variant);border-radius:999px;padding:4px 10px;font-size:11px;color:var(--on-surface-variant);font-weight:700}
+
+  /* note callout */
+  .note{margin:16px 0 0 48px;font-size:13.5px;color:var(--on-surface-variant);background:var(--surface-low);border-left:3px solid var(--primary-container);border-radius:0 10px 10px 0;padding:10px 16px;max-width:760px}
+  .note b{color:var(--on-surface)}
+
+  /* marketing hooks */
+  .hooks{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-left:48px}
+  @media(max-width:820px){.hooks{grid-template-columns:1fr;margin-left:0}}
+  .hook{background:var(--primary);color:var(--on-primary);border-radius:18px;padding:26px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
+  .hook.alt{background:var(--inverse-surface)}
+  .hook.cream{background:var(--surface);color:var(--on-surface);border:1px solid var(--outline-variant)}
+  .hook .htag{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+  .hook .hbig{font-family:var(--headline);font-size:21px;font-weight:600;line-height:1.25;margin-top:10px}
+  .hook .hsub{font-size:13px;opacity:.85;margin-top:12px}
+  .disc-tag{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.55;margin-top:14px}
+
+  /* audit table */
+  .audit{margin-left:48px;border:1px solid var(--outline-variant);border-radius:16px;overflow:hidden}
+  .audit .arow{display:grid;grid-template-columns:1.1fr 1.2fr 1fr;gap:0;border-bottom:1px solid var(--outline-variant)}
+  .audit .arow:last-child{border-bottom:none}
+  .audit .arow.head{background:var(--surface-high);font-weight:800;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--on-surface-variant)}
+  .audit .acell{padding:13px 16px;font-size:13.5px;border-right:1px solid var(--outline-variant)}
+  .audit .acell:last-child{border-right:none}
+  .flag{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+  .flag.keep{background:var(--primary-fixed);color:var(--primary)}
+  .flag.soft{background:#f3e6cf;color:var(--tertiary)}
+  .flag.decide{background:#f7dedd;color:var(--error)}
+
+  .legend{margin:18px auto 0;max-width:760px;text-align:center;font-size:13px;color:var(--outline)}
+  footer{margin-top:80px;text-align:center;color:var(--outline);font-size:13px;border-top:1px solid var(--outline-variant);padding-top:28px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="kicker">Emotional Design Pass · Hatch's honest-not-soft voice</div>
+    <h1>The functional moments are the <span class="grad">highest-emotion</span> moments.</h1>
+    <p>Loading, waiting, the wrong answer, coming back after a lapse. LeetCode treats these as dead air. Interview prep is emotionally loaded, and Hatch is already the coach in the room. The question is whether each moment leaves you calmer and more capable, or just more anxious.</p>
+    <div class="principle">
+      <b>The test every moment has to pass:</b> does it leave the user calmer and more capable, or just more hooked and more anxious? Build only the first kind. No streak-guilt, no countdown pressure, no "you're falling behind." That is both a dark pattern and dead against an honest-coach brand. It also happens to be the version that retains, because confidence compounds and anxiety churns.
+    </div>
+    <div class="toc">
+      <a href="#m1">1 · Pre-interview</a>
+      <a href="#m2">2 · Grading wait</a>
+      <a href="#m3">3 · Wrong answer</a>
+      <a href="#m4">4 · Coming back</a>
+      <a href="#m5">5 · The win</a>
+      <a href="#mkt">Marketing hooks</a>
+      <a href="#audit">Anti-dark-pattern audit</a>
+    </div>
+    <div class="legend">Every reframe below is discipline-agnostic. It reads the same whether the rep was system design, coding, product sense, or data modeling.</div>
+  </div>
+
+  <!-- ============ MOMENT 1 ============ -->
+  <section id="m1">
+    <div class="sec-head"><div class="sec-num">1</div><h2>Pre-live-interview — the most charged moment in the product</h2></div>
+    <div class="sec-why">The "click start" screen is your "feeder paired successfully" equivalent: the single most loaded second in the whole product. Right now it explains the mechanics. Instead, defuse the dread and tell them what good actually looks like in the first two minutes.</div>
+    <div class="sec-where">Lives in <code>live-interviews/[id]/page.tsx</code> · the <code>interviewPhase === 'ready'</code> block</div>
+    <div class="ba">
+      <div class="ba-col">
+        <div class="ba-label before"><span class="dot"></span>Current</div>
+        <div class="mock dim">
+          <div class="mock-body">
+            <div class="row"><div class="hatch"><span class="material-symbols-outlined">smart_toy</span></div>
+              <div><div class="eyebrow">Live interview</div><div class="mtitle" style="margin:2px 0 0">You're ready to go</div></div>
+            </div>
+            <p class="mtext" style="margin-top:16px">Hatch will play the role of your interviewer. Speak naturally, make your reasoning visible, and commit to a clear answer.</p>
+            <div class="mt-a" style="padding-top:22px"><button class="btn">Start interview</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="ba-col">
+        <div class="ba-label after"><span class="dot"></span>Reframed</div>
+        <div class="mock after-frame">
+          <div class="mock-body">
+            <div class="row"><div class="hatch"><span class="material-symbols-outlined">smart_toy</span></div>
+              <div><div class="eyebrow">Live interview</div><div class="mtitle" style="margin:2px 0 0">Your interviewer is spinning up. Breathe.</div></div>
+            </div>
+            <p class="mtext" style="margin-top:16px">The first two minutes are just you saying what you see. No heroics. The best candidates spend the wait deciding how they'll think out loud, not what the final answer is.</p>
+            <div class="chip" style="margin-top:16px"><span class="material-symbols-outlined" style="font-size:16px">visibility</span> I'm scoring how you reason, not whether you're instantly right.</div>
+            <div class="mt-a" style="padding-top:20px"><button class="btn">I'm ready</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Why it works:</b> names the dread out loud ("breathe"), shrinks the threat ("just say what you see"), and hands them a concrete plan for the wait. The CTA moves from a command ("Start interview") to consent ("I'm ready").</div>
+  </section>
+
+  <!-- ============ MOMENT 2 ============ -->
+  <section id="m2">
+    <div class="sec-head"><div class="sec-num">2</div><h2>The grading wait — turn dead time into anticipation</h2></div>
+    <div class="sec-why">The most literal parallel to the ad. Right now the spinner narrates its own internals ("analysing across 4 dimensions," "turning signals into a readable review"). Reframe the wait as value: tell them what's being looked for, which is also what they should care about.</div>
+    <div class="sec-where">Lives in <code>grading/page.tsx</code> · the <code>GRADING_STAGES</code> map</div>
+    <div class="ba">
+      <div class="ba-col">
+        <div class="ba-label before"><span class="dot"></span>Current</div>
+        <div class="mock dim">
+          <div class="mock-body" style="align-items:center;text-align:center">
+            <div class="hatch" style="width:56px;height:56px;border-radius:18px"><span class="material-symbols-outlined" style="font-size:32px">smart_toy</span></div>
+            <div class="mtitle" style="margin-top:16px">Hatch is reviewing your answer</div>
+            <p class="mtext">Analysing your thinking across all 4 dimensions.</p>
+            <div class="progress" style="width:100%"><span style="width:58%"></span></div>
+            <p class="small">Turning the signals into a readable coaching review.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ba-col">
+        <div class="ba-label after"><span class="dot"></span>Reframed</div>
+        <div class="mock after-frame">
+          <div class="mock-body" style="align-items:center;text-align:center">
+            <div class="hatch" style="width:56px;height:56px;border-radius:18px"><span class="material-symbols-outlined" style="font-size:32px">smart_toy</span></div>
+            <div class="mtitle" style="margin-top:16px">Reading your reasoning the way a hiring panel would.</div>
+            <p class="mtext">The part they care about isn't whether you got it. It's how you got there.</p>
+            <div class="progress" style="width:100%"><span style="width:58%"></span></div>
+            <p class="small">Finding the move you made well, and the one rep that would sharpen it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Why it works:</b> every line teaches something true about how interviews actually score while the user waits, so the spinner becomes a coaching beat. It also pre-frames the feedback as "one rep to sharpen," softening the landing before they see a number.</div>
+  </section>
+
+  <!-- ============ MOMENT 3 ============ -->
+  <section id="m3">
+    <div class="sec-head"><div class="sec-num">3</div><h2>The wrong answer — highest retention leverage in the product</h2></div>
+    <div class="sec-why">A red "Incorrect" is where people quietly churn in shame. Reframe the miss as the product doing its job, honestly: you'd rather miss it here than in the room. Name the specific gap, then offer the same shape again while it's fresh.</div>
+    <div class="sec-where">Lives in <code>feedback/page.tsx</code> (<code>scoreDescriptor</code>) and <code>PostSessionMirror.tsx</code> (<code>summaryLine</code> + fallback verdicts)</div>
+    <div class="ba">
+      <div class="ba-col">
+        <div class="ba-label before"><span class="dot"></span>Current</div>
+        <div class="mock dim">
+          <div class="mock-body">
+            <div class="row spread">
+              <div class="scorebadge" style="background:#f7dedd;color:var(--error)">4<span class="u">/10</span></div>
+              <span class="verdict v-miss"><span class="material-symbols-outlined" style="font-size:14px">close</span> Miss</span>
+            </div>
+            <div class="mtitle" style="margin-top:16px">Keep practicing, review the suggestions below</div>
+            <p class="mtext">Partial run - the coaching below shows where each move went.</p>
+            <div class="bubble" style="margin-top:16px">The key move was missed here.</div>
+          </div>
+        </div>
+      </div>
+      <div class="ba-col">
+        <div class="ba-label after"><span class="dot"></span>Reframed</div>
+        <div class="mock after-frame">
+          <div class="mock-body">
+            <div class="row spread">
+              <div class="scorebadge" style="background:var(--surface-high);color:var(--on-surface)">4<span class="u">/10</span></div>
+              <span class="verdict v-partial"><span class="material-symbols-outlined" style="font-size:14px">bolt</span> Caught it here</span>
+            </div>
+            <div class="mtitle" style="margin-top:16px">That one would've cost you the offer. Better to miss it here.</div>
+            <p class="mtext">You framed the situation fine. The gap was the tradeoff: you named what you'd gain but never the sacrifice, and the sacrifice is the part that proves it's a real decision and not a preference.</p>
+            <div class="row" style="gap:8px;margin-top:18px"><button class="btn">Run the same shape again</button><button class="btn ghost">See the move</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Why it works:</b> "Miss" becomes "Caught it here." The score stays honest (4/10, no inflation) but the frame is "the product just saved you a real offer." The gap is named specifically, not generically, and the primary action is to try again immediately, while it stings and while it's fresh. <b>Discipline-agnostic:</b> swap the tradeoff example for an entity-relationship gap (data modeling) or an edge case (coding) and the structure holds.</div>
+  </section>
+
+  <!-- ============ MOMENT 4 ============ -->
+  <section id="m4">
+    <div class="sec-head"><div class="sec-num">4</div><h2>Coming back after a lapse — do the opposite of streak-guilt</h2></div>
+    <div class="sec-why">This is where most apps reach for the dark pattern: streak-guilt, "you lost your 7 days," "don't break the chain." The honest-coach move is the opposite. Prep isn't a streak you keep, it's reps you bank, and you still have all of yours.</div>
+    <div class="sec-where">Lives in <code>StreakRecoveryModal.tsx</code> and <code>HeroGreeterCard.tsx</code> · already the strongest copy in the app, sharpen + hold the anti-guilt stance</div>
+    <div class="ba">
+      <div class="ba-col">
+        <div class="ba-label before"><span class="dot"></span>Current</div>
+        <div class="mock dim">
+          <div class="mock-body">
+            <div class="row"><div class="hatch sm"><span class="material-symbols-outlined">smart_toy</span></div><div class="bubble" style="border-top-left-radius:4px">Your skills didn't reset, just the counter. Let's get your streak back.</div></div>
+            <div class="mtitle" style="margin-top:18px">Welcome back.</div>
+            <p class="mtext">Your 7-day streak ended. Streaks reset at midnight. You can start a new one right now.</p>
+            <div class="mt-a" style="padding-top:20px"><button class="btn">Start today's Quick Take</button></div>
+            <p class="small" style="margin-top:10px">Earn a Streak Shield after 7 days, and it'll protect you next time.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ba-col">
+        <div class="ba-label after"><span class="dot"></span>Reframed</div>
+        <div class="mock after-frame">
+          <div class="mock-body">
+            <div class="row"><div class="hatch sm"><span class="material-symbols-outlined">smart_toy</span></div><div class="bubble" style="border-top-left-radius:4px">Prep isn't a streak you keep. It's reps you bank, and you've still got every one of them.</div></div>
+            <div class="mtitle" style="margin-top:18px">Welcome back.</div>
+            <p class="mtext">The counter reset, the judgment you built didn't. Pick up where it stings most and the next rep is the only one that matters.</p>
+            <div class="mt-a" style="padding-top:20px"><button class="btn">Pick up where it stings</button></div>
+            <p class="small" style="margin-top:10px">One 90-second take is a full rep. No catching up to do.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Why it works:</b> removes loss-framing entirely ("your 7-day streak ended" → "the judgment you built didn't"). No "catch up," no shield-anxiety. The CTA points at the most useful rep, not the streak. This is the moment the anti-dark-pattern rule protects most directly.</div>
+  </section>
+
+  <!-- ============ MOMENT 5 ============ -->
+  <section id="m5">
+    <div class="sec-head"><div class="sec-num">5</div><h2>The win — make success land as evidence of judgment</h2></div>
+    <div class="sec-why">Right now a clean run is a transaction: "Clean run. Every move landed," plus an XP chip. Make the win specific and earned, so it builds a self-image ("I can do this") rather than just a point total.</div>
+    <div class="sec-where">Lives in <code>PostSessionMirror.tsx</code> · complete phase header + the live-interview debrief copy</div>
+    <div class="ba">
+      <div class="ba-col">
+        <div class="ba-label before"><span class="dot"></span>Current</div>
+        <div class="mock dim">
+          <div class="mock-body">
+            <div class="row spread">
+              <div class="scorebadge" style="background:var(--primary-fixed);color:var(--primary)">9<span class="u">/10</span></div>
+              <span class="chip">+150 XP</span>
+            </div>
+            <div class="eyebrow" style="margin-top:16px">Hatch's Debrief</div>
+            <div class="mtitle" style="margin-top:4px">Clean run. Every move landed.</div>
+            <p class="mtext">The FLOW path below shows where you stayed inside the move and where you drifted out.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ba-col">
+        <div class="ba-label after"><span class="dot"></span>Reframed</div>
+        <div class="mock after-frame">
+          <div class="mock-body">
+            <div class="row spread">
+              <div class="scorebadge" style="background:var(--primary-fixed);color:var(--primary)">9<span class="u">/10</span></div>
+              <span class="chip">+150 XP</span>
+            </div>
+            <div class="eyebrow" style="margin-top:16px">Hatch's Debrief</div>
+            <div class="mtitle" style="margin-top:4px">That's the run that gets the offer.</div>
+            <p class="mtext">You named the sacrifice before you defended the call. Most candidates skip straight to the answer. You did the harder thing, and it's the thing a panel actually scores. Do it again under a harder prompt and it's yours for good.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Why it works:</b> "Every move landed" is a status report. "That's the run that gets the offer" plus a specific reason ("you named the sacrifice before defending the call") tells them <i>why</i> they're good, which is what builds durable confidence. The nudge to repeat under pressure turns the win into momentum.</div>
+  </section>
+
+  <!-- ============ MARKETING ============ -->
+  <section id="mkt">
+    <div class="sec-head"><div class="sec-num">M</div><h2>Marketing hooks — reframe the technical problem as the emotional one</h2></div>
+    <div class="sec-why">The ad's move: take a technical thing and name the emotional truth under it. For this audience that's gold, because the deepest truth about interviews is that they're a performance, not a knowledge test. One pattern, shown across disciplines so the message is track-agnostic.</div>
+    <div class="sec-where">Lands on <code>V3Hero.tsx</code>, <code>V3ContextSection.tsx</code>, <code>lib/seo/outcomes.ts</code> · bold question hook, one clean screenshot of the failure-reframe or pre-interview calm, soft CTA</div>
+    <div class="hooks">
+      <div class="hook">
+        <div><span class="htag">The pattern</span><div class="hbig">You're not bad at this. You're bad at it while someone's watching.</div></div>
+        <div class="hsub">LeetCode trained you to solve in silence. Interviews are a performance. You've been practicing the wrong sport.</div>
+      </div>
+      <div class="hook alt">
+        <div><span class="htag">System design lens</span><div class="hbig">You can design the system. Can you defend it while three people poke holes in it?</div></div>
+        <div class="disc-tag">discipline-agnostic · swap the noun</div>
+      </div>
+      <div class="hook cream">
+        <div><span class="htag">Product sense lens</span><div class="hbig">Your product instincts are fine. They just go quiet the moment it counts.</div></div>
+        <div class="disc-tag">same structure, any track</div>
+      </div>
+      <div class="hook alt">
+        <div><span class="htag">The honest line</span><div class="hbig">Your interview anxiety isn't a flaw to fix. It's just untrained reps.</div></div>
+        <div class="hsub">Soft CTA: Train the reps →</div>
+      </div>
+    </div>
+    <div class="note"><b>The throughline:</b> "interviews are a performance, not a knowledge test." Every hook is the same move (technical competence vs. performance under observation) so it scales to any discipline by swapping one noun. The hero screenshot should be the failure-reframe (Moment 3) or the pre-interview calm (Moment 1), shown not described.</div>
+  </section>
+
+  <!-- ============ AUDIT ============ -->
+  <section id="audit">
+    <div class="sec-head"><div class="sec-num">!</div><h2>Anti-dark-pattern audit — the enforced guardrail</h2></div>
+    <div class="sec-why">The hard rule, applied back to what already ships. Every existing pressure or guilt mechanic gets checked against the test: calmer-and-more-capable, or just more-hooked? This rule goes into the writing style guide, which all five Hatch skills inherit, so it propagates to AI output too.</div>
+    <div class="audit">
+      <div class="arow head"><div class="acell">Existing surface</div><div class="acell">What it does now</div><div class="acell">Verdict</div></div>
+      <div class="arow"><div class="acell">"Your 7-day streak ended" / "reset at midnight"</div><div class="acell">Loss-frames a lapse, implies you blew something</div><div class="acell"><span class="flag soft">reframe</span> drop loss language, see Moment 4</div></div>
+      <div class="arow"><div class="acell">Streak Shield "protect you next time"</div><div class="acell">Adds a thing to anxiously preserve</div><div class="acell"><span class="flag soft">reframe</span> frame as banked, not at-risk</div></div>
+      <div class="arow"><div class="acell">Quick-take 90s timer copy</div><div class="acell">Countdown pressure on a learning rep</div><div class="acell"><span class="flag soft">reframe</span> "90 seconds is the whole rep," not a clock to beat</div></div>
+      <div class="arow"><div class="acell">Red "Incorrect" / "Miss" verdict</div><div class="acell">Shame trigger, churn point</div><div class="acell"><span class="flag soft">reframe</span> "Caught it here," see Moment 3</div></div>
+      <div class="arow"><div class="acell">Dashboard "keep the streak alive"</div><div class="acell">Mild guilt nudge</div><div class="acell"><span class="flag soft">reframe</span> point at the useful rep instead</div></div>
+      <div class="arow"><div class="acell">The midnight-reset mechanic itself</div><div class="acell">Structural, not just copy</div><div class="acell"><span class="flag decide">product call</span> flagged, not silently changed</div></div>
+      <div class="arow"><div class="acell">"Skills didn't reset, just the counter"</div><div class="acell">Already honest, already anti-guilt</div><div class="acell"><span class="flag keep">keep</span> sharpen only</div></div>
+    </div>
+    <div class="note"><b>Rule, verbatim for the style guide:</b> Honest, not soft, and never manipulative. Anxious job-seekers are easy to exploit with streak-guilt, countdown pressure, and "you're falling behind." Never use them. Every moment must leave the user calmer and more capable, never just more hooked. If a line only works by making someone anxious, cut it.</div>
+  </section>
+
+  <footer>
+    Preview only. No application code touched. React inline (✅ / ✏️ / ❌ per moment) and I'll lock the approved copy into a microcopy sheet, then implement across in-app strings, Hatch's AI briefs, the style-guide rule, and the landing page.
+  </footer>
+
+</div>
+</body>
+</html>

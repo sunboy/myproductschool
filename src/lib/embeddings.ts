@@ -5,31 +5,45 @@
  */
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logger } from '@/lib/log'
 
 export const EMBEDDING_DIMS = 384
 export const EMBEDDING_MODEL = 'gte-small'
+
+// Without a timeout, a stalled edge function leaves the awaiting route hanging
+// indefinitely (the memory-noted "hung screen" failure mode). Cap it so a stall
+// fails fast to null instead of blocking the response.
+const EMBEDDING_TIMEOUT_MS = Number(process.env.EMBEDDING_TIMEOUT_MS ?? '8000')
 
 export async function generateEmbedding(text: string): Promise<number[] | null> {
   try {
     const admin = createAdminClient()
     const { data, error } = await admin.functions.invoke('embed', {
       body: { input: text.slice(0, 2000) },
+      // @supabase/functions-js supports a native timeout (ms) that aborts the
+      // underlying fetch and rejects with an AbortError on stall.
+      timeout: EMBEDDING_TIMEOUT_MS,
     })
 
     if (error) {
-      console.error('[embeddings] Supabase function error', error)
+      logger.error('[embeddings] Supabase function error', { error: String(error) })
       return null
     }
 
     const embedding = data?.embedding as number[] | undefined
     if (!embedding || embedding.length !== EMBEDDING_DIMS) {
-      console.error('[embeddings] Unexpected response shape', data)
+      logger.error('[embeddings] Unexpected response shape')
       return null
     }
 
     return embedding
   } catch (err) {
-    console.error('[embeddings] generateEmbedding failed', err)
+    const aborted = err instanceof Error && err.name === 'AbortError'
+    if (aborted) {
+      logger.warn('[embeddings] timed out, returning null', { timeoutMs: EMBEDDING_TIMEOUT_MS })
+    } else {
+      logger.error('[embeddings] generateEmbedding failed', { error: String(err) })
+    }
     return null
   }
 }

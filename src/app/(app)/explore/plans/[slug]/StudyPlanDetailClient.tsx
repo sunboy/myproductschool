@@ -1,10 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AnimatedProgress, MotionCard, MotionList, MotionListItem, PresencePanel } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { StudyPlanItem, StudyPlanWithItems } from '@/lib/types'
+import { trackEvent } from '@/lib/posthog/client'
+import {
+  EVENT_STUDY_PLAN_VIEWED,
+  EVENT_STUDY_PLAN_ENROLLED,
+  EVENT_STUDY_PLAN_CHAPTER_OPENED,
+  EVENT_STUDY_PLAN_COMPLETED,
+} from '@/lib/posthog/events'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -63,7 +70,7 @@ interface ChapterRowProps {
   nextItemId?: string
 }
 
-function ChapterRow({ chapterTitle, items, chapterIdx, slug, nextItemId }: ChapterRowProps) {
+function ChapterRow({ chapterTitle, items, chapterIdx, slug, nextItemId, planPct }: ChapterRowProps & { planPct: number }) {
   const [open, setOpen] = useState(chapterIdx === 0)
   const completedInChapter = items.filter(i => i.challenge?.is_completed).length
   const totalInChapter = items.length
@@ -78,7 +85,17 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug, nextItemId }: Chapt
       overflow: 'hidden',
     }}>
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={() => {
+          const opening = !open
+          setOpen(opening)
+          if (opening) {
+            trackEvent(EVENT_STUDY_PLAN_CHAPTER_OPENED, {
+              plan_slug: slug,
+              chapter_index: chapterIdx,
+              pct: planPct,
+            })
+          }
+        }}
         style={{
           width: '100%', padding: '16px 20px',
           display: 'flex', alignItems: 'center', gap: 14,
@@ -150,18 +167,23 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug, nextItemId }: Chapt
 
       <PresencePanel isOpen={open} style={{ borderTop: '1px solid #e7dfc9' }}>
           {items.map((item, itemIdx) => {
-            const typeLabel = ITEM_TYPE_LABEL[item.item_type] ?? item.item_type
-            const title = item.challenge?.title ?? (item as { concept?: { title?: string } }).concept?.title ?? 'Untitled'
+            const lesson = item.lesson
+            const typeLabel = lesson ? 'Lesson' : (ITEM_TYPE_LABEL[item.item_type] ?? item.item_type)
+            const title = item.challenge?.title ?? lesson?.title ?? (item as { concept?: { title?: string } }).concept?.title ?? 'Untitled'
             const href =
               item.item_type === 'challenge' && item.challenge_id
                 ? `/workspace/challenges/${item.challenge_id}?from_plan=${slug}`
+                : lesson
+                ? `/explore/modules/${lesson.module_slug}?chapter=${lesson.slug}`
                 : item.item_type === 'concept' && item.concept_id
                 ? `/vocabulary/${item.concept_id}`
                 : '#'
-            const isCompleted = item.challenge?.is_completed ?? false
+            const isCompleted = item.challenge?.is_completed ?? lesson?.is_completed ?? false
             const isInProgress = item.challenge?.is_in_progress ?? false
             const isNext = item.id === nextItemId && !isCompleted
-            const actionLabel = isCompleted ? 'Review' : isInProgress ? 'Continue' : 'Start'
+            const actionLabel = lesson
+              ? (isCompleted ? 'Reread' : 'Read')
+              : isCompleted ? 'Review' : isInProgress ? 'Continue' : 'Start'
 
             const typeBadgeStyle: React.CSSProperties =
               item.item_type === 'challenge'
@@ -267,6 +289,19 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
   const diff = plan.difficulty ?? 'intermediate'
   const difficultyLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
 
+  useEffect(() => {
+    trackEvent(EVENT_STUDY_PLAN_VIEWED, { plan_slug: slug })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug])
+
+  useEffect(() => {
+    if (plan.progress_percentage >= 100) {
+      trackEvent(EVENT_STUDY_PLAN_COMPLETED, { plan_slug: slug })
+    }
+    // Only fire once when progress first hits 100
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const allChallengeItems = plan.items.filter(i => i.item_type === 'challenge' && i.challenge_id)
   const firstIncomplete = allChallengeItems.find(i => !i.challenge?.is_completed)
   const ctaHref = firstIncomplete?.challenge_id
@@ -366,6 +401,11 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <Link
                 href={ctaHref}
+                onClick={() => {
+                  if (pct === 0) {
+                    trackEvent(EVENT_STUDY_PLAN_ENROLLED, { plan_slug: slug })
+                  }
+                }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 7,
                   background: '#f3ede0', color: '#1e1b14',
@@ -452,6 +492,7 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
                 chapterIdx={chapterIdx}
                 slug={slug}
                 nextItemId={firstIncomplete?.id}
+                planPct={pct}
               />
             ))}
           </MotionList>

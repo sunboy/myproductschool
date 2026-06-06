@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { withRoute } from '@/lib/api/withRoute'
 
-export async function GET(req: NextRequest) {
+export const GET = withRoute(async (req: NextRequest) => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
   const admin = createAdminClient()
   let query = admin
     .from('challenge_attempts')
-    .select('id, challenge_id, grade_label, total_score, max_score, completed_at, feedback_json, canvas_png_url, challenges(title, challenge_type)')
+    .select('id, challenge_id, grade_label, total_score, max_score, completed_at, feedback_json, canvas_png_url, challenges(title, challenge_type, display_number)')
     .eq('user_id', user.id)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
@@ -116,6 +117,7 @@ export async function GET(req: NextRequest) {
       challenge_id: row.challenge_id as string,
       challenge_title: challenge?.title ?? row.challenge_id,
       challenge_type: challengeType ?? null,
+      display_number: (challenge?.display_number as number | null) ?? null,
       grade_label: row.grade_label as string | null,
       score,
       max_score: maxScore,
@@ -127,4 +129,4 @@ export async function GET(req: NextRequest) {
   })
 
   return NextResponse.json(attempts)
-}
+}, { name: 'attempts.GET' })
