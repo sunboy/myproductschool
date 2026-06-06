@@ -10,7 +10,12 @@
 // autosave (see session/start WORKSPACE_RESTORE_URL).
 //
 // This is the backstop for the closed-tab case; the client idle modal handles
-// the polite tab-open case. Auth: CRON_SECRET bearer (matches other crons).
+// the polite tab-open case. Auth: CRON_SECRET bearer.
+//
+// SCHEDULING: driven by SUPABASE pg_cron (job 'cc-reap-10min', every 10 min),
+// NOT a vercel.json cron — the Vercel plan caps sub-daily cron frequency. pg_cron
+// calls this endpoint via pg_net with the CRON_SECRET from Vault. See migration
+// 20260606120000_cc_reap_pg_cron.sql. This also runs the spend snapshot (below).
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
