@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_CHALLENGE_STARTED, EVENT_CHALLENGE_STEP_ADVANCED } from '@/lib/posthog/events'
 import gsap from 'gsap'
 import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
 import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
@@ -1351,7 +1352,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             setAttemptId(attempt.id)
             setCurrentStep('frame')
             setPhase('question')
-            trackEvent('challenge_started', { challenge_id: challengeId, attempt_id: attempt.id })
+            trackEvent(EVENT_CHALLENGE_STARTED, { challenge_id: challengeId, attempt_id: attempt.id })
           }
         })
       }
@@ -2160,6 +2161,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               window.dispatchEvent(new CustomEvent('challenge-completed', { detail: { challengeId, fromPlan } }))
             }
             completeSession(cd, finalStepResults)
+            // Reconcile the optimistic inline record (pushed above) with the full
+            // server record — step breakdown, competency deltas, XP — so the
+            // Submissions tab matches without a manual reload.
+            void loadSubmissionHistory()
           } else {
             completeSession(null, finalStepResults)
           }
@@ -2183,7 +2188,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       }
     } else {
       setCompletedSteps((prev) => prev.includes(currentStep) ? prev : [...prev, currentStep])
-      setCurrentStep(FLOW_STEPS[stepIdx + 1])
+      const nextStep = FLOW_STEPS[stepIdx + 1]
+      trackEvent(EVENT_CHALLENGE_STEP_ADVANCED, {
+        challenge_id: challengeId,
+        attempt_id: attemptId ?? '',
+        step: nextStep,
+      })
+      setCurrentStep(nextStep)
       setStepDrafts({})       // fresh drafts for the next step
       setQuestionIdx(0)
       setSelectedOptionId(null)
@@ -2223,7 +2234,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // ── Discussions fetch ──────────────────────────────────────────
 
-  async function fetchDiscussions() {
+  const fetchDiscussions = useCallback(async () => {
     if (!challengeId) return
     setDiscussionsLoading(true)
     try {
@@ -2237,14 +2248,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setDiscussionsLoading(false)
     }
-  }
+  }, [challengeId, currentUserId, deriveDiscussionUpvotes])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Optimistic post: render the user's just-created discussion immediately, then
+  // reconcile in the background (ordering, expert picks, joined display name).
+  // Edits/deletes/replies pass no row and just trigger the background refetch.
+  const handleDiscussionSubmitted = useCallback((created?: ChallengeDiscussion) => {
+    if (created) {
+      setDiscussions(prev =>
+        prev.some(d => d.id === created.id) ? prev : [created, ...prev]
+      )
+    }
+    void fetchDiscussions()
+  }, [fetchDiscussions])
+
   useEffect(() => {
     if (leftTab === 'Discussions' && !discussionsLoaded) {
-      fetchDiscussions()
+      void fetchDiscussions()
     }
-  }, [leftTab])
+  }, [leftTab, discussionsLoaded, fetchDiscussions])
 
   useEffect(() => {
     let cancelled = false
@@ -3255,7 +3277,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   ) : (
     <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {discussionsLoading && (
+        {discussionsLoading && !discussionsLoaded && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[1, 2, 3].map(i => (
               <div
@@ -3271,7 +3293,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             ))}
           </div>
         )}
-        {!discussionsLoading && expertPicks.length > 0 && (
+        {discussionsLoaded && expertPicks.length > 0 && (
           <div>
             <p style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 700, color: 'var(--color-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
               Expert picks
@@ -3292,7 +3314,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             ))}
           </div>
         )}
-        {!discussionsLoading && restDiscussions.length === 0 && expertPicks.length === 0 && discussionsLoaded && (
+        {discussionsLoaded && restDiscussions.length === 0 && expertPicks.length === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20 }}>
             <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'var(--color-outline)' }}>forum</span>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
@@ -3300,7 +3322,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </p>
           </div>
         )}
-        {!discussionsLoading && restDiscussions.map(d => (
+        {discussionsLoaded && restDiscussions.map(d => (
           <DiscussionThread
             key={d.id}
             discussion={d}
@@ -3315,7 +3337,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         ))}
       </div>
       <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid var(--color-outline-variant)' }}>
-        <DiscussionInput challengeId={challengeId} onSubmitted={fetchDiscussions} />
+        <DiscussionInput challengeId={challengeId} onSubmitted={handleDiscussionSubmitted} />
       </div>
     </div>
   )

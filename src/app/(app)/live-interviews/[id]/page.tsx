@@ -57,6 +57,13 @@ import {
 import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
 import { IS_MOCK } from '@/lib/mock'
+import { trackEvent } from '@/lib/posthog/client'
+import {
+  EVENT_INTERVIEW_STARTED,
+  EVENT_INTERVIEW_PHASE_CHANGED,
+  EVENT_INTERVIEW_COMPLETED,
+  EVENT_INTERVIEW_ABANDONED,
+} from '@/lib/posthog/events'
 
 // First-entry tour for the live-interview workspace. Fires once when the
 // interview goes active (desktop only), and on demand via `start-interview-tour`.
@@ -592,6 +599,52 @@ export default function SessionPage({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [discipline])
+
+  // ── Analytics: interview phase tracking ──────────────────────────────────
+  useEffect(() => {
+    if (interviewPhase === 'active' && sessionId) {
+      trackEvent(EVENT_INTERVIEW_STARTED, {
+        session_id: sessionId,
+        discipline: discipline ?? null,
+        mode: isVoiceAvailable ? 'voice' : 'text',
+      })
+    }
+    trackEvent(EVENT_INTERVIEW_PHASE_CHANGED, {
+      session_id: sessionId,
+      phase: interviewPhase,
+    })
+  // Fire once per phase change only
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interviewPhase])
+
+  useEffect(() => {
+    if (interviewPhase !== 'ended' || !sessionId) return
+    const durationSec = interviewStartedAt ? Math.round((Date.now() - interviewStartedAt) / 1000) : 0
+    trackEvent(EVENT_INTERVIEW_COMPLETED, {
+      session_id: sessionId,
+      mode: isVoiceAvailable ? 'voice' : 'text',
+      duration_sec: durationSec,
+      discipline: discipline ?? null,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interviewPhase])
+
+  // Fire abandoned on beforeunload when still active
+  useEffect(() => {
+    if (interviewPhase !== 'active') return
+    const handleUnload = () => {
+      const durationSec = interviewStartedAt ? Math.round((Date.now() - interviewStartedAt) / 1000) : 0
+      trackEvent(EVENT_INTERVIEW_ABANDONED, {
+        session_id: sessionId,
+        mode: isVoiceAvailable ? 'voice' : 'text',
+        duration_sec: durationSec,
+        discipline: discipline ?? null,
+      })
+    }
+    window.addEventListener('beforeunload', handleUnload)
+    return () => window.removeEventListener('beforeunload', handleUnload)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interviewPhase, sessionId, interviewStartedAt])
 
   // Auto-scroll transcript
   useEffect(() => {

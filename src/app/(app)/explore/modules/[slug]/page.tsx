@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useLearnModule } from '@/hooks/useLearnModule'
 import { useLearnChapter } from '@/hooks/useLearnChapter'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_CHAPTER_OPENED, EVENT_CHAPTER_COMPLETED } from '@/lib/posthog/events'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import { ChapterBody } from '@/components/learning/ChapterBody'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
@@ -218,7 +220,12 @@ function ChapterPane({
       <div className="px-5 py-3 border-t border-outline-variant bg-surface-container-low flex items-center justify-between flex-shrink-0">
         {!markedDone ? (
           <button
-            onClick={async () => { await markComplete(); setMarkedDone(true); onComplete() }}
+            onClick={async () => {
+              await markComplete()
+              setMarkedDone(true)
+              trackEvent(EVENT_CHAPTER_COMPLETED, { module_slug: moduleSlug, chapter_slug: chapterSlug })
+              onComplete()
+            }}
             disabled={isMarkingComplete}
             className="inline-flex items-center gap-1.5 bg-primary text-on-primary rounded-full px-4 py-2 text-xs font-bold font-label disabled:opacity-50 hover:opacity-90 transition-opacity"
           >
@@ -325,6 +332,8 @@ function ModulePageInner({ slug }: { slug: string }) {
   const handleSelectChapter = (chSlug: string) => {
     setActiveChapterSlug(chSlug)
     router.replace(`/explore/modules/${slug}?chapter=${chSlug}`, { scroll: false })
+    const idx = data?.chapters.findIndex(c => c.slug === chSlug) ?? -1
+    trackEvent(EVENT_CHAPTER_OPENED, { module_slug: slug, chapter_slug: chSlug, chapter_index: idx >= 0 ? idx : undefined })
   }
 
   const handleNext = (chSlug: string) => {
