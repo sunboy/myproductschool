@@ -16,6 +16,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
 import { recordSessionSpend } from '@/lib/sandbox/record-spend'
+import { runSpendSnapshot } from '@/lib/sandbox/spend-snapshot'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -175,6 +176,17 @@ export async function GET(request: NextRequest) {
   }
   if (orphanFailures.length) console.error('[cc-reap] orphan sweep failures:', orphanFailures)
 
+  // --- Spend snapshot (piggybacked on this cron) ---
+  // Folded into cc-reap rather than its own cron to stay under the Vercel
+  // cron-count limit. Both are 10-min CC sweeps. Tight budget so it can't blow
+  // this route's 60s maxDuration on top of the reap + orphan work above.
+  let spend: Awaited<ReturnType<typeof runSpendSnapshot>> | null = null
+  try {
+    spend = await runSpendSnapshot(admin, 12_000)
+  } catch (err) {
+    console.error('[cc-reap] spend snapshot failed (best-effort):', err)
+  }
+
   return NextResponse.json({
     scanned: sessions.length,
     reaped,
@@ -184,5 +196,6 @@ export async function GET(request: NextRequest) {
     orphans_reaped: orphansReaped,
     orphans_skipped: orphansSkipped,
     orphan_failures: orphanFailures.length,
+    spend,
   })
 }
