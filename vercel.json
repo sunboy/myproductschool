@@ -15,7 +15,7 @@
     },
     {
       "path": "/api/cron/cc-reap",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/cron/resume-challenge",
