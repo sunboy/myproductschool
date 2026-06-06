@@ -50,8 +50,14 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient()
   const isAnalyticsPlan = isAnalyticsPlanId(plan)
   if (isAnalyticsPlan) {
-    const { enabled, hasAccess } = await getAnalyticsAccess(admin, user.id)
-    if (!enabled && !hasAccess) {
+    // Hard gate: the Analytics tier is only SELLABLE when the global feature flag
+    // is on. The per-user allowlist (cc_analytics_access) grants feature ACCESS
+    // for beta users, but must NOT open a checkout while the tier is unlaunched —
+    // otherwise an allowlisted user could buy a tier with no live Stripe price
+    // (create-checkout would fall back to inline price_data). Gate on `enabled`
+    // alone here, independent of the allowlist. (Stripe audit finding.)
+    const { enabled } = await getAnalyticsAccess(admin, user.id)
+    if (!enabled) {
       return NextResponse.json({ error: 'Claude Code Analytics is not available yet' }, { status: 400 })
     }
   }

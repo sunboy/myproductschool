@@ -52,6 +52,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Sandbox container runtime scripts (Node CommonJS, built into the Docker
+    // image — never bundled by Next). They legitimately use require(); linting
+    // them as app TS is wrong and breaks CI.
+    "infra/**",
   ]),
   {
     rules: {
