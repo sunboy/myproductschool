@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
+import { recordSessionSpend } from '@/lib/sandbox/record-spend'
 import { gradeAnalystSession } from '@/lib/coding-grading/analytics-grader'
 import { getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
@@ -79,6 +80,14 @@ export async function POST(
       console.error('[cc/finalize] destroySession failed (best-effort):', err)
     })
   }
+
+  // --- Record Claude spend BEFORE grading ---
+  // Grading can early-return 402 (AI budget) below, so capture spend first or an
+  // over-budget user's session spend would never be recorded. Best-effort + the
+  // backstop cron also catches it. (idempotent via recordSessionSpend's claim.)
+  await recordSessionSpend(admin, session.user_id as string, sessionId).catch((err) => {
+    console.error('[cc/finalize] recordSessionSpend failed (best-effort):', err)
+  })
 
   // --- Run analyst grader (analyst_v1) ---
   const { data: challenge } = await admin

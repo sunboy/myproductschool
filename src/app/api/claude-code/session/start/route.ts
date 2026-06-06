@@ -16,7 +16,7 @@ import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 import { getSandbox } from '@/lib/sandbox'
 import type { SessionEnv } from '@/lib/sandbox/types'
 import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
-import { mintSessionVirtualKey } from '@/lib/sandbox/llm-gateway'
+import { mintSessionVirtualKey, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -290,9 +290,22 @@ export async function POST(req: NextRequest) {
       anthropicBaseUrl = vkey.baseUrl
     }
   } catch (err) {
-    // Gateway mint failure should not hard-fail the session in dev; log and fall
-    // back to the shared key. (In prod, consider failing closed instead.)
-    console.error('[cc/session/start] virtual key mint failed, using shared key:', err)
+    console.error('[cc/session/start] virtual key mint failed:', err)
+    // FAIL CLOSED when the gateway is configured. Falling back to the shared key
+    // would hand the session the platform's real ANTHROPIC_API_KEY with NO
+    // per-session $0.50 budget and NO cc-<sessionId> alias — so spend is both
+    // uncapped AND invisible to spend tracking. Only the no-gateway (local/dev)
+    // path may use the shared key. (Codex review.)
+    if (isGatewayConfigured()) {
+      await admin
+        .from('claude_code_sessions')
+        .update({ status: 'failed', ended_at: new Date().toISOString() })
+        .eq('id', sessionId)
+      return NextResponse.json(
+        { error: 'Could not start a budgeted session. Please try again.' },
+        { status: 503 },
+      )
+    }
   }
 
   // --- Build SessionEnv ---

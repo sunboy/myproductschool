@@ -106,6 +106,48 @@ export async function getKeySpend(virtualKey: string): Promise<KeySpend | null> 
   }
 }
 
+/**
+ * Read spend (cents) for a session's virtual key by its ALIAS (cc-<sessionId>),
+ * from /key/list. Unlike /key/info?key=<rawkey>, this works at teardown without
+ * holding the raw key, and — verified live — /key/list retains a key's spend even
+ * after its TTL expires, so it's a reliable source long after the session ends.
+ * Returns null if unconfigured / not found / lookup fails.
+ */
+export async function getSessionKeySpendCents(sessionId: string): Promise<number | null> {
+  const all = await getAllSessionKeySpendCents()
+  if (!all) return null
+  return all.get(sessionId) ?? null
+}
+
+/**
+ * Bulk: one /key/list call → Map<sessionId, spentCents> for every cc-<sessionId>
+ * key the gateway knows about (alive or expired). Used by the backstop spend cron.
+ * Returns null if unconfigured or the call fails (caller treats as "no update").
+ */
+export async function getAllSessionKeySpendCents(): Promise<Map<string, number> | null> {
+  if (!isGatewayConfigured()) return null
+  const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
+  const master = process.env.LLM_GATEWAY_MASTER_KEY!
+  try {
+    const res = await fetch(`${baseUrl}/key/list?return_full_object=true`, {
+      headers: { Authorization: `Bearer ${master}` },
+    })
+    if (!res.ok) return null
+    const data = (await res.json()) as { keys?: Array<{ key_alias?: string; spend?: number }> }
+    const out = new Map<string, number>()
+    for (const k of data.keys ?? []) {
+      const alias = k.key_alias ?? ''
+      if (!alias.startsWith('cc-')) continue
+      const sessionId = alias.slice(3)
+      const cents = Math.round((k.spend ?? 0) * 100)
+      out.set(sessionId, cents)
+    }
+    return out
+  } catch {
+    return null
+  }
+}
+
 /** Best-effort revoke when a session ends (the duration TTL also expires it). */
 export async function revokeSessionKey(virtualKey: string): Promise<void> {
   if (!isGatewayConfigured()) return

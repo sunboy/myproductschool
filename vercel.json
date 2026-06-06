@@ -18,6 +18,10 @@
       "schedule": "*/10 * * * *"
     },
     {
+      "path": "/api/cron/cc-spend-snapshot",
+      "schedule": "*/10 * * * *"
+    },
+    {
       "path": "/api/cron/resume-challenge",
       "schedule": "0 16 * * *"
     },

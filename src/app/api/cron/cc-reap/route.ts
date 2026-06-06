@@ -15,6 +15,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
+import { recordSessionSpend } from '@/lib/sandbox/record-spend'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
   const nowIso = new Date().toISOString()
   const { data: stale, error } = await admin
     .from('claude_code_sessions')
-    .select('id, host_instance_id, last_activity_at, expires_at')
+    .select('id, user_id, host_instance_id, last_activity_at, expires_at')
     .eq('status', 'active')
     .or(`last_activity_at.lt.${cutoff},expires_at.lt.${nowIso}`)
     .limit(200)
@@ -60,6 +61,17 @@ export async function GET(request: NextRequest) {
   for (const s of sessions) {
     const hostId = s.host_instance_id as string | null
     try {
+      // Capture Claude spend before releasing the instance — the gateway key may
+      // expire soon after; /key/list retains it but recording now keeps the
+      // per-user rolling total current. Best-effort + idempotent; the
+      // cc-spend-snapshot cron is the backstop. (Reaped sessions are a primary
+      // abandoned-tab case, so this is where most spend gets attributed.)
+      const userId = s.user_id as string | null
+      if (userId) {
+        await recordSessionSpend(admin, userId, s.id as string).catch((err) =>
+          console.error('[cc-reap] recordSessionSpend failed (best-effort):', err),
+        )
+      }
       if (hostId) {
         // Drops the tag from the service traffic + deletes the revision,
         // releasing the pinned instance. (See destroySession.)
