@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getSandbox } from '@/lib/sandbox'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,7 +39,7 @@ export async function GET(
   const { data: session } = await admin
     .from('claude_code_sessions')
     .select(
-      'id, user_id, challenge_id, status, wss_url, expires_at, last_snapshot_at, prompt_count, warehouse_query_count, total_input_tokens, total_output_tokens',
+      'id, user_id, challenge_id, status, host_instance_id, wss_url, expires_at, last_snapshot_at, prompt_count, warehouse_query_count, total_input_tokens, total_output_tokens',
     )
     .eq('id', sessionId)
     .maybeSingle()
@@ -54,6 +55,17 @@ export async function GET(
   // --- Lazy expiry flip: active → terminated ---
   if (status === 'active' && expiresAt && new Date(expiresAt) <= new Date()) {
     status = 'terminated'
+    // Tear the sandbox down BEFORE flipping the row out of `active`. The reaper
+    // only sweeps `active` sessions, so once this row is `terminated` nothing
+    // else will free its Cloud Run instance — skipping destroySession here
+    // orphans the revision (minScale=1, billing) indefinitely. Best-effort: the
+    // orphan-reconcile sweep in cc-reap is the backstop if this throws.
+    const hostId = session.host_instance_id as string | null
+    if (hostId) {
+      await getSandbox()
+        .destroySession(hostId)
+        .catch((err) => console.error('[cc/state] destroySession failed (best-effort):', err))
+    }
     await admin
       .from('claude_code_sessions')
       .update({ status: 'terminated', ended_at: new Date().toISOString() })

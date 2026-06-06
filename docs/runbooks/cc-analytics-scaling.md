@@ -7,7 +7,9 @@ that expects more than a couple dozen simultaneous analysts.
 ## The model (why these are the limits)
 
 Each active session = **one pinned Cloud Run instance** (`cc-sandbox`, 1 vCPU /
-512 MiB, `minScale=maxScale=1` on a per-session tagged revision). Every session's
+512 MiB, `minInstanceCount=maxInstanceCount=1` on a per-session **tagged
+revision** — the base service itself is minScale=0, so there is no always-on
+instance, only one per live session). Every session's
 Claude traffic + per-session key minting routes through **one shared gateway**
 (`cc-llm-gateway`) backed by **one Cloud SQL Postgres** (`cc-llm-db`). So the
 ceiling is set by the *shared funnels*, not the per-session sandbox.
@@ -21,12 +23,19 @@ Bottlenecks, in the order they bite:
 5. **Cloud Run regional CPU quota** (1 vCPU per session → quota ÷ 1000 mCPU = max
    concurrent sandboxes). Only binds after 1–4 are raised.
 
-## Current state (2026-06-03)
+## Current state (2026-06-05)
 
-- `cc-sandbox`: 1 vCPU / 512 MiB, 1 instance per session, 30-min TTL, **no reaper**
-  (abandoned sessions hold an instance until TTL — implement the reaper before real load).
-- `cc-llm-gateway`: **maxScale=10** (raised from 3 on 2026-06-03), minScale=1,
-  `cpu-throttling=false`, scales to zero idle.
+- `cc-sandbox`: 1 vCPU / 512 MiB, 1 instance per session, 30-min TTL. Base service
+  is **minScale=0** (no always-on instance); each session runs on its own tagged
+  revision pinned at minInstanceCount=1 for its lifetime.
+  **Idle reaper is live** (`/api/cron/cc-reap`, `*/10 * * * *` in `vercel.json`,
+  `CC_IDLE_REAP_SECONDS=900`): frees a session's instance after 15 min idle by
+  dropping its tag + deleting the revision, marking the session `idle` (resumable
+  from autosave). Backstop for the closed-tab case; the client idle modal handles
+  the tab-open case.
+- `cc-llm-gateway`: **maxScale=10**, **minScale=0** (scales fully to zero idle;
+  first session of an idle window eats a ~5-15s cold mint), **1 vCPU / 1 GiB**,
+  `cpu-throttling=false`.
 - `cc-llm-db`: **`db-f1-micro`** (shared-core, ~0.6 GB RAM, **~25 max connections**),
   ZONAL, 10 GB PD_HDD, `storageAutoResize=true`. **This is the current first wall.**
 - Realistic ceiling today: **~20–40 concurrent active users** (DB-bound).

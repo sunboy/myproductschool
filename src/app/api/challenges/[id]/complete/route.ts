@@ -10,6 +10,7 @@ import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
 import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
+import { checkAndGrantAchievements } from '@/lib/achievements/check'
 import { FLOW_MAX_SCORE, MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
 import { buildCompletedAttemptResult } from '@/lib/scoring/completed-attempt-result'
 import {
@@ -20,6 +21,7 @@ import {
 import { createCommunitySubmissionCandidate, recordCommunityCompletion } from '@/lib/data/community'
 import { withRoute } from '@/lib/api/withRoute'
 import { captureServerImmediate } from '@/lib/posthog/server'
+import { EVENT_CHALLENGE_COMPLETED } from '@/lib/posthog/events'
 
 const RequestSchema = z.object({
   attempt_id: z.string().uuid(),
@@ -269,6 +271,11 @@ export const POST = withRoute(async (
   }
   await applyMoveLevelXp(userId, moveScores, 'challenge')
 
+  // Grant any newly earned achievements (fire-and-forget so it never blocks/fails completion)
+  checkAndGrantAchievements(userId, admin).catch(err =>
+    console.error('[challenge-complete] achievement check failed:', err)
+  )
+
   const step_breakdown = stepResults.map((s) => ({
     step: s.step,
     score: s.step_score,
@@ -423,7 +430,7 @@ export const POST = withRoute(async (
 
   await captureServerImmediate({
     distinctId: userId,
-    event: 'challenge_completed',
+    event: EVENT_CHALLENGE_COMPLETED,
     properties: {
       challenge_id: challengeId,
       grade_label,

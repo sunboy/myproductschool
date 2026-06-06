@@ -1,10 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { FloatingNav } from '@/components/marketing/FloatingNav'
-import { GradientFooter } from '@/components/marketing/GradientFooter'
+import { Check, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 import {
   BILLING_PLANS,
   ANALYTICS_PLANS,
@@ -15,6 +13,8 @@ import {
   type AnyPlanId,
 } from '@/lib/billing/plans'
 import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_PRICING_VIEWED, EVENT_CHECKOUT_STARTED } from '@/lib/posthog/events'
 
 type BillingCycle = BillingPlanId
 
@@ -46,6 +46,13 @@ const PRO_LIMITS = [
   '12 live AI interview starts per month',
   'Fair-use Hatch AI coaching budget',
   'Learner DNA, failure patterns, and study plans',
+]
+
+const ANALYTICS_LIMITS = [
+  'Everything in Pro',
+  'Live Claude Code sessions on real BigQuery data',
+  'Hatch coaching inside the terminal',
+  'Reusable skills and shareable analyst reports',
 ]
 
 const FEATURE_ROWS = [
@@ -161,6 +168,7 @@ export function PricingClient() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('plan') === 'monthly') setBilling('monthly')
+    trackEvent(EVENT_PRICING_VIEWED)
   }, [])
 
   useEffect(() => {
@@ -197,6 +205,7 @@ export function PricingClient() {
     if (loadingPlan) return
     setCheckoutError(null)
     setLoadingPlan(plan)
+    trackEvent(EVENT_CHECKOUT_STARTED, { plan })
 
     try {
       const response = await fetch('/api/stripe/create-checkout', {
@@ -223,122 +232,101 @@ export function PricingClient() {
   }
 
   return (
-    <div className="min-h-screen bg-background font-body text-on-surface">
-      <FloatingNav />
-
-      <main>
-        <section className="relative overflow-hidden border-b border-outline-variant/30 bg-[#f6f0e7] pt-36">
-          <div className="mx-auto grid max-w-7xl gap-12 px-6 pb-20 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-24">
-            <div className="relative z-10 max-w-3xl">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white/70 px-3 py-2 text-sm font-bold text-primary shadow-sm">
-                <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
-                7-day free trial on Pro
-              </div>
-              <h1 className="font-headline text-4xl font-extrabold leading-tight text-on-surface md:text-6xl">
-                Pricing that matches focused practice.
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-on-surface-variant">
-                Start with the free plan, then move to Pro when Hatch coaching, live AI interviews,
-                and deeper practice limits become part of your weekly routine.
+    <>
+      <section className="v3-page-hero">
+        <div className="shell">
+          <div className="v3-page-hero-inner">
+            <p className="eyebrow">
+              <span className="dot" />
+              7-day free trial on Pro
+            </p>
+            <h1>Pricing that matches focused practice.</h1>
+            <p className="v3-page-hero-sub">
+              Start with the free plan, then move to Pro when Hatch coaching, live AI interviews,
+              and deeper practice limits become part of your weekly routine.
+            </p>
+            <div className="v3-page-hero-cta">
+              <button
+                type="button"
+                onClick={() => startCheckout(billing)}
+                disabled={loadingPlan !== null}
+                className="btn btn-forest"
+              >
+                {loadingPlan === billing ? 'Opening Stripe...' : 'Start Pro trial'}{' '}
+                <span aria-hidden>→</span>
+              </button>
+              <Link href="/signup" className="btn btn-primary">
+                Start free <span aria-hidden>→</span>
+              </Link>
+            </div>
+            {checkoutError && (
+              <p
+                role="alert"
+                className="v3-page-hero-sub"
+                style={{ color: '#b83230', marginTop: 16 }}
+              >
+                {checkoutError}
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => startCheckout(billing)}
-                  disabled={loadingPlan !== null}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-white shadow-[0_14px_28px_rgba(74,124,89,0.20)] transition-colors hover:bg-[#3f6d4d] disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  {loadingPlan === billing ? 'Opening Stripe...' : 'Start Pro trial'}
-                  <span className="material-symbols-outlined text-[19px]">arrow_forward</span>
-                </button>
-                <Link
-                  href="/signup"
-                  className="inline-flex min-h-12 items-center justify-center rounded-lg border border-outline-variant bg-white px-6 py-3 font-bold text-on-surface transition-colors hover:border-primary/50 hover:text-primary"
-                >
-                  Start free
-                </Link>
-              </div>
-              {checkoutError && (
-                <p className="mt-4 max-w-xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                  {checkoutError}
-                </p>
-              )}
-            </div>
-
-            <div className="relative hidden min-h-[340px] items-end justify-center lg:flex">
-              <div className="absolute inset-x-8 bottom-0 top-12 rounded-lg border border-primary/15 bg-white/50 shadow-[0_24px_70px_rgba(46,50,48,0.12)]" />
-              <Image
-                src="/images/hatch-mascot.png"
-                alt=""
-                width={320}
-                height={320}
-                priority
-                className="relative z-10 h-auto w-72 drop-shadow-[0_26px_28px_rgba(46,50,48,0.20)]"
-              />
-              <div className="absolute bottom-8 left-0 z-20 rounded-lg border border-outline-variant/60 bg-white px-5 py-4 shadow-[0_12px_30px_rgba(46,50,48,0.14)]">
-                <p className="text-sm font-bold text-on-surface">Pro plan</p>
-                <p className="mt-1 text-2xl font-extrabold text-primary">{displayPrice(activePrice)}</p>
-                <p className="text-sm text-on-surface-variant">
-                  per {activePrice.interval === 'year' ? 'year' : 'month'}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-          <div className={`grid gap-6 ${analyticsEnabled ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
-            <article className="flex min-h-[560px] flex-col rounded-lg border border-outline-variant/60 bg-white p-7 shadow-[0_16px_34px_rgba(46,50,48,0.06)]">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-headline text-3xl font-extrabold text-on-surface">Free</h2>
-                  <p className="mt-3 text-on-surface-variant">
-                    A practical starting point for light practice and product fundamentals.
-                  </p>
-                </div>
-                <span className="rounded-lg bg-[#efe8dc] px-3 py-1 text-sm font-bold text-on-surface-variant">
-                  No card
-                </span>
+      <section className="pricing-section">
+        <div className="shell pricing-shell">
+          <div className="pricing-copy">
+            <h2>One practice system. The plan that fits your sprint.</h2>
+            <p>
+              Free to start, then a single Pro tier that unlocks Hatch coaching, live AI
+              interviews, scoring, autopsies, and study plans in one place.
+            </p>
+          </div>
+
+          <div
+            className={analyticsEnabled ? 'pricing-grid pricing-grid-three' : 'pricing-grid'}
+            aria-label="HackProduct pricing"
+          >
+            <article className="pricing-card">
+              <div className="pricing-card-top">
+                <span className="pricing-badge">No card required</span>
+                <Zap aria-hidden="true" strokeWidth={2} />
               </div>
-
-              <div className="mt-8 flex items-end gap-2">
-                <span className="font-headline text-5xl font-extrabold text-on-surface">$0</span>
-                <span className="pb-2 font-semibold text-on-surface-variant">forever</span>
+              <h3>Free</h3>
+              <div className="pricing-price">
+                <span>$0</span>
+                <small>forever</small>
               </div>
-
-              <ul className="mt-8 space-y-4">
+              <p className="pricing-card-copy">
+                A practical starting point for light practice and product fundamentals.
+              </p>
+              <ul>
                 {FREE_LIMITS.map((feature) => (
-                  <li key={feature} className="flex gap-3 text-on-surface-variant">
-                    <span className="material-symbols-outlined mt-0.5 text-[20px] text-primary">
-                      check_circle
-                    </span>
+                  <li key={feature}>
+                    <Check aria-hidden="true" strokeWidth={2.2} />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
-
-              <Link
-                href="/signup"
-                className="mt-auto inline-flex min-h-12 items-center justify-center rounded-lg border border-outline-variant bg-white px-6 py-3 font-bold text-on-surface transition-colors hover:border-primary/50 hover:text-primary"
-              >
-                Create free account
+              <Link href="/signup" className="btn btn-primary pricing-cta">
+                Create free account <span aria-hidden>→</span>
               </Link>
             </article>
 
-            <article className="flex min-h-[560px] flex-col rounded-lg border border-primary/25 bg-white p-7 shadow-[0_20px_44px_rgba(74,124,89,0.13)]">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-headline text-3xl font-extrabold text-on-surface">Pro</h2>
-                  <p className="mt-3 text-on-surface-variant">
-                    Full practice capacity for interview prep, skill growth, and Hatch feedback.
-                  </p>
-                </div>
-                <span className="rounded-lg bg-primary-container px-3 py-1 text-sm font-bold text-primary">
-                  7-day trial
-                </span>
+            <article className="pricing-card pricing-card-featured">
+              <div className="pricing-card-top">
+                <span className="pricing-badge">7-day trial</span>
+                <Sparkles aria-hidden="true" strokeWidth={2} />
               </div>
+              <h3>Pro</h3>
+              <div className="pricing-price">
+                <span>{displayPrice(activePrice)}</span>
+                <small>/ {activePrice.interval === 'year' ? 'year' : 'month'}</small>
+              </div>
+              <p className="pricing-card-copy">
+                Full practice capacity for interview prep, skill growth, and Hatch feedback.
+              </p>
 
-              <div className="mt-7 grid gap-2 rounded-lg bg-[#f0ece4] p-1 sm:grid-cols-2">
+              <div className="pricing-toggle" role="group" aria-label="Pro billing cycle">
                 {(['monthly', 'annual'] as BillingCycle[]).map((cycle) => {
                   const selected = billing === cycle
                   const price = prices[cycle]
@@ -348,22 +336,15 @@ export function PricingClient() {
                       type="button"
                       aria-pressed={selected}
                       onClick={() => setBilling(cycle)}
-                      className={`rounded-lg px-4 py-3 text-left transition-colors ${
-                        selected
-                          ? 'bg-white text-on-surface shadow-[0_1px_8px_rgba(46,50,48,0.12)]'
-                          : 'text-on-surface-variant hover:bg-white/60'
-                      }`}
+                      data-selected={selected ? 'true' : undefined}
+                      className="pricing-toggle-btn"
                     >
-                      <span className="block text-sm font-bold capitalize">{cycle}</span>
-                      <span className="mt-1 block text-lg font-extrabold">
-                        {displayPrice(price)}
-                        <span className="text-sm font-semibold text-on-surface-variant">
-                          {' '}
-                          / {price.interval === 'year' ? 'yr' : 'mo'}
-                        </span>
+                      <span className="pricing-toggle-label">{cycle}</span>
+                      <span className="pricing-toggle-price">
+                        {displayPrice(price)} / {price.interval === 'year' ? 'yr' : 'mo'}
                       </span>
                       {cycle === 'annual' && annualSavings > 0 && (
-                        <span className="mt-1 block text-xs font-bold text-primary">
+                        <span className="pricing-toggle-save">
                           Save {annualSavings}% at {annualMonthly}/mo
                         </span>
                       )}
@@ -372,34 +353,24 @@ export function PricingClient() {
                 })}
               </div>
 
-              <ul className="mt-8 space-y-4">
+              <ul>
                 {PRO_LIMITS.map((feature) => (
-                  <li key={feature} className="flex gap-3 text-on-surface">
-                    <span
-                      className="material-symbols-outlined mt-0.5 text-[20px] text-primary"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      verified
-                    </span>
-                    <span className="font-semibold">{feature}</span>
+                  <li key={feature}>
+                    <Check aria-hidden="true" strokeWidth={2.2} />
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <div className="mt-auto pt-8">
-                <button
-                  type="button"
-                  onClick={() => startCheckout(billing)}
-                  disabled={loadingPlan !== null}
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-white shadow-[0_14px_28px_rgba(74,124,89,0.20)] transition-colors hover:bg-[#3f6d4d] disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  {loadingPlan === billing ? 'Opening Stripe...' : 'Start 7-day trial'}
-                  <span className="material-symbols-outlined text-[19px]">arrow_forward</span>
-                </button>
-                <p className="mt-3 text-center text-sm font-semibold text-on-surface-variant">
-                  Trial first. Cancel anytime from the customer portal.
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => startCheckout(billing)}
+                disabled={loadingPlan !== null}
+                className="btn btn-amber pricing-cta"
+              >
+                {loadingPlan === billing ? 'Opening Stripe...' : 'Start 7-day trial'}{' '}
+                <span aria-hidden>→</span>
+              </button>
             </article>
 
             {/* Claude Code Analytics — special tier. Only rendered when the
@@ -413,20 +384,21 @@ export function PricingClient() {
                   (analyticsPrices.analytics_monthly.unitAmount * 12)) * 100,
               )
               return (
-                <article className="flex min-h-[560px] flex-col rounded-lg border border-tertiary/40 bg-white p-7 shadow-[0_20px_44px_rgba(112,92,48,0.13)]">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <h2 className="font-headline text-3xl font-extrabold text-on-surface">Analytics</h2>
-                      <p className="mt-3 text-on-surface-variant">
-                        Everything in Pro, plus live Claude Code analytics sessions on real datasets.
-                      </p>
-                    </div>
-                    <span className="rounded-lg bg-tertiary-container px-3 py-1 text-sm font-bold text-tertiary">
-                      Includes Pro
-                    </span>
+                <article className="pricing-card">
+                  <div className="pricing-card-top">
+                    <span className="pricing-badge">Includes Pro</span>
+                    <Sparkles aria-hidden="true" strokeWidth={2} />
                   </div>
+                  <h3>Analytics</h3>
+                  <div className="pricing-price">
+                    <span>{displayPrice(aPrice)}</span>
+                    <small>/ {aPrice.interval === 'year' ? 'year' : 'month'}</small>
+                  </div>
+                  <p className="pricing-card-copy">
+                    Everything in Pro, plus live Claude Code analytics sessions on real datasets.
+                  </p>
 
-                  <div className="mt-7 grid gap-2 rounded-lg bg-[#f0ece4] p-1 sm:grid-cols-2">
+                  <div className="pricing-toggle" role="group" aria-label="Analytics billing cycle">
                     {(['monthly', 'annual'] as BillingCycle[]).map((cycle) => {
                       const selected = analyticsBilling === cycle
                       const price = analyticsPrices[cycle === 'monthly' ? 'analytics_monthly' : 'analytics_annual']
@@ -436,21 +408,15 @@ export function PricingClient() {
                           type="button"
                           aria-pressed={selected}
                           onClick={() => setAnalyticsBilling(cycle)}
-                          className={`rounded-lg px-4 py-3 text-left transition-colors ${
-                            selected
-                              ? 'bg-white text-on-surface shadow-[0_1px_8px_rgba(46,50,48,0.12)]'
-                              : 'text-on-surface-variant hover:bg-white/60'
-                          }`}
+                          data-selected={selected ? 'true' : undefined}
+                          className="pricing-toggle-btn"
                         >
-                          <span className="block text-sm font-bold capitalize">{cycle}</span>
-                          <span className="mt-1 block text-lg font-extrabold">
-                            {displayPrice(price)}
-                            <span className="text-sm font-semibold text-on-surface-variant">
-                              {' '}/ {price.interval === 'year' ? 'yr' : 'mo'}
-                            </span>
+                          <span className="pricing-toggle-label">{cycle}</span>
+                          <span className="pricing-toggle-price">
+                            {displayPrice(price)} / {price.interval === 'year' ? 'yr' : 'mo'}
                           </span>
                           {cycle === 'annual' && aSavings > 0 && (
-                            <span className="mt-1 block text-xs font-bold text-tertiary">
+                            <span className="pricing-toggle-save">
                               Save {aSavings}% at {aAnnualMonthly}/mo
                             </span>
                           )}
@@ -459,116 +425,100 @@ export function PricingClient() {
                     })}
                   </div>
 
-                  <ul className="mt-8 space-y-4">
-                    {[
-                      'Everything in Pro',
-                      'Live Claude Code sessions on real BigQuery data',
-                      'Hatch coaching inside the terminal',
-                      'Reusable skills and shareable analyst reports',
-                    ].map((feature) => (
-                      <li key={feature} className="flex gap-3 text-on-surface">
-                        <span
-                          className="material-symbols-outlined mt-0.5 text-[20px] text-tertiary"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          verified
-                        </span>
-                        <span className="font-semibold">{feature}</span>
+                  <ul>
+                    {ANALYTICS_LIMITS.map((feature) => (
+                      <li key={feature}>
+                        <Check aria-hidden="true" strokeWidth={2.2} />
+                        <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <div className="mt-auto pt-8">
-                    <button
-                      type="button"
-                      onClick={() => startCheckout(aPlanId)}
-                      disabled={loadingPlan !== null}
-                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-tertiary px-6 py-3 font-bold text-white shadow-[0_14px_28px_rgba(112,92,48,0.20)] transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {loadingPlan === aPlanId ? 'Opening Stripe...' : 'Get Analytics'}
-                      <span className="material-symbols-outlined text-[19px]">arrow_forward</span>
-                    </button>
-                    <p className="mt-3 text-center text-sm font-semibold text-on-surface-variant">
-                      {displayPrice(aPrice)} / {aPrice.interval === 'year' ? 'year' : 'month'}. Cancel anytime.
-                    </p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => startCheckout(aPlanId)}
+                    disabled={loadingPlan !== null}
+                    className="btn btn-forest pricing-cta"
+                  >
+                    {loadingPlan === aPlanId ? 'Opening Stripe...' : 'Get Analytics'}{' '}
+                    <span aria-hidden>→</span>
+                  </button>
                 </article>
               )
             })()}
           </div>
-        </section>
 
-        <section className="border-y border-outline-variant/30 bg-white py-16">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-              <div>
-                <h2 className="font-headline text-3xl font-extrabold text-on-surface md:text-4xl">
-                  Plan comparison
-                </h2>
-                <p className="mt-3 max-w-2xl text-on-surface-variant">
-                  Compare the limits that matter when practice becomes a weekly habit.
-                </p>
-              </div>
-              <Link
-                href="/terms"
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-outline-variant px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:border-primary/50 hover:text-primary"
-              >
-                Billing terms
-              </Link>
-            </div>
-
-            <div className="grid gap-3 md:hidden">
-              {FEATURE_ROWS.map((row) => (
-                <article
-                  key={row.feature}
-                  className="rounded-lg border border-outline-variant/60 bg-white p-5"
-                >
-                  <h3 className="font-bold text-on-surface">{row.feature}</h3>
-                  <div className="mt-4 grid gap-3 text-sm">
-                    <div>
-                      <p className="font-bold text-on-surface-variant">Free</p>
-                      <p className="mt-1 text-on-surface-variant">{row.free}</p>
-                    </div>
-                    <div>
-                      <p className="font-bold text-primary">Pro</p>
-                      <p className="mt-1 font-semibold text-on-surface">{row.pro}</p>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-
-            <div className="hidden rounded-lg border border-outline-variant/60 md:block">
-              <table className="w-full border-collapse bg-white text-left">
-                <thead className="bg-[#f6f0e7]">
-                  <tr>
-                    <th className="w-1/3 px-5 py-4 text-sm font-extrabold text-on-surface">
-                      Feature
-                    </th>
-                    <th className="w-1/3 px-5 py-4 text-sm font-extrabold text-on-surface">
-                      Free
-                    </th>
-                    <th className="w-1/3 px-5 py-4 text-sm font-extrabold text-on-surface">
-                      Pro
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {FEATURE_ROWS.map((row) => (
-                    <tr key={row.feature} className="border-t border-outline-variant/50">
-                      <td className="px-5 py-4 font-bold text-on-surface">{row.feature}</td>
-                      <td className="px-5 py-4 text-on-surface-variant">{row.free}</td>
-                      <td className="px-5 py-4 font-semibold text-on-surface">{row.pro}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="pricing-note">
+            <ShieldCheck aria-hidden="true" strokeWidth={2} />
+            <span>
+              Trial first. Cancel anytime from the customer portal. Billing is handled through Stripe.
+            </span>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
 
-      <GradientFooter />
-    </div>
+      <section className="v3-section">
+        <div className="shell">
+          <div className="v3-section-head">
+            <h2>Plan comparison</h2>
+            <p>Compare the limits that matter when practice becomes a weekly habit.</p>
+          </div>
+
+          <div className="grid gap-3 md:hidden">
+            {FEATURE_ROWS.map((row) => (
+              <article
+                key={row.feature}
+                className="rounded-lg border border-outline-variant/60 bg-white p-5"
+              >
+                <h3 className="font-bold text-on-surface">{row.feature}</h3>
+                <div className="mt-4 grid gap-3 text-sm">
+                  <div>
+                    <p className="font-bold text-on-surface-variant">Free</p>
+                    <p className="mt-1 text-on-surface-variant">{row.free}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-primary">Pro</p>
+                    <p className="mt-1 font-semibold text-on-surface">{row.pro}</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-lg border border-outline-variant/60 md:block">
+            <table className="w-full min-w-[40rem] border-collapse bg-white text-left">
+              <thead className="bg-surface-container">
+                <tr>
+                  <th className="w-1/3 px-5 py-4 text-sm font-extrabold text-on-surface">
+                    Feature
+                  </th>
+                  <th className="w-1/3 px-5 py-4 text-sm font-extrabold text-on-surface">
+                    Free
+                  </th>
+                  <th className="w-1/3 px-5 py-4 text-sm font-extrabold text-on-surface">
+                    Pro
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {FEATURE_ROWS.map((row) => (
+                  <tr key={row.feature} className="border-t border-outline-variant/50">
+                    <td className="px-5 py-4 font-bold text-on-surface">{row.feature}</td>
+                    <td className="px-5 py-4 text-on-surface-variant">{row.free}</td>
+                    <td className="px-5 py-4 font-semibold text-on-surface">{row.pro}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="v3-page-hero-cta" style={{ marginTop: 24 }}>
+            <Link href="/terms" className="btn btn-primary">
+              Billing terms <span aria-hidden>→</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
   )
 }

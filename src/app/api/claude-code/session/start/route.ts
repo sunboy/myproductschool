@@ -16,7 +16,7 @@ import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 import { getSandbox } from '@/lib/sandbox'
 import type { SessionEnv } from '@/lib/sandbox/types'
 import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
-import { mintSessionVirtualKey } from '@/lib/sandbox/llm-gateway'
+import { mintSessionVirtualKey, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -290,15 +290,37 @@ export async function POST(req: NextRequest) {
       anthropicBaseUrl = vkey.baseUrl
     }
   } catch (err) {
-    // Gateway mint failure should not hard-fail the session in dev; log and fall
-    // back to the shared key. (In prod, consider failing closed instead.)
-    console.error('[cc/session/start] virtual key mint failed, using shared key:', err)
+    console.error('[cc/session/start] virtual key mint failed:', err)
+    // FAIL CLOSED when the gateway is configured. Falling back to the shared key
+    // would hand the session the platform's real ANTHROPIC_API_KEY with NO
+    // per-session $0.50 budget and NO cc-<sessionId> alias — so spend is both
+    // uncapped AND invisible to spend tracking. Only the no-gateway (local/dev)
+    // path may use the shared key. (Codex review.)
+    if (isGatewayConfigured()) {
+      await admin
+        .from('claude_code_sessions')
+        .update({ status: 'failed', ended_at: new Date().toISOString() })
+        .eq('id', sessionId)
+      return NextResponse.json(
+        { error: 'Could not start a budgeted session. Please try again.' },
+        { status: 503 },
+      )
+    }
   }
 
   // --- Build SessionEnv ---
+  // Pin the CLI's model to one the gateway serves natively (Sonnet). Without this
+  // the CLI defaults to claude-opus-4-7, which the gateway has to remap to Sonnet
+  // — and the CLI then sends Opus-only params (e.g. thinking effort 'xhigh') that
+  // Sonnet rejects with a 400. Setting ANTHROPIC_MODEL makes the CLI request Sonnet
+  // directly, so params match the model. (project_cc_gateway_model_mismatch)
+  const ccModel = process.env.CC_DEFAULT_MODEL ?? 'claude-sonnet-4-6'
+  const ccFastModel = process.env.CC_FAST_MODEL ?? 'claude-haiku-4-5'
   const sessionEnv: SessionEnv = {
     ANTHROPIC_API_KEY: anthropicKey,
     ...(anthropicBaseUrl ? { ANTHROPIC_BASE_URL: anthropicBaseUrl } : {}),
+    ANTHROPIC_MODEL: ccModel,
+    ANTHROPIC_SMALL_FAST_MODEL: ccFastModel,
     ANTHROPIC_BUDGET_USD: process.env.ANTHROPIC_BUDGET_USD ?? '0.50',
     SESSION_ID: sessionId,
     SESSION_TOKEN_SECRET: process.env.SESSION_TOKEN_SECRET ?? '',
@@ -325,9 +347,19 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     console.error('[cc/session/start] createSession failed:', err)
+    // createSession can throw AFTER the revision PATCH lands (e.g. the response
+    // read fails), leaving a partially-created revision that pins an instance
+    // (minScale=1, billing) with no row to ever reap it. The tag is a pure
+    // function of sessionId, so reconstruct it and tear down best-effort.
+    const partialHostId = sandbox.deriveHostInstanceId?.(sessionId)
+    if (partialHostId) {
+      await sandbox
+        .destroySession(partialHostId)
+        .catch((e) => console.error('[cc/session/start] partial teardown failed:', e))
+    }
     await admin
       .from('claude_code_sessions')
-      .update({ status: 'failed' })
+      .update({ status: 'failed', ended_at: new Date().toISOString() })
       .eq('id', sessionId)
     return NextResponse.json(
       { error: 'Sandbox provisioning failed. Please try again.' },
@@ -347,7 +379,7 @@ export async function POST(req: NextRequest) {
     // Mark failed; best-effort teardown
     await admin
       .from('claude_code_sessions')
-      .update({ status: 'failed' })
+      .update({ status: 'failed', ended_at: new Date().toISOString() })
       .eq('id', sessionId)
     sandbox.destroySession(provision.hostInstanceId).catch(() => {})
     return NextResponse.json(

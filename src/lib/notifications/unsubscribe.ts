@@ -5,6 +5,7 @@ export type NotificationPreferenceKey =
   | 'weekly_digest'
   | 'completion_email'
   | 'marketing'
+  | 'lifecycle'
   | 'push_enabled'
   | 'discussion_reply'
   | 'billing_alerts'
@@ -19,6 +20,7 @@ const PREFERENCES = new Set<NotificationPreferenceKey>([
   'weekly_digest',
   'completion_email',
   'marketing',
+  'lifecycle',
   'push_enabled',
   'discussion_reply',
   'billing_alerts',

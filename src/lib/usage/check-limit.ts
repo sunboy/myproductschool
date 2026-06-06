@@ -1,6 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export type UsageFeature = 'challenges' | 'interviews' | 'hatch_ai_cents' | 'claude_code_sessions'
+export type UsageFeature =
+  | 'challenges'
+  | 'interviews'
+  | 'hatch_ai_cents'
+  | 'claude_code_sessions'
+  | 'cc_claude_spend_cents'
 export type UsageUnit = 'count' | 'cents'
 export type BillingPlan = 'free' | 'pro'
 
@@ -68,6 +73,16 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       description: 'Claude Code Analytics sessions per rolling month (not included)',
       costCeilingCents: null,
     },
+    cc_claude_spend_cents: {
+      // OBSERVABILITY ONLY (not a gate yet). Per-user CC Analytics Claude spend in
+      // cents/30d, recorded from the gateway. High value so checkUsageLimit never
+      // blocks; alerts read the rolling sum directly via getUsedQuantity.
+      limitValue: 100000,
+      windowDays: 30,
+      unit: 'cents',
+      description: 'CC Analytics Claude spend in cents per rolling month (observed, not gated)',
+      costCeilingCents: 100000,
+    },
   },
   pro: {
     challenges: {
@@ -99,6 +114,14 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       unit: 'count',
       description: 'Claude Code Analytics sessions per rolling month',
       costCeilingCents: null,
+    },
+    cc_claude_spend_cents: {
+      // OBSERVABILITY ONLY (not a gate yet). The future $10/mo cap will tighten this.
+      limitValue: 100000,
+      windowDays: 30,
+      unit: 'cents',
+      description: 'CC Analytics Claude spend in cents per rolling month (observed, not gated)',
+      costCeilingCents: 100000,
     },
   },
 }
@@ -152,7 +175,7 @@ async function getPlanLimit(
   return record
 }
 
-async function getUsedQuantity(
+export async function getUsedQuantity(
   userId: string,
   feature: UsageFeature,
   windowStart: string
@@ -166,9 +189,21 @@ async function getUsedQuantity(
     .eq('feature', feature)
     .gte('created_at', windowStart)
 
+  // Cents features store a dollar amount in `quantity`; a count is meaningless for
+  // them. Count features (challenges/interviews/sessions) default a null qty to 1.
+  const isCentsFeature = feature === 'hatch_ai_cents' || feature === 'cc_claude_spend_cents'
+
   if (!error && data) {
-    return data.reduce((sum, row) => sum + (Number(row.quantity) || 1), 0)
+    return data.reduce(
+      (sum, row) => sum + (Number(row.quantity) || (isCentsFeature ? 0 : 1)),
+      0,
+    )
   }
+
+  // Sum query failed. For cents features, falling back to a ROW COUNT would turn
+  // e.g. 1060 cents into "1" and silently suppress spend alerts — so return 0
+  // (treat as "unknown, not over") rather than a bogus count. (Codex review.)
+  if (isCentsFeature) return 0
 
   const { count } = await admin
     .from('usage_events')
@@ -177,7 +212,7 @@ async function getUsedQuantity(
     .eq('feature', feature)
     .gte('created_at', windowStart)
 
-  return feature === 'hatch_ai_cents' ? 0 : (count ?? 0)
+  return count ?? 0
 }
 
 async function getFeatureUsage(

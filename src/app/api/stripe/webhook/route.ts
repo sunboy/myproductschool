@@ -23,6 +23,8 @@ import {
 } from '@/lib/email/transactional'
 import { subscriptionEntitlesPlan, type SubscriptionEntitlementRow } from '@/lib/billing/entitlements'
 import { isAnalyticsPlanId } from '@/lib/billing/plans'
+import { captureServerImmediate } from '@/lib/posthog/server'
+import { EVENT_UPGRADED } from '@/lib/posthog/events'
 
 function subscriptionPlanForStatus(status: Stripe.Subscription.Status): 'free' | 'pro' {
   return status === 'active' || status === 'trialing' || status === 'past_due' ? 'pro' : 'free'
@@ -246,6 +248,19 @@ export async function POST(req: NextRequest) {
       }, { onConflict: 'user_id' })
 
       await upsertAffiliateReferralFromCheckoutSession(supabase, session)
+
+      // PostHog: track successful upgrade (fire-and-forget, never throws)
+      const upgradePlan = analyticsPlan ?? session.metadata?.plan ?? 'pro'
+      const upgradeInterval = (session.metadata?.plan === 'annual' || session.metadata?.plan === 'analytics_annual') ? 'year' : 'month'
+      void captureServerImmediate({
+        distinctId: userId,
+        event: EVENT_UPGRADED,
+        properties: {
+          plan: upgradePlan,
+          interval: upgradeInterval,
+          currency: session.currency ?? 'usd',
+        },
+      })
 
       await sendPaymentReceiptEmail(supabase, {
         dedupeKey: `${event.id}:payment_receipt`,

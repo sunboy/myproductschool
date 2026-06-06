@@ -10,6 +10,7 @@ const PREFERENCE_LABELS: Record<NotificationPreferenceKey, string> = {
   weekly_digest: 'Weekly digests',
   completion_email: 'Challenge completion emails',
   marketing: 'Marketing emails',
+  lifecycle: 'Reminders and tips',
   push_enabled: 'Push notifications',
   discussion_reply: 'Discussion reply emails',
   billing_alerts: 'Billing alerts',
