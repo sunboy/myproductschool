@@ -26,6 +26,7 @@ AS $$
   FROM public.challenges c
   WHERE c.is_published = TRUE
     AND c.challenge_type <> 'quick_take'
+    AND c.is_calibration IS NOT TRUE
     AND NOT EXISTS (
       SELECT 1
       FROM public.challenge_attempts ca
@@ -45,7 +46,6 @@ AS $$
       WHEN p_competency = ANY(COALESCE(c.secondary_competencies, ARRAY[]::TEXT[])) THEN 1
       ELSE 2
     END,
-    c.is_featured DESC,
     c.created_at DESC
   LIMIT 1;
 $$;
