@@ -549,7 +549,7 @@
 }
 @keyframes v3-live-pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-.v3 .disc-screen-body { position: relative; overflow: hidden; }
+.v3 .disc-screen-body { position: relative; overflow: hidden; height: 420px; }
 .v3 .disc-screen-slide {
   position: absolute;
   inset: 0;
@@ -559,13 +559,13 @@
   pointer-events: none;
   transition: opacity 240ms ease;
 }
-.v3 .disc-screen-slide.active { position: relative; opacity: 1; pointer-events: auto; }
+.v3 .disc-screen-slide.active { opacity: 1; pointer-events: auto; }
 
 /* discipline-specific screen styles */
 .v3 .ds {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  min-height: 420px;
+  height: 100%;
   background: var(--dark);
   color: var(--on-dark);
 }
@@ -761,9 +761,12 @@
             mask-image: none;
     min-height: 0;
   }
+  .v3 .disc-screen-body {
+    height: 940px;
+  }
   .v3 .ds {
     grid-template-columns: 1fr;
-    min-height: 0;
+    height: 100%;
   }
   .v3 .ds-left {
     border-right: none;
