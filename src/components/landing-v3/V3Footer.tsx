@@ -7,7 +7,7 @@ const footerColumns = [
     links: [
       { label: 'Pricing', href: '/pricing' },
       { label: 'Live AI interviews', href: '/interviews/live-ai-interviews' },
-      { label: 'Live data analyst', href: '/claude-code-analytics' },
+      { label: 'Live AI data analyst', href: '/claude-code-analytics' },
       { label: 'FLOW', href: '/flow' },
       { label: 'Hatch preview', href: '/hatch-preview' },
     ],

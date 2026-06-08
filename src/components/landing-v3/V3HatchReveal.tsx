@@ -90,10 +90,7 @@ export function V3HatchReveal() {
         <div className="shell hatch-reveal-shell">
           <div className="hatch-reveal-copy">
             <h2 id="hatch-reveal-heading">Hatch grades every rep and names the gap.</h2>
-            <p>
-              Hatch turns interview practice into a guided system: calibrated reps,
-              live judgment, and feedback that compounds.
-            </p>
+            <p>It scores every answer live and tells you what to fix next.</p>
           </div>
 
           <div className="hatch-stage" aria-label="Scroll animation introducing Hatch">

@@ -3,15 +3,15 @@ import { Check, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 import { PricingCta } from './PricingCta'
 
 const monthlyFeatures = [
-  'Live interview loops across product, system design, data, SQL, and coding',
-  'Hatch feedback on voice, chat, code, and canvas artifacts',
-  'Rubric-backed scoring that keeps each rep connected to the next one',
+  'Live interviews across product, system design, SQL, and coding',
+  'Live AI data analyst sessions, using Claude Code',
+  'Hatch feedback and scoring on every answer',
 ]
 
 const annualFeatures = [
-  'Best value for an interview season or role transition sprint',
-  'Autopsies, study plans, FLOW, scoring, and Hatch coaching in one practice system',
-  'Lower effective monthly cost while keeping the same Pro practice capacity',
+  'Best value for an interview season',
+  'Autopsies, study plans, and Hatch coaching included',
+  'Lower monthly cost, same full access',
 ]
 
 export function V3PricingSection() {
@@ -21,8 +21,7 @@ export function V3PricingSection() {
         <div className="pricing-copy">
           <h2 id="pricing-heading">One practice system. Two ways to commit.</h2>
           <p>
-            Maximize interview readiness with AI coaching, real reps, scoring, artifacts,
-            and human judgment in one place.
+            AI coaching, real interview practice, and scoring in one place.
           </p>
         </div>
 

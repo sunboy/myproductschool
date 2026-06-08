@@ -8,7 +8,7 @@ const NAV_LINKS = [
   { label: 'Practice', href: '/practice' },
   { label: 'Skills', href: '/skills' },
   { label: 'Live Interviews', href: '/interviews/live-ai-interviews' },
-  { label: 'Analytics', href: '/claude-code-analytics' },
+  { label: 'Live analyst', href: '/claude-code-analytics' },
   { label: 'FLOW', href: '/flow' },
   { label: 'Pricing', href: '/pricing' },
 ]

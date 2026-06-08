@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { DISCIPLINES, type DisciplineId } from './disciplines'
 import { V3DisciplineScreen } from './V3DisciplineScreen'
 
-const PILL_MESSAGES = ['Maximize interview readiness', 'Six disciplines, graded rep by rep']
+const PILL_MESSAGES = ['Practice the interview out loud', 'Product sense, system design, SQL, coding']
 
 function openSignup() {
   window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { mode: 'signup' } }))
@@ -79,15 +79,15 @@ export function V3Hero() {
           <ul className="hero-bullets">
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>Interviews are a performance, not a knowledge test.</b> Practice the artifacts, tradeoffs, and thinking out loud that real loops actually score.</span>
+              <span><b>Interviews test performance, not knowledge.</b> The skill is thinking out loud and defending a call while someone watches.</span>
             </li>
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>Real reps under real pressure.</b> Live interviews, scoring, autopsies, study plans, code, and canvas practice in one connected loop.</span>
+              <span><b>Practice the rounds that decide it.</b> Product sense, system design, SQL, coding, and a live AI data analyst you drive with Claude Code.</span>
             </li>
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>Hatch, your AI coach.</b> Reads your work, names the gap honestly, and turns the dread into trained reps.</span>
+              <span><b>Hatch sees how you reason.</b> It names the weak spot and what to fix. Drill sites only say pass or fail.</span>
             </li>
           </ul>
 

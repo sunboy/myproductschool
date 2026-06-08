@@ -8,12 +8,13 @@ import { V3ContextSection } from '@/components/landing-v3/V3ContextSection'
 import { V3HatchReveal } from '@/components/landing-v3/V3HatchReveal'
 import { V3FeatureGrid } from '@/components/landing-v3/V3FeatureGrid'
 import { V3LiveInterviewSection } from '@/components/landing-v3/V3LiveInterviewSection'
+import { V3AnalyticsSection } from '@/components/landing-v3/V3AnalyticsSection'
 import { V3PricingSection } from '@/components/landing-v3/V3PricingSection'
 import { V3Footer } from '@/components/landing-v3/V3Footer'
 import { V3AuthGate } from '@/components/landing-v3/V3AuthGate'
 
 export const v3LandingDescription =
-  'HackProduct makes product and technical judgment trainable. Run live interview loops, get Hatch AI coaching, study autopsies, follow study plans, practice code and canvas work, and track scoring in one AI-native prep system.'
+  'HackProduct makes product and technical judgment trainable. Run live interviews, drive a live AI data analyst with Claude Code, get Hatch AI coaching, study autopsies, follow study plans, practice code and canvas work, and track scoring in one AI-native prep system.'
 
 export const v3LandingTitle = 'HackProduct | AI-Native Practice System for Product and Technical Judgment'
 
@@ -79,6 +80,7 @@ export function V3LandingPage() {
         <V3HatchReveal />
         <V3FeatureGrid />
         <V3LiveInterviewSection />
+        <V3AnalyticsSection />
         <V3PricingSection />
       </main>
       <V3Footer />
