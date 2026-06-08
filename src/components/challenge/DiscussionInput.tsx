@@ -2,10 +2,13 @@
 
 import { type RefObject, useRef, useState } from 'react'
 import { validateDiscussionContent } from '@/lib/content/discussion-validator'
+import type { ChallengeDiscussion } from '@/lib/types'
 
 interface Props {
   challengeId: string
-  onSubmitted?: () => void
+  // Receives the just-created discussion row so the parent can append it
+  // optimistically (zero perceived lag), then reconcile in the background.
+  onSubmitted?: (created?: ChallengeDiscussion) => void
   inputRef?: RefObject<HTMLTextAreaElement | null>
 }
 
@@ -126,9 +129,12 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
         setError(messageForStatus(res.status, data?.error))
         return
       }
+      // The POST returns the created discussion row (201). Hand it to the parent
+      // so it can render immediately rather than waiting on a second GET.
+      const created = (await res.json().catch(() => null)) as ChallengeDiscussion | null
       setSubmitted(true)
       setContent('')
-      onSubmitted?.()
+      onSubmitted?.(created ?? undefined)
       setTimeout(() => setSubmitted(false), 2500)
     } catch {
       setError('Could not post discussion. Check your connection and try again.')

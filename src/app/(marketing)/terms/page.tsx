@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { buildMetadata } from '@/lib/seo/site'
+import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3ProseSection, V3ProseBlock } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Terms of Service | HackProduct',
@@ -109,73 +111,45 @@ const TERMS_SECTIONS = [
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-background text-on-surface">
-      <section className="border-b border-outline-variant bg-surface-container-low">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 lg:grid-cols-[0.8fr_1.2fr] lg:px-8 lg:py-20">
-          <div>
-            <Link href="/" className="text-sm font-bold text-primary no-underline">
-              HackProduct
-            </Link>
-            <p className="mt-8 text-xs font-black uppercase text-primary">Terms of Service</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight text-on-surface sm:text-5xl">
-              Rules for using HackProduct.
-            </h1>
-          </div>
-          <div className="max-w-2xl">
-            <p className="text-lg leading-8 text-on-surface-variant">
-              These terms define account responsibilities, acceptable use, billing rules, content rights, affiliate terms, and the limits of Hatch coaching.
-            </p>
-            <p className="mt-5 text-sm text-on-surface-variant">Last updated: June 1, 2026</p>
-          </div>
-        </div>
-      </section>
+    <V3PageShell>
+      <JsonLdScript
+        data={[
+          breadcrumbJsonLd([
+            { name: 'Home', path: 'https://hackproduct.dev/' },
+            { name: 'Terms of Service', path: 'https://hackproduct.dev/terms' },
+          ]),
+        ]}
+      />
 
-      <section className="mx-auto grid max-w-6xl gap-8 px-5 py-10 lg:grid-cols-[240px_1fr] lg:px-8 lg:py-14">
-        <aside className="hidden lg:block">
-          <nav className="sticky top-8 space-y-2" aria-label="Terms sections">
-            {TERMS_SECTIONS.map((section) => (
-              <a
-                key={section.title}
-                href={`#${section.title.toLowerCase().replaceAll(' ', '-')}`}
-                className="block rounded-md px-3 py-2 text-sm font-bold text-on-surface-variant no-underline transition-colors hover:bg-surface-container-low hover:text-primary"
-              >
-                {section.title}
-              </a>
-            ))}
-          </nav>
-        </aside>
+      <V3PageHero
+        eyebrow="Terms of Service"
+        title="Rules for using HackProduct."
+        subtitle="These terms define account responsibilities, acceptable use, billing rules, content rights, affiliate terms, and the limits of Hatch coaching."
+      />
 
-        <div className="space-y-6">
-          {TERMS_SECTIONS.map((section) => (
-            <section
-              key={section.title}
-              id={section.title.toLowerCase().replaceAll(' ', '-')}
-              className="rounded-lg border border-outline-variant bg-background p-5 sm:p-6"
-            >
-              <h2 className="text-2xl font-black text-on-surface">{section.title}</h2>
-              <ul className="mt-5 space-y-3">
-                {section.body.map((item) => (
-                  <li key={item} className="flex gap-3 text-sm leading-6 text-on-surface-variant">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+      <V3ProseSection>
+        <V3ProseBlock>
+          <p>Last updated: June 1, 2026</p>
+        </V3ProseBlock>
 
-          <section className="rounded-lg border border-outline-variant bg-surface-container-low p-5 sm:p-6">
-            <h2 className="text-2xl font-black text-on-surface">Contact</h2>
-            <p className="mt-4 text-sm leading-6 text-on-surface-variant">
-              Questions about these terms can be sent to{' '}
-              <a className="font-bold text-primary" href="mailto:founders@hackproduct.com">
-                founders@hackproduct.com
-              </a>
-              . Include the account email address and the request topic.
-            </p>
-          </section>
-        </div>
-      </section>
-    </main>
+        {TERMS_SECTIONS.map((section) => (
+          <V3ProseBlock key={section.title} title={section.title}>
+            <ul>
+              {section.body.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </V3ProseBlock>
+        ))}
+
+        <V3ProseBlock title="Contact">
+          <p>
+            Questions about these terms can be sent to{' '}
+            <a href="mailto:founders@hackproduct.com">founders@hackproduct.com</a>. Include the
+            account email address and the request topic.
+          </p>
+        </V3ProseBlock>
+      </V3ProseSection>
+    </V3PageShell>
   )
 }

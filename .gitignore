@@ -94,3 +94,6 @@ v2 plannin.md
 # graphify output
 /graphify-out/
 seeds/chillinterview/
+
+# Local SA keys for CC analytics testing (never commit)
+.secrets/

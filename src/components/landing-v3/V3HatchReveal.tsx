@@ -89,7 +89,7 @@ export function V3HatchReveal() {
       <div className="hatch-reveal-sticky">
         <div className="shell hatch-reveal-shell">
           <div className="hatch-reveal-copy">
-            <h2 id="hatch-reveal-heading">Your coach arrives as the loop comes together.</h2>
+            <h2 id="hatch-reveal-heading">Hatch grades every rep and names the gap.</h2>
             <p>
               Hatch turns interview practice into a guided system: calibrated reps,
               live judgment, and feedback that compounds.

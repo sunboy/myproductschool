@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Check, ShieldCheck, Sparkles, Zap } from 'lucide-react'
+import { PricingCta } from './PricingCta'
 
 const monthlyFeatures = [
   'Live interview loops across product, system design, data, SQL, and coding',
@@ -21,7 +22,7 @@ export function V3PricingSection() {
           <h2 id="pricing-heading">One practice system. Two ways to commit.</h2>
           <p>
             Maximize interview readiness with AI coaching, real reps, scoring, artifacts,
-            and human judgment converging in one place.
+            and human judgment in one place.
           </p>
         </div>
 
@@ -47,9 +48,9 @@ export function V3PricingSection() {
                 </li>
               ))}
             </ul>
-            <Link className="btn btn-forest pricing-cta" href="/signup?next=%2Fpricing%3Fplan%3Dmonthly">
+            <PricingCta className="btn btn-forest pricing-cta" next="/pricing?plan=monthly">
               Start training with Hatch
-            </Link>
+            </PricingCta>
           </article>
 
           <article className="pricing-card pricing-card-featured">
@@ -73,9 +74,9 @@ export function V3PricingSection() {
                 </li>
               ))}
             </ul>
-            <Link className="btn btn-amber pricing-cta" href="/signup?next=%2Fpricing%3Fplan%3Dannual">
+            <PricingCta className="btn btn-amber pricing-cta" next="/pricing?plan=annual">
               Start training with Hatch
-            </Link>
+            </PricingCta>
           </article>
         </div>
 

@@ -1,8 +1,9 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { buildMetadata } from '@/lib/seo/site'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3ProseSection, V3ProseBlock } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Changelog | HackProduct',
@@ -55,21 +56,18 @@ function ChangelogBody({ body }: { body: string }) {
   const paragraphs = lines.filter((line) => !line.startsWith('- '))
 
   return (
-    <div className="space-y-4">
+    <>
       {paragraphs.map((paragraph) => (
         <p key={paragraph}>{paragraph}</p>
       ))}
       {bullets.length > 0 && (
-        <ul className="space-y-3">
+        <ul>
           {bullets.map((item) => (
-            <li key={item} className="flex gap-3">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-              <span>{item}</span>
-            </li>
+            <li key={item}>{item}</li>
           ))}
         </ul>
       )}
-    </div>
+    </>
   )
 }
 
@@ -77,42 +75,21 @@ export default function ChangelogPage() {
   const entries = getChangelogEntries()
 
   return (
-    <main className="min-h-screen bg-background text-on-surface">
-      <section className="border-b border-outline-variant bg-surface-container-low">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 lg:grid-cols-[0.8fr_1.2fr] lg:px-8 lg:py-20">
-          <div>
-            <Link href="/" className="text-sm font-bold text-primary no-underline">
-              HackProduct
-            </Link>
-            <p className="mt-8 text-xs font-black uppercase text-primary">Changelog</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight text-on-surface sm:text-5xl">
-              What changed before launch.
-            </h1>
-          </div>
-          <div className="max-w-2xl">
-            <p className="text-lg leading-8 text-on-surface-variant">
-              Recent updates focused on launch readiness: safer auth, clearer billing paths, stronger Hatch guardrails, and verified practice flows.
-            </p>
-          </div>
-        </div>
-      </section>
+    <V3PageShell>
+      <V3PageHero
+        eyebrow="Changelog"
+        title="What changed before launch."
+        subtitle="Recent updates focused on launch readiness: safer auth, clearer billing paths, stronger Hatch guardrails, and verified practice flows."
+      />
 
-      <section className="mx-auto max-w-4xl px-5 py-10 lg:px-8 lg:py-14">
-        <div className="space-y-6">
-          {entries.map((entry) => (
-            <article
-              key={entry.slug}
-              className="rounded-lg border border-outline-variant bg-background p-5 sm:p-6"
-            >
-              <p className="text-xs font-black uppercase text-primary">{entry.date}</p>
-              <h2 className="mt-2 text-2xl font-black text-on-surface">{entry.title}</h2>
-              <div className="mt-4 text-sm leading-6 text-on-surface-variant">
-                <ChangelogBody body={entry.body} />
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-    </main>
+      <V3ProseSection>
+        {entries.map((entry) => (
+          <V3ProseBlock key={entry.slug} title={entry.title}>
+            <p className="v3-card-eyebrow">{entry.date}</p>
+            <ChangelogBody body={entry.body} />
+          </V3ProseBlock>
+        ))}
+      </V3ProseSection>
+    </V3PageShell>
   )
 }

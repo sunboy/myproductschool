@@ -1,16 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import {
-  BulletGrid,
-  CtaBand,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-  PillList,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl, SITE_NAME, SITE_URL } from '@/lib/seo/site'
 import { getStudyPlan, STUDY_PLAN_DIRECTORIES } from '@/lib/seo/directory-content'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CardGrid, V3Card, V3CtaBand } from '@/components/landing-v3/sections'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -58,7 +52,7 @@ export default async function StudyPlanDirectoryDetailPage({ params }: Props) {
   }
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -69,22 +63,41 @@ export default async function StudyPlanDirectoryDetailPage({ params }: Props) {
           courseJsonLd,
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow={`${plan.weeks} weeks · ${plan.level}`}
         title={plan.title}
-        description={plan.summary}
-        ctaLabel="Start this plan"
+        subtitle={plan.summary}
+        ctas={[{ label: 'Start this plan', href: '/signup' }]}
       />
-      <DirectorySection title="Built for">
-        <PillList items={[plan.audience]} />
-      </DirectorySection>
-      <DirectorySection shaded eyebrow="Sequence" title="Plan chapters">
-        <BulletGrid items={plan.chapters} />
-      </DirectorySection>
-      <DirectorySection eyebrow="Outcomes" title="What you should be able to do">
-        <BulletGrid items={plan.outcomes} />
-      </DirectorySection>
-      <CtaBand title="Use the preview as the map. Use Hatch for the reps." />
-    </DirectoryShell>
+
+      <V3Section title="Built for">
+        <V3CardGrid>
+          <V3Card title={plan.audience} />
+        </V3CardGrid>
+      </V3Section>
+
+      <V3Section eyebrow="Sequence" title="Plan chapters">
+        <V3CardGrid>
+          {plan.chapters.map((chapter, index) => (
+            <V3Card key={chapter} eyebrow={`Chapter ${index + 1}`} title={chapter} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3Section eyebrow="Outcomes" title="What you should be able to do">
+        <V3CardGrid>
+          {plan.outcomes.map((outcome) => (
+            <V3Card key={outcome} title={outcome} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3CtaBand
+        title="Use the preview as the map. Use Hatch for the reps."
+        subtitle="Run a live loop, get a score, and see the next move."
+        ctas={[{ label: 'Get started', href: '/signup' }]}
+      />
+    </V3PageShell>
   )
 }

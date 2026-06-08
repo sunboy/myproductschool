@@ -300,6 +300,43 @@ export const SKILL_DIRECTORIES: SkillDirectoryEntry[] = [
       },
     ],
   },
+  {
+    slug: 'live-data-analyst',
+    title: 'Live data analyst practice',
+    shortTitle: 'Live data analyst',
+    eyebrow: 'AI-native data analysis on real datasets',
+    metaTitle: 'Live Data Analyst Practice with Claude Code | HackProduct',
+    metaDescription:
+      'Drive a live Claude Code agent against a real BigQuery dataset, investigate a business question end to end, and earn a graded analyst scorecard.',
+    summary:
+      'Live data analyst practice puts you in the driver seat of a real analysis. You direct a Claude Code agent against a live BigQuery dataset to find the cause behind a metric, prove it with numbers, and write a reproducible report.',
+    thesis:
+      'Anyone can run a query. The skill that moves a career is knowing which metric to chase, which segment reveals the story, and which guardrail catches a fix that backfires.',
+    audience: ['Engineers moving toward data work', 'Analysts sharpening investigation judgment', 'PMs who need analytics fluency', 'Founders making decisions from data'],
+    outcomes: ['Frame a business question into a measurable investigation', 'Read a schema and grain before querying', 'Segment a metric to isolate the real cause', 'Write a finding with a number, a recommendation, and a guardrail'],
+    practiceTypes: ['Funnel drop investigation', 'Schema exploration', 'Conversion segmentation', 'Reproducible reporting', 'Reusable analysis skills'],
+    samplePrompts: [
+      'Find the funnel step where conversion drops the most, with the percentage.',
+      'Break the worst step down by device type and compare mobile to desktop.',
+      'Summarize the cause, the number that proves it, and one guardrail metric to watch.',
+    ],
+    related: [
+      { label: 'Claude Code analytics', href: '/claude-code-analytics' },
+      { label: 'SQL practice', href: '/skills/sql' },
+      { label: 'Data modeling practice', href: '/skills/data-modeling' },
+      { label: 'AI-native workflows', href: '/skills/ai-native-workflows' },
+    ],
+    faqs: [
+      {
+        q: 'Do I need to know SQL first?',
+        a: 'No. You direct the analysis in plain language and the agent runs the queries. The practice trains the judgment behind the questions, not query syntax.',
+      },
+      {
+        q: 'Is the data real?',
+        a: 'Yes. Each session runs against a live BigQuery dataset, so the schema, the row counts, and the funnel drops are real, not a fixed script.',
+      },
+    ],
+  },
 ]
 
 export const COMPANY_DIRECTORIES: CompanyDirectoryEntry[] = [
@@ -438,6 +475,19 @@ export const STUDY_PLAN_DIRECTORIES: StudyPlanDirectoryEntry[] = [
     chapters: ['Requirements and constraints', 'Entities and relationships', 'APIs and access patterns', 'Scale and reliability'],
     outcomes: ['Design cleaner schemas', 'Map data flow', 'Defend storage choices', 'Explain architecture trade-offs'],
   },
+  {
+    slug: 'ai-native-data-fluency',
+    title: 'AI-native data fluency',
+    metaTitle: 'AI-Native Data Fluency Study Plan | HackProduct',
+    metaDescription:
+      'Build data analyst judgment by driving a live Claude Code agent against real datasets: schema reading, funnel analysis, segmentation, reporting, and reusable skills.',
+    summary: 'A plan for builders who want to investigate data with an AI agent and reach a defensible answer, not just run a query.',
+    weeks: 4,
+    level: 'Intermediate',
+    audience: 'Engineers, analysts, PMs, and founders working with data',
+    chapters: ['Connect the tools and read the schema', 'Find the drop and segment it', 'Land a finding with a guardrail', 'Write the report and a reusable skill'],
+    outcomes: ['Frame a metric question into an investigation', 'Isolate a cause by segmenting', 'Write a finding backed by a number', 'Encode the analysis as a reusable skill'],
+  },
 ]
 
 export const PRACTICE_DIRECTORIES: PracticeDirectoryEntry[] = [
@@ -500,6 +550,18 @@ export const PRACTICE_DIRECTORIES: PracticeDirectoryEntry[] = [
     scenario: 'An AI-generated solution passes sample tests for a sliding-window problem but fails production-like edge cases.',
     skills: ['Constraint framing', 'Edge cases', 'Complexity analysis', 'AI output review', 'Communication'],
     prompts: ['Which hidden edge case is most likely?', 'How do you prove the fix?', 'What complexity trade-off is acceptable?'],
+  },
+  {
+    slug: 'analytics-funnel-drop-investigation',
+    title: 'Investigate a funnel conversion drop',
+    discipline: 'Analytics',
+    metaTitle: 'Funnel Drop Investigation Practice with Live Data | HackProduct',
+    metaDescription:
+      'Drive a live Claude Code agent against a real BigQuery dataset to find where a funnel drops, segment the cause, and land a finding with a guardrail metric.',
+    summary: 'A live analytics preview where you direct an AI agent through a real dataset to find the cause behind a conversion drop.',
+    scenario: 'A checkout funnel is leaking. You direct a Claude Code agent against the live events table to rank the steps by drop, segment the worst one, and write the finding.',
+    skills: ['Schema reading', 'Funnel measurement', 'Segmentation', 'Evidence', 'Guardrail metrics'],
+    prompts: ['Which funnel step has the biggest drop, with the percentage?', 'Does the drop concentrate on mobile or desktop?', 'What guardrail would tell us if the fix backfired?'],
   },
 ]
 
@@ -634,6 +696,7 @@ export const PUBLIC_DIRECTORY_PATHS = [
   '/glossary',
   ...GLOSSARY_DIRECTORIES.map((entry) => `/glossary/${entry.slug}`),
   '/interviews/live-ai-interviews',
+  '/claude-code-analytics',
   '/alternatives/leetcode',
   '/pricing',
   '/contact',

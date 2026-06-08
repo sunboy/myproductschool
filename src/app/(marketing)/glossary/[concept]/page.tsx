@@ -1,15 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import {
-  CtaBand,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl, SITE_NAME, SITE_URL } from '@/lib/seo/site'
 import { getGlossaryTerm, getSkill, GLOSSARY_DIRECTORIES } from '@/lib/seo/directory-content'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3ProseSection, V3ProseBlock, V3CtaBand } from '@/components/landing-v3/sections'
 
 type Props = {
   params: Promise<{ concept: string }>
@@ -46,7 +42,7 @@ export default async function GlossaryTermPage({ params }: Props) {
   if (!term) notFound()
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -73,35 +69,39 @@ export default async function GlossaryTermPage({ params }: Props) {
           },
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow="Glossary term"
         title={term.term}
-        description={term.definition}
-        ctaHref="/practice"
-        ctaLabel="Practice related skills"
+        subtitle={term.definition}
+        ctas={[{ label: 'Practice related skills', href: '/practice' }]}
       />
-      <DirectorySection title="Why it matters">
-        <p className="max-w-3xl text-lg leading-8 text-on-surface-variant">{term.whyItMatters}</p>
-      </DirectorySection>
-      <DirectorySection shaded title="Example">
-        <blockquote className="max-w-4xl rounded-2xl bg-surface-container-lowest p-6 font-headline text-2xl font-semibold leading-snug ring-1 ring-outline-variant/35">
-          {term.example}
-        </blockquote>
-      </DirectorySection>
-      <DirectorySection title="Related concepts">
-        <div className="flex flex-wrap gap-3">
-          {term.related.map((slug) => (
-            <Link
-              key={slug}
-              href={relatedHref(slug)}
-              className="rounded-full bg-primary-fixed/70 px-4 py-2 text-sm font-bold text-on-primary-fixed no-underline hover:bg-primary-fixed"
-            >
-              {slug.replace(/-/g, ' ')}
-            </Link>
-          ))}
-        </div>
-      </DirectorySection>
-      <CtaBand />
-    </DirectoryShell>
+
+      <V3ProseSection>
+        <V3ProseBlock title="Why it matters">
+          <p>{term.whyItMatters}</p>
+        </V3ProseBlock>
+
+        <V3ProseBlock title="Example">
+          <blockquote>{term.example}</blockquote>
+        </V3ProseBlock>
+
+        <V3ProseBlock title="Related concepts">
+          <div className="v3-card-grid">
+            {term.related.map((slug) => (
+              <Link key={slug} className="v3-card" href={relatedHref(slug)}>
+                <h3>{slug.replace(/-/g, ' ')}</h3>
+              </Link>
+            ))}
+          </div>
+        </V3ProseBlock>
+      </V3ProseSection>
+
+      <V3CtaBand
+        title="Start training for your next career move."
+        subtitle="Run a live loop, get a score, and see the next move."
+        ctas={[{ label: 'Get started', href: '/signup' }]}
+      />
+    </V3PageShell>
   )
 }

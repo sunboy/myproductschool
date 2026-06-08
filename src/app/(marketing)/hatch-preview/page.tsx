@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { HatchState } from '@/components/shell/HatchGlyph'
 import { buildMetadata } from '@/lib/seo/site'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Hatch Animation States | HackProduct',
@@ -22,38 +24,47 @@ const states: { state: HatchState; label: string; description: string }[] = [
 
 export default function HatchPreviewPage() {
   return (
-    <div className="min-h-screen bg-background text-on-background font-body p-12">
-      <h1 className="font-headline font-bold text-3xl mb-2">Hatch Animation States</h1>
-      <p className="text-on-surface-variant mb-10">Preview all HatchGlyph animation states.</p>
+    <V3PageShell>
+      <V3PageHero
+        eyebrow="Hatch"
+        title="Hatch animation states."
+        subtitle="Every HatchGlyph animation state used across coaching, feedback, and practice surfaces, shown at three sizes."
+      />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {states.map(({ state, label, description }) => (
-          <div key={state} className="bg-surface-container rounded-xl p-8 flex flex-col items-center gap-5">
-            <div className="flex items-end gap-6">
-              <HatchGlyph size={32} state={state} />
-              <HatchGlyph size={64} state={state} />
-              <HatchGlyph size={96} state={state} />
-            </div>
-            <div className="text-center">
-              <p className="font-label font-bold text-sm">{label}</p>
-              <p className="text-xs text-on-surface-variant mt-1">{description}</p>
-              <code className="text-[10px] text-outline mt-2 block">state=&quot;{state}&quot;</code>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-12 bg-inverse-surface text-inverse-on-surface rounded-xl p-8">
-        <h2 className="font-headline font-bold text-xl mb-6">On dark background</h2>
-        <div className="flex flex-wrap items-center gap-8">
-          {states.map(({ state, label }) => (
-            <div key={state} className="flex flex-col items-center gap-2">
-              <HatchGlyph size={64} state={state} />
-              <span className="text-xs font-label">{label}</span>
+      <V3Section title="States at a glance.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {states.map(({ state, label, description }) => (
+            <div key={state} className="v3-card flex flex-col items-center gap-5">
+              <div className="flex items-end gap-6">
+                <HatchGlyph size={32} state={state} />
+                <HatchGlyph size={64} state={state} />
+                <HatchGlyph size={96} state={state} />
+              </div>
+              <div className="text-center">
+                <p className="font-label font-bold text-sm">{label}</p>
+                <p className="text-xs text-on-surface-variant mt-1">{description}</p>
+                <code className="text-[10px] text-outline mt-2 block">state=&quot;{state}&quot;</code>
+              </div>
             </div>
           ))}
         </div>
-      </div>
-    </div>
+      </V3Section>
+
+      <V3Section title="On dark background.">
+        <div
+          className="rounded-xl p-8"
+          style={{ background: '#2e3230', color: '#f5f0e8' }}
+        >
+          <div className="flex flex-wrap items-center gap-8">
+            {states.map(({ state, label }) => (
+              <div key={state} className="flex flex-col items-center gap-2">
+                <HatchGlyph size={64} state={state} />
+                <span className="text-xs font-label">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </V3Section>
+    </V3PageShell>
   )
 }

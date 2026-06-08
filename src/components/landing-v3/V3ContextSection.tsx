@@ -69,7 +69,7 @@ const cards = [
   },
   {
     title: 'Calibrated Feedback',
-    body: 'Hatch converges each attempt, rubric, artifact, and next rep into coaching.',
+    body: 'Hatch reads each attempt, rubric, and artifact, then coaches you toward the next rep.',
     image: '/landing-v3/section-2/calibrated-feedback.png',
     alt: 'Abstract organized feedback loop with rubric signals.',
     width: 1536,

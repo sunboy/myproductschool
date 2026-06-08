@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { buildMetadata } from '@/lib/seo/site'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
 import { PricingClient } from './PricingClient'
 
 export const metadata: Metadata = buildMetadata({
@@ -17,5 +18,9 @@ export const metadata: Metadata = buildMetadata({
 })
 
 export default function PricingPage() {
-  return <PricingClient />
+  return (
+    <V3PageShell>
+      <PricingClient />
+    </V3PageShell>
+  )
 }

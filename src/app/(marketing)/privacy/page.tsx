@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { buildMetadata } from '@/lib/seo/site'
+import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3ProseSection, V3ProseBlock } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Privacy Policy | HackProduct',
@@ -104,73 +106,49 @@ const DATA_SECTIONS = [
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-background text-on-surface">
-      <section className="border-b border-outline-variant bg-surface-container-low">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 lg:grid-cols-[0.8fr_1.2fr] lg:px-8 lg:py-20">
-          <div>
-            <Link href="/" className="text-sm font-bold text-primary no-underline">
-              HackProduct
-            </Link>
-            <p className="mt-8 text-xs font-black uppercase text-primary">Privacy Policy</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight text-on-surface sm:text-5xl">
-              How data moves through HackProduct.
-            </h1>
-          </div>
-          <div className="max-w-2xl">
-            <p className="text-lg leading-8 text-on-surface-variant">
-              This policy explains what HackProduct collects, why it is used, which vendors process it, how long it is kept, and how account holders can ask for access or deletion.
-            </p>
-            <p className="mt-5 text-sm text-on-surface-variant">Last updated: June 1, 2026</p>
-          </div>
-        </div>
-      </section>
+    <V3PageShell>
+      <JsonLdScript
+        data={[
+          breadcrumbJsonLd([
+            { name: 'Home', path: 'https://hackproduct.dev/' },
+            { name: 'Privacy', path: 'https://hackproduct.dev/privacy' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'PrivacyPolicy',
+            name: 'HackProduct Privacy Policy',
+            url: 'https://hackproduct.dev/privacy',
+            description:
+              'How HackProduct collects, uses, stores, and deletes account, practice, billing, and coaching data.',
+          },
+        ]}
+      />
 
-      <section className="mx-auto grid max-w-6xl gap-8 px-5 py-10 lg:grid-cols-[240px_1fr] lg:px-8 lg:py-14">
-        <aside className="hidden lg:block">
-          <nav className="sticky top-8 space-y-2" aria-label="Privacy sections">
-            {DATA_SECTIONS.map((section) => (
-              <a
-                key={section.title}
-                href={`#${section.title.toLowerCase().replaceAll(' ', '-')}`}
-                className="block rounded-md px-3 py-2 text-sm font-bold text-on-surface-variant no-underline transition-colors hover:bg-surface-container-low hover:text-primary"
-              >
-                {section.title}
-              </a>
-            ))}
-          </nav>
-        </aside>
+      <V3PageHero
+        eyebrow="Privacy Policy"
+        title="How data moves through HackProduct."
+        subtitle="This policy explains what HackProduct collects, why it is used, which vendors process it, how long it is kept, and how account holders can ask for access or deletion. Last updated: June 1, 2026."
+      />
 
-        <div className="space-y-6">
-          {DATA_SECTIONS.map((section) => (
-            <section
-              key={section.title}
-              id={section.title.toLowerCase().replaceAll(' ', '-')}
-              className="rounded-lg border border-outline-variant bg-background p-5 sm:p-6"
-            >
-              <h2 className="text-2xl font-black text-on-surface">{section.title}</h2>
-              <ul className="mt-5 space-y-3">
-                {section.body.map((item) => (
-                  <li key={item} className="flex gap-3 text-sm leading-6 text-on-surface-variant">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+      <V3ProseSection>
+        {DATA_SECTIONS.map((section) => (
+          <V3ProseBlock key={section.title} title={section.title}>
+            <ul>
+              {section.body.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </V3ProseBlock>
+        ))}
 
-          <section className="rounded-lg border border-outline-variant bg-surface-container-low p-5 sm:p-6">
-            <h2 className="text-2xl font-black text-on-surface">Contact</h2>
-            <p className="mt-4 text-sm leading-6 text-on-surface-variant">
-              Privacy requests can be sent to{' '}
-              <a className="font-bold text-primary" href="mailto:founders@hackproduct.com">
-                founders@hackproduct.com
-              </a>
-              . Include the account email address and the request type.
-            </p>
-          </section>
-        </div>
-      </section>
-    </main>
+        <V3ProseBlock title="Contact">
+          <p>
+            Privacy requests can be sent to{' '}
+            <a href="mailto:founders@hackproduct.com">founders@hackproduct.com</a>. Include the
+            account email address and the request type.
+          </p>
+        </V3ProseBlock>
+      </V3ProseSection>
+    </V3PageShell>
   )
 }

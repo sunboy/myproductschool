@@ -107,7 +107,7 @@ export function V3FeatureGrid() {
     <section className="feature-grid-section" id="features" aria-labelledby="feature-grid-heading">
       <div className="shell">
         <div className="feature-grid-copy">
-          <h2 id="feature-grid-heading">Every practice surface converges into one system.</h2>
+          <h2 id="feature-grid-heading">Every practice surface connects into one system.</h2>
           <p>
             Autopsies, lessons, live loops, challenges, scoring, and Hatch feedback stay
             connected so each rep knows what came before it.

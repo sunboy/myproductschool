@@ -16,8 +16,8 @@ export async function checkAndGrantAchievements(
   const [definitionsResult, unlockedResult, profileResult, challengeCountResult, simulationCountResult] = await Promise.all([
     admin.from('achievement_definitions').select('*'),
     admin.from('user_achievements').select('achievement_id').eq('user_id', userId),
-    admin.from('profiles').select('streak_days').eq('id', userId).single(),
-    admin.from('challenge_attempts').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+    admin.from('profiles').select('streak_days, xp_total').eq('id', userId).single(),
+    admin.from('challenge_attempts').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'completed'),
     admin.from('simulation_sessions').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'completed'),
   ])
 
@@ -48,9 +48,10 @@ export async function checkAndGrantAchievements(
       .filter((d) => newlyUnlocked.includes(d.id))
       .reduce((sum: number, d) => sum + (d.xp_reward ?? 0), 0)
     if (totalXP > 0) {
+      const currentXp = profileResult.data?.xp_total ?? 0
       await admin
         .from('profiles')
-        .update({ xp_total: admin.rpc('increment', { x: totalXP }) })
+        .update({ xp_total: currentXp + totalXP })
         .eq('id', userId)
     }
   }

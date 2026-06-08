@@ -7,6 +7,7 @@ const footerColumns = [
     links: [
       { label: 'Pricing', href: '/pricing' },
       { label: 'Live AI interviews', href: '/interviews/live-ai-interviews' },
+      { label: 'Live data analyst', href: '/claude-code-analytics' },
       { label: 'FLOW', href: '/flow' },
       { label: 'Hatch preview', href: '/hatch-preview' },
     ],
@@ -16,7 +17,7 @@ const footerColumns = [
     links: [
       { label: 'Skills', href: '/skills' },
       { label: 'Study plans', href: '/study-plans' },
-      { label: 'Autopsies', href: '/explore/autopsies' },
+      { label: 'Autopsies', href: '/autopsies' },
       { label: 'Practice previews', href: '/practice' },
     ],
   },

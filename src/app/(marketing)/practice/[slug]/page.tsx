@@ -1,16 +1,18 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import {
-  BulletGrid,
-  CtaBand,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-  PillList,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl, SITE_NAME, SITE_URL } from '@/lib/seo/site'
 import { getPractice, PRACTICE_DIRECTORIES } from '@/lib/seo/directory-content'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import {
+  V3PageHero,
+  V3Section,
+  V3CardGrid,
+  V3Card,
+  V3ProseSection,
+  V3ProseBlock,
+  V3CtaBand,
+} from '@/components/landing-v3/sections'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -43,6 +45,13 @@ const RUBRIC_PREVIEWS: Record<string, string[]> = {
     'Win: explains why the fix is reliable and how it was verified.',
   ],
 }
+
+const LOCKED_WORKSPACE = [
+  'Answer workspace with timers, notes, schema or code context where relevant.',
+  'Hatch follow-ups that adapt to your weak move instead of giving generic hints.',
+  'FLOW score receipts across Frame, List, Optimize, and Win.',
+  'Next-drill routing into the career goal you are training for.',
+]
 
 export function generateStaticParams() {
   return PRACTICE_DIRECTORIES.map((practice) => ({ slug: practice.slug }))
@@ -81,7 +90,7 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
   }
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -92,45 +101,67 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
           learningResourceJsonLd,
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow={practice.discipline}
         title={practice.title}
-        description={practice.summary}
-        ctaLabel="Practice in the app"
+        subtitle={practice.summary}
+        ctas={[{ label: 'Practice in the app', href: '/login' }]}
       />
-      <DirectorySection eyebrow="Scenario" title="Prompt preview">
-        <blockquote className="max-w-4xl rounded-2xl bg-surface-container-lowest p-6 font-headline text-2xl font-semibold leading-snug ring-1 ring-outline-variant/35">
-          {practice.scenario}
-        </blockquote>
-      </DirectorySection>
-      <DirectorySection shaded title="Skills this rep trains">
-        <PillList items={practice.skills} />
-      </DirectorySection>
-      <DirectorySection
+
+      <V3Section eyebrow="Scenario" title="Prompt preview">
+        <V3ProseSection>
+          <V3ProseBlock>
+            <p>{practice.scenario}</p>
+          </V3ProseBlock>
+        </V3ProseSection>
+      </V3Section>
+
+      <V3Section eyebrow="Skills" title="Skills this rep trains">
+        <V3ProseSection>
+          <V3ProseBlock>
+            <ul>
+              {practice.skills.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </V3ProseBlock>
+        </V3ProseSection>
+      </V3Section>
+
+      <V3Section
         eyebrow="Rubric preview"
         title="How FLOW will score the full answer"
-        description="The public preview shows what good evidence looks like. The app scores your actual answer and stores the receipt."
+        subtitle="The public preview shows what good evidence looks like. The app scores your actual answer and stores the receipt."
       >
-        <BulletGrid items={RUBRIC_PREVIEWS[practice.slug] ?? practice.prompts} />
-      </DirectorySection>
-      <DirectorySection eyebrow="Follow-ups" title="Hatch-style coaching prompts">
-        <BulletGrid items={practice.prompts} />
-      </DirectorySection>
-      <DirectorySection shaded eyebrow="Locked workspace" title="What unlocks after sign in">
-        <div className="grid gap-3 md:grid-cols-2">
-          {[
-            'Answer workspace with timers, notes, schema or code context where relevant.',
-            'Hatch follow-ups that adapt to your weak move instead of giving generic hints.',
-            'FLOW score receipts across Frame, List, Optimize, and Win.',
-            'Next-drill routing into the career goal you are training for.',
-          ].map((item) => (
-            <div key={item} className="rounded-xl bg-surface-container-lowest p-4 text-sm font-semibold leading-6 ring-1 ring-outline-variant/30">
-              {item}
-            </div>
+        <V3CardGrid>
+          {(RUBRIC_PREVIEWS[practice.slug] ?? practice.prompts).map((item) => (
+            <V3Card key={item} title={item} />
           ))}
-        </div>
-      </DirectorySection>
-      <CtaBand title="Open the full workspace to answer, run, and get scored." />
-    </DirectoryShell>
+        </V3CardGrid>
+      </V3Section>
+
+      <V3Section eyebrow="Follow-ups" title="Hatch-style coaching prompts">
+        <V3CardGrid>
+          {practice.prompts.map((item) => (
+            <V3Card key={item} title={item} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3Section eyebrow="Locked workspace" title="What unlocks after sign in">
+        <V3CardGrid>
+          {LOCKED_WORKSPACE.map((item) => (
+            <V3Card key={item} title={item} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3CtaBand
+        title="Open the full workspace to answer, run, and get scored."
+        subtitle="Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress."
+        ctas={[{ label: 'Start a free rep', href: '/login' }]}
+      />
+    </V3PageShell>
   )
 }

@@ -1,14 +1,9 @@
 import type { Metadata } from 'next'
-import {
-  CtaBand,
-  DirectoryCard,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl } from '@/lib/seo/site'
 import { GLOSSARY_DIRECTORIES, itemListJsonLd } from '@/lib/seo/directory-content'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CardGrid, V3Card, V3CtaBand } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Product, System Design, SQL, and Data Glossary | HackProduct',
@@ -26,7 +21,7 @@ export default function GlossaryDirectoryPage() {
   }))
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -36,24 +31,31 @@ export default function GlossaryDirectoryPage() {
           itemListJsonLd('HackProduct glossary', items),
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow="Glossary"
         title="A machine-readable map of product-minded tech concepts."
-        description="Definitions, examples, and practice links for the vocabulary behind product sense, systems, data, SQL, coding, and AI-era interviews."
+        subtitle="Definitions, examples, and practice links for the vocabulary behind product sense, systems, data, SQL, coding, and AI-era interviews."
       />
-      <DirectorySection title="Browse glossary terms">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+
+      <V3Section title="Browse glossary terms">
+        <V3CardGrid>
           {GLOSSARY_DIRECTORIES.map((term) => (
-            <DirectoryCard
+            <V3Card
               key={term.slug}
               href={`/glossary/${term.slug}`}
               title={term.term}
-              description={term.definition}
+              body={term.definition}
             />
           ))}
-        </div>
-      </DirectorySection>
-      <CtaBand />
-    </DirectoryShell>
+        </V3CardGrid>
+      </V3Section>
+
+      <V3CtaBand
+        title="Turn vocabulary into judgment."
+        subtitle="Run a live loop, get a score, and see the next move."
+        ctas={[{ label: 'Get started', href: '/signup' }]}
+      />
+    </V3PageShell>
   )
 }

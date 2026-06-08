@@ -1,14 +1,9 @@
 import type { Metadata } from 'next'
-import {
-  CtaBand,
-  DirectoryCard,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl } from '@/lib/seo/site'
 import { COMPANY_DIRECTORIES, itemListJsonLd } from '@/lib/seo/directory-content'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CardGrid, V3Card, V3CtaBand } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Company Interview Prep Directory | HackProduct',
@@ -26,7 +21,7 @@ export default function CompaniesDirectoryPage() {
   }))
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -43,25 +38,32 @@ export default function CompaniesDirectoryPage() {
           itemListJsonLd('HackProduct company interview directories', items),
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow="Company prep"
         title="Practice the interview style behind each top tech loop."
-        description="Public company pages organize product sense, systems, data, SQL, and coding practice around the signals each interview loop tends to reward."
+        subtitle="Public company pages organize product sense, systems, data, SQL, and coding practice around the signals each interview loop tends to reward."
       />
-      <DirectorySection title="Company directories">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+
+      <V3Section title="Company directories">
+        <V3CardGrid>
           {COMPANY_DIRECTORIES.map((company) => (
-            <DirectoryCard
+            <V3Card
               key={company.slug}
               href={`/companies/${company.slug}`}
+              eyebrow={company.roles.slice(0, 2).join(' · ')}
               title={company.name}
-              description={company.summary}
-              meta={company.roles.slice(0, 2).join(' · ')}
+              body={company.summary}
             />
           ))}
-        </div>
-      </DirectorySection>
-      <CtaBand />
-    </DirectoryShell>
+        </V3CardGrid>
+      </V3Section>
+
+      <V3CtaBand
+        title="Start training for your next career move."
+        subtitle="Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress."
+        ctas={[{ label: 'Start a free rep', href: '/login' }]}
+      />
+    </V3PageShell>
   )
 }

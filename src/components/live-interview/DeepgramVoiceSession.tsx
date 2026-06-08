@@ -253,18 +253,26 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
         gain.connect(analyserNode)
 
         const now = ctx.currentTime
-        if (ttsStartTimeRef.current < now + TTS_PREBUFFER_SECONDS) {
+        // First chunk of a new utterance (ttsStartTime reset to 0 on
+        // AgentStartedSpeaking, or we've fallen behind): prebuffer and apply a
+        // tiny fade-in to avoid an initial click. Subsequent chunks play
+        // gaplessly at flat gain — fading each chunk to silence at its seam is
+        // what caused the crackle between contiguous chunks of one utterance.
+        const isUtteranceStart = ttsStartTimeRef.current < now + TTS_PREBUFFER_SECONDS
+        if (isUtteranceStart) {
           ttsStartTimeRef.current = now + TTS_PREBUFFER_SECONDS
         }
 
         const startAt = ttsStartTimeRef.current
         const endAt = startAt + buffer.duration
-        const fade = Math.min(TTS_FADE_SECONDS, buffer.duration / 3)
 
-        gain.gain.setValueAtTime(0.0001, startAt)
-        gain.gain.linearRampToValueAtTime(1, startAt + fade)
-        gain.gain.setValueAtTime(1, Math.max(startAt + fade, endAt - fade))
-        gain.gain.linearRampToValueAtTime(0.0001, endAt)
+        if (isUtteranceStart) {
+          const fade = Math.min(TTS_FADE_SECONDS, buffer.duration / 3)
+          gain.gain.setValueAtTime(0.0001, startAt)
+          gain.gain.linearRampToValueAtTime(1, startAt + fade)
+        } else {
+          gain.gain.setValueAtTime(1, startAt)
+        }
 
         source.addEventListener('ended', () => {
           scheduledSourcesRef.current.delete(source)
@@ -309,7 +317,9 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
           wsRef.current = ws
           ws.binaryType = 'arraybuffer'
 
-          const ttsCtx = new AudioContext({ latencyHint: 'interactive' })
+          // Match Deepgram's 16 kHz PCM output so the browser doesn't resample
+          // every buffer (resampling at chunk boundaries adds clicks/crackle).
+          const ttsCtx = new AudioContext({ sampleRate: TTS_SAMPLE_RATE, latencyHint: 'interactive' })
           ttsCtxRef.current = ttsCtx
 
           const analyser = ttsCtx.createAnalyser()
