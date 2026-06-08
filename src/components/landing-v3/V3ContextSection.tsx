@@ -52,24 +52,24 @@ const tickerLoops = [tickerCompanies, tickerCompanies]
 
 const cards = [
   {
-    title: 'Solo Grind',
-    body: 'Solving in silence trains the wrong skill. The room asks you to think out loud while someone watches.',
+    title: 'Practicing alone',
+    body: 'Solving in silence trains the wrong skill. The room makes you think out loud.',
     image: '/landing-v3/section-2/solo-grid.png',
     alt: 'Abstract scattered practice tiles for interview disciplines.',
     width: 1254,
     height: 1254,
   },
   {
-    title: 'Blind Spots',
-    body: 'You can repeat reps for hours and still miss the evidence interviewers score.',
+    title: 'What you can’t see',
+    body: 'You can practice for hours and still miss what interviewers actually score.',
     image: '/landing-v3/section-2/blind-spots.png',
     alt: 'Abstract tangled path with hidden evaluation gaps.',
     width: 1402,
     height: 1122,
   },
   {
-    title: 'Calibrated Feedback',
-    body: 'Hatch converges each attempt, rubric, artifact, and next rep into coaching.',
+    title: 'Honest feedback',
+    body: 'Hatch reads your answer and shows you the exact gap to close.',
     image: '/landing-v3/section-2/calibrated-feedback.png',
     alt: 'Abstract organized feedback loop with rubric signals.',
     width: 1536,
@@ -110,7 +110,7 @@ export function V3ContextSection() {
           <h2 id="context-heading">
             Your interview anxiety isn&rsquo;t a flaw to fix. It&rsquo;s untrained reps.
           </h2>
-          <p>HackProduct gives you the reps under pressure, with a coach that names the gap honestly so confidence compounds instead of dread.</p>
+          <p>Practice under pressure, with a coach that tells you the truth.</p>
         </div>
 
         <div className="context-map">

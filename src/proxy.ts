@@ -1,6 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
+import {
+  MARKETING_ROUTES,
+  AUTH_ROUTES,
+  EXACT_MARKETING_ROUTES,
+  PUBLIC_SCORECARD_ROUTE,
+} from '@/lib/routes/public'
 
 // ── Pre-launch gate ──────────────────────────────────────────
 // Set to true to restrict all routes to the waitlist page.
@@ -10,54 +16,11 @@ const PRE_LAUNCH = false
 const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-quick', '/waitlist-flow', '/api/waitlist', '/hatch-preview', '/hatch-motion']
 
 // ── Post-launch route config ─────────────────────────────────
-// Marketing / auth pages — accessible without any session.
-// These short-circuit BEFORE we talk to Supabase so they can
-// never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = [
-  '/',
-  '/v3',
-  '/about',
-  '/contact',
-  '/security',
-  '/waitlist',
-  '/waitlist-quick',
-  '/waitlist-flow',
-  '/pricing',
-  '/privacy',
-  '/terms',
-  '/help',
-  '/changelog',
-  '/r',
-  '/flow',
-  '/hatch-preview',
-  '/hatch-motion',
-  '/home',
-  '/role-transitions',
-  '/uplevel',
-  '/salary-negotiation',
-  '/skills',
-  '/companies',
-  '/study-plans',
-  '/practice',
-  '/autopsies',
-  '/autopsy',
-  '/glossary',
-  '/interviews',
-  '/alternatives',
-  '/lp',
-  '/landing',
-  '/robots.txt',
-  '/sitemap.xml',
-  '/manifest.json',
-  '/llms.txt',
-  '/llms-full.txt',
-  '/clone',
-]
-const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/magic-link-sent']
+// Marketing / auth pages live in @/lib/routes/public (shared with the
+// client-side V3AuthGate so both use one source of truth). Pure-marketing
+// routes short-circuit BEFORE we talk to Supabase so they can never be
+// blocked by an auth-service hiccup.
 const AUTH_CALLBACK_ROUTES = ['/auth/callback']
-const EXACT_MARKETING_ROUTES = ['/interview-prep']
-const PUBLIC_SCORECARD_ROUTE =
-  /^\/workspace\/challenges\/[^/]+\/share(?:\/[^/]+(?:\/(?:opengraph-image|twitter-image)[^/]*)?)?$/
 
 // Routes that can be reached before signing in.
 const APP_PUBLIC_ROUTES = ['/canvas-harness']

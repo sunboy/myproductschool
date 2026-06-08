@@ -1,9 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DirectoryShell, CtaBand } from '@/components/directory/DirectoryChrome'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CtaBand } from '@/components/landing-v3/sections'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { OutcomePageEntry } from '@/lib/seo/outcomes'
 
@@ -13,6 +11,8 @@ const FLOW = [
   ['Optimize', 'Prioritize the rep that most improves the next high-stakes moment.'],
   ['Win', 'Turn the evidence into a clear story someone can act on.'],
 ] as const
+
+const FLOW_SCORES = [82, 66, 74, 88]
 
 const OUTCOME_DETAIL: Record<OutcomePageEntry['slug'], {
   hatchImage: string
@@ -92,150 +92,313 @@ export function OutcomePage({ outcome }: { outcome: OutcomePageEntry }) {
   const detail = OUTCOME_DETAIL[outcome.slug]
 
   return (
-    <DirectoryShell>
-      <section className="relative overflow-hidden bg-[#102018] px-5 py-16 text-[#f8f3e7] sm:px-8 lg:py-20">
+    <V3PageShell>
+      <V3PageHero
+        eyebrow={outcome.shortTitle}
+        title={outcome.hero}
+        subtitle={
+          <>
+            {outcome.summary}
+            <br />
+            <strong style={{ color: 'var(--forest-2)' }}>{outcome.proofPoint}</strong>
+          </>
+        }
+        ctas={[
+          { label: outcome.ctaLabel, href: outcome.ctaHref, variant: 'forest' },
+          { label: outcome.secondaryLabel, href: outcome.secondaryHref, variant: 'primary' },
+        ]}
+      />
+
+      {/* Sample rep preview card */}
+      <V3Section eyebrow="Sample rep preview" title="See a rep before you sign up.">
         <div
-          aria-hidden
-          className="absolute inset-0 opacity-90"
           style={{
-            background:
-              'radial-gradient(760px 420px at 15% 85%, rgba(142,207,158,.26), transparent 62%), radial-gradient(620px 340px at 90% 10%, rgba(201,147,58,.2), transparent 58%), linear-gradient(115deg, rgba(200,232,208,.1), transparent 45%)',
+            background: 'var(--paper)',
+            border: '1px solid var(--line-1)',
+            borderRadius: 'var(--r-lg)',
+            overflow: 'hidden',
+            maxWidth: '760px',
           }}
-        />
-        <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
-          <div>
-            <Badge className="mb-5 border-[#b9e6b2]/25 bg-[#f8f3e7]/8 text-[#b9e6b2]">
-              {outcome.shortTitle}
-            </Badge>
-            <h1 className="max-w-4xl font-headline text-4xl font-semibold leading-[1.02] sm:text-5xl lg:text-6xl">
-              {outcome.hero}
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#f8f3e7]/72">{outcome.summary}</p>
-            <p className="mt-4 max-w-2xl text-sm font-semibold leading-6 text-[#b9e6b2]">{outcome.proofPoint}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild className="h-11 rounded-md bg-[#f8f3e7] px-5 text-[#102018] hover:bg-white">
-                <Link href={outcome.ctaHref} prefetch={false}>{outcome.ctaLabel}</Link>
-              </Button>
-              <Button asChild variant="outline" className="h-11 rounded-md border-white/22 bg-white/5 px-5 text-[#f8f3e7] hover:bg-white/10 hover:text-white">
-                <Link href={outcome.secondaryHref}>{outcome.secondaryLabel}</Link>
-              </Button>
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              padding: '12px 16px',
+              borderBottom: '1px solid var(--line-1)',
+              background: 'var(--surface)',
+            }}
+          >
+            <span
+              style={{
+                fontFamily: 'var(--v3-font-display)',
+                fontSize: '20px',
+                fontWeight: 600,
+                color: 'var(--ink-1)',
+              }}
+            >
+              Sample rep preview
+            </span>
+            <Image src={detail.hatchImage} width={74} height={58} alt={detail.hatchAlt} style={{ height: 'auto', width: '74px' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px' }}>
+            <div
+              style={{
+                border: '1px solid var(--line-1)',
+                borderRadius: 'var(--r-sm)',
+                background: 'var(--bg)',
+                padding: '12px',
+              }}
+            >
+              <div
+                style={{
+                  marginBottom: '8px',
+                  fontFamily: 'var(--v3-font-mono)',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  color: 'var(--forest-2)',
+                }}
+              >
+                Prompt
+              </div>
+              <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, lineHeight: 1.5, color: 'var(--ink-1)' }}>
+                {detail.samplePrompt}
+              </p>
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))',
+                gap: '8px',
+              }}
+            >
+              {FLOW.map(([move], index) => (
+                <div
+                  key={move}
+                  style={{
+                    borderRadius: 'var(--r-sm)',
+                    background: 'var(--surface-2)',
+                    padding: '11px',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: 'var(--v3-font-mono)',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: 'var(--ink-3)',
+                    }}
+                  >
+                    {move}
+                  </span>
+                  <div
+                    style={{
+                      marginTop: '8px',
+                      fontFamily: 'var(--v3-font-display)',
+                      fontSize: '24px',
+                      fontWeight: 700,
+                      color: 'var(--forest)',
+                    }}
+                  >
+                    {FLOW_SCORES[index]}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'center',
+                borderRadius: 'var(--r-sm)',
+                background: 'var(--forest-soft)',
+                padding: '12px',
+                color: 'var(--forest-deep)',
+              }}
+            >
+              <HatchGlyph state="challenging" size={34} />
+              <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, lineHeight: 1.45 }}>{detail.signupHook}</p>
             </div>
           </div>
-
-          <Card className="overflow-hidden rounded-lg border-white/12 bg-[#f8f3e7] py-0 text-[#2e3230] shadow-2xl">
-            <CardHeader className="border-b border-outline-variant/40 bg-[#fffdf8] px-5 py-4">
-              <div className="flex items-center justify-between gap-4">
-                <CardTitle className="font-headline text-xl font-semibold">
-                  Sample rep preview
-                </CardTitle>
-                <Image src={detail.hatchImage} width={74} height={58} alt={detail.hatchAlt} className="h-auto w-[74px]" />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4 px-5 py-5">
-              <div className="rounded-md border border-outline-variant/40 bg-white p-4">
-                <div className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-primary">Prompt</div>
-                <p className="text-sm font-bold leading-6">{detail.samplePrompt}</p>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                {FLOW.map(([move], index) => (
-                  <div key={move} className="rounded-md bg-surface-container p-3">
-                    <span className="text-[10px] font-black uppercase text-on-surface-variant">{move}</span>
-                    <div className="mt-2 font-headline text-2xl font-bold text-primary">{[82, 66, 74, 88][index]}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-3 rounded-md bg-primary-fixed p-3 text-[#22342b]">
-                <HatchGlyph state="challenging" size={34} />
-                <p className="text-sm font-semibold leading-5">{detail.signupHook}</p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-      </section>
+      </V3Section>
 
-      <section className="px-5 py-12 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[.75fr_1.25fr]">
-          <div>
-            <div className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-primary">What you can do today</div>
-            <h2 className="font-headline text-3xl font-semibold leading-tight sm:text-4xl">
-              Useful before signup, stronger inside the workspace.
-            </h2>
-            <p className="mt-3 text-base leading-7 text-on-surface-variant">
-              This page gives the path, examples, and proof model. The product unlocks the rep, follow-up pressure, scored feedback, and saved evidence.
-            </p>
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            {detail.quickWins.map((win) => (
-              <div key={win} className="rounded-lg bg-surface-container-lowest p-5 text-sm font-bold leading-6 ring-1 ring-outline-variant/30">
-                {win}
-              </div>
-            ))}
-          </div>
+      {/* Quick wins */}
+      <V3Section
+        eyebrow="What you can do today"
+        title="Useful before signup, stronger inside the workspace."
+        subtitle="This page gives the path, examples, and proof model. The product unlocks the rep, follow-up pressure, scored feedback, and saved evidence."
+      >
+        <div
+          style={{
+            display: 'grid',
+            gap: '12px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
+          }}
+        >
+          {detail.quickWins.map((win) => (
+            <div
+              key={win}
+              style={{
+                borderRadius: 'var(--r-md)',
+                background: 'var(--surface)',
+                border: '1px solid var(--line-1)',
+                padding: '16px',
+                fontSize: '14px',
+                fontWeight: 600,
+                lineHeight: 1.5,
+                color: 'var(--ink-1)',
+              }}
+            >
+              {win}
+            </div>
+          ))}
         </div>
-      </section>
+      </V3Section>
 
-      <section className="bg-[#f5f1ea] px-5 py-12 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.85fr_1.15fr]">
-          <div>
-            <div className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-primary">Recommended path</div>
-            <h2 className="font-headline text-3xl font-semibold leading-tight sm:text-4xl">
-              A practical three-step playbook.
-            </h2>
-            <p className="mt-3 text-base leading-7 text-on-surface-variant">
-              Each step maps to real product behavior: run the rep, get pushed, then save the receipt.
-            </p>
-          </div>
-          <div className="grid gap-3">
-            {detail.playbook.map(([title, body], index) => (
-              <div key={title} className="grid gap-4 rounded-lg bg-white p-5 ring-1 ring-outline-variant/30 sm:grid-cols-[44px_1fr]">
-                <div className="grid h-11 w-11 place-items-center rounded-lg bg-primary text-sm font-black text-on-primary">
-                  {index + 1}
-                </div>
-                <div>
-                  <h3 className="font-headline text-xl font-semibold text-on-surface">{title}</h3>
-                  <p className="mt-1 text-sm font-semibold leading-6 text-on-surface-variant">{body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-5 py-12 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.9fr_1.1fr]">
-          <div>
-            <div className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-primary">Reps to open next</div>
-            <h2 className="font-headline text-3xl font-semibold leading-tight sm:text-4xl">
-              Start with drills that create useful evidence.
-            </h2>
-          </div>
-          <div className="grid gap-3">
-            {outcome.reps.map((rep) => (
-              <Link
-                key={rep.href}
-                href={rep.href}
-                className="grid gap-3 rounded-lg bg-surface-container-lowest p-5 no-underline ring-1 ring-outline-variant/30 transition-transform hover:-translate-y-0.5 sm:grid-cols-[1fr_auto] sm:items-center"
+      {/* Playbook */}
+      <V3Section
+        eyebrow="Recommended path"
+        title="A practical three-step playbook."
+        subtitle="Each step maps to real product behavior: run the rep, get pushed, then save the receipt."
+      >
+        <div style={{ display: 'grid', gap: '12px', maxWidth: '760px' }}>
+          {detail.playbook.map(([title, body], index) => (
+            <div
+              key={title}
+              style={{
+                display: 'grid',
+                gap: '12px',
+                gridTemplateColumns: '40px 1fr',
+                alignItems: 'start',
+                borderRadius: 'var(--r-md)',
+                background: 'var(--paper)',
+                border: '1px solid var(--line-1)',
+                padding: '16px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'grid',
+                  placeItems: 'center',
+                  height: '40px',
+                  width: '40px',
+                  borderRadius: 'var(--r-sm)',
+                  background: 'var(--forest)',
+                  color: 'var(--bg)',
+                  fontFamily: 'var(--v3-font-display)',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                }}
               >
-                <div>
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    <Badge variant="outline">{rep.discipline}</Badge>
-                    <Badge className="bg-primary-fixed text-on-primary-fixed">{rep.flowMove}</Badge>
-                  </div>
-                  <h3 className="font-headline text-xl font-semibold text-on-surface">{rep.title}</h3>
-                </div>
-                <span className="text-sm font-bold text-primary">Preview</span>
-              </Link>
-            ))}
-          </div>
+                {index + 1}
+              </div>
+              <div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--v3-font-display)',
+                    fontSize: '20px',
+                    fontWeight: 600,
+                    color: 'var(--ink-1)',
+                  }}
+                >
+                  {title}
+                </h3>
+                <p style={{ margin: '6px 0 0', fontSize: '14px', fontWeight: 500, lineHeight: 1.55, color: 'var(--ink-3)' }}>
+                  {body}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
-      </section>
+      </V3Section>
 
-      <CtaBand
+      {/* Reps to open next */}
+      <V3Section
+        eyebrow="Reps to open next"
+        title="Start with drills that create useful evidence."
+      >
+        <div style={{ display: 'grid', gap: '12px', maxWidth: '760px' }}>
+          {outcome.reps.map((rep) => (
+            <Link
+              key={rep.href}
+              href={rep.href}
+              style={{
+                display: 'grid',
+                gap: '12px',
+                gridTemplateColumns: '1fr auto',
+                alignItems: 'center',
+                borderRadius: 'var(--r-md)',
+                background: 'var(--surface)',
+                border: '1px solid var(--line-1)',
+                padding: '16px',
+                textDecoration: 'none',
+                transition: 'border-color var(--tr), transform var(--tr-fast)',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+                  <span
+                    style={{
+                      fontFamily: 'var(--v3-font-mono)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: 'var(--ink-3)',
+                      border: '1px solid var(--line-2)',
+                      borderRadius: 'var(--r-xs)',
+                      padding: '3px 8px',
+                    }}
+                  >
+                    {rep.discipline}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--v3-font-mono)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: 'var(--forest-deep)',
+                      background: 'var(--forest-soft)',
+                      borderRadius: 'var(--r-xs)',
+                      padding: '3px 8px',
+                    }}
+                  >
+                    {rep.flowMove}
+                  </span>
+                </div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--v3-font-display)',
+                    fontSize: '20px',
+                    fontWeight: 600,
+                    color: 'var(--ink-1)',
+                  }}
+                >
+                  {rep.title}
+                </h3>
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--forest-2)' }}>Preview →</span>
+            </Link>
+          ))}
+        </div>
+      </V3Section>
+
+      <V3CtaBand
         title="Train for your next career move."
-        description="Pick the outcome, run the rep, let Hatch follow up, and keep the receipts that show how your judgment is improving."
-        href={outcome.ctaHref}
-        label={outcome.ctaLabel}
+        subtitle="Pick the outcome, run the rep, let Hatch follow up, and keep the receipts that show how your judgment is improving."
+        ctas={[{ label: outcome.ctaLabel, href: outcome.ctaHref }]}
       />
-    </DirectoryShell>
+    </V3PageShell>
   )
 }

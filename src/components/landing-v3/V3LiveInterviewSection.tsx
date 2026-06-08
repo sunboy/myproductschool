@@ -204,11 +204,9 @@ export function V3LiveInterviewSection() {
           initial={shouldReduce ? false : { opacity: 0, y: 20 }}
           transition={{ duration: 0.62 }}
         >
-          <h2 id="live-interview-heading">Live interviews with Hatch, your AI interview agent.</h2>
+          <h2 id="live-interview-heading">Live interviews with Hatch.</h2>
           <p>
-            Hatch is trained on interview rubrics, interview loops, and product and technical
-            practice patterns, so voice, chat, code, canvas work, scoring, and coaching happen in
-            one company-calibrated session.
+            Voice, chat, code, and a shared canvas in one session, scored as you go.
           </p>
 
           <div className="live-company-panel" aria-label="Company interview loops">

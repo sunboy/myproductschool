@@ -1,10 +1,6 @@
 import type { Metadata } from 'next'
-import {
-  CtaBand,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-} from '@/components/directory/DirectoryChrome'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CtaBand } from '@/components/landing-v3/sections'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl } from '@/lib/seo/site'
 import { itemListJsonLd, PRACTICE_DIRECTORIES } from '@/lib/seo/directory-content'
@@ -58,7 +54,7 @@ export default function PracticeDirectoryPage() {
   }))
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -68,21 +64,24 @@ export default function PracticeDirectoryPage() {
           itemListJsonLd('HackProduct public practice previews', items),
         ]}
       />
-      <DirectoryHero
+      <V3PageHero
         eyebrow="Practice catalog"
         title="Filter reps by discipline, FLOW move, and career goal."
-        description="Public previews show the scenario, skill focus, rubric hints, and Hatch-style nudges. The full app adds the answer workspace, follow-ups, scoring, and saved progress."
-        ctaHref="/login?returnTo=/challenges"
-        ctaLabel="Start a free rep"
+        subtitle="Public previews show the scenario, skill focus, rubric hints, and Hatch-style nudges. The full app adds the answer workspace, follow-ups, scoring, and saved progress."
+        ctas={[{ label: 'Start a free rep', href: '/login?returnTo=/challenges' }]}
       />
-      <DirectorySection
+      <V3Section
         eyebrow="Sneak peek catalog"
         title="Useful previews without replacing logged-in practice."
-        description="Use filters to find the next rep. Public pages show the prompt and rubric preview; Hatch coaching and saved receipts happen in the app."
+        subtitle="Use filters to find the next rep. Public pages show the prompt and rubric preview; Hatch coaching and saved receipts happen in the app."
       >
         <PracticeCatalogClient items={catalogItems} />
-      </DirectorySection>
-      <CtaBand />
-    </DirectoryShell>
+      </V3Section>
+      <V3CtaBand
+        title="Start training for your next career move."
+        subtitle="Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress."
+        ctas={[{ label: 'Start a free rep', href: '/login?returnTo=/challenges' }]}
+      />
+    </V3PageShell>
   )
 }

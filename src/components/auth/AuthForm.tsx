@@ -423,15 +423,15 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
           <p
             className="font-body mt-3 max-w-[38ch] text-sm leading-relaxed text-white/55 sm:mt-4 sm:text-base md:text-white/45"
           >
-            Practice product, systems, data, SQL, and coding judgment. Stay sharp as AI reshapes the job.
+            Practice product sense, system design, SQL, and coding. Plus a live AI data analyst you drive with Claude Code.
           </p>
 
           {/* Feature bullets — desktop only */}
           <ul className="mt-10 hidden flex-col gap-3 min-[1200px]:flex">
             {[
-              'Product sense, system design, data modeling, SQL, and coding in one track',
-              'Hatch coaches in real time and pushes back when you hand-wave',
-              'Role-aware plans without human scheduling',
+              'Drive a live AI data analyst on real data, using Claude Code',
+              'Product sense, system design, SQL, and coding in one place',
+              'Hatch coaches every answer and shows you the exact gap',
             ].map(item => (
               <li key={item} className="flex items-center gap-3">
                 <span

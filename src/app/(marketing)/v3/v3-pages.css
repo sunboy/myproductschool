@@ -1,0 +1,332 @@
+/* ============================================================
+   V3 marketing-page primitives — shared building blocks for the
+   content/legal/directory pages that adopt the landing design system.
+   All selectors scoped under .v3 (zero leakage). Reuses the tokens
+   defined in v3-landing.css.
+   ============================================================ */
+
+/* ===== Page hero band ===== */
+.v3 .v3-page-hero {
+  padding: 48px 0 36px;
+  background: linear-gradient(180deg, #fffdf7 0%, var(--bg) 64%, var(--surface-2) 100%);
+  border-bottom: 1px solid var(--line-1);
+}
+.v3 .v3-page-hero-inner {
+  max-width: 840px;
+}
+.v3 .v3-page-hero h1 {
+  font-family: var(--v3-font-display);
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--ink-1);
+  margin: 16px 0 0;
+}
+.v3 .v3-page-hero p.v3-page-hero-sub {
+  font-size: 16.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+  margin: 12px 0 0;
+  max-width: 62ch;
+}
+.v3 .v3-page-hero-cta {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ===== Prose section (legal / help / about) ===== */
+.v3 .v3-prose-section {
+  padding: 36px 0 48px;
+}
+.v3 .v3-prose {
+  max-width: 760px;
+}
+.v3 .v3-prose h2 {
+  font-family: var(--v3-font-display);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink-1);
+  margin: 0 0 14px;
+}
+.v3 .v3-prose h3 {
+  font-family: var(--v3-font-ui);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink-1);
+  margin: 24px 0 8px;
+}
+.v3 .v3-prose p {
+  font-size: 16.5px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  margin: 0 0 14px;
+}
+.v3 .v3-prose ul {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.v3 .v3-prose ul li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.v3 .v3-prose ul li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--forest);
+}
+.v3 .v3-prose a {
+  color: var(--forest-2);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.v3 .v3-prose-block {
+  padding: 18px 0;
+  border-top: 1px solid var(--line-1);
+}
+.v3 .v3-prose-block:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* ===== Card grid ===== */
+.v3 .v3-card-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+}
+.v3 .v3-card {
+  display: block;
+  background: var(--paper);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  padding: 18px;
+  transition: border-color var(--tr), transform var(--tr-fast), box-shadow var(--tr);
+}
+.v3 a.v3-card:hover {
+  border-color: var(--forest-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -28px rgba(30, 53, 40, 0.45);
+}
+.v3 .v3-card-eyebrow {
+  font-family: var(--v3-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--forest-2);
+}
+.v3 .v3-card h3 {
+  font-family: var(--v3-font-display);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.18;
+  color: var(--ink-1);
+  margin: 10px 0 0;
+}
+.v3 .v3-card p {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  margin: 10px 0 0;
+}
+
+/* ===== Section heading (above a grid) ===== */
+.v3 .v3-section {
+  padding: 16px 0 40px;
+}
+.v3 .v3-section-head {
+  max-width: 640px;
+  margin: 0 0 18px;
+}
+.v3 .v3-section-head h2 {
+  font-family: var(--v3-font-display);
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
+  line-height: 1.12;
+  color: var(--ink-1);
+  margin: 12px 0 0;
+}
+.v3 .v3-section-head p {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  margin: 12px 0 0;
+}
+
+/* ===== Closing CTA band ===== */
+.v3 .v3-cta-band {
+  margin: 8px 0 48px;
+}
+.v3 .v3-cta-band-inner {
+  background: linear-gradient(135deg, var(--forest-deep), var(--forest));
+  border-radius: var(--r-lg);
+  padding: 32px 32px;
+  color: var(--on-dark);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.v3 .v3-cta-band-copy h2 {
+  font-family: var(--v3-font-display);
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--on-dark);
+  margin: 0;
+}
+.v3 .v3-cta-band-copy p {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--on-dark-2);
+  margin: 10px 0 0;
+  max-width: 52ch;
+}
+.v3 .v3-cta-band-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ===== PRICING BILLING TOGGLE (scoped to the pricing page) ===== */
+.v3 .pricing-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 24px 0 0;
+  padding: 6px;
+  border: 1px solid rgba(213,202,177,0.82);
+  background: rgba(244,238,226,0.7);
+}
+.v3 .pricing-toggle-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-3);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.v3 .pricing-toggle-btn:hover {
+  background: rgba(255,253,247,0.6);
+}
+.v3 .pricing-toggle-btn[data-selected='true'] {
+  background: #fffdf7;
+  color: var(--ink-1);
+  box-shadow: 0 1px 10px -4px rgba(30,27,20,0.4);
+}
+.v3 .pricing-toggle-label {
+  font-size: 12px;
+  font-weight: 880;
+  text-transform: capitalize;
+  letter-spacing: 0.01em;
+}
+.v3 .pricing-toggle-price {
+  font-family: var(--v3-font-display);
+  font-size: 18px;
+  font-weight: 780;
+  line-height: 1;
+  color: inherit;
+}
+.v3 .pricing-toggle-save {
+  font-size: 11px;
+  font-weight: 820;
+  color: var(--forest-2);
+}
+.v3 .pricing-cta:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== Mobile (the page primitives had no breakpoints before) ===== */
+@media (max-width: 640px) {
+  .v3 .v3-page-hero {
+    padding: 36px 0 28px;
+  }
+  .v3 .v3-page-hero p.v3-page-hero-sub {
+    font-size: 15.5px;
+  }
+  .v3 .v3-page-hero-cta {
+    margin-top: 16px;
+  }
+
+  .v3 .v3-section {
+    padding: 12px 0 28px;
+  }
+  .v3 .v3-section-head {
+    margin: 0 0 14px;
+  }
+
+  .v3 .v3-prose-section {
+    padding: 28px 0 36px;
+  }
+  .v3 .v3-prose-block {
+    padding: 16px 0;
+  }
+  .v3 .v3-prose h2 {
+    font-size: 22px;
+  }
+
+  .v3 .v3-card-grid {
+    gap: 12px;
+  }
+  .v3 .v3-card {
+    padding: 16px;
+  }
+
+  .v3 .v3-cta-band {
+    margin: 8px 0 32px;
+  }
+  .v3 .v3-cta-band-inner {
+    padding: 24px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* ===== Pricing page mobile (375px-class phones) ===== */
+  /* Billing toggle stacks on narrow screens. */
+  .v3 .pricing-toggle {
+    grid-template-columns: 1fr;
+    margin-top: 18px;
+  }
+  /* Oversized display heading needs a smaller floor on a phone. */
+  .v3 .pricing-copy h2 {
+    font-size: clamp(30px, 9vw, 42px);
+  }
+  /* Tier-card price numeral floor is too tall at 375px. */
+  .v3 .pricing-price span {
+    font-size: clamp(44px, 14vw, 58px);
+  }
+  .v3 .pricing-card h3 {
+    margin-top: 18px;
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 420px) {
+  .v3 .v3-card-grid {
+    gap: 10px;
+  }
+}

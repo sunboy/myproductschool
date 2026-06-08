@@ -245,7 +245,13 @@
   align-items: center;
 }
 @media (max-width: 1040px) {
-  .v3 .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+  /* minmax(0, 1fr), not bare 1fr: a `1fr` track is minmax(auto, 1fr), and the
+     `auto` min equals the child's min-content width — which lets the discipline
+     mockup (wide intrinsic content) blow the column past the viewport on mobile.
+     Pinning the min to 0 + min-width:0 on the children sizes the track to the
+     viewport instead. */
+  .v3 .hero-inner { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .v3 .hero-inner > * { min-width: 0; }
 }
 
 .v3 .hero-eyebrow { margin-bottom: 18px; }
@@ -257,6 +263,7 @@
   gap: 10px;
   padding: 7px 16px 7px 14px;
   margin-bottom: 22px;
+  max-width: 100%;
   border-radius: 999px;
   background: var(--paper);
   border: 1px solid var(--amber-soft);
@@ -305,6 +312,22 @@
   .v3 .hero-pill-text { transition: none; }
 }
 
+/* Let the pill wrap instead of overflowing on phones when the longer
+   rotating message is shown. */
+@media (max-width: 640px) {
+  .v3 .hero-pill {
+    align-items: flex-start;
+    border-radius: 16px;
+  }
+  .v3 .hero-pill .hero-pill-dot {
+    margin-top: 4px;
+  }
+  .v3 .hero-pill-text {
+    white-space: normal;
+    line-height: 1.4;
+  }
+}
+
 /* ClickUp-tuned: moderate display size (was clamp(48,6.2vw,88)).
    Cloud Design also constrained at 14ch; we let it run wider to wrap naturally over ~3 lines. */
 .v3 .hero-display {
@@ -347,55 +370,17 @@
 }
 .v3 .hero-bullet-check svg { width: 12px; height: 12px; }
 
-.v3 .hero-form {
+.v3 .hero-cta-row {
   display: flex;
-  gap: 8px;
-  padding: 6px;
-  background: var(--paper);
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
   max-width: 480px;
-  box-shadow: 0 12px 28px -16px rgba(30,53,40,0.18);
-  transition: border-color var(--tr), box-shadow var(--tr);
 }
-.v3 .hero-form:focus-within {
-  border-color: var(--forest);
-  box-shadow: 0 12px 32px -14px rgba(74,124,89,0.4);
-}
-.v3 .hero-form input {
-  flex: 1;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  padding: 10px 16px;
-  font-size: 15px;
-  color: var(--ink-1);
-}
-.v3 .hero-form input::placeholder { color: var(--ink-4); }
-.v3 .hero-form button {
-  background: var(--forest);
-  color: white;
-  border-radius: 999px;
-  padding: 11px 22px;
-  font-weight: 700;
-  font-size: 14.5px;
+.v3 .hero-cta {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: background var(--tr), transform var(--tr-fast);
-}
-.v3 .hero-form button:hover { background: var(--forest-2); transform: translateY(-1px); }
-.v3 .hero-form-success {
-  padding: 18px 22px;
-  background: var(--forest-soft);
-  border-radius: 999px;
-  color: var(--forest-deep);
+  gap: 8px;
+  padding: 14px 26px;
+  font-size: 15px;
   font-weight: 700;
-  font-size: 14.5px;
-  max-width: 480px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .v3 .hero-microtrust {
@@ -762,6 +747,33 @@
   from { width: 0%; }
   to   { width: 100%; }
 }
+
+/* Mobile discipline mockup. Placed AFTER the base .ds / .disc-screen rules so
+   these win the cascade (equal specificity → source order decides). Two fixes:
+   1) Stack the inner 2-column layout into one column — at phone width two
+      columns crush to ~140px each and the right (rubric) column gets eaten.
+   2) Drop the decorative radial mask. On a narrow card that corner-fade
+      curves across the right/bottom edge and visually CROPS the rubric text
+      ("Correctn…", "Comple…"). A plain card reads cleanly on mobile. */
+@media (max-width: 640px) {
+  .v3 .disc-screen {
+    -webkit-mask-image: none;
+            mask-image: none;
+    min-height: 0;
+  }
+  .v3 .ds {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .v3 .ds-left {
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .v3 .ds-code {
+    overflow-x: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html:has(.v3) {
     scroll-behavior: auto;
@@ -2330,11 +2342,173 @@
   }
 }
 
+/* ===== LIVE AI DATA ANALYST ===== */
+.v3 .analytics-section {
+  position: relative;
+  overflow: hidden;
+  padding: 96px 0 104px;
+  background:
+    radial-gradient(620px 420px at 82% 14%, rgba(245,167,108,0.12), transparent 70%),
+    var(--background);
+}
+.v3 .analytics-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 48px;
+  align-items: center;
+}
+.v3 .analytics-shell > * { min-width: 0; }
+.v3 .analytics-copy h2 {
+  margin: 12px 0 0;
+  font-family: var(--v3-font-display);
+  font-size: clamp(30px, 4vw, 52px);
+  font-weight: 720;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  color: var(--ink-1);
+}
+.v3 .analytics-lead {
+  margin: 18px 0 0;
+  max-width: 460px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.v3 .analytics-cta-row {
+  margin-top: 26px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 22px;
+}
+.v3 .analytics-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 26px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.v3 .analytics-secondary {
+  font-family: var(--v3-font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--line-2);
+  padding-bottom: 2px;
+  transition: color var(--tr), border-color var(--tr);
+}
+.v3 .analytics-secondary:hover { color: var(--forest); border-color: var(--forest); }
+
+/* Dark scorecard card — reuses .ds-rubric-* / .ds-score-big visual language */
+.v3 .analytics-card {
+  position: relative;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: var(--dark);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 50px 110px -40px rgba(30,53,40,0.45),
+    0 20px 44px -12px rgba(0,0,0,0.2);
+}
+.v3 .analytics-card-chrome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.25);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.v3 .analytics-card-chrome .analytics-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.16);
+  flex-shrink: 0;
+}
+.v3 .analytics-url {
+  margin-left: 6px;
+  font-family: var(--v3-font-mono);
+  font-size: 11.5px;
+  color: var(--on-dark-2);
+  background: rgba(0,0,0,0.32);
+  padding: 4px 12px;
+  border-radius: 999px;
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v3 .analytics-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--v3-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--amber-bright);
+  flex-shrink: 0;
+}
+.v3 .analytics-card-body {
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--on-dark);
+}
+.v3 .analytics-trace {
+  font-family: var(--v3-font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--on-dark-2);
+}
+.v3 .analytics-trace-step { color: var(--on-dark); }
+.v3 .analytics-trace-arrow { color: var(--on-dark-3); }
+.v3 .analytics-scorecard {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.v3 .analytics-scorecard-label {
+  margin: 0 0 2px;
+  font-family: var(--v3-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--on-dark-3);
+}
+.v3 .analytics-overall {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  font-family: var(--v3-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--on-dark-3);
+}
+
+@media (max-width: 1040px) {
+  .v3 .analytics-shell { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+}
+@media (max-width: 640px) {
+  .v3 .analytics-section { padding: 64px 0 72px; }
+  .v3 .analytics-card-body { padding: 16px; }
+}
+
 /* ===== PRICING ===== */
 .v3 .pricing-section {
   position: relative;
   overflow: hidden;
-  padding: 96px 0 104px;
+  padding: 48px 0 56px;
   background:
     radial-gradient(760px 460px at 78% 18%, rgba(217,130,17,0.12), transparent 66%),
     linear-gradient(180deg, #fffdf7 0%, #f4eee2 100%);
@@ -2342,25 +2516,25 @@
 .v3 .pricing-shell {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-  gap: 44px;
+  gap: 32px;
   align-items: center;
 }
 .v3 .pricing-copy h2 {
   margin: 0;
-  max-width: 620px;
+  max-width: 540px;
   font-family: var(--v3-font-display);
-  font-size: clamp(42px, 5.2vw, 78px);
-  font-weight: 760;
-  line-height: 0.96;
+  font-size: clamp(34px, 4.4vw, 58px);
+  font-weight: 740;
+  line-height: 1;
   letter-spacing: 0;
   color: var(--ink-1);
 }
 .v3 .pricing-copy > p:not(.eyebrow) {
-  margin: 22px 0 0;
-  max-width: 560px;
+  margin: 16px 0 0;
+  max-width: 540px;
   color: var(--ink-3);
-  font-size: 20px;
-  font-weight: 760;
+  font-size: 17px;
+  font-weight: 720;
   line-height: 1.45;
 }
 .v3 .pricing-grid {
@@ -2368,12 +2542,15 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
+.v3 .pricing-grid-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 .v3 .pricing-card {
   display: flex;
   min-width: 0;
-  min-height: 620px;
+  min-height: 460px;
   flex-direction: column;
-  padding: 26px;
+  padding: 22px;
   border: 1px solid rgba(213,202,177,0.82);
   background: rgba(255,253,247,0.82);
   box-shadow: 0 24px 60px -48px rgba(30,27,20,0.4);
@@ -2409,9 +2586,9 @@
   line-height: 1;
 }
 .v3 .pricing-card h3 {
-  margin: 28px 0 0;
+  margin: 18px 0 0;
   font-family: var(--v3-font-display);
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 760;
   line-height: 1;
   color: var(--ink-1);
@@ -2420,14 +2597,14 @@
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 14px;
   color: var(--ink-1);
 }
 .v3 .pricing-price span {
   font-family: var(--v3-font-display);
-  font-size: clamp(58px, 7vw, 86px);
+  font-size: clamp(48px, 6vw, 68px);
   font-weight: 780;
-  line-height: 0.86;
+  line-height: 0.88;
   letter-spacing: 0;
 }
 .v3 .pricing-price small {
@@ -2437,7 +2614,7 @@
   font-weight: 850;
 }
 .v3 .pricing-card-copy {
-  margin: 20px 0 0;
+  margin: 14px 0 0;
   color: var(--ink-2);
   font-size: 15px;
   font-weight: 720;
@@ -2445,8 +2622,8 @@
 }
 .v3 .pricing-card ul {
   display: grid;
-  gap: 14px;
-  margin: 30px 0 34px;
+  gap: 10px;
+  margin: 18px 0 22px;
   padding: 0;
   list-style: none;
 }
@@ -2499,17 +2676,25 @@
   .v3 .pricing-note {
     grid-column: auto;
   }
+  /* A 3-wide tier grid is too cramped once the shell stacks. */
+  .v3 .pricing-grid-three {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 720px) {
   .v3 .pricing-section {
-    padding: 72px 0 82px;
+    padding: 40px 0 48px;
   }
-  .v3 .pricing-grid {
+  .v3 .pricing-shell {
+    gap: 24px;
+  }
+  .v3 .pricing-grid,
+  .v3 .pricing-grid-three {
     grid-template-columns: 1fr;
   }
   .v3 .pricing-card {
     min-height: auto;
-    padding: 22px;
+    padding: 20px;
   }
   .v3 .pricing-copy > p:not(.eyebrow) {
     font-size: 16px;

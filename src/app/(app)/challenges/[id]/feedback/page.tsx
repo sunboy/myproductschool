@@ -183,9 +183,10 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           isCanvasChallenge && canvasSnapshot
             ? adminClient.from('interview_grades').select('canvas_annotations').eq('attempt_id', attempt).maybeSingle()
             : Promise.resolve({ data: null }),
-          weakestCompetency
-            ? adminClient.rpc('next_user_challenge', { p_user_id: user.id, p_competency: weakestCompetency }).maybeSingle()
-            : Promise.resolve({ data: null }),
+          adminClient.rpc('next_user_challenge', {
+            p_user_id: user.id,
+            p_competency: weakestCompetency ?? null,
+          }).maybeSingle(),
         ])
 
         if (gradeResult.data?.canvas_annotations && Array.isArray(gradeResult.data.canvas_annotations)) {
@@ -480,6 +481,31 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               <FeedbackText className="text-on-tertiary-fixed-variant">{full.key_insight}</FeedbackText>
             </div>
           </div>
+
+          {/* Up next banner */}
+          {nextChallenge && nextChallengeHref && (
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <span className="material-symbols-outlined text-primary flex-shrink-0 mt-0.5">rocket_launch</span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-primary uppercase tracking-wider font-label">Up next</p>
+                  <p className="text-sm font-semibold text-on-surface truncate">{nextChallenge.title}</p>
+                  {weakestCompetency && (
+                    <p className="text-xs text-on-surface-variant font-label mt-0.5">
+                      Targets your weakest move this run
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Link
+                href={nextChallengeHref}
+                className="py-3 px-6 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 shadow-md shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm whitespace-nowrap"
+              >
+                Start next challenge
+                <span className="material-symbols-outlined">arrow_forward</span>
+              </Link>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-2">

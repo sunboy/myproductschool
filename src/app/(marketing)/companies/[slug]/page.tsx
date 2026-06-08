@@ -1,21 +1,40 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import {
-  BulletGrid,
-  CtaBand,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-  PillList,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl } from '@/lib/seo/site'
 import { COMPANY_DIRECTORIES, getCompany } from '@/lib/seo/directory-content'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import {
+  V3PageHero,
+  V3Section,
+  V3CardGrid,
+  V3Card,
+  V3ProseSection,
+  V3ProseBlock,
+  V3CtaBand,
+} from '@/components/landing-v3/sections'
 
 type Props = {
   params: Promise<{ slug: string }>
 }
+
+const RECOMMENDED_HUBS = [
+  {
+    href: '/skills/product-sense',
+    title: 'Product sense',
+    body: 'Practice ambiguous product decisions and metric diagnosis.',
+  },
+  {
+    href: '/skills/system-design',
+    title: 'System design',
+    body: 'Practice architecture, scale, reliability, and trade-offs.',
+  },
+  {
+    href: '/interviews/live-ai-interviews',
+    title: 'Live AI interviews',
+    body: 'Run voice-to-voice mock interviews with Hatch follow-ups.',
+  },
+]
 
 export function generateStaticParams() {
   return COMPANY_DIRECTORIES.map((company) => ({ slug: company.slug }))
@@ -39,7 +58,7 @@ export default async function CompanyDirectoryDetailPage({ params }: Props) {
   if (!company) notFound()
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -64,45 +83,57 @@ export default async function CompanyDirectoryDetailPage({ params }: Props) {
           },
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow={`${company.name} interview prep`}
         title={`Practice for ${company.name}-style product and technical interviews.`}
-        description={`${company.summary} ${company.interviewStyle}`}
-        secondaryHref="/practice"
-        secondaryLabel="Browse practice previews"
+        subtitle={`${company.summary} ${company.interviewStyle}`}
+        ctas={[
+          { label: 'Start free', href: '/login' },
+          { label: 'Browse practice previews', href: '/practice' },
+        ]}
       />
-      <DirectorySection title="Roles and signals">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div>
-            <h2 className="mb-3 font-headline text-2xl font-semibold">Common roles</h2>
-            <PillList items={company.roles} />
-          </div>
-          <div>
-            <h2 className="mb-3 font-headline text-2xl font-semibold">Practice areas</h2>
-            <PillList items={company.practiceAreas} />
-          </div>
-        </div>
-      </DirectorySection>
-      <DirectorySection shaded eyebrow="Sample prompts" title={`Representative ${company.name} questions`}>
-        <BulletGrid items={company.sampleQuestions} />
-      </DirectorySection>
-      <DirectorySection title="Recommended HackProduct hubs">
-        <div className="grid gap-3 md:grid-cols-3">
-          <Link className="rounded-xl bg-surface-container-lowest p-5 no-underline ring-1 ring-outline-variant/35 hover:ring-primary/35" href="/skills/product-sense">
-            <div className="font-headline text-xl font-semibold text-on-surface">Product sense</div>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Practice ambiguous product decisions and metric diagnosis.</p>
-          </Link>
-          <Link className="rounded-xl bg-surface-container-lowest p-5 no-underline ring-1 ring-outline-variant/35 hover:ring-primary/35" href="/skills/system-design">
-            <div className="font-headline text-xl font-semibold text-on-surface">System design</div>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Practice architecture, scale, reliability, and trade-offs.</p>
-          </Link>
-          <Link className="rounded-xl bg-surface-container-lowest p-5 no-underline ring-1 ring-outline-variant/35 hover:ring-primary/35" href="/interviews/live-ai-interviews">
-            <div className="font-headline text-xl font-semibold text-on-surface">Live AI interviews</div>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Run voice-to-voice mock interviews with Hatch follow-ups.</p>
-          </Link>
-        </div>
-      </DirectorySection>
-      <CtaBand title={`Train for ${company.name} with live feedback.`} />
-    </DirectoryShell>
+
+      <V3Section title="Roles and signals">
+        <V3ProseSection>
+          <V3ProseBlock title="Common roles">
+            <ul>
+              {company.roles.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </V3ProseBlock>
+          <V3ProseBlock title="Practice areas">
+            <ul>
+              {company.practiceAreas.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </V3ProseBlock>
+        </V3ProseSection>
+      </V3Section>
+
+      <V3Section eyebrow="Sample prompts" title={`Representative ${company.name} questions`}>
+        <V3CardGrid>
+          {company.sampleQuestions.map((item) => (
+            <V3Card key={item} title={item} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3Section title="Recommended HackProduct hubs">
+        <V3CardGrid>
+          {RECOMMENDED_HUBS.map((hub) => (
+            <V3Card key={hub.href} href={hub.href} title={hub.title} body={hub.body} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3CtaBand
+        title={`Train for ${company.name} with live feedback.`}
+        subtitle="Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress."
+        ctas={[{ label: 'Start a free rep', href: '/login' }]}
+      />
+    </V3PageShell>
   )
 }

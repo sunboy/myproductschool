@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { buildMetadata } from '@/lib/seo/site'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CardGrid, V3Card, V3CtaBand } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Help Center | HackProduct',
@@ -67,75 +68,32 @@ const HELP_SECTIONS = [
 
 export default function HelpPage() {
   return (
-    <main className="min-h-screen bg-background text-on-surface">
-      <section className="border-b border-outline-variant bg-surface-container-low">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 lg:grid-cols-[0.8fr_1.2fr] lg:px-8 lg:py-20">
-          <div>
-            <Link href="/" className="text-sm font-bold text-primary no-underline">
-              HackProduct
-            </Link>
-            <p className="mt-8 text-xs font-black uppercase text-primary">Help Center</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight text-on-surface sm:text-5xl">
-              Answers before launch.
-            </h1>
-          </div>
-          <div className="max-w-2xl">
-            <p className="text-lg leading-8 text-on-surface-variant">
-              Use this page for account setup, Hatch coaching, streaks, billing, and support paths. The product is still moving quickly, so contact support when a workflow does not match what you see.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href="mailto:hello@hackproduct.dev"
-                className="rounded-md bg-primary px-4 py-2 text-sm font-black text-on-primary no-underline transition-opacity hover:opacity-90"
-              >
-                Contact support
-              </Link>
-              <Link
-                href="/pricing"
-                className="rounded-md border border-outline-variant px-4 py-2 text-sm font-black text-on-surface no-underline transition-colors hover:bg-surface-container"
-              >
-                View plans
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+    <V3PageShell>
+      <V3PageHero
+        eyebrow="Help Center"
+        title="Answers before launch."
+        subtitle="Use this page for account setup, Hatch coaching, streaks, billing, and support paths. The product is still moving quickly, so contact support when a workflow does not match what you see."
+        ctas={[
+          { label: 'Contact support', href: 'mailto:hello@hackproduct.dev' },
+          { label: 'View plans', href: '/pricing', variant: 'amber' },
+        ]}
+      />
 
-      <section className="mx-auto grid max-w-6xl gap-8 px-5 py-10 lg:grid-cols-[240px_1fr] lg:px-8 lg:py-14">
-        <aside className="hidden lg:block">
-          <nav className="sticky top-8 space-y-2" aria-label="Help sections">
-            {HELP_SECTIONS.map((section) => (
-              <a
-                key={section.id}
-                href={`#${section.id}`}
-                className="block rounded-md px-3 py-2 text-sm font-bold text-on-surface-variant no-underline transition-colors hover:bg-surface-container-low hover:text-primary"
-              >
-                {section.title}
-              </a>
+      {HELP_SECTIONS.map((section) => (
+        <V3Section key={section.id} title={section.title}>
+          <V3CardGrid>
+            {section.items.map((item) => (
+              <V3Card key={item} title={item} />
             ))}
-          </nav>
-        </aside>
+          </V3CardGrid>
+        </V3Section>
+      ))}
 
-        <div className="space-y-6">
-          {HELP_SECTIONS.map((section) => (
-            <section
-              key={section.id}
-              id={section.id}
-              className="rounded-lg border border-outline-variant bg-background p-5 sm:p-6"
-            >
-              <h2 className="text-2xl font-black text-on-surface">{section.title}</h2>
-              <ul className="mt-5 space-y-3">
-                {section.items.map((item) => (
-                  <li key={item} className="flex gap-3 text-sm leading-6 text-on-surface-variant">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-      </section>
-    </main>
+      <V3CtaBand
+        title="Still stuck?"
+        subtitle="Email support from your account address and we will help."
+        ctas={[{ label: 'Contact support', href: 'mailto:hello@hackproduct.dev' }]}
+      />
+    </V3PageShell>
   )
 }

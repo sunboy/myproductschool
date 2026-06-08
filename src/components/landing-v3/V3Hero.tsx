@@ -1,10 +1,14 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { DISCIPLINES, type DisciplineId } from './disciplines'
 import { V3DisciplineScreen } from './V3DisciplineScreen'
 
-const PILL_MESSAGES = ['Maximize interview readiness', 'AI coaching, real reps, and human judgment converge']
+const PILL_MESSAGES = ['Practice the interview out loud', 'Product sense, system design, SQL, coding']
+
+function openSignup() {
+  window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { mode: 'signup' } }))
+}
 
 function AnnouncementPill() {
   const [index, setIndex] = useState(0)
@@ -37,41 +41,6 @@ function CheckIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <polyline points="20 6 9 17 4 12" />
     </svg>
-  )
-}
-
-function HeroForm() {
-  const [submitted, setSubmitted] = useState(false)
-
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const email = new FormData(e.currentTarget).get('email')
-
-    if (typeof email === 'string' && email.includes('@')) setSubmitted(true)
-  }
-
-  if (submitted) {
-    return (
-      <div className="hero-form-success" role="status">
-        <CheckIcon />
-        <span>You&apos;re in. Check your inbox for your first rep.</span>
-      </div>
-    )
-  }
-
-  return (
-    <form className="hero-form" onSubmit={onSubmit}>
-      <input
-        name="email"
-        type="email"
-        required
-        placeholder="you@work.com"
-        aria-label="Work email"
-      />
-      <button type="submit">
-        Get started <span aria-hidden>→</span>
-      </button>
-    </form>
   )
 }
 
@@ -110,19 +79,23 @@ export function V3Hero() {
           <ul className="hero-bullets">
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>Interviews are a performance, not a knowledge test.</b> Practice the artifacts, tradeoffs, and thinking out loud that real loops actually score.</span>
+              <span><b>Interviews test performance, not knowledge.</b> The skill is thinking out loud and defending a call while someone watches.</span>
             </li>
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>Real reps under real pressure.</b> Live interviews, scoring, autopsies, study plans, code, and canvas practice in one connected loop.</span>
+              <span><b>Practice the rounds that decide it.</b> Product sense, system design, SQL, coding, and a live AI data analyst you drive with Claude Code.</span>
             </li>
             <li className="hero-bullet">
               <span className="hero-bullet-check"><CheckIcon /></span>
-              <span><b>Hatch, your AI coach.</b> Reads your work, names the gap honestly, and turns the dread into trained reps.</span>
+              <span><b>Hatch sees how you reason.</b> It names the weak spot and what to fix. Drill sites only say pass or fail.</span>
             </li>
           </ul>
 
-          <HeroForm />
+          <div className="hero-cta-row">
+            <button type="button" className="btn btn-amber hero-cta" onClick={openSignup}>
+              Start training with Hatch <span aria-hidden>→</span>
+            </button>
+          </div>
 
           <div className="hero-eyebrow-mini" id="disciplines">GET HANDS-ON · CUSTOMIZE YOUR PRACTICE</div>
 

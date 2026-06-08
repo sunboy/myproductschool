@@ -1,14 +1,9 @@
 import type { Metadata } from 'next'
-import {
-  CtaBand,
-  DirectoryCard,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl } from '@/lib/seo/site'
 import { itemListJsonLd, STUDY_PLAN_DIRECTORIES } from '@/lib/seo/directory-content'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CardGrid, V3Card, V3CtaBand } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Public Study Plan Directory for AI-Era Tech Skills | HackProduct',
@@ -26,7 +21,7 @@ export default function StudyPlansDirectoryPage() {
   }))
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -36,25 +31,32 @@ export default function StudyPlansDirectoryPage() {
           itemListJsonLd('HackProduct public study plans', items),
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow="Study plans"
         title="Sequenced paths for product-minded technical growth."
-        description="Public previews of the role-aware HackProduct plans that turn scattered practice into weekly progress."
+        subtitle="Public previews of the role-aware HackProduct plans that turn scattered practice into weekly progress."
       />
-      <DirectorySection title="Browse study plan previews">
-        <div className="grid gap-4 md:grid-cols-2">
+
+      <V3Section title="Browse study plan previews">
+        <V3CardGrid>
           {STUDY_PLAN_DIRECTORIES.map((plan) => (
-            <DirectoryCard
+            <V3Card
               key={plan.slug}
               href={`/study-plans/${plan.slug}`}
+              eyebrow={`${plan.weeks} weeks · ${plan.level}`}
               title={plan.title}
-              description={plan.summary}
-              meta={`${plan.weeks} weeks · ${plan.level}`}
+              body={plan.summary}
             />
           ))}
-        </div>
-      </DirectorySection>
-      <CtaBand />
-    </DirectoryShell>
+        </V3CardGrid>
+      </V3Section>
+
+      <V3CtaBand
+        title="Turn scattered practice into weekly progress."
+        subtitle="Pick a plan, run the reps, and let Hatch keep the loop tight."
+        ctas={[{ label: 'Get started', href: '/signup' }]}
+      />
+    </V3PageShell>
   )
 }

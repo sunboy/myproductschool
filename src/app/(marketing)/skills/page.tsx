@@ -1,15 +1,10 @@
 import type { Metadata } from 'next'
-import {
-  CtaBand,
-  DirectoryCard,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl } from '@/lib/seo/site'
 import { HACKPRODUCT_POSITIONING, itemListJsonLd, SKILL_DIRECTORIES } from '@/lib/seo/directory-content'
 import { OUTCOME_PAGES } from '@/lib/seo/outcomes'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CardGrid, V3Card, V3CtaBand } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Skills Catalog for Career-Changing Judgment | HackProduct',
@@ -27,7 +22,7 @@ export default function SkillsDirectoryPage() {
   }))
 
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -37,51 +32,58 @@ export default function SkillsDirectoryPage() {
           itemListJsonLd('HackProduct skill directories', items),
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow="Skills catalog"
         title="Pick the discipline that strengthens your next career move."
-        description={HACKPRODUCT_POSITIONING.subhead}
-        ctaHref="/practice"
-        ctaLabel="Browse reps"
-        secondaryHref="/flow"
-        secondaryLabel="See FLOW"
+        subtitle={HACKPRODUCT_POSITIONING.subhead}
+        ctas={[
+          { label: 'Browse reps', href: '/practice' },
+          { label: 'See FLOW', href: '/flow' },
+        ]}
       />
-      <DirectorySection
+
+      <V3Section
         eyebrow="Outcome filters"
         title="Start from the career goal, then choose the track."
-        description="Each skill page shows what the discipline trains, where FLOW applies, and which public reps prove the skill without replacing the full app workspace."
+        subtitle="Each skill page shows what the discipline trains, where FLOW applies, and which public reps prove the skill without replacing the full app workspace."
       >
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <V3CardGrid>
           {OUTCOME_PAGES.map((outcome) => (
-            <DirectoryCard
+            <V3Card
               key={outcome.slug}
               href={outcome.path}
+              eyebrow="Career goal"
               title={outcome.shortTitle}
-              description={outcome.summary}
-              meta="Career goal"
+              body={outcome.summary}
             />
           ))}
-        </div>
-      </DirectorySection>
-      <DirectorySection
+        </V3CardGrid>
+      </V3Section>
+
+      <V3Section
         eyebrow="All tracks"
         title="One catalog for product, systems, data, SQL, coding, and AI-native work."
-        description="Each public hub explains the skill, shows FLOW mapping, previews representative reps, and points toward the career outcomes where that skill creates leverage."
-        shaded
+        subtitle="Each public hub explains the skill, shows FLOW mapping, previews representative reps, and points toward the career outcomes where that skill creates leverage."
       >
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <V3CardGrid>
           {SKILL_DIRECTORIES.map((skill) => (
-            <DirectoryCard
+            <V3Card
               key={skill.slug}
               href={`/skills/${skill.slug}`}
+              eyebrow={skill.eyebrow}
               title={skill.shortTitle}
-              description={skill.summary}
-              meta={skill.eyebrow}
+              body={skill.summary}
             />
           ))}
-        </div>
-      </DirectorySection>
-      <CtaBand />
-    </DirectoryShell>
+        </V3CardGrid>
+      </V3Section>
+
+      <V3CtaBand
+        title="Turn the right discipline into proof of level."
+        subtitle="Run a live loop, get a score, and see the next move."
+        ctas={[{ label: 'Get started', href: '/signup' }]}
+      />
+    </V3PageShell>
   )
 }

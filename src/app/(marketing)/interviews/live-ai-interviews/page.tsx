@@ -1,15 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import {
-  BulletGrid,
-  CtaBand,
-  DirectoryHero,
-  DirectorySection,
-  DirectoryShell,
-  PillList,
-} from '@/components/directory/DirectoryChrome'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl, SITE_NAME, SITE_URL } from '@/lib/seo/site'
+import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { V3PageHero, V3Section, V3CardGrid, V3Card, V3CtaBand } from '@/components/landing-v3/sections'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Live AI Interview Practice for Product, Systems, SQL, Coding | HackProduct',
@@ -20,6 +13,7 @@ export const metadata: Metadata = buildMetadata({
 })
 
 const disciplines = ['Product sense', 'System design', 'Data modeling', 'SQL', 'Coding']
+
 const interviewSignals = [
   'Voice-to-voice follow-ups when you hand-wave',
   'Scenario selection across product, systems, data, SQL, and coding',
@@ -27,9 +21,27 @@ const interviewSignals = [
   'Debriefs that turn one interview into the next practice prescription',
 ]
 
+const relatedHubs = [
+  {
+    title: 'Product sense',
+    body: 'Practice ambiguous PM and engineering product decisions.',
+    href: '/skills/product-sense',
+  },
+  {
+    title: 'System design',
+    body: 'Practice architecture, scale, and technical communication.',
+    href: '/skills/system-design',
+  },
+  {
+    title: 'Company prep',
+    body: 'Map practice to top tech interview styles.',
+    href: '/companies',
+  },
+]
+
 export default function LiveAiInterviewsDirectoryPage() {
   return (
-    <DirectoryShell>
+    <V3PageShell>
       <JsonLdScript
         data={[
           breadcrumbJsonLd([
@@ -55,36 +67,42 @@ export default function LiveAiInterviewsDirectoryPage() {
           },
         ]}
       />
-      <DirectoryHero
+
+      <V3PageHero
         eyebrow="Live AI interviews"
         title="Mock interviews that push back like the real loop."
-        description="Hatch runs live practice rooms across product sense, system design, data modeling, SQL, and coding, then writes the debrief you can act on."
-        ctaHref="/live-interviews"
-        ctaLabel="Open interview room"
+        subtitle="Hatch runs live practice rooms across product sense, system design, data modeling, SQL, and coding, then writes the debrief you can act on."
+        ctas={[{ label: 'Open interview room', href: '/live-interviews' }]}
       />
-      <DirectorySection title="Interview disciplines">
-        <PillList items={disciplines} />
-      </DirectorySection>
-      <DirectorySection shaded eyebrow="Signals" title="What the interview room trains">
-        <BulletGrid items={interviewSignals} />
-      </DirectorySection>
-      <DirectorySection title="Related public hubs">
-        <div className="grid gap-3 md:grid-cols-3">
-          <Link className="rounded-xl bg-surface-container-lowest p-5 no-underline ring-1 ring-outline-variant/35 hover:ring-primary/35" href="/skills/product-sense">
-            <div className="font-headline text-xl font-semibold text-on-surface">Product sense</div>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Practice ambiguous PM and engineering product decisions.</p>
-          </Link>
-          <Link className="rounded-xl bg-surface-container-lowest p-5 no-underline ring-1 ring-outline-variant/35 hover:ring-primary/35" href="/skills/system-design">
-            <div className="font-headline text-xl font-semibold text-on-surface">System design</div>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Practice architecture, scale, and technical communication.</p>
-          </Link>
-          <Link className="rounded-xl bg-surface-container-lowest p-5 no-underline ring-1 ring-outline-variant/35 hover:ring-primary/35" href="/companies">
-            <div className="font-headline text-xl font-semibold text-on-surface">Company prep</div>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Map practice to top tech interview styles.</p>
-          </Link>
-        </div>
-      </DirectorySection>
-      <CtaBand title="Run the room when you want pressure." href="/live-interviews" label="Start an interview" />
-    </DirectoryShell>
+
+      <V3Section title="Interview disciplines">
+        <V3CardGrid>
+          {disciplines.map((discipline) => (
+            <V3Card key={discipline} title={discipline} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3Section eyebrow="Signals" title="What the interview room trains">
+        <V3CardGrid>
+          {interviewSignals.map((signal) => (
+            <V3Card key={signal} title={signal} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3Section title="Related public hubs">
+        <V3CardGrid>
+          {relatedHubs.map((hub) => (
+            <V3Card key={hub.href} title={hub.title} body={hub.body} href={hub.href} />
+          ))}
+        </V3CardGrid>
+      </V3Section>
+
+      <V3CtaBand
+        title="Run the room when you want pressure."
+        ctas={[{ label: 'Start an interview', href: '/live-interviews' }]}
+      />
+    </V3PageShell>
   )
 }

@@ -26,12 +26,19 @@ export function V3Nav() {
           <a className="nav-link" href="#disciplines">Disciplines <span className="caret">▾</span></a>
           <a className="nav-link" href="#features">Features <span className="caret">▾</span></a>
           <a className="nav-link" href="#live">Live Interviews</a>
+          <a className="nav-link" href="#analytics">Live Analyst</a>
           <a className="nav-link" href="#hatch">Hatch</a>
           <a className="nav-link" href="#pricing">Pricing</a>
         </div>
         <div className="nav-cta-row">
           <a className="nav-signin" href="/login">Sign in</a>
-          <a className="btn btn-amber nav-cta" href="/signup">Get started <span aria-hidden>→</span></a>
+          <button
+            type="button"
+            className="btn btn-amber nav-cta"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { mode: 'signup' } }))}
+          >
+            Get started <span aria-hidden>→</span>
+          </button>
         </div>
       </div>
     </nav>
