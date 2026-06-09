@@ -31,6 +31,7 @@ type TransactionalEmailKind =
   | 'resume_article'
   | 'promotion'
   | 'paid_insight'
+  | 'lead_magnet_unlock'
 
 interface BaseTransactionalInput {
   dedupeKey: string
@@ -123,6 +124,20 @@ interface PromotionInput extends BaseTransactionalInput {
   valueBullets?: string[] | null
   heroImageUrl?: string | null
   eyebrow?: string | null
+}
+
+interface LeadMagnetUnlockInput extends BaseTransactionalInput {
+  /** Magnet slug, e.g. 'failure-mode'. Drives the dedupe key + subject line. */
+  sourceSlug: string
+  subject: string
+  eyebrow: string
+  heading: string
+  body: string
+  ctaLabel: string
+  ctaUrl: string
+  valueBullets?: string[] | null
+  heroImageUrl?: string | null
+  heroAlt?: string | null
 }
 
 interface PaidInsightInput extends BaseTransactionalInput {
@@ -841,6 +856,23 @@ export function sendPromotionEmail(admin: SupabaseClient, input: PromotionInput)
     heading: input.heading,
     heroImageUrl: input.heroImageUrl ?? EMAIL_ART['hatch-wave'],
     heroAlt: 'Hatch',
+    body: input.body,
+    valueBullets: input.valueBullets ?? null,
+    ctaLabel: input.ctaLabel,
+    ctaUrl: input.ctaUrl,
+  })
+}
+
+export function sendLeadMagnetUnlockEmail(admin: SupabaseClient, input: LeadMagnetUnlockInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    dedupeKey: input.dedupeKey || `lead_magnet_unlock:${input.sourceSlug}:${input.to ?? ''}`,
+    kind: 'lead_magnet_unlock',
+    subject: input.subject,
+    eyebrow: input.eyebrow,
+    heading: input.heading,
+    heroImageUrl: input.heroImageUrl ?? EMAIL_ART['hatch-unlock'],
+    heroAlt: input.heroAlt ?? 'Hatch unlocking your result',
     body: input.body,
     valueBullets: input.valueBullets ?? null,
     ctaLabel: input.ctaLabel,

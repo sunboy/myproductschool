@@ -4,6 +4,7 @@
 // that don't opt in.
 import './v3/v3-landing.css'
 import './v3/v3-pages.css'
+import './v3/lead-magnet.css'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>

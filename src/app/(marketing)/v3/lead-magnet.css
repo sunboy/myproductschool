@@ -1,0 +1,162 @@
+/* Lead-magnet (/go/*) shared primitives. All scoped under `.v3` so they inherit
+ * the marketing design tokens and never leak. Pages compose these with their own
+ * widget markup. Tokens only — no raw hex except inside rgba() shadows, matching
+ * the existing v3-landing.css convention. */
+
+.v3 .lm-page { display: flex; flex-direction: column; }
+
+/* ── Hero rhythm ─────────────────────────────────────────── */
+.v3 .lm-hero {
+  padding: 88px 0 56px;
+  background:
+    radial-gradient(120% 80% at 80% -10%, var(--forest-soft) 0%, transparent 55%),
+    var(--bg);
+}
+.v3 .lm-hero .shell { display: grid; gap: 40px; grid-template-columns: 1fr; }
+@media (min-width: 960px) {
+  .v3 .lm-hero .shell { grid-template-columns: 1.05fr 0.95fr; align-items: center; }
+}
+.v3 .lm-hero h1 {
+  font-family: var(--v3-font-display);
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  margin: 14px 0 16px;
+}
+.v3 .lm-hero-lead {
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 52ch;
+}
+.v3 .lm-hero-bullets { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 12px; }
+.v3 .lm-hero-bullets li {
+  display: flex; gap: 10px; align-items: flex-start;
+  color: var(--ink-2); font-size: 15px; line-height: 1.45;
+}
+.v3 .lm-hero-bullets li::before {
+  content: ''; flex: 0 0 18px; height: 18px; margin-top: 1px; border-radius: var(--r-xs);
+  background: var(--forest-soft);
+  background-image: linear-gradient(135deg, transparent 40%, var(--forest) 40% 60%, transparent 60%);
+}
+
+/* ── Section frame ───────────────────────────────────────── */
+.v3 .lm-section { padding: 56px 0; }
+.v3 .lm-section-alt { background: var(--surface-2); }
+.v3 .lm-section h2 {
+  font-family: var(--v3-font-display);
+  font-size: clamp(24px, 3.4vw, 36px);
+  line-height: 1.1; letter-spacing: -0.015em; color: var(--ink-1);
+  margin: 12px 0 10px;
+}
+.v3 .lm-section-sub { color: var(--ink-2); font-size: 16px; line-height: 1.5; max-width: 60ch; }
+
+/* ── Card ────────────────────────────────────────────────── */
+.v3 .lm-card {
+  background: var(--paper);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-lg);
+  padding: 24px;
+}
+.v3 .lm-card + .lm-card { margin-top: 14px; }
+
+/* ── Gate form ───────────────────────────────────────────── */
+.v3 .lm-gate {
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  box-shadow: 0 18px 40px -28px rgba(30,27,20,0.35);
+}
+.v3 .lm-gate-signup { background: transparent; border: none; box-shadow: none; padding: 0; }
+.v3 .lm-gate-title { font-weight: 800; color: var(--ink-1); font-size: 18px; margin: 0 0 6px; }
+.v3 .lm-gate-sub { color: var(--ink-3); font-size: 14px; margin: 0 0 16px; line-height: 1.45; }
+.v3 .lm-gate-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.v3 .lm-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-full, 999px);
+  background: var(--bg);
+  color: var(--ink-1);
+  font-size: 15px;
+  outline: none;
+  transition: border-color var(--tr-fast);
+}
+.v3 .lm-input:focus { border-color: var(--forest); }
+.v3 .lm-input::placeholder { color: var(--ink-4); }
+.v3 .lm-gate-cta { white-space: nowrap; }
+.v3 .lm-gate-fine { color: var(--ink-4); font-size: 12px; margin: 12px 0 0; }
+.v3 .lm-gate-err { color: var(--amber-2); font-size: 13px; margin: 10px 0 0; }
+.v3 .lm-hp {
+  position: absolute; left: -9999px; width: 1px; height: 1px;
+  opacity: 0; pointer-events: none;
+}
+
+/* ── Unlocked state ──────────────────────────────────────── */
+.v3 .lm-unlocked {
+  border: 1px solid var(--forest);
+  border-radius: var(--r-lg);
+  background: var(--forest-soft);
+  padding: 24px;
+}
+.v3 .lm-unlocked-body { color: var(--ink-1); }
+.v3 .lm-unlocked-foot {
+  margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--line-3);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.v3 .lm-unlocked-foot p { color: var(--ink-2); font-size: 13px; margin: 0; }
+
+/* ── Breadth strip ───────────────────────────────────────── */
+.v3 .lm-breadth { padding: 56px 0; background: var(--dark); color: var(--on-dark); }
+.v3 .lm-breadth .eyebrow { color: var(--forest-bright); }
+.v3 .lm-breadth-head {
+  font-family: var(--v3-font-display);
+  font-size: clamp(24px, 3.4vw, 34px);
+  line-height: 1.1; letter-spacing: -0.015em;
+  color: var(--on-dark); margin: 12px 0 10px;
+}
+.v3 .lm-breadth-sub { color: var(--ink-4); font-size: 16px; line-height: 1.5; max-width: 60ch; }
+.v3 .lm-breadth-list {
+  list-style: none; padding: 0; margin: 22px 0 0;
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.v3 .lm-breadth-chip {
+  padding: 8px 16px;
+  border: 1px solid var(--dark-3);
+  border-radius: var(--r-full, 999px);
+  background: var(--dark-2);
+  color: var(--on-dark);
+  font-size: 14px; font-weight: 600;
+}
+
+/* ── Quiz / option mechanics (shared by several pages) ───── */
+.v3 .lm-option {
+  display: block; width: 100%; text-align: left;
+  padding: 16px 18px; margin: 0 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  color: var(--ink-1); font-size: 15px; line-height: 1.45;
+  cursor: pointer; transition: border-color var(--tr-fast), background var(--tr-fast), transform var(--tr-fast);
+}
+.v3 .lm-option:hover { border-color: var(--forest); transform: translateY(-1px); }
+.v3 .lm-option.is-selected { border-color: var(--forest); background: var(--forest-soft); }
+.v3 .lm-option.is-correct { border-color: var(--forest); background: var(--forest-soft); }
+.v3 .lm-option.is-wrong { border-color: var(--amber-2); background: var(--amber-soft); }
+.v3 .lm-option:disabled { cursor: default; }
+
+/* ── Scorecard rows (readiness / analyst) ────────────────── */
+.v3 .lm-score-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-1); }
+.v3 .lm-score-label { color: var(--ink-2); font-size: 14px; }
+.v3 .lm-score-bar { grid-column: 1 / -1; height: 7px; border-radius: var(--r-full, 999px); background: var(--surface-3); overflow: hidden; }
+.v3 .lm-score-fill { height: 100%; border-radius: inherit; background: var(--forest); }
+.v3 .lm-score-val { font-weight: 800; color: var(--ink-1); font-size: 14px; }
+
+@media (max-width: 600px) {
+  .v3 .lm-hero { padding: 64px 0 40px; }
+  .v3 .lm-gate-row { flex-direction: column; }
+  .v3 .lm-gate-cta { width: 100%; }
+}
