@@ -5,6 +5,9 @@ import { X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { AuthForm } from '@/components/auth/AuthForm'
 import { isPublicPath } from '@/lib/routes/public'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_SIGNUP_FROM_MAGNET } from '@/lib/posthog/events'
+import { consumeMagnetSource } from '@/lib/lead-magnets/utm'
 
 function getInternalPath(anchor: HTMLAnchorElement) {
   const href = anchor.getAttribute('href')
@@ -47,8 +50,17 @@ export function V3AuthGate() {
       }
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(Boolean(session))
+      // When a user signs in via OAuth on a /go/* page, read and clear the
+      // stored magnet source and fire the attribution event client-side.
+      // Email/password signups fire this server-side via the API route instead.
+      if (event === 'SIGNED_IN') {
+        const magnetSlug = consumeMagnetSource()
+        if (magnetSlug) {
+          trackEvent(EVENT_SIGNUP_FROM_MAGNET, { source_slug: magnetSlug })
+        }
+      }
     })
 
     return () => {

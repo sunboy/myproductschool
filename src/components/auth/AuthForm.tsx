@@ -7,6 +7,7 @@ import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 import { TurnstileWidget, isTurnstileClientEnabled } from '@/components/auth/TurnstileWidget'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { loginSchema, passwordResetRequestSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
+import { consumeMagnetSource } from '@/lib/lead-magnets/utm'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -307,11 +308,13 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
       if (!requireTurnstileToken()) return
 
       try {
+        const magnetSource = consumeMagnetSource()
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
           ...validation.data,
           turnstileToken,
           website,
           redirectTo: `${siteOrigin()}/dashboard`,
+          ...(magnetSource ? { magnetSource } : {}),
         })
         if (data.hasSession) {
           play('success')

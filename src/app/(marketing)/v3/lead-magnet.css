@@ -160,3 +160,117 @@
   .v3 .lm-gate-row { flex-direction: column; }
   .v3 .lm-gate-cta { width: 100%; }
 }
+
+/* ── Quiz engine primitives ─────────────────────────────────── */
+
+/* Slim progress track */
+.v3 .lm-progress {
+  height: 4px;
+  border-radius: var(--r-full, 999px);
+  background: var(--surface-3);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.v3 .lm-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--forest);
+  transition: width var(--tr-fast);
+}
+
+/* One-step card */
+.v3 .lm-quiz-step {
+  background: var(--paper);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-lg);
+  padding: 28px 24px;
+}
+
+/* "Step X of N" eyebrow inside the step card */
+.v3 .lm-quiz-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 14px;
+}
+
+/* Optional scenario paragraph above the prompt */
+.v3 .lm-quiz-context {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0 0 16px;
+}
+
+/* Back text-button */
+.v3 .lm-quiz-back {
+  display: inline-block;
+  padding: 0;
+  margin: 0 0 14px;
+  background: none;
+  border: none;
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.v3 .lm-quiz-back:hover { color: var(--ink-1); }
+
+/* Instant-reveal explanation callout */
+.v3 .lm-reveal {
+  background: var(--forest-soft);
+  border-left: 3px solid var(--forest);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  color: var(--ink-1);
+  font-size: 14px;
+  line-height: 1.55;
+  margin-top: 16px;
+}
+
+/* Select that reuses lm-input styling */
+.v3 .lm-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Result band headline */
+.v3 .lm-result-band {
+  font-family: var(--v3-font-display);
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  margin: 0 0 12px;
+}
+
+/* Result band supporting copy */
+.v3 .lm-result-blurb {
+  color: var(--ink-2);
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 52ch;
+  margin: 0;
+}
+
+/* Sticky bottom CTA — small screens only */
+.v3 .lm-sticky-cta {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--paper);
+  border-top: 1px solid var(--line-2);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 700px) {
+  .v3 .lm-sticky-cta { display: block; }
+}

@@ -5,6 +5,8 @@ import { IS_MOCK } from '@/lib/mock'
 import { authEmailSchema, honeypotSchema } from '@/lib/auth/validation'
 import { getLeadMagnet } from '@/lib/lead-magnets/config'
 import { sendLeadMagnetUnlockEmail } from '@/lib/email/transactional'
+import { captureServerImmediate } from '@/lib/posthog/server'
+import { EVENT_MAGNET_LEAD_CAPTURED } from '@/lib/posthog/events'
 
 // Lead capture for the /go/* paid-social landing pages. Mirrors the waitlist
 // route (admin client, IS_MOCK short-circuit, 23505 -> 409) and adds:
@@ -13,6 +15,8 @@ import { sendLeadMagnetUnlockEmail } from '@/lib/email/transactional'
 //    unlock emails and per-magnet segmentation)
 //  - honeypot spam defence
 //  - fire-and-forget unlock email (gate magnets only)
+//  - upsert on retake (same email + same magnet updates magnet_result)
+//  - tokenized report URL in the response when magnet.hasReport is true
 
 const leadSchema = z.object({
   email: authEmailSchema,
@@ -60,33 +64,55 @@ export async function POST(req: NextRequest) {
   }
 
   if (IS_MOCK) {
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, alreadyCaptured: false, reportUrl: null })
   }
 
   const supabase = createAdminClient()
+
+  // Pre-check: does a row already exist for this (email, source_slug)? This is
+  // the reliable retake signal — comparing created_at vs updated_at can race on
+  // the same-millisecond initial insert.
+  const { data: existing } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('email', email)
+    .eq('source_slug', source_slug)
+    .maybeSingle()
+
+  const alreadyCaptured = !!existing
+
   const row: {
     email: string
     source_slug: string
     name?: string
     magnet_result?: Record<string, unknown>
-  } = { email, source_slug }
+    updated_at: string
+  } = { email, source_slug, updated_at: new Date().toISOString() }
   if (name) row.name = name
   if (magnet_result) row.magnet_result = magnet_result
 
-  const { error } = await supabase.from('leads').insert(row)
+  const { data: upserted, error } = await supabase
+    .from('leads')
+    .upsert(row, { onConflict: 'email,source_slug' })
+    .select('id, report_token, created_at, updated_at')
+    .single()
 
-  // Duplicate (same email + same magnet) is a friendly success, not a hard
-  // error — the visitor already has the result; just re-send is unnecessary.
-  if (error && error.code !== '23505') {
+  if (error) {
     return NextResponse.json({ error: 'Failed to save' }, { status: 500 })
   }
 
-  const alreadyCaptured = error?.code === '23505'
+  const reportToken = upserted?.report_token as string | null
+  const reportUrl =
+    magnet.hasReport && reportToken
+      ? absoluteUrl(req, `/go/${source_slug}/r/${reportToken}`)
+      : null
 
-  // Fire-and-forget unlock email for gate magnets (skip on duplicate to avoid
-  // re-sending). Never block the HTTP response on email delivery.
+  // Fire-and-forget unlock email for new gate captures only (skip retakes to
+  // avoid re-sending). The email_dedupes table is a secondary guard.
   if (!alreadyCaptured && magnet.capture === 'gate' && magnet.unlockEmail) {
     const copy = magnet.unlockEmail
+    // When the magnet has a personal report, the email CTA links it directly.
+    const ctaUrl = reportUrl ?? absoluteUrl(req, copy.ctaUrl)
     void sendLeadMagnetUnlockEmail(supabase, {
       to: email,
       name: name ?? null,
@@ -97,7 +123,7 @@ export async function POST(req: NextRequest) {
       heading: copy.heading,
       body: copy.body,
       ctaLabel: copy.ctaLabel,
-      ctaUrl: absoluteUrl(req, copy.ctaUrl),
+      ctaUrl,
       valueBullets: copy.valueBullets ?? null,
     }).catch((err) => {
       console.error('[leads] unlock email failed', {
@@ -107,5 +133,26 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  return NextResponse.json({ success: true, alreadyCaptured })
+  // Server-side PostHog analytics — fire-and-forget, never breaks the response.
+  const utm = magnet_result && typeof magnet_result.utm === 'object' && magnet_result.utm !== null
+    ? magnet_result.utm as Record<string, string>
+    : {}
+
+  void captureServerImmediate({
+    distinctId: upserted?.id ?? email,
+    event: EVENT_MAGNET_LEAD_CAPTURED,
+    properties: {
+      source_slug,
+      already_captured: alreadyCaptured,
+      band: typeof magnet_result?.band === 'string' ? magnet_result.band : undefined,
+      ...(utm.utm_source ? { utm_source: utm.utm_source } : {}),
+      ...(utm.utm_campaign ? { utm_campaign: utm.utm_campaign } : {}),
+      ...(utm.utm_content ? { utm_content: utm.utm_content } : {}),
+    },
+  }).catch(() => {
+    // Analytics failure must never break the response — already guarded in
+    // captureServerImmediate, but belt-and-suspenders here too.
+  })
+
+  return NextResponse.json({ success: true, alreadyCaptured, reportUrl })
 }

@@ -47,6 +47,7 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     slug: 'failure-mode',
     label: 'Product-sense failure mode',
     capture: 'gate',
+    hasReport: true,
     unlockEmail: {
       subject: 'Your product-sense failure mode, unlocked',
       eyebrow: 'Your result',
@@ -65,6 +66,7 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     slug: 'ai-pm-readiness',
     label: 'AI product-sense readiness',
     capture: 'gate',
+    hasReport: true,
     unlockEmail: {
       subject: 'Your 2026 AI product-sense gap report',
       eyebrow: 'Your readiness',
@@ -83,6 +85,7 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     slug: 'answer-fix',
     label: 'Answer repair',
     capture: 'gate',
+    hasReport: true,
     unlockEmail: {
       subject: 'Your interview-answer structure, ready to print',
       eyebrow: 'Your toolkit',
@@ -101,6 +104,7 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     slug: 'ai-pm-questions',
     label: 'AI-PM question bank',
     capture: 'gate',
+    hasReport: true,
     unlockEmail: {
       subject: 'The full AI-PM question set, with what each one tests',
       eyebrow: 'Your question bank',
@@ -119,6 +123,7 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     slug: 'spot-the-flaw',
     label: 'Spot the flaw',
     capture: 'gate',
+    hasReport: true,
     unlockEmail: {
       subject: 'The rejection-reason taxonomy, unlocked',
       eyebrow: 'Your set',
@@ -137,6 +142,7 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     slug: 'salary',
     label: 'Comp + negotiation',
     capture: 'gate',
+    hasReport: true,
     unlockEmail: {
       subject: 'Your negotiation playbook is ready',
       eyebrow: 'Your playbook',
@@ -155,6 +161,7 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     slug: 'switch',
     label: 'Engineer to PM',
     capture: 'gate',
+    hasReport: true,
     unlockEmail: {
       subject: 'Your engineer-to-PM transition plan',
       eyebrow: 'Your plan',
