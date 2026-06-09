@@ -27,6 +27,19 @@ export interface LeadMagnet {
   capture: LeadMagnetCapture
   /** Present only for `gate` magnets. */
   unlockEmail?: LeadMagnetUnlockCopy
+  /**
+   * Gate magnets with a personal report page at /go/{slug}/r/{report_token}.
+   * When true, the unlock email CTA and the inline unlocked state both link
+   * the tokenized report (the printable deliverable).
+   */
+  hasReport?: boolean
+  /**
+   * Post-capture nurture copy (sent by the lead-nurture cron, deduped via
+   * email_dedupes). d2 = day-2 value email, d5 = day-5 signup push. Both are
+   * marketing emails and carry the unsubscribe link; the unlock email does
+   * not. Copy is segmented per magnet.
+   */
+  nurture?: { d2: LeadMagnetUnlockCopy; d5?: LeadMagnetUnlockCopy }
 }
 
 export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
