@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { INSTANT_HOOKS } from '@/lib/lead-magnets/instant'
 import { getLeadMagnet } from '@/lib/lead-magnets/config'
 import type {
@@ -8,6 +8,7 @@ import type {
   QuizAnswers,
   QuizOutcome,
   QuizStep,
+  QuizOptionTier,
 } from '@/lib/lead-magnets/quiz-types'
 import { toMagnetResultPayload } from '@/lib/lead-magnets/quiz-types'
 import { useMagnetTracking } from './useMagnetTracking'
@@ -20,15 +21,32 @@ import {
   EVENT_MAGNET_GATE_SUBMITTED,
   EVENT_MAGNET_CTA_CLICKED,
 } from '@/lib/posthog/events'
-
-// ── Per-slug config registry ──────────────────────────────────────────────────
-// Lazy-loaded at runtime from the 6 quiz modules.
+import { HatchGlyph, type HatchState } from '@/components/shell/HatchGlyph'
+import { HatchLottie } from '@/components/hatch/HatchLottie'
 import { failureModeQuizConfig } from '@/lib/lead-magnets/quizzes/failure-mode'
 import { aiPmReadinessConfig } from '@/lib/lead-magnets/quizzes/ai-pm-readiness'
 import { spotTheFlawConfig } from '@/lib/lead-magnets/quizzes/spot-the-flaw'
 import { switchQuizConfig } from '@/lib/lead-magnets/quizzes/switch'
 import { salaryQuizConfig } from '@/lib/lead-magnets/quizzes/salary'
 import { teardownQuizConfig } from '@/lib/lead-magnets/quizzes/teardown'
+
+// ── Tier → Hatch state + default quips ────────────────────────────────────────
+
+const TIER_STATES: Record<QuizOptionTier, HatchState> = {
+  best:    'delighted',
+  good:    'intrigued',
+  surface: 'challenging',
+  wrong:   'challenging',
+}
+
+const TIER_QUIPS: Record<QuizOptionTier, string> = {
+  best:    "That's the move. You named the real constraint before picking a direction.",
+  good:    "Solid instinct. One step short of the full picture.",
+  surface: "That treats the symptom. The question is what's driving it.",
+  wrong:   "Logical on the surface. Skips the problem and optimizes for the wrong thing.",
+}
+
+// ── Per-slug config registry ──────────────────────────────────────────────────
 
 const QUIZ_REGISTRY: Record<string, MagnetQuizConfig> = {
   'failure-mode': failureModeQuizConfig,
@@ -46,9 +64,11 @@ const SIGNUP_NEXT: Record<string, string> = {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Phase = 'hook' | 'quiz' | 'result' | 'capture' | 'unlocked'
+type Phase = 'hook' | 'quiz' | 'egg' | 'result' | 'capture' | 'unlocked'
 
 type RevealState = { pickedId: string; correct: boolean }
+
+type QuipState = { text: string } | null
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -69,6 +89,12 @@ export function InstantMagnet({ slug }: { slug: string }) {
   const [inputDraft, setInputDraft] = useState<Record<string, Record<string, string | number>>>({})
   const [outcome, setOutcome] = useState<QuizOutcome | null>(null)
 
+  // Hatch reaction state
+  const [hatchState, setHatchState] = useState<HatchState>('idle')
+  const [quip, setQuip] = useState<QuipState>(null)
+  const [eggHatching, setEggHatching] = useState(false)
+  const quipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Gate-capture state
   const [email, setEmail] = useState('')
   const [website, setWebsite] = useState('') // honeypot
@@ -79,6 +105,13 @@ export function InstantMagnet({ slug }: { slug: string }) {
   const startedEventFired = useRef(false)
   const gateViewedFired = useRef(false)
 
+  // Clean up quip timer on unmount
+  useEffect(() => {
+    return () => {
+      if (quipTimerRef.current) clearTimeout(quipTimerRef.current)
+    }
+  }, [])
+
   const fireStarted = useCallback(() => {
     if (!startedEventFired.current) {
       startedEventFired.current = true
@@ -87,12 +120,13 @@ export function InstantMagnet({ slug }: { slug: string }) {
   }, [track])
 
   // ── Progress bar segment count ──────────────────────────────────────────────
-  // Hook + steps + result = total + 2 segments.
-  const totalSegments = total + 2
+  // Hook + steps + egg + result = total + 3 segments.
+  const totalSegments = total + 3
   const filledSegments =
     phase === 'hook' ? 0
     : phase === 'quiz' ? 1 + stepIndex
-    : 1 + total  // result / capture / unlocked
+    : phase === 'egg' ? 1 + total
+    : 1 + total + 1  // result / capture / unlocked
 
   // ── Advance through quiz ────────────────────────────────────────────────────
   function advance(updatedAnswers: QuizAnswers) {
@@ -115,9 +149,14 @@ export function InstantMagnet({ slug }: { slug: string }) {
         variant: 'instant',
       })
       setOutcome(result)
-      setPhase('result')
+      // Always route through the egg reveal between quiz completion and result.
+      setHatchState('idle')
+      setEggHatching(false)
+      setPhase('egg')
     } else {
       setStepIndex(next)
+      // Reset Hatch to idle for each new step.
+      setHatchState('idle')
     }
   }
 
@@ -136,6 +175,26 @@ export function InstantMagnet({ slug }: { slug: string }) {
 
     const next = { ...answers, [step.id]: optionId }
     setAnswers(next)
+
+    // If the option has a tier, show Hatch reaction before advancing.
+    if (step.kind === 'mcq') {
+      const pickedOpt = step.options.find((o) => o.id === optionId)
+      if (pickedOpt?.tier) {
+        const tier = pickedOpt.tier
+        setHatchState(TIER_STATES[tier])
+        const quipText = pickedOpt.quip ?? TIER_QUIPS[tier]
+        setQuip({ text: quipText })
+
+        // Clear any pending timer, then schedule: hide quip + advance after 900ms.
+        if (quipTimerRef.current) clearTimeout(quipTimerRef.current)
+        quipTimerRef.current = setTimeout(() => {
+          setQuip(null)
+          advance(next)
+        }, 900)
+        return
+      }
+    }
+
     setTimeout(() => advance(next), 250)
   }
 
@@ -271,7 +330,18 @@ export function InstantMagnet({ slug }: { slug: string }) {
             />
           ))}
         </div>
+        {/* Persistent Hatch glyph — state reacts to answer tier */}
+        <div className="lmi-hatch-slot">
+          <HatchGlyph size={40} state={hatchState} />
+        </div>
       </div>
+
+      {/* Hatch quip speech bubble — shows ~900ms after tier-bearing answer */}
+      {quip && (
+        <div className="lmi-quip" role="status" aria-live="polite">
+          {quip.text}
+        </div>
+      )}
 
       {/* Scrollable body */}
       <div className="lmi-body">
@@ -320,10 +390,26 @@ export function InstantMagnet({ slug }: { slug: string }) {
             />
           )}
 
+          {/* ── EGG screen ───────────────────────────────────────────── */}
+          {phase === 'egg' && (
+            <InstantEgg
+              hatching={eggHatching}
+              onTap={() => {
+                if (eggHatching) return
+                track(EVENT_MAGNET_CTA_CLICKED, { cta: 'egg', variant: 'instant' })
+                setEggHatching(true)
+              }}
+              onHatchComplete={() => {
+                setPhase('result')
+              }}
+            />
+          )}
+
           {/* ── RESULT screen ────────────────────────────────────────── */}
           {phase === 'result' && outcome && (
             <InstantResult
               outcome={outcome}
+              eggHatched={eggHatching}
               onGetReport={() => {
                 if (magnet?.capture === 'signup') {
                   const next = SIGNUP_NEXT[slug] ?? '/dashboard'
@@ -526,45 +612,98 @@ function InstantStep({
   )
 }
 
+// ── InstantEgg ────────────────────────────────────────────────────────────────
+
+interface InstantEggProps {
+  hatching: boolean
+  onTap: () => void
+  onHatchComplete: () => void
+}
+
+function InstantEgg({ hatching, onTap, onHatchComplete }: InstantEggProps) {
+  return (
+    <div className="lmi-egg-stage">
+      <p className="lmi-eyebrow">Your result is ready.</p>
+      <h2 className="lmi-headline" style={{ textAlign: 'center', fontSize: 'clamp(24px,6vw,34px)' }}>
+        Tap the egg.
+      </h2>
+
+      <button
+        type="button"
+        className="lmi-egg-btn"
+        onClick={onTap}
+        aria-label="Tap to reveal your result"
+        disabled={hatching}
+      >
+        {!hatching ? (
+          <HatchLottie name="egg-idle" size={260} loop autoplay />
+        ) : (
+          <HatchLottie
+            name="egg-hatch"
+            size={260}
+            loop={false}
+            autoplay
+            onComplete={onHatchComplete}
+          />
+        )}
+      </button>
+
+      {!hatching && (
+        <p className="lmi-egg-hint">tap to reveal</p>
+      )}
+    </div>
+  )
+}
+
 // ── InstantResult ─────────────────────────────────────────────────────────────
 
 interface InstantResultProps {
   outcome: QuizOutcome
+  eggHatched: boolean
   onGetReport: () => void
   isSignupMode: boolean
 }
 
-function InstantResult({ outcome, onGetReport, isSignupMode }: InstantResultProps) {
+function InstantResult({ outcome, eggHatched, onGetReport, isSignupMode }: InstantResultProps) {
   const dims = outcome.dimensions?.slice(0, 5) ?? []
 
   return (
-    <div className="lmi-result">
-      <div>
-        <p className="lmi-eyebrow">Your result</p>
-        <p className="lmi-band">{outcome.band.label}</p>
-        <p className="lmi-blurb">{outcome.band.blurb}</p>
-      </div>
-
-      {dims.length > 0 && (
-        <div className="lmi-dims">
-          {dims.map((d) => {
-            const pct = Math.round((d.value / d.max) * 100)
-            return (
-              <div key={d.key} className="lmi-dim-row">
-                <span className="lmi-dim-label">{d.label}</span>
-                <span className="lmi-dim-val">{d.value}/{d.max}</span>
-                <div className="lmi-dim-bar">
-                  <div className="lmi-dim-fill" style={{ width: `${pct}%` }} />
-                </div>
-              </div>
-            )
-          })}
+    <div className="lmi-egg-result-wrap">
+      {/* Keep the completed egg-hatch Lottie in its final pose above the card */}
+      {eggHatched && (
+        <div className="lmi-egg-final">
+          <HatchLottie name="egg-hatch" size={160} loop={false} autoplay={false} />
         </div>
       )}
 
-      <button type="button" className="lmi-cta" onClick={onGetReport}>
-        {isSignupMode ? 'Start training free' : 'Get my full report'}
-      </button>
+      <div className="lmi-result-card">
+        <div>
+          <p className="lmi-eyebrow">Your result</p>
+          <p className="lmi-band">{outcome.band.label}</p>
+          <p className="lmi-blurb">{outcome.band.blurb}</p>
+        </div>
+
+        {dims.length > 0 && (
+          <div className="lmi-dims">
+            {dims.map((d) => {
+              const pct = Math.round((d.value / d.max) * 100)
+              return (
+                <div key={d.key} className="lmi-dim-row">
+                  <span className="lmi-dim-label">{d.label}</span>
+                  <span className="lmi-dim-val">{d.value}/{d.max}</span>
+                  <div className="lmi-dim-bar">
+                    <div className="lmi-dim-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        <button type="button" className="lmi-cta" onClick={onGetReport}>
+          {isSignupMode ? 'Start training free' : 'Get my full report'}
+        </button>
+      </div>
     </div>
   )
 }

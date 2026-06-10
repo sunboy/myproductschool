@@ -265,12 +265,12 @@ export function buildFailureModeReport(
       ? `${greeting}'s failure-mode profile`
       : 'Your failure-mode profile',
     intro:
-      'Four scenarios. One archetype. The move you skip, the competencies it implicates, and the reps that fix it.',
+      'Four scenarios. One pattern. The move you skip, the skills it connects to, and the reps that fix it.',
     sections: [
-      // ── (a) Archetype ────────────────────────────────────────────────────────
+      // ── (a) Thinking style ───────────────────────────────────────────────────
       {
         id: 'archetype',
-        title: 'Your archetype',
+        title: 'Your thinking style',
         body: (
           <div>
             <div
@@ -287,7 +287,7 @@ export function buildFailureModeReport(
               </p>
             </div>
             <p style={{ lineHeight: 1.65, color: 'var(--ink-2)', fontSize: 14 }}>
-              Archetypes are not fixed. They reflect the pattern produced by four answers
+              This is not fixed. It reflects the pattern produced by four answers
               under time pressure. The pattern changes when the weakest move improves.
             </p>
           </div>
@@ -302,8 +302,8 @@ export function buildFailureModeReport(
           <div>
             <p style={{ lineHeight: 1.65, color: 'var(--ink-2)', marginBottom: '1.25rem', fontSize: 14 }}>
               Each move scored on a 0-100 scale from your answers.
-              A score below 50 means the move was skipped or landed on the wrong layer.
-              A score of 70 or above means the move was structurally present and well-executed.
+              Below 50 means the move was skipped or landed on the wrong layer.
+              70 or above means the move was structurally present and well-executed.
             </p>
             <div className="lm-report-moves">
               {moves.map((move) => {
@@ -346,16 +346,16 @@ export function buildFailureModeReport(
         ),
       },
 
-      // ── (c) Six competencies ─────────────────────────────────────────────────
+      // ── (c) Six skills ───────────────────────────────────────────────────────
       {
         id: 'competencies',
-        title: 'The competencies behind your score',
+        title: 'The skills behind your score',
         body: (
           <div>
             <p style={{ lineHeight: 1.65, color: 'var(--ink-2)', marginBottom: '1.25rem', fontSize: 14 }}>
-              Each FLOW move draws on two competencies. Your weakest move,{' '}
-              <strong>{weakestLabel}</strong>, implicates the two described below.
-              These are the competencies where targeted reps produce the largest score improvement.
+              Each FLOW move draws on two thinking skills. Your weakest move,{' '}
+              <strong>{weakestLabel}</strong>, connects to the two described below.
+              These are the skills where targeted reps produce the largest improvement.
             </p>
             <div className="lm-report-templates">
               {competencies.map((c) => (
@@ -369,9 +369,9 @@ export function buildFailureModeReport(
               ))}
             </div>
             <p style={{ lineHeight: 1.65, color: 'var(--ink-2)', marginTop: '1rem', fontSize: 14 }}>
-              The full competency model has six dimensions. The other four are reached by
+              The full model has six thinking skills. The others are reached by
               strengthening the remaining moves. The sequence that works: fix the weakest
-              move first, because the competencies it implicates are prerequisites for the
+              move first, because the skills it connects to are prerequisites for the
               adjacent moves.
             </p>
           </div>

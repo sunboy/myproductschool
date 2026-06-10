@@ -12,6 +12,14 @@ import {
   type MoveScores,
 } from '@/lib/calibration/derive'
 
+// Map calibration quality → instant-player tier for Hatch reactions.
+const QUALITY_TO_TIER: Record<string, 'best' | 'good' | 'surface' | 'wrong'> = {
+  best: 'best',
+  good_but_incomplete: 'good',
+  surface: 'surface',
+  plausible_wrong: 'wrong',
+}
+
 // Map the four calibration questions directly into MagnetQuiz steps.
 // step.id = move key so answers are keyed by move for scoring.
 const buildSteps = () =>
@@ -23,6 +31,7 @@ const buildSteps = () =>
     options: q.options.map((o) => ({
       id: o.id,
       text: o.text,
+      tier: QUALITY_TO_TIER[o.quality],
     })),
     // No reveal — silent scoring keeps the diagnostic feel.
   }))

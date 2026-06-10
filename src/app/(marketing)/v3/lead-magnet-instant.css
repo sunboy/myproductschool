@@ -477,6 +477,123 @@
   margin: 0;
 }
 
+/* ── Hatch top-bar glyph ─────────────────────────────────────────────────── */
+
+.lmi-hatch-slot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  margin-left: 6px;
+}
+
+/* ── Hatch quip speech bubble ────────────────────────────────────────────── */
+
+.lmi-quip {
+  position: fixed;
+  top: 52px;                          /* just below the top bar (h ≈ 48px) */
+  right: 16px;
+  max-width: 260px;
+  background: var(--paper);
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink-1);
+  box-shadow: 0 6px 20px -8px rgba(30, 27, 20, 0.22);
+  z-index: 40;
+  pointer-events: none;
+  animation: lmi-quip-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Caret pointing up-right toward the Hatch glyph */
+.lmi-quip::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  right: 18px;
+  width: 12px;
+  height: 12px;
+  background: var(--paper);
+  border-left: 1.5px solid var(--line-2);
+  border-top: 1.5px solid var(--line-2);
+  transform: rotate(45deg);
+}
+
+@keyframes lmi-quip-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Egg stage ───────────────────────────────────────────────────────────── */
+
+.lmi-egg-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.lmi-egg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: var(--r-lg);
+  transition: transform var(--tr-fast);
+}
+
+.lmi-egg-btn:hover { transform: scale(1.04); }
+.lmi-egg-btn:active { transform: scale(0.97); }
+
+.lmi-egg-hint {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin: 0;
+  animation: lmi-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lmi-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* ── Result card (post-egg reveal) ──────────────────────────────────────── */
+
+.lmi-result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  box-shadow: 0 12px 32px -16px rgba(30, 27, 20, 0.2);
+  animation: lmi-card-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lmi-egg-result-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.lmi-egg-final {
+  flex: 0 0 auto;
+}
+
+@keyframes lmi-card-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Motion preferences ──────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -484,7 +601,19 @@
   .lmi-cta,
   .lmi-cta-secondary,
   .lmi-progress-seg,
-  .lmi-dim-fill {
+  .lmi-dim-fill,
+  .lmi-egg-btn,
+  .lmi-result-card {
     transition: none;
+    animation: none;
+  }
+
+  .lmi-quip {
+    animation: none;
+  }
+
+  .lmi-egg-hint {
+    animation: none;
+    opacity: 1;
   }
 }

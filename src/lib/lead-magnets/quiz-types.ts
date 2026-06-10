@@ -4,6 +4,14 @@
 // src/lib/lead-magnets/quizzes/. Everything here is import-safe on both server
 // and client: configs are plain data + pure functions, no server-only deps.
 
+/**
+ * Tier mapping for live Hatch reaction in the instant player.
+ * best → 'delighted' state, good → 'intrigued', surface/wrong → 'challenging'.
+ * When tier is set on an option, the player shows a speech bubble quip
+ * (~900ms) before auto-advancing instead of the default 250ms.
+ */
+export type QuizOptionTier = 'best' | 'good' | 'surface' | 'wrong'
+
 /** One selectable option inside an MCQ step. */
 export interface QuizOption {
   id: string
@@ -13,6 +21,18 @@ export interface QuizOption {
    * { evals: 2 }. Keys are magnet-defined dimension keys.
    */
   scores?: Record<string, number>
+  /**
+   * Quality tier — drives Hatch's live reaction in the instant player.
+   * Maps from calibration option quality:
+   *   best → 'best', good_but_incomplete → 'good',
+   *   surface → 'surface', plausible_wrong → 'wrong'
+   */
+  tier?: QuizOptionTier
+  /**
+   * Optional per-option quip override. When absent the player uses the
+   * default per-tier line from TIER_QUIPS in InstantMagnet.
+   */
+  quip?: string
 }
 
 export type QuizStep =

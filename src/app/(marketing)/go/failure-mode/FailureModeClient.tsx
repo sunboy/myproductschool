@@ -24,7 +24,7 @@ function ResultView({
     <div style={{ display: 'grid', gap: 24 }}>
       {/* Archetype band */}
       <div className="lm-card">
-        <p className="lm-quiz-eyebrow">Your failure mode</p>
+        <p className="lm-quiz-eyebrow">Your thinking style</p>
         <p className="lm-result-band">{outcome.band.label}</p>
         <p className="lm-result-blurb">{outcome.band.blurb}</p>
       </div>
@@ -131,7 +131,7 @@ function ResultView({
         mode="gate"
         magnetResult={payload}
         title="Get your full failure-mode profile"
-        subtitle="Six-competency breakdown, the three reps that fix your weakest move, and a printable 7-day plan."
+        subtitle="Six-skill breakdown, the three reps that fix your weakest move, and a printable 7-day plan."
         ctaLabel="See your full profile"
         postUnlockCtaLabel="Start training free"
         signupNext="/challenges"
@@ -155,8 +155,8 @@ function ResultView({
             fontSize: 14,
           }}
         >
-          <li>Your six-competency profile across motivation theory, cognitive empathy, taste, strategic thinking, creative execution, and domain expertise</li>
-          <li>Which specific competencies your weakest move implicates</li>
+          <li>Your six-skill profile across the thinking moves that decide PM screens</li>
+          <li>Which specific skills your weakest move connects to</li>
           <li>Three reps to fix it, in order of highest impact</li>
           <li>A 7-day plan: day by day, starting from where you are</li>
         </ul>
