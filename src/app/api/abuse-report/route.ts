@@ -6,7 +6,7 @@ import { rateLimit } from '@/lib/security/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
-const TARGET_TYPES = ['hatch_response', 'share_scorecard', 'discussion_comment'] as const
+const TARGET_TYPES = ['hatch_response', 'share_scorecard', 'share_fit_report', 'discussion_comment'] as const
 const REPORT_CATEGORIES = ['harmful', 'harassment', 'spam', 'broken_incorrect', 'other'] as const
 
 const MetadataValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])

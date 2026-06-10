@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 
 type ReportCategory = 'harmful' | 'harassment' | 'spam' | 'broken_incorrect' | 'other'
-type ReportTargetType = 'hatch_response' | 'share_scorecard' | 'discussion_comment'
+type ReportTargetType = 'hatch_response' | 'share_scorecard' | 'share_fit_report' | 'discussion_comment'
 
 type ReportMetadata = Record<string, string | number | boolean | null>
 

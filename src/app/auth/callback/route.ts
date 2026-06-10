@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { AFFILIATE_COOKIE_NAME, affiliatesEnabled } from '@/lib/affiliate/config'
 import { applyReferralAttribution } from '@/lib/affiliate/server'
+import { FIT_CLAIM_COOKIE, claimPublicFitReports } from '@/lib/careerops/public/claim'
 import { sendWelcomeEmail } from '@/lib/email/transactional'
 import { captureServerImmediate } from '@/lib/posthog/server'
 import { EVENT_USER_SIGNED_UP } from '@/lib/posthog/events'
@@ -67,6 +68,11 @@ export async function GET(request: NextRequest) {
       request.cookies.get(AFFILIATE_COOKIE_NAME)?.value
     )
   }
+
+  // Claim any anonymous /job-fit report this visitor ran before signing up.
+  // Best-effort by contract: claimPublicFitReports never throws, and is not
+  // awaited so it can never delay the redirect.
+  void claimPublicFitReports(admin, data.user.id, request.cookies.get(FIT_CLAIM_COOKIE)?.value)
 
   const { data: profile } = await admin
     .from('profiles')

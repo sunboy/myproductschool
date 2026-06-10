@@ -10,6 +10,9 @@ import { assertCareerOpsFeature } from '@/lib/careerops/assert-feature'
 import { isCareerOpsFeatureEnabled } from '@/lib/careerops/flags'
 import { buildCareerGrounding } from '@/lib/careerops/grounding'
 import { NotAJobDescriptionError, scoreJob } from '@/lib/careerops/scorer'
+import { getOrCreateEvaluationShareId } from '@/lib/careerops/public/share'
+import { EVENT_FIT_RUN_COMPLETED } from '@/lib/posthog/events'
+import { captureServerImmediate } from '@/lib/posthog/server'
 import type { CareerProfile } from '@/lib/careerops/types'
 
 const ROUTE_KEY = 'careerops_score'
@@ -113,19 +116,39 @@ export async function POST(req: NextRequest) {
     return apiError(502, 'score_failed', 'Scoring failed, please try again')
   }
 
-  // Persist the evaluation history row.
-  await admin.from('career_fit_evaluations').insert({
-    user_id: user.id,
-    application_id: body.application_id ?? null,
-    company: body.company ?? null,
-    role_title: body.role_title ?? null,
-    score: evaluation.score,
-    grade: evaluation.grade,
-    breakdown: evaluation.breakdown,
-    report_md: evaluation.report_md,
-    gaps: evaluation.gaps,
-    readiness_map: evaluation.readiness_map,
-  })
+  // Persist the evaluation history row and give it a public share card.
+  const { data: insertedEval } = await admin
+    .from('career_fit_evaluations')
+    .insert({
+      user_id: user.id,
+      application_id: body.application_id ?? null,
+      company: body.company ?? null,
+      role_title: body.role_title ?? null,
+      score: evaluation.score,
+      grade: evaluation.grade,
+      breakdown: evaluation.breakdown,
+      report_md: evaluation.report_md,
+      gaps: evaluation.gaps,
+      readiness_map: evaluation.readiness_map,
+    })
+    .select('id')
+    .single()
+
+  let shareUrl: string | null = null
+  if (insertedEval?.id) {
+    try {
+      const shareId = await getOrCreateEvaluationShareId(admin, {
+        evaluationId: insertedEval.id as string,
+        userId: user.id,
+      })
+      if (shareId) {
+        shareUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://hackproduct.com'}/job-fit/r/${shareId}`
+      }
+    } catch (error) {
+      // The score is the product; the share card is a bonus. Never fail the run.
+      console.error('[careerops/score] share id failed:', error)
+    }
+  }
 
   // Update the linked application's fit fields when given.
   if (body.application_id) {
@@ -153,5 +176,11 @@ export async function POST(req: NextRequest) {
   })
   await admin.rpc('update_user_streak', { p_user_id: user.id }).then(undefined, () => {})
 
-  return NextResponse.json({ evaluation, xp_earned: SCORE_XP })
+  await captureServerImmediate({
+    distinctId: user.id,
+    event: EVENT_FIT_RUN_COMPLETED,
+    properties: { mode: 'job_fit', score: evaluation.score, grade: evaluation.grade, anonymous: false },
+  })
+
+  return NextResponse.json({ evaluation, xp_earned: SCORE_XP, share_url: shareUrl })
 }

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { AFFILIATE_COOKIE_NAME, affiliatesEnabled } from '@/lib/affiliate/config'
 import { applyReferralAttribution } from '@/lib/affiliate/server'
+import { FIT_CLAIM_COOKIE, claimPublicFitReports } from '@/lib/careerops/public/claim'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -86,6 +87,9 @@ export async function POST(request: NextRequest) {
         request.cookies.get(AFFILIATE_COOKIE_NAME)?.value
       )
     }
+    // Claim any anonymous /job-fit report this visitor ran before signing up.
+    // Best-effort by contract: claimPublicFitReports never throws.
+    void claimPublicFitReports(admin, data.user.id, request.cookies.get(FIT_CLAIM_COOKIE)?.value)
     // Fire-and-forget welcome email. With email confirmation disabled, signups
     // land here with a session and never pass through /auth/callback, so this is
     // the welcome hook for email/password users. The `welcome:${userId}`

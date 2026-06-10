@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { ReadinessMap } from './ReadinessMap'
 import { gradeClasses } from './grade'
+import { FitShareActions } from './public/FitShareActions'
 import { isCareerOpsFeatureEnabled } from '@/lib/careerops/flags'
 import type { FitEvaluation } from '@/lib/careerops/types'
 
@@ -15,6 +16,7 @@ export function ScorePanel() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [evaluation, setEvaluation] = useState<FitEvaluation | null>(null)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const trackerOn = isCareerOpsFeatureEnabled('tracker')
 
@@ -23,6 +25,7 @@ export function ScorePanel() {
     setLoading(true)
     setError(null)
     setEvaluation(null)
+    setShareUrl(null)
     setSaved(false)
     try {
       const res = await fetch('/api/career-ops/score', {
@@ -34,6 +37,7 @@ export function ScorePanel() {
       if (!res.ok) throw new Error('score_failed')
       const data = await res.json()
       setEvaluation(data.evaluation as FitEvaluation)
+      setShareUrl((data.share_url as string | null) ?? null)
     } catch {
       setError('Scoring failed. Try again.')
     } finally {
@@ -152,6 +156,17 @@ export function ScorePanel() {
               <p className="mb-2 font-label text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Readiness map</p>
               <ReadinessMap rows={evaluation.readiness_map} />
             </div>
+
+            {shareUrl && (
+              <div>
+                <p className="mb-2 font-label text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Share it</p>
+                <FitShareActions
+                  shareUrl={shareUrl}
+                  shareText={`I scored ${evaluation.score}/100 fit against ${(company.trim() || 'a role I want')} with Hatch.`}
+                  mode="job_fit"
+                />
+              </div>
+            )}
 
             {trackerOn && (
               <button
