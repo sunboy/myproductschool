@@ -8,6 +8,9 @@ export const AI_PLAN_LIMIT_FEATURES = [
   'live_interview_turns',
   'quick_takes',
   'ai_grading_runs',
+  'careerops_fit_scores',
+  'careerops_feed_scores',
+  'careerops_resume_tailors',
 ] as const
 
 export type AiPlanLimitFeature = (typeof AI_PLAN_LIMIT_FEATURES)[number]
@@ -74,6 +77,9 @@ const FALLBACK_AI_PLAN_LIMITS: Record<BillingPlan, Record<AiPlanLimitFeature, Pl
     live_interview_turns: { limitValue: 80, windowDays: 30 },
     quick_takes: { limitValue: 30, windowDays: 30 },
     ai_grading_runs: { limitValue: 30, windowDays: 30 },
+    careerops_fit_scores: { limitValue: 3, windowDays: 30 },
+    careerops_feed_scores: { limitValue: 10, windowDays: 30 },
+    careerops_resume_tailors: { limitValue: 1, windowDays: 30 },
   },
   pro: {
     hatch_chat_msgs: { limitValue: 1500, windowDays: 30 },
@@ -83,6 +89,9 @@ const FALLBACK_AI_PLAN_LIMITS: Record<BillingPlan, Record<AiPlanLimitFeature, Pl
     live_interview_turns: { limitValue: 1500, windowDays: 30 },
     quick_takes: { limitValue: 1000, windowDays: 30 },
     ai_grading_runs: { limitValue: 1000, windowDays: 30 },
+    careerops_fit_scores: { limitValue: 200, windowDays: 30 },
+    careerops_feed_scores: { limitValue: 400, windowDays: 30 },
+    careerops_resume_tailors: { limitValue: 100, windowDays: 30 },
   },
 }
 

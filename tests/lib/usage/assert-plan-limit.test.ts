@@ -98,3 +98,19 @@ test('assertPlanLimit normalizes unknown plans to free', async () => {
   const usage = await assertPlanLimit('user-3', 'enterprise', 'simulation_turns')
   assert.equal(usage.limit, 1)
 })
+
+test('careerops AI features resolve free/pro fallback limits', async () => {
+  const now = () => new Date('2026-05-05T12:00:00.000Z')
+
+  const freeStore = new MemoryPlanLimitStore()
+  const assertFree = createPlanLimitAsserter({ store: freeStore, now })
+  assert.equal((await assertFree('u-free', 'free', 'careerops_fit_scores')).limit, 3)
+  assert.equal((await assertFree('u-free', 'free', 'careerops_feed_scores')).limit, 10)
+  assert.equal((await assertFree('u-free', 'free', 'careerops_resume_tailors')).limit, 1)
+
+  const proStore = new MemoryPlanLimitStore()
+  const assertPro = createPlanLimitAsserter({ store: proStore, now })
+  assert.equal((await assertPro('u-pro', 'pro', 'careerops_fit_scores')).limit, 200)
+  assert.equal((await assertPro('u-pro', 'pro', 'careerops_feed_scores')).limit, 400)
+  assert.equal((await assertPro('u-pro', 'pro', 'careerops_resume_tailors')).limit, 100)
+})

@@ -99,6 +99,7 @@ export function parseHatchPageContext(pathname: string): Omit<HatchPageContext, 
   if (pathname.startsWith('/challenges')) return { pageType: 'practice', entityId: null, pathname }
   if (pathname.startsWith('/progress')) return { pageType: 'progress', entityId: null, pathname }
   if (pathname.startsWith('/live-interviews')) return { pageType: 'live_interviews', entityId: null, pathname }
+  if (pathname.startsWith('/career-ops')) return { pageType: 'career', entityId: null, pathname }
 
   return { pageType: 'general', entityId: null, pathname }
 }

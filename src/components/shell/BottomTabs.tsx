@@ -1,14 +1,16 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { isCareerOpsFeatureEnabled } from '@/lib/careerops/flags'
 
 const tabs = [
   { href: '/dashboard',  icon: 'home',           label: 'Home'     },
   { href: '/explore',    icon: 'explore',        label: 'Explore'  },
   { href: '/challenges', icon: 'track_changes', label: 'Practice' },
   { href: '/live-interviews', icon: 'graphic_eq', label: 'Interview' },
+  { href: '/career-ops', icon: 'work',           label: 'Career'   },
   { href: '/progress',   icon: 'bar_chart',      label: 'Progress' },
-]
+].filter(tab => tab.href !== '/career-ops' || isCareerOpsFeatureEnabled('master'))
 
 export function BottomTabs() {
   const pathname = usePathname()

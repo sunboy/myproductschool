@@ -22,6 +22,7 @@ import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPee
 import { CommunityActivityCard } from '@/components/dashboard/cards/CommunityActivityCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
+import { CareerDiscoveryCard } from '@/components/dashboard/cards/CareerDiscoveryCard'
 import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
 import { AchievementsCard, ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
 import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarCard'
@@ -596,6 +597,9 @@ export default async function DashboardPage() {
                 {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
               </div>
             )}
+
+            {/* CareerOps — top job matches (renders only when the discovery flag is on) */}
+            <CareerDiscoveryCard />
 
             {/* Secondary row */}
             <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
