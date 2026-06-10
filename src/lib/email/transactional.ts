@@ -133,6 +133,8 @@ interface LeadMagnetUnlockInput extends BaseTransactionalInput {
   eyebrow: string
   heading: string
   body: string
+  /** Extra paragraphs after `body` — the value-dense part of the email. */
+  bodyParagraphs?: string[] | null
   ctaLabel: string
   ctaUrl: string
   valueBullets?: string[] | null
@@ -174,6 +176,14 @@ interface TransactionalEmailPayload extends BaseTransactionalInput {
   valueBullets?: string[] | null
   secondaryCta?: SecondaryCta | null
   tone?: EmailTone
+  /** Additional body paragraphs rendered after `body` (each its own <p>). */
+  bodyParagraphs?: string[] | null
+  /**
+   * Footer line explaining why the recipient got this email. Defaults to the
+   * account-holder line; lead-magnet emails override it since leads have no
+   * account.
+   */
+  audienceNote?: string | null
 }
 
 function appUrl(path = '/') {
@@ -344,6 +354,12 @@ function renderHtmlEmail(input: TransactionalEmailPayload) {
           <div style="padding:24px;">
             <p style="margin:0 0 14px;color:${COLOR.ink};font-size:15px;line-height:1.7;">${greeting}</p>
             <p style="margin:0;color:${COLOR.muted};font-size:15px;line-height:1.7;">${escapeHtml(input.body)}</p>
+            ${(input.bodyParagraphs ?? [])
+              .map(
+                (p) =>
+                  `<p style="margin:14px 0 0;color:${COLOR.muted};font-size:15px;line-height:1.7;">${escapeHtml(p)}</p>`,
+              )
+              .join('')}
             ${detail}
             ${valueBulletList(input.valueBullets)}
             ${ctaBlock}
@@ -351,7 +367,7 @@ function renderHtmlEmail(input: TransactionalEmailPayload) {
           </div>
         </div>
         <p style="margin:18px 0 0;color:${COLOR.faint};font-size:12px;line-height:1.6;">
-          You are receiving this because you have a HackProduct account.
+          ${escapeHtml(input.audienceNote ?? 'You are receiving this because you have a HackProduct account.')}
           ${input.unsubscribeUrl ? `<br /><a href="${escapeHtml(input.unsubscribeUrl)}" style="color:${COLOR.primary};text-decoration:underline;">Unsubscribe</a>` : ''}
         </p>
       </div>
@@ -370,6 +386,7 @@ function renderTextEmail(input: TransactionalEmailPayload) {
     '',
     input.name?.trim() ? `Hi ${input.name.trim()},` : 'Hi,',
     input.body,
+    ...(input.bodyParagraphs ?? []).map((p) => `\n${p}`),
     input.detail ?? null,
     bullets ? `\n${bullets}` : null,
     input.ctaUrl && input.ctaLabel ? `\n${input.ctaLabel}: ${input.ctaUrl}` : null,
@@ -874,9 +891,11 @@ export function sendLeadMagnetUnlockEmail(admin: SupabaseClient, input: LeadMagn
     heroImageUrl: input.heroImageUrl ?? EMAIL_ART['hatch-unlock'],
     heroAlt: input.heroAlt ?? 'Hatch unlocking your result',
     body: input.body,
+    bodyParagraphs: input.bodyParagraphs ?? null,
     valueBullets: input.valueBullets ?? null,
     ctaLabel: input.ctaLabel,
     ctaUrl: input.ctaUrl,
+    audienceNote: 'You are receiving this because you requested your result at hackproduct.com.',
   })
 }
 

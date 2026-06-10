@@ -15,6 +15,11 @@ export interface LeadMagnetUnlockCopy {
   eyebrow: string
   heading: string
   body: string
+  /**
+   * Extra paragraphs after `body`. This is where the email earns its open:
+   * real substance from the magnet, not a teaser. Aim for 3-5 paragraphs.
+   */
+  bodyParagraphs?: string[]
   ctaLabel: string
   ctaUrl: string
   valueBullets?: string[]
@@ -96,10 +101,16 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     capture: 'gate',
     hasReport: true,
     unlockEmail: {
-      subject: 'Your 2026 AI product-sense gap report',
+      subject: 'Five dimensions, one gap: your AI product-sense read',
       eyebrow: 'Your readiness',
-      heading: 'Where you stand on the round that now decides AI-PM offers.',
-      body: 'The score was the surface. Inside: your gap on each of the five dimensions an AI product-sense round tests, with the model-layer versus app-layer breakdown most candidates miss.',
+      heading: 'Where the round is actually going, and where your score sits.',
+      body: 'You just worked through five scenarios that map to the five dimensions AI-native companies use to screen product candidates in 2026. The band is the surface. This is the rest: a per-dimension read, the distinction that decides most rejects, and a two-week plan starting from your weakest score.',
+      bodyParagraphs: [
+        'Here is the one distinction the quiz was built around: most candidates default to the model layer for problems that belong in the app layer. Formatting inconsistency, style drift, and output structure issues in an AI feature are almost always fixable with a system prompt, few-shot examples, or a post-processing step. Fine-tuning is a last resort, not a first response, and reaching for it too early signals that a candidate does not know where to apply force. The line an interviewer draws when scoring is: does this person know the difference between a model problem and an app-layer problem?',
+        'In 2026, this matters because the round itself has changed. AI product-sense questions are no longer about describing what a feature does. They ask about when not to build it, which layer owns the problem, what an offline eval cannot measure, and where safety belongs other than in a disclaimer. Candidates who prepped on 2023 materials are being screened out in the first fifteen minutes on exactly these dimensions, because those dimensions were not in the playbooks two years ago.',
+        'Your full report breaks the result into all five dimensions scored 0 to 3, shows the gap text for each one that landed at or below 1, and walks through a complete model-layer versus app-layer worked example using a support-thread summarization feature. There is also a safety-woven answer template with four layers: framing, data access, output format, and ongoing metrics. The two-week plan at the end starts from your weakest dimension and runs one targeted rep per day.',
+        'HackProduct is the gym this diagnostic came from. Inside: 104 real product decisions graded move by move by Hatch, plus system design, SQL, coding, data modeling, and live AI interview rounds in one place. The practice reps for the AI product-sense dimensions your report flagged are already there, matched to your band.',
+      ],
       ctaLabel: 'Open your gap report',
       ctaUrl: '/go/ai-pm-readiness',
       valueBullets: [
@@ -143,10 +154,16 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     capture: 'gate',
     hasReport: true,
     unlockEmail: {
-      subject: 'Your interview-answer structure, ready to print',
+      subject: 'The four-move structure behind strong interview answers',
       eyebrow: 'Your toolkit',
-      heading: 'The four-move structure that turns rambling into a hire.',
-      body: 'You watched one answer get rebuilt. This is the reusable version: the move-by-move structure plus the three reasoning templates strong candidates run without thinking.',
+      heading: 'Every strong answer runs four moves. Here is the reusable version.',
+      body: 'You watched one answer get rebuilt. This is the version you keep: the four-move structure, the three reasoning templates that run underneath strong answers, and the before-and-after cases that show the difference at the sentence level.',
+      bodyParagraphs: [
+        'Here is the template for the move most candidates skip: the Optimize tradeoff sentence. A strong answer at this move looks like: "We get [gain]. We give up [sacrifice]. The sacrifice is acceptable because [reason]." Most candidates state a preference with supporting reasons but never name what the team gives up by making the choice. The interviewer hears an opinion rather than a decision, because a real decision has a named cost. This template is worth writing out and saying aloud before any screen where you will be asked to pick between options.',
+        'The 2026 hiring context is relevant here. AI-adjacent product roles have made the bar for structured thinking sharper, not softer. Interviewers at AI-native companies are running the FLOW scoring pattern on answers whether candidates know it or not: did the answer name the right problem before jumping to solutions, did it generate more than one direction, did it name the sacrifice, did it end with a falsifiable claim. The candidates who pass have internalized the structure so it runs under pressure without effort.',
+        'Your full report has the printable four-move structure with a template sentence for each move, three reasoning templates for the moments that cause the most rambling (the opening frame, the tradeoff, and the close), and a set of before-and-after answer excerpts where you can see exactly which move was skipped and what the stronger version does differently.',
+        'When you want to practice the structure on real scenarios with graded feedback, HackProduct is where this came from. Hatch marks which move landed and which one missed on each rep. That feedback loop, across 104 real product decisions plus system design, SQL, coding, and live AI interview rounds, is what makes the structure automatic rather than effortful.',
+      ],
       ctaLabel: 'Get the structure',
       ctaUrl: '/go/answer-fix',
       valueBullets: [
@@ -190,10 +207,17 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     capture: 'gate',
     hasReport: true,
     unlockEmail: {
-      subject: 'The full AI-PM question set, with what each one tests',
+      subject: 'The AI-PM question that eliminates the most candidates, and how to answer it',
       eyebrow: 'Your question bank',
-      heading: 'The questions exposing unready candidates, all of them.',
-      body: 'You saw the first ten. Here is the full set, each tagged with the reasoning move it tests, plus the answer skeletons and rubrics interviewers actually score against.',
+      heading: '24 questions. Here is the one with the highest rejection rate, answered.',
+      body: 'You saw the first ten. Here is the full set of 24, each tagged with the reasoning move it tests and the hidden signal behind it, plus answer skeletons for the six questions with the highest rejection rate.',
+      bodyParagraphs: [
+        'The question that eliminates the most candidates is rank 1 in your bank: "A user says the assistant keeps making things up. Walk through how you decide whether to fix the model, fix the retrieval layer, or change the product interaction." The hidden signal is whether the candidate understands that hallucination has multiple upstream causes. A strong answer opens by separating the failure into three buckets: knowledge gap (the model produces wrong facts), retrieval gap (the right facts exist but were not surfaced), and design gap (the product lets users form expectations the feature cannot meet). The bucket tells you where to apply force. Candidates who jump to "fine-tune the model" or "add citations" are treating a diagnostic question as a solution question, and interviewers log it immediately.',
+        'The pattern behind the top-rejection questions is consistent: they all ask about a step before the solution. Which layer owns the problem. What the failure mode costs when it happens. Whether the eval measures what production actually tests. The candidates who clear these questions have learned to ask the diagnostic question out loud before answering, which signals the reasoning move the interviewer is scoring.',
+        'In 2026, that move is now the filter. AI product-sense rounds at the companies running these interviews are structured to surface whether a candidate reasons about AI systems or just describes them. The question bank exists because the questions that separate passes from rejects were not in prep materials two years ago.',
+        'Your full report has all 24 questions ranked by rejection risk, the hidden signal tagged to each one, and answer skeletons for the six highest-risk questions. The skeletons are reasoning moves, not model answers. Each one shows the four steps a strong answer takes in sequence.',
+        'HackProduct has practice scenarios built around the same question types, graded by Hatch against the same rubric the bank describes. The gap between knowing the question and answering it under pressure closes with reps, not re-reading. Inside: 104 real product decisions, plus system design, SQL, coding, and live AI interview rounds in one place.',
+      ],
       ctaLabel: 'Open the full set',
       ctaUrl: '/go/ai-pm-questions',
       valueBullets: [
@@ -237,10 +261,16 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     capture: 'gate',
     hasReport: true,
     unlockEmail: {
-      subject: 'The rejection-reason taxonomy, unlocked',
+      subject: 'The rejection rule most candidates never see in their own answers',
       eyebrow: 'Your set',
-      heading: 'Train the eye interviewers use to reject answers.',
-      body: 'One was a warm-up. Here is the full flaw-spotting set and the taxonomy of rejection reasons, so you can catch the flaw in your own answers before someone else does.',
+      heading: 'Seven answers to dissect, a taxonomy of three rejection families, and the strong move for each.',
+      body: 'One question was the warm-up. Here is the full set: seven answer excerpts to dissect, the three rejection families that cover almost every product-sense rejection, and the strong-answer move that replaces each flaw.',
+      bodyParagraphs: [
+        'Here is one rejection rule from the taxonomy, written out fully: an answer fails the unfalsifiable-thinking test when the success condition has no paired failure condition. The quiz example looks like this: "If submission rate reaches 15 percent and actionable items increase after 60 days, the feature is working." The flaw is that almost any outcome can be declared a win under this framing. A strong answer pairs the primary metric with a counter-signal: "We know it worked if submission rate reaches 15 percent and 30-day activation does not drop below its current baseline. We know it failed if either condition is not met." The second version is falsifiable. The first is a preference wearing the clothes of a success metric.',
+        'The reason this matters in 2026 is that interviewers at product-sense-heavy companies have built their evaluation rubrics around exactly these flaws. The taxonomy is not a stylistic preference: it maps to specific scoring criteria on the rubric the interviewer is filling out. Solution-first answers fail because the Frame move was skipped. Unfalsifiable thinking fails because the Win move has no counter-signal. Fake tradeoffs fail because the Optimize move named a direction without naming a sacrifice. Knowing the taxonomy means you can audit your own answers against the same criteria before you say them.',
+        'Your full set has seven excerpts covering all three rejection families, the taxonomy entry for each one, and the specific rewrite that makes the answer pass. The structure of each case is: here is the flaw, here is the rejection family it belongs to, here is the strong move.',
+        'When you want to practice catching flaws in your own answers, not just reading them in someone else\'s, HackProduct is where this came from. Hatch flags the exact flaw category in your reasoning using the same taxonomy, on reps across 104 real product decisions plus system design, SQL, coding, and live AI interview rounds in one place.',
+      ],
       ctaLabel: 'Open the full set',
       ctaUrl: '/go/spot-the-flaw',
       valueBullets: [
@@ -284,10 +314,17 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     capture: 'gate',
     hasReport: true,
     unlockEmail: {
-      subject: 'Your negotiation playbook is ready',
+      subject: 'Your push signal, your band, and the highest-leverage sentence in a negotiation',
       eyebrow: 'Your playbook',
-      heading: 'The band was step one. This is how you move it.',
-      body: 'You have the market band. Now the part that changes the number: a one-page negotiation script, a counter-offer template, and the four questions that tell you whether to push.',
+      heading: 'The band was step one. Here is the part that actually moves the number.',
+      body: 'You have a directional comp band and a push signal. This is the rest: a negotiation script, a counter-offer template, and the four questions to run before you say anything. The full report also has the reasoning behind your push or hold verdict.',
+      bodyParagraphs: [
+        'The single highest-leverage moment in a negotiation is the anchor reset, and it is the sentence most candidates skip. When the recruiter names a number, most candidates either accept it or counter it directly. The candidates who move the number furthest reset the anchor before the counter-offer: "I want to make this work, and I have done some research on what this role is paying in the market right now. Based on that, I was thinking of something closer to [number]." That sentence does two things. It signals that the candidate has external information without naming the source. And it moves the frame from "here is what we offered" to "here is what the market is paying," which is a different negotiating position. It works even when the recruiter has said the offer is firm, because "firm" is a negotiating position, not a budget fact.',
+        'The comp bands in this quiz are directional on purpose. The tool\'s job is the push signal, not the database. If the quiz told you to push, there is room in the offer and the company expects a counter. If it told you to push once, one calibrated ask with one specific reason is the right move, and a second ask in your situation is more likely to slow the process than improve the outcome. If it told you to hold, the leverage position is weak enough that the smarter play is six to twelve months of demonstrated value before negotiating from real alternatives.',
+        'In 2026, the senior PM and AI-PM comp ranges have moved faster than most candidates realize. The AI-PM premium at tier-1 companies has opened a gap of $30k to $60k over general PM roles at equivalent levels, and that gap is widest at mid-level where demand is outpacing supply. The playbook is relevant to whatever role you are negotiating, but if you are going for an AI-native role, the band in your report reflects that market.',
+        'Your full report has the negotiation script with the four-question pre-call checklist, the counter-offer template with fill-in-the-bracket spots, the specific sentence for the anchor reset, and the one number in most offer letters that is more moveable than the base.',
+        'HackProduct is the gym where candidates practice the interview skills that put them in the strongest negotiating position before the offer arrives. Inside: product-sense and system design rounds that determine where you land on the comp band, graded by Hatch move by move, plus SQL, coding, data modeling, and live AI interview rounds in one place.',
+      ],
       ctaLabel: 'Get the playbook',
       ctaUrl: '/go/salary',
       valueBullets: [
@@ -331,10 +368,17 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     capture: 'gate',
     hasReport: true,
     unlockEmail: {
-      subject: 'Your engineer-to-PM transition plan',
+      subject: 'What the story audit found, and the reframe that fixes the telling',
       eyebrow: 'Your plan',
-      heading: 'The stories that transfer, and the ones to rebuild.',
-      body: 'You saw the gaps. Here is the fix: one of your engineering stories reframed into product language, a 30-day transition plan, and the five stories you need ready before the first screen.',
+      heading: 'Same project. Two very different stories. Here is the PM version.',
+      body: 'The quiz scored your story on three lenses: customer, tradeoff, and outcome. The audit result and the lens read are in your report. So is the reframe: the engineer telling versus the PM telling of the same project, and the 30-day plan.',
+      bodyParagraphs: [
+        'Here is what the customer lens looks like in practice, for a rescue-type project. The engineer version opens like this: "We had a critical service that was failing under load. I refactored the database layer and the p95 latency dropped from 4 seconds to 300ms." The PM version of the same project opens like this: "Enterprise customers were churning in their third month because they stopped trusting the data export. The exports were timing out at high volume, and support was seeing the same complaint on every quarterly renewal call. We fixed the underlying cause and retention in that segment went from 68 percent to 84 percent in the next cohort." Same project. Same engineer. The second version names a person with a blocked goal before it names any technical work, and it closes on a metric the business cared about rather than a latency number the business never saw. That is the reframe the audit is looking for.',
+        'The telling is not a cosmetic change. PM interviewers score the story on product reasoning: did the candidate know whose problem this was, did they understand why the technical decision was made and what it gave up, and do they know what moved because of it. Engineers who cannot make that translation are screened as IC-capable, not PM-ready, regardless of how much cross-functional work they actually did.',
+        'The reason this matters specifically in 2026 is that the bar for the PM interview has risen to include AI product reasoning, and the candidates who get offers are usually engineers who can demonstrate both the execution credibility and the product judgment. The execution credibility is already there. The work is the telling.',
+        'Your full report has the band read with the lens scores, the engineer-versus-PM reframe of your story type (rescue, scale, zero-to-one, or migration), the three things that transfer from your background and the three gaps to close, the five stories every PM screen expects, and a week-by-week 30-day plan.',
+        'HackProduct is where engineers practice the product reasoning moves the transition requires: framing problems, generating structurally different options, naming real tradeoffs, and closing with a falsifiable claim. Those moves, practiced on 104 real product decisions graded by Hatch, plus system design, SQL, coding, and live AI interview rounds in one place, are what close the credibility gap faster than any talking point about your engineering background.',
+      ],
       ctaLabel: 'Open your plan',
       ctaUrl: '/go/switch',
       valueBullets: [

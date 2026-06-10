@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
 import { authEmailSchema, honeypotSchema } from '@/lib/auth/validation'
 import { getLeadMagnet } from '@/lib/lead-magnets/config'
+import { buildUnlockEmailCopy } from '@/lib/lead-magnets/unlock-emails'
 import { sendLeadMagnetUnlockEmail } from '@/lib/email/transactional'
 import { captureServerImmediate } from '@/lib/posthog/server'
 import { EVENT_MAGNET_LEAD_CAPTURED } from '@/lib/posthog/events'
@@ -31,9 +32,12 @@ const leadSchema = z.object({
 
 function absoluteUrl(req: NextRequest, path: string) {
   if (/^https?:\/\//.test(path)) return path
+  // Outside production, prefer the request origin: NEXT_PUBLIC_APP_URL points
+  // at prod, which would put prod links in dev/preview emails.
   const origin =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    req.nextUrl.origin ||
+    (process.env.NODE_ENV === 'production'
+      ? process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin
+      : req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL) ||
     'https://hackproduct.com'
   return `${origin.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`
 }
@@ -112,7 +116,9 @@ export async function POST(req: NextRequest) {
   // Fire-and-forget unlock email for new gate captures only (skip retakes to
   // avoid re-sending). The email_dedupes table is a secondary guard.
   if (!alreadyCaptured && magnet.capture === 'gate' && magnet.unlockEmail) {
-    const copy = magnet.unlockEmail
+    // Personalized copy built from the captured result where a builder exists;
+    // static config copy otherwise.
+    const copy = buildUnlockEmailCopy(source_slug, magnet_result) ?? magnet.unlockEmail
     // When the magnet has a personal report, the email CTA links it directly.
     const ctaUrl = absoluteUrl(req, reportPath ?? copy.ctaUrl)
     void sendLeadMagnetUnlockEmail(supabase, {
@@ -124,6 +130,7 @@ export async function POST(req: NextRequest) {
       eyebrow: copy.eyebrow,
       heading: copy.heading,
       body: copy.body,
+      bodyParagraphs: copy.bodyParagraphs ?? null,
       ctaLabel: copy.ctaLabel,
       ctaUrl,
       valueBullets: copy.valueBullets ?? null,
