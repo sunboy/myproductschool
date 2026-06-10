@@ -85,8 +85,10 @@ const speckles = group('speckles', [
   group('s4', [ellipse([40, 52], [9, 9]), fill(GOLD, 50)]),
 ])
 
+// Egg fill is one step warmer than the page background (#faf6f0) so the egg
+// reads as an object instead of dissolving into the page.
 const eggWhole = (nm = 'egg') =>
-  group(nm, [eggPath(), fill(EGG_CREAM), stroke(FOREST, 8)])
+  group(nm, [eggPath(), fill(CREAM), stroke(FOREST, 8)])
 
 // Zigzag crack across the egg (y ~ -10 band)
 const crackShape = path(
@@ -203,41 +205,26 @@ const sparkLayers = SPARKS.map(([deg, dist, size, color, t0], idx) => {
 })
 
 // ── egg-hatch.json ─────────────────────────────────────────
+// Two variants share the same egg/shell/sparkle rig:
+//   egg-hatch.json      - vector Hatch (glyph-derived shapes)
+//   egg-hatch-img.json  - illustrated Hatch (gpt-image-1 pose as an image layer)
 const HATCH_OP = 168
-const eggHatch = {
+const buildEggHatch = (characterLayers, assets = [], { includeShellBottom = true } = {}) => ({
   v: '5.7.0', fr: 60, ip: 0, op: HATCH_OP, w: 512, h: 512,
   nm: 'hatch-egg-reveal',
-  assets: [],
-  slots: { bgColor: { p: stat([1, 1, 1, 0]) } },
+  assets,
   layers: [
     ...sparkLayers,
-
-    // Cap + arrow: pops slightly higher mid-flight, lands seated on the head
-    // (same final transform as the body so there is never a resting gap).
-    layer('hatch-cap', hatchCap, {
-      p: anim(
-        [[40, [256, 424, 0]], [58, [256, 230, 0]], [64, [256, 244, 0]], [76, [256, 252, 0]], [HATCH_OP, [256, 252, 0]]],
-        EASE_OUT,
-      ),
-      s: anim([[40, [55, 55, 100]], [62, [104, 104, 100]], [74, [100, 100, 100]]], EASE_OUT),
-      o: anim([[38, 0], [44, 100]]),
-    }, { ip: 38 }),
-
-    // Hatch body springs out; final pose tucks the chin into the shell cup.
-    layer('hatch-body', hatchBody, {
-      p: anim(
-        [[40, [256, 424, 0]], [58, [256, 236, 0]], [68, [256, 260, 0]], [78, [256, 252, 0]], [HATCH_OP, [256, 252, 0]]],
-        EASE_OUT,
-      ),
-      s: anim([[40, [55, 55, 100]], [62, [104, 104, 100]], [74, [100, 100, 100]]], EASE_OUT),
-      o: anim([[38, 0], [44, 100]]),
-    }, { ip: 38 }),
+    ...characterLayers,
 
     // Bottom shell cup: sits in front of Hatch; small bounce when the top pops.
-    layer('shell-bottom', [shellBottom], {
-      p: anim([[36, [256, 318, 0]], [44, [256, 332, 0]], [52, [256, 324, 0]], [HATCH_OP, [256, 324, 0]]], EASE_OUT),
-      o: anim([[35, 0], [36, 100]]),
-    }, { ip: 35 }),
+    // Skipped for the image variant: the illustrated pose has its own cup.
+    ...(includeShellBottom
+      ? [layer('shell-bottom', [shellBottom], {
+          p: anim([[36, [256, 318, 0]], [44, [256, 332, 0]], [52, [256, 324, 0]], [HATCH_OP, [256, 324, 0]]], EASE_OUT),
+          o: anim([[35, 0], [36, 100]]),
+        }, { ip: 35 })]
+      : []),
 
     // Top shell: launches up-left, spins, fades.
     layer('shell-top', [shellTop], {
@@ -267,14 +254,59 @@ const eggHatch = {
       s: anim([[0, [100, 100, 100]], [14, [108, 90, 100]], [28, [96, 104, 100]], [40, [112, 96, 100]], [70, [100, 100, 100]]]),
     }),
 
-    // Player-compat background (transparent by default via slot).
-    {
-      ddd: 0, ty: 4, nm: 'background', ip: 0, op: HATCH_OP, st: 0,
-      ks: { o: stat(100), r: stat(0), p: stat([256, 256, 0]), a: stat([0, 0, 0]), s: stat([100, 100, 100]) },
-      shapes: [group('bg', [rect([0, 0], [512, 512]), { ty: 'fl', c: { sid: 'bgColor' }, o: stat(100) }])],
-    },
   ],
-}
+})
+
+// Vector character: cap layer lags the body for a springy follow.
+const vectorCharacter = [
+  layer('hatch-cap', hatchCap, {
+    p: anim(
+      [[40, [256, 424, 0]], [58, [256, 230, 0]], [64, [256, 244, 0]], [76, [256, 252, 0]], [HATCH_OP, [256, 252, 0]]],
+      EASE_OUT,
+    ),
+    s: anim([[40, [55, 55, 100]], [62, [104, 104, 100]], [74, [100, 100, 100]]], EASE_OUT),
+    o: anim([[38, 0], [44, 100]]),
+  }, { ip: 38 }),
+  layer('hatch-body', hatchBody, {
+    p: anim(
+      [[40, [256, 424, 0]], [58, [256, 236, 0]], [68, [256, 260, 0]], [78, [256, 252, 0]], [HATCH_OP, [256, 252, 0]]],
+      EASE_OUT,
+    ),
+    s: anim([[40, [55, 55, 100]], [62, [104, 104, 100]], [74, [100, 100, 100]]], EASE_OUT),
+    o: anim([[38, 0], [44, 100]]),
+  }, { ip: 38 }),
+]
+
+// Illustrated character: the gpt-image-1 pose as a single image layer with the
+// same spring. Anchor at the image's bottom-center so it rises out of the cup.
+// The illustrated pose contains Hatch + its own shell cup, so it stands in for
+// shell-bottom + body + cap. It scales up from the egg's footprint with the
+// same spring; the cup base lands where the vector egg sat.
+const imageCharacter = [
+  {
+    ddd: 0, ty: 2, nm: 'hatch-pose', refId: 'hatchpop', ip: 36, op: HATCH_OP, st: 0,
+    ks: {
+      o: anim([[36, 0], [42, 100]]),
+      r: stat(0),
+      a: stat([256, 450, 0]), // bottom-center of the illustrated cup (512px asset)
+      p: anim(
+        [[36, [256, 436, 0]], [58, [256, 422, 0]], [68, [256, 434, 0]], [HATCH_OP, [256, 434, 0]]],
+        EASE_OUT,
+      ),
+      s: anim(
+        [[36, [44, 36, 100]], [56, [76, 84, 100]], [66, [78, 74, 100]], [76, [76, 76, 100]]],
+        EASE_OUT,
+      ),
+    },
+  },
+]
+
+const eggHatch = buildEggHatch(vectorCharacter)
+const eggHatchImg = buildEggHatch(
+  imageCharacter,
+  [{ id: 'hatchpop', w: 512, h: 512, u: '/lottie/hatch/pieces/', p: 'hatch-pop-512.png', e: 0 }],
+  { includeShellBottom: false },
+)
 
 // ── egg-idle.json (loop) ───────────────────────────────────
 const IDLE_OP = 180
@@ -282,7 +314,6 @@ const eggIdle = {
   v: '5.7.0', fr: 60, ip: 0, op: IDLE_OP, w: 512, h: 512,
   nm: 'hatch-egg-idle',
   assets: [],
-  slots: { bgColor: { p: stat([1, 1, 1, 0]) } },
   layers: [
     layer('egg', [speckles, eggWhole()], {
       a: stat([0, EGG_BOT, 0]),
@@ -294,15 +325,11 @@ const eggIdle = {
       p: stat([256, 446, 0]),
       s: anim([[0, [100, 100, 100]], [45, [92, 94, 100]], [90, [100, 100, 100]], [IDLE_OP, [100, 100, 100]]]),
     }),
-    {
-      ddd: 0, ty: 4, nm: 'background', ip: 0, op: IDLE_OP, st: 0,
-      ks: { o: stat(100), r: stat(0), p: stat([256, 256, 0]), a: stat([0, 0, 0]), s: stat([100, 100, 100]) },
-      shapes: [group('bg', [rect([0, 0], [512, 512]), { ty: 'fl', c: { sid: 'bgColor' }, o: stat(100) }])],
-    },
   ],
 }
 
 mkdirSync(OUT_DIR, { recursive: true })
 writeFileSync(join(OUT_DIR, 'egg-hatch.json'), JSON.stringify(eggHatch))
+writeFileSync(join(OUT_DIR, 'egg-hatch-img.json'), JSON.stringify(eggHatchImg))
 writeFileSync(join(OUT_DIR, 'egg-idle.json'), JSON.stringify(eggIdle))
-console.log('Wrote egg-hatch.json (%d frames) and egg-idle.json (%d frames) to %s', HATCH_OP, IDLE_OP, OUT_DIR)
+console.log('Wrote egg-hatch.json, egg-hatch-img.json (%d frames) and egg-idle.json (%d frames) to %s', HATCH_OP, IDLE_OP, OUT_DIR)

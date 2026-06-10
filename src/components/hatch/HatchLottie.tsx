@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AnimationItem } from 'lottie-web'
 
-export type HatchLottieName = 'egg-idle' | 'egg-hatch'
+export type HatchLottieName = 'egg-idle' | 'egg-hatch' | 'egg-hatch-img'
 
 interface HatchLottieProps {
   name: HatchLottieName
   size?: number
   loop?: boolean
   autoplay?: boolean
+  /** Render the animation's final frame as a static image (no playback). */
+  still?: boolean
   /** Fires once when a non-looping animation completes. */
   onComplete?: () => void
   className?: string
@@ -28,6 +30,7 @@ export function HatchLottie({
   size = 240,
   loop = false,
   autoplay = true,
+  still = false,
   onComplete,
   className = '',
 }: HatchLottieProps) {
@@ -56,16 +59,17 @@ export function HatchLottie({
         const animationData = await res.json()
         if (cancelled) return
 
+        const showStill = still || reducedMotion
         const anim = lottie.loadAnimation({
           container: host,
           renderer: 'svg',
-          loop: reducedMotion ? false : loop,
-          autoplay: reducedMotion ? false : autoplay,
+          loop: showStill ? false : loop,
+          autoplay: showStill ? false : autoplay,
           animationData,
         })
         animRef.current = anim
 
-        if (reducedMotion) {
+        if (showStill) {
           anim.goToAndStop(Math.max(anim.totalFrames - 1, 0), true)
           onCompleteRef.current?.()
         } else if (!loop) {

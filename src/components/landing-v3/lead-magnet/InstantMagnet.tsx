@@ -639,7 +639,7 @@ function InstantEgg({ hatching, onTap, onHatchComplete }: InstantEggProps) {
           <HatchLottie name="egg-idle" size={260} loop autoplay />
         ) : (
           <HatchLottie
-            name="egg-hatch"
+            name="egg-hatch-img"
             size={260}
             loop={false}
             autoplay
@@ -672,7 +672,7 @@ function InstantResult({ outcome, eggHatched, onGetReport, isSignupMode }: Insta
       {/* Keep the completed egg-hatch Lottie in its final pose above the card */}
       {eggHatched && (
         <div className="lmi-egg-final">
-          <HatchLottie name="egg-hatch" size={160} loop={false} autoplay={false} />
+          <HatchLottie name="egg-hatch-img" size={160} still />
         </div>
       )}
 
