@@ -55,7 +55,9 @@ Employment Special Ad Category: frame everything as skill development / practice
 
 ## Video
 
-**Now:** `scripts/ad-creatives/capture-flow-video.mjs` records the real `/go/failure-mode/i` flow (taps with visible ripples → triple-tap egg crack → result card) as a native-style 9:16 capture. Good enough for TikTok native test cells. If the Lottie stutters on-device, the scoped upgrade is deterministic frame-stepping (drive `goToAndStop` per frame, screenshot, ffmpeg 30fps).
+**Hero video:** `scripts/ad-creatives/render-egg-hero-video.mjs` produces the 15s "egg hero" motion ad (1080x1920, 30fps), rendered deterministically frame-by-frame from `templates/egg-hero.html`: hook line → egg + four tap chips, crack progressing per tap → result card with filling bars → CTA end-card with the wave pose. Fully regenerable; edit the template's timeline to refresh.
+
+**Rejected (user review 2026-06-10):** the raw screen capture of the instant flow (`capture-flow-video.mjs`) does not work as a creative. Keep the script only as a QA artifact, never as ad material.
 
 **Storyboards for later production (≤15s each, 9:16, text in safe zones, no audio — TikTok music added in ads manager):**
 
