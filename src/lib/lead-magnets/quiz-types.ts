@@ -17,6 +17,12 @@ export interface QuizOption {
   id: string
   text: string
   /**
+   * Compact phrasing for the mobile instant player (~8-15 words). The full
+   * pages keep `text`; the instant player renders shortText when present.
+   * Scoring is identical either way.
+   */
+  shortText?: string
+  /**
    * Per-dimension points this option contributes, e.g. { frame: 100 } or
    * { evals: 2 }. Keys are magnet-defined dimension keys.
    */
@@ -43,6 +49,8 @@ export type QuizStep =
       prompt: string
       /** Optional scenario/context paragraph rendered above the prompt. */
       context?: string
+      /** Compact scenario for the mobile instant player (2-3 short sentences). */
+      shortContext?: string
       options: QuizOption[]
       /**
        * When present the step becomes an instant-reveal: after picking, the

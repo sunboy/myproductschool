@@ -20,6 +20,38 @@ const QUALITY_TO_TIER: Record<string, 'best' | 'good' | 'surface' | 'wrong'> = {
   plausible_wrong: 'wrong',
 }
 
+// Compact phrasings for the mobile instant player. Same options, same
+// scoring; just trimmed to a tappable length. Keyed by `${move}:${optionId}`.
+const SHORT_CONTEXTS: Record<string, string> = {
+  frame:
+    'Weekly active users are down 30% in two months. Tickets say the dashboard feels slow, but the logs show no regression. Leadership wants a fix this sprint.',
+  list:
+    'A finance app keeps new users for two weeks, then they stop logging. Adding one entry takes five taps. Three engineers are free next sprint.',
+  optimize:
+    'Variant A cuts cart abandonment 18% but adds 40 seconds to checkout. Variant B is 25 seconds faster but does not move abandonment. One ships.',
+  win:
+    'A legacy export format serves 12% of users but eats engineering time. Sales fears churn, engineering wants it gone, the CEO wants a call this week.',
+}
+
+const SHORT_TEXTS: Record<string, string> = {
+  'frame:A': 'Pull the data first: what did users stop doing before they churned?',
+  'frame:B': 'Profile the dashboard and add a loading skeleton.',
+  'frame:C': 'Survey churned users and ask why they left.',
+  'frame:D': 'Escalate to engineering so leadership sees action this sprint.',
+  'list:A': 'Put four different levers on the table: quick-add, auto-import, streaks, zero-effort mode.',
+  'list:B': 'Cut the add-entry flow from five taps to two and A/B test it.',
+  'list:C': 'Send a daily push reminder to log spending.',
+  'list:D': 'Drop manual logging entirely and import bank data instead.',
+  'optimize:A': 'Name the deciding metric, revenue per visitor, model both, ship the winner.',
+  'optimize:B': 'Ship A: fewer abandoned carts means more revenue.',
+  'optimize:C': 'Ship B: a faster checkout is a better experience.',
+  'optimize:D': 'Run a third variant that combines the best of both.',
+  'win:A': 'Propose a 90-day sunset with migration tooling, a churn guardrail, and an offer for sales.',
+  'win:B': 'Agree to deprecate and announce the date in release notes.',
+  'win:C': 'Tell sales the 12% does not represent real revenue.',
+  'win:D': 'Ask the CEO to make the final call.',
+}
+
 // Map the four calibration questions directly into MagnetQuiz steps.
 // step.id = move key so answers are keyed by move for scoring.
 const buildSteps = () =>
@@ -27,10 +59,12 @@ const buildSteps = () =>
     kind: 'mcq' as const,
     id: q.move,
     context: q.scenario,
+    shortContext: SHORT_CONTEXTS[q.move],
     prompt: q.q,
     options: q.options.map((o) => ({
       id: o.id,
       text: o.text,
+      shortText: SHORT_TEXTS[`${q.move}:${o.id}`],
       tier: QUALITY_TO_TIER[o.quality],
     })),
     // No reveal — silent scoring keeps the diagnostic feel.
