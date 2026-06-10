@@ -31,7 +31,7 @@ export const CREATIVES = [
       sub: 'The mistake is in the second sentence. Most people read past it.',
       cta: 'Spot it yourself',
     },
-    pose: 'hatch-red-pen-a.png',
+    pose: 'hatch-red-pen-b.png',
     ratios: ['9x16', '1x1'],
     destination: { slug: 'spot-the-flaw', instant: true },
     data: {
@@ -49,7 +49,7 @@ export const CREATIVES = [
       sub: 'Hatch circled the reason. Interviewers see it in seconds.',
       cta: 'Train the eye',
     },
-    pose: 'hatch-red-pen-a.png', // TEMP stand-in until hatch-stamp lands
+    pose: 'hatch-stamp-a.png',
     ratios: ['9x16', '1x1'],
     destination: { slug: 'spot-the-flaw', instant: true },
     data: {
@@ -70,7 +70,7 @@ export const CREATIVES = [
       sub: 'Four product scenarios. Your thinking style cracks out at the end.',
       cta: 'Crack yours',
     },
-    pose: 'hatch-pop-512.png', // TEMP stand-in until hatch-sit-egg lands
+    pose: 'hatch-sit-egg-a.png',
     poseSize: 520,
     ratios: ['9x16', '1x1'],
     destination: { slug: 'failure-mode', instant: true },
@@ -86,7 +86,7 @@ export const CREATIVES = [
       sub: 'Four taps find yours. No signup to see the result.',
       cta: 'Find the crack',
     },
-    pose: 'hatch-pop-512.png', // TEMP stand-in until hatch-peek lands
+    pose: 'hatch-peek-a.png',
     poseSize: 440,
     ratios: ['9x16', '1x1'],
     destination: { slug: 'failure-mode', instant: true },
