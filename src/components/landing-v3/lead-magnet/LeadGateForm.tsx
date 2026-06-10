@@ -176,7 +176,7 @@ export function LeadGateForm({
         <input
           type="email"
           className="lm-input"
-          placeholder="you@work.com"
+          placeholder="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required

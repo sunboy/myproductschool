@@ -744,7 +744,7 @@ function InstantCapture({
       <input
         type="email"
         className="lmi-input"
-        placeholder="you@work.com"
+        placeholder="Email address"
         value={email}
         onChange={(e) => onEmailChange(e.target.value)}
         required
