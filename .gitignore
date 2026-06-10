@@ -97,3 +97,9 @@ seeds/chillinterview/
 
 # Local SA keys for CC analytics testing (never commit)
 .secrets/
+
+# Ad-creative renders are regenerable via scripts/ad-creatives/render.mjs;
+# the manifest, templates, poses, and contact sheet ARE committed.
+docs/notes/ad-creatives/*/*.png
+docs/notes/ad-creatives/*/*.webm
+docs/notes/ad-creatives/*/*.mp4

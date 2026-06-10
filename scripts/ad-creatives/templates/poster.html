@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="_tokens.css" />
+<style>
+  /* Poster: one statement + Hatch. Used by egg, contrarian, looking-for. */
+  .ad-root { background: var(--cream); }
+  .ad-root.palette-forest-inverse { background: var(--deep-forest); }
+  .ad-root.palette-forest-inverse .headline { color: var(--cream); }
+  .ad-root.palette-forest-inverse .sub { color: var(--mist); }
+  .ad-root.palette-forest-inverse .eyebrow { color: var(--amber); }
+
+  .stage {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    padding: 140px 84px;
+    text-align: center;
+  }
+
+  .eyebrow { font-size: 30px; color: var(--forest); }
+
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--charcoal);
+    letter-spacing: -0.02em;
+    line-height: 1.04;
+  }
+  .ratio-9x16 .headline { font-size: 92px; }
+  .ratio-4x5  .headline { font-size: 84px; }
+  .ratio-1x1  .headline { font-size: 76px; }
+
+  .sub {
+    font-size: 36px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    max-width: 820px;
+    font-weight: 600;
+  }
+
+  .pose { display: flex; justify-content: center; }
+  .pose img { width: var(--pose-size, 460px); height: auto; }
+  .ratio-1x1 .pose img { width: 360px; }
+
+  .cta-pill { font-size: 38px; padding: 30px 72px; }
+
+  .brand-chip { position: absolute; top: 150px; left: 84px; font-size: 34px; }
+  .ratio-1x1 .brand-chip, .ratio-4x5 .brand-chip { top: 56px; left: 64px; }
+</style>
+</head>
+<body>
+<div class="ad-root" id="root">
+  <div class="brand-chip">HackProduct</div>
+  <div class="stage">
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1 class="headline" id="headline"></h1>
+    <div class="pose"><img id="pose" alt="" /></div>
+    <p class="sub" id="sub"></p>
+    <div class="cta-pill" id="cta"></div>
+  </div>
+  <div class="safe-guides"></div>
+</div>
+<script>
+  const d = window.__AD_DATA__
+  document.getElementById('root').classList.add('ratio-' + d.ratio, 'palette-' + (d.palette || 'cream'))
+  if (new URLSearchParams(location.search).get('guides')) document.body.classList.add('show-guides')
+  document.getElementById('eyebrow').textContent = d.hook.eyebrow || ''
+  document.getElementById('headline').textContent = d.hook.headline
+  document.getElementById('sub').textContent = d.hook.sub || ''
+  document.getElementById('cta').textContent = d.hook.cta
+  const img = document.getElementById('pose')
+  if (d.poseUrl) img.src = d.poseUrl; else img.parentElement.remove()
+  if (d.poseSize) document.getElementById('root').style.setProperty('--pose-size', d.poseSize + 'px')
+  if (!d.hook.eyebrow) document.getElementById('eyebrow').remove()
+  if (!d.hook.sub) document.getElementById('sub').remove()
+</script>
+</body>
+</html>
