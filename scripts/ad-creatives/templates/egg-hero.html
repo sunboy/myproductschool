@@ -118,18 +118,20 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
   const ease = (t) => 1 - Math.pow(1 - clamp(t, 0, 1), 3)
 
+  // Animation data is injected by render-egg-hero-video.mjs via
+  // window.__LOTTIE_DATA__ (fetch() is blocked on file:// pages, and the
+  // asset path inside the JSON is rewritten to a file:// URL there too).
   let anim = null
   window.__ready = false
 
-  fetch('../../../public/lottie/hatch/egg-hatch-img.json')
-    .then((r) => r.json())
-    .then((data) => {
-      anim = lottie.loadAnimation({
-        container: document.getElementById('lottie-stage'),
-        renderer: 'svg', loop: false, autoplay: false, animationData: data,
-      })
-      anim.addEventListener('DOMLoaded', () => { window.__ready = true })
+  if (window.__LOTTIE_DATA__) {
+    anim = lottie.loadAnimation({
+      container: document.getElementById('lottie-stage'),
+      renderer: 'svg', loop: false, autoplay: false,
+      animationData: window.__LOTTIE_DATA__,
     })
+    anim.addEventListener('DOMLoaded', () => { window.__ready = true })
+  }
 
   const params = new URLSearchParams(location.search)
   document.getElementById('cta-pose').src = params.get('pose') || ''

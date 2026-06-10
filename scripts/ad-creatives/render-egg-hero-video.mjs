@@ -6,7 +6,7 @@
 // Usage: node scripts/ad-creatives/render-egg-hero-video.mjs
 
 import { chromium } from '@playwright/test'
-import { mkdirSync, rmSync, existsSync } from 'node:fs'
+import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { execSync } from 'node:child_process'
@@ -26,8 +26,22 @@ const poseUrl = existsSync(ctaPose)
 rmSync(FRAMES_DIR, { recursive: true, force: true })
 mkdirSync(FRAMES_DIR, { recursive: true })
 
+// Load the egg-hatch Lottie JSON in Node (fetch is blocked on file:// pages)
+// and point its raster asset at a file:// URL so the image layer resolves.
+const lottieData = JSON.parse(
+  readFileSync(join(ROOT, 'public/lottie/hatch/egg-hatch-img.json'), 'utf8'),
+)
+for (const asset of lottieData.assets ?? []) {
+  if (asset.u && asset.p) {
+    asset.u = pathToFileURL(join(ROOT, 'public', asset.u)).href.replace(/\/?$/, '/')
+  }
+}
+
 const browser = await chromium.launch()
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 })
+await page.addInitScript((data) => {
+  window.__LOTTIE_DATA__ = data
+}, lottieData)
 
 const templateUrl =
   pathToFileURL(join(HERE, 'templates/egg-hero.html')).href + `?pose=${encodeURIComponent(poseUrl)}`
