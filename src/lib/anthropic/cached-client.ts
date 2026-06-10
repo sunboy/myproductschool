@@ -17,6 +17,7 @@ const ANTHROPIC_TIMEOUT_MS = Number(process.env.ANTHROPIC_REQUEST_TIMEOUT_MS ?? 
 export interface CachedMessageOptions {
   model: string
   max_tokens: number
+  temperature?: number
   thinking?: { type: 'enabled'; budget_tokens: number } | { type: 'adaptive' }
   budget?: { userId: string; userPlan: string; route: string }
 }
@@ -50,6 +51,7 @@ export async function createCachedMessage(
     {
       model: options.model,
       max_tokens: options.max_tokens,
+      ...(options.temperature != null ? { temperature: options.temperature } : {}),
       ...(options.thinking ? { thinking: options.thinking } : {}),
       system: [
         {
@@ -100,6 +102,7 @@ export async function createCachedMessageMultiSystem(
     {
       model: options.model,
       max_tokens: options.max_tokens,
+      ...(options.temperature != null ? { temperature: options.temperature } : {}),
       ...(options.thinking ? { thinking: options.thinking } : {}),
       system: [
         {

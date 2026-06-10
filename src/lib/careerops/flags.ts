@@ -17,6 +17,7 @@ export type CareerOpsFeature =
   | 'tracker'
   | 'resume'
   | 'stories'
+  | 'public_score'
 
 function readBool(value: string | undefined): boolean {
   return value === 'true'
@@ -37,6 +38,8 @@ export function deriveCareerOpsFlags(raw: RawCareerOpsFlags): Record<CareerOpsFe
     tracker: raw.master && raw.tracker,
     resume: raw.master && raw.resume,
     stories: raw.master && raw.stories,
+    // The public anonymous tool runs the same scorer engine, so it requires it.
+    public_score: raw.master && raw.scorer && raw.public_score,
   }
 }
 
@@ -50,6 +53,7 @@ const RAW: RawCareerOpsFlags = {
   tracker: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_TRACKER),
   resume: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_RESUME),
   stories: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_STORIES),
+  public_score: readBool(process.env.NEXT_PUBLIC_ENABLE_CAREEROPS_PUBLIC_SCORE),
 }
 
 export const careeropsFlags: Record<CareerOpsFeature, boolean> = deriveCareerOpsFlags(RAW)

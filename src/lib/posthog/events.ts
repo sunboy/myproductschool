@@ -208,3 +208,53 @@ export interface ChapterCompletedProps {
   module_slug: string
   chapter_slug: string
 }
+
+// ─── Public Job Fit / Resume Roast funnel ────────────────────────────────────
+
+/** Fired (client) when the public /job-fit tool page mounts. */
+export const EVENT_FIT_TOOL_VIEWED = 'fit_tool_viewed'
+export interface FitToolViewedProps {
+  mode: 'job_fit' | 'resume_roast'
+}
+
+/** Fired (client) when an anonymous visitor submits a run. */
+export const EVENT_FIT_RUN_STARTED = 'fit_run_started'
+export interface FitRunStartedProps {
+  mode: 'job_fit' | 'resume_roast'
+}
+
+/** Fired (server) when a fit/roast run completes, public or member. */
+export const EVENT_FIT_RUN_COMPLETED = 'fit_run_completed'
+export interface FitRunCompletedProps {
+  mode: 'job_fit' | 'resume_roast'
+  score: number | null
+  grade: string | null
+  anonymous: boolean
+}
+
+/** Fired (client) when a share action is taken on a result or share page. */
+export const EVENT_FIT_RESULT_SHARED = 'fit_result_shared'
+export interface FitResultSharedProps {
+  mode: 'job_fit' | 'resume_roast'
+  channel: 'copy' | 'x' | 'linkedin'
+}
+
+/** Fired (server) when a public share page renders for a real report. */
+export const EVENT_FIT_SHARE_VIEWED = 'fit_share_viewed'
+export interface FitShareViewedProps {
+  mode: 'job_fit' | 'resume_roast'
+}
+
+/** Fired (server) when a signup claims an anonymous report via the claim cookie. */
+export const EVENT_FIT_RESULT_CLAIMED = 'fit_result_claimed'
+export interface FitResultClaimedProps {
+  mode: 'job_fit' | 'resume_roast'
+  score: number | null
+}
+
+/** Fired (client) on every signup CTA click on the tool and share pages. */
+export const EVENT_FIT_SIGNUP_CTA_CLICKED = 'fit_signup_cta_clicked'
+export interface FitSignupCtaClickedProps {
+  mode: 'job_fit' | 'resume_roast'
+  source: 'result' | 'gate' | 'share_page'
+}

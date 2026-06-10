@@ -9,7 +9,7 @@ import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limi
 import { assertCareerOpsFeature } from '@/lib/careerops/assert-feature'
 import { isCareerOpsFeatureEnabled } from '@/lib/careerops/flags'
 import { buildCareerGrounding } from '@/lib/careerops/grounding'
-import { scoreJob } from '@/lib/careerops/scorer'
+import { NotAJobDescriptionError, scoreJob } from '@/lib/careerops/scorer'
 import type { CareerProfile } from '@/lib/careerops/types'
 
 const ROUTE_KEY = 'careerops_score'
@@ -105,6 +105,9 @@ export async function POST(req: NextRequest) {
       return apiError(402, 'limit_reached', 'limit_reached', {
         feature: 'hatch_ai_cents', used: error.used, limit: error.limit, windowDays: error.windowDays,
       })
+    }
+    if (error instanceof NotAJobDescriptionError) {
+      return apiError(422, 'not_a_job', 'That text does not read like a job description. Paste the posting itself.')
     }
     console.error('[careerops/score] scoring failed:', error)
     return apiError(502, 'score_failed', 'Scoring failed, please try again')
