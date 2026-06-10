@@ -102,17 +102,19 @@ export async function POST(req: NextRequest) {
   }
 
   const reportToken = upserted?.report_token as string | null
-  const reportUrl =
-    magnet.hasReport && reportToken
-      ? absoluteUrl(req, `/go/${source_slug}/r/${reportToken}`)
-      : null
+  // The in-page link is a RELATIVE path so it always stays on the origin the
+  // user is browsing (NEXT_PUBLIC_APP_URL points at prod, which would strand
+  // dev/preview sessions on the wrong host). Only the email needs an absolute
+  // URL.
+  const reportPath =
+    magnet.hasReport && reportToken ? `/go/${source_slug}/r/${reportToken}` : null
 
   // Fire-and-forget unlock email for new gate captures only (skip retakes to
   // avoid re-sending). The email_dedupes table is a secondary guard.
   if (!alreadyCaptured && magnet.capture === 'gate' && magnet.unlockEmail) {
     const copy = magnet.unlockEmail
     // When the magnet has a personal report, the email CTA links it directly.
-    const ctaUrl = reportUrl ?? absoluteUrl(req, copy.ctaUrl)
+    const ctaUrl = absoluteUrl(req, reportPath ?? copy.ctaUrl)
     void sendLeadMagnetUnlockEmail(supabase, {
       to: email,
       name: name ?? null,
@@ -154,5 +156,5 @@ export async function POST(req: NextRequest) {
     // captureServerImmediate, but belt-and-suspenders here too.
   })
 
-  return NextResponse.json({ success: true, alreadyCaptured, reportUrl })
+  return NextResponse.json({ success: true, alreadyCaptured, reportUrl: reportPath })
 }
