@@ -38,7 +38,33 @@ Bottlenecks, in the order they bite:
   `cpu-throttling=false`.
 - `cc-llm-db`: **`db-f1-micro`** (shared-core, ~0.6 GB RAM, **~25 max connections**),
   ZONAL, 10 GB PD_HDD, `storageAutoResize=true`. **This is the current first wall.**
+  **Stopped when idle** (`activationPolicy=NEVER`) — Cloud SQL has no native
+  scale-to-zero, so the app orchestrates it on demand (see below).
 - Realistic ceiling today: **~20–40 concurrent active users** (DB-bound).
+
+## Cloud SQL on-demand start/stop (idle cost = $0 compute)
+
+`cc-llm-db` would bill 24/7 if left RUNNABLE, so the app starts/stops it via the
+SQL Admin API (`src/lib/sandbox/cloud-sql-admin.ts`, toggling
+`settings.activationPolicy` ALWAYS↔NEVER):
+
+- **Start**: `session/start` calls `ensureSqlRunnable(40_000)` BEFORE minting the
+  gateway key (LiteLLM can't issue keys without its Postgres). Cold start from
+  stopped is ~30-90s; the 40s budget fits the route's 60s `maxDuration` with
+  headroom. If the DB isn't RUNNABLE in time the route returns **503** (row marked
+  `failed`, not stranded `provisioning`) — the DB keeps booting in the background,
+  and the user's retry sails through. The gateway key-mint also retries with
+  backoff to absorb a cold-DB Prisma connection.
+- **Stop**: `cc-reap` (every 10 min) stops the DB when **zero** sessions are
+  `active` and no `provisioning` row is younger than 5 min (a stale provisioning
+  row from a killed start is ignored so it can't pin the DB forever).
+- **Race**: `ensureSqlRunnable` re-asserts ALWAYS even when already RUNNABLE, so it
+  wins against a reaper NEVER patch that's in flight.
+- **Gating**: requires `CC_SQL_INSTANCE`, `GCP_PROJECT`, `CLOUD_RUN_SA_JSON`
+  (orchestrator SA, granted `roles/cloudsql.admin`). Absent any of these it no-ops,
+  so local/dev and the prod-dark state are unaffected.
+- Residual idle cost is just the public IPv4 (~$5/mo) + 10 GB disk (~$1/mo) while
+  the instance exists; compute is $0 when stopped.
 
 > Note: with the gateway now at maxScale=10, the f1-micro connection cap is the
 > binding limit (10 gateway instances × Prisma pool can exceed ~25 connections).

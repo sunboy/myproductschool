@@ -50,31 +50,52 @@ export async function mintSessionVirtualKey(
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
   const budgetUsd = parseFloat(process.env.CC_SESSION_BUDGET_USD ?? '0.50')
 
-  const res = await fetch(`${baseUrl}/key/generate`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${master}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      key_alias: `cc-${sessionId}`,
-      max_budget: budgetUsd,
-      // Hard duration so a key can't be reused indefinitely; matches session TTL.
-      duration: `${Math.max(60, ttlSeconds)}s`,
-      models,
-      metadata: { feature: 'claude_code_analytics', session_id: sessionId },
-    }),
-  })
+  // Retry with backoff: the gateway is minScale=0 and its Cloud SQL may have just
+  // been woken on demand (see cloud-sql-admin), so the FIRST key/generate can hit
+  // a cold gateway whose Prisma connection to the fresh DB isn't ready yet (500 /
+  // connection error). A couple of retries absorb that without failing the session.
+  // A terminal error (4xx client error) is thrown directly and NOT retried; only
+  // transient failures (5xx, network) fall through to the retry loop. (A plain
+  // `throw` inside the try would be swallowed by the catch and retried 4×.)
+  class TerminalKeyError extends Error {}
 
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '')
-    throw new Error(`LiteLLM key/generate failed (${res.status}): ${detail.slice(0, 300)}`)
+  let lastErr: unknown
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 2000 * attempt))
+    try {
+      const res = await fetch(`${baseUrl}/key/generate`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key_alias: `cc-${sessionId}`,
+          max_budget: budgetUsd,
+          // Hard duration so a key can't be reused indefinitely; matches session TTL.
+          duration: `${Math.max(60, ttlSeconds)}s`,
+          models,
+          metadata: { feature: 'claude_code_analytics', session_id: sessionId },
+        }),
+      })
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '')
+        // 5xx / connection issues are transient (cold gateway/DB) → retry. 4xx is
+        // a real client error (bad master key, bad model) → fail fast.
+        if (res.status >= 500) {
+          lastErr = new Error(`LiteLLM key/generate ${res.status}: ${detail.slice(0, 200)}`)
+          continue
+        }
+        throw new TerminalKeyError(`LiteLLM key/generate failed (${res.status}): ${detail.slice(0, 300)}`)
+      }
+      const data = (await res.json()) as { key?: string }
+      if (!data.key) throw new TerminalKeyError('LiteLLM key/generate returned no key')
+      return { key: data.key, baseUrl, budgetUsd }
+    } catch (err) {
+      // Don't retry a client-side / contract error — surface it immediately.
+      if (err instanceof TerminalKeyError) throw err
+      lastErr = err
+      // Network-level throw (gateway still cold) — retry unless it's the last try.
+    }
   }
-
-  const data = (await res.json()) as { key?: string }
-  if (!data.key) throw new Error('LiteLLM key/generate returned no key')
-
-  return { key: data.key, baseUrl, budgetUsd }
+  throw lastErr ?? new Error('LiteLLM key/generate failed after retries')
 }
 
 export interface KeySpend {

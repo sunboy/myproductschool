@@ -17,6 +17,7 @@ import { getSandbox } from '@/lib/sandbox'
 import type { SessionEnv } from '@/lib/sandbox/types'
 import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
 import { mintSessionVirtualKey, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
+import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -275,6 +276,30 @@ export async function POST(req: NextRequest) {
   if (upsertErr) {
     console.error('[cc/session/start] Failed to upsert session:', upsertErr)
     return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
+  }
+
+  // --- Wake the gateway's Cloud SQL on demand. cc-llm-db is stopped while CC
+  // Analytics is idle (it has no native scale-to-zero, so it would bill 24/7).
+  // Start it and wait until RUNNABLE BEFORE minting a gateway key — the mint hits
+  // LiteLLM, which can't issue virtual keys without its Postgres. The wake is
+  // capped at 40s so it fits this route's 60s maxDuration WITH headroom for the
+  // mint + sandbox boot below; if the DB is too slow, we 503 cleanly (the row is
+  // marked `failed`, NOT left `provisioning`) and the user's retry — by which
+  // time the DB has finished booting — sails through. No-op when unconfigured
+  // (local/dev). The reaper stops it again when no session is active. ---
+  if (isGatewayConfigured() && isSqlAutostartConfigured()) {
+    const sql = await ensureSqlRunnable(40_000)
+    if (!sql.ready) {
+      console.error('[cc/session/start] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
+      await admin
+        .from('claude_code_sessions')
+        .update({ status: 'failed', ended_at: new Date().toISOString() })
+        .eq('id', sessionId)
+      return NextResponse.json(
+        { error: 'Starting your environment took too long. Please try again.' },
+        { status: 503 },
+      )
+    }
   }
 
   // --- Mint a per-session virtual key with a hard spend cap (if the gateway is
