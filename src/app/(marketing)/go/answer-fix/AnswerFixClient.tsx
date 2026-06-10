@@ -1,8 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { LeadGateForm } from '@/components/landing-v3/lead-magnet/LeadGateForm'
+import { useMagnetTracking } from '@/components/landing-v3/lead-magnet/useMagnetTracking'
+import {
+  EVENT_MAGNET_QUIZ_STARTED,
+  EVENT_MAGNET_QUIZ_COMPLETED,
+} from '@/lib/posthog/events'
 
 // The four FLOW moves, shown as the rebuild of one weak answer. Content is
 // authored (HackProduct voice), not a fabricated company claim. The weak answer
@@ -61,16 +66,43 @@ export function AnswerFixClient() {
   const [active, setActive] = useState<string>('frame')
   const current = MOVES.find((m) => m.key === active) ?? MOVES[0]
 
+  const { track } = useMagnetTracking('answer-fix')
+
+  // Track which moves the visitor has viewed (first interaction fires quiz_started).
+  const viewedMoves = useRef<Set<string>>(new Set())
+  const quizStartedRef = useRef(false)
+  const quizCompletedRef = useRef(false)
+
+  function handleMoveSelect(key: string) {
+    setActive(key)
+
+    if (!quizStartedRef.current) {
+      quizStartedRef.current = true
+      track(EVENT_MAGNET_QUIZ_STARTED)
+    }
+
+    viewedMoves.current.add(key)
+
+    if (!quizCompletedRef.current && viewedMoves.current.size === MOVES.length) {
+      quizCompletedRef.current = true
+      track(EVENT_MAGNET_QUIZ_COMPLETED, {
+        band: 'answer-fix',
+        movesViewed: MOVES.length,
+      })
+    }
+  }
+
   return (
     <>
       <section className="lm-hero">
         <div className="shell">
           <div>
             <p className="eyebrow"><span className="dot" />Answer repair</p>
-            <h1>Turn a rambling product answer into one that gets the offer.</h1>
+            <h1>Turn a rambling product answer into one that sounds like a decision.</h1>
             <p className="lm-hero-lead">
               Most engineers lose product-sense rounds not on ideas but on structure. Watch one
-              real answer get rebuilt move by move, and see exactly why each version scores higher.
+              real answer get rebuilt move by move, and see exactly what each rebuild does
+              differently.
             </p>
             <ul className="lm-hero-bullets">
               <li>The four moves that turn a list of ideas into a decision</li>
@@ -110,7 +142,7 @@ export function AnswerFixClient() {
                     ? undefined
                     : { background: 'var(--paper)', color: 'var(--ink-1)', border: '1px solid var(--line-2)' }
                 }
-                onClick={() => setActive(m.key)}
+                onClick={() => handleMoveSelect(m.key)}
               >
                 {m.move}
               </button>
@@ -147,9 +179,9 @@ export function AnswerFixClient() {
           <LeadGateForm
             sourceSlug="answer-fix"
             mode="gate"
-            magnetResult={{ magnet: 'answer-fix' }}
+            magnetResult={{ magnet: 'answer-fix', version: 1, movesViewed: viewedMoves.current.size }}
             title="Send me the answer structure"
-            subtitle="A one-page structure and three templates, in your inbox in seconds."
+            subtitle="A printable four-move structure and three reasoning templates, in your inbox in seconds."
             ctaLabel="Get the structure"
             postUnlockCtaLabel="Practice it on a real challenge"
             signupNext="/challenges"
@@ -165,7 +197,7 @@ export function AnswerFixClient() {
               <li><strong>Win:</strong> a falsifiable metric with a guardrail and a timeline.</li>
             </ul>
             <p style={{ color: 'var(--ink-2)', marginTop: 14, fontSize: 14 }}>
-              The full version with reasoning templates is in your inbox.
+              Your printable answer structure with reasoning templates is in your inbox.
             </p>
           </LeadGateForm>
         </div>
