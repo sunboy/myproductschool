@@ -101,7 +101,7 @@ export default async function LiveInterviewsPage() {
   return (
     <UsageProvider>
       <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-6">
-        <section data-tour-target="interviews-hero" className="relative overflow-hidden rounded-[28px] border border-outline-variant/40 bg-[#14241c] px-6 py-6 sm:px-8 sm:py-7">
+        <section data-tour-target="interviews-hero" className="relative overflow-hidden rounded-[28px] border border-outline-variant/40 bg-hero-forest-deep px-6 py-6 sm:px-8 sm:py-7">
           <div
             aria-hidden
             className="absolute inset-0"

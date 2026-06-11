@@ -92,12 +92,24 @@
   --color-traditional-soft:         #dfe7e1;
   --color-success:                  #2f7a4a;
 
+  /* Dark hero surfaces (shared across hub-page heroes) */
+  --color-hero-forest:              #1e3528;
+  --color-hero-forest-deep:         #14241c;
+  --color-hero-forest-deepest:      #0e1a14;
+  --color-on-hero:                  #f3ede0;
+  --color-on-hero-accent:           #7ee099;
+
   /* Extended radius scale */
   --radius-xs:  0.5rem;
   --radius-sm:  0.75rem;
   --radius-md:  1.125rem;
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
+}
+
+/* Shared gradients (referenced from style={{}} where Tailwind utilities can't) */
+:root {
+  --gradient-hero-forest: linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%);
 }
 
 /* ── Base ─────────────────────────────────────────────────────── */

@@ -8,6 +8,7 @@ import { ActiveFilterPills } from '@/components/challenges/ActiveFilterPills'
 import { FilterBottomSheet } from '@/components/challenges/FilterBottomSheet'
 import { MotionList } from '@/components/motion'
 import { AppTooltip } from '@/components/ui/AppTooltip'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { TopicChipCloud } from '@/components/challenges/TopicChipCloud'
 import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
@@ -545,9 +546,10 @@ function AllPracticeView({
 
   if (visibleDisciplines.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-        <p className="font-headline text-base font-bold text-on-surface">No challenges match those filters</p>
-      </div>
+      <EmptyState
+        title="No challenges match those filters"
+        hint="Loosen a filter or two and more reps will show up."
+      />
     )
   }
 
@@ -811,9 +813,10 @@ function FlatDisciplineList({
 
   if (!loading && rows.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-        <p className="font-headline text-base font-bold text-on-surface">No challenges match those filters</p>
-      </div>
+      <EmptyState
+        title="No challenges match those filters"
+        hint="Loosen a filter or two and more reps will show up."
+      />
     )
   }
 

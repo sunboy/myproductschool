@@ -20,6 +20,10 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   { pattern: /^\/live-interviews/, message: 'Tell me the company, role, or discipline you want to practice.' },
   { pattern: /^\/progress/, message: 'Want to understand what your numbers actually mean?' },
   { pattern: /^\/dashboard/, message: 'Ready to pick your first challenge today?' },
+  { pattern: /^\/cohort/, message: 'Curious how your week compares? I can point out where to close the gap.' },
+  { pattern: /^\/settings/, message: 'Tuning your setup? I can explain what any of these settings change.' },
+  { pattern: /^\/simulation/, message: 'Mid-interview nerves are normal. Ask me anything between questions.' },
+  { pattern: /^\/notes/, message: 'Your notes feed my coaching. Want me to pull a theme out of them?' },
 ]
 
 export function getPagePrompt(pathname: string): string {

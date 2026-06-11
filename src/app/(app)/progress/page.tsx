@@ -767,11 +767,11 @@ export default function ProgressPage() {
   const hasActivity = recentAttempts.length > 0 || recentInterviews.length > 0
 
   return (
-    <div className="animate-fade-in-up mx-auto max-w-[1180px] px-4 py-4 pb-16 sm:px-6 lg:px-8">
+    <div className="animate-fade-in-up mx-auto max-w-[1440px] px-4 py-4 pb-16 sm:px-6 lg:px-8">
       {/* ── HERO + FLOW (merged) ─────────────────────────────── */}
       <div
         className="relative mb-4 overflow-hidden rounded-2xl p-3.5 sm:p-4"
-        style={{ background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)' }}
+        style={{ background: 'var(--gradient-hero-forest)' }}
       >
         {/* Dot grid bg */}
         <div aria-hidden className="hidden sm:block" style={{

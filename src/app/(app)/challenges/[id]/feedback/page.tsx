@@ -371,7 +371,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           <MotionSection className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <HatchGlyph size={40} className="text-primary flex-shrink-0" />
+                <HatchGlyph size={40} state={overallScoreNum >= 75 ? 'celebrating' : 'reviewing'} className="text-primary flex-shrink-0" />
                 <div>
                   <h3 className="font-headline text-lg font-bold text-on-surface">
                     Hatch&apos;s Analysis

@@ -12,6 +12,7 @@ import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { AppTooltip } from '@/components/ui/AppTooltip'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StudyPlanGrid } from './StudyPlanGrid'
 import { getCompanyLabel } from '@/lib/data/taxonomy'
 
@@ -214,7 +215,7 @@ export default async function ExplorePage() {
   const topDomains = domains.filter(d => (d.challenge_count ?? 0) >= 1).slice(0, 6)
 
   return (
-    <main className="animate-fade-in-up relative isolate mx-auto max-w-[1240px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
+    <main className="animate-fade-in-up relative isolate mx-auto max-w-[1440px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
       <ExplorePageBackdrop />
 
       <AppBreadcrumbs
@@ -228,9 +229,12 @@ export default async function ExplorePage() {
       <header data-tour-target="explore-hero" className="relative mb-8 grid overflow-hidden rounded-[26px] border border-outline-variant/35 bg-surface-container-low/85 p-5 shadow-[0_24px_70px_-58px_rgba(46,50,48,0.7)] backdrop-blur-sm sm:p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
         <ExploreHeroPattern />
         <div className="relative">
-          <h1 className="font-headline text-[36px] font-bold leading-tight text-on-surface sm:text-[44px]">
-            Explore
-          </h1>
+          <div className="flex items-center gap-3">
+            <HatchGlyph size={40} state="idle" className="shrink-0 text-primary" />
+            <h1 className="font-headline text-[36px] font-bold leading-tight text-on-surface sm:text-[44px]">
+              Explore
+            </h1>
+          </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <MetaChip icon="menu_book" label={`${guidesCount} guides`} />
             {totalAutopsyHubs > 0 && <MetaChip icon="troubleshoot" label={`${totalAutopsyHubs} autopsy hubs`} />}

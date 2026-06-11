@@ -338,6 +338,8 @@ export function FloatingHatch() {
                 {currentPageType === 'challenge' ? 'Coaching on this challenge' :
                  currentPageType === 'learning_module' ? 'Reading this module with you' :
                  currentPageType === 'progress' ? 'Reviewing your progress' :
+                 currentPageType === 'live_interviews' ? 'Practicing an interview with you' :
+                 currentPageType === 'practice' ? 'Helping you pick the right rep' :
                  'Your product thinking coach'}
               </p>
             </div>

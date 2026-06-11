@@ -45,7 +45,7 @@ export default function SimulationPage() {
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col items-center justify-center" style={{ height: 'calc(100vh - 4rem)' }}>
-        <HatchGlyph size={48} className="text-primary mx-auto mb-4" animated />
+        <HatchGlyph size={48} state="idle" className="text-primary mx-auto mb-4" />
         <p className="text-on-surface-variant text-sm">Loading session…</p>
       </div>
     )
@@ -60,7 +60,7 @@ export default function SimulationPage() {
       <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
         {/* Header */}
         <div className="flex items-center gap-3 pb-4 border-b border-outline-variant mb-4">
-          <HatchGlyph size={28} className="text-primary" animated />
+          <HatchGlyph size={28} state="idle" className="text-primary" />
           <div>
             <p className="font-medium text-on-surface">{companyName ?? 'Interview Simulation'}</p>
             <p className="text-xs text-on-surface-variant">{challengeTitle ?? 'Hatch as PM Interviewer'}</p>
@@ -69,7 +69,7 @@ export default function SimulationPage() {
 
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-5 max-w-md">
-            <HatchGlyph size={56} className="text-primary mx-auto" />
+            <HatchGlyph size={56} state="celebrating" className="text-primary mx-auto" />
             <h2 className="font-headline text-2xl font-bold text-on-surface">Session complete</h2>
 
             {score != null && (
@@ -106,7 +106,7 @@ export default function SimulationPage() {
     <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 border-b border-outline-variant mb-4">
-        <HatchGlyph size={28} className="text-primary" animated />
+        <HatchGlyph size={28} state="listening" className="text-primary" />
         <div>
           <p className="font-medium text-on-surface">{companyName ?? 'Interview Simulation'}</p>
           <p className="text-xs text-on-surface-variant">{challengeTitle ?? 'Hatch as PM Interviewer'}</p>
@@ -140,7 +140,7 @@ export default function SimulationPage() {
         ))}
         {isSending && (
           <div className="flex gap-3">
-            <HatchGlyph size={24} className="text-primary flex-shrink-0 mt-1" />
+            <HatchGlyph size={24} state="reviewing" className="text-primary flex-shrink-0 mt-1" />
             <div className="bg-primary-container rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1">
               {[0, 150, 300].map(delay => (
                 <span key={delay} className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }} />

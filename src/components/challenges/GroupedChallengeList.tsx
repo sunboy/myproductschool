@@ -9,6 +9,7 @@ import { challengePath, formatChallengeNumber } from '@/lib/challenges/challenge
 import { coerceDifficulty, DIFFICULTY_PILL_CLASSES } from '@/lib/practice/difficulty'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 import { deriveChallengeStatus } from '@/lib/challenges/status'
+import { EmptyState } from '@/components/ui/EmptyState'
 import type { ChallengeWithDomain } from '@/lib/types'
 import type { Discipline } from './DisciplineTabStrip'
 import type { FilterState } from './FilterDropdownBar'
@@ -399,7 +400,7 @@ function StaticGroupedList({ challenges, groupBy, topicLabels, returnHref, colle
   const locked = enforceLimit && atLimit
 
   if (challenges.length === 0) {
-    return <div className="text-center py-12 text-on-surface-variant font-label text-sm">No challenges to display.</div>
+    return <EmptyState compact title="No challenges to display" hint="Adjust your filters to see more reps." />
   }
 
   if (groupBy === 'none') {
@@ -508,9 +509,7 @@ function ServerGroupedList({ discipline, returnHref, searchString, pageSize, enf
 
   if (topicEntries.length === 0) {
     return (
-      <div className="text-center py-12 text-on-surface-variant font-label text-sm">
-        No challenges to display.
-      </div>
+      <EmptyState compact title="No challenges to display" hint="Adjust your filters to see more reps." />
     )
   }
 

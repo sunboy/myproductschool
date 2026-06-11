@@ -16,6 +16,11 @@ type ProfileResponse = {
   subscription?: SubscriptionInfo | null
 }
 
+type BillingPrices = {
+  monthly?: { formatted?: string | null }
+  annual?: { formatted?: string | null }
+}
+
 function formatDate(value?: string | null) {
   if (!value) return null
   const date = new Date(value)
@@ -33,8 +38,13 @@ export default function BillingSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [portalLoading, setPortalLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [prices, setPrices] = useState<BillingPrices | null>(null)
 
   useEffect(() => {
+    fetch('/api/billing/prices')
+      .then(r => r.ok ? r.json() : null)
+      .then((data: BillingPrices | null) => setPrices(data))
+      .catch(() => {})
     fetch('/api/profile')
       .then(r => r.ok ? r.json() : null)
       .then((data: ProfileResponse | null) => {
@@ -73,7 +83,12 @@ export default function BillingSettingsPage() {
 
   const isPro = plan === 'pro'
   const interval = subscription?.billing_interval === 'year' ? 'Annual' : 'Monthly'
-  const price = subscription?.billing_interval === 'year' ? '$190/yr' : '$19/mo'
+  const priceFormatted = subscription?.billing_interval === 'year'
+    ? prices?.annual?.formatted
+    : prices?.monthly?.formatted
+  const price = priceFormatted
+    ? `${priceFormatted}/${subscription?.billing_interval === 'year' ? 'yr' : 'mo'}`
+    : null
   const nextBillingDate = formatDate(subscription?.current_period_end)
   const cancelScheduled = !!subscription?.cancel_at_period_end
   const cancelDate = formatDate(subscription?.cancel_at ?? subscription?.current_period_end)
@@ -111,7 +126,7 @@ export default function BillingSettingsPage() {
             )}
           </div>
 
-          {isPro && !loading && (
+          {isPro && !loading && price && (
             <div className="text-right">
               <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant mb-1">
                 Price
@@ -187,7 +202,8 @@ export default function BillingSettingsPage() {
             <div className="flex-1 min-w-0">
               <p className="font-label font-semibold text-on-surface mb-1">Ready to go further?</p>
               <p className="text-sm font-body text-on-surface-variant mb-4">
-                Unlimited challenges, unlimited live interviews, and priority Hatch coaching — starting at $19/mo.
+                Unlimited challenges, unlimited live interviews, and priority Hatch coaching
+                {prices?.monthly?.formatted ? `, starting at ${prices.monthly.formatted}/mo` : ''}.
               </p>
               <Link
                 href="/pricing"

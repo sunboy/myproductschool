@@ -87,7 +87,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
       {/* ── Hero ── */}
       <div style={{
         borderRadius: 32, overflow: 'hidden', marginBottom: 32,
-        background: 'linear-gradient(135deg, #1e3528 0%, #0e1a14 100%)',
+        background: 'var(--gradient-hero-forest)',
         padding: '36px 48px', position: 'relative',
         border: '1px solid rgba(255,255,255,0.06)',
       }}>

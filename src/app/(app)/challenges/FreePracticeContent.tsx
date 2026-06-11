@@ -13,6 +13,7 @@ import { ChallengeSearch } from './ChallengeSearch'
 import { HatchPick } from './HatchPick'
 import { FilteredChallengesView } from './FilteredChallengesView'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
 
@@ -140,9 +141,12 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
           ]}
         />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <h1 className="font-headline text-3xl font-bold leading-tight text-on-surface">
-            Practice
-          </h1>
+          <div className="flex items-center gap-3">
+            <HatchGlyph size={36} state="listening" className="shrink-0 text-primary" />
+            <h1 className="font-headline text-3xl font-bold leading-tight text-on-surface">
+              Practice
+            </h1>
+          </div>
           <ChallengeSearch total={counts.all} />
         </div>
       </div>
