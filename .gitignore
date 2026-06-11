@@ -97,3 +97,6 @@ seeds/chillinterview/
 
 # Local SA keys for CC analytics testing (never commit)
 .secrets/
+
+# Description-rewrite batch artifacts (reproducible via scripts/export-descriptions-for-rewrite.ts)
+scripts/content/rewrites/
