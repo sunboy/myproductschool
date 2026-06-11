@@ -13,6 +13,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
+import { validateDescription } from '../src/lib/content/description-spec'
 
 // ---------------------------------------------------------------------------
 // Types for the parts schema
@@ -232,11 +233,12 @@ async function main() {
 
   console.log(`Committing ${approved.length} approved challenges...${DRY_RUN ? ' (DRY RUN)' : ''}`)
 
+  let rejected = 0
+
   for (const c of approved) {
     const md = (c.metadata as Record<string, unknown>) ?? {}
     const isSql = Boolean((c as { is_sql?: boolean }).is_sql)
     const challengeType = (c.challenge_type as string) ?? (isSql ? 'sql' : 'algorithm')
-    const isCoding = challengeType === 'algorithm' || challengeType === 'sql'
 
     // Explore-surface fields: pulled from metadata so the "Asked at top companies"
     // query (is_published + is_real_interview + company_tags) can see this row.
@@ -246,13 +248,34 @@ async function main() {
     const sourceUrl = (md.source_url as string) ?? null
     const isRealInterview = Boolean(md.source) // anything imported from a real source
 
-    // Coding challenges render from a problem statement + metadata, not a canvas.
-    const scenarioTrigger = isCoding
+    // Per docs/CHALLENGE_DESCRIPTION_SPEC.md: trigger/question must never restate or
+    // pad the body. Coding types get the standard editor lines; SQL's ask lives in the
+    // body's ## Output section; canvas types rely on buildChallengeBrief defaults.
+    const scenarioTrigger = challengeType === 'algorithm'
       ? 'Solve it in the editor. Run the tests as you go.'
-      : 'You have 30 minutes.'
-    const scenarioQuestion = isCoding
+      : challengeType === 'sql'
+        ? 'Write the query in the editor. Run the visible tests as you go.'
+        : null
+    const scenarioQuestion = challengeType === 'algorithm'
       ? 'Write a working solution. Use Hatch for coaching.'
-      : 'Design your solution on the canvas. Use Hatch for coaching.'
+      : null
+
+    // Reject entries that fail the description spec before they reach the DB.
+    const descCheck = validateDescription(challengeType, {
+      context: c.problem_statement_markdown as string,
+      trigger: scenarioTrigger,
+      question: scenarioQuestion,
+      metadata: md,
+    })
+    if (descCheck.errors.length > 0) {
+      console.error(`  ✗ REJECTED "${c.title}" (description spec):`)
+      for (const e of descCheck.errors) console.error(`      ${e.field}: ${e.message}`)
+      rejected += 1
+      continue
+    }
+    for (const w of descCheck.warnings) {
+      console.warn(`  ⚠ "${c.title}" ${w.field}: ${w.message}`)
+    }
 
     const challengeId = randomUUID()
     const slug = await uniqueSlug(c.title as string)
@@ -316,6 +339,9 @@ async function main() {
     }
   }
 
+  if (rejected > 0) {
+    console.error(`\n${rejected} entr${rejected === 1 ? 'y' : 'ies'} rejected by the description spec. Fix and re-run. See docs/CHALLENGE_DESCRIPTION_SPEC.md`)
+  }
   console.log('\nDone. Check /challenges or /explore to see the new challenges.')
 }
 

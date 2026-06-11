@@ -520,6 +520,8 @@ This is pre-existing design (introduced in commit `47872c1`). Always use `qualit
 
 ## Content Authoring Pipeline
 
+**Challenge description standard:** every published challenge description must follow [`docs/CHALLENGE_DESCRIPTION_SPEC.md`](./docs/CHALLENGE_DESCRIPTION_SPEC.md) (per-type templates: algorithm gets `## Examples` from real test cases + `## Constraints`; sql gets `## Output`; canvas gets `## Requirements`/`## Scale`; flow gets single-ask questions). Enforced by `validateDescription` (`src/lib/content/description-spec.ts`) at commit time (`scripts/commit-interview-seeds.ts`) and in the FLOW validator. Audit the live DB anytime: `npx tsx --env-file=.env.local scripts/lint-descriptions.ts`.
+
 **Skill:** Use `hackproduct-tech-content` (Skill tool) for any Learn module authoring — writing, proofreading, image enrichment, or upsert work. The skill contains the full chapter format, slug rules, style bans, diagram conventions, Codex invocation, and upsert commands.
 
 Full architecture: [`docs/notes/content-authoring-architecture.md`](./docs/notes/content-authoring-architecture.md). Operator runbook: [`docs/notes/content-generation-runbook.md`](./docs/notes/content-generation-runbook.md).

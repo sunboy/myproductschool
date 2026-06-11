@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo, isValidElement } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
@@ -37,6 +37,7 @@ import { CodeOutputPanel } from '@/components/challenge/CodeOutputPanel'
 import { LanguageSelector } from '@/components/challenge/LanguageSelector'
 import { SchemaDiagram } from '@/components/challenge/SchemaDiagram'
 import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
+import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
@@ -219,6 +220,75 @@ function buildContextFieldPrompt(challengeType: string | undefined, fieldLabel: 
   return `Focus on the "${fieldLabel}" section of my Context Pack and compare it to the current canvas. Tell me what it implies for the ${copy.artifact}; if a small canvas update is clearly missing, make it.`
 }
 
+// Extract plain text from React children (for the copy button on code blocks)
+function extractNodeText(node: React.ReactNode): string {
+  if (node == null || typeof node === 'boolean') return ''
+  if (typeof node === 'string' || typeof node === 'number') return String(node)
+  if (Array.isArray(node)) return node.map(extractNodeText).join('')
+  if (isValidElement(node)) {
+    return extractNodeText((node.props as { children?: React.ReactNode }).children)
+  }
+  return ''
+}
+
+// Fenced code block with a hover copy button (LeetCode-style example blocks)
+function CopyablePre({ children, ...props }: React.HTMLAttributes<HTMLPreElement>) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = () => {
+    const text = extractNodeText(children).replace(/\n$/, '')
+    if (!text) return
+    navigator.clipboard?.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1600)
+    }).catch(() => {})
+  }
+  return (
+    <div style={{ position: 'relative', margin: '0 0 14px' }}>
+      <pre {...props} style={{
+        fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
+        fontSize: 12.5,
+        lineHeight: 1.55,
+        background: 'var(--color-surface-container-high)',
+        color: 'var(--color-on-surface)',
+        padding: '12px 40px 12px 14px',
+        borderRadius: 10,
+        border: '1px solid var(--color-outline-variant)',
+        overflow: 'auto',
+        margin: 0,
+        whiteSpace: 'pre',
+      }}>
+        {children}
+      </pre>
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={copied ? 'Copied' : 'Copy code'}
+        title={copied ? 'Copied' : 'Copy'}
+        style={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 26,
+          height: 26,
+          borderRadius: 7,
+          border: '1px solid var(--color-outline-variant)',
+          background: 'var(--color-surface-container-low)',
+          color: copied ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+          cursor: 'pointer',
+          padding: 0,
+        }}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 15 }}>
+          {copied ? 'check' : 'content_copy'}
+        </span>
+      </button>
+    </div>
+  )
+}
+
 const codingMarkdownComponents = {
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h3 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: 'var(--color-on-surface)', margin: '18px 0 8px', lineHeight: 1.25 }} />
@@ -262,21 +332,7 @@ const codingMarkdownComponents = {
       }} />
     )
   ),
-  pre: (props: React.HTMLAttributes<HTMLPreElement>) => (
-    <pre {...props} style={{
-      fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
-      fontSize: 12.5,
-      lineHeight: 1.55,
-      background: 'var(--color-surface-container-high)',
-      color: 'var(--color-on-surface)',
-      padding: '12px 14px',
-      borderRadius: 10,
-      border: '1px solid var(--color-outline-variant)',
-      overflow: 'auto',
-      margin: '0 0 14px',
-      whiteSpace: 'pre',
-    }} />
-  ),
+  pre: (props: React.HTMLAttributes<HTMLPreElement>) => <CopyablePre {...props} />,
   blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
     <blockquote {...props} style={{
       borderLeft: '3px solid var(--color-outline-variant)',
@@ -286,6 +342,103 @@ const codingMarkdownComponents = {
       fontStyle: 'italic',
     }} />
   ),
+}
+
+// Single-document problem statement for technical challenge types (algorithm, sql,
+// system_design, data_modeling). Renders the markdown body as one continuous document,
+// LeetCode-style: section structure comes from the content's ## headings, styled as
+// small-caps section headers. The narrative card stack (BriefSectionCard) stays for
+// flow / quick_take scenario challenges.
+const documentMarkdownComponents = {
+  ...codingMarkdownComponents,
+  h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <h4 {...props} style={{
+      fontFamily: 'var(--font-label)',
+      fontSize: 11.5,
+      fontWeight: 800,
+      letterSpacing: '0.065em',
+      textTransform: 'uppercase',
+      color: 'var(--color-primary)',
+      margin: '22px 0 10px',
+      lineHeight: 1.3,
+    }} />
+  ),
+  h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <h5 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 700, color: 'var(--color-on-surface)', margin: '16px 0 6px', lineHeight: 1.3 }} />
+  ),
+}
+
+function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
+  const contextSections = sections.filter((s) => s.tone === 'context')
+  const changeSections = sections.filter((s) => s.tone === 'change')
+  const taskSections = sections.filter((s) => s.tone === 'task')
+  const supportSections = sections.filter((s) => s.tone === 'support')
+
+  return (
+    <div>
+      {/* The body as one continuous document; headings come from the content */}
+      {contextSections.map((section) => (
+        <div key={section.id} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
+          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+        </div>
+      ))}
+
+      {/* One-line destabilizing constraint (canvas) renders as an emphasis bar */}
+      {changeSections.map((section) => (
+        <div key={section.id} style={{
+          borderLeft: '3px solid var(--color-tertiary)',
+          padding: '6px 0 6px 12px',
+          margin: '14px 0',
+          fontFamily: 'var(--font-body)',
+          fontSize: 14,
+          lineHeight: 1.6,
+          fontWeight: 600,
+          color: 'var(--color-on-surface)',
+        }}>
+          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+        </div>
+      ))}
+
+      {/* Single highlighted task callout (canvas "What to draw" / "What to model") */}
+      {taskSections.map((section) => (
+        <section key={section.id} style={{
+          marginTop: 16,
+          background: 'var(--color-primary-container)',
+          border: '1px solid rgba(74,124,89,0.28)',
+          borderRadius: 14,
+          padding: '14px 16px',
+        }}>
+          <div style={{
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: '0.065em',
+            textTransform: 'uppercase',
+            color: 'var(--color-primary)',
+            marginBottom: 7,
+            fontFamily: 'var(--font-label)',
+          }}>
+            {section.title}
+          </div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.68, fontWeight: 650, color: 'var(--color-on-surface)' }}>
+            <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+          </div>
+        </section>
+      ))}
+
+      {/* Muted support footnote (tests/starter-code guidance) */}
+      {supportSections.map((section) => (
+        <div key={section.id} style={{
+          marginTop: 14,
+          fontFamily: 'var(--font-body)',
+          fontSize: 13,
+          lineHeight: 1.6,
+          color: 'var(--color-on-surface-variant)',
+        }}>
+          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function BriefSectionCard({ section }: { section: ChallengeBriefSection }) {
@@ -2578,12 +2731,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* Plain-language brief sections */}
+      {/* Problem statement: technical types render as one continuous document
+          (structure from the content's ## headings); flow/quick_take keep the
+          narrative card stack. */}
       {challengeBriefSections.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          {challengeBriefSections.map((section) => (
-            <BriefSectionCard key={section.id} section={section} />
-          ))}
+          {(isCodingChallenge || isCanvasChallenge) ? (
+            <ProblemDocument sections={challengeBriefSections} />
+          ) : (
+            challengeBriefSections.map((section) => (
+              <BriefSectionCard key={section.id} section={section} />
+            ))
+          )}
         </div>
       )}
 
@@ -2857,14 +3016,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* SQL schema + sample data - only shown for coding challenges with SQL */}
+      {/* SQL schema + sample data + expected output - only shown for coding challenges with SQL */}
       {isCodingChallenge && currentLanguage === 'sql' && (() => {
         const metadata = (isApiMode ? detail?.challenge?.metadata : null) as {
           sql_schema?: { schema_diagram?: SchemaDiagramData; sample_data_preview?: Record<string, Record<string, unknown>[]> }
+          test_cases?: ExpectedOutputTestCase[]
         } | null | undefined
         const schemaDiagram = metadata?.sql_schema?.schema_diagram
         const sampleDataPreview = metadata?.sql_schema?.sample_data_preview
-        if (!schemaDiagram && !sampleDataPreview) return null
+        const sqlTestCases = Array.isArray(metadata?.test_cases) ? metadata.test_cases : []
+        if (!schemaDiagram && !sampleDataPreview && sqlTestCases.length === 0) return null
         return (
           <div style={{ marginTop: 8 }}>
             {schemaDiagram && (
@@ -2876,11 +3037,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               </div>
             )}
             {sampleDataPreview && Object.keys(sampleDataPreview).length > 0 && (
-              <div>
+              <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 8, fontFamily: 'var(--font-label)' }}>
                   Sample Data
                 </div>
                 <SampleDataPreview sample_data_preview={sampleDataPreview} />
+              </div>
+            )}
+            {sqlTestCases.length > 0 && (
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 8, fontFamily: 'var(--font-label)' }}>
+                  Expected Output
+                </div>
+                <ExpectedOutput test_cases={sqlTestCases} />
               </div>
             )}
           </div>
