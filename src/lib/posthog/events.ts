@@ -17,6 +17,20 @@ export interface UserSignedUpProps {
   provider?: string
 }
 
+/**
+ * Fired (server) when an auth-funnel request fails for any reason the user
+ * sees an error for. `code` carries the internal apiError code (e.g.
+ * 'turnstile_failed', 'rate_limited', 'signup_failed') so a success-rate
+ * collapse is alertable even while MASK_API_ERRORS hides messages from users.
+ */
+export const EVENT_AUTH_SIGNUP_FAILED = 'auth_signup_failed'
+export const EVENT_AUTH_MAGIC_LINK_FAILED = 'auth_magic_link_failed'
+export const EVENT_AUTH_PASSWORD_RESET_FAILED = 'auth_password_reset_failed'
+export interface AuthFailureProps {
+  code: string
+  status: number
+}
+
 /** Fired (client) when the user advances a step of the onboarding flow. */
 export const EVENT_ONBOARDING_STEP = 'onboarding_step'
 export interface OnboardingStepProps {

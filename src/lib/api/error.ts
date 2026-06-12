@@ -41,11 +41,13 @@ export function apiError(
   message: string,
   details?: ApiErrorDetails
 ) {
-  // Server-side errors (5xx) are real failures the user shouldn't have to
-  // report for us to know about. Log them structured (with redaction) and
-  // forward to Sentry so they surface as issues, not just console noise.
-  // 4xx are client/validation errors — log only when masking is on, never
-  // forwarded (they'd drown out real failures).
+  // Every error a user might see must be visible to us — especially with
+  // MASK_API_ERRORS on, where the client gets a generic string and users
+  // can't report anything useful. 5xx go to Sentry as errors; 4xx as
+  // warnings tagged by code, so a sudden spike in one code (e.g. a config
+  // failure returning 400 on 100% of requests) surfaces as an issue
+  // instead of hiding in runtime logs. Sentry groups by message, so steady
+  // background validation noise stays a single grouped issue.
   if (status >= 500) {
     logger.error(`[apiError] ${status} ${code}: ${message}`, {
       status,
@@ -57,11 +59,18 @@ export function apiError(
       tags: { api_error_code: code, status: String(status) },
       extra: { details },
     })
-  } else if (MASK_ERRORS) {
-    logger.error(`[apiError] ${status} ${code}: ${message}`, {
-      status,
-      code,
-      ...(details !== undefined ? { details } : {}),
+  } else {
+    if (MASK_ERRORS) {
+      logger.error(`[apiError] ${status} ${code}: ${message}`, {
+        status,
+        code,
+        ...(details !== undefined ? { details } : {}),
+      })
+    }
+    Sentry.captureMessage(`API ${status} ${code}: ${message}`, {
+      level: 'warning',
+      tags: { api_error_code: code, status: String(status) },
+      extra: { details },
     })
   }
 

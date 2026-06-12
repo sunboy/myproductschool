@@ -8,14 +8,23 @@ import {
 import { protectedPasswordResetRequestSchema } from '@/lib/auth/validation'
 import { turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
 import { apiError } from '@/lib/api/error'
+import { captureServerAnonymous } from '@/lib/posthog/server'
+import { EVENT_AUTH_PASSWORD_RESET_FAILED } from '@/lib/posthog/events'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = protectedPasswordResetRequestSchema.extend({
   redirectTo: z.string().trim().max(2048).optional(),
 })
 
-function rateLimitedResponse(retryAfter: number) {
-  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+// Every failure response also lands in PostHog so this funnel's success
+// rate is alertable, independent of error masking.
+async function fail(status: number, code: string, message: string, details?: Record<string, unknown>) {
+  await captureServerAnonymous(EVENT_AUTH_PASSWORD_RESET_FAILED, { code, status })
+  return apiError(status, code, message, details)
+}
+
+async function rateLimitedResponse(retryAfter: number) {
+  const response = await fail(429, 'rate_limited', 'rate_limited', { retryAfter })
   response.headers.set('Retry-After', String(retryAfter))
   return response
 }
@@ -33,11 +42,11 @@ export async function POST(request: Request) {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return apiError(400, 'invalid_request', 'Invalid request body', {
+      return fail(400, 'invalid_request', 'Invalid request body', {
         issues: validationIssues(error),
       })
     }
-    return apiError(400, 'invalid_json', 'Invalid JSON body')
+    return fail(400, 'invalid_json', 'Invalid JSON body')
   }
   const { email, turnstileToken } = body
 
@@ -50,7 +59,7 @@ export async function POST(request: Request) {
 
   const turnstile = await verifyTurnstileToken({ token: turnstileToken, remoteIp: ip })
   if (!turnstile.ok) {
-    return apiError(400, 'turnstile_failed', turnstileErrorMessage(turnstile))
+    return fail(400, 'turnstile_failed', turnstileErrorMessage(turnstile))
   }
 
   const supabase = await createClient()

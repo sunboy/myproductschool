@@ -50,3 +50,17 @@ export async function captureServerImmediate({ distinctId, event, properties }: 
     })
   }
 }
+
+/**
+ * Capture a server-side event with no authenticated user (pre-auth failures
+ * like a rejected signup). Uses a fixed distinctId and disables person
+ * profile processing so these never create PostHog persons — they exist for
+ * counting/alerting, not identity.
+ */
+export async function captureServerAnonymous(event: string, properties?: Record<string, unknown>): Promise<void> {
+  await captureServerImmediate({
+    distinctId: 'server-anonymous',
+    event,
+    properties: { ...properties, $process_person_profile: false },
+  })
+}
