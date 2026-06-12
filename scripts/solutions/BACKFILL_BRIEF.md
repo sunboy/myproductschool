@@ -46,6 +46,9 @@ Schema gotchas (from earlier waves):
 - `schema_tables` relations only accept cardinality `1:1`, `1:N`, or `N:M` (no `N:1`; flip the from/to direction instead).
 - `complexity.time` / `complexity.space` cap at 60 chars; keep O() strings terse and put prose in `complexity.note`.
 - Copy question ids exactly when querying `flow_options`; verify row counts match the question count before writing the walkthrough.
+- Diagram step labels cap at 80 chars; write them as brief imperative fragments (under 60 chars) and put sentences in `detail`.
+- Before validating, grep your draft for the slop list in `src/lib/ai/voice-rules.ts` ("leverage" is the one that slips through most) to save a validator round.
+- For sql challenges, every approach needs a runnable code block, including the non-optimal one.
 
 Quality bar:
 - Approaches teach the reasoning progression, not just the answer. Diagrams use the typed specs correctly (architecture lanes for design types, complexity_curves / flow_steps for algorithm, schema_tables where joins are the hard part, a flow_steps reasoning chain for flow types).
