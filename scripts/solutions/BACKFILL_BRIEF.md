@@ -64,7 +64,7 @@ npx tsx scripts/solutions/validate-solution-jobs.ts scripts/content/solutions/<w
 # fix until: 0 hard errors, 0 slop/role-framing warnings, 0 structure warnings
 npx tsx scripts/solutions/render-upsert-sql.ts scripts/content/solutions/<wave>/<batch>.solutions.json
 ```
-Then read the generated `.upserts.sql` and execute each statement (separated by blank lines) via `execute_sql`, one statement per call. If you split statements into temp files, name them with your batch prefix and challenge id (e.g. `/tmp/<batch>-<challenge_id>.sql`); bare `/tmp/stmt_N.sql` names collide with parallel wave agents. Finally verify:
+Then read the generated `.upserts.sql` and execute each statement (separated by blank lines) via `execute_sql`, one statement per call. If a statement is unwieldy to transport, rewriting the content literal with dollar-quoting (`$SOL$...$SOL$::jsonb`) is safe after verifying the content contains no `$SOL$` sequence. If you split statements into temp files, name them with your batch prefix and challenge id (e.g. `/tmp/<batch>-<challenge_id>.sql`); bare `/tmp/stmt_N.sql` names collide with parallel wave agents. Finally verify:
 ```sql
 SELECT challenge_id, generation_status, jsonb_array_length(content->'approaches') AS approaches
 FROM challenge_solutions WHERE challenge_id IN (<your ids>);
