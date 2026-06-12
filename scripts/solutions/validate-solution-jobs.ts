@@ -142,7 +142,9 @@ async function main() {
           itemHardError = true
         }
         for (const slop of BANNED_SLOP) {
-          if (new RegExp(`\\b${slop.replace(/[-\s]/g, '[-\\s]')}\\b`, 'i').test(prose)) {
+          // (?<![\w-]) / (?![\w-]) so hyphenated compounds like "highest-leverage"
+          // (legitimate usage) don't false-positive on the bare slop word.
+          if (new RegExp(`(?<![\\w-])${slop.replace(/[-\s]/g, '[-\\s]')}(?![\\w-])`, 'i').test(prose)) {
             console.warn(`! ${label}: slop "${slop}" in ${path}`)
             warnings++
           }

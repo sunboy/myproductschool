@@ -20,7 +20,8 @@ interface ChallengeSourceRow {
   scenario_question: string | null
   engineer_standout: string | null
   company_tags: string[] | null
-  tags: string[] | null
+  topic_tags: string[] | null
+  technique_tags: string[] | null
   metadata: Record<string, unknown> | null
 }
 
@@ -63,7 +64,7 @@ export async function buildSolutionSourceContext(
 ): Promise<SolutionSourceContext | null> {
   const { data: challenge, error } = await admin
     .from('challenges')
-    .select('id, title, challenge_type, difficulty, prompt_text, scenario_role, scenario_context, scenario_trigger, scenario_question, engineer_standout, company_tags, tags, metadata')
+    .select('id, title, challenge_type, difficulty, prompt_text, scenario_role, scenario_context, scenario_trigger, scenario_question, engineer_standout, company_tags, topic_tags, technique_tags, metadata')
     .eq('id', challengeId)
     .maybeSingle()
 
@@ -78,7 +79,8 @@ export async function buildSolutionSourceContext(
     `Type: ${type}`,
     `Difficulty: ${row.difficulty ?? 'unknown'}`,
     row.company_tags?.length ? `Companies: ${row.company_tags.join(', ')}` : '',
-    row.tags?.length ? `Topics: ${row.tags.join(', ')}` : '',
+    row.topic_tags?.length ? `Topics: ${row.topic_tags.join(', ')}` : '',
+    row.technique_tags?.length ? `Techniques: ${row.technique_tags.join(', ')}` : '',
   ].filter(Boolean).join('\n')))
 
   parts.push(section('Problem statement', row.prompt_text))
