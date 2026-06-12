@@ -44,7 +44,17 @@ The script exits 0 on green, 1 on red. It validates 13 checks across env shape a
 
 For test-mode hygiene (CI / dev), run `scripts/audit/audit-stripe-config.ts` — same idea but enforces sk_test_ shape.
 
-**Changing limits / prices / running promos:** operator runbook at [`docs/runbooks/limits-and-pricing.md`](./docs/runbooks/limits-and-pricing.md). Limits are edited live in `/admin/paywall-config` (plan_limits table; enforcement AND all marketing/paywall copy follow within ~60s via `getPublicPlanLimits` / `usePlanLimits` — never hardcode limit numbers in user-facing copy). Promos = Stripe promotion codes (`scripts/billing/create-promo.ts`); checkout already has `allow_promotion_codes`.
+## Changing limits, pricing, and promotions
+
+Operator runbook: [`docs/runbooks/limits-and-pricing.md`](./docs/runbooks/limits-and-pricing.md). Quick reference:
+
+| Want to... | Do this | Deploy? |
+|---|---|---|
+| Change any limit (free or Pro) | Edit it in `/admin/paywall-config` | No — enforcement AND all pricing/paywall copy update within ~60s |
+| Run a promo | `npx tsx scripts/billing/create-promo.ts --code LAUNCH50 --percent 50 --duration repeating --months 3` (point `ENV_PATH` at the prod env file for live mode) | No — code works at checkout immediately (`allow_promotion_codes` is on) |
+| Permanently change price | New price in Stripe Dashboard → swap `STRIPE_PRICE_MONTHLY`/`_ANNUAL` on Vercel → redeploy | Yes |
+
+How it works: the `plan_limits` table is the single source of truth. Enforcement (`checkUsageLimit`) and all user-facing copy (pricing page, comparison table, paywall gates, upgrade/limit modals) read it live via `getPublicPlanLimits` (server, 60s cache), `usePlanLimits` (client hook), and `GET /api/billing/limits`. **Never hardcode limit numbers in user-facing copy** — import from `src/lib/usage/plan-limits-shared.ts` (client-safe defaults) or thread the live values through. dev and prod share the Supabase DB, so a limit change is live everywhere at once; nothing reverts automatically after a promo — set a reminder to undo temporary bumps.
 
 ## Claude Code Analytics — infra & scaling
 
