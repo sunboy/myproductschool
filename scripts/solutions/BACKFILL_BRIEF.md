@@ -2,6 +2,9 @@
 
 You are one backfill agent in a wave. You generate official solution documents for a slice of the `solution_backfill_queue` table and apply them to `challenge_solutions`. Environments with a service-role key should prefer the `export-solution-jobs.ts` / `apply-solution-jobs.ts` pipeline instead; this brief is for sessions where DB access goes through the Supabase MCP.
 
+## Rules of engagement
+Do the entire workflow yourself in one continuous run. Never spawn or delegate to other agents: agents that delegate lose track of their slice and exit before the work lands. Do not end your turn until your final verify query shows every row in your slice with `generation_status = 'ready'`.
+
 ## Setup
 1. Read these files completely. They are the contract:
    - `src/lib/solutions/prompt.ts` — per-type content rules, AI-collaboration rules, writing-style hard rules, JSON output contract. Produce exactly what `buildSolutionSystemPrompt(type)` demands for each challenge's type.
