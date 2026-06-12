@@ -1,13 +1,8 @@
+'use client'
+
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
-
-const FEATURES = [
-  { icon: 'fitness_center', text: '80 challenge starts each month' },
-  { icon: 'psychology',     text: 'Fair-use Hatch AI coaching budget' },
-  { icon: 'analytics',      text: 'Learner DNA, competency radar' },
-  { icon: 'school',         text: 'All study plans and autopsies' },
-  { icon: 'mic',            text: '12 AI interview starts each month' },
-]
+import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 interface ProPaywallGateProps {
   challengeTitle?: string
@@ -21,6 +16,14 @@ export function ProPaywallGate({
   onUpgrade,
 }: ProPaywallGateProps) {
   const monthlyPlan = BILLING_PLANS.monthly
+  const { pro } = usePlanLimits()
+  const FEATURES = [
+    { icon: 'fitness_center', text: `${pro.challenges} challenge starts each month` },
+    { icon: 'psychology',     text: 'Fair-use Hatch AI coaching budget' },
+    { icon: 'analytics',      text: 'Learner DNA, competency radar' },
+    { icon: 'school',         text: 'All study plans and autopsies' },
+    { icon: 'mic',            text: `${pro.interviews} AI interview starts each month` },
+  ]
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">

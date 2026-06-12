@@ -1,24 +1,26 @@
 import Link from 'next/link'
+import { getPublicPlanLimits } from '@/lib/usage/public-limits'
 
-const FREE_FEATURES = [
-  '20 challenge starts per month',
-  '5 AI interview starts per month',
-  'All 5 domains',
-  'Vocabulary + flashcards',
-  'Starter Hatch AI budget',
-  'Progress tracking',
-]
+export async function InlinePricing() {
+  const limits = await getPublicPlanLimits()
 
-const PRO_FEATURES = [
-  'Everything in Free',
-  '80 challenge starts per month',
-  '12 AI interview starts per month',
-  'Fair-use Hatch AI budget',
-  'Full model answers',
-  'Failure pattern tracking',
-]
+  const FREE_FEATURES = [
+    `${limits.free.challenges} challenge starts per month`,
+    `${limits.free.interviews} AI interview starts per month`,
+    'All 5 domains',
+    'Vocabulary + flashcards',
+    'Starter Hatch AI budget',
+    'Progress tracking',
+  ]
 
-export function InlinePricing() {
+  const PRO_FEATURES = [
+    'Everything in Free',
+    `${limits.pro.challenges} challenge starts per month`,
+    `${limits.pro.interviews} AI interview starts per month`,
+    'Fair-use Hatch AI budget',
+    'Full model answers',
+    'Failure pattern tracking',
+  ]
   return (
     <section className="py-20">
       <div className="text-center mb-10">

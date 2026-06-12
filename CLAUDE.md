@@ -44,6 +44,8 @@ The script exits 0 on green, 1 on red. It validates 13 checks across env shape a
 
 For test-mode hygiene (CI / dev), run `scripts/audit/audit-stripe-config.ts` — same idea but enforces sk_test_ shape.
 
+**Changing limits / prices / running promos:** operator runbook at [`docs/runbooks/limits-and-pricing.md`](./docs/runbooks/limits-and-pricing.md). Limits are edited live in `/admin/paywall-config` (plan_limits table; enforcement AND all marketing/paywall copy follow within ~60s via `getPublicPlanLimits` / `usePlanLimits` — never hardcode limit numbers in user-facing copy). Promos = Stripe promotion codes (`scripts/billing/create-promo.ts`); checkout already has `allow_promotion_codes`.
+
 ## Claude Code Analytics — infra & scaling
 
 The analytics feature runs **one pinned Cloud Run instance per active session**

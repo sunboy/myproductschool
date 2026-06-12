@@ -1,7 +1,7 @@
 'use client'
 
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
-
+import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 interface InterviewLimitModalProps {
   used: number
@@ -16,7 +16,7 @@ export function InterviewLimitModal({
   onUpgrade,
   onEndSession,
 }: InterviewLimitModalProps) {
-
+  const { pro } = usePlanLimits()
   const radius = 36
   const circumference = 2 * Math.PI * radius
   const progressOffset = circumference - (used / limit) * circumference
@@ -61,7 +61,7 @@ export function InterviewLimitModal({
             You&apos;ve used {used} of {limit} free sessions
           </h2>
           <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-6">
-            Your transcript is saved. Upgrade to Pro for 12 AI interview starts each month, or end here and review your debrief.
+            Your transcript is saved. Upgrade to Pro for {pro.interviews} AI interview starts each month, or end here and review your debrief.
           </p>
           <button
             onClick={onUpgrade}

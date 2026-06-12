@@ -9,6 +9,7 @@ import {
   formatMonthlyEquivalent,
   formatPlanPrice,
 } from '@/lib/billing/plans'
+import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 const stripePublishableKey =
   process.env.NEXT_PUBLIC_STRIPE_MODE === 'test'
@@ -17,14 +18,16 @@ const stripePublishableKey =
 
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null)
 
-const FEATURES = [
-  { icon: 'fitness_center',    text: '80 challenge starts/month' },
-  { icon: 'psychology',        text: 'Fair-use Hatch AI budget' },
-  { icon: 'analytics',         text: 'Learner DNA, competency radar' },
-  { icon: 'school',            text: 'Study plans and autopsies' },
-  { icon: 'mic',               text: '12 AI interview starts/month' },
-  { icon: 'workspace_premium', text: 'Early access to new features' },
-]
+function proFeatures(pro: { challenges: number; interviews: number }) {
+  return [
+    { icon: 'fitness_center',    text: `${pro.challenges} challenge starts/month` },
+    { icon: 'psychology',        text: 'Fair-use Hatch AI budget' },
+    { icon: 'analytics',         text: 'Learner DNA, competency radar' },
+    { icon: 'school',            text: 'Study plans and autopsies' },
+    { icon: 'mic',               text: `${pro.interviews} AI interview starts/month` },
+    { icon: 'workspace_premium', text: 'Early access to new features' },
+  ]
+}
 
 type BillingCycle = 'monthly' | 'annual'
 
@@ -35,6 +38,8 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
+  const { pro } = usePlanLimits()
+  const FEATURES = proFeatures(pro)
   const [billing, setBilling] = useState<BillingCycle>('monthly')
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [checkoutBilling, setCheckoutBilling] = useState<BillingCycle>('monthly')

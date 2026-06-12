@@ -2,6 +2,7 @@
 
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
+import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 interface InterviewPaywallGateProps {
   used: number
@@ -18,6 +19,7 @@ export function InterviewPaywallGate({
 }: InterviewPaywallGateProps) {
   const progressPct = Math.min((used / limit) * 100, 100)
   const monthlyPlan = BILLING_PLANS.monthly
+  const { pro } = usePlanLimits()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -57,7 +59,7 @@ export function InterviewPaywallGate({
         </div>
         <div className="px-7 pt-5 pb-7 space-y-4">
           <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-            Pro includes 12 AI interview starts each month, fair-use Hatch coaching, post-session analysis, and all company personas.
+            Pro includes {pro.interviews} AI interview starts each month, fair-use Hatch coaching, post-session analysis, and all company personas.
           </p>
           <div
             className="rounded-xl px-4 py-3.5 flex items-center justify-between"

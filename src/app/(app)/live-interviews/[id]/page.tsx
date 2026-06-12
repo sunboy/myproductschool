@@ -4,6 +4,7 @@ import { Component, use, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { ErrorInfo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { DEFAULT_PLAN_LIMITS } from '@/lib/usage/plan-limits-shared'
 import type { HatchAvatarState } from '@/components/live-interview/HatchAvatar'
 import dynamic from 'next/dynamic'
 import DeepgramVoiceSession, { type DeepgramVoiceSessionHandle } from '@/components/live-interview/DeepgramVoiceSession'
@@ -499,7 +500,7 @@ export default function SessionPage({
   const [isEnding, setIsEnding] = useState(false)
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [showLimitModal, setShowLimitModal] = useState(false)
-  const [interviewUsageData, setInterviewUsageData] = useState<{ used: number; limit: number }>({ used: 1, limit: 5 })
+  const [interviewUsageData, setInterviewUsageData] = useState<{ used: number; limit: number }>({ used: 1, limit: DEFAULT_PLAN_LIMITS.free.interviews })
   const [currentCaption, setCurrentCaption] = useState('')
   const [recentSignals, setRecentSignals] = useState<Array<CoachingSignal & { id: string; time: number }>>([])
   const talkingHeadRef = useRef<TalkingHeadHandle | null>(null)

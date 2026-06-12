@@ -2,14 +2,7 @@
 
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { BILLING_PLANS, ANALYTICS_PLANS, formatPlanPrice } from '@/lib/billing/plans'
-
-const FEATURES = [
-  { icon: 'fitness_center', text: '80 challenge starts each month' },
-  { icon: 'psychology',     text: 'Fair-use Hatch AI coaching budget' },
-  { icon: 'analytics',      text: 'Learner DNA, competency radar' },
-  { icon: 'school',         text: 'All study plans and autopsies' },
-  { icon: 'mic',            text: '12 AI interview starts each month' },
-]
+import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 // Shown when the gate is for the Claude Code Analytics tier (super-set of Pro).
 const ANALYTICS_FEATURES = [
@@ -103,7 +96,15 @@ export function ChallengePaywallGate({
   const progressPct = Math.min((used / safeLimit) * 100, 100)
   const isAnalytics = feature ? ANALYTICS_FEATURE_KEYS.has(feature) : false
   const planForCopy = isAnalytics ? ANALYTICS_PLANS.analytics_monthly : BILLING_PLANS.monthly
-  const featureList = isAnalytics ? ANALYTICS_FEATURES : FEATURES
+  const { pro } = usePlanLimits()
+  const proFeatures = [
+    { icon: 'fitness_center', text: `${pro.challenges} challenge starts each month` },
+    { icon: 'psychology',     text: 'Fair-use Hatch AI coaching budget' },
+    { icon: 'analytics',      text: 'Learner DNA, competency radar' },
+    { icon: 'school',         text: 'All study plans and autopsies' },
+    { icon: 'mic',            text: `${pro.interviews} AI interview starts each month` },
+  ]
+  const featureList = isAnalytics ? ANALYTICS_FEATURES : proFeatures
   const ctaLabel = isAnalytics ? 'Get Analytics' : 'Unlock Pro'
   const planLabel = isAnalytics ? 'Analytics monthly' : 'Monthly plan'
   const featureCopy = copyForFeature(feature)
