@@ -20,6 +20,13 @@ function sqlString(value: string): string {
   return `'${value.replace(/'/g, "''")}'`
 }
 
+// JSONB content is emitted dollar-quoted: it avoids quote-doubling entirely and
+// survives copy/paste through SQL consoles and MCP tools that mangle escapes.
+// Falls back to standard escaping if the content ever contains the tag.
+function sqlJsonLiteral(json: string): string {
+  return json.includes('$SOL$') ? sqlString(json) : `$SOL$${json}$SOL$`
+}
+
 const files = process.argv.slice(2)
 if (files.length === 0) {
   console.error('Usage: npx tsx scripts/solutions/render-upsert-sql.ts <file.solutions.json> [...]')
@@ -39,7 +46,7 @@ for (const file of files) {
     }
     statements.push(
       `INSERT INTO challenge_solutions (challenge_id, schema_version, content, generation_status, generation_error, generated_by, model, updated_at)\n` +
-      `VALUES (${sqlString(item.id)}, 1, ${sqlString(JSON.stringify(parsed.data))}::jsonb, 'ready', NULL, 'backfill', 'claude-code-subagent', NOW())\n` +
+      `VALUES (${sqlString(item.id)}, 1, ${sqlJsonLiteral(JSON.stringify(parsed.data))}::jsonb, 'ready', NULL, 'backfill', 'claude-code-subagent', NOW())\n` +
       `ON CONFLICT (challenge_id) DO UPDATE SET\n` +
       `  content = EXCLUDED.content, schema_version = 1, generation_status = 'ready',\n` +
       `  generation_error = NULL, generated_by = 'backfill', model = EXCLUDED.model, updated_at = NOW();`
