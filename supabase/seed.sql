@@ -748,7 +748,7 @@ INSERT INTO study_plans (id, title, slug, description, move_tag, role_tags, chal
 
   ('sp000001-0000-0000-0000-000000000007',
    'DevOps → Product Impact',
-   'devops-to-product-impact',
+   'devops-to-product',
    'Learn to articulate the product value of reliability, developer experience, and platform investments. Make the case for infrastructure work in product terms.',
    'win',
    ARRAY['DevOps'],

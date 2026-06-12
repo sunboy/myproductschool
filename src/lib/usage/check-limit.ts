@@ -41,14 +41,14 @@ const limitCache = new Map<string, LimitRecord>()
 const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord, 'fetchedAt'>>> = {
   free: {
     challenges: {
-      limitValue: 3,
+      limitValue: 20,
       windowDays: 30,
       unit: 'count',
       description: 'Free challenge starts per rolling month',
       costCeilingCents: null,
     },
     interviews: {
-      limitValue: 1,
+      limitValue: 5,
       windowDays: 30,
       unit: 'count',
       description: 'Free AI interview starts per rolling month',

@@ -97,13 +97,6 @@ const FLOW_MOVES = [
 
 const READING_PHRASES = ['Reading your answers…', 'Mapping your instincts…', 'Almost done…']
 
-const PLAN_LABELS: Record<string, string> = {
-  'frame-like-a-pm':          'Frame Like a PM',
-  'the-list-move':             'The List Move',
-  'optimize-under-pressure':   'Optimize Under Pressure',
-  'win-the-room':              'Win the Room',
-}
-
 function isCalScreen(value: unknown): value is CalScreen {
   return typeof value === 'string' && CAL_SCREENS.includes(value as CalScreen)
 }

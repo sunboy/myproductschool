@@ -1,7 +1,8 @@
 import Link from 'next/link'
 
 const FREE_FEATURES = [
-  '3 challenge starts per month',
+  '20 challenge starts per month',
+  '5 AI interview starts per month',
   'All 5 domains',
   'Vocabulary + flashcards',
   'Starter Hatch AI budget',

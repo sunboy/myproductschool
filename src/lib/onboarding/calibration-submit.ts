@@ -40,21 +40,46 @@ export const CalibrationSubmitSchema = z.object({
   interview_date: z.string().optional(),
 })
 
-// Weakness-move → study-plan slug map.
-// 'explore' goal always yields null (route to /explore/plans index instead).
-const WEAKNESS_TO_PLAN_SLUG: Record<CalibrationMove, string> = {
-  frame: 'frame-like-a-pm',
-  list: 'the-list-move',
-  optimize: 'optimize-under-pressure',
-  win: 'win-the-room',
+// Personalised study plan mapping. The 4 weakness-move plans (frame-like-a-pm,
+// the-list-move, optimize-under-pressure, win-the-room) were retired and
+// unpublished, so personalization keys off the onboarding role/goal/timeline
+// and maps only to published plans that have real chapters. The submit route
+// still verifies the slug against study_plans before returning it, so a future
+// retirement degrades to a hidden CTA instead of a 404.
+type OnboardingRole = (typeof VALID_ONBOARDING_ROLES)[number]
+
+const ROLE_TO_PLAN_SLUG: Record<OnboardingRole, string> = {
+  swe: 'staff-engineer-path',
+  data_eng: 'data-eng-to-product',
+  ml_eng: 'ai-product-fluency',
+  devops: 'devops-to-product',
+  em: 'em-product-leadership',
+  founding_eng: 'founding-engineer',
+  tech_lead: 'staff-engineer-path',
+  pm: 'ai-product-fluency',
+  designer: 'ai-product-fluency',
+  data_scientist: 'data-eng-to-product',
 }
 
-export function computePersonalisedPlanSlug(
-  weaknessMove: CalibrationMove,
-  primaryGoal?: string | null,
-): string | null {
+export function computePersonalisedPlanSlug({
+  role,
+  primaryGoal,
+  prepTimeline,
+}: {
+  role?: string | null
+  primaryGoal?: string | null
+  prepTimeline?: string | null
+}): string | null {
   if (primaryGoal === 'explore') return null
-  return WEAKNESS_TO_PLAN_SLUG[weaknessMove] ?? null
+  // An interview inside a month outranks role: prep urgency wins.
+  if (prepTimeline === 'lt_1mo') return '7-day-interview-prep'
+  const rolePlan =
+    role && role in ROLE_TO_PLAN_SLUG ? ROLE_TO_PLAN_SLUG[role as OnboardingRole] : null
+  // PMs and unknown roles chasing a PM-adjacent move get the interview loop.
+  if (primaryGoal === 'land_pm_adjacent' && (!rolePlan || role === 'pm')) {
+    return '7-day-interview-prep'
+  }
+  return rolePlan ?? 'ai-product-fluency'
 }
 
 export type CalibrationSubmitInput = z.infer<typeof CalibrationSubmitSchema>

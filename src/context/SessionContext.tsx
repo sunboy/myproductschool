@@ -50,8 +50,8 @@ export interface UsageData {
 }
 
 export const DEFAULT_USAGE: UsageData = {
-  challenges: { used: 0, limit: 3, windowDays: 30, unit: 'count' },
-  interviews: { used: 0, limit: 1, windowDays: 30, unit: 'count' },
+  challenges: { used: 0, limit: 20, windowDays: 30, unit: 'count' },
+  interviews: { used: 0, limit: 5, windowDays: 30, unit: 'count' },
   hatchAiCents: { used: 0, limit: 35, windowDays: 30, unit: 'cents' },
 }
 

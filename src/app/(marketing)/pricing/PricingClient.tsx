@@ -35,7 +35,8 @@ interface BillingPrices {
 }
 
 const FREE_LIMITS = [
-  '3 challenge starts per month',
+  '20 challenge starts per month',
+  '5 live AI interview starts per month',
   'Starter Hatch AI budget',
   'Core practice library',
   'Progress history',
@@ -58,7 +59,7 @@ const ANALYTICS_LIMITS = [
 const FEATURE_ROWS = [
   {
     feature: 'Challenge starts',
-    free: '3 per month',
+    free: '20 per month',
     pro: '80 per month',
   },
   {
@@ -68,7 +69,7 @@ const FEATURE_ROWS = [
   },
   {
     feature: 'Live AI interviews',
-    free: 'Not included',
+    free: '5 starts per month',
     pro: '12 starts per month',
   },
   {
