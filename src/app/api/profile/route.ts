@@ -5,6 +5,7 @@ import { IS_MOCK } from '@/lib/mock'
 import { getUsageForUser } from '@/lib/usage/check-limit'
 import { effectivePlanFromRows } from '@/lib/billing/entitlements'
 import { computeDunningStatus } from '@/lib/billing/dunning'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = z.object({
@@ -77,7 +78,19 @@ export async function GET() {
       .gte('created_at', new Date().toISOString().split('T')[0]),
   ])
 
-  if (profileResult.error) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  if (profileResult.error) {
+    // PGRST116 = .single() found no row (profile genuinely missing). Anything
+    // else is a failed query (e.g. a column in the select that doesn't exist
+    // on the live schema) — that's our bug, not a missing profile, and it
+    // must reach Sentry. Swallowing it as 404 previously hid a schema-drift
+    // outage where every session rendered without profile data.
+    if (profileResult.error.code === 'PGRST116') {
+      return apiError(404, 'profile_not_found', 'Profile not found')
+    }
+    return apiError(500, 'profile_query_failed', `Profile query failed: ${profileResult.error.message}`, {
+      dbCode: profileResult.error.code,
+    })
+  }
 
   const plan = effectivePlanFromRows(profileResult.data, subscriptionResult.data)
   const dailyLimit = plan === 'pro' ? null : 3
