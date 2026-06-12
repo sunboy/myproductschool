@@ -109,6 +109,10 @@ const RequestSchema = z.object({
   skills_written: z.array(z.string().max(200)).max(50).optional(),
   marked_findings: z.array(MarkedFindingSchema).max(20).optional(),
   asserted_finding: z.string().max(2000).nullable().optional(),
+  // ── Solutions tab awareness ──────────────────────────────────────────────
+  solutions_tab_open: z.boolean().optional(),
+  solution_approach_title: z.string().max(300).nullable().optional(),
+  solution_approach_tagline: z.string().max(500).nullable().optional(),
 })
 
 function retryAfterSeconds(resetAt: Date) {
@@ -140,6 +144,7 @@ Rules:
 - For debugging: read their code, identify the issue, ask a leading question that points them at it.
 - Freely explain: time/space complexity, data structure choices, algorithm theory, language idioms, syntax.
 - If stuck 3+ exchanges: give a stronger hint - still not the full solution.
+- If the user content includes a "Solutions tab" section, they have the official solution open and the no-spoiler rule relaxes for that material: discuss the named approach directly, contrast it with their code, and ask which tradeoff it makes that theirs does not. Never paste long stretches of the solution back.
 - Always return: { "intent": "coach", "message": "...", "actions": [], "annotations": [] }
 - Never set intent to "build" or "build_and_coach" for coding challenges.`
   }
@@ -190,7 +195,11 @@ const CONTEXT_CANVAS_RULES = `Context Pack + canvas behavior:
 - Compare intent vs artifact. If the Context Pack mentions something absent from the canvas, call that out or build the smallest useful canvas change.
 - If the user asks to "build from notes", "turn notes into canvas", or similar, translate only the highest-signal context into concrete canvas elements. Do not dump every note onto the canvas.
 - If Context Pack and canvas conflict, name the conflict directly and suggest the decision the candidate should make.
-- In coach mode, prefer: one observation, one next canvas move, one tradeoff to defend.`
+- In coach mode, prefer: one observation, one next canvas move, one tradeoff to defend.
+
+Solutions awareness:
+- When the user content includes a "Solutions tab" section, the user is reading the official solution for this challenge. Engage with the named approach directly: contrast it with their canvas or code, ask which tradeoff the approach makes that theirs avoids, and connect it to the reasoning move it demonstrates.
+- Never paste or paraphrase long stretches of the solution back to them, and never treat the solution as the only valid answer; their design can disagree if the reasoning holds.`
 
 const SYSTEM_DESIGN_RULES = `Domain-specific guidance for system_design challenges:
 - Common gaps to surface in coach mode: missing auth/identity layer, no rate limiting, cache on the write path causing consistency issues, no monitoring/observability, single point of failure, no retry/backoff strategy.
@@ -299,6 +308,26 @@ function buildSystemPrompt(challengeType: string): string {
 
 type InterpretBody = z.infer<typeof RequestSchema>
 
+/**
+ * Solutions-tab context. When the user is reading the official solution, the
+ * coach should engage with the specific approach on screen instead of generic
+ * guidance, and must not simply restate the solution.
+ */
+function solutionsContextBlock(body: InterpretBody): string | null {
+  if (!body.solutions_tab_open) return null
+  const title = body.solution_approach_title?.trim()
+  const tagline = body.solution_approach_tagline?.trim()
+  const reading = title
+    ? `, reading the approach "${title}"${tagline ? ` (${tagline})` : ''}`
+    : ''
+  return (
+    `# Solutions tab\nThe user has the official solution open${reading}. ` +
+    `Coach relative to it: contrast their own attempt with this approach, ask what tradeoff ` +
+    `the approach makes that theirs does not, and point at the reasoning move it demonstrates. ` +
+    `Never just restate the solution text back to them.`
+  )
+}
+
 function buildCodingUserContent(body: InterpretBody): string {
   const historyText = (body.history ?? [])
     .slice(-6)
@@ -365,6 +394,11 @@ function buildCodingUserContent(body: InterpretBody): string {
 
   if (body.sql_schema_summary) {
     parts.push(`# Schema\n${body.sql_schema_summary}`)
+  }
+
+  const solutionsBlock = solutionsContextBlock(body)
+  if (solutionsBlock) {
+    parts.push(solutionsBlock)
   }
 
   if (historyText) {
@@ -474,6 +508,7 @@ function buildUserContent(body: InterpretBody): string {
     `# Canvas state\n${sceneText}`,
     body.context_pack?.trim() ? `# Context Pack\n${body.context_pack.trim()}` : null,
     body.guidance_phase ? `# Guidance phase\n${guidancePhaseHint(body.guidance_phase)}` : null,
+    solutionsContextBlock(body),
     historyText ? `# Recent conversation\n${historyText}` : null,
     `# User's latest message\n${body.message}`,
   ]
