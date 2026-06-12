@@ -42,6 +42,11 @@ FROM flow_options WHERE question_id IN (<qids>) ORDER BY question_id, option_lab
 ## Output
 Write ONE file: `scripts/content/solutions/<wave>/<batch>.solutions.json` — a JSON array of items `{ "id", "challenge_type", "content" }`. Also write the matching input manifest `scripts/content/solutions/<wave>/<batch>.json` (array of `{ "id", "challenge_type" }`) so the validator can cross-check ids.
 
+Schema gotchas (from earlier waves):
+- `schema_tables` relations only accept cardinality `1:1`, `1:N`, or `N:M` (no `N:1`; flip the from/to direction instead).
+- `complexity.time` / `complexity.space` cap at 60 chars; keep O() strings terse and put prose in `complexity.note`.
+- Copy question ids exactly when querying `flow_options`; verify row counts match the question count before writing the walkthrough.
+
 Quality bar:
 - Approaches teach the reasoning progression, not just the answer. Diagrams use the typed specs correctly (architecture lanes for design types, complexity_curves / flow_steps for algorithm, schema_tables where joins are the hard part, a flow_steps reasoning chain for flow types).
 - `ai_collaboration` is specific to each problem, tool-agnostic, with at least one critic-mode prompt.
