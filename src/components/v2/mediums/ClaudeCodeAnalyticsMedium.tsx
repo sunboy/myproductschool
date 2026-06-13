@@ -657,12 +657,17 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             the right column — exactly how FlowWorkspace mounts the same panel. */}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden', position: 'relative' }}>
 
-          {/* LEFT — scenario + dataset */}
+          {/* LEFT — scenario + dataset. `minHeight: 0` + `height: 100%` are what
+              let `overflowY: auto` actually engage inside the flex row: without
+              them the column stretches to its content's intrinsic height, grows
+              the row past the viewport, and the bottom (skills library) gets
+              clipped with no scrollbar. */}
           <div style={{
             width: '28%', minWidth: 220, maxWidth: 320,
             flexShrink: 0,
+            height: '100%', minHeight: 0,
             borderRight: '1px solid var(--color-outline-variant)',
-            overflow: 'auto', padding: '14px 14px',
+            overflowY: 'auto', overflowX: 'hidden', padding: '14px 14px',
             display: 'flex', flexDirection: 'column', gap: 12,
             background: 'var(--color-surface-container-low)',
           }}>
@@ -670,6 +675,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
               fontSize: 10, fontWeight: 800,
               letterSpacing: '0.07em', textTransform: 'uppercase',
               color: 'var(--color-on-surface-variant)',
+              flexShrink: 0,
             }}>
               Challenge scenario
             </div>
