@@ -41,6 +41,7 @@ import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challe
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
 import type { SchemaDiagramData } from '@/components/challenge/SchemaDiagram'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
@@ -728,6 +729,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Left panel collapse state - persisted to localStorage
   const [leftCollapsed, setLeftCollapsed] = useState(false)
 
+  // Mobile (phone) layout. On phones the desktop two-pane split is replaced by a
+  // vertical stack; the description becomes a collapsible top drawer (collapsed
+  // by default so the question is visible first).
+  const isMobile = useIsMobile()
+  const [mobileDescOpen, setMobileDescOpen] = useState(false)
+
   // Derived: dock fade-out fires when answer has been submitted (phase leaves 'question')
   const dockSubmitted = phase === 'reveal' || phase === 'complete'
 
@@ -809,6 +816,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isCodingChallenge = apiChallengeType === 'sql' || apiChallengeType === 'algorithm'
   // Either canvas or coding - both are full-panel interview modes (no MCQ FLOW steps)
   const isInterviewChallenge = isCanvasChallenge || isCodingChallenge
+
+  // On a phone, FLOW/MCQ challenges stack vertically. Canvas/coding challenges
+  // are gated to a "best on desktop" notice instead (see Fork C below).
+  const mobileStacked = isMobile && !isInterviewChallenge
 
   const openContextPack = useCallback(() => {
     setLeftTab('Description')
@@ -3943,13 +3954,173 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : null
 
-  // Shared drag handle - sits between left and right panel; hidden when rail is collapsed
-  const dragHandle = leftCollapsed ? null : (
+  // Shared drag handle - sits between left and right panel; hidden when rail is
+  // collapsed or on mobile (the stacked layout has no side-by-side split to drag).
+  const dragHandle = (leftCollapsed || isMobile) ? null : (
     <div
       onMouseDown={handleSeparatorMouseDown}
       style={{ width: 6, cursor: 'col-resize', background: 'transparent', flexShrink: 0, position: 'relative' }}
     >
       <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 2, height: 32, background: 'var(--color-outline-variant)', borderRadius: 999 }} />
+    </div>
+  )
+
+  // ── Mobile (phone) chrome ──────────────────────────────────────────────────
+  // On phones the desktop two-pane split is replaced by a vertical stack. These
+  // consts are only consumed inside the `isMobile`/`mobileStacked` branches of the
+  // return trees below; on desktop they evaluate to null so no extra work is done.
+  const mobileTabBadge = (count: number, active: boolean) => (
+    <span style={{
+      minWidth: 18, height: 18, padding: '0 5px', borderRadius: 99,
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: 11, fontWeight: 800,
+      background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
+      color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+    }}>{count}</span>
+  )
+
+  // Top bar: back button + horizontally scrollable tabs (no clipping).
+  const mobileChrome = isMobile ? (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)', flexShrink: 0, padding: '6px 8px' }}>
+      <button
+        onClick={props.onExit ?? (() => window.history.back())}
+        className="btn btn--ghost"
+        style={{ padding: '6px 8px', display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
+        aria-label="Back"
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_back</span>
+      </button>
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', flex: 1 }}>
+        {tabs.map(t => {
+          const active = leftTab === t
+          return (
+            <button
+              key={t}
+              onClick={() => { setLeftTab(t); setMobileDescOpen(true) }}
+              style={{
+                flexShrink: 0, whiteSpace: 'nowrap', padding: '7px 14px', fontSize: 13,
+                fontWeight: active ? 700 : 600,
+                color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
+                background: active ? 'var(--color-surface-container-low)' : 'transparent',
+                border: '1px solid ' + (active ? 'var(--color-outline-faint)' : 'transparent'),
+                borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              <span>{t}</span>
+              {t === 'Discussions' && discussionsLoaded && mobileTabBadge(discussions.length, active)}
+              {t === 'Submissions' && sessionHistory.length > 0 && mobileTabBadge(sessionHistory.length, active)}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  ) : null
+
+  // Collapsible description drawer (collapsed by default so the question shows first).
+  const mobileDrawer = isMobile ? (
+    <div style={{ flexShrink: 0, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)' }}>
+      <button
+        onClick={() => setMobileDescOpen(v => !v)}
+        aria-expanded={mobileDescOpen}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+      >
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 18, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>description</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-on-surface)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {mobileDescOpen
+              ? `Hide ${leftTab.toLowerCase()}`
+              : (leftTab === 'Description' ? (challengeTitle ?? 'Show brief') : `Show ${leftTab.toLowerCase()}`)}
+          </span>
+        </span>
+        <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
+          {mobileDescOpen ? 'expand_less' : 'expand_more'}
+        </span>
+      </button>
+      {mobileDescOpen && (
+        <div style={{ maxHeight: '55vh', overflowY: 'auto', borderTop: '1px solid var(--color-outline-faint)' }}>
+          {leftTab === 'Description' && descriptionPane}
+          {leftTab === 'Discussions' && discussionsPane}
+          {leftTab === 'Submissions' && submissionsPane}
+        </div>
+      )}
+    </div>
+  ) : null
+
+  // FLOW step bar in a horizontally scrollable wrapper.
+  const mobileStepperBar = isMobile ? (
+    <div style={{ flexShrink: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)', padding: '8px 12px', display: 'flex', justifyContent: 'center' }}>
+      <FlowStepper
+        currentStep={currentStep}
+        completedSteps={completedSteps}
+        onStepClick={undefined}
+        questionIdx={questionIdx}
+        questionCount={activeStepData?.questions.length}
+      />
+    </div>
+  ) : null
+
+  // Full-width footer: prev + next/submit, reusing the same handlers as desktop.
+  const mobileFooter = (isMobile && currentQuestion) ? (
+    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: questionIdx > 0 ? 'space-between' : 'flex-end', gap: 10, borderTop: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)', padding: '10px 14px' }}>
+      {questionIdx > 0 && (
+        <button
+          className="btn btn--ghost"
+          style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          disabled={activeSubmitting || ackVisible}
+          onClick={handlePreviousQuestion}
+        >
+          <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
+        </button>
+      )}
+      <button
+        className="btn btn--primary"
+        style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderRadius: 99, fontWeight: 600, border: 'none' }}
+        disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
+        onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
+      >
+        {activeSubmitting ? 'Grading…' : primaryButtonLabel}
+        {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
+        {activeSubmitting && <HatchGlyph size={16} state="reviewing" className="text-on-primary" />}
+      </button>
+    </div>
+  ) : null
+
+  // Canvas / coding challenges are gated to this notice on phones — the Excalidraw
+  // canvas and Monaco editor need a larger screen. The full brief still renders so
+  // the user knows what the challenge is.
+  const mobileDesktopNotice = (
+    <div className="flex flex-col h-full" style={{ background: 'var(--color-background)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)', flexShrink: 0, padding: '6px 8px' }}>
+        <button
+          onClick={props.onExit ?? (() => window.history.back())}
+          className="btn btn--ghost"
+          style={{ padding: '6px 8px', display: 'inline-flex', alignItems: 'center' }}
+          aria-label="Back"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_back</span>
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col items-center text-center gap-3 px-6 pt-10 pb-6 max-w-md mx-auto">
+          <HatchGlyph size={56} state="idle" className="text-primary" />
+          <h2 className="font-headline text-xl text-on-surface">Best experienced on desktop</h2>
+          <p className="font-body text-sm text-on-surface-variant">
+            {isCodingChallenge
+              ? 'This coding challenge uses a full code editor that needs a larger screen. Open it on a desktop to work through it.'
+              : 'This system design challenge uses a drawing canvas that needs a larger screen. Open it on a desktop to work through it.'}
+          </p>
+          <a
+            href="/challenges"
+            className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary text-on-primary font-label font-semibold text-sm px-5 py-2.5"
+          >
+            <span className="material-symbols-outlined text-[18px]">grid_view</span> Back to Practice
+          </a>
+        </div>
+        <div className="border-t border-outline-variant/60">
+          {descriptionPane}
+        </div>
+      </div>
     </div>
   )
 
@@ -3968,13 +4139,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
     return (
       <div className="flex flex-col overflow-hidden h-full">
-        {/* Same full-width top chrome as question phase */}
-        {topChrome}
+        {/* Same full-width top chrome as question phase (desktop only - on mobile
+            the feedback fills the width and carries its own navigation). */}
+        {!isMobile && topChrome}
 
-        {/* Middle: resizable two-pane content */}
-        <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden">
-          {leftDescriptionPanel}
-          {dragHandle}
+        {/* Middle: resizable two-pane content on desktop, single column on mobile */}
+        <div ref={containerRef} className={isMobile ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden'}>
+          {!isMobile && leftDescriptionPanel}
+          {!isMobile && dragHandle}
 
           {/* Right panel */}
           <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ background: 'var(--color-background)' }}>
@@ -4172,15 +4344,27 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }
 
   // phase === 'question'
+  // Canvas (system design) / coding challenges can't render their editor on a
+  // phone - gate them to a "best on desktop" notice instead of a broken canvas.
+  if (isMobile && isInterviewChallenge) {
+    return mobileDesktopNotice
+  }
   return (
     <div className="flex flex-col overflow-hidden h-full">
-      {/* Full-width top chrome: tabs on left, stepper on right - one continuous borderBottom */}
-      {topChrome}
+      {/* Desktop: full-width chrome (tabs + stepper). Mobile: stacked chrome -
+          scrollable tabs, collapsible description drawer, scrollable step bar. */}
+      {mobileStacked ? (
+        <>
+          {mobileChrome}
+          {mobileDrawer}
+          {mobileStepperBar}
+        </>
+      ) : topChrome}
 
-      {/* Middle: resizable two-pane content area */}
-      <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden">
-        {leftDescriptionPanel}
-        {dragHandle}
+      {/* Middle: resizable two-pane on desktop, single column on mobile */}
+      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden'}>
+        {!mobileStacked && leftDescriptionPanel}
+        {!mobileStacked && dragHandle}
 
         {/* Right pane: scrollable workspace content only */}
         <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden', minHeight: 0 }}>
@@ -4746,8 +4930,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* Full-width bottom footer: left actions + submit - only for MCQ FLOW challenges */}
-      {!isInterviewChallenge && bottomFooter}
+      {/* Full-width bottom footer: left actions + submit - only for MCQ FLOW challenges.
+          Mobile uses a compact full-width footer (no left stats column). */}
+      {!isInterviewChallenge && (mobileStacked ? mobileFooter : bottomFooter)}
     </div>
   )
 }
