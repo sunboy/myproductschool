@@ -147,14 +147,17 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
   // Claude Code Analytics challenges use a dedicated live-terminal medium, not
   // the FLOW MCQ workspace. Route them to the analytics shell with the full row.
   if (challengeType === 'claude_code_analytics') {
-    // Entitlement + feature-flag gate. The feature ships dark: if the user has no
-    // access, send them to the gated pricing tier (when the feature is enabled) or
-    // fully hide it (redirect to Practice) when it's still off and they're not
-    // allowlisted. Mock mode bypasses (no auth/admin client).
+    // Entitlement + feature-flag gate. The feature ships dark. When it's still off
+    // and the user isn't allowlisted, fully hide it (redirect to Practice). When
+    // it's launched but the user lacks the tier, keep them in place and show the
+    // upgrade modal over a blurred preview (`locked`) — never a full-page redirect
+    // to the pricing page. Mock mode bypasses (no auth/admin client).
+    let analyticsLocked = false
     if (!IS_MOCK && user) {
       const access = await getAnalyticsAccess(createAdminClient(), user.id)
       if (!access.hasAccess) {
-        redirect(access.enabled ? '/pricing?tier=analytics' : '/challenges')
+        if (!access.enabled) redirect('/challenges')
+        analyticsLocked = true
       }
     }
     const { data: challengeRow } = await createAdminClient()
@@ -177,6 +180,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
           challenge={challengeRow as never}
           scenario={scenario}
           returnTo={sanitizeReturnTo(returnTo)}
+          locked={analyticsLocked}
         />
       )
     }

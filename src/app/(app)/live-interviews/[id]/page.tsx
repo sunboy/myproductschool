@@ -44,8 +44,7 @@ import {
 } from '@/components/motion'
 import { Md } from '@/components/ui/Md'
 import { useInterviewTimer } from '@/hooks/useInterviewTimer'
-import { InterviewLimitModal } from '@/components/paywalls/InterviewLimitModal'
-import { useUpgrade } from '@/hooks/useUpgrade'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { useEntitlements } from '@/hooks/useEntitlements'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
@@ -463,7 +462,6 @@ export default function SessionPage({
     scenario_title: scenarioTitleParam,
   } = use(searchParams)
   const router = useRouter()
-  const { startUpgrade } = useUpgrade()
   const { isPro, isAdmin } = useEntitlements()
 
   const [sessionId, setSessionId] = useState<string>(IS_MOCK ? 'mock-session-id' : id)
@@ -2482,17 +2480,21 @@ export default function SessionPage({
       )}
 
       {/* Interview limit modal */}
-      {showLimitModal && (
-        <InterviewLimitModal
-          used={interviewUsageData.used}
-          limit={interviewUsageData.limit}
-          onUpgrade={startUpgrade}
-          onEndSession={() => {
+      <PaywallModal
+        open={showLimitModal}
+        feature="interviews"
+        used={interviewUsageData.used}
+        limit={interviewUsageData.limit}
+        dismissible={false}
+        onClose={() => setShowLimitModal(false)}
+        secondaryAction={{
+          label: 'End session & view debrief',
+          onClick: () => {
             setShowLimitModal(false)
             handleEndInterview()
-          }}
-        />
-      )}
+          },
+        }}
+      />
 
       {/* End confirm modal */}
       {showEndConfirm && (
