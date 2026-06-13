@@ -12,6 +12,7 @@ import { IdleReapModal } from './IdleReapModal'
 import { AnalyticsOnboardingOverlay, shouldShowOnboarding } from './AnalyticsOnboardingOverlay'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { mergeArc } from './analyticsArc'
 import { toDimensionViews, type AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
@@ -66,6 +67,16 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   )
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
+  // Free quota exhausted (HTTP 402). Opens the unified PaywallModal (analytics
+  // tier) instead of a generic error. Holds the used/limit for the modal copy.
+  const [paywall, setPaywall] = useState<{ used?: number; limit?: number } | null>(null)
+  // Which provisioning phase we're in, for the progress indicator. The sandbox
+  // boot is multi-step (wake DB → mint key → boot container → wait readiness),
+  // and on a cold start it can take ~30-60s — so we show the user what they're
+  // waiting on rather than an opaque spinner.
+  const [provisionPhase, setProvisionPhase] = useState<
+    'requesting' | 'waking' | 'booting' | 'connecting' | null
+  >(null)
 
   const [activeSubProblemIdx, setActiveSubProblemIdx] = useState(0)
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
@@ -122,14 +133,24 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     setShowOnboarding(shouldShowOnboarding())
   }, [])
 
-  // Start session on mount
+  // Start + provision session. The flow is split so it fits Vercel Hobby's 60s
+  // function ceiling on a cold start:
+  //   1. POST /session/start    → fast: gates + create a `provisioning` row.
+  //   2. POST /session/[id]/provision → the heavy step (wake DB, mint key, boot
+  //      revision, wait readiness). Runs in its own request.
+  //   3. While (2) runs, poll /session/[id]/state to advance the progress phase
+  //      and pick up wss_url the moment the row flips to `active`.
   useEffect(() => {
     // Provision only after the user clicks "Start sandbox" (started=true). The
     // dev stub sets started=true up front so the UX renders without real infra.
     if (USE_DEV_STUB || !started) return
 
-    async function startSession() {
+    let cancelled = false
+    let pollTimer: ReturnType<typeof setInterval> | null = null
+
+    async function run() {
       try {
+        setProvisionPhase('requesting')
         const res = await fetch('/api/claude-code/session/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -141,31 +162,107 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             ...(attemptId ? { attempt_id: attemptId } : {}),
           }),
         })
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({})) as { error?: string }
-          setSessionError(err.error ?? `Session start failed (${res.status})`)
+
+        if (res.status === 402) {
+          // Quota exhausted / not entitled → unified paywall, not a raw error.
+          const err = await res.json().catch(() => ({})) as { used?: number; limit?: number }
+          if (!cancelled) setPaywall({ used: err.used, limit: err.limit })
           return
         }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({})) as { error?: string }
+          if (!cancelled) setSessionError(err.error ?? `Session start failed (${res.status})`)
+          return
+        }
+
         const data = await res.json() as {
           session_id: string
-          wss_url: string
-          expires_at: string
+          status: string
+          wss_url: string | null
           sub_problems?: AnalyticsSubProblem[]
         }
+        if (cancelled) return
         setSessionId(data.session_id)
-        setWssUrl(data.wss_url)
         // Per-challenge sub_problems are OVERRIDES merged onto the default arc
         // by id, so the generic MCP/EDA/report teaching copy stays consistent.
         if (data.sub_problems?.length) {
           setSubProblems(mergeArc(challenge.difficulty, data.sub_problems))
         }
         sessionStartRef.current = Date.now()
+
+        // Already live (reconnect to a running container) — done.
+        if (data.status === 'active' && data.wss_url) {
+          setWssUrl(data.wss_url)
+          setProvisionPhase(null)
+          return
+        }
+
+        // Poll /state for readiness while provision runs. The phase advances on
+        // elapsed time so the copy reflects the slow steps even though /state
+        // only reports coarse status (provisioning → active).
+        const provisionStart = Date.now()
+        setProvisionPhase('waking')
+        const poll = async () => {
+          if (cancelled) return
+          const elapsed = Date.now() - provisionStart
+          // Time-based phase hints (the DB wake is the long pole, then boot).
+          setProvisionPhase((cur) =>
+            cur === null ? cur : elapsed > 22000 ? 'connecting' : elapsed > 8000 ? 'booting' : 'waking',
+          )
+          try {
+            const sres = await fetch(`/api/claude-code/session/${data.session_id}/state`)
+            if (sres.ok) {
+              const sdata = await sres.json() as { status?: string; wss_url?: string | null }
+              if (sdata.status === 'active' && sdata.wss_url) {
+                if (!cancelled) { setWssUrl(sdata.wss_url); setProvisionPhase(null) }
+                if (pollTimer) clearInterval(pollTimer)
+                return
+              }
+              if (sdata.status === 'failed' || sdata.status === 'terminated') {
+                if (!cancelled) setSessionError('Sandbox failed to start. Please try again.')
+                if (pollTimer) clearInterval(pollTimer)
+                return
+              }
+            }
+          } catch { /* transient — keep polling */ }
+        }
+
+        // Kick off the heavy provision request (its own 60s budget). We do NOT
+        // await it for the UI — the poll picks up the result either way, so a
+        // client-side timeout/disconnect on this fetch never blocks readiness.
+        fetch(`/api/claude-code/session/${data.session_id}/provision`, { method: 'POST' })
+          .then(async (pres) => {
+            if (cancelled) return
+            if (pres.status === 402) {
+              const err = await pres.json().catch(() => ({})) as { used?: number; limit?: number }
+              setPaywall({ used: err.used, limit: err.limit })
+              if (pollTimer) clearInterval(pollTimer)
+              return
+            }
+            if (pres.ok) {
+              const pdata = await pres.json().catch(() => ({})) as { wss_url?: string | null }
+              if (pdata.wss_url && !cancelled) {
+                setWssUrl(pdata.wss_url)
+                setProvisionPhase(null)
+                if (pollTimer) clearInterval(pollTimer)
+              }
+            }
+            // Non-OK (503/timeout) is handled by the poll loop + its failed flip.
+          })
+          .catch(() => { /* the poll loop is the source of truth */ })
+
+        await poll()
+        pollTimer = setInterval(poll, 3000)
       } catch (err) {
-        setSessionError(String(err))
+        if (!cancelled) setSessionError(String(err))
       }
     }
 
-    startSession()
+    run()
+    return () => {
+      cancelled = true
+      if (pollTimer) clearInterval(pollTimer)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started])
 
@@ -457,6 +554,26 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     )
   }
 
+  // Free quota exhausted → unified upgrade modal (analytics tier), over a blurred
+  // shell so the user sees what they're unlocking.
+  if (paywall) {
+    return (
+      <div style={{ position: 'relative', height: '100%' }}>
+        <div style={{ height: '100%', filter: 'blur(4px)', opacity: 0.4, pointerEvents: 'none', padding: 24 }}>
+          <div style={{ height: '100%', borderRadius: 12, background: 'var(--color-surface-container)' }} />
+        </div>
+        <PaywallModal
+          open
+          feature="claude_code_sessions"
+          used={paywall.used}
+          limit={paywall.limit}
+          dismissible
+          onClose={() => { setPaywall(null); setStarted(false) }}
+        />
+      </div>
+    )
+  }
+
   if (sessionError) {
     return (
       <div style={{
@@ -480,7 +597,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           {sessionError}
         </div>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => { setSessionError(null); setStarted(false) }}
           style={{
             padding: '9px 20px', borderRadius: 99,
             background: 'var(--color-primary)', color: 'var(--color-on-primary)',
@@ -727,23 +844,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                   </button>
                 </div>
               ) : (
-                <div style={{
-                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: '#1c1f1e', borderRadius: 12,
-                  flexDirection: 'column', gap: 10,
-                }}>
-                  <div style={{
-                    width: 24, height: 24,
-                    border: '3px solid rgba(142,207,158,0.2)',
-                    borderTopColor: '#8ecf9e',
-                    borderRadius: '50%',
-                    animation: 'spin 0.8s linear infinite',
-                  }} />
-                  <span style={{ fontSize: 12, color: '#8ecf9e', fontFamily: 'monospace' }}>
-                    Starting sandbox…
-                  </span>
-                  <style>{`@keyframes spin { to { transform: rotate(360deg) } } @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }`}</style>
-                </div>
+                <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} />
               )}
             </div>
 
@@ -799,5 +900,83 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
       </div>
 
     </>
+  )
+}
+
+// ── Sandbox startup progress ────────────────────────────────────────────────
+// A determinate, multi-phase indicator for the cold-start wait. The boot is a
+// pipeline (wake the warehouse DB → mint a budgeted key → boot the container →
+// connect), and on a cold start it can take ~30-60s. Showing the active step
+// (and that cold starts are slow) beats an opaque spinner.
+const STARTUP_STEPS: { key: 'requesting' | 'waking' | 'booting' | 'connecting'; label: string }[] = [
+  { key: 'requesting', label: 'Requesting your sandbox' },
+  { key: 'waking', label: 'Waking the data warehouse' },
+  { key: 'booting', label: 'Booting the Claude Code container' },
+  { key: 'connecting', label: 'Connecting BigQuery and finishing up' },
+]
+
+function SandboxStartupProgress({
+  phase,
+  resuming,
+}: {
+  phase: 'requesting' | 'waking' | 'booting' | 'connecting' | null
+  resuming?: boolean
+}) {
+  const activeIdx = phase ? STARTUP_STEPS.findIndex((s) => s.key === phase) : 0
+  return (
+    <div style={{
+      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: '#1c1f1e', borderRadius: 12,
+      flexDirection: 'column', gap: 18, padding: '28px 24px',
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: '#e8e4dc' }}>
+          {resuming ? 'Resuming your sandbox' : 'Starting your sandbox'}
+        </span>
+        <span style={{ fontSize: 11.5, color: 'rgba(232,228,220,0.55)' }}>
+          First start of an idle period can take 30–60s. Hang tight.
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
+        {STARTUP_STEPS.map((step, i) => {
+          const done = i < activeIdx
+          const active = i === activeIdx
+          return (
+            <div key={step.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{
+                width: 18, height: 18, flexShrink: 0,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {done ? (
+                  <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#8ecf9e', fontVariationSettings: "'FILL' 1" }}>
+                    check_circle
+                  </span>
+                ) : active ? (
+                  <span style={{
+                    width: 14, height: 14,
+                    border: '2px solid rgba(142,207,158,0.25)',
+                    borderTopColor: '#8ecf9e',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                  }} />
+                ) : (
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(232,228,220,0.22)' }} />
+                )}
+              </span>
+              <span style={{
+                fontSize: 12.5,
+                color: done ? 'rgba(232,228,220,0.6)' : active ? '#e8e4dc' : 'rgba(232,228,220,0.4)',
+                fontWeight: active ? 600 : 400,
+              }}>
+                {step.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
   )
 }

@@ -1,0 +1,188 @@
+// Shared provisioning core for Claude Code Analytics sessions.
+//
+// Why this exists: Vercel Hobby caps a function at 60s and KILLS it at the
+// ceiling (the function does not keep running after the client disconnects). A
+// cold start is SQL-wake (up to ~40s) + key mint + revision PATCH + readiness
+// (up to ~40s) — which cannot fit in one 60s invocation. So `session/start`
+// stays thin (gates + row) and the heavy lifting runs here, driven by a
+// separate `session/[id]/provision` route the client calls and then polls
+// `session/[id]/state` for phase/status/wss_url.
+//
+// Each phase writes `status` on the row so the client can render real progress:
+//   provisioning  → row created, work in flight
+//   active        → revision Ready, wss_url set, usage recorded
+//   failed        → a step errored (client shows retry)
+
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getSandbox } from '@/lib/sandbox'
+import type { SessionEnv } from '@/lib/sandbox/types'
+import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
+import { mintSessionVirtualKey, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
+import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
+import { recordUsageEvent } from '@/lib/usage/check-limit'
+
+// Readiness is the REVISION Ready condition (control-plane truth the container
+// is up). Kept under the calling route's maxDuration. Override via env.
+const READINESS_DEADLINE_MS = parseInt(process.env.CC_READINESS_DEADLINE_MS ?? '40000', 10)
+// SQL wake budget. cc-llm-db is stopped while idle (no native scale-to-zero), so
+// the first session of an idle period pays this. Kept short so the whole
+// provision route stays under 60s on Hobby.
+const SQL_WAKE_MS = parseInt(process.env.CC_SQL_WAKE_MS ?? '40000', 10)
+
+export interface ProvisionInput {
+  sessionId: string
+  userId: string
+  challengeId: string
+  bqProject: string
+  bqDataset: string
+  bqBillingProject: string
+  claudeMd: string
+  ttlSeconds: number
+  /** Presigned URL to the user's prior ~/.claude state (MCP regs + skills). */
+  userClaudeStateUrl?: string
+  /** Presigned URL to a prior /workspace snapshot, for resume. */
+  workspaceRestoreUrl?: string
+}
+
+export type ProvisionResult =
+  | { ok: true; wssUrl: string; expiresAt: string }
+  | { ok: false; status: number; error: string }
+
+/**
+ * Run the full provisioning pipeline for an existing `provisioning` row. Flips
+ * the row to `active` (with wss_url) on success or `failed` on any step error.
+ * Safe to call once per session row; idempotency/dedup lives in the start route.
+ */
+export async function provisionSession(input: ProvisionInput): Promise<ProvisionResult> {
+  const admin = createAdminClient()
+  const { sessionId, ttlSeconds } = input
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.VERCEL_URL ??
+    'http://localhost:3000'
+  const orchestratorSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/snapshot`
+  const userStateSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/user-state`
+  const snapshotToken = mintSnapshotToken(sessionId, process.env.SESSION_TOKEN_SECRET ?? '')
+
+  // --- Wake the gateway's Cloud SQL on demand (the long pole on a cold start) ---
+  if (isGatewayConfigured() && isSqlAutostartConfigured()) {
+    const sql = await ensureSqlRunnable(SQL_WAKE_MS)
+    if (!sql.ready) {
+      console.error('[cc/provision] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
+      await markFailed(admin, sessionId)
+      return {
+        ok: false,
+        status: 503,
+        error: 'Starting your environment took too long. Please try again.',
+      }
+    }
+  }
+
+  // --- Mint a per-session virtual key with a hard spend cap ---
+  let anthropicKey = process.env.ANTHROPIC_API_KEY ?? ''
+  let anthropicBaseUrl: string | undefined
+  try {
+    const vkey = await mintSessionVirtualKey(sessionId, ttlSeconds)
+    if (vkey) {
+      anthropicKey = vkey.key
+      anthropicBaseUrl = vkey.baseUrl
+    }
+  } catch (err) {
+    console.error('[cc/provision] virtual key mint failed:', err)
+    // FAIL CLOSED when the gateway is configured — never hand a session the
+    // shared uncapped key. Only the no-gateway (local/dev) path may fall back.
+    if (isGatewayConfigured()) {
+      await markFailed(admin, sessionId)
+      return {
+        ok: false,
+        status: 503,
+        error: 'Could not start a budgeted session. Please try again.',
+      }
+    }
+  }
+
+  // --- Build SessionEnv ---
+  const ccModel = process.env.CC_DEFAULT_MODEL ?? 'claude-sonnet-4-6'
+  const ccFastModel = process.env.CC_FAST_MODEL ?? 'claude-haiku-4-5'
+  const sessionEnv: SessionEnv = {
+    ANTHROPIC_API_KEY: anthropicKey,
+    ...(anthropicBaseUrl ? { ANTHROPIC_BASE_URL: anthropicBaseUrl } : {}),
+    ANTHROPIC_MODEL: ccModel,
+    ANTHROPIC_SMALL_FAST_MODEL: ccFastModel,
+    ANTHROPIC_BUDGET_USD: process.env.ANTHROPIC_BUDGET_USD ?? '0.50',
+    SESSION_ID: sessionId,
+    SESSION_TOKEN_SECRET: process.env.SESSION_TOKEN_SECRET ?? '',
+    GOOGLE_APPLICATION_CREDENTIALS_JSON: process.env.CC_BIGQUERY_SA_JSON ?? '',
+    BQ_PROJECT: input.bqProject,
+    BQ_DATASET: input.bqDataset,
+    BQ_BILLING_PROJECT: input.bqBillingProject,
+    CLAUDE_MD: input.claudeMd,
+    ORCHESTRATOR_SNAPSHOT_URL: orchestratorSnapshotUrl,
+    SNAPSHOT_AUTH_TOKEN: snapshotToken,
+    USER_STATE_SNAPSHOT_URL: userStateSnapshotUrl,
+    ...(input.userClaudeStateUrl ? { USER_CLAUDE_STATE_URL: input.userClaudeStateUrl } : {}),
+    ...(input.workspaceRestoreUrl ? { WORKSPACE_RESTORE_URL: input.workspaceRestoreUrl } : {}),
+  }
+
+  // --- Provision sandbox (create tagged revision) ---
+  const sandbox = getSandbox()
+  let provision
+  try {
+    provision = await sandbox.createSession({ sessionId, env: sessionEnv, ttlSeconds })
+  } catch (err) {
+    console.error('[cc/provision] createSession failed:', err)
+    // A partially-created revision still pins an instance — tear it down.
+    const partialHostId = sandbox.deriveHostInstanceId?.(sessionId)
+    if (partialHostId) {
+      await sandbox
+        .destroySession(partialHostId)
+        .catch((e) => console.error('[cc/provision] partial teardown failed:', e))
+    }
+    await markFailed(admin, sessionId)
+    return { ok: false, status: 503, error: 'Sandbox provisioning failed. Please try again.' }
+  }
+
+  // --- Readiness: wait for the REVISION to be Ready ---
+  const ready = await sandbox.awaitReady(provision.hostInstanceId, READINESS_DEADLINE_MS)
+  if (!ready) {
+    console.error('[cc/provision] revision not Ready within', READINESS_DEADLINE_MS, 'ms')
+    await markFailed(admin, sessionId)
+    sandbox.destroySession(provision.hostInstanceId).catch(() => {})
+    return { ok: false, status: 503, error: 'Sandbox timed out starting. Please try again.' }
+  }
+
+  // --- Flip the row to active with live connection details ---
+  const expiresAt = provision.expiresAt
+  await admin
+    .from('claude_code_sessions')
+    .update({
+      host_instance_id: provision.hostInstanceId,
+      host_app: provision.hostApp,
+      host_provider: provision.provider,
+      wss_url: provision.wssUrl,
+      expires_at: expiresAt,
+      status: 'active',
+      started_at: new Date().toISOString(),
+    })
+    .eq('id', sessionId)
+
+  // --- Record usage event (analytics session counter) ---
+  await recordUsageEvent(input.userId, 'claude_code_sessions', 1, {
+    challenge_id: input.challengeId,
+    session_id: sessionId,
+    provider: provision.provider,
+  })
+
+  return { ok: true, wssUrl: provision.wssUrl, expiresAt }
+}
+
+async function markFailed(
+  admin: ReturnType<typeof createAdminClient>,
+  sessionId: string,
+): Promise<void> {
+  await admin
+    .from('claude_code_sessions')
+    .update({ status: 'failed', ended_at: new Date().toISOString() })
+    .eq('id', sessionId)
+}
