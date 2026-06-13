@@ -17,7 +17,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
 import type { SessionEnv } from '@/lib/sandbox/types'
 import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
-import { mintSessionVirtualKey, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
+import { mintSessionVirtualKey, isGatewayConfigured, warmGateway } from '@/lib/sandbox/llm-gateway'
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { recordUsageEvent } from '@/lib/usage/check-limit'
 
@@ -70,18 +70,25 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   const userStateSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/user-state`
   const snapshotToken = mintSnapshotToken(sessionId, process.env.SESSION_TOKEN_SECRET ?? '')
 
-  // --- Wake the gateway's Cloud SQL on demand (the long pole on a cold start) ---
-  if (isGatewayConfigured() && isSqlAutostartConfigured()) {
-    const sql = await ensureSqlRunnable(SQL_WAKE_MS)
-    if (!sql.ready) {
-      console.error('[cc/provision] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
-      await markFailed(admin, sessionId)
-      return {
-        ok: false,
-        status: 503,
-        error: 'Starting your environment took too long. Please try again.',
+  // --- Wake Cloud SQL AND warm the gateway CONCURRENTLY (both feed the key mint).
+  // Serially these are the two long poles on a cold start (~40s + ~40s > Hobby's
+  // 60s). Overlapping them — plus the fire-and-forget warm-up `start` already
+  // kicked off — keeps the cold path under one function's budget. ---
+  if (isGatewayConfigured()) {
+    const warm = warmGateway() // triggers gateway container boot in parallel
+    if (isSqlAutostartConfigured()) {
+      const sql = await ensureSqlRunnable(SQL_WAKE_MS)
+      if (!sql.ready) {
+        console.error('[cc/provision] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
+        await markFailed(admin, sessionId)
+        return {
+          ok: false,
+          status: 503,
+          error: 'Starting your environment took too long. Please try again.',
+        }
       }
     }
+    await warm // gateway warm-up returns fast (or times out at 8s) either way
   }
 
   // --- Mint a per-session virtual key with a hard spend cap ---

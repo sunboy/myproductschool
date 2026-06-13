@@ -13,6 +13,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import { getAnalyticsAccess } from '@/lib/flags/analytics'
 import { checkUsageLimit } from '@/lib/usage/check-limit'
+import { warmGateway, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
+import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -235,6 +237,19 @@ export async function POST(req: NextRequest) {
   if (upsertErr) {
     console.error('[cc/session/start] Failed to upsert session:', upsertErr)
     return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
+  }
+
+  // --- Pre-warm the slow cold-start dependencies in PARALLEL, fire-and-forget,
+  // so they boot while the client is rendering the workspace and before it calls
+  // provision. On a cold path the gateway (minScale=0) + its Cloud SQL otherwise
+  // boot SERIALLY inside provision (SQL wake ~40s THEN gateway cold mint ~40s),
+  // blowing past Hobby's 60s. Kicking both off here overlaps them with the user's
+  // read time so provision finds them warm. Both swallow their own errors. ---
+  if (isGatewayConfigured()) {
+    void warmGateway()
+    if (isSqlAutostartConfigured()) {
+      void ensureSqlRunnable(40_000).catch(() => {})
+    }
   }
 
   return NextResponse.json({

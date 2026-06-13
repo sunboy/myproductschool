@@ -60,8 +60,15 @@ export async function mintSessionVirtualKey(
   class TerminalKeyError extends Error {}
 
   let lastErr: unknown
-  for (let attempt = 0; attempt < 4; attempt++) {
-    if (attempt > 0) await new Promise((r) => setTimeout(r, 2000 * attempt))
+  // Each attempt has its OWN timeout: a cold gateway accepts the TCP connection
+  // but never responds while LiteLLM boots, so a fetch with no timeout HANGS for
+  // the full ~40s cold-boot and eats the route's 60s budget. A 9s per-attempt
+  // timeout + retries means we re-probe a booting gateway every ~9s and connect
+  // the moment it's up, instead of one long hang. 5 attempts × (9s + backoff)
+  // covers a ~40-50s cold boot.
+  const ATTEMPT_TIMEOUT_MS = parseInt(process.env.CC_MINT_ATTEMPT_TIMEOUT_MS ?? '9000', 10)
+  for (let attempt = 0; attempt < 5; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * attempt))
     try {
       const res = await fetch(`${baseUrl}/key/generate`, {
         method: 'POST',
@@ -74,6 +81,7 @@ export async function mintSessionVirtualKey(
           models,
           metadata: { feature: 'claude_code_analytics', session_id: sessionId },
         }),
+        signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
       })
       if (!res.ok) {
         const detail = await res.text().catch(() => '')
@@ -96,6 +104,31 @@ export async function mintSessionVirtualKey(
     }
   }
   throw lastErr ?? new Error('LiteLLM key/generate failed after retries')
+}
+
+/**
+ * Fire-and-forget warm-up ping. The gateway is minScale=0; the first real request
+ * (key mint) otherwise eats the full cold-boot. Calling this when a session STARTS
+ * — before the user has finished reading the workspace and the provision step runs
+ * — lets the container boot in parallel, so the later mint hits a warm gateway.
+ * Never throws; a failure here is harmless (the mint's own retries are the
+ * backstop). Returns immediately; do not await for correctness.
+ */
+export async function warmGateway(): Promise<void> {
+  if (!isGatewayConfigured()) return
+  const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
+  const master = process.env.LLM_GATEWAY_MASTER_KEY!
+  try {
+    // /health/readiness boots the container + checks its DB connection — the exact
+    // dependency the mint needs. Short timeout: we only need to TRIGGER the boot.
+    await fetch(`${baseUrl}/health/readiness`, {
+      headers: { Authorization: `Bearer ${master}` },
+      signal: AbortSignal.timeout(8000),
+    })
+  } catch {
+    // Cold gateway won't answer in 8s — that's fine, the ping still triggered the
+    // boot. Swallow everything.
+  }
 }
 
 export interface KeySpend {
