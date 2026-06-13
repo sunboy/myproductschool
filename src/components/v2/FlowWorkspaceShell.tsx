@@ -4,8 +4,7 @@ import { useState } from 'react'
 import type { UserRoleV2 } from '@/lib/types'
 import { FlowWorkspace } from './FlowWorkspace'
 import { useRouter } from 'next/navigation'
-import { ChallengePaywallGate } from '@/components/paywalls/ChallengePaywallGate'
-import { useUpgrade } from '@/hooks/useUpgrade'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 
 export interface FlowWorkspaceShellProps {
   challengeId: string
@@ -19,7 +18,6 @@ export interface FlowWorkspaceShellProps {
 export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, fromPlan, nextChallengeSlug, returnTo }: FlowWorkspaceShellProps) {
   const router = useRouter()
   const [paywallData, setPaywallData] = useState<{ used: number; limit: number } | null>(null)
-  const { startUpgrade } = useUpgrade()
   const exitHref = returnTo ?? '/challenges'
 
   return (
@@ -35,15 +33,13 @@ export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, 
         onExit={() => router.push(exitHref)}
         onPaywall={(data) => setPaywallData(data)}
       />
-      {paywallData && (
-        <ChallengePaywallGate
-          used={paywallData.used}
-          limit={paywallData.limit}
-          challengeTitle="this challenge"
-          onUpgrade={startUpgrade}
-          onDismiss={() => router.push(exitHref)}
-        />
-      )}
+      <PaywallModal
+        open={!!paywallData}
+        feature="challenges"
+        used={paywallData?.used}
+        limit={paywallData?.limit}
+        onClose={() => router.push(exitHref)}
+      />
     </div>
   )
 }

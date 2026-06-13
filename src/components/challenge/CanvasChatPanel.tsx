@@ -10,8 +10,7 @@ import type { GuidancePhase, GuidanceLabels } from '@/lib/hatch/canvasGuidance'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
-import { ChallengePaywallGate } from '@/components/paywalls/ChallengePaywallGate'
-import { useUpgrade } from '@/hooks/useUpgrade'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 
 interface ChatMessage {
   role: 'user' | 'hatch'
@@ -192,7 +191,6 @@ export function CanvasChatPanel({
 }: CanvasChatPanelProps) {
   const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
   const { muted, toggleMuted, play } = useHatchSonics()
-  const { startUpgrade } = useUpgrade()
 
   // One-shot: capture the phase-aware opener at mount only. Not reactive to
   // later phase changes, which would clobber an in-progress conversation.
@@ -625,15 +623,13 @@ export function CanvasChatPanel({
           </div>
         )}
         </div>
-        {limitGate && (
-          <ChallengePaywallGate
-            used={limitGate.used}
-            limit={limitGate.limit}
-            feature={limitGate.feature}
-            onUpgrade={startUpgrade}
-            onDismiss={() => setLimitGate(null)}
-          />
-        )}
+        <PaywallModal
+          open={!!limitGate}
+          used={limitGate?.used}
+          limit={limitGate?.limit}
+          feature={limitGate?.feature}
+          onClose={() => setLimitGate(null)}
+        />
       </>
     )
   }
@@ -802,15 +798,13 @@ export function CanvasChatPanel({
         </div>
       )}
     </div>
-    {limitGate && (
-      <ChallengePaywallGate
-        used={limitGate.used}
-        limit={limitGate.limit}
-        feature={limitGate.feature}
-        onUpgrade={startUpgrade}
-        onDismiss={() => setLimitGate(null)}
-      />
-    )}
+    <PaywallModal
+      open={!!limitGate}
+      used={limitGate?.used}
+      limit={limitGate?.limit}
+      feature={limitGate?.feature}
+      onClose={() => setLimitGate(null)}
+    />
     </>
   )
 }

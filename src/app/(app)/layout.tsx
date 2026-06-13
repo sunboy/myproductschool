@@ -6,19 +6,16 @@ import { BottomTabs } from '@/components/shell/BottomTabs'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { HatchDirector } from '@/components/shell/HatchDirector'
 import { IntroTourController } from '@/components/shell/IntroTourController'
-import { UpgradeModal } from '@/components/shell/UpgradeModal'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { IdleTimer } from '@/components/auth/IdleTimer'
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { HatchProvider } from '@/context/HatchContext'
-import { SessionProvider, useSession } from '@/context/SessionContext'
+import { SessionProvider } from '@/context/SessionContext'
 import { OnboardingModalProvider } from '@/context/OnboardingModalContext'
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const [upgradeOpen, setUpgradeOpen] = useState(false)
-  // userId comes from the session fetched once by SessionProvider — no extra
-  // client-side getUser() round-trip on every navigation.
-  const { userId } = useSession()
 
   useEffect(() => {
     const upgradeHandler = () => setUpgradeOpen(true)
@@ -41,10 +38,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
         <FloatingHatch />
         <FeedbackWidget />
         <IdleTimer />
-        <UpgradeModal
+        <PaywallModal
           open={upgradeOpen}
           onClose={() => setUpgradeOpen(false)}
-          userId={userId}
         />
         <OnboardingModal />
       </div>
