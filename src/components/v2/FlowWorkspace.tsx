@@ -4089,38 +4089,40 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Canvas / coding challenges are gated to this notice on phones — the Excalidraw
   // canvas and Monaco editor need a larger screen. The full brief still renders so
   // the user knows what the challenge is.
-  const mobileDesktopNotice = (
-    <div className="flex flex-col h-full" style={{ background: 'var(--color-background)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)', flexShrink: 0, padding: '6px 8px' }}>
-        <button
-          onClick={props.onExit ?? (() => window.history.back())}
-          className="btn btn--ghost"
-          style={{ padding: '6px 8px', display: 'inline-flex', alignItems: 'center' }}
-          aria-label="Back"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_back</span>
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col items-center text-center gap-3 px-6 pt-10 pb-6 max-w-md mx-auto">
-          <HatchGlyph size={56} state="idle" className="text-primary" />
-          <h2 className="font-headline text-xl text-on-surface">Best experienced on desktop</h2>
-          <p className="font-body text-sm text-on-surface-variant">
-            {isCodingChallenge
-              ? 'This coding challenge uses a full code editor that needs a larger screen. Open it on a desktop to work through it.'
-              : 'This system design challenge uses a drawing canvas that needs a larger screen. Open it on a desktop to work through it.'}
-          </p>
-          <a
-            href="/challenges"
-            className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary text-on-primary font-label font-semibold text-sm px-5 py-2.5"
-          >
-            <span className="material-symbols-outlined text-[18px]">grid_view</span> Back to Practice
-          </a>
-        </div>
-        <div className="border-t border-outline-variant/60">
-          {descriptionPane}
-        </div>
-      </div>
+  // Canvas (system design) / coding challenges on a phone: the editor can't run
+  // here, so the answer surface is replaced by a "best on desktop" notice. The
+  // rest of the workspace stays - scrollable tabs (Description / Discussions /
+  // Submissions) and the full brief, which scrolls because each pane is a
+  // flex:1 / overflowY:auto child of a bounded flex-column section (the same
+  // pattern the desktop left panel uses). Bottom padding reserves space for the
+  // fixed mobile BottomTabs nav so nothing is occluded.
+  const mobileInterviewNotice = (
+    <div className="flex flex-col items-center text-center gap-3 px-6 pt-8 pb-6 max-w-md mx-auto" style={{ flexShrink: 0 }}>
+      <HatchGlyph size={56} state="idle" className="text-primary" />
+      <h2 className="font-headline text-xl text-on-surface">Best experienced on desktop</h2>
+      <p className="font-body text-sm text-on-surface-variant">
+        {isCodingChallenge
+          ? 'This coding challenge uses a full code editor that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.'
+          : 'This system design challenge uses a drawing canvas that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.'}
+      </p>
+      <a
+        href="/challenges"
+        className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary text-on-primary font-label font-semibold text-sm px-5 py-2.5"
+      >
+        <span className="material-symbols-outlined text-[18px]">grid_view</span> Back to Practice
+      </a>
+    </div>
+  )
+
+  const mobileInterviewView = (
+    <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0" style={{ background: 'var(--color-background)' }}>
+      {mobileChrome}
+      <section style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0, background: 'var(--color-surface)' }}>
+        {leftTab === 'Description' && mobileInterviewNotice}
+        {leftTab === 'Description' && descriptionPane}
+        {leftTab === 'Discussions' && discussionsPane}
+        {leftTab === 'Submissions' && submissionsPane}
+      </section>
     </div>
   )
 
@@ -4138,7 +4140,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const codingControlsLive = !historyRecord || isCurrentAttemptRecord
 
     return (
-      <div className="flex flex-col overflow-hidden h-full">
+      <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
         {/* Same full-width top chrome as question phase (desktop only - on mobile
             the feedback fills the width and carries its own navigation). */}
         {!isMobile && topChrome}
@@ -4347,10 +4349,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Canvas (system design) / coding challenges can't render their editor on a
   // phone - gate them to a "best on desktop" notice instead of a broken canvas.
   if (isMobile && isInterviewChallenge) {
-    return mobileDesktopNotice
+    return mobileInterviewView
   }
   return (
-    <div className="flex flex-col overflow-hidden h-full">
+    <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
       {/* Desktop: full-width chrome (tabs + stepper). Mobile: stacked chrome -
           scrollable tabs, collapsible description drawer, scrollable step bar. */}
       {mobileStacked ? (
