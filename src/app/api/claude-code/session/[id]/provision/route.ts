@@ -19,13 +19,18 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: sessionId } = await params
   if (!sessionId) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 })
   }
+
+  // The deployment that signs the snapshot token must also receive the snapshot.
+  // Derive this request's origin so the container POSTs back here, not to a
+  // hardcoded prod URL whose SESSION_TOKEN_SECRET may differ.
+  const originUrl = new URL(req.url).origin
 
   // --- Auth ---
   const supabase = await createClient()
@@ -121,6 +126,7 @@ export async function POST(
     ttlSeconds,
     userClaudeStateUrl,
     workspaceRestoreUrl,
+    originUrl,
   })
 
   if (!result.ok) {

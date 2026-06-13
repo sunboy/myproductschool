@@ -38,6 +38,15 @@ export interface ProvisionInput {
   sessionId: string
   userId: string
   challengeId: string
+  /**
+   * Absolute origin the container should POST its snapshots back to. MUST be the
+   * deployment that provisioned the session — the snapshot bearer is HMAC-signed
+   * with THIS deployment's SESSION_TOKEN_SECRET, so a preview container pointed at
+   * prod (via a hardcoded NEXT_PUBLIC_APP_URL) 401s if the secret differs across
+   * deployments. Derived from the provision request's own origin. Falls back to
+   * NEXT_PUBLIC_APP_URL only when absent (e.g. a non-HTTP caller).
+   */
+  originUrl?: string
   bqProject: string
   bqDataset: string
   bqBillingProject: string
@@ -62,7 +71,11 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   const admin = createAdminClient()
   const { sessionId, ttlSeconds } = input
 
+  // Prefer the provisioning request's own origin so the container POSTs snapshots
+  // back to THIS deployment (whose secret signed the token). Only fall back to the
+  // configured app URL when no origin was threaded through.
   const baseUrl =
+    input.originUrl ??
     process.env.NEXT_PUBLIC_APP_URL ??
     process.env.VERCEL_URL ??
     'http://localhost:3000'
