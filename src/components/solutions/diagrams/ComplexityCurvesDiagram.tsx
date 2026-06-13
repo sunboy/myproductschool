@@ -51,7 +51,7 @@ export function ComplexityCurvesDiagram({ spec, animate, reducedMotion }: Props)
 
   return (
     <div>
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ overflow: 'visible' }} aria-hidden="true">
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ display: 'block', width: '100%', maxWidth: width, height: 'auto', overflow: 'visible' }} aria-hidden="true">
         {/* Axes */}
         <line x1={PAD_LEFT} y1={PAD_TOP} x2={PAD_LEFT} y2={PAD_TOP + PLOT_H} stroke="var(--color-outline-variant)" strokeWidth={1} />
         <line x1={PAD_LEFT} y1={PAD_TOP + PLOT_H} x2={PAD_LEFT + PLOT_W} y2={PAD_TOP + PLOT_H} stroke="var(--color-outline-variant)" strokeWidth={1} />

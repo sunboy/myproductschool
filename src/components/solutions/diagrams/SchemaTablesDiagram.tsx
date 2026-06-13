@@ -67,7 +67,7 @@ export function SchemaTablesDiagram({ spec, animate, reducedMotion }: Props) {
   const height = Math.max(...tables.map((t) => t.y + t.h)) + 8
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ overflow: 'visible' }} aria-hidden="true">
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ display: 'block', width: '100%', maxWidth: width, height: 'auto', margin: '0 auto', overflow: 'visible' }} aria-hidden="true">
       {/* Relations under cards */}
       {spec.relations.map((rel, i) => {
         const from = placed.get(rel.from)

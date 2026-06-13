@@ -42,7 +42,7 @@ export function ComparisonBarsDiagram({ spec, animate, reducedMotion }: Props) {
   }, [visible, reducedMotion, spec.bars])
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ maxHeight: height, overflow: 'visible' }} aria-hidden="true">
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ display: 'block', width: '100%', maxWidth: width, height: 'auto', maxHeight: height, overflow: 'visible' }} aria-hidden="true">
       {spec.bars.map((bar, i) => {
         const y = i * ROW_H + 6
         const centerY = y + BAR_H / 2
