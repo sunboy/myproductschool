@@ -100,3 +100,4 @@ seeds/chillinterview/
 
 # Description-rewrite batch artifacts (reproducible via scripts/export-descriptions-for-rewrite.ts)
 scripts/content/rewrites/
+scripts/content/solutions/

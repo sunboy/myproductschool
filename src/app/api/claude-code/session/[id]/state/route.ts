@@ -7,8 +7,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
+import { probeAndActivate } from '@/lib/sandbox/provision-session'
 
 export const dynamic = 'force-dynamic'
+// A provisioning row's per-poll readiness probe lives here (a few seconds). Keep
+// headroom over that single probe; this never blocks for the full cold boot.
+export const maxDuration = 15
 
 // ---------------------------------------------------------------------------
 // GET handler
@@ -51,6 +55,30 @@ export async function GET(
 
   let status = session.status as string
   const expiresAt = session.expires_at as string | null
+
+  // --- Readiness probe: a provisioning row whose revision was already PATCHed
+  // (host_instance_id present) gets a quick Ready check here. This is how the
+  // cold-boot finishes when the provision route was killed at Hobby's 60s ceiling
+  // mid-wait — the client polls this every few seconds and we flip to `active`
+  // the moment the revision is Ready, without ever blocking a single request for
+  // the whole boot. ---
+  const hostId0 = session.host_instance_id as string | null
+  const wss0 = session.wss_url as string | null
+  if (status === 'provisioning' && hostId0 && wss0) {
+    try {
+      const activated = await probeAndActivate(
+        sessionId,
+        hostId0,
+        user.id,
+        session.challenge_id as string,
+        'cloud_run',
+        wss0,
+      )
+      if (activated) status = 'active'
+    } catch (err) {
+      console.error('[cc/state] readiness probe failed (will retry next poll):', err)
+    }
+  }
 
   // --- Lazy expiry flip: active → terminated ---
   if (status === 'active' && expiresAt && new Date(expiresAt) <= new Date()) {

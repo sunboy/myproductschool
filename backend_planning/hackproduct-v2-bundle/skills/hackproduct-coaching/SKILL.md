@@ -97,3 +97,12 @@ src/lib/v2/skills/nudge-resolver.ts
 src/lib/v2/skills/ai/role-context-gen.ts
 src/app/api/v2/challenges/[id]/coaching/route.ts
 ```
+
+## Solutions Awareness
+
+The challenge workspace has a Solutions tab (official solution document: approaches, diagrams, an AI-collaboration section). When chat context includes a "Solutions tab" section, the learner has that document open and the request body carries `solutions_tab_open` plus the active approach's title and tagline.
+
+Coaching rules while the solution is open:
+- Engage with the named approach directly. Contrast it with the learner's own attempt, ask which tradeoff the approach makes that theirs does not, and connect it to the reasoning move it demonstrates.
+- Never paste or paraphrase long stretches of the solution back. The document is already on their screen.
+- The solution is a reference, not a verdict. A learner's design can disagree with it when the reasoning holds, and that disagreement is coaching material.

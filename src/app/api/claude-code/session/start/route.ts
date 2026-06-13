@@ -12,19 +12,17 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import { getAnalyticsAccess } from '@/lib/flags/analytics'
-import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
-import { getSandbox } from '@/lib/sandbox'
-import type { SessionEnv } from '@/lib/sandbox/types'
-import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
-import { mintSessionVirtualKey, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
+import { checkUsageLimit } from '@/lib/usage/check-limit'
+import { warmGateway, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
+import { getSandbox } from '@/lib/sandbox'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
-// Provisioning = create a tagged revision + tag-route propagation + cold container
-// boot, then poll /health. A cold deploy can exceed 25s, so give the whole route
-// room (60s, the platform max) with the readiness poll set just under it.
-export const maxDuration = 60
+// This route is now thin (gates + create a provisioning row) and returns fast.
+// The heavy lifting runs in `session/[id]/provision`, which the client calls next
+// and then polls `session/[id]/state` for progress.
+export const maxDuration = 15
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -35,16 +33,6 @@ const BodySchema = z.object({
   challenge_id: z.string().min(1),
   attempt_id: z.string().uuid().optional(),
 })
-
-// ---------------------------------------------------------------------------
-// Readiness deadline
-// ---------------------------------------------------------------------------
-
-// Readiness is now the REVISION Ready condition (see sandbox.awaitReady), which
-// flips in ~5s — NOT the tagged HTTP route (whose propagation lag caused 503s).
-// Keep a generous ceiling under the route's maxDuration (60s); a healthy revision
-// resolves well within it. Override via CC_READINESS_DEADLINE_MS.
-const READINESS_DEADLINE_MS = parseInt(process.env.CC_READINESS_DEADLINE_MS ?? '45000', 10)
 
 // ---------------------------------------------------------------------------
 // POST handler
@@ -89,37 +77,22 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // --- Read challenge metadata ---
+  // --- Read challenge metadata (only sub_problems are needed here; the env/
+  // dataset fields are resolved by the provision route) ---
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const meta = (challenge.metadata ?? {}) as Record<string, any>
-  // Dataset + sub-problems may live nested under metadata.claude_code OR at the
-  // metadata root, depending on how the challenge was seeded. Read both shapes.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const claudeCodeMeta = (meta.claude_code ?? {}) as Record<string, any>
-  const bqProject =
-    claudeCodeMeta.dataset_project ?? claudeCodeMeta.BQ_PROJECT ??
-    meta.dataset_project ?? meta.BQ_PROJECT ??
-    process.env.GCP_PROJECT ?? ''
-  const bqDataset =
-    claudeCodeMeta.dataset_id ?? claudeCodeMeta.BQ_DATASET ??
-    meta.dataset_id ?? meta.BQ_DATASET ?? ''
-  // Where query jobs bill. For a public dataset (bqProject=bigquery-public-data)
-  // this stays our own project so our SA can run the job. Defaults to GCP_PROJECT.
-  const bqBillingProject =
-    claudeCodeMeta.dataset_billing_project ?? meta.dataset_billing_project ??
-    process.env.GCP_PROJECT ?? 'hackproduct'
-  const claudeMd = claudeCodeMeta.claude_md ?? meta.claude_md ?? ''
-  const ttlSeconds = parseInt(process.env.CC_SESSION_TTL_SECONDS ?? '1800', 10)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subProblems: unknown[] = (claudeCodeMeta.sub_problems ?? meta.sub_problems ?? []) as any[]
 
-  // --- Load user plan for usage gate + prior Claude Code state pointer ---
+  // --- Load user plan for the usage gate ---
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, cc_claude_state_uri')
+    .select('plan')
     .eq('id', user.id)
     .single()
   const userPlan = (profile?.plan as string) ?? 'free'
-  const priorClaudeStateUri = (profile?.cc_claude_state_uri as string | null) ?? null
 
   const admin = createAdminClient()
 
@@ -140,15 +113,19 @@ export async function POST(req: NextRequest) {
   }
 
   // --- Usage gate (analytics session cap for the tier) ---
+  // Free users get a small quota (set in plan_limits) then hit the unified
+  // PaywallModal. `reason: 'paywall'` + the analytics upgrade target tell the
+  // client to open that modal rather than show a generic error.
   const usageResult = await checkUsageLimit(user.id, 'claude_code_sessions', userPlan)
   if (!usageResult.allowed) {
     return NextResponse.json(
       {
         error: 'Usage limit reached',
-        upgrade_url: '/pricing',
+        reason: 'paywall',
+        upgrade_url: '/pricing?tier=analytics',
+        feature: 'claude_code_sessions',
         used: usageResult.used,
         limit: usageResult.limit,
-        feature: 'claude_code_sessions',
       },
       { status: 402 },
     )
@@ -193,7 +170,7 @@ export async function POST(req: NextRequest) {
   // --- Idempotency: check for an active/provisioning session on this attempt ---
   const { data: existingSession } = await admin
     .from('claude_code_sessions')
-    .select('id, status, wss_url, expires_at, transcript_uri')
+    .select('id, status, wss_url, expires_at, transcript_uri, host_instance_id')
     .eq('attempt_id', attemptId)
     .maybeSingle()
 
@@ -204,63 +181,65 @@ export async function POST(req: NextRequest) {
   let resumeSnapshotUri: string | null = null
 
   if (existingSession) {
-    const sessionId = existingSession.id as string
+    const sid = existingSession.id as string
     const status = existingSession.status as string
     const expiresAt = existingSession.expires_at as string | null
 
     const isExpired = expiresAt ? new Date(expiresAt) <= new Date() : false
 
-    if (!isExpired && (status === 'active' || status === 'provisioning')) {
-      // Reconnect — return the existing session
+    if (!isExpired && status === 'active') {
+      // Reconnect ONLY if the underlying revision still exists. A session can be
+      // `active` in the DB while its container was already reaped (idle TTL) or
+      // deleted — handing back that dead wss_url makes the client reconnect-loop
+      // forever ("Connecting to sandbox…"). Verify liveness first; if the revision
+      // is gone, fall through to re-provision (carrying the workspace forward).
+      const hostId = existingSession.host_instance_id as string | null
+      let revisionLive = false
+      if (hostId) {
+        try {
+          revisionLive = await getSandbox().awaitReady(hostId, 2500)
+        } catch {
+          revisionLive = false
+        }
+      }
+      if (revisionLive) {
+        return NextResponse.json({
+          session_id: sid,
+          status: 'active',
+          wss_url: existingSession.wss_url,
+          expires_at: expiresAt,
+          sub_problems: subProblems,
+        })
+      }
+      // Stale active row (container reaped) — retire it and re-provision below.
+      await admin
+        .from('claude_code_sessions')
+        .update({ status: 'terminated', ended_at: new Date().toISOString() })
+        .eq('id', sid)
+      resumeSnapshotUri = (existingSession.transcript_uri as string | null) ?? null
+    } else if (!isExpired && status === 'provisioning') {
+      // A provision is already in flight (or was interrupted). Hand the client
+      // the same row so it polls/continues rather than starting a second one.
       return NextResponse.json({
-        session_id: sessionId,
-        wss_url: existingSession.wss_url,
+        session_id: sid,
+        status: 'provisioning',
+        wss_url: null,
         expires_at: expiresAt,
         sub_problems: subProblems,
       })
+    } else {
+      // Reaped/expired/terminated prior session: carry its workspace forward.
+      resumeSnapshotUri = (existingSession.transcript_uri as string | null) ?? null
     }
-
-    // Reaped/expired/terminated prior session: carry its workspace forward.
-    resumeSnapshotUri = (existingSession.transcript_uri as string | null) ?? null
   }
 
   // --- Insert provisioning row (upsert on attempt_id) ---
+  // The heavy lifting (SQL wake, key mint, revision boot, readiness) runs in the
+  // separate `session/[id]/provision` route — it cannot fit in this route's 60s
+  // Hobby ceiling on a cold start. We persist `transcript_uri` so that route can
+  // presign the resume snapshot. Return immediately with `status: 'provisioning'`
+  // so the client shows real progress while it calls provision + polls state.
   const sessionId = randomUUID()
-  const snapshotToken = mintSnapshotToken(
-    sessionId,
-    process.env.SESSION_TOKEN_SECRET ?? '',
-  )
-
-  // Resolve the absolute orchestrator URL for the snapshot callback.
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.VERCEL_URL ??
-    'http://localhost:3000'
-  const orchestratorSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/snapshot`
-  const userStateSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/user-state`
-
-  // Presign a download of the user's prior ~/.claude state (MCP regs + skills),
-  // so the container rehydrates it and MCP setup becomes one-time. Best-effort:
-  // a missing/expired object just means a first session.
-  let userClaudeStateUrl: string | undefined
-  if (priorClaudeStateUri) {
-    const { data: signed } = await admin.storage
-      .from('cc-user-state')
-      .createSignedUrl(priorClaudeStateUri, ttlSeconds + 120)
-    userClaudeStateUrl = signed?.signedUrl
-  }
-
-  // Resume: presign the prior session's latest workspace snapshot so the new
-  // container rehydrates /workspace from it (entrypoint extracts with
-  // --strip-components=1). Best-effort — a missing object just yields a fresh
-  // workspace.
-  let workspaceRestoreUrl: string | undefined
-  if (resumeSnapshotUri) {
-    const { data: signed } = await admin.storage
-      .from('cc-sessions')
-      .createSignedUrl(resumeSnapshotUri, ttlSeconds + 120)
-    workspaceRestoreUrl = signed?.signedUrl
-  }
 
   const { error: upsertErr } = await admin.from('claude_code_sessions').upsert(
     {
@@ -269,6 +248,8 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       challenge_id,
       status: 'provisioning',
+      // Carry the prior workspace forward so provision can presign + restore it.
+      transcript_uri: resumeSnapshotUri,
     },
     { onConflict: 'attempt_id', ignoreDuplicates: false },
   )
@@ -278,164 +259,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
   }
 
-  // --- Wake the gateway's Cloud SQL on demand. cc-llm-db is stopped while CC
-  // Analytics is idle (it has no native scale-to-zero, so it would bill 24/7).
-  // Start it and wait until RUNNABLE BEFORE minting a gateway key — the mint hits
-  // LiteLLM, which can't issue virtual keys without its Postgres. The wake is
-  // capped at 40s so it fits this route's 60s maxDuration WITH headroom for the
-  // mint + sandbox boot below; if the DB is too slow, we 503 cleanly (the row is
-  // marked `failed`, NOT left `provisioning`) and the user's retry — by which
-  // time the DB has finished booting — sails through. No-op when unconfigured
-  // (local/dev). The reaper stops it again when no session is active. ---
-  if (isGatewayConfigured() && isSqlAutostartConfigured()) {
-    const sql = await ensureSqlRunnable(40_000)
-    if (!sql.ready) {
-      console.error('[cc/session/start] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
-      await admin
-        .from('claude_code_sessions')
-        .update({ status: 'failed', ended_at: new Date().toISOString() })
-        .eq('id', sessionId)
-      return NextResponse.json(
-        { error: 'Starting your environment took too long. Please try again.' },
-        { status: 503 },
-      )
+  // --- Pre-warm the slow cold-start dependencies in PARALLEL, fire-and-forget,
+  // so they boot while the client is rendering the workspace and before it calls
+  // provision. On a cold path the gateway (minScale=0) + its Cloud SQL otherwise
+  // boot SERIALLY inside provision (SQL wake ~40s THEN gateway cold mint ~40s),
+  // blowing past Hobby's 60s. Kicking both off here overlaps them with the user's
+  // read time so provision finds them warm. Both swallow their own errors. ---
+  if (isGatewayConfigured()) {
+    void warmGateway()
+    if (isSqlAutostartConfigured()) {
+      void ensureSqlRunnable(40_000).catch(() => {})
     }
   }
-
-  // --- Mint a per-session virtual key with a hard spend cap (if the gateway is
-  // deployed). The container then talks to the LiteLLM gateway instead of holding
-  // the real Anthropic key, and a runaway session is capped in dollars. Falls
-  // back to the shared key when the gateway is not configured. ---
-  let anthropicKey = process.env.ANTHROPIC_API_KEY ?? ''
-  let anthropicBaseUrl: string | undefined
-  try {
-    const vkey = await mintSessionVirtualKey(sessionId, ttlSeconds)
-    if (vkey) {
-      anthropicKey = vkey.key
-      anthropicBaseUrl = vkey.baseUrl
-    }
-  } catch (err) {
-    console.error('[cc/session/start] virtual key mint failed:', err)
-    // FAIL CLOSED when the gateway is configured. Falling back to the shared key
-    // would hand the session the platform's real ANTHROPIC_API_KEY with NO
-    // per-session $0.50 budget and NO cc-<sessionId> alias — so spend is both
-    // uncapped AND invisible to spend tracking. Only the no-gateway (local/dev)
-    // path may use the shared key. (Codex review.)
-    if (isGatewayConfigured()) {
-      await admin
-        .from('claude_code_sessions')
-        .update({ status: 'failed', ended_at: new Date().toISOString() })
-        .eq('id', sessionId)
-      return NextResponse.json(
-        { error: 'Could not start a budgeted session. Please try again.' },
-        { status: 503 },
-      )
-    }
-  }
-
-  // --- Build SessionEnv ---
-  // Pin the CLI's model to one the gateway serves natively (Sonnet). Without this
-  // the CLI defaults to claude-opus-4-7, which the gateway has to remap to Sonnet
-  // — and the CLI then sends Opus-only params (e.g. thinking effort 'xhigh') that
-  // Sonnet rejects with a 400. Setting ANTHROPIC_MODEL makes the CLI request Sonnet
-  // directly, so params match the model. (project_cc_gateway_model_mismatch)
-  const ccModel = process.env.CC_DEFAULT_MODEL ?? 'claude-sonnet-4-6'
-  const ccFastModel = process.env.CC_FAST_MODEL ?? 'claude-haiku-4-5'
-  const sessionEnv: SessionEnv = {
-    ANTHROPIC_API_KEY: anthropicKey,
-    ...(anthropicBaseUrl ? { ANTHROPIC_BASE_URL: anthropicBaseUrl } : {}),
-    ANTHROPIC_MODEL: ccModel,
-    ANTHROPIC_SMALL_FAST_MODEL: ccFastModel,
-    ANTHROPIC_BUDGET_USD: process.env.ANTHROPIC_BUDGET_USD ?? '0.50',
-    SESSION_ID: sessionId,
-    SESSION_TOKEN_SECRET: process.env.SESSION_TOKEN_SECRET ?? '',
-    GOOGLE_APPLICATION_CREDENTIALS_JSON: process.env.CC_BIGQUERY_SA_JSON ?? '',
-    BQ_PROJECT: bqProject,
-    BQ_DATASET: bqDataset,
-    BQ_BILLING_PROJECT: bqBillingProject,
-    CLAUDE_MD: claudeMd,
-    ORCHESTRATOR_SNAPSHOT_URL: orchestratorSnapshotUrl,
-    SNAPSHOT_AUTH_TOKEN: snapshotToken,
-    USER_STATE_SNAPSHOT_URL: userStateSnapshotUrl,
-    ...(userClaudeStateUrl ? { USER_CLAUDE_STATE_URL: userClaudeStateUrl } : {}),
-    ...(workspaceRestoreUrl ? { WORKSPACE_RESTORE_URL: workspaceRestoreUrl } : {}),
-  }
-
-  // --- Provision sandbox ---
-  const sandbox = getSandbox()
-  let provision
-  try {
-    provision = await sandbox.createSession({
-      sessionId,
-      env: sessionEnv,
-      ttlSeconds,
-    })
-  } catch (err) {
-    console.error('[cc/session/start] createSession failed:', err)
-    // createSession can throw AFTER the revision PATCH lands (e.g. the response
-    // read fails), leaving a partially-created revision that pins an instance
-    // (minScale=1, billing) with no row to ever reap it. The tag is a pure
-    // function of sessionId, so reconstruct it and tear down best-effort.
-    const partialHostId = sandbox.deriveHostInstanceId?.(sessionId)
-    if (partialHostId) {
-      await sandbox
-        .destroySession(partialHostId)
-        .catch((e) => console.error('[cc/session/start] partial teardown failed:', e))
-    }
-    await admin
-      .from('claude_code_sessions')
-      .update({ status: 'failed', ended_at: new Date().toISOString() })
-      .eq('id', sessionId)
-    return NextResponse.json(
-      { error: 'Sandbox provisioning failed. Please try again.' },
-      { status: 503 },
-    )
-  }
-
-  // --- Readiness: wait for the REVISION to be Ready (control-plane truth that
-  // the container is up, ~5s) rather than polling the tagged HTTP /health URL,
-  // whose route propagation lags and intermittently 404s past the deadline even
-  // for a healthy revision (the cause of the prior 503 storms). The browser's WS
-  // connect has its own reconnect backoff to absorb any residual tag-route lag.
-  const ready = await sandbox.awaitReady(provision.hostInstanceId, READINESS_DEADLINE_MS)
-
-  if (!ready) {
-    console.error('[cc/session/start] Sandbox revision not Ready within', READINESS_DEADLINE_MS, 'ms')
-    // Mark failed; best-effort teardown
-    await admin
-      .from('claude_code_sessions')
-      .update({ status: 'failed', ended_at: new Date().toISOString() })
-      .eq('id', sessionId)
-    sandbox.destroySession(provision.hostInstanceId).catch(() => {})
-    return NextResponse.json(
-      { error: 'Sandbox timed out starting. Please try again.' },
-      { status: 503 },
-    )
-  }
-
-  // --- Update session row with live connection details ---
-  const expiresAt = provision.expiresAt
-  await admin.from('claude_code_sessions').update({
-    host_instance_id: provision.hostInstanceId,
-    host_app: provision.hostApp,
-    host_provider: provision.provider,
-    wss_url: provision.wssUrl,
-    expires_at: expiresAt,
-    status: 'active',
-    started_at: new Date().toISOString(),
-  }).eq('id', sessionId)
-
-  // --- Record usage event (analytics session counter) ---
-  await recordUsageEvent(user.id, 'claude_code_sessions', 1, {
-    challenge_id,
-    session_id: sessionId,
-    provider: provision.provider,
-  })
 
   return NextResponse.json({
     session_id: sessionId,
-    wss_url: provision.wssUrl,
-    expires_at: expiresAt,
+    status: 'provisioning',
+    wss_url: null,
+    expires_at: null,
     sub_problems: subProblems,
   })
 }

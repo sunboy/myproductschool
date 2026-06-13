@@ -1,3 +1,5 @@
+'use client'
+
 import type { Challenge } from '@/lib/types'
 
 interface ModelAnswerProps {
@@ -109,12 +111,12 @@ export function ModelAnswer({ challenge, isPro }: ModelAnswerProps) {
             <p className="text-sm text-on-surface-variant mb-3 text-center max-w-xs">
               See the complete walkthrough with trade-off analysis
             </p>
-            <a
-              href="/pricing"
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
               className="px-6 py-2.5 bg-primary text-on-primary font-semibold font-label rounded-full hover:opacity-90 transition-opacity text-center"
             >
               Upgrade to Pro
-            </a>
+            </button>
           </div>
         </div>
       </div>

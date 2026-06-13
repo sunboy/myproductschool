@@ -65,12 +65,13 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       costCeilingCents: 5000,
     },
     claude_code_sessions: {
-      // Free users never reach this (the analytics tier gate blocks them first),
-      // but the fallback must be complete. 0 = no analytics sessions.
-      limitValue: 0,
+      // Free users get a single trial session, then hit the unified PaywallModal
+      // (analytics tier). Authoritative value lives in plan_limits; this is the
+      // fallback used only if that row is missing.
+      limitValue: 1,
       windowDays: 30,
       unit: 'count',
-      description: 'Claude Code Analytics sessions per rolling month (not included)',
+      description: 'Claude Code Analytics sessions per rolling month (free trial)',
       costCeilingCents: null,
     },
     cc_claude_spend_cents: {

@@ -10,8 +10,7 @@ import type { GuidancePhase, GuidanceLabels } from '@/lib/hatch/canvasGuidance'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
-import { ChallengePaywallGate } from '@/components/paywalls/ChallengePaywallGate'
-import { useUpgrade } from '@/hooks/useUpgrade'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 
 interface ChatMessage {
   role: 'user' | 'hatch'
@@ -75,6 +74,10 @@ interface CanvasChatPanelProps {
   // in the draw → notes → ask → submit loop, per CLAUDE.md Hatch-awareness.
   guidancePhase?: GuidancePhase
   guidanceLabels?: GuidanceLabels
+  // Solutions tab awareness — set while the user has the official solution open,
+  // so Hatch can coach relative to the approach they are reading.
+  solutionsOpen?: boolean
+  activeSolutionApproach?: { title: string; tagline: string } | null
 }
 
 function getInitialMessage(
@@ -189,10 +192,11 @@ export function CanvasChatPanel({
   assertedFinding,
   guidancePhase,
   guidanceLabels,
+  solutionsOpen = false,
+  activeSolutionApproach = null,
 }: CanvasChatPanelProps) {
   const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
   const { muted, toggleMuted, play } = useHatchSonics()
-  const { startUpgrade } = useUpgrade()
 
   // One-shot: capture the phase-aware opener at mount only. Not reactive to
   // later phase changes, which would clobber an in-progress conversation.
@@ -215,7 +219,9 @@ export function CanvasChatPanel({
   const canvasStatusLabel = (challengeType === 'coding' || isAnalyticsMode)
     ? null
     : `${scene.entities.length} ${challengeType === 'data_modeling' ? 'tables' : 'nodes'} · ${scene.connections.length} ${challengeType === 'data_modeling' ? 'links' : 'flows'}`
-  const suggestionPrompts = getSuggestionPrompts(challengeType, currentLanguage)
+  const suggestionPrompts = solutionsOpen
+    ? ['Compare my work to this approach.', ...getSuggestionPrompts(challengeType, currentLanguage).slice(0, 2)]
+    : getSuggestionPrompts(challengeType, currentLanguage)
   const isThrottled = retryAfter != null && retryAfter > 0
   const inputDisabled = isLoading || isThrottled
   const inputPlaceholder = isThrottled
@@ -284,6 +290,9 @@ export function CanvasChatPanel({
         attemptId,
         context_pack: contextPack,
         guidance_phase: guidancePhase ?? null,
+        solutions_tab_open: solutionsOpen,
+        solution_approach_title: activeSolutionApproach?.title ?? null,
+        solution_approach_tagline: activeSolutionApproach?.tagline ?? null,
       }
 
       const codingBody = challengeType === 'coding' ? {
@@ -399,6 +408,8 @@ export function CanvasChatPanel({
       markedFindings, assertedFinding,
       // Canvas guidance context
       guidancePhase,
+      // Solutions tab context
+      solutionsOpen, activeSolutionApproach,
       play, isThrottled])
 
   useEffect(() => {
@@ -625,15 +636,13 @@ export function CanvasChatPanel({
           </div>
         )}
         </div>
-        {limitGate && (
-          <ChallengePaywallGate
-            used={limitGate.used}
-            limit={limitGate.limit}
-            feature={limitGate.feature}
-            onUpgrade={startUpgrade}
-            onDismiss={() => setLimitGate(null)}
-          />
-        )}
+        <PaywallModal
+          open={!!limitGate}
+          used={limitGate?.used}
+          limit={limitGate?.limit}
+          feature={limitGate?.feature}
+          onClose={() => setLimitGate(null)}
+        />
       </>
     )
   }
@@ -802,15 +811,13 @@ export function CanvasChatPanel({
         </div>
       )}
     </div>
-    {limitGate && (
-      <ChallengePaywallGate
-        used={limitGate.used}
-        limit={limitGate.limit}
-        feature={limitGate.feature}
-        onUpgrade={startUpgrade}
-        onDismiss={() => setLimitGate(null)}
-      />
-    )}
+    <PaywallModal
+      open={!!limitGate}
+      used={limitGate?.used}
+      limit={limitGate?.limit}
+      feature={limitGate?.feature}
+      onClose={() => setLimitGate(null)}
+    />
     </>
   )
 }

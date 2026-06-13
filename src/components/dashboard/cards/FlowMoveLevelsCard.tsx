@@ -52,10 +52,10 @@ export function FlowMoveLevelsCard({ levels = [] }: FlowMoveLevelsCardProps) {
           <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
         </Link>
       </div>
-      <div className="grid grid-cols-4 gap-3.5 relative">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5 relative">
         <div
           aria-hidden
-          className="absolute top-7 z-0 pointer-events-none"
+          className="absolute top-7 z-0 pointer-events-none hidden sm:block"
           style={{
             left: '12%', right: '12%', height: 2,
             backgroundImage: 'repeating-linear-gradient(90deg, var(--color-outline-variant) 0 6px, transparent 6px 12px)',
