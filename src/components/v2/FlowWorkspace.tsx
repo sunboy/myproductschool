@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef, useMemo, isValidElement } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
@@ -49,6 +49,9 @@ import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import type { ChallengeDiscussion } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { buildChallengeBrief, type ChallengeBriefSection } from '@/lib/challenges/presentation'
+import { codingMarkdownComponents } from '@/components/challenge/markdownComponents'
+import { SolutionsPane } from '@/components/solutions/SolutionsPane'
+import type { SolutionTabResponse } from '@/lib/solutions/schema'
 
 const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
@@ -221,129 +224,8 @@ function buildContextFieldPrompt(challengeType: string | undefined, fieldLabel: 
   return `Focus on the "${fieldLabel}" section of my Context Pack and compare it to the current canvas. Tell me what it implies for the ${copy.artifact}; if a small canvas update is clearly missing, make it.`
 }
 
-// Extract plain text from React children (for the copy button on code blocks)
-function extractNodeText(node: React.ReactNode): string {
-  if (node == null || typeof node === 'boolean') return ''
-  if (typeof node === 'string' || typeof node === 'number') return String(node)
-  if (Array.isArray(node)) return node.map(extractNodeText).join('')
-  if (isValidElement(node)) {
-    return extractNodeText((node.props as { children?: React.ReactNode }).children)
-  }
-  return ''
-}
-
-// Fenced code block with a hover copy button (LeetCode-style example blocks)
-function CopyablePre({ children, ...props }: React.HTMLAttributes<HTMLPreElement>) {
-  const [copied, setCopied] = useState(false)
-  const handleCopy = () => {
-    const text = extractNodeText(children).replace(/\n$/, '')
-    if (!text) return
-    navigator.clipboard?.writeText(text).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1600)
-    }).catch(() => {})
-  }
-  return (
-    <div style={{ position: 'relative', margin: '0 0 14px' }}>
-      <pre {...props} style={{
-        fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
-        fontSize: 12.5,
-        lineHeight: 1.55,
-        background: 'var(--color-surface-container-high)',
-        color: 'var(--color-on-surface)',
-        padding: '12px 40px 12px 14px',
-        borderRadius: 10,
-        border: '1px solid var(--color-outline-variant)',
-        overflow: 'auto',
-        margin: 0,
-        whiteSpace: 'pre',
-      }}>
-        {children}
-      </pre>
-      <button
-        type="button"
-        onClick={handleCopy}
-        aria-label={copied ? 'Copied' : 'Copy code'}
-        title={copied ? 'Copied' : 'Copy'}
-        style={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 26,
-          height: 26,
-          borderRadius: 7,
-          border: '1px solid var(--color-outline-variant)',
-          background: 'var(--color-surface-container-low)',
-          color: copied ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
-          cursor: 'pointer',
-          padding: 0,
-        }}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: 15 }}>
-          {copied ? 'check' : 'content_copy'}
-        </span>
-      </button>
-    </div>
-  )
-}
-
-const codingMarkdownComponents = {
-  h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h3 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: 'var(--color-on-surface)', margin: '18px 0 8px', lineHeight: 1.25 }} />
-  ),
-  h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h4 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, color: 'var(--color-on-surface)', margin: '16px 0 6px', lineHeight: 1.3 }} />
-  ),
-  h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h5 {...props} style={{ fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 700, color: 'var(--color-on-surface)', margin: '14px 0 6px', lineHeight: 1.3 }} />
-  ),
-  p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-    <p {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, fontWeight: 500, color: 'var(--color-on-surface)', margin: '0 0 12px' }} />
-  ),
-  ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, fontWeight: 500, color: 'var(--color-on-surface)', margin: '0 0 12px', paddingLeft: 22 }} />
-  ),
-  ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol {...props} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, fontWeight: 500, color: 'var(--color-on-surface)', margin: '0 0 12px', paddingLeft: 22 }} />
-  ),
-  li: (props: React.HTMLAttributes<HTMLLIElement>) => (
-    <li {...props} style={{ marginBottom: 4 }} />
-  ),
-  strong: (props: React.HTMLAttributes<HTMLElement>) => (
-    <strong {...props} style={{ fontWeight: 700, color: 'var(--color-on-surface)' }} />
-  ),
-  em: (props: React.HTMLAttributes<HTMLElement>) => (
-    <em {...props} style={{ fontStyle: 'italic' }} />
-  ),
-  code: ({ inline, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) => (
-    inline === false ? (
-      <code {...props} style={{ fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)', fontSize: 13, color: 'var(--color-on-surface)' }} />
-    ) : (
-      <code {...props} style={{
-        fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
-        fontSize: 12.5,
-        background: 'var(--color-surface-container-high)',
-        color: 'var(--color-on-surface)',
-        padding: '1px 6px',
-        borderRadius: 4,
-        border: '1px solid var(--color-outline-variant)',
-      }} />
-    )
-  ),
-  pre: (props: React.HTMLAttributes<HTMLPreElement>) => <CopyablePre {...props} />,
-  blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
-    <blockquote {...props} style={{
-      borderLeft: '3px solid var(--color-outline-variant)',
-      padding: '4px 0 4px 12px',
-      margin: '0 0 12px',
-      color: 'var(--color-on-surface-variant)',
-      fontStyle: 'italic',
-    }} />
-  ),
-}
+// extractNodeText / CopyablePre / codingMarkdownComponents moved to
+// '@/components/challenge/markdownComponents' so the Solutions tab shares them.
 
 // Single-document problem statement for technical challenge types (algorithm, sql,
 // system_design, data_modeling). Renders the markdown body as one continuous document,
@@ -807,7 +689,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }, [challengeId, leftWidth, leftCollapsed])
 
   // Left description tab state
-  const [leftTab, setLeftTab] = useState<'Description' | 'Discussions' | 'Submissions'>('Description')
+  const [leftTab, setLeftTab] = useState<'Description' | 'Discussions' | 'Submissions' | 'Solutions'>('Description')
 
   // Helper: true for interview challenge types that use canvas/coding instead of MCQ
   // Canvas and coding challenges are only supported in API mode; adapter mode always returns false
@@ -834,6 +716,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [discussions, setDiscussions] = useState<ChallengeDiscussion[]>([])
   const [discussionsLoading, setDiscussionsLoading] = useState(false)
   const [discussionsLoaded, setDiscussionsLoaded] = useState(false)
+
+  // Solutions tab state (lazy-loaded on first tab open, like discussions)
+  const [solution, setSolution] = useState<SolutionTabResponse | null>(null)
+  const [solutionLoading, setSolutionLoading] = useState(false)
+  const [solutionLoaded, setSolutionLoaded] = useState(false)
+  const [activeApproachId, setActiveApproachId] = useState<string | null>(null)
+  const solutionGenerateTriggeredRef = useRef(false)
+  const solutionStateRef = useRef<SolutionTabResponse | null>(null)
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   // True once the Supabase session can no longer be refreshed (refresh token
@@ -2432,6 +2322,82 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [leftTab, discussionsLoaded, fetchDiscussions])
 
+  // ── Solutions fetch / lazy generation ──────────────────────────
+
+  const fetchSolution = useCallback(async () => {
+    if (!challengeId) return
+    setSolutionLoading(true)
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/solution`)
+      if (res.ok) {
+        const data: SolutionTabResponse = await res.json()
+        setSolution(data)
+        setSolutionLoaded(true)
+      }
+    } catch { /* transient; user can re-open the tab */ }
+    finally {
+      setSolutionLoading(false)
+    }
+  }, [challengeId])
+
+  const triggerSolutionGeneration = useCallback(async () => {
+    if (!challengeId) return
+    setSolution({ locked: false, status: 'generating' })
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/solution/generate`, { method: 'POST' })
+      const data = await res.json().catch(() => null)
+      if (res.ok && data) {
+        setSolution(data as SolutionTabResponse)
+      } else {
+        setSolution({ locked: false, status: 'failed' })
+      }
+    } catch {
+      setSolution({ locked: false, status: 'failed' })
+    }
+  }, [challengeId])
+
+  // Lazy-load on first Solutions tab open
+  useEffect(() => {
+    if (leftTab === 'Solutions' && !solutionLoaded && !solutionLoading && challengeId) {
+      void fetchSolution()
+    }
+  }, [leftTab, solutionLoaded, solutionLoading, fetchSolution, challengeId])
+
+  // No stored solution yet -> trigger generation once; poll while generating
+  useEffect(() => {
+    if (leftTab !== 'Solutions' || !solution || solution.locked) return
+    if (solution.status === 'none' && !solutionGenerateTriggeredRef.current) {
+      solutionGenerateTriggeredRef.current = true
+      void triggerSolutionGeneration()
+      return
+    }
+    if (solution.status === 'generating') {
+      const interval = window.setInterval(() => { void fetchSolution() }, 4000)
+      return () => window.clearInterval(interval)
+    }
+  }, [leftTab, solution, triggerSolutionGeneration, fetchSolution])
+
+  useEffect(() => { solutionStateRef.current = solution }, [solution])
+
+  // Hatch awareness: which solution approach the user is reading (null when the
+  // tab is closed, locked, or still generating). Sent with every chat turn.
+  const activeSolutionApproach = useMemo(() => {
+    if (!solution || solution.locked || solution.status !== 'ready') return null
+    const approaches = solution.content.approaches
+    const approach = approaches.find((a) => a.id === activeApproachId) ?? approaches[0]
+    return approach ? { title: approach.title, tagline: approach.tagline } : null
+  }, [solution, activeApproachId])
+  const solutionsOpen = leftTab === 'Solutions' && activeSolutionApproach !== null
+
+  // A completed submission unlocks the tab for free users without a reload.
+  useEffect(() => {
+    if (sessionHistory.length === 0) return
+    if (solutionStateRef.current?.locked) {
+      setSolution(null)
+      setSolutionLoaded(false)
+    }
+  }, [sessionHistory.length])
+
   useEffect(() => {
     let cancelled = false
     fetch('/api/profile')
@@ -2647,7 +2613,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     win:      'Finish',
   }
 
-  const tabs = ['Description', 'Discussions', 'Submissions'] as const
+  const tabs = ['Description', 'Discussions', 'Submissions', 'Solutions'] as const
 
   // Derived: active coding parts from detail (only meaningful for coding challenges)
   const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])
@@ -3435,13 +3401,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
-  const editorialPane = (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-      <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>lock</span>
+  const solutionsPane = !challengeId ? (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 20 }}>
+      <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>menu_book</span>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
-        Complete this challenge to unlock the editorial.
+        Solutions not available in preview mode.
       </p>
     </div>
+  ) : (
+    <SolutionsPane
+      solution={solution}
+      loading={solutionLoading}
+      challengeTitle={challengeTitle ?? null}
+      onRetry={() => { void triggerSolutionGeneration() }}
+      onGoToDescription={() => setLeftTab('Description')}
+      activeApproachId={activeApproachId}
+      onApproachChange={setActiveApproachId}
+    />
   )
 
   const expertPicks = discussions.filter(d => d.is_expert_pick)
@@ -3651,6 +3627,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {leftTab === 'Description' && descriptionPane}
       {leftTab === 'Discussions' && discussionsPane}
       {leftTab === 'Submissions' && submissionsPane}
+      {leftTab === 'Solutions' && solutionsPane}
     </section>
   )
 
@@ -4288,6 +4265,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     lastRunResult={lastRunResult}
                     challengeTitle={challengeTitle ?? undefined}
                     problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
+                    solutionsOpen={solutionsOpen}
+                    activeSolutionApproach={activeSolutionApproach}
                   />
                 )}
               </div>
@@ -4437,6 +4416,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 canvasDrawFailure={canvasDrawFailure}
                 guidancePhase={guidance.phase}
                 guidanceLabels={guidance.labels}
+                solutionsOpen={solutionsOpen}
+                activeSolutionApproach={activeSolutionApproach}
               />
             </div>
           )}
@@ -4744,6 +4725,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     activePartPrompt={activePart?.coding_subtask_prompt ?? null}
                     activePartResponseType={activePart?.response_type}
                     activePartWeightPct={activePart ? Math.round(activePart.grading_weight_within_step * 100) : undefined}
+                    solutionsOpen={solutionsOpen}
+                    activeSolutionApproach={activeSolutionApproach}
                   />
                 )
               })()}
