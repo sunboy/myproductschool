@@ -78,7 +78,7 @@ export function ProductIQCard({ score, delta, weeklyActivity, totalAttempts, dim
       </div>
 
       {/* Sub-metric progress bars */}
-      <div className="grid grid-cols-3 gap-6 pt-6 border-t border-outline-variant/20">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-outline-variant/20">
         {subMetrics.map(metric => (
           <div key={metric.label}>
             <p className="text-xs font-bold uppercase tracking-wider text-outline mb-1">{metric.label}</p>

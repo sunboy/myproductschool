@@ -861,7 +861,7 @@ export default function ProgressPage() {
             </div>
 
             {/* Inline stat strip */}
-            <div className="mb-3 grid grid-cols-3 gap-2">
+            <div className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
               <HeroStat k="Readiness score" v={overallPct > 0 ? `${overallPct}%` : 'Start a rep'} />
               <HeroStat k="Challenges mastered" v={total > 0 ? `${mastered} of ${total}` : 'None yet'} />
               <HeroStat

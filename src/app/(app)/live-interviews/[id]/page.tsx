@@ -2298,7 +2298,7 @@ export default function SessionPage({
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 36 }}
         style={{
-          width: 340,
+          width: 'min(340px, calc(100vw - 24px))',
           background: 'rgba(13,20,16,0.97)',
           backdropFilter: 'blur(16px)',
           borderLeft: '1px solid rgba(255,255,255,0.07)',

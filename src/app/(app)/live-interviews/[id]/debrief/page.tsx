@@ -239,7 +239,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
               </span>
             </div>
             <p className="text-sm text-on-surface-variant mb-4">{artifactGrading.artifact_verdict}</p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {(
                 [
                   { key: 'completeness' as const, label: 'Completeness', icon: 'checklist' },
