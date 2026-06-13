@@ -15,6 +15,7 @@ import { getAnalyticsAccess } from '@/lib/flags/analytics'
 import { checkUsageLimit } from '@/lib/usage/check-limit'
 import { warmGateway, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
+import { getSandbox } from '@/lib/sandbox'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
   // --- Idempotency: check for an active/provisioning session on this attempt ---
   const { data: existingSession } = await admin
     .from('claude_code_sessions')
-    .select('id, status, wss_url, expires_at, transcript_uri')
+    .select('id, status, wss_url, expires_at, transcript_uri, host_instance_id')
     .eq('attempt_id', attemptId)
     .maybeSingle()
 
@@ -187,17 +188,36 @@ export async function POST(req: NextRequest) {
     const isExpired = expiresAt ? new Date(expiresAt) <= new Date() : false
 
     if (!isExpired && status === 'active') {
-      // Already live — reconnect straight to the running container.
-      return NextResponse.json({
-        session_id: sid,
-        status: 'active',
-        wss_url: existingSession.wss_url,
-        expires_at: expiresAt,
-        sub_problems: subProblems,
-      })
-    }
-
-    if (!isExpired && status === 'provisioning') {
+      // Reconnect ONLY if the underlying revision still exists. A session can be
+      // `active` in the DB while its container was already reaped (idle TTL) or
+      // deleted — handing back that dead wss_url makes the client reconnect-loop
+      // forever ("Connecting to sandbox…"). Verify liveness first; if the revision
+      // is gone, fall through to re-provision (carrying the workspace forward).
+      const hostId = existingSession.host_instance_id as string | null
+      let revisionLive = false
+      if (hostId) {
+        try {
+          revisionLive = await getSandbox().awaitReady(hostId, 2500)
+        } catch {
+          revisionLive = false
+        }
+      }
+      if (revisionLive) {
+        return NextResponse.json({
+          session_id: sid,
+          status: 'active',
+          wss_url: existingSession.wss_url,
+          expires_at: expiresAt,
+          sub_problems: subProblems,
+        })
+      }
+      // Stale active row (container reaped) — retire it and re-provision below.
+      await admin
+        .from('claude_code_sessions')
+        .update({ status: 'terminated', ended_at: new Date().toISOString() })
+        .eq('id', sid)
+      resumeSnapshotUri = (existingSession.transcript_uri as string | null) ?? null
+    } else if (!isExpired && status === 'provisioning') {
       // A provision is already in flight (or was interrupted). Hand the client
       // the same row so it polls/continues rather than starting a second one.
       return NextResponse.json({
@@ -207,10 +227,10 @@ export async function POST(req: NextRequest) {
         expires_at: expiresAt,
         sub_problems: subProblems,
       })
+    } else {
+      // Reaped/expired/terminated prior session: carry its workspace forward.
+      resumeSnapshotUri = (existingSession.transcript_uri as string | null) ?? null
     }
-
-    // Reaped/expired/terminated prior session: carry its workspace forward.
-    resumeSnapshotUri = (existingSession.transcript_uri as string | null) ?? null
   }
 
   // --- Insert provisioning row (upsert on attempt_id) ---
