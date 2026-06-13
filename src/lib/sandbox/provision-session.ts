@@ -22,8 +22,13 @@ import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud
 import { recordUsageEvent } from '@/lib/usage/check-limit'
 
 // Readiness is the REVISION Ready condition (control-plane truth the container
-// is up). Kept under the calling route's maxDuration. Override via env.
-const READINESS_DEADLINE_MS = parseInt(process.env.CC_READINESS_DEADLINE_MS ?? '40000', 10)
+// is up). On Vercel Hobby a function is KILLED at 60s, so we do NOT block the
+// whole boot here — we PATCH the revision, persist its host/wss on the row, then
+// wait only a short optimistic window. If the revision isn't Ready yet the row
+// stays `provisioning` and the client's /state poll finishes the readiness check
+// (a quick per-poll probe), so the boot completes across several short requests
+// instead of one >60s call. Override via env.
+const READINESS_OPTIMISTIC_MS = parseInt(process.env.CC_READINESS_OPTIMISTIC_MS ?? '12000', 10)
 // SQL wake budget. cc-llm-db is stopped while idle (no native scale-to-zero), so
 // the first session of an idle period pays this. Kept short so the whole
 // provision route stays under 60s on Hobby.
@@ -45,7 +50,7 @@ export interface ProvisionInput {
 }
 
 export type ProvisionResult =
-  | { ok: true; wssUrl: string; expiresAt: string }
+  | { ok: true; wssUrl: string; expiresAt: string; pending?: boolean }
   | { ok: false; status: number; error: string }
 
 /**
@@ -143,16 +148,10 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     return { ok: false, status: 503, error: 'Sandbox provisioning failed. Please try again.' }
   }
 
-  // --- Readiness: wait for the REVISION to be Ready ---
-  const ready = await sandbox.awaitReady(provision.hostInstanceId, READINESS_DEADLINE_MS)
-  if (!ready) {
-    console.error('[cc/provision] revision not Ready within', READINESS_DEADLINE_MS, 'ms')
-    await markFailed(admin, sessionId)
-    sandbox.destroySession(provision.hostInstanceId).catch(() => {})
-    return { ok: false, status: 503, error: 'Sandbox timed out starting. Please try again.' }
-  }
-
-  // --- Flip the row to active with live connection details ---
+  // --- Persist the host/wss immediately (the revision EXISTS post-PATCH; it may
+  // still be booting). This lets the /state poll finish the readiness check even
+  // if THIS request is killed at the Hobby 60s ceiling. Row stays `provisioning`
+  // until a Ready probe flips it `active`. ---
   const expiresAt = provision.expiresAt
   await admin
     .from('claude_code_sessions')
@@ -162,19 +161,66 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
       host_provider: provision.provider,
       wss_url: provision.wssUrl,
       expires_at: expiresAt,
-      status: 'active',
-      started_at: new Date().toISOString(),
     })
     .eq('id', sessionId)
 
-  // --- Record usage event (analytics session counter) ---
+  // --- Optimistic short readiness wait. A warm path comes up inside this window;
+  // a cold one does not, and that's fine — the client's /state poll takes over. ---
+  const ready = await sandbox.awaitReady(provision.hostInstanceId, READINESS_OPTIMISTIC_MS)
+  if (ready) {
+    await markActiveAndMeter(admin, sessionId, input, provision.provider)
+    return { ok: true, wssUrl: provision.wssUrl, expiresAt }
+  }
+
+  // Not Ready yet — the revision is still booting. Leave the row `provisioning`
+  // (host/wss persisted) and let /state finish it. This is a SUCCESS for the
+  // request: the client keeps showing progress and polling.
+  return { ok: true, wssUrl: provision.wssUrl, expiresAt, pending: true }
+}
+
+/**
+ * Quick per-poll readiness probe used by the /state route. Flips a `provisioning`
+ * row (that already has a host_instance_id) to `active` the moment its revision
+ * reports Ready. Returns the wss_url when it goes active, else null.
+ */
+export async function probeAndActivate(
+  sessionId: string,
+  hostInstanceId: string,
+  userId: string,
+  challengeId: string,
+  provider: string,
+  wssUrl: string,
+): Promise<string | null> {
+  const admin = createAdminClient()
+  const sandbox = getSandbox()
+  // Single short probe (a few seconds) — the /state route is called repeatedly.
+  const ready = await sandbox.awaitReady(hostInstanceId, 3000)
+  if (!ready) return null
+  await markActiveAndMeter(admin, sessionId, { userId, challengeId } as ProvisionInput, provider)
+  return wssUrl
+}
+
+async function markActiveAndMeter(
+  admin: ReturnType<typeof createAdminClient>,
+  sessionId: string,
+  input: Pick<ProvisionInput, 'userId' | 'challengeId'>,
+  provider: string,
+): Promise<void> {
+  // Guard: only the first transition out of `provisioning` records usage, so a
+  // race between the provision wait and a /state probe can't double-count.
+  const { data: flipped } = await admin
+    .from('claude_code_sessions')
+    .update({ status: 'active', started_at: new Date().toISOString() })
+    .eq('id', sessionId)
+    .eq('status', 'provisioning')
+    .select('id')
+  if (!flipped || flipped.length === 0) return
+
   await recordUsageEvent(input.userId, 'claude_code_sessions', 1, {
     challenge_id: input.challengeId,
     session_id: sessionId,
-    provider: provision.provider,
+    provider,
   })
-
-  return { ok: true, wssUrl: provision.wssUrl, expiresAt }
 }
 
 async function markFailed(

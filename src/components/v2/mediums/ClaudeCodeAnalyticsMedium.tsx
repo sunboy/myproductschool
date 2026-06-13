@@ -201,10 +201,19 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
         // elapsed time so the copy reflects the slow steps even though /state
         // only reports coarse status (provisioning → active).
         const provisionStart = Date.now()
+        // Hard ceiling on the whole boot. A cold start is ~30-60s; well past that
+        // something is wrong, so stop polling and show the retry path rather than
+        // spin forever (e.g. if provisioning died before persisting a host).
+        const POLL_DEADLINE_MS = 150_000
         setProvisionPhase('waking')
         const poll = async () => {
           if (cancelled) return
           const elapsed = Date.now() - provisionStart
+          if (elapsed > POLL_DEADLINE_MS) {
+            if (pollTimer) clearInterval(pollTimer)
+            if (!cancelled) setSessionError('Sandbox took too long to start. Please try again.')
+            return
+          }
           // Time-based phase hints (the DB wake is the long pole, then boot).
           setProvisionPhase((cur) =>
             cur === null ? cur : elapsed > 22000 ? 'connecting' : elapsed > 8000 ? 'booting' : 'waking',
@@ -240,8 +249,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
               return
             }
             if (pres.ok) {
-              const pdata = await pres.json().catch(() => ({})) as { wss_url?: string | null }
-              if (pdata.wss_url && !cancelled) {
+              const pdata = await pres.json().catch(() => ({})) as { status?: string; wss_url?: string | null }
+              // Only connect when the revision is actually Ready (`active`). A
+              // `provisioning` response means the container is still booting —
+              // the /state poll will flip it and set wss_url then.
+              if (pdata.status === 'active' && pdata.wss_url && !cancelled) {
                 setWssUrl(pdata.wss_url)
                 setProvisionPhase(null)
                 if (pollTimer) clearInterval(pollTimer)

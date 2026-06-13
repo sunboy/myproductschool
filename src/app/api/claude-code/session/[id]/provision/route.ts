@@ -127,8 +127,10 @@ export async function POST(
     return NextResponse.json({ error: result.error }, { status: result.status })
   }
 
+  // `pending` = revision PATCHed + host/wss persisted, but not Ready inside the
+  // optimistic window. The client keeps polling /state, which finishes readiness.
   return NextResponse.json({
-    status: 'active',
+    status: result.pending ? 'provisioning' : 'active',
     wss_url: result.wssUrl,
     expires_at: result.expiresAt,
   })
