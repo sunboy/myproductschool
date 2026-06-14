@@ -25,6 +25,7 @@ const analyticsFeatures = [
 
 export function V3PricingSection() {
   const analyticsEnabled = isAnalyticsFeatureEnabled()
+  const analyticsMonthly = ANALYTICS_PLANS.analytics_monthly
   const analyticsAnnual = ANALYTICS_PLANS.analytics_annual
 
   return (
@@ -107,11 +108,11 @@ export function V3PricingSection() {
               </div>
               <h3>Analytics</h3>
               <div className="pricing-price">
-                <span>{formatPlanPrice(analyticsAnnual)}</span>
-                <small>/ year</small>
+                <span>{formatPlanPrice(analyticsMonthly)}</span>
+                <small>/ month</small>
               </div>
               <p className="pricing-card-copy">
-                Everything in Pro, plus live Claude Code analytics sessions on real datasets, around {formatMonthlyEquivalent(analyticsAnnual)} per month.
+                Everything in Pro, plus live Claude Code analytics sessions on real datasets. Or {formatPlanPrice(analyticsAnnual)} per year, around {formatMonthlyEquivalent(analyticsAnnual)} per month.
               </p>
               <ul>
                 {analyticsFeatures.map((feature) => (
@@ -121,7 +122,7 @@ export function V3PricingSection() {
                   </li>
                 ))}
               </ul>
-              <PricingCta className="btn btn-forest pricing-cta" next="/pricing?plan=analytics_annual&checkout=1">
+              <PricingCta className="btn btn-forest pricing-cta" next="/pricing?plan=analytics_monthly&checkout=1">
                 Get Analytics
               </PricingCta>
             </article>
