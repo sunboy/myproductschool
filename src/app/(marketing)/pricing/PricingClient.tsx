@@ -8,6 +8,7 @@ import {
   ANALYTICS_PLANS,
   annualSavingsPercent,
   formatPlanPrice,
+  isAnyPlanId,
   type BillingInterval,
   type BillingPlanId,
   type AnyPlanId,
@@ -184,8 +185,27 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('plan') === 'monthly') setBilling('monthly')
+    const planParam = params.get('plan')
+    if (isAnyPlanId(planParam)) {
+      // Pre-select the toggle that matches the deep-linked plan.
+      if (planParam === 'analytics_monthly' || planParam === 'analytics_annual') {
+        setAnalyticsBilling(planParam === 'analytics_monthly' ? 'monthly' : 'annual')
+      } else {
+        setBilling(planParam)
+      }
+      // Resume checkout automatically only when we arrived here straight from auth
+      // (checkout=1). A user who types /pricing?plan=monthly by hand just gets the
+      // toggle pre-selected. Strip the params first so refresh/back never re-fires.
+      if (params.get('checkout') === '1') {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('checkout')
+        url.searchParams.delete('plan')
+        window.history.replaceState(null, '', url.toString())
+        startCheckout(planParam)
+      }
+    }
     trackEvent(EVENT_PRICING_VIEWED)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -233,7 +253,7 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
       const data = await response.json().catch(() => ({}))
 
       if (response.status === 401) {
-        window.location.href = `/signup?next=${encodeURIComponent(`/pricing?plan=${plan}`)}`
+        window.location.href = `/signup?next=${encodeURIComponent(`/pricing?plan=${plan}&checkout=1`)}`
         return
       }
 
