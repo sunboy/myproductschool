@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Check, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 import { PricingCta } from './PricingCta'
+import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
+import { ANALYTICS_PLANS, formatPlanPrice, formatMonthlyEquivalent } from '@/lib/billing/plans'
 
 const monthlyFeatures = [
   'Live interviews across product, system design, SQL, and coding',
@@ -14,18 +16,35 @@ const annualFeatures = [
   'Lower monthly cost, same full access',
 ]
 
+const analyticsFeatures = [
+  'Everything in Pro',
+  'Live Claude Code sessions on real BigQuery data',
+  'Hatch coaching inside the terminal',
+  'Reusable skills and shareable analyst reports',
+]
+
 export function V3PricingSection() {
+  const analyticsEnabled = isAnalyticsFeatureEnabled()
+  const analyticsAnnual = ANALYTICS_PLANS.analytics_annual
+
   return (
     <section className="pricing-section" id="pricing" aria-labelledby="pricing-heading">
       <div className="shell pricing-shell">
         <div className="pricing-copy">
-          <h2 id="pricing-heading">One practice system. Two ways to commit.</h2>
+          <h2 id="pricing-heading">
+            {analyticsEnabled
+              ? 'One practice system. The plan that fits your sprint.'
+              : 'One practice system. Two ways to commit.'}
+          </h2>
           <p>
             AI coaching, real interview practice, and scoring in one place.
           </p>
         </div>
 
-        <div className="pricing-grid" aria-label="HackProduct Pro pricing">
+        <div
+          className={analyticsEnabled ? 'pricing-grid pricing-grid-three' : 'pricing-grid'}
+          aria-label="HackProduct pricing"
+        >
           <article className="pricing-card">
             <div className="pricing-card-top">
               <span className="pricing-badge">Flexible monthly practice</span>
@@ -47,7 +66,7 @@ export function V3PricingSection() {
                 </li>
               ))}
             </ul>
-            <PricingCta className="btn btn-forest pricing-cta" next="/pricing?plan=monthly">
+            <PricingCta className="btn btn-forest pricing-cta" next="/pricing?plan=monthly&checkout=1">
               Start training with Hatch
             </PricingCta>
           </article>
@@ -73,10 +92,40 @@ export function V3PricingSection() {
                 </li>
               ))}
             </ul>
-            <PricingCta className="btn btn-amber pricing-cta" next="/pricing?plan=annual">
+            <PricingCta className="btn btn-amber pricing-cta" next="/pricing?plan=annual&checkout=1">
               Start training with Hatch
             </PricingCta>
           </article>
+
+          {/* Claude Code Analytics — special tier. Only rendered when the feature
+              flag is on; never visible while the feature ships dark. */}
+          {analyticsEnabled && (
+            <article className="pricing-card">
+              <div className="pricing-card-top">
+                <span className="pricing-badge">Includes Pro</span>
+                <Sparkles aria-hidden="true" strokeWidth={2} />
+              </div>
+              <h3>Analytics</h3>
+              <div className="pricing-price">
+                <span>{formatPlanPrice(analyticsAnnual)}</span>
+                <small>/ year</small>
+              </div>
+              <p className="pricing-card-copy">
+                Everything in Pro, plus live Claude Code analytics sessions on real datasets, around {formatMonthlyEquivalent(analyticsAnnual)} per month.
+              </p>
+              <ul>
+                {analyticsFeatures.map((feature) => (
+                  <li key={feature}>
+                    <Check aria-hidden="true" strokeWidth={2.2} />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <PricingCta className="btn btn-forest pricing-cta" next="/pricing?plan=analytics_annual&checkout=1">
+                Get Analytics
+              </PricingCta>
+            </article>
+          )}
         </div>
 
         <div className="pricing-note">

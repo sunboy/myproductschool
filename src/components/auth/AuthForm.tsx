@@ -307,16 +307,21 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
       if (!requireTurnstileToken()) return
 
       try {
+        const dest = resolvedRedirectTo('/dashboard')
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
           ...validation.data,
           turnstileToken,
           website,
-          redirectTo: `${siteOrigin()}/dashboard`,
+          // Route the email-confirmation link through /auth/callback so it commits
+          // the session AND forwards the user to their post-signup destination
+          // (e.g. a /pricing plan deep-link that resumes checkout), not just /dashboard.
+          redirectTo: `${siteOrigin()}/auth/callback?next=${encodeURIComponent(dest)}`,
         })
         if (data.hasSession) {
           play('success')
-          router.push('/dashboard')
-          router.refresh()
+          // Hard nav (like login) so the session cookie is committed before the proxy
+          // evaluates the destination, and so a plan deep-link resumes checkout.
+          window.location.href = dest
         } else {
           resetTurnstile()
           play('success')
