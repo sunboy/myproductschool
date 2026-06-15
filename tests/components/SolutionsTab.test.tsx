@@ -5,10 +5,47 @@ import { ArchitectureDiagram } from '../../src/components/solutions/diagrams/Arc
 import { ComparisonBarsDiagram } from '../../src/components/solutions/diagrams/ComparisonBarsDiagram'
 import { ComplexityCurvesDiagram } from '../../src/components/solutions/diagrams/ComplexityCurvesDiagram'
 import { SchemaTablesDiagram } from '../../src/components/solutions/diagrams/SchemaTablesDiagram'
-import { SolutionContent } from '../../src/components/solutions/SolutionContent'
+import { SolutionContent, stripDuplicateCodeFence } from '../../src/components/solutions/SolutionContent'
 import { SolutionsPane } from '../../src/components/solutions/SolutionsPane'
+import { codingMarkdownComponents } from '../../src/components/challenge/markdownComponents'
 import { MOCK_SOLUTION_CONTENT } from '../../src/lib/solutions/mock'
 import type { SolutionContentV1 } from '../../src/lib/solutions/schema'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const MdCode = codingMarkdownComponents.code as any
+
+describe('markdown code rendering (react-markdown v10)', () => {
+  it('renders fenced block code plain (no inline chip border), inline code chipped', () => {
+    const blockHtml = renderToStaticMarkup(<MdCode className="language-python">{'def f():\n    return 1'}</MdCode>)
+    expect(blockHtml).toContain('background:transparent')
+    expect(blockHtml).not.toContain('1px solid var(--color-outline-variant)')
+
+    const multilineNoClass = renderToStaticMarkup(<MdCode>{'line1\nline2'}</MdCode>)
+    expect(multilineNoClass).toContain('background:transparent')
+
+    const inlineHtml = renderToStaticMarkup(<MdCode>{'nums'}</MdCode>)
+    expect(inlineHtml).toContain('1px solid var(--color-outline-variant)')
+  })
+})
+
+describe('stripDuplicateCodeFence', () => {
+  const code = 'def solution(n):\n    return n'
+  it('removes a fenced block whose content equals approach.code.source', () => {
+    const body = '## Idea\nUse a set.\n\n```python\ndef solution(n):\n    return n\n```\n\n## Why\nFast.'
+    const out = stripDuplicateCodeFence(body, code)
+    expect(out).not.toContain('def solution(n):')
+    expect(out).toContain('## Idea')
+    expect(out).toContain('## Why')
+  })
+  it('keeps fenced blocks that differ from the code field', () => {
+    const body = 'context\n\n```python\nprint("different snippet")\n```'
+    expect(stripDuplicateCodeFence(body, code)).toContain('different snippet')
+  })
+  it('is a no-op when there is no code field', () => {
+    const body = '```python\ndef solution(n):\n    return n\n```'
+    expect(stripDuplicateCodeFence(body, undefined)).toBe(body)
+  })
+})
 
 describe('solution diagrams', () => {
   it('FlowStepsDiagram renders every step with its number, label, and detail', () => {

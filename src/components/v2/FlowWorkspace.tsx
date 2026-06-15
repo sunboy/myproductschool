@@ -757,6 +757,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Session history for Submissions tab
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
   const [selectedHistoryIdx, setSelectedHistoryIdx] = useState<number | null>(null)
+  const [submissionsLoaded, setSubmissionsLoaded] = useState(false)
+  const [submissionsLoading, setSubmissionsLoading] = useState(false)
+  const [submissionsCount, setSubmissionsCount] = useState(0)
 
   // Load the persisted feedback payload when a history record is selected.
   useEffect(() => {
@@ -807,6 +810,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // just made.
   const loadSubmissionHistory = useCallback(async () => {
     if (!isApiMode || !challengeId) return
+    setSubmissionsLoading(true)
     let rows: Array<{
       id: string
       challenge_id: string
@@ -826,10 +830,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       } | null
     }>
     try {
-      const res = await fetch(`/api/attempts?limit=20&challenge_id=${encodeURIComponent(challengeId)}`)
-      if (!res.ok) return // preserve existing history on 401/5xx
+      const res = await fetch(`/api/attempts?limit=20&summary=1&challenge_id=${encodeURIComponent(challengeId)}`)
+      if (!res.ok) { setSubmissionsLoading(false); return } // preserve existing history on 401/5xx
       rows = await res.json()
     } catch {
+      setSubmissionsLoading(false)
       return // preserve existing history on network failure
     }
     const past = rows
@@ -872,11 +877,38 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }
       })
     setSessionHistory(past)
+    setSubmissionsLoaded(true)
+    setSubmissionsLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApiMode, challengeId, challengeSlug])
 
-  // Load history on mount.
-  useEffect(() => { void loadSubmissionHistory() }, [loadSubmissionHistory])
+  // Lazy-load submission history on first Submissions-tab open, so it stays off
+  // the workspace mount critical path (mirrors Discussions/Solutions). Post-submit
+  // reconciliation still calls loadSubmissionHistory directly.
+  useEffect(() => {
+    if (leftTab === 'Submissions' && !submissionsLoaded && !submissionsLoading) {
+      void loadSubmissionHistory()
+    }
+  }, [leftTab, submissionsLoaded, submissionsLoading, loadSubmissionHistory])
+
+  // Cheap count for the Submissions tab pill — a head-only count query, no
+  // feedback_json payload — so the pill can show the prior-attempt count on
+  // mount without eagerly loading the full (heavy) history.
+  useEffect(() => {
+    if (!isApiMode || !challengeId) return
+    let cancelled = false
+    fetch(`/api/attempts?challenge_id=${encodeURIComponent(challengeId)}&count=1`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { count?: number } | null) => {
+        if (!cancelled && typeof d?.count === 'number') setSubmissionsCount(d.count)
+      })
+      .catch(() => { /* pill just stays hidden on failure */ })
+    return () => { cancelled = true }
+  }, [isApiMode, challengeId])
+
+  // Tab pill count: the loaded history is authoritative once present; before
+  // that (and before the tab is opened) fall back to the cheap mount count.
+  const submissionBadgeCount = Math.max(sessionHistory.length, submissionsCount)
 
   // Optimistically prepend a just-completed submission to the history list,
   // deduped by attemptId (a re-submit reuses the same attempt row). Used by the
@@ -3507,7 +3539,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const gradeStyle = (label: string) =>
     GRADE_STYLE[label] ?? GRADE_STYLE['default']
 
-  const submissionsPane = sessionHistory.length === 0 ? (
+  const submissionsPane = (submissionsLoading && sessionHistory.length === 0) ? (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {[1, 2, 3].map(i => (
+        <div key={i} className="animate-pulse" style={{ height: 84, borderRadius: 12, background: 'var(--color-surface-container-highest)', border: '1px solid var(--color-outline-variant)' }} />
+      ))}
+    </div>
+  ) : sessionHistory.length === 0 ? (
     <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
       <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>history</span>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
@@ -3691,7 +3729,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   {discussions.length}
                 </span>
               )}
-              {t === 'Submissions' && sessionHistory.length > 0 && (
+              {t === 'Submissions' && submissionBadgeCount > 0 && (
                 <span style={{
                   minWidth: 18,
                   height: 18,
@@ -3705,7 +3743,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
                   color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
                 }}>
-                  {sessionHistory.length}
+                  {submissionBadgeCount}
                 </span>
               )}
             </button>
@@ -3986,7 +4024,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             >
               <span>{t}</span>
               {t === 'Discussions' && discussionsLoaded && mobileTabBadge(discussions.length, active)}
-              {t === 'Submissions' && sessionHistory.length > 0 && mobileTabBadge(sessionHistory.length, active)}
+              {t === 'Submissions' && submissionBadgeCount > 0 && mobileTabBadge(submissionBadgeCount, active)}
             </button>
           )
         })}

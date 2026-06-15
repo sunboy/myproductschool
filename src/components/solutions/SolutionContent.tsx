@@ -16,6 +16,21 @@ interface Props {
   onApproachChange: (id: string) => void
 }
 
+// Coding approaches often weave the full solution into body_md as a fenced
+// block AND carry it again in approach.code. Rendering both shows the code
+// twice. Strip a fenced block from body_md only when its content exactly
+// matches approach.code.source (trimmed), so distinct illustrative snippets
+// and approaches whose code lives only in the code field are untouched. The
+// dedicated approach.code block below remains the single canonical display.
+export function stripDuplicateCodeFence(bodyMd: string, codeSource?: string): string {
+  if (!codeSource) return bodyMd
+  const target = codeSource.trim()
+  return bodyMd
+    .replace(/```[^\n]*\n([\s\S]*?)```/g, (block, inner: string) => (inner.trim() === target ? '' : block))
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 function SolutionMd({ children }: { children: string }) {
   return (
     <ReactMarkdown
@@ -227,7 +242,7 @@ export function SolutionContent({ content, size, activeApproachId, onApproachCha
         </p>
         <ComplexityChips approach={active} />
         {active.diagram && <SolutionDiagram spec={active.diagram} />}
-        <SolutionMd>{active.body_md}</SolutionMd>
+        <SolutionMd>{stripDuplicateCodeFence(active.body_md, active.code?.source)}</SolutionMd>
         {active.code && (
           <div style={{ margin: '14px 0' }}>
             <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 6 }}>

@@ -12,8 +12,26 @@ export const GET = withRoute(async (req: NextRequest) => {
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '5'), 20)
   const includePatterns = searchParams.get('include_patterns') === 'true'
   const challengeId = searchParams.get('challenge_id')
+  // Workspace Submissions tab uses only challenges.challenge_type + feedback_json
+  // (canvas/coding detail loads separately via /api/attempts/[id]/grade), so it
+  // passes summary=1 to skip the interview_grades enrichment query.
+  const summary = searchParams.get('summary') === '1'
 
   const admin = createAdminClient()
+
+  // count=1: head-only count of completed attempts (no payload), used by the
+  // Submissions tab pill so it can show a number without loading full history.
+  if (searchParams.get('count') === '1') {
+    let countQuery = admin
+      .from('challenge_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
+    if (challengeId) countQuery = countQuery.eq('challenge_id', challengeId)
+    const { count } = await countQuery
+    return NextResponse.json({ count: count ?? 0 })
+  }
+
   let query = admin
     .from('challenge_attempts')
     .select('id, challenge_id, grade_label, total_score, max_score, completed_at, feedback_json, canvas_png_url, challenges(title, challenge_type, display_number)')
@@ -50,7 +68,7 @@ export const GET = withRoute(async (req: NextRequest) => {
     includePatterns && rows.length > 0
       ? admin.from('user_failure_patterns').select('attempt_id, pattern_name, created_at').eq('user_id', user.id).in('attempt_id', attemptIds).order('created_at', { ascending: false }).then(r => r.data ?? [])
       : Promise.resolve([]),
-    rows.length > 0
+    rows.length > 0 && !summary
       ? admin.from('interview_grades').select('attempt_id, challenge_type, overall_score, graded_at').in('attempt_id', attemptIds).order('graded_at', { ascending: false }).then(r => r.data ?? [])
       : Promise.resolve([]),
   ])
