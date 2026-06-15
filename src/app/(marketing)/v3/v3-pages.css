@@ -206,59 +206,10 @@
   gap: 12px;
 }
 
-/* ===== PRICING BILLING TOGGLE (scoped to the pricing page) ===== */
-.v3 .pricing-toggle {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  margin: 24px 0 0;
-  padding: 6px;
-  border: 1px solid rgba(213,202,177,0.82);
-  background: rgba(244,238,226,0.7);
-}
-.v3 .pricing-toggle-btn {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--ink-3);
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
-}
-.v3 .pricing-toggle-btn:hover {
-  background: rgba(255,253,247,0.6);
-}
-.v3 .pricing-toggle-btn[data-selected='true'] {
-  background: #fffdf7;
-  color: var(--ink-1);
-  box-shadow: 0 1px 10px -4px rgba(30,27,20,0.4);
-}
-.v3 .pricing-toggle-label {
-  font-size: 12px;
-  font-weight: 880;
-  text-transform: capitalize;
-  letter-spacing: 0.01em;
-}
-.v3 .pricing-toggle-price {
-  font-family: var(--v3-font-display);
-  font-size: 18px;
-  font-weight: 780;
-  line-height: 1;
-  color: inherit;
-}
-.v3 .pricing-toggle-save {
-  font-size: 11px;
-  font-weight: 820;
-  color: var(--forest-2);
-}
-.v3 .pricing-cta:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
+/* ===== PRICING BILLING TOGGLE =====
+   Moved to v3-landing.css (loaded by both /pricing and the landing page) so the
+   toggle cards render on both surfaces. The pricing-page-only mobile overrides
+   for .pricing-copy/.pricing-price/.pricing-card heads stay below. */
 
 /* ===== Mobile (the page primitives had no breakpoints before) ===== */
 @media (max-width: 640px) {
@@ -306,11 +257,6 @@
   }
 
   /* ===== Pricing page mobile (375px-class phones) ===== */
-  /* Billing toggle stacks on narrow screens. */
-  .v3 .pricing-toggle {
-    grid-template-columns: 1fr;
-    margin-top: 18px;
-  }
   /* Oversized display heading needs a smaller floor on a phone. */
   .v3 .pricing-copy h2 {
     font-size: clamp(30px, 9vw, 42px);
