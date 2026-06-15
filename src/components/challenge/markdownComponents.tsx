@@ -102,11 +102,21 @@ export const codingMarkdownComponents = {
   em: (props: React.HTMLAttributes<HTMLElement>) => (
     <em {...props} style={{ fontStyle: 'italic' }} />
   ),
-  code: ({ inline, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) => (
-    inline === false ? (
-      <code {...props} style={{ fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)', fontSize: 13, color: 'var(--color-on-surface)' }} />
+  // react-markdown v10 removed the `inline` prop, so detect a fenced block by
+  // its `language-*` class (or a multi-line body) instead. Block code renders
+  // plain — the surrounding CopyablePre <pre> already provides the box — while
+  // inline code keeps the chip. Using `inline === false` here (the old API)
+  // sent every block through the inline-chip branch, nesting a bordered chip
+  // inside the <pre> and breaking code-block formatting.
+  code: ({ className, children, ...props }: React.HTMLAttributes<HTMLElement> & { className?: string }) => {
+    const text = typeof children === 'string'
+      ? children
+      : Array.isArray(children) ? children.filter((c) => typeof c === 'string').join('') : ''
+    const isBlock = (typeof className === 'string' && className.includes('language-')) || text.includes('\n')
+    return isBlock ? (
+      <code {...props} className={className} style={{ fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)', fontSize: 12.5, background: 'transparent', color: 'inherit', padding: 0, border: 'none' }}>{children}</code>
     ) : (
-      <code {...props} style={{
+      <code {...props} className={className} style={{
         fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
         fontSize: 12.5,
         background: 'var(--color-surface-container-high)',
@@ -114,9 +124,9 @@ export const codingMarkdownComponents = {
         padding: '1px 6px',
         borderRadius: 4,
         border: '1px solid var(--color-outline-variant)',
-      }} />
+      }}>{children}</code>
     )
-  ),
+  },
   pre: (props: React.HTMLAttributes<HTMLPreElement>) => <CopyablePre {...props} />,
   blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
     <blockquote {...props} style={{

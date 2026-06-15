@@ -12,6 +12,10 @@ export const GET = withRoute(async (req: NextRequest) => {
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '5'), 20)
   const includePatterns = searchParams.get('include_patterns') === 'true'
   const challengeId = searchParams.get('challenge_id')
+  // Workspace Submissions tab uses only challenges.challenge_type + feedback_json
+  // (canvas/coding detail loads separately via /api/attempts/[id]/grade), so it
+  // passes summary=1 to skip the interview_grades enrichment query.
+  const summary = searchParams.get('summary') === '1'
 
   const admin = createAdminClient()
   let query = admin
@@ -50,7 +54,7 @@ export const GET = withRoute(async (req: NextRequest) => {
     includePatterns && rows.length > 0
       ? admin.from('user_failure_patterns').select('attempt_id, pattern_name, created_at').eq('user_id', user.id).in('attempt_id', attemptIds).order('created_at', { ascending: false }).then(r => r.data ?? [])
       : Promise.resolve([]),
-    rows.length > 0
+    rows.length > 0 && !summary
       ? admin.from('interview_grades').select('attempt_id, challenge_type, overall_score, graded_at').in('attempt_id', attemptIds).order('graded_at', { ascending: false }).then(r => r.data ?? [])
       : Promise.resolve([]),
   ])
