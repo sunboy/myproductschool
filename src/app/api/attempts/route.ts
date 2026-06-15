@@ -18,6 +18,20 @@ export const GET = withRoute(async (req: NextRequest) => {
   const summary = searchParams.get('summary') === '1'
 
   const admin = createAdminClient()
+
+  // count=1: head-only count of completed attempts (no payload), used by the
+  // Submissions tab pill so it can show a number without loading full history.
+  if (searchParams.get('count') === '1') {
+    let countQuery = admin
+      .from('challenge_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
+    if (challengeId) countQuery = countQuery.eq('challenge_id', challengeId)
+    const { count } = await countQuery
+    return NextResponse.json({ count: count ?? 0 })
+  }
+
   let query = admin
     .from('challenge_attempts')
     .select('id, challenge_id, grade_label, total_score, max_score, completed_at, feedback_json, canvas_png_url, challenges(title, challenge_type, display_number)')

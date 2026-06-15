@@ -759,6 +759,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [selectedHistoryIdx, setSelectedHistoryIdx] = useState<number | null>(null)
   const [submissionsLoaded, setSubmissionsLoaded] = useState(false)
   const [submissionsLoading, setSubmissionsLoading] = useState(false)
+  const [submissionsCount, setSubmissionsCount] = useState(0)
 
   // Load the persisted feedback payload when a history record is selected.
   useEffect(() => {
@@ -889,6 +890,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       void loadSubmissionHistory()
     }
   }, [leftTab, submissionsLoaded, submissionsLoading, loadSubmissionHistory])
+
+  // Cheap count for the Submissions tab pill — a head-only count query, no
+  // feedback_json payload — so the pill can show the prior-attempt count on
+  // mount without eagerly loading the full (heavy) history.
+  useEffect(() => {
+    if (!isApiMode || !challengeId) return
+    let cancelled = false
+    fetch(`/api/attempts?challenge_id=${encodeURIComponent(challengeId)}&count=1`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { count?: number } | null) => {
+        if (!cancelled && typeof d?.count === 'number') setSubmissionsCount(d.count)
+      })
+      .catch(() => { /* pill just stays hidden on failure */ })
+    return () => { cancelled = true }
+  }, [isApiMode, challengeId])
+
+  // Tab pill count: the loaded history is authoritative once present; before
+  // that (and before the tab is opened) fall back to the cheap mount count.
+  const submissionBadgeCount = Math.max(sessionHistory.length, submissionsCount)
 
   // Optimistically prepend a just-completed submission to the history list,
   // deduped by attemptId (a re-submit reuses the same attempt row). Used by the
@@ -3709,7 +3729,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   {discussions.length}
                 </span>
               )}
-              {t === 'Submissions' && sessionHistory.length > 0 && (
+              {t === 'Submissions' && submissionBadgeCount > 0 && (
                 <span style={{
                   minWidth: 18,
                   height: 18,
@@ -3723,7 +3743,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
                   color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
                 }}>
-                  {sessionHistory.length}
+                  {submissionBadgeCount}
                 </span>
               )}
             </button>
@@ -4004,7 +4024,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             >
               <span>{t}</span>
               {t === 'Discussions' && discussionsLoaded && mobileTabBadge(discussions.length, active)}
-              {t === 'Submissions' && sessionHistory.length > 0 && mobileTabBadge(sessionHistory.length, active)}
+              {t === 'Submissions' && submissionBadgeCount > 0 && mobileTabBadge(submissionBadgeCount, active)}
             </button>
           )
         })}
