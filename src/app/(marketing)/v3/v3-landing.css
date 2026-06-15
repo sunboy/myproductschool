@@ -2548,6 +2548,10 @@
 .v3 .pricing-grid-three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+/* Single Pro card (analytics tier flagged off) should not stretch half-width. */
+.v3 .pricing-grid-solo {
+  grid-template-columns: minmax(0, 460px);
+}
 .v3 .pricing-card {
   display: flex;
   min-width: 0;
@@ -2650,6 +2654,60 @@
   width: 100%;
   margin-top: auto;
 }
+.v3 .pricing-cta:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+/* ===== PRICING BILLING TOGGLE =====
+   Lives here (not v3-pages.css) so both /pricing and the landing page get it. */
+.v3 .pricing-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 24px 0 0;
+  padding: 6px;
+  border: 1px solid rgba(213,202,177,0.82);
+  background: rgba(244,238,226,0.7);
+}
+.v3 .pricing-toggle-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-3);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.v3 .pricing-toggle-btn:hover {
+  background: rgba(255,253,247,0.6);
+}
+.v3 .pricing-toggle-btn[data-selected='true'] {
+  background: #fffdf7;
+  color: var(--ink-1);
+  box-shadow: 0 1px 10px -4px rgba(30,27,20,0.4);
+}
+.v3 .pricing-toggle-label {
+  font-size: 12px;
+  font-weight: 880;
+  text-transform: capitalize;
+  letter-spacing: 0.01em;
+}
+.v3 .pricing-toggle-price {
+  font-family: var(--v3-font-display);
+  font-size: 18px;
+  font-weight: 780;
+  line-height: 1;
+  color: inherit;
+}
+.v3 .pricing-toggle-save {
+  font-size: 11px;
+  font-weight: 820;
+  color: var(--forest-2);
+}
 .v3 .pricing-note {
   display: flex;
   grid-column: 2;
@@ -2694,6 +2752,11 @@
   .v3 .pricing-grid,
   .v3 .pricing-grid-three {
     grid-template-columns: 1fr;
+  }
+  /* Billing toggle stacks on narrow screens. */
+  .v3 .pricing-toggle {
+    grid-template-columns: 1fr;
+    margin-top: 18px;
   }
   .v3 .pricing-card {
     min-height: auto;
