@@ -72,6 +72,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   let mentalModelsBreakdown: MentalModelStep[] | null = null
   let weakestCompetency: string | null = null
   let nextChallenge: NextChallenge | null = null
+  let nextIsCompetencyTargeted = false
   let canvasSnapshot: Record<string, unknown> | null = null
   type CanvasAnnotation = { target_label: string; text: string; severity?: string | null }
   let canvasAnnotations: CanvasAnnotation[] | null = null
@@ -200,6 +201,25 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             slug: typeof recommendedChallenge.slug === 'string' ? recommendedChallenge.slug : null,
             title: String(recommendedChallenge.title),
           }
+          nextIsCompetencyTargeted = Boolean(weakestCompetency)
+        }
+
+        // Fallback: if the competency-targeted query found nothing, recommend any
+        // unpracticed published challenge (p_competency = null skips the filter) so the
+        // user always has a real next challenge to start.
+        if (!nextChallenge && weakestCompetency) {
+          const { data: fallbackData } = await adminClient
+            .rpc('next_user_challenge', { p_user_id: user.id, p_competency: null })
+            .maybeSingle()
+          if (fallbackData) {
+            const fb = fallbackData as Record<string, unknown>
+            nextChallenge = {
+              id: String(fb.id),
+              slug: typeof fb.slug === 'string' ? fb.slug : null,
+              title: String(fb.title),
+            }
+            nextIsCompetencyTargeted = false
+          }
         }
       }
     } catch {
@@ -264,9 +284,19 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     `/workspace/challenges/${id}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
     returnTo,
   )
-  const nextChallengeHref = nextChallenge
+  // Guaranteed next-step CTA: always render a button, regardless of trajectory.
+  const hasNext = !!nextChallenge
+  const nextHref = nextChallenge
     ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}`
-    : undefined
+    : '/challenges'
+  const nextLabel = hasNext ? 'Start next challenge' : 'Browse challenges'
+  const nextTitle = hasNext ? nextChallenge!.title : 'Pick your next rep'
+  const nextSubtitle = hasNext
+    ? (nextIsCompetencyTargeted ? 'Targets your weakest move this run' : 'Keep your streak going')
+    : 'You have cleared the queue. Choose what to sharpen next'
+  const nextIcon = hasNext ? 'rocket_launch' : 'grid_view'
+  // Only deep-link the Mental Models breakdown when a real challenge exists.
+  const nextChallengeHref = hasNext ? nextHref : undefined
   const shareHref = `/workspace/challenges/${id}/share${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`
 
   return (
@@ -482,30 +512,24 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </div>
           </div>
 
-          {/* Up next banner */}
-          {nextChallenge && nextChallengeHref && (
-            <div className="bg-primary/10 border border-primary/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex items-start gap-3 flex-1 min-w-0">
-                <span className="material-symbols-outlined text-primary flex-shrink-0 mt-0.5">rocket_launch</span>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-primary uppercase tracking-wider font-label">Up next</p>
-                  <p className="text-sm font-semibold text-on-surface truncate">{nextChallenge.title}</p>
-                  {weakestCompetency && (
-                    <p className="text-xs text-on-surface-variant font-label mt-0.5">
-                      Targets your weakest move this run
-                    </p>
-                  )}
-                </div>
+          {/* Up next banner — always rendered so every user has a next-step CTA */}
+          <div className="bg-primary/10 border border-primary/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <span className="material-symbols-outlined text-primary flex-shrink-0 mt-0.5">{nextIcon}</span>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-primary uppercase tracking-wider font-label">Up next</p>
+                <p className="text-sm font-semibold text-on-surface truncate">{nextTitle}</p>
+                <p className="text-xs text-on-surface-variant font-label mt-0.5">{nextSubtitle}</p>
               </div>
-              <Link
-                href={nextChallengeHref}
-                className="py-3 px-6 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 shadow-md shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm whitespace-nowrap"
-              >
-                Start next challenge
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </Link>
             </div>
-          )}
+            <Link
+              href={nextHref}
+              className="py-3 px-6 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 shadow-md shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm whitespace-nowrap"
+            >
+              {nextLabel}
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </Link>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
