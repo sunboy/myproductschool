@@ -93,7 +93,12 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
       const sql = await ensureSqlRunnable(SQL_WAKE_MS)
       if (!sql.ready) {
         console.error('[cc/provision] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
-        await markFailed(admin, sessionId)
+        await markFailed(
+          admin,
+          sessionId,
+          'sql_wake_timeout',
+          `cc-llm-db not RUNNABLE in time (state: ${sql.state ?? 'unknown'})`,
+        )
         return {
           ok: false,
           status: 503,
@@ -118,7 +123,12 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     // FAIL CLOSED when the gateway is configured — never hand a session the
     // shared uncapped key. Only the no-gateway (local/dev) path may fall back.
     if (isGatewayConfigured()) {
-      await markFailed(admin, sessionId)
+      await markFailed(
+        admin,
+        sessionId,
+        'gateway_mint_failed',
+        err instanceof Error ? err.message : String(err),
+      )
       return {
         ok: false,
         status: 503,
@@ -164,7 +174,12 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
         .destroySession(partialHostId)
         .catch((e) => console.error('[cc/provision] partial teardown failed:', e))
     }
-    await markFailed(admin, sessionId)
+    await markFailed(
+      admin,
+      sessionId,
+      'sandbox_create_failed',
+      err instanceof Error ? err.message : String(err),
+    )
     return { ok: false, status: 503, error: 'Sandbox provisioning failed. Please try again.' }
   }
 
@@ -246,9 +261,17 @@ async function markActiveAndMeter(
 async function markFailed(
   admin: ReturnType<typeof createAdminClient>,
   sessionId: string,
+  failureCode: string,
+  failureReason: string,
 ): Promise<void> {
   await admin
     .from('claude_code_sessions')
-    .update({ status: 'failed', ended_at: new Date().toISOString() })
+    .update({
+      status: 'failed',
+      ended_at: new Date().toISOString(),
+      failure_code: failureCode,
+      // Trim so a long upstream error can't bloat the row.
+      failure_reason: failureReason.slice(0, 500),
+    })
     .eq('id', sessionId)
 }

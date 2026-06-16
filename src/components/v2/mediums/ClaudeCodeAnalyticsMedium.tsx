@@ -31,6 +31,23 @@ const USE_DEV_STUB = process.env.NODE_ENV === 'development' && process.env.NEXT_
 
 const MOCK_WSS_URL = 'wss://echo.websocket.org/'
 
+// Map the durable failure_code (written by markFailed in provision-session) to a
+// user-facing message that names the failing step, so a recurring "Sandbox failed
+// to start" is diagnosable at a glance instead of opaque. Mirrors the per-step
+// error strings the provision route returns in its 503 body.
+function failureMessage(code: string | null | undefined): string {
+  switch (code) {
+    case 'sql_wake_timeout':
+      return 'Starting your environment took too long. Please try again.'
+    case 'gateway_mint_failed':
+      return 'Could not start a budgeted session. Please try again.'
+    case 'sandbox_create_failed':
+      return 'Sandbox provisioning failed. Please try again.'
+    default:
+      return 'Sandbox failed to start. Please try again.'
+  }
+}
+
 
 const IDLE_THRESHOLD_MS = 18000 // 18s
 
@@ -221,14 +238,20 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           try {
             const sres = await fetch(`/api/claude-code/session/${data.session_id}/state`)
             if (sres.ok) {
-              const sdata = await sres.json() as { status?: string; wss_url?: string | null }
+              const sdata = await sres.json() as {
+                status?: string
+                wss_url?: string | null
+                failure_code?: string | null
+              }
               if (sdata.status === 'active' && sdata.wss_url) {
                 if (!cancelled) { setWssUrl(sdata.wss_url); setProvisionPhase(null) }
                 if (pollTimer) clearInterval(pollTimer)
                 return
               }
               if (sdata.status === 'failed' || sdata.status === 'terminated') {
-                if (!cancelled) setSessionError('Sandbox failed to start. Please try again.')
+                // Show WHICH step failed (durably recorded on the row) instead of a
+                // generic message, so a recurring failure is diagnosable at a glance.
+                if (!cancelled) setSessionError(failureMessage(sdata.failure_code))
                 if (pollTimer) clearInterval(pollTimer)
                 return
               }
@@ -258,8 +281,17 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 setProvisionPhase(null)
                 if (pollTimer) clearInterval(pollTimer)
               }
+            } else if (pres.status === 503) {
+              // The provision route already carries the step-specific reason in its
+              // body. Surface it immediately rather than waiting for the poll's
+              // generic failed flip, so the user sees the real cause without delay.
+              const err = await pres.json().catch(() => ({})) as { error?: string }
+              if (!cancelled) {
+                setSessionError(err.error ?? failureMessage(null))
+                if (pollTimer) clearInterval(pollTimer)
+              }
             }
-            // Non-OK (503/timeout) is handled by the poll loop + its failed flip.
+            // Other non-OK is handled by the poll loop + its failed flip.
           })
           .catch(() => { /* the poll loop is the source of truth */ })
 

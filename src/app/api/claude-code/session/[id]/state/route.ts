@@ -43,7 +43,7 @@ export async function GET(
   const { data: session } = await admin
     .from('claude_code_sessions')
     .select(
-      'id, user_id, challenge_id, status, host_instance_id, wss_url, expires_at, last_snapshot_at, prompt_count, warehouse_query_count, total_input_tokens, total_output_tokens',
+      'id, user_id, challenge_id, status, host_instance_id, wss_url, expires_at, last_snapshot_at, prompt_count, warehouse_query_count, total_input_tokens, total_output_tokens, failure_code, failure_reason',
     )
     .eq('id', sessionId)
     .maybeSingle()
@@ -135,6 +135,10 @@ export async function GET(
   return NextResponse.json({
     status,
     wss_url: session.wss_url ?? null,
+    // Durable failure detail so the client can show WHICH step failed instead of
+    // a generic "Sandbox failed to start" (see 20260616120000 migration).
+    failure_code: (session.failure_code as string | null) ?? null,
+    failure_reason: (session.failure_reason as string | null) ?? null,
     expires_at: expiresAt,
     last_snapshot_at: session.last_snapshot_at ?? null,
     prompt_count: session.prompt_count ?? 0,
