@@ -280,7 +280,7 @@ export function FloatingHatch() {
     (!suppressPageBubble && bubble && !bubbleDismissed && messages.length === 0)
   )
   const isWorkspace = pathname.startsWith('/workspace')
-  const wrapperPositionClass = `right-4 md:right-5 ${isWorkspace ? 'bottom-24 md:bottom-20' : 'bottom-24 md:bottom-5'}`
+  const wrapperPositionClass = `right-4 md:right-5 ${isWorkspace ? 'bottom-[calc(6rem+env(safe-area-inset-bottom))] md:bottom-20' : 'bottom-[calc(6rem+env(safe-area-inset-bottom))] md:bottom-5'}`
   const currentAnimation = activeCue?.animation ?? (open ? 'listening' : 'idle-hover')
   const currentGlyphState = open ? 'listening' : activeCue?.state ?? glyphState
   const currentPageType = parseHatchPageContext(pathname).pageType

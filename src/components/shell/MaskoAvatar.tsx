@@ -1,6 +1,6 @@
 'use client'
 
-import type { CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import type { HatchAnimation } from '@/context/HatchContext'
 
 interface MaskoAvatarProps {
@@ -43,6 +43,16 @@ export const HATCH_MASKO_ANIMATION_ASSETS: Record<HatchAnimation, MaskoAsset> = 
   land: DEFAULT_MASKO_ASSET,
 }
 
+// Safari (desktop + iOS) plays alpha-transparent WebM but drops the alpha
+// channel, so the transparent regions render as an opaque box. There's no HEVC
+// alpha source to fall back to, so on Safari we render the transparent PNG
+// instead. Detection runs after mount to keep SSR markup (the video) stable and
+// avoid a hydration mismatch.
+function detectSafari(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent)
+}
+
 export function MaskoAvatar({
   size = 120,
   className = '',
@@ -50,6 +60,26 @@ export function MaskoAvatar({
   animation = 'wave',
 }: MaskoAvatarProps) {
   const asset = HATCH_MASKO_ANIMATION_ASSETS[animation] ?? DEFAULT_MASKO_ASSET
+  const [useStillImage, setUseStillImage] = useState(false)
+
+  useEffect(() => {
+    setUseStillImage(detectSafari())
+  }, [])
+
+  if (useStillImage) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={asset.png}
+        alt="Hatch mascot"
+        width={size}
+        height={size}
+        className={className}
+        style={{ objectFit: 'contain', ...style }}
+        data-hatch-masko-state={animation}
+      />
+    )
+  }
 
   return (
     <video

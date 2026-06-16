@@ -104,7 +104,7 @@ export function TopBar() {
 
           {/* XP */}
           <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-primary-fixed/70 rounded-full" suppressHydrationWarning>
-            <span className="text-xs font-bold text-primary font-label" suppressHydrationWarning>{xpTotal.toLocaleString()} XP</span>
+            <span className="text-xs font-bold text-primary font-label" suppressHydrationWarning>{xpTotal.toLocaleString('en-US')} XP</span>
           </div>
 
           {/* Avatar + dropdown */}

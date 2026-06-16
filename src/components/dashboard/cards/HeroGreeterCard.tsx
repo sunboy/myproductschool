@@ -193,7 +193,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, focusMove, f
             icon: 'local_fire_department',
           },
           {
-            value: `${xpTotal.toLocaleString()}`,
+            value: `${xpTotal.toLocaleString('en-US')}`,
             unit: 'total XP',
             sublabel: 'across all moves',
             icon: 'bolt',

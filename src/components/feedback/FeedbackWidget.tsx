@@ -130,7 +130,7 @@ export function FeedbackWidget() {
       <button
         type="button"
         onClick={openFeedback}
-        className="fixed right-5 bottom-24 z-[55] inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface px-3.5 py-2 text-xs font-bold text-on-surface shadow-lg transition-transform hover:-translate-y-0.5 hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:bottom-24"
+        className="fixed right-5 bottom-[calc(11rem+env(safe-area-inset-bottom))] z-[55] inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface px-3.5 py-2 text-xs font-bold text-on-surface shadow-lg transition-transform hover:-translate-y-0.5 hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:bottom-24"
         aria-label="Send feedback"
       >
         <span className="material-symbols-outlined text-[17px]" style={{ fontVariationSettings: "'FILL' 0" }}>

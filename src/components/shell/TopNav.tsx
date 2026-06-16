@@ -193,7 +193,7 @@ export function TopNav() {
               <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                 bolt
               </span>
-              {xp.toLocaleString()}
+              {xp.toLocaleString('en-US')}
             </div>
           </AppTooltip>
 
