@@ -18,6 +18,8 @@ interface DeepgramVoiceSessionProps {
   onError: (err: string) => void
   onAnalyserReady?: (analyser: AnalyserNode | null) => void
   disabled?: boolean
+  /** deviceId chosen in the mic pre-flight; passed as { ideal } constraint so the live session uses the same device. */
+  preferredDeviceId?: string
 }
 
 const TTS_SAMPLE_RATE = 16000
@@ -47,6 +49,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
       onError,
       onAnalyserReady,
       disabled,
+      preferredDeviceId,
     } = props
 
     const wsRef = useRef<WebSocket | null>(null)
@@ -183,14 +186,18 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
         micStarted = true
 
         try {
+          const audioConstraints: MediaTrackConstraints = {
+            sampleRate: TTS_SAMPLE_RATE,
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          }
+          if (preferredDeviceId) {
+            audioConstraints.deviceId = { ideal: preferredDeviceId }
+          }
           const stream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-              sampleRate: TTS_SAMPLE_RATE,
-              channelCount: 1,
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true,
-            },
+            audio: audioConstraints,
           })
 
           if (intentionallyClosed || !canSend(wsRef.current)) {
@@ -486,7 +493,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
         streamRef.current = null
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [disabled, sessionId, stopScheduledAudio])
+    }, [disabled, sessionId, stopScheduledAudio, preferredDeviceId])
 
     useEffect(() => {
       const stream = streamRef.current
