@@ -138,6 +138,18 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
     if (identity?.id) {
       challengeId = identity.id
       challengeSlug = identity.slug ?? identity.id
+
+      // Canonical-URL redirect: if the user arrived via the raw id or a number
+      // slug (e.g. a UUID or "sql-2001"), send them to the clean text-slug URL
+      // so there is ONE canonical address per challenge. Preserve query params.
+      if (identity.slug && id !== identity.slug) {
+        const qs = new URLSearchParams()
+        if (role) qs.set('role', role)
+        if (from_plan) qs.set('from_plan', from_plan)
+        if (returnTo) qs.set('returnTo', returnTo)
+        const suffix = qs.toString() ? `?${qs.toString()}` : ''
+        redirect(`/workspace/challenges/${identity.slug}${suffix}`)
+      }
     }
     challengeType = identity?.challenge_type ?? undefined
     // Quick takes don't have FLOW steps - send to challenges hub

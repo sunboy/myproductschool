@@ -368,8 +368,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     confidence: p.confidence,
     evidence: p.evidence,
   })) ?? []
+  // Prefer the canonical text slug so the back-to-challenge link is clean and
+  // skips the id→slug redirect hop (challenge was resolved via getChallengeById,
+  // which returns the slug). Falls back to the route param if slug is absent.
+  const challengeCanonical = (challenge as { slug?: string | null }).slug ?? id
   const challengeHref = appendReturnTo(
-    `/workspace/challenges/${id}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
+    `/workspace/challenges/${challengeCanonical}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
     returnTo,
   )
   const nextChallengeHref = nextChallenge
