@@ -158,7 +158,7 @@ function DimensionTile({
       >
         <div className="pt-4 space-y-3 border-t border-outline-variant/40 mt-3">
           {dim.evidence && (
-            <blockquote className="border-l-2 border-outline-variant pl-3 py-0.5">
+            <blockquote className="bg-surface-container-low rounded-lg px-3 py-2">
               <FeedbackText className="text-xs italic text-on-surface-variant">
                 {dim.evidence}
               </FeedbackText>

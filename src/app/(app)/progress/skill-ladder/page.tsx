@@ -74,17 +74,17 @@ const COMPETENCY_META: Array<{ key: Competency; label: string; shortLabel: strin
 const COMPETENCY_KEYS = new Set<Competency>(COMPETENCY_META.map(item => item.key))
 
 const MOVE_META: Record<FlowMove, { label: string; icon: string; description: string }> = {
-  frame:  { label: 'Frame', icon: 'frame_inspect', description: 'Find the real problem behind the surface complaint' },
-  list:   { label: 'List',  icon: 'format_list_bulleted', description: 'Generate structurally distinct options across stakeholders' },
-  weigh:  { label: 'Weigh', icon: 'balance', description: 'Name the tradeoff and the criterion that resolves it' },
-  sell:   { label: 'Sell',  icon: 'campaign', description: 'Frame the win so the decision-maker feels heard' },
+  frame:  { label: 'Frame',    icon: 'frame_inspect',        description: 'Find the real problem behind the surface complaint' },
+  list:   { label: 'List',     icon: 'format_list_bulleted', description: 'Generate structurally distinct options across stakeholders' },
+  weigh:  { label: 'Optimize', icon: 'balance',              description: 'Name the tradeoff and the criterion that resolves it' },
+  sell:   { label: 'Win',      icon: 'campaign',             description: 'Frame the win so the decision-maker feels heard' },
 }
 
 const MOVE_LEVEL_NAMES: Record<FlowMove, string[]> = {
-  frame: ['Frame Finder', 'Frame Builder', 'Frame Strategist', 'Frame Expert', 'Frame Master'],
-  list:  ['List Finder',  'List Builder',  'List Strategist',  'List Expert',  'List Master'],
-  weigh: ['Weigh Finder', 'Weigh Builder', 'Weigh Strategist', 'Weigh Expert', 'Weigh Master'],
-  sell:  ['Sell Finder',  'Sell Builder',  'Sell Strategist',  'Sell Expert',  'Sell Master'],
+  frame: ['Frame Finder',    'Frame Builder',    'Frame Strategist',    'Frame Expert',    'Frame Master'],
+  list:  ['List Finder',     'List Builder',     'List Strategist',     'List Expert',     'List Master'],
+  weigh: ['Optimize Finder', 'Optimize Builder', 'Optimize Strategist', 'Optimize Expert', 'Optimize Master'],
+  sell:  ['Win Finder',      'Win Builder',      'Win Strategist',      'Win Expert',      'Win Master'],
 }
 
 function toRecord(value: unknown): Record<string, unknown> {
@@ -319,7 +319,7 @@ function SkillLadderContent() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-sm">Level 1: {moveLevelNames[0]} · Beginner</h3>
-                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned</span>
+                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>military_tech</span> Earned</span>
                   </div>
                   <p className="text-xs text-white/80 mt-0.5">Typical: APM / Junior PM</p>
                 </div>
@@ -515,7 +515,7 @@ function SkillLadderContent() {
             <span className="material-symbols-outlined text-tertiary text-lg">info</span>
             <p className="text-[11px] text-tertiary font-medium leading-tight">
               <span className="font-bold block mb-0.5">FLOW Framework</span>
-              The {meta.label} move is one of 4 FLOW thinking moves: Frame · List · Weigh · Sell
+              The {meta.label} move is one of 4 FLOW thinking moves: Frame · List · Optimize · Win
             </p>
           </div>
         </div>
@@ -643,7 +643,7 @@ function CompletedRung({ level, label, tier }: { level: number; label: string; t
       <div className="flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="font-bold text-sm">Level {level}: {label} · {tier}</h3>
-          <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned</span>
+          <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>military_tech</span> Earned</span>
         </div>
       </div>
     </div>

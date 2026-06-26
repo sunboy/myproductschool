@@ -35,7 +35,7 @@ export function ChallengeCardV2({ challenge, onStart }: ChallengeCardV2Props) {
                 {numberLabel}
               </span>
             )}
-            {paradigmLabel && (
+            {paradigmLabel && paradigmLabel.toLowerCase() !== 'traditional' && (
               <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-3 py-0.5 font-label">
                 {paradigmLabel}
               </span>

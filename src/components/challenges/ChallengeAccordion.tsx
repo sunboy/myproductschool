@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
+import { askedAtLabel } from '@/lib/format/company'
 
 export interface AccordionItem {
   id: string
@@ -105,7 +106,7 @@ export function ChallengeAccordion({ chapters, defaultOpenIndex = 0 }: Challenge
                                 {isReal && (
                                   <span className="inline-flex items-center gap-0.5 text-[10px] font-label font-bold px-1.5 py-px rounded-full bg-tertiary-container text-on-secondary-container">
                                     <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                                    {item.company_tags![0]}
+                                    {askedAtLabel(item.company_tags![0])}
                                   </span>
                                 )}
                               </div>

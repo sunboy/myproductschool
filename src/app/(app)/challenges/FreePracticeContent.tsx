@@ -136,7 +136,6 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
       <div className="mb-6 space-y-4">
         <AppBreadcrumbs
           items={[
-            { label: 'Dashboard', href: '/dashboard' },
             { label: 'Practice' },
           ]}
         />

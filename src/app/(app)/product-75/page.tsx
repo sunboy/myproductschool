@@ -164,7 +164,7 @@ export default async function Product75Page() {
                 href={`/vocabulary/${concept.id}`}
                 className={`group bg-surface-container-lowest h-16 rounded-md flex items-center px-6 gap-6 ghost-border transition-all cursor-pointer ${
                   isHoverPreview
-                    ? '-translate-y-[2px] border-l-4 border-l-primary ring-1 ring-primary/10 editorial-shadow'
+                    ? '-translate-y-[2px] ring-1 ring-primary/20 editorial-shadow bg-surface-container-low'
                     : 'hover:bg-surface-container-low hover:-translate-y-[1px]'
                 }`}
               >

@@ -44,6 +44,7 @@ import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
 import type { SchemaDiagramData } from '@/components/challenge/SchemaDiagram'
+import { formatCompany } from '@/lib/format/company'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import type { ChallengeDiscussion } from '@/lib/types'
@@ -614,7 +615,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Mobile (phone) layout. On phones the desktop two-pane split is replaced by a
   // vertical stack; the description becomes a collapsible top drawer (collapsed
   // by default so the question is visible first).
-  const isMobile = useIsMobile()
+  // Use the stacked single-column layout through the TABLET range (≤1023px), not
+  // just phones. The desktop two-pane chrome (left description panel + right
+  // answer panel + centered FLOW stepper + the Description/Discussions/Submissions
+  // tab row) needs ≥1024px; at 768px it collided ("Frame" sitting on the tab row).
+  const isMobile = useIsMobile('(max-width: 1023px)')
   const [mobileDescOpen, setMobileDescOpen] = useState(false)
 
   // Derived: dock fade-out fires when answer has been submitted (phase leaves 'question')
@@ -2691,13 +2696,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
                   padding: '3px 9px', borderRadius: 999,
                   fontFamily: 'var(--font-label)', textDecoration: 'none',
+                  position: 'relative', zIndex: 0,
                 }}>
                   {label}
                 </Link>
               )
             })()}
             {companyTags.map(tag => (
-              <Link key={tag} href={practiceFilterHref('company', tag)} title={`Browse ${tag} practice`} style={{
+              <Link key={tag} href={practiceFilterHref('company', tag)} title={`Browse ${formatCompany(tag)} practice`} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
                 background: '#1e3528', color: '#9ee0b8',
                 fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
@@ -2705,7 +2711,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 fontFamily: 'var(--font-label)', textDecoration: 'none',
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>apartment</span>
-                {tag}
+                {formatCompany(tag)}
               </Link>
             ))}
             {topicTags.map(tag => (

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
 import { getTechniqueLabelAny, getTopicLabelAny } from '@/lib/data/taxonomy'
 import { challengePath } from '@/lib/challenges/challengeNumber'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 
 export default async function DomainDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -75,11 +76,13 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
   return (
     <div className="max-w-3xl mx-auto px-6 py-6 pb-12">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-5 font-label text-xs text-on-surface-variant">
-        <Link href="/explore/domains" className="hover:text-primary transition-colors">Domains</Link>
-        <span>/</span>
-        <span className="text-on-surface font-bold">{domain.title}</span>
-      </div>
+      <AppBreadcrumbs
+        className="mb-5"
+        items={[
+          { label: 'Explore', href: '/explore' },
+          { label: domain.title },
+        ]}
+      />
 
       {/* Header */}
       <div className="mb-6">

@@ -400,7 +400,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                   : 'text-on-surface-variant'
               }`}
             >
-              <span className="text-[10px]">◇◈◆◎</span> Guided
+              <span className="material-symbols-outlined text-sm">view_agenda</span> Guided
             </button>
             <button
               onClick={() => setMode('freeform')}
@@ -647,7 +647,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                   className="bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 transition-all"
                 >
                   <span className="material-symbols-outlined text-sm">segment</span>
-                  ≡ Frameworks
+                  Frameworks
                 </button>
               </div>
             </div>

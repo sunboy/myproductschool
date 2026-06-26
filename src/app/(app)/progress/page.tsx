@@ -8,8 +8,24 @@ import { AppTooltip } from '@/components/ui/AppTooltip'
 import { Md } from '@/components/ui/Md'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
-import { formatScore } from '@/lib/format/score'
 import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
+
+/* ── Humanize snake_case archetype labels ─────────────────────────── */
+
+function humanizeArchetype(value: string | null | undefined): string {
+  if (!value) return 'Not set'
+  return value
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+/** Display an interview score on the canonical /100 scale. */
+function formatInterviewScore(score: number | null | undefined): string | null {
+  if (score == null) return null
+  // overallScore from the API is on a 0–100 scale; show it as "82/100"
+  return `${Math.round(score)}/100`
+}
 
 /* ── Event label map for activity feed ────────────────────────────── */
 
@@ -864,7 +880,7 @@ export default function ProgressPage() {
               <HeroStat k="Challenges mastered" v={total > 0 ? `${mastered} of ${total}` : 'None yet'} />
               <HeroStat
                 k="Archetype"
-                v={profile?.archetype ?? 'Not set'}
+                v={humanizeArchetype(profile?.archetype)}
                 small={!profile?.archetype}
               />
             </div>
@@ -1115,7 +1131,7 @@ export default function ProgressPage() {
                       const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-'
                       const date = s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
                       const displayName = s.companyName && s.companyName !== 'Unknown' ? s.companyName : 'Practice interview'
-                      const formattedScore = formatScore(s.overallScore)
+                      const formattedScore = formatInterviewScore(s.overallScore)
                       return (
                         <Link
                           key={s.id}

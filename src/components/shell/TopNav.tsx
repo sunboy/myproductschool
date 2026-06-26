@@ -138,8 +138,11 @@ export function TopNav() {
                   <button
                     data-hatch-sound={active ? undefined : 'open'}
                     data-hatch-target={item.id === 'home' ? 'nav-dashboard' : `nav-${item.id}`}
+                    aria-label={item.label}
                     className={cn(
-                      'inline-flex items-center gap-[7px] px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
+                      // Icon-only in the md→lg range (where 5 labelled pills + brand
+                      // + right cluster used to collide), labels return at lg.
+                      'inline-flex items-center gap-[7px] px-2.5 lg:px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
                       'text-[13px] font-bold transition-[background,color] duration-200',
                       active
                         ? 'text-white'
@@ -157,7 +160,7 @@ export function TopNav() {
                     >
                       {item.icon}
                     </span>
-                    {item.label}
+                    <span className="hidden lg:inline">{item.label}</span>
                   </button>
                 </Link>
               </AppTooltip>

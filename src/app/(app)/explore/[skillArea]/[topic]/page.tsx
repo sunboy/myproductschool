@@ -6,6 +6,7 @@ import { getChallenges } from '@/lib/data/challenges'
 import { getDomainBySlug } from '@/lib/data/domains'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { challengePath } from '@/lib/challenges/challengeNumber'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 
 interface TopicPageProps {
   params: Promise<{ skillArea: string; topic: string }>
@@ -41,20 +42,14 @@ export default async function TopicPage({ params }: TopicPageProps) {
   return (
     <div className="max-w-7xl mx-auto px-6 py-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-on-surface-variant mb-5 flex-wrap">
-        <Link href="/explore" className="hover:text-primary transition-colors">
-          Explore
-        </Link>
-        <span className="material-symbols-outlined text-base">chevron_right</span>
-        <Link
-          href={`/explore/${skillArea}`}
-          className="hover:text-primary transition-colors"
-        >
-          {domain.title}
-        </Link>
-        <span className="material-symbols-outlined text-base">chevron_right</span>
-        <span className="text-on-surface font-semibold">{topicData.title}</span>
-      </nav>
+      <AppBreadcrumbs
+        className="mb-5"
+        items={[
+          { label: 'Explore', href: '/explore' },
+          { label: domain.title, href: `/explore/${skillArea}` },
+          { label: topicData.title },
+        ]}
+      />
 
       {/* Header */}
       <div className="flex items-start gap-4 mb-6">

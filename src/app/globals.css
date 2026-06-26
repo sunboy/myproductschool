@@ -296,6 +296,19 @@ body::before {
   .animate-scroll { animation: none; }
 }
 
+/* Global reduced-motion guard: near-instant transitions/animations and no
+   transform-based motion (e.g. the shared Button's active:scale press, card
+   hover lifts). Keeps the UI usable for motion-sensitive users without us
+   having to annotate every component. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Hatch Glow ────────────────────────────────────────────────── */
 
 @keyframes hatch-glow {

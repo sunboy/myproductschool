@@ -15,6 +15,7 @@ import { AppTooltip } from '@/components/ui/AppTooltip'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StudyPlanGrid } from './StudyPlanGrid'
 import { getCompanyLabel } from '@/lib/data/taxonomy'
+import { formatCompany } from '@/lib/format/company'
 
 interface PersonalisedPlan {
   slug: string
@@ -221,7 +222,6 @@ export default async function ExplorePage() {
       <AppBreadcrumbs
         className="relative mb-5"
         items={[
-          { label: 'Dashboard', href: '/dashboard' },
           { label: 'Explore' },
         ]}
       />
@@ -778,11 +778,7 @@ function AskedAtChallengeRow({ challenge, index, accent }: {
 }
 
 function getCompanyDisplayName(company: string) {
-  return getCompanyLabel(company) ?? company
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+  return getCompanyLabel(company) ?? formatCompany(company)
 }
 
 function getCompanyMark(label: string) {

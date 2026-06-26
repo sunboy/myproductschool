@@ -11,6 +11,7 @@ import type { ChallengeWithDomain } from '@/lib/types'
 import { deriveChallengeStatus } from '@/lib/challenges/status'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
+import { askedAtLabel } from '@/lib/format/company'
 
 const PARADIGM_STYLE: Record<string, {
   bg: string
@@ -259,13 +260,15 @@ export function ChallengeCard({
           </span>
         )}
 
-        {/* Paradigm badge */}
-        <span
-          className="hidden sm:inline text-[11px] font-bold px-2 py-0.5 rounded-full font-label shrink-0"
-          style={{ backgroundColor: style.bg, color: style.fg }}
-        >
-          {paradigm}
-        </span>
+        {/* Paradigm badge — suppress the default "Traditional" tag; it carries no signal */}
+        {paradigm.toLowerCase() !== 'traditional' && (
+          <span
+            className="hidden sm:inline text-[11px] font-bold px-2 py-0.5 rounded-full font-label shrink-0"
+            style={{ backgroundColor: style.bg, color: style.fg }}
+          >
+            {paradigm}
+          </span>
+        )}
 
         {/* Interview type badge */}
         {(challenge.challenge_type === 'system_design' || challenge.challenge_type === 'data_modeling') && (
@@ -301,7 +304,7 @@ export function ChallengeCard({
         {challenge.is_real_interview && (challenge.company_tags ?? []).length > 0 && (
           <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-label font-bold px-2 py-0.5 rounded-full bg-tertiary-container text-on-secondary-container shrink-0">
             <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-            Asked at {challenge.company_tags![0]}
+            {askedAtLabel(challenge.company_tags![0])}
           </span>
         )}
 
@@ -390,12 +393,14 @@ export function ChallengeCard({
               {numberLabel}
             </span>
           )}
-          <span
-            className="text-[11px] font-bold px-2.5 py-0.5 rounded-full font-label"
-            style={{ backgroundColor: 'rgba(255,255,255,0.7)', color: style.fg }}
-          >
-            {paradigm}
-          </span>
+          {paradigm.toLowerCase() !== 'traditional' && (
+            <span
+              className="text-[11px] font-bold px-2.5 py-0.5 rounded-full font-label"
+              style={{ backgroundColor: 'rgba(255,255,255,0.7)', color: style.fg }}
+            >
+              {paradigm}
+            </span>
+          )}
           {(challenge.challenge_type === 'system_design' || challenge.challenge_type === 'data_modeling') && (
             <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label">
               {challenge.challenge_type === 'system_design' ? 'System Design' : 'Data Modeling'}
@@ -469,7 +474,7 @@ export function ChallengeCard({
             {isReal && (
               <span className="inline-flex items-center gap-0.5 text-[10px] font-label font-bold px-2 py-0.5 rounded-full bg-tertiary-container text-on-secondary-container">
                 <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                Asked at {challenge.company_tags![0]}
+                {askedAtLabel(challenge.company_tags![0])}
               </span>
             )}
           </div>

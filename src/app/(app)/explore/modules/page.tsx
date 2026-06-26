@@ -6,6 +6,7 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useLearnModules } from '@/hooks/useLearnModules'
 import type { LearnDifficulty, LearnModuleWithProgress } from '@/lib/types'
 import { DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 
 const DIFFICULTIES: Array<{ id: LearnDifficulty | 'all'; label: string }> = [
   { id: 'all', label: 'All' },
@@ -274,6 +275,15 @@ export default function ModulesPage() {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 24px 48px' }}>
 
+      {/* ── Breadcrumb ── */}
+      <AppBreadcrumbs
+        className="mb-4"
+        items={[
+          { label: 'Explore', href: '/explore' },
+          { label: 'Guides' },
+        ]}
+      />
+
       {/* ── Hero ── */}
       <div style={{
         borderRadius: 24,
@@ -302,13 +312,6 @@ export default function ModulesPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'center', position: 'relative', zIndex: 1 }}>
           {/* Left */}
           <div>
-            <div style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
-              color: 'rgba(243,237,224,0.45)', marginBottom: 8,
-            }}>
-              Explore › Guides
-            </div>
             <h1 style={{
               fontFamily: 'var(--font-headline)',
               fontSize: 34, fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1,
