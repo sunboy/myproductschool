@@ -124,7 +124,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           .select('feedback_json, completed_at, response_text, mental_models_breakdown, weakest_competency, total_score, max_score, grade_label, canvas_final_snapshot')
           .eq('id', attempt)
           .eq('user_id', user.id)
-          .single()
+          // Scope to THIS challenge + completed, so a crafted link with a foreign
+          // or in-progress attempt id can't render under this challenge URL.
+          .eq('challenge_id', id)
+          .eq('status', 'completed')
+          .maybeSingle()
 
         if (attemptData) {
           const feedbackJson = attemptData.feedback_json && typeof attemptData.feedback_json === 'object'
@@ -169,14 +173,18 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               ? (feedbackJson.improvements as string[])
               : []
 
+            // Real attempt: missing fields stay EMPTY, never backfilled from
+            // MOCK_FEEDBACK_FULL. Showing a real user mock "what worked" / key
+            // insight / percentile is the same fabricated-coaching bug as the
+            // mock page itself. Downstream UI hides empty sections.
             feedbackFull = {
               overall: typeof feedbackJson.overall_summary === 'string'
                 ? feedbackJson.overall_summary
                 : typeof feedbackJson.overall === 'string'
                   ? feedbackJson.overall
-                : (MOCK_FEEDBACK_FULL.overall),
-              what_worked: strengths.length > 0 ? strengths : MOCK_FEEDBACK_FULL.what_worked,
-              what_to_fix: improvements.length > 0 ? improvements : MOCK_FEEDBACK_FULL.what_to_fix,
+                : '',
+              what_worked: strengths,
+              what_to_fix: improvements,
               dimensions: feedback.map(f => ({
                 dimension: f.dimension,
                 score: f.score,
@@ -185,10 +193,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               })),
               key_insight: typeof feedbackJson.key_insight === 'string'
                 ? feedbackJson.key_insight
-                : MOCK_FEEDBACK_FULL.key_insight,
+                : '',
+              // percentile is not rendered on this page; 0 = "unknown" (never
+              // shown), so we don't carry a fabricated mock percentile.
               percentile: typeof feedbackJson.percentile === 'number'
                 ? feedbackJson.percentile
-                : MOCK_FEEDBACK_FULL.percentile,
+                : 0,
               detected_patterns: detectedPatterns.map(p => ({
                 pattern_id: String(p.pattern_id ?? ''),
                 pattern_name: String(p.pattern_name ?? ''),
@@ -300,7 +310,20 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
       ? Math.round(feedback.reduce((s, f) => s + f.score, 0) / feedback.length * 10)
       : 70
 
-  const full = feedbackFull ?? MOCK_FEEDBACK_FULL
+  // Only the mock/demo path may fall back to MOCK_FEEDBACK_FULL. On the real
+  // path (e.g. an attempt that has mental_models_breakdown but no feedback_json)
+  // we use an empty shell so no mock strengths/insight/percentile ever render.
+  const EMPTY_FEEDBACK_FULL: typeof MOCK_FEEDBACK_FULL = {
+    ...MOCK_FEEDBACK_FULL,
+    overall: '',
+    what_worked: [],
+    what_to_fix: [],
+    dimensions: [],
+    key_insight: '',
+    percentile: 0,
+    detected_patterns: [],
+  }
+  const full = feedbackFull ?? (isMock ? MOCK_FEEDBACK_FULL : EMPTY_FEEDBACK_FULL)
   const items = feedback.length > 0 ? feedback : (full.dimensions as HatchFeedbackItem[])
 
   // Determine score descriptor text
@@ -453,7 +476,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
 
           {/* Score Summary Card */}
-          <MotionSection className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
+          <MotionSection className="bg-surface-container p-5 rounded-xl editorial-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <HatchGlyph size={40} state={overallScoreNum >= 75 ? 'celebrating' : 'reviewing'} className="text-primary flex-shrink-0" />
@@ -474,7 +497,9 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <p className="text-sm text-on-surface-variant mb-4">{scoreDescriptor}</p>
 
             {/* Overall assessment */}
-            <FeedbackText className="mb-6 text-on-surface">{full.overall}</FeedbackText>
+            {full.overall && (
+              <FeedbackText className="mb-6 text-on-surface">{full.overall}</FeedbackText>
+            )}
 
             {/* Progress Bars for each dimension (summary) */}
             <div className="space-y-2">
@@ -510,37 +535,45 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </div>
           )}
 
-          {/* What Worked / What to Fix */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-surface border-l-4 border-primary rounded-xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
-                <h4 className="font-headline font-extrabold text-on-surface text-lg">What Worked</h4>
-              </div>
-              <ul className="space-y-2">
-                {full.what_worked.map((item, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                    <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
-                    <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
-                  </li>
-                ))}
-              </ul>
+          {/* What Worked / What to Fix — only render a side when it has content
+              (a real attempt with no strengths/improvements must not show an
+              empty box, and must never backfill mock items). */}
+          {(full.what_worked.length > 0 || full.what_to_fix.length > 0) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {full.what_worked.length > 0 && (
+                <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
+                    <h4 className="font-headline font-extrabold text-on-surface text-lg">What Worked</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {full.what_worked.map((item, i) => (
+                      <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
+                        <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
+                        <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {full.what_to_fix.length > 0 && (
+                <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                    <h4 className="font-headline font-extrabold text-on-surface text-lg">Areas for Growth</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {full.what_to_fix.map((item, i) => (
+                      <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
+                        <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
+                        <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-            <div className="bg-surface border-l-4 border-secondary rounded-xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-                <h4 className="font-headline font-extrabold text-on-surface text-lg">Areas for Growth</h4>
-              </div>
-              <ul className="space-y-2">
-                {full.what_to_fix.map((item, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                    <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
-                    <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          )}
 
           {/* Dimension Expansion Panels (Accordions) */}
           <FeedbackAccordion
@@ -558,14 +591,16 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             />
           )}
 
-          {/* Key Insight */}
-          <div className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">
-            <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
-            <div>
-              <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
-              <FeedbackText className="text-on-tertiary-fixed-variant">{full.key_insight}</FeedbackText>
+          {/* Key Insight — hidden when a real attempt has none (no mock fallback) */}
+          {full.key_insight && (
+            <div className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">
+              <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
+              <div>
+                <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
+                <FeedbackText className="text-on-tertiary-fixed-variant">{full.key_insight}</FeedbackText>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Up next banner */}
           {nextChallenge && nextChallengeHref && (
