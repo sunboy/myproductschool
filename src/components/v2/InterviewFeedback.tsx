@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { FeedbackText } from '@/components/ui/FeedbackText'
 import type { InterviewGrade, ChallengeType } from '@/lib/types'
 
@@ -10,6 +11,10 @@ interface InterviewFeedbackProps {
   canvasPngUrl?: string | null
   onRetry?: () => void
   onBackToCanvas?: () => void
+  /** Next challenge to attempt (origin-preserving href). Primary "what next" CTA. */
+  nextChallengeHref?: string | null
+  /** Where "Back to practice" lands (origin-aware hub). */
+  backToListHref?: string | null
 }
 
 function scoreColorClasses(score: number) {
@@ -188,7 +193,7 @@ function DimensionTile({
   )
 }
 
-export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, onRetry, onBackToCanvas }: InterviewFeedbackProps) {
+export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, onRetry, onBackToCanvas, nextChallengeHref, backToListHref }: InterviewFeedbackProps) {
   const [calloutVisible, setCalloutVisible] = useState(false)
 
   // Lift expanded state up so parent can collapse grid to 1-col when any tile is open
@@ -280,21 +285,42 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
       </div>
 
       {/* ── 5. STICKY BOTTOM ACTIONS ───────────────────────── */}
-      {(onBackToCanvas || onRetry) && (
+      {(nextChallengeHref || backToListHref || onBackToCanvas || onRetry) && (
         <div className="mt-auto pt-4 sticky bottom-0 bg-surface border-t border-outline-variant px-5 pb-5 flex flex-col gap-2">
-          {onBackToCanvas && (
-            <button
-              onClick={onBackToCanvas}
-              className="w-full rounded-full bg-primary text-on-primary font-label font-semibold text-sm py-2.5 hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-1.5"
+          {/* Primary "what next": move forward, not just back. */}
+          {nextChallengeHref && (
+            <Link
+              href={nextChallengeHref}
+              className="w-full rounded-full bg-primary text-on-primary font-label font-semibold text-sm py-2.5 hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-1.5 no-underline"
             >
-              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-              Back to canvas
-            </button>
+              Next challenge
+              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </Link>
           )}
+          <div className="flex gap-2">
+            {backToListHref && (
+              <Link
+                href={backToListHref}
+                className="flex-1 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant font-label font-semibold text-sm py-2 hover:bg-surface-container transition-colors inline-flex items-center justify-center gap-1.5 no-underline"
+              >
+                <span className="material-symbols-outlined text-[17px]">grid_view</span>
+                Back to practice
+              </Link>
+            )}
+            {onBackToCanvas && (
+              <button
+                onClick={onBackToCanvas}
+                className="flex-1 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant font-label font-semibold text-sm py-2 hover:bg-surface-container transition-colors inline-flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[17px]">edit</span>
+                Back to canvas
+              </button>
+            )}
+          </div>
           {onRetry && (
             <button
               onClick={onRetry}
-              className="w-full rounded-full bg-transparent text-on-surface-variant font-label font-semibold text-sm py-2 hover:text-on-surface transition-colors"
+              className="w-full rounded-full bg-transparent text-on-surface-variant font-label font-semibold text-sm py-1.5 hover:text-on-surface transition-colors"
             >
               Try again
             </button>

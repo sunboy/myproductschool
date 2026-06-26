@@ -44,7 +44,7 @@ import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challe
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
-import { workspaceBreadcrumbs } from '@/lib/workspace/breadcrumbs'
+import { workspaceBreadcrumbs, workspaceExitHref } from '@/lib/workspace/breadcrumbs'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
@@ -4249,6 +4249,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   grade={interviewGrade}
                   challengeType={apiChallengeType ?? 'system_design'}
                   canvasPngUrl={submittedCanvasPngUrl}
+                  nextChallengeHref={nextChallengeHref}
+                  backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   onRetry={() => window.location.reload()}
                   onBackToCanvas={() => {
                     setPhase('question')
@@ -4269,6 +4271,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     grade={historyInterviewGrade}
                     challengeType={apiChallengeType ?? 'system_design'}
                     canvasPngUrl={historyRecord.canvasPngUrl}
+                    nextChallengeHref={nextChallengeHref}
+                    backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   />
                 </div>
               ) : (

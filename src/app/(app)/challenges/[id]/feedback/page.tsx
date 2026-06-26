@@ -6,6 +6,7 @@ import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakd
 import { AnimatedProgress, MotionSection } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { workspaceBreadcrumbs } from '@/lib/workspace/breadcrumbs'
 import { Md } from '@/components/ui/Md'
 import { FeedbackText } from '@/components/ui/FeedbackText'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
@@ -41,12 +42,12 @@ function scorePercent(totalValue: unknown, maxValue: unknown): number | null {
 
 interface FeedbackPageProps {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ attempt?: string; returnTo?: string }>
+  searchParams: Promise<{ attempt?: string; returnTo?: string; from_plan?: string; from_domain?: string }>
 }
 
 export default async function FeedbackPage({ params, searchParams }: FeedbackPageProps) {
   const { id } = await params
-  const { attempt: attemptParam, returnTo: rawReturnTo } = await searchParams
+  const { attempt: attemptParam, returnTo: rawReturnTo, from_plan: fromPlan, from_domain: fromDomain } = await searchParams
   const returnTo = sanitizeReturnTo(rawReturnTo)
 
   const challenge = await getChallengeById(id)
@@ -237,12 +238,21 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           canvasAnnotations = gradeResult.data.canvas_annotations as CanvasAnnotation[]
         }
 
-        if (recommendationResult.data) {
-          const recommendedChallenge = recommendationResult.data as Record<string, unknown>
+        // Competency-targeted recommendation. ~92% of challenges have no
+        // competency tags, so this RPC frequently returns nothing — fall back to
+        // ANY unattempted published challenge so "Up next" is never empty.
+        let recommendedRow = recommendationResult.data as Record<string, unknown> | null
+        if (!recommendedRow && weakestCompetency) {
+          const fallback = await adminClient
+            .rpc('next_user_challenge', { p_user_id: user.id, p_competency: null })
+            .maybeSingle()
+          recommendedRow = (fallback.data as Record<string, unknown> | null) ?? null
+        }
+        if (recommendedRow) {
           nextChallenge = {
-            id: String(recommendedChallenge.id),
-            slug: typeof recommendedChallenge.slug === 'string' ? recommendedChallenge.slug : null,
-            title: String(recommendedChallenge.title),
+            id: String(recommendedRow.id),
+            slug: typeof recommendedRow.slug === 'string' ? recommendedRow.slug : null,
+            title: String(recommendedRow.title),
           }
         }
       }
@@ -386,7 +396,9 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
       <AppBreadcrumbs
         className="mb-4"
         items={[
-          { label: 'Practice', href: returnTo ?? '/challenges' },
+          // Origin-aware hub (Practice / Study Plans / Explore), matching the
+          // workspace trail, then the challenge (back to its workspace), then this.
+          ...workspaceBreadcrumbs(challenge.title, { fromPlan, fromDomain }).slice(0, -1),
           { label: challenge.title, href: challengeHref },
           { label: 'Feedback' },
         ]}
