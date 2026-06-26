@@ -120,9 +120,9 @@ export function buildStepTour(
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   const tour = new Shepherd.Tour({
-    // No dimming modal overlay: its rectangular cutout clashes with rounded
-    // cards (ugly light corners). We highlight the target with a pulsing border
-    // instead (see .shepherd-target styles in shepherd-theme.css).
+    // No dimming modal overlay (its rectangular cutout clashes with rounded
+    // cards) and no target ring: the popover + its arrow point at the target on
+    // their own. The old pulsing-green ring read as a stray floating pointer.
     useModalOverlay: false,
     exitOnEsc: true,
     keyboardNavigation: false, // we own Next/Back via buttons + cursor
