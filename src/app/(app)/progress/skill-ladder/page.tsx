@@ -17,6 +17,10 @@ import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import type { CareerBenchmark, Competency, FlowMove } from '@/lib/types'
 
+// Intentional external-brand exception: LinkedIn's official button blue. Not a
+// design-system token because it must match LinkedIn's brand, not Terra.
+const LINKEDIN_BRAND_BLUE = '#0077b5'
+
 function buildLinkedInUrl(moveName: string, level: number): string {
   const now = new Date()
   const certName = encodeURIComponent(`HackProduct ${moveName} Move: Level ${level}`)
@@ -301,7 +305,7 @@ function SkillLadderContent() {
               <p className="text-sm font-medium text-on-surface">
                 {moveLevel < 5
                   ? `You're ${Math.ceil((1 - moveProgress / 100) * 8)} challenges away from Level ${moveLevel + 1}. Here's exactly what that unlocks.`
-                  : `You're at the top of the ladder — Level 5. Here's how to keep that edge sharp.`}
+                  : `You've reached Level 5, the highest rung. Here's how to keep that edge sharp.`}
               </p>
             </div>
           </div>
@@ -446,7 +450,7 @@ function SkillLadderContent() {
               target="_blank"
               rel="noopener noreferrer"
               className="w-full text-white py-2.5 rounded-full text-sm font-bold flex items-center justify-center gap-2 shadow transition-colors hover:opacity-90"
-              style={{ backgroundColor: '#0077b5' }}
+              style={{ backgroundColor: LINKEDIN_BRAND_BLUE }}
             >
               <span className="material-symbols-outlined text-lg">add_circle</span>
               Add to LinkedIn profile →

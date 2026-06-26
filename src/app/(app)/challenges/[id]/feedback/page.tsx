@@ -9,6 +9,7 @@ import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { workspaceBreadcrumbs } from '@/lib/workspace/breadcrumbs'
 import { Md } from '@/components/ui/Md'
 import { FeedbackText } from '@/components/ui/FeedbackText'
+import { formatCompany } from '@/lib/format/company'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -443,7 +444,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   key={tag}
                   className="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30"
                 >
-                  {tag}
+                  {formatCompany(tag)}
                 </span>
               ))}
             </div>
@@ -500,7 +501,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   <h3 className="font-headline text-lg font-bold text-on-surface">
                     Hatch&apos;s Analysis
                   </h3>
-                  <p className="text-sm text-on-surface-variant">Hatch review</p>
+                  <p className="text-sm text-on-surface-variant">Here&apos;s what I saw in your reasoning.</p>
                 </div>
               </div>
               <div className="text-right">
@@ -591,13 +592,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </div>
           )}
 
-          {/* Dimension Expansion Panels (Accordions) */}
-          <FeedbackAccordion
-            dimensions={dimensionPanels}
-            detectedPatterns={detectedPatterns.length > 0 ? detectedPatterns : undefined}
-          />
-
-          {/* Mental Models Breakdown (v2 challenges) */}
+          {/* Mental Models Breakdown (v2 challenges) — the artifact replay leads,
+              so it sits above the per-dimension accordion. */}
           {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
             <MentalModelsBreakdown
               breakdown={mentalModelsBreakdown}
@@ -606,6 +602,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               nextChallengeTitle={nextChallenge?.title}
             />
           )}
+
+          {/* Dimension Expansion Panels (Accordions) */}
+          <FeedbackAccordion
+            dimensions={dimensionPanels}
+            detectedPatterns={detectedPatterns.length > 0 ? detectedPatterns : undefined}
+          />
 
           {/* Key Insight — hidden when a real attempt has none (no mock fallback) */}
           {full.key_insight && (
