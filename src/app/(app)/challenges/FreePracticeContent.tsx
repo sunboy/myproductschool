@@ -160,7 +160,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1", color: '#c9933a' }}>star</span>
+              <span className="material-symbols-outlined text-[22px] text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
               <h2 className="font-headline text-[22px] font-[500] text-on-surface m-0">Featured</h2>
             </div>
             <span className="text-[12px] text-on-surface-variant font-label">Curated picks</span>

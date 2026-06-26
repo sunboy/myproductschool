@@ -57,16 +57,17 @@ type ExploreAutopsyCardItem =
 
 const PLANS_STATIC: PlanItem[] = [
   { title: 'Staff Engineer Path', sub: '6 weeks', diff: 'Intermediate', color: '#4a7c59', bg: '#dfe7e1', enrolled: 1243, icon: 'route', slug: 'staff-engineer-path' },
-  { title: 'AI Product Foundations', sub: '3 weeks', diff: 'Beginner', color: '#3b6ed4', bg: '#e1ecff', enrolled: 892, icon: 'smart_toy', slug: 'ai-product-foundations' },
-  { title: 'Decision-Making Under Pressure', sub: '4 weeks', diff: 'Advanced', color: '#7a5c2e', bg: '#f3e2b9', enrolled: 441, icon: 'bolt', slug: 'decision-making-under-pressure' },
-  { title: 'From Engineer to PM', sub: '8 weeks', diff: 'Beginner', color: '#5b6f4d', bg: '#cfe3d3', enrolled: 2104, icon: 'trending_up', slug: 'from-engineer-to-pm' },
+  { title: 'AI Product Foundations', sub: '3 weeks', diff: 'Beginner', color: '#3a6e4a', bg: '#cfe3d3', enrolled: 892, icon: 'smart_toy', slug: 'ai-product-foundations' },
+  { title: 'Decision-Making Under Pressure', sub: '4 weeks', diff: 'Advanced', color: '#2e5e40', bg: '#b8d4bf', enrolled: 441, icon: 'bolt', slug: 'decision-making-under-pressure' },
+  { title: 'From Engineer to PM', sub: '8 weeks', diff: 'Beginner', color: '#5d9070', bg: '#e8f2eb', enrolled: 2104, icon: 'trending_up', slug: 'from-engineer-to-pm' },
 ]
 
+// Module covers use dark forest-green tint family — same hue, varying depth.
 const MODULES_STATIC = [
   { slug: 'flow-framework', name: 'The FLOW Framework', tagline: 'How product decisions get made.', cover_color: '#1e3528', accent_color: '#7ee099', chapter_count: 8, est_minutes: 90, difficulty: 'easy' },
-  { slug: 'product-sense', name: 'Product Sense', tagline: 'Developing taste and judgment.', cover_color: '#172240', accent_color: '#7aa7ff', chapter_count: 7, est_minutes: 75, difficulty: 'medium' },
-  { slug: 'agentic-pm', name: 'Agentic PM', tagline: 'Managing AI systems end-to-end.', cover_color: '#25143a', accent_color: '#c89df5', chapter_count: 6, est_minutes: 80, difficulty: 'hard' },
-  { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#301a0a', accent_color: '#f5a76c', chapter_count: 5, est_minutes: 60, difficulty: 'medium' },
+  { slug: 'product-sense', name: 'Product Sense', tagline: 'Developing taste and judgment.', cover_color: '#152e20', accent_color: '#8ed4a8', chapter_count: 7, est_minutes: 75, difficulty: 'medium' },
+  { slug: 'agentic-pm', name: 'Agentic PM', tagline: 'Managing AI systems end-to-end.', cover_color: '#102418', accent_color: '#6ec48e', chapter_count: 6, est_minutes: 80, difficulty: 'hard' },
+  { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#1a3022', accent_color: '#a0d8b8', chapter_count: 5, est_minutes: 60, difficulty: 'medium' },
 ] as const
 
 const PRIMARY_PATHS = [
@@ -85,8 +86,8 @@ const PRIMARY_PATHS = [
     body: 'Run a Hatch-led mock interview across product, systems, data, SQL, and coding.',
     href: '/live-interviews',
     icon: 'graphic_eq',
-    accent: '#6d4cc2',
-    bg: 'linear-gradient(135deg, #ecdeff 0%, #f4efe7 100%)',
+    accent: '#3a6e4a',
+    bg: 'linear-gradient(135deg, #cfe3d3 0%, #f5f1ea 100%)',
     art: 'interview',
     tooltip: 'Simulate live pressure with Hatch asking follow-ups and scoring your interview moves.',
   },
@@ -95,20 +96,21 @@ const PRIMARY_PATHS = [
     body: 'Follow a sequenced plan instead of browsing from scratch.',
     href: '/explore/plans',
     icon: 'route',
-    accent: '#c9933a',
-    bg: 'linear-gradient(135deg, #f3e2b9 0%, #f8f0dc 100%)',
+    accent: '#2e5e40',
+    bg: 'linear-gradient(135deg, #b8d4bf 0%, #f5f1ea 100%)',
     art: 'plans',
     tooltip: 'Let Hatch sequence a path across disciplines based on your role and current FLOW profile.',
   },
 ] as const
 
+// Single forest-green accent family — tint/lightness varies by index, not hue.
 const DOMAIN_THEMES = [
-  { bg: 'linear-gradient(135deg, #dfe7e1 0%, #f7efe2 100%)', accent: '#4a7c59', soft: 'rgba(74,124,89,0.14)' },
-  { bg: 'linear-gradient(135deg, #e1ecff 0%, #f7efe2 100%)', accent: '#3b6ed4', soft: 'rgba(59,110,212,0.13)' },
-  { bg: 'linear-gradient(135deg, #f3e2b9 0%, #fbf3df 100%)', accent: '#c9933a', soft: 'rgba(201,147,58,0.15)' },
-  { bg: 'linear-gradient(135deg, #ecdeff 0%, #f7efe2 100%)', accent: '#7c5fd8', soft: 'rgba(124,95,216,0.13)' },
-  { bg: 'linear-gradient(135deg, #d9efe6 0%, #f7efe2 100%)', accent: '#2f8b74', soft: 'rgba(47,139,116,0.13)' },
-  { bg: 'linear-gradient(135deg, #ffe1d2 0%, #f7efe2 100%)', accent: '#c66a3b', soft: 'rgba(198,106,59,0.13)' },
+  { bg: 'linear-gradient(135deg, #dfe7e1 0%, #f5f1ea 100%)', accent: '#4a7c59', soft: 'rgba(74,124,89,0.14)' },
+  { bg: 'linear-gradient(135deg, #cfe3d3 0%, #f5f1ea 100%)', accent: '#3a6e4a', soft: 'rgba(58,110,74,0.13)' },
+  { bg: 'linear-gradient(135deg, #c4dbc9 0%, #f5f1ea 100%)', accent: '#2f6040', soft: 'rgba(47,96,64,0.13)' },
+  { bg: 'linear-gradient(135deg, #b8d4bf 0%, #f5f1ea 100%)', accent: '#2e5e40', soft: 'rgba(46,94,64,0.13)' },
+  { bg: 'linear-gradient(135deg, #e8f2eb 0%, #f5f1ea 100%)', accent: '#5d9070', soft: 'rgba(93,144,112,0.13)' },
+  { bg: 'linear-gradient(135deg, #d5e8da 0%, #f5f1ea 100%)', accent: '#3e7450', soft: 'rgba(62,116,80,0.13)' },
 ] as const
 
 export default async function ExplorePage() {
@@ -791,13 +793,14 @@ function getCompanyMark(label: string) {
 }
 
 function getCompanyVisual(company: string) {
+  // Single forest-green family — six tint steps so adjacent companies look distinct.
   const palette = [
     { accent: '#4a7c59', soft: 'rgba(74,124,89,0.10)' },
-    { accent: '#7a5c2e', soft: 'rgba(201,147,58,0.13)' },
-    { accent: '#3b6ed4', soft: 'rgba(59,110,212,0.10)' },
-    { accent: '#6d4cc2', soft: 'rgba(109,76,194,0.10)' },
-    { accent: '#2f8b74', soft: 'rgba(47,139,116,0.10)' },
-    { accent: '#c66a3b', soft: 'rgba(198,106,59,0.11)' },
+    { accent: '#3a6e4a', soft: 'rgba(58,110,74,0.10)' },
+    { accent: '#2e5e40', soft: 'rgba(46,94,64,0.10)' },
+    { accent: '#5d9070', soft: 'rgba(93,144,112,0.10)' },
+    { accent: '#2f6040', soft: 'rgba(47,96,64,0.10)' },
+    { accent: '#3e7450', soft: 'rgba(62,116,80,0.10)' },
   ]
   const hash = [...company].reduce((sum, char) => sum + char.charCodeAt(0), 0)
 

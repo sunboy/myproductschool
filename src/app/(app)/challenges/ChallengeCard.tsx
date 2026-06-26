@@ -13,6 +13,11 @@ import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { askedAtLabel } from '@/lib/format/company'
 
+// Single forest-green accent family — differentiated by tint/saturation, not hue.
+// Traditional: mid-tint (neutral green)
+// AI-Assisted: slightly warmer, lighter green
+// Agentic: deeper, richer green
+// AI-Native: lightest, most airy tint
 const PARADIGM_STYLE: Record<string, {
   bg: string
   fg: string
@@ -21,22 +26,22 @@ const PARADIGM_STYLE: Record<string, {
   Traditional: {
     bg: '#dfe7e1',
     fg: '#2d4a3b',
-    accent: '#6b8275',
+    accent: '#4a7c59',
   },
   'AI-Assisted': {
-    bg: '#e1ecff',
-    fg: '#174a99',
-    accent: '#7aa7ff',
+    bg: '#cfe3d3',
+    fg: '#1e4030',
+    accent: '#3a6e4a',
   },
   Agentic: {
-    bg: '#ecdeff',
-    fg: '#5a2e86',
-    accent: '#a878d6',
+    bg: '#b8d4bf',
+    fg: '#18382a',
+    accent: '#2e5e40',
   },
   'AI-Native': {
-    bg: '#fbe1d0',
-    fg: '#8a3c12',
-    accent: '#e37d4a',
+    bg: '#e8f2eb',
+    fg: '#345240',
+    accent: '#5d9070',
   },
 }
 
