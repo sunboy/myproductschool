@@ -1223,7 +1223,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
       emitHatchCue({
         surface: 'workspace',
-        message: `Looks like the ${workspaceKind} has gone quiet. Want a thread to pull on?`,
+        message: `Stuck on your ${workspaceKind}? I can give you a hint.`,
         state: 'intrigued',
         animation: 'stuck-check',
         target,
