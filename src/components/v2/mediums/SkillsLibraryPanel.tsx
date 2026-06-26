@@ -35,8 +35,14 @@ function randomDelimiter(): string {
   return `HACKPRODUCT_SKILL_${hex}`
 }
 
+// Normalize any skill path to its segment after `.claude/skills/`, wherever that
+// prefix appears — relative ('.claude/skills/foo/SKILL.md'), absolute
+// ('/home/analyst/.claude/skills/foo/SKILL.md'), or tilde ('~/.claude/skills/...').
+// Both the fetched store filenames AND the live sessionSkills values must collapse
+// to the SAME key (e.g. 'foo/SKILL.md') or the placeholder/store dedup misses.
 function shortName(filename: string): string {
-  return filename.replace(/^\.claude\/skills\//, '')
+  const m = /(?:^|\/|~)\.claude\/skills\/(.+)$/i.exec(filename)
+  return m ? m[1] : filename
 }
 
 export function SkillsLibraryPanel({
@@ -78,9 +84,28 @@ export function SkillsLibraryPanel({
     onLoaded?.(path)
   }
 
+  // Merge the persisted store with skills created LIVE this session that the store
+  // doesn't know about yet. /api/claude-code/skills reads the cc-user-state tarball,
+  // which only updates on snapshot/finalize — so a skill the user just wrote in this
+  // session won't be in `skills` until then. Surface those immediately as lightweight
+  // "In session" entries (no preview/Load — their content isn't persisted yet) so the
+  // panel reflects the write without waiting for a refresh. Once persisted, the fetched
+  // entry supersedes the placeholder (dedup by short name).
+  const fetchedNames = new Set((skills ?? []).map((s) => shortName(s.filename)))
+  const sessionOnly: UserSkill[] = sessionSkills
+    .map((s) => shortName(s))
+    .filter((name, i, arr) => name && arr.indexOf(name) === i && !fetchedNames.has(name))
+    .map((name) => ({
+      filename: `.claude/skills/${name}`,
+      title: name.replace(/\/SKILL\.md$/i, '').replace(/\.md$/i, ''),
+      preview: '',
+      content: '',
+    }))
+  const displaySkills: UserSkill[] = [...(skills ?? []), ...sessionOnly]
+
   // Don't render anything heavy until we know there's something to show. The panel
-  // collapses to a slim empty/error state otherwise.
-  const hasSkills = skills && skills.length > 0
+  // collapses to a slim empty/error state otherwise. A live session-only skill counts.
+  const hasSkills = displaySkills.length > 0
 
   return (
     <div
@@ -124,9 +149,12 @@ export function SkillsLibraryPanel({
 
       {hasSkills && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {skills.map((skill) => {
+          {displaySkills.map((skill) => {
             const name = shortName(skill.filename)
             const inSession = sessionSkills.some((s) => shortName(s) === name)
+            // A session-only placeholder has no persisted content yet — it can't be
+            // previewed or re-loaded (it's already in the live session), only badged.
+            const isPlaceholder = !skill.content
             const isOpen = expanded === skill.filename
             return (
               <div
@@ -166,15 +194,17 @@ export function SkillsLibraryPanel({
                       Load
                     </button>
                   )}
-                  <button
-                    onClick={() => setExpanded(isOpen ? null : skill.filename)}
-                    aria-label={isOpen ? 'Hide preview' : 'Show preview'}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-on-surface-variant)', display: 'flex', padding: 2 }}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                      {isOpen ? 'expand_less' : 'expand_more'}
-                    </span>
-                  </button>
+                  {!isPlaceholder && (
+                    <button
+                      onClick={() => setExpanded(isOpen ? null : skill.filename)}
+                      aria-label={isOpen ? 'Hide preview' : 'Show preview'}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-on-surface-variant)', display: 'flex', padding: 2 }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                        {isOpen ? 'expand_less' : 'expand_more'}
+                      </span>
+                    </button>
+                  )}
                 </div>
                 {isOpen && (
                   <pre
