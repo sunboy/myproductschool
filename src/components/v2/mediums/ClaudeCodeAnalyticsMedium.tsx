@@ -133,6 +133,22 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     setShowOnboarding(shouldShowOnboarding())
   }, [])
 
+  // First-session coaching: open the Hatch dock the FIRST time a user runs an
+  // analytics session so the coach is visibly present (it can see the terminal,
+  // active step, and MCP/skills state). One-time flag, so later collapses stick.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const KEY = 'cc-analytics-hatch-dock:auto-opened'
+      if (!localStorage.getItem(KEY)) {
+        setHatchOpen(true)
+        localStorage.setItem(KEY, '1')
+      }
+    } catch {
+      setHatchOpen(true)
+    }
+  }, [])
+
   // Start + provision session. The flow is split so it fits Vercel Hobby's 60s
   // function ceiling on a cold start:
   //   1. POST /session/start    → fast: gates + create a `provisioning` row.
