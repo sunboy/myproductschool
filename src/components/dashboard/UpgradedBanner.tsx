@@ -11,6 +11,13 @@ export function UpgradedBanner() {
   useEffect(() => {
     if (searchParams.get('upgraded') === '1') {
       setShow(true)
+      // Fire the Google Ads "Subscribe" conversion exactly once on the
+      // post-checkout redirect. gtag only exists when the user accepted all
+      // cookies (loaded by AnalyticsGate), so this no-ops without consent.
+      const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag
+      if (typeof gtag === 'function') {
+        gtag('event', 'conversion', { send_to: 'AW-18255128704/ghYpCK-v2cIcEIDR3IBE' })
+      }
       // Clean the URL without a reload
       const url = new URL(window.location.href)
       url.searchParams.delete('upgraded')

@@ -1,6 +1,7 @@
 'use client'
 
 import { Analytics } from '@vercel/analytics/next'
+import Script from 'next/script'
 import { useEffect, useState } from 'react'
 import {
   COOKIE_CHOICE_EVENT,
@@ -33,5 +34,26 @@ export function AnalyticsGate() {
     return () => window.removeEventListener(COOKIE_CHOICE_EVENT, onChoice)
   }, [])
 
-  return enabled ? <Analytics /> : null
+  if (!enabled) return null
+
+  return (
+    <>
+      <Analytics />
+      {/* Google tag (gtag.js) — Google Ads conversion tracking. Loaded only
+          after the user has accepted all cookies, alongside Vercel Analytics. */}
+      <Script
+        id="gtag-src"
+        strategy="afterInteractive"
+        src="https://www.googletagmanager.com/gtag/js?id=AW-18255128704"
+      />
+      <Script id="gtag-init" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'AW-18255128704');
+        `}
+      </Script>
+    </>
+  )
 }
