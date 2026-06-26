@@ -40,6 +40,8 @@ import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
 import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { workspaceBreadcrumbs } from '@/lib/workspace/breadcrumbs'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
@@ -446,8 +448,8 @@ function scoreToGradeLabel(score: number): string {
 }
 
 type FlowWorkspaceProps =
-  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; nextChallengeSlug?: string; returnTo?: string }
-  | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; nextChallengeSlug?: string; returnTo?: string }
+  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
+  | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
 
 // First-entry tour for the canvas workspace. Auto-fires once when a canvas
 // challenge is interactive (desktop only), and on demand via 'start-canvas-tour'.
@@ -490,6 +492,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const initialRoleId = isApiMode ? props.initialRoleId : 'engineer' as UserRoleV2
   const onPaywall = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).onPaywall : undefined
   const fromPlan = props.fromPlan
+  const fromDomain = props.fromDomain
   const nextChallengeSlug = props.nextChallengeSlug
   const nextChallengeHref = nextChallengeSlug
     ? `/workspace/challenges/${nextChallengeSlug}${props.returnTo ? `?${new URLSearchParams({ returnTo: props.returnTo }).toString()}` : ''}`
@@ -3671,6 +3674,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </section>
   )
 
+  // Origin-aware breadcrumb strip, rendered above the tab chrome on every
+  // workspace type so the trail and exit are identical across FLOW / canvas /
+  // coding (mirrors the analytics shell header). Deep-linking or arriving via
+  // grading no longer drops the user out of the app.
+  const workspaceCrumbs = workspaceBreadcrumbs(challengeTitle || 'Challenge', { fromPlan, fromDomain })
+  const breadcrumbBar = (
+    <div
+      className="hidden md:flex items-center h-9 px-4 shrink-0 border-b"
+      style={{ borderColor: 'var(--color-outline-faint)', background: 'var(--color-surface)' }}
+    >
+      <AppBreadcrumbs items={workspaceCrumbs} className="min-w-0" />
+    </div>
+  )
+
   // Shared top chrome - spans full width so the borderBottom is continuous
   const topChrome = (
     <div style={{
@@ -4151,6 +4168,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
         {/* Same full-width top chrome as question phase (desktop only - on mobile
             the feedback fills the width and carries its own navigation). */}
+        {!isMobile && breadcrumbBar}
         {!isMobile && topChrome}
 
         {/* Middle: resizable two-pane content on desktop, single column on mobile */}
@@ -4371,7 +4389,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           {mobileDrawer}
           {mobileStepperBar}
         </>
-      ) : topChrome}
+      ) : (
+        <>
+          {breadcrumbBar}
+          {topChrome}
+        </>
+      )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
       <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden'}>
