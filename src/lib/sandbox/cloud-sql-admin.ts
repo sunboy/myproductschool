@@ -124,9 +124,15 @@ export async function ensureSqlRunnable(deadlineMs = 40_000): Promise<EnsureRunn
 
   let state = await getSqlInstanceState()
 
-  // Always assert ALWAYS (idempotent) to override any racing reaper NEVER patch.
+  // Already up → READY regardless of the re-assert PATCH. The PATCH to ALWAYS is a
+  // best-effort guard against a racing reaper NEVER patch, but it can 409
+  // ("another operation already in progress") when a concurrent provision or an
+  // admin op is mid-flight. A 409 there is BENIGN — the instance is RUNNABLE and
+  // fully usable, so we must NOT fail-close the session on it. (Bug: `ready:
+  // patched` returned ready=false on a 409 even though SQL was up, surfacing as
+  // "cc-llm-db not RUNNABLE in time (state: RUNNABLE)" → spurious 503.)
   const patched = await patchActivationPolicy(cfg, 'ALWAYS')
-  if (state === 'RUNNABLE') return { ready: patched, started: false, state }
+  if (state === 'RUNNABLE') return { ready: true, started: false, state }
   if (!patched) return { ready: false, started: false, state }
 
   const deadline = Date.now() + deadlineMs
