@@ -626,7 +626,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   return (
     <>
       {showOnboarding && (
-        <AnalyticsOnboardingOverlay onDone={() => setShowOnboarding(false)} />
+        <AnalyticsOnboardingOverlay
+          onDone={() => setShowOnboarding(false)}
+          stepCount={subProblems.length}
+        />
       )}
 
       <div style={{
