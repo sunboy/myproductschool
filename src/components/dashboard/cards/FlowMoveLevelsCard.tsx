@@ -1,13 +1,14 @@
 import Link from 'next/link'
+import { FLOW_MOVES, FLOW_MOVE_ORDER } from '@/lib/flow/moves'
 
-const MOVE_META: Record<string, { icon: string; tint: string; iconBg: string; desc: string }> = {
-  frame:    { icon: 'center_focus_strong', tint: '#cfe3d3', iconBg: '#4a7c59', desc: 'Find the right problem' },
-  list:     { icon: 'format_list_bulleted', tint: '#dfe7e1', iconBg: '#6b8275', desc: 'Generate options' },
-  optimize: { icon: 'tune',                tint: '#f3e2b9', iconBg: '#c9933a', desc: 'Pick & refine' },
-  win:      { icon: 'emoji_events',        tint: '#ecdeff', iconBg: '#a878d6', desc: 'Drive outcomes' },
+// Short dashboard-context taglines (the canonical FLOW_MOVES taglines are
+// longer and tuned for grading copy; these fit the compact tile).
+const MOVE_DESC: Record<string, string> = {
+  frame: 'Find the right problem',
+  list: 'Generate options',
+  optimize: 'Pick & refine',
+  win: 'Drive outcomes',
 }
-
-const MOVE_ORDER = ['frame', 'list', 'optimize', 'win']
 
 interface MoveLevel {
   move: string
@@ -21,15 +22,18 @@ interface FlowMoveLevelsCardProps {
 }
 
 export function FlowMoveLevelsCard({ levels = [] }: FlowMoveLevelsCardProps) {
-  const moves = MOVE_ORDER.map(key => {
-    const meta = MOVE_META[key]
+  const moves = FLOW_MOVE_ORDER.map(key => {
+    const meta = FLOW_MOVES[key]
     const live = levels.find(l => l.move === key)
     return {
-      key: key.charAt(0).toUpperCase() + key.slice(1),
+      key: meta.label,
       icon: meta.icon,
-      tint: meta.tint,
-      iconBg: meta.iconBg,
-      desc: meta.desc,
+      // One accent family: the move's solid color for the icon chip + bar,
+      // its soft tint for the tile background, its border tint for the edge.
+      tint: meta.soft,
+      iconBg: meta.color,
+      border: meta.border,
+      desc: MOVE_DESC[key],
       level: live?.level ?? 1,
       pct: live ? live.progress_pct / 100 : 0,
     }
@@ -64,8 +68,8 @@ export function FlowMoveLevelsCard({ levels = [] }: FlowMoveLevelsCardProps) {
         {moves.map(m => (
           <div
             key={m.key}
-            className="relative z-10 rounded-2xl p-4 border"
-            style={{ background: m.tint, borderColor: 'rgba(0,0,0,0.04)' }}
+            className="relative z-10 rounded-2xl p-4 border bg-surface"
+            style={{ background: m.tint, borderColor: m.border }}
           >
             <div className="flex items-start justify-between mb-2.5">
               <div
@@ -79,18 +83,15 @@ export function FlowMoveLevelsCard({ levels = [] }: FlowMoveLevelsCardProps) {
                   {m.icon}
                 </span>
               </div>
-              <span className="text-xs font-label font-bold" style={{ color: 'rgba(0,0,0,0.55)' }}>
+              <span className="text-xs font-label font-bold text-on-surface-variant">
                 Lv {m.level}
               </span>
             </div>
-            <div className="font-headline text-lg font-semibold tracking-tight">{m.key}</div>
-            <div className="text-xs mt-0.5 mb-2.5" style={{ color: 'rgba(0,0,0,0.6)' }}>
+            <div className="font-headline text-lg font-semibold tracking-tight text-on-surface">{m.key}</div>
+            <div className="text-xs mt-0.5 mb-2.5 text-on-surface-variant">
               {m.desc}
             </div>
-            <div
-              className="h-1 rounded-full overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.6)' }}
-            >
+            <div className="h-1 rounded-full overflow-hidden bg-surface-container-highest">
               <div style={{ width: `${m.pct * 100}%`, background: m.iconBg, height: '100%' }} />
             </div>
           </div>

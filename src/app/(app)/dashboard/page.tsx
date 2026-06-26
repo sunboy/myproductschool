@@ -8,28 +8,25 @@ import {
   getLeaderboardPeek,
   getLatestInterview,
 } from '@/lib/data/dashboard'
-import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
-import { HeroGreeterCard } from '@/components/dashboard/cards/HeroGreeterCard'
 import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsCard'
 import { LatestInterviewCard } from '@/components/dashboard/cards/LatestInterviewCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
-import { CommunityActivityCard } from '@/components/dashboard/cards/CommunityActivityCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
-import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
 import { AchievementsCard, ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
-import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarCard'
 import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
-import { DisciplineExplorer } from '@/components/flow-disciplines'
 import { BillingDashboardNudge } from '@/components/billing/BillingDashboardNudge'
 import { FeaturedAutopsyCard } from '@/components/dashboard/cards/FeaturedAutopsyCard'
+import { CoachSpineCard } from '@/components/dashboard/cards/CoachSpineCard'
+import { CadenceRibbon } from '@/components/dashboard/cards/CadenceRibbon'
 import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
+import { getHatchContext } from '@/lib/hatch-context'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
@@ -119,91 +116,6 @@ function LockOverlay({ children, label = 'Unlocks after calibration' }: { childr
   )
 }
 
-function HatchOperatingSystemCard() {
-  const modes = [
-    {
-      label: 'Daily reps',
-      sub: 'Hatch picks the next highest-leverage challenge.',
-      href: '/challenges',
-      icon: 'track_changes',
-      tone: '#4a7c59',
-    },
-    {
-      label: 'Canvas studio',
-      sub: 'Design systems, schemas, and context packs.',
-      href: '/challenges?discipline=system_design',
-      icon: 'schema',
-      tone: '#3b6ed4',
-    },
-    {
-      label: 'AI interviews',
-      sub: 'Pressure test your thinking without scheduling anyone.',
-      href: '/live-interviews',
-      icon: 'graphic_eq',
-      tone: '#8b46d4',
-    },
-    {
-      label: 'Autopsies',
-      sub: 'Read the decision trees behind real products.',
-      href: '/explore/autopsies',
-      icon: 'biotech',
-      tone: '#c9933a',
-    },
-  ]
-
-  return (
-    <section
-      className="rounded-[24px] border border-outline-variant/50 bg-surface-container-low p-4 sm:p-5"
-      aria-label="Hatch operating system"
-      data-hatch-target="dashboard-hatch-os"
-    >
-      <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
-        <div>
-          <div className="text-[10px] font-label font-extrabold uppercase tracking-[0.12em] text-on-surface-variant mb-1">
-            Hatch OS
-          </div>
-          <h2 className="font-headline text-[22px] font-bold leading-none text-on-surface m-0">
-            One platform-run practice loop.
-          </h2>
-        </div>
-        <Link
-          href="/explore"
-          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-label font-bold text-primary no-underline hover:bg-primary-fixed"
-        >
-          Explore paths
-          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-        </Link>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
-        {modes.map(mode => (
-          <Link
-            key={mode.label}
-            href={mode.href}
-            className="group rounded-[18px] border border-outline-variant/40 bg-background px-4 py-3 no-underline transition-transform hover:-translate-y-0.5"
-          >
-            <div className="flex items-start gap-3">
-              <span
-                className="material-symbols-outlined mt-0.5 text-[21px]"
-                style={{ color: mode.tone, fontVariationSettings: "'FILL' 1" }}
-              >
-                {mode.icon}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[13px] font-label font-extrabold text-on-surface leading-tight">
-                  {mode.label}
-                </span>
-                <span className="mt-1 block text-[11.5px] font-body font-semibold leading-4 text-on-surface-variant">
-                  {mode.sub}
-                </span>
-              </span>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
-  )
-}
-
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -253,12 +165,24 @@ export default async function DashboardPage() {
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, featuredAutopsy, activePlanResult] = await Promise.all([
+  // Grounded coach read for the hero (Zone 1). getHatchContext returns the
+  // user's six competency scores+trends, weakest competency, and recent
+  // completions. Empty/new users fall back gracefully inside CoachSpineCard.
+  const hatchContext = userId ? await getHatchContext(userId).catch(() => null) : null
+  const weakestCompetency = hatchContext?.weakestCompetency ?? null
+  const weakest = weakestCompetency
+    ? hatchContext?.competencies.find(c => c.competency === weakestCompetency) ?? null
+    : null
+  const coachCompetencyScore = weakest ? Math.round(weakest.score) : null
+  const coachCompetencyTrend = weakest?.trend ?? null
+  const coachOverallLevel = hatchContext?.overallLevel ?? 'Beginner'
+  const coachRecentCompletions = hatchContext?.recentCompletions.length ?? 0
+
+  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, featuredAutopsy, activePlanResult] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId, { display_name: rawDisplayName, xp_total: xpTotal }) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
-    userId ? getCommunityActivityFeed(6) : [],
     getFeaturedAutopsyForDashboard(),
     userId
       ? adminClient
@@ -502,12 +426,20 @@ export default async function DashboardPage() {
 
   const userEntry = (leaderboard as { rank: number; isCurrentUser?: boolean }[]).find(e => e.isCurrentUser)
   const userRank = userEntry?.rank ?? 0
+  // LeaderboardPeekCard self-hides under 3 entries; mirror that here so Trending
+  // spans full width instead of leaving a dead 2fr column at 1440.
+  const hasLeaderboard = leaderboard.length >= 3
 
   const interviews: UserInterview[] = interviewDate
     ? [{ id: '0', user_id: userId, company: null, role: null, round: null, interview_date: interviewDate, notes: null, created_at: interviewDate }]
     : []
-  const hasFollowUpCards = Boolean(latestInterview || enrolledPlans.length > 0)
-  const showSplitFollowUps = Boolean(latestInterview && enrolledPlans.length > 0)
+  // Zone 4: only render cards that have real data to act on.
+  const hasPausedLoop = Boolean(pausedLoopData)
+  const hasLatestInterview = Boolean(latestInterview)
+  const hasEnrolledPlans = enrolledPlans.length > 0
+  const hasInterviewCountdown = Boolean(interviewDate && (roleContext === 'engineer_pm_interview' || roleContext === 'both'))
+  const hasAchievements = achievementData.length > 0
+  const hasZone4 = hasPausedLoop || hasLatestInterview || hasEnrolledPlans || hasInterviewCountdown || hasAchievements
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7">
@@ -516,124 +448,154 @@ export default async function DashboardPage() {
         <UpgradedBanner />
       </Suspense>
 
-      {/* Unified dashboard — same layout for first-time and calibrated users.
-          Calibration-seeded cards (FLOW Levels) lock until calibration is done;
-          activity-driven cards render their genuine empty states. */}
-      <div className="grid min-w-0 grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_340px]">
-          {/* Main column */}
-          <div className="flex flex-col gap-6 min-w-0">
-            <HeroGreeterCard
-              displayName={displayName}
-              streakDays={streakDays}
-              xpTotal={xpTotal}
-              focusMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
-              focusLevel={allMoveLevels[0]?.level ?? 1}
-              dailyDone={dailyDone}
-              isCalibrated={isCalibrated}
-              sessionHref={
-                nextChallenge
-                  ? challengePath(nextChallenge)
-                  : '/challenges'
-              }
-              studyPlanHref={enrolledPlans.length > 0 ? `/explore/plans/${enrolledPlans[0].slug}` : '/explore/plans'}
-            />
+      {/* Single-column zone layout — no dead right rail at 1440px.
+          Old grid-cols-[1fr_340px] left a huge empty cream column at wide
+          viewports. All cards now fill the full width across four zones. */}
+      <div className="flex flex-col gap-7">
 
-            <BillingDashboardNudge plan={plan} />
+        {/* ZONE 1 — Coach Spine: personalized, data-grounded hero.
+            getHatchContext is awaited above and its output (weakest competency,
+            score, trend) threads into CoachSpineCard. Falls back gracefully
+            for new users with no competency data yet. */}
+        <CoachSpineCard
+          displayName={displayName}
+          streakDays={streakDays}
+          xpTotal={xpTotal}
+          focusMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
+          focusLevel={allMoveLevels[0]?.level ?? 1}
+          dailyDone={dailyDone}
+          isCalibrated={isCalibrated}
+          sessionHref={nextChallenge ? challengePath(nextChallenge) : '/challenges'}
+          studyPlanHref={enrolledPlans.length > 0 ? `/explore/plans/${enrolledPlans[0].slug}` : '/explore/plans'}
+          weakestCompetency={weakestCompetency}
+          competencyScore={coachCompetencyScore}
+          competencyTrend={coachCompetencyTrend}
+          overallLevel={coachOverallLevel}
+          recentCompletions={coachRecentCompletions}
+        />
 
-            <HatchOperatingSystemCard />
+        <BillingDashboardNudge plan={plan} />
 
-            {featuredAutopsy && (
-              <FeaturedAutopsyCard story={featuredAutopsy.story} company={featuredAutopsy.company} />
-            )}
+        {/* ZONE 2 — Cadence ribbon: streak week grid + today's path steps merged
+            into one full-width horizontal strip (replaces the dead 340px rail). */}
+        {userId && (weekDates.length > 0 || todaysPathSteps.length > 0) && (
+          <CadenceRibbon
+            streakDays={streakDays}
+            xpTotal={xpTotal}
+            dailyDone={dailyDone}
+            todaysPathSteps={todaysPathSteps}
+            todaysPathCompleted={todaysPathCompleted}
+            weekDates={weekDates}
+          />
+        )}
 
-            {/* FLOW Disciplines explorer card */}
-            <DisciplineExplorer />
+        {/* ZONE 3 — The Bench: practice entry points filling the full width. */}
+        <div className="flex flex-col gap-5">
 
-            {/* Resume / Quick Take row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* scroll-mt offsets the fixed top bar when linked via #quick-take */}
-              <div id="quick-take" className="scroll-mt-24">
-                <QuickTakeCard
-                  prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
-                  challengeId={quickTakePrompt?.id ?? 'orientation'}
-                  hatchContext={null}
-                />
-              </div>
-              {nextChallenge?.domainName ? (
-                <NextChallengeCard
-                  title={nextChallenge.title}
-                  domain={nextChallenge.domainName}
-                  difficulty={nextChallenge.difficulty ?? 'standard'}
-                  challengeId={nextChallenge.slug ?? nextChallenge.id}
-                  catalogNumber={formatChallengeNumber(nextChallenge.challenge_type, nextChallenge.display_number)}
-                  hatchInsight={nextChallenge.hatch_insight ?? null}
-                  activePlanSlug={activePlanSlug}
-                />
-              ) : (
-                <NextChallengeCard
-                  title="Designing a Metric Dashboard for a B2B SaaS Tool"
-                  domain="Product Sense"
-                  difficulty="standard"
-                  challengeId="orientation"
-                  hatchInsight={null}
-                  activePlanSlug={activePlanSlug}
-                />
-              )}
+          {/* Top row: Quick Take + Next Challenge + Featured Autopsy */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div id="quick-take" className="scroll-mt-24">
+              <QuickTakeCard
+                prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
+                challengeId={quickTakePrompt?.id ?? 'orientation'}
+                hatchContext={null}
+              />
             </div>
 
-            {/* FLOW Move Levels — calibration seeds these, so lock until done */}
-            {isCalibrated ? (
-              <FlowMoveLevelsCard levels={allMoveLevels} />
+            {nextChallenge?.domainName ? (
+              <NextChallengeCard
+                title={nextChallenge.title}
+                domain={nextChallenge.domainName}
+                difficulty={nextChallenge.difficulty ?? 'standard'}
+                challengeId={nextChallenge.slug ?? nextChallenge.id}
+                catalogNumber={formatChallengeNumber(nextChallenge.challenge_type, nextChallenge.display_number)}
+                hatchInsight={nextChallenge.hatch_insight ?? null}
+                activePlanSlug={activePlanSlug}
+              />
             ) : (
-              <LockOverlay>
-                <FlowMoveLevelsCard levels={allMoveLevels} />
-              </LockOverlay>
+              <NextChallengeCard
+                title="Designing a Metric Dashboard for a B2B SaaS Tool"
+                domain="Product Sense"
+                difficulty="standard"
+                challengeId="orientation"
+                hatchInsight={null}
+                activePlanSlug={activePlanSlug}
+              />
             )}
 
-            {hasFollowUpCards && (
-              <div className={`grid grid-cols-1 gap-4 ${showSplitFollowUps ? 'xl:grid-cols-2' : 'xl:max-w-[640px]'}`}>
-                {latestInterview && <LatestInterviewCard data={latestInterview} />}
-                {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
+            {featuredAutopsy ? (
+              <FeaturedAutopsyCard story={featuredAutopsy.story} company={featuredAutopsy.company} />
+            ) : (
+              <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 flex items-center justify-center p-6 min-h-[160px]">
+                <Link
+                  href="/explore/autopsies"
+                  className="flex flex-col items-center gap-2 text-on-surface-variant text-center no-underline hover:text-on-surface transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[32px]" style={{ fontVariationSettings: "'FILL' 0" }}>biotech</span>
+                  <span className="text-[13px] font-label font-semibold">Browse Autopsies</span>
+                  <span className="text-[11px]">Real product decision trees</span>
+                </Link>
               </div>
-            )}
-
-            {/* Secondary row */}
-            <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
-              <HotChallengesCard challenges={hotChallenges} />
-              <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
-            </div>
-
-            <CommunityActivityCard events={communityActivity} />
-
-            {/* Interview Countdown — only for users who selected an interview goal */}
-            {interviewDate && (roleContext === 'engineer_pm_interview' || roleContext === 'both') && (
-              <InterviewCountdownCard interviews={interviews} />
             )}
           </div>
 
-          {/* Right rail */}
-          <aside className="hidden min-w-0 flex-col gap-5 lg:flex">
-            {todaysPathSteps.length > 0 && (
-              <TodaysPathCard steps={todaysPathSteps} completedCount={todaysPathCompleted} />
-            )}
-            {pausedLoopData && (
-              <PausedLoopCard
-                loop={pausedLoopData.loop as unknown as InterviewLoop}
-                rounds={pausedLoopData.rounds as unknown as LoopRound[]}
-              />
-            )}
-            {achievementData.length > 0 && (
-              <AchievementsCard
-                achievements={achievementData}
-                unlockedCount={achievementData.filter(a => a.unlocked).length}
-                totalCount={achievementData.length}
-              />
-            )}
-            {weekDates.length > 0 && (
-              <StreakCalendarCard streakDays={streakDays} weekDates={weekDates} />
-            )}
-          </aside>
+          {/* FLOW Move Levels — full width, calibration-gated */}
+          {isCalibrated ? (
+            <FlowMoveLevelsCard levels={allMoveLevels} />
+          ) : (
+            <LockOverlay>
+              <FlowMoveLevelsCard levels={allMoveLevels} />
+            </LockOverlay>
+          )}
+
+          {/* Hot Challenges + Leaderboard — side by side only when the
+              leaderboard has enough entries; otherwise Trending spans full width
+              so there is no dead column at wide widths. */}
+          {hasLeaderboard ? (
+            <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-5">
+              <HotChallengesCard challenges={hotChallenges} />
+              <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
+            </div>
+          ) : (
+            <HotChallengesCard challenges={hotChallenges} />
+          )}
         </div>
+
+        {/* ZONE 4 — Continue strip: only render when there is something to act on.
+            Streak + today's path live in Zone 2 and are not repeated here. */}
+        {hasZone4 && (
+          <section aria-label="Continue where you left off">
+            <div className="text-[10px] font-label font-extrabold uppercase tracking-[0.12em] text-on-surface-variant mb-3">
+              Continue
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {hasPausedLoop && pausedLoopData && (
+                <PausedLoopCard
+                  loop={pausedLoopData.loop as unknown as InterviewLoop}
+                  rounds={pausedLoopData.rounds as unknown as LoopRound[]}
+                />
+              )}
+              {hasLatestInterview && latestInterview && (
+                <LatestInterviewCard data={latestInterview} />
+              )}
+              {hasEnrolledPlans && (
+                <EnrolledPlansCard plans={enrolledPlans} />
+              )}
+              {hasInterviewCountdown && (
+                <InterviewCountdownCard interviews={interviews} />
+              )}
+              {hasAchievements && (
+                <AchievementsCard
+                  achievements={achievementData}
+                  unlockedCount={achievementData.filter(a => a.unlocked).length}
+                  totalCount={achievementData.length}
+                />
+              )}
+            </div>
+          </section>
+        )}
+
+      </div>
     </div>
   )
 }

@@ -10,7 +10,13 @@ interface LeaderboardPeekCardProps {
   userRank: number
 }
 
-const RANK_MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
+// Top-3 get a tonal medal glyph (Material Symbol, never an emoji — emoji are
+// banned in UI). Gold/silver/bronze via Terra-harmonious tints, not raw neon.
+const RANK_MEDAL_COLOR: Record<number, string> = {
+  1: '#a9772f', // amber/gold (Terra tertiary family)
+  2: '#8a8a82', // muted silver
+  3: '#9c6b3f', // warm bronze
+}
 
 export function LeaderboardPeekCard({ entries, userRank }: LeaderboardPeekCardProps) {
   if (entries.length < 3) return null
@@ -37,8 +43,15 @@ export function LeaderboardPeekCard({ entries, userRank }: LeaderboardPeekCardPr
               entry.isCurrentUser ? 'bg-primary-fixed/70' : 'hover:bg-surface-container'
             }`}
           >
-            <span className="w-5 text-center text-sm shrink-0 leading-none">
-              {RANK_MEDALS[entry.rank] ?? (
+            <span className="w-5 flex items-center justify-center shrink-0 leading-none">
+              {RANK_MEDAL_COLOR[entry.rank] ? (
+                <span
+                  className="material-symbols-outlined text-[18px] leading-none"
+                  style={{ color: RANK_MEDAL_COLOR[entry.rank], fontVariationSettings: "'FILL' 1" }}
+                >
+                  workspace_premium
+                </span>
+              ) : (
                 <span className="text-[11px] font-bold text-on-surface-variant font-label tabular-nums">{entry.rank}</span>
               )}
             </span>
