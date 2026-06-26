@@ -333,10 +333,10 @@ function ExplorePageBackdrop() {
       <svg className="absolute left-1/2 top-0 h-[460px] w-[1100px] -translate-x-1/2 opacity-[0.18]" viewBox="0 0 1100 460" fill="none">
         <path d="M56 216 C186 118, 302 316, 458 180 S752 80, 1032 220" stroke="#4a7c59" strokeWidth="1.5" strokeDasharray="8 12" />
         <path d="M38 312 C202 188, 356 388, 532 246 S802 140, 1068 294" stroke="#c9933a" strokeWidth="1.2" strokeDasharray="5 13" />
-        <path d="M154 96 C300 34, 380 188, 516 122 S764 20, 942 92" stroke="#3b6ed4" strokeWidth="1" strokeDasharray="4 14" />
+        <path d="M154 96 C300 34, 380 188, 516 122 S764 20, 942 92" stroke="#2e5e40" strokeWidth="1" strokeDasharray="4 14" />
         <circle cx="178" cy="152" r="5" fill="#4a7c59" />
         <circle cx="704" cy="96" r="5" fill="#c9933a" />
-        <circle cx="940" cy="238" r="5" fill="#3b6ed4" />
+        <circle cx="940" cy="238" r="5" fill="#2e5e40" />
       </svg>
     </div>
   )
@@ -349,7 +349,7 @@ function ExploreHeroPattern() {
       <path d="M92 52 H524 M92 92 H424 M92 132 H560 M92 172 H380" stroke="#2e3230" strokeWidth="1" strokeDasharray="4 10" opacity="0.36" />
       <rect x="388" y="50" width="86" height="60" rx="16" fill="#4a7c59" opacity="0.12" />
       <rect x="468" y="132" width="72" height="72" rx="18" fill="#c9933a" opacity="0.12" />
-      <circle cx="302" cy="110" r="34" fill="#3b6ed4" opacity="0.10" />
+      <circle cx="302" cy="110" r="34" fill="#2e5e40" opacity="0.10" />
     </svg>
   )
 }
