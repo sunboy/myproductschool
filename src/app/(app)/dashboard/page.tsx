@@ -25,6 +25,8 @@ import { BillingDashboardNudge } from '@/components/billing/BillingDashboardNudg
 import { FeaturedAutopsyCard } from '@/components/dashboard/cards/FeaturedAutopsyCard'
 import { CoachSpineCard } from '@/components/dashboard/cards/CoachSpineCard'
 import { CadenceRibbon } from '@/components/dashboard/cards/CadenceRibbon'
+import { AnalyticsLabCard } from '@/components/dashboard/cards/AnalyticsLabCard'
+import { getCcAnalyticsFrontDoor } from '@/lib/data/cc-analytics-frontdoor'
 import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
 import { getHatchContext } from '@/lib/hatch-context'
 import type { UserInterview } from '@/lib/data/dashboard'
@@ -164,6 +166,12 @@ export default async function DashboardPage() {
 
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
+
+  // Anchor feature front door (Zone 3). Resolves access + skills compounded +
+  // last scorecard + start/resume challenge. Fails soft to a disabled tile.
+  const ccAnalytics = userId
+    ? await getCcAnalyticsFrontDoor(adminClient, userId).catch(() => null)
+    : null
 
   // Grounded coach read for the hero (Zone 1). getHatchContext returns the
   // user's six competency scores+trends, weakest competency, and recent
@@ -491,6 +499,10 @@ export default async function DashboardPage() {
 
         {/* ZONE 3 — The Bench: practice entry points filling the full width. */}
         <div className="flex flex-col gap-5">
+
+          {/* Anchor: Claude Code Analytics front door. Self-hides when the
+              feature is off; dominant dark tile when on. */}
+          {ccAnalytics?.enabled && <AnalyticsLabCard data={ccAnalytics} />}
 
           {/* Top row: Quick Take + Next Challenge + Featured Autopsy */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
