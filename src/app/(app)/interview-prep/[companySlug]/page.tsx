@@ -25,7 +25,7 @@ export default async function CompanyProfilePage({
       <AppBreadcrumbs
         className="mb-6"
         items={[
-          { label: 'Interview Prep', href: '/interview-prep' },
+          { label: 'Interviews', href: '/live-interviews' },
           { label: company.name },
         ]}
       />
@@ -94,7 +94,6 @@ export default async function CompanyProfilePage({
             interviewDate="Mar 28, 2026"
             daysRemaining={14}
             readinessPercent={35}
-            comparativeInsight="Ahead of 72% of candidates at this stage"
           />
 
           {/* Mentor card */}

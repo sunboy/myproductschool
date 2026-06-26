@@ -14,8 +14,6 @@ const DIFF_CONFIG: Record<string, { bg: string; iconBg: string; artColor: string
   advanced:     { bg: '#ecdeff', iconBg: '#8b46d4', artColor: '#a878d6' },
 }
 
-const ENROLLED_COUNTS = [1243, 892, 441, 2104, 388, 219]
-
 function BeginnersArt({ color }: { color: string }) {
   const waves = [
     'M-10 40 C 20 30, 60 50, 100 40 C 140 30, 180 50, 230 40',
@@ -69,7 +67,7 @@ function AdvancedArt({ color }: { color: string }) {
   )
 }
 
-export function StudyPlanCard({ plan, index = 0 }: StudyPlanCardProps & { index?: number }) {
+export function StudyPlanCard({ plan }: StudyPlanCardProps & { index?: number }) {
   const [hovered, setHovered] = useState(false)
   const diff = (plan.difficulty ?? 'intermediate').toLowerCase()
   const cfg = DIFF_CONFIG[diff] ?? DIFF_CONFIG.intermediate
@@ -77,7 +75,7 @@ export function StudyPlanCard({ plan, index = 0 }: StudyPlanCardProps & { index?
   const hasProgress = plan.progress_percentage > 0
   const isEnrolled = plan.is_enrolled ?? false
   const ctaLabel = hasProgress ? 'Resume' : isEnrolled ? 'Begin' : 'Start plan'
-  const enrolledCount = ENROLLED_COUNTS[index % 6]
+  const itemCount = plan.item_count ?? plan.items?.length ?? 0
 
   return (
     <Link
@@ -203,10 +201,12 @@ export function StudyPlanCard({ plan, index = 0 }: StudyPlanCardProps & { index?
           {ctaLabel}
           <span className="material-symbols-outlined" style={{ fontSize: 15 }}>arrow_forward</span>
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--font-label)', fontSize: 12, color: 'rgba(0,0,0,0.45)' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1" }}>group</span>
-          {enrolledCount.toLocaleString()}
-        </div>
+        {itemCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--font-label)', fontSize: 12, color: 'rgba(0,0,0,0.45)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1" }}>list_alt</span>
+            {itemCount} {itemCount === 1 ? 'challenge' : 'challenges'}
+          </div>
+        )}
       </div>
     </Link>
   )

@@ -708,9 +708,9 @@ export function PostSessionMirror({
               className="material-symbols-outlined"
               style={{ fontSize: 16, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
             >
-              dashboard
+              list_alt
             </span>
-            Dashboard
+            Back to practice
           </button>
           {onNextChallenge && (
             <button

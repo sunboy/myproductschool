@@ -46,13 +46,47 @@ interface FeedbackPageProps {
 
 export default async function FeedbackPage({ params, searchParams }: FeedbackPageProps) {
   const { id } = await params
-  const { attempt, returnTo: rawReturnTo } = await searchParams
+  const { attempt: attemptParam, returnTo: rawReturnTo } = await searchParams
   const returnTo = sanitizeReturnTo(rawReturnTo)
 
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()
 
-  const isMock = IS_MOCK || attempt === 'mock' || !attempt
+  // Explicit demo mode only. A real, signed-in user who lands here without an
+  // `attempt` id must NEVER be shown canned MOCK coaching — for an AI-coaching
+  // product that is the most corrosive possible bug. Instead, when no attempt
+  // is supplied we resolve their latest completed attempt for this challenge
+  // server-side and grade against THAT. If they have none, we render an honest
+  // "no graded attempt yet" state below — not fabricated praise.
+  const isMock = IS_MOCK || attemptParam === 'mock'
+
+  // Resolve the effective attempt id: the explicit param, else the user's most
+  // recent completed attempt on this challenge.
+  let attempt: string | undefined = attemptParam && attemptParam !== 'mock' ? attemptParam : undefined
+  let noGradedAttempt = false
+  if (!isMock && !attempt) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const adminClient = createAdminClient()
+      const { data: latest } = await adminClient
+        .from('challenge_attempts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('challenge_id', id)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (latest?.id) {
+        attempt = latest.id as string
+      } else {
+        noGradedAttempt = true
+      }
+    } else {
+      noGradedAttempt = true
+    }
+  }
 
   let feedback: HatchFeedbackItem[] = isMock ? MOCK_FEEDBACK : []
   let feedbackFull: typeof MOCK_FEEDBACK_FULL | undefined = isMock ? MOCK_FEEDBACK_FULL : undefined
@@ -203,9 +237,60 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         }
       }
     } catch {
-      feedback = MOCK_FEEDBACK
-      feedbackFull = MOCK_FEEDBACK_FULL
+      // A real attempt failed to load — show the honest empty/error state rather
+      // than fabricating coaching the user never received.
+      noGradedAttempt = true
     }
+  }
+
+  // If we're in a real (non-mock) flow but resolved no graded content at all
+  // (attempt belonged to another user, was deleted, or has no feedback), do not
+  // fall through to MOCK_FEEDBACK_FULL — show the honest empty state.
+  if (!isMock && feedback.length === 0 && !mentalModelsBreakdown) {
+    noGradedAttempt = true
+  }
+
+  if (noGradedAttempt) {
+    const browseHref = returnTo ?? '/challenges'
+    const retryHref = appendReturnTo(`/workspace/challenges/${id}`, returnTo)
+    return (
+      <div className="max-w-2xl mx-auto px-4 md:px-6 py-12">
+        <AppBreadcrumbs
+          className="mb-8"
+          items={[
+            { label: 'Practice', href: browseHref },
+            { label: challenge.title, href: retryHref },
+            { label: 'Feedback' },
+          ]}
+        />
+        <div className="bg-surface-container rounded-2xl p-8 md:p-10 text-center editorial-shadow">
+          <HatchGlyph size={56} state="idle" className="text-primary mx-auto mb-5" />
+          <h1 className="font-headline text-2xl font-bold text-on-surface mb-2">
+            No graded attempt yet
+          </h1>
+          <p className="text-sm text-on-surface-variant leading-relaxed max-w-md mx-auto mb-7">
+            Hatch grades your reasoning the moment you submit. Run this challenge and
+            it will read your actual work, then break down what landed and the one
+            move that closes the gap.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href={retryHref}
+              className="inline-flex items-center gap-1.5 bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-base">play_arrow</span>
+              Start this challenge
+            </Link>
+            <Link
+              href={browseHref}
+              className="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-container rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              Browse practice
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Compute overall score on /100 scale

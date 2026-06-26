@@ -299,7 +299,9 @@ function SkillLadderContent() {
             </div>
             <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant relative before:content-[''] before:absolute before:-left-2 before:top-4 before:w-4 before:h-4 before:bg-surface-container-low before:rotate-45 before:border-l before:border-b before:border-outline-variant">
               <p className="text-sm font-medium text-on-surface">
-                You&apos;re {moveLevel < 5 ? `${Math.ceil((1 - moveProgress / 100) * 8)} challenges` : 'at the top'} away from Level {Math.min(moveLevel + 1, 5)}. Here&apos;s exactly what that unlocks.
+                {moveLevel < 5
+                  ? `You're ${Math.ceil((1 - moveProgress / 100) * 8)} challenges away from Level ${moveLevel + 1}. Here's exactly what that unlocks.`
+                  : `You're at the top of the ladder — Level 5. Here's how to keep that edge sharp.`}
               </p>
             </div>
           </div>

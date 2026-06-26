@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppTooltip } from '@/components/ui/AppTooltip'
+import { Md } from '@/components/ui/Md'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { formatScore } from '@/lib/format/score'
@@ -30,6 +31,7 @@ const FLOW_MOVES = [
 ] as const
 
 interface RecentAttempt {
+  id: string
   challenge_id: string
   challenge_title: string
   challenge_type?: string | null
@@ -845,12 +847,8 @@ export default function ProgressPage() {
                     <div style={{ height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 4, width: '66%' }} />
                   </div>
                 ) : reflection ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {reflection.split('\n\n').map((para, i) => (
-                      <p key={i} style={{ margin: 0, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.82)' }}>
-                        {para}
-                      </p>
-                    ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.82)' }}>
+                    <Md variant="chat" tone="inherit">{reflection}</Md>
                   </div>
                 ) : (
                   <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.62)' }}>
@@ -1062,7 +1060,7 @@ export default function ProgressPage() {
                         return (
                           <Link
                             key={i}
-                            href={`/challenges/${a.challenge_id}/feedback`}
+                            href={`/challenges/${a.challenge_id}/feedback${a.id ? `?attempt=${a.id}` : ''}`}
                             className="hover:bg-surface-container"
                             style={{
                               display: 'flex', alignItems: 'center', justifyContent: 'space-between',

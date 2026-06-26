@@ -2572,7 +2572,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Resolve challenge display data across both modes
   const challengeTitle = isApiMode ? detail?.challenge.title : adapterChallenge?.title
   const challengeScenarioQ = isApiMode ? detail?.challenge.scenario_question : adapterChallenge?.scenario_question
-  const scenarioRole = isApiMode ? detail?.challenge.scenario_role : adapterChallenge?.scenario_role
   const scenarioContext = isApiMode ? detail?.challenge.scenario_context : adapterChallenge?.scenario_context
   const scenarioTrigger = isApiMode ? detail?.challenge.scenario_trigger : adapterChallenge?.scenario_trigger
   const challenge = isApiMode ? detail?.challenge : adapterChallenge
@@ -2733,12 +2732,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </h2>
       )}
 
-      {/* Meta row */}
-      {scenarioRole && (
-        <div style={{ display: 'flex', gap: 12, fontSize: 12, fontWeight: 650, color: 'var(--color-on-surface-variant)', marginBottom: 20, fontFamily: 'var(--font-label)' }}>
-          <span>{scenarioRole}</span>
-        </div>
-      )}
+      {/* Role is metadata, never user-facing copy (voice rule: no role framing).
+          The scenario_role line that used to render here leaked labels like
+          "staff engineer" under the title — dropped. */}
 
       {/* Problem statement: technical types render as one continuous document
           (structure from the content's ## headings); flow/quick_take keep the
@@ -3929,17 +3925,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 {copied && <span style={{ fontSize: 11 }}>Copied!</span>}
               </button>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 999, background: '#4a7c59', display: 'inline-block' }} />
-              3,589 online
-            </div>
           </>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 999, background: '#4a7c59', display: 'inline-block' }} />
-            3,589 online
-          </div>
-        )}
+        ) : null}
       </div>
       {/* Drag handle spacer - matches drag handle visibility */}
       <div style={{ width: leftCollapsed ? 0 : 6, flexShrink: 0 }} />
@@ -4118,7 +4105,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <p className="font-body text-sm text-on-surface-variant">
         {isCodingChallenge
           ? 'This coding challenge uses a full code editor that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.'
-          : 'This system design challenge uses a drawing canvas that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.'}
+          : `This ${apiChallengeType === 'data_modeling' ? 'data modeling' : 'system design'} challenge uses a drawing canvas that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.`}
       </p>
       <a
         href="/challenges"

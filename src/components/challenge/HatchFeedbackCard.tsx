@@ -7,7 +7,7 @@ interface Props {
   attemptId?: string
 }
 
-export function HatchFeedbackCard({ challengeId, feedbackExcerpt, attemptId: _attemptId }: Props) {
+export function HatchFeedbackCard({ challengeId, feedbackExcerpt, attemptId }: Props) {
   const hasExcerpt = feedbackExcerpt && feedbackExcerpt.trim().length > 0
   const excerpt = hasExcerpt
     ? feedbackExcerpt.length > 200
@@ -43,7 +43,7 @@ export function HatchFeedbackCard({ challengeId, feedbackExcerpt, attemptId: _at
       <div className="mt-4 flex items-center justify-between">
         {hasExcerpt ? (
           <Link
-            href={`/challenges/${challengeId}/feedback`}
+            href={`/challenges/${challengeId}/feedback${attemptId ? `?attempt=${attemptId}` : ''}`}
             className="flex items-center gap-1 text-primary font-bold text-sm hover:underline"
           >
             See Full Feedback

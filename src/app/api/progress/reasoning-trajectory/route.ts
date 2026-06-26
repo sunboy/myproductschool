@@ -459,7 +459,7 @@ export async function GET() {
         sourceLabel: 'Practice',
         title,
         evidence: signal,
-        href: `/challenges/${attempt.challenge_id}/feedback`,
+        href: `/challenges/${attempt.challenge_id}/feedback?attempt=${attempt.id}`,
         occurredAt: attempt.completed_at ?? lastRow.created_at ?? new Date().toISOString(),
       }
       events.push(event)
@@ -488,7 +488,7 @@ export async function GET() {
           sourceLabel: 'Workspace',
           title,
           evidence: grade.top_improvement ?? grade.top_strength,
-          href: `/challenges/${attempt.challenge_id}/feedback`,
+          href: `/challenges/${attempt.challenge_id}/feedback?attempt=${grade.attempt_id}`,
           occurredAt: grade.graded_at ?? attempt.completed_at ?? new Date().toISOString(),
         }
         events.push(event)
@@ -509,7 +509,7 @@ export async function GET() {
         sourceLabel: 'Workspace',
         title,
         evidence: grade.top_improvement ?? grade.top_strength,
-        href: `/challenges/${attempt.challenge_id}/feedback`,
+        href: `/challenges/${attempt.challenge_id}/feedback?attempt=${grade.attempt_id}`,
         occurredAt: grade.graded_at ?? attempt.completed_at ?? new Date().toISOString(),
       }
       events.push(event)
