@@ -11,6 +11,7 @@ import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, Syntheti
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
 import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
+import { FLOW_MOVES } from '@/lib/flow/moves'
 import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
 import { StepReveal } from './StepReveal'
@@ -2628,16 +2629,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }
 
   const STAGE_COLOR: Record<FlowStep, string> = {
-    frame:    '#4a7c59',
-    list:     '#6b8275',
-    optimize: '#c9933a',
-    win:      '#a878d6',
+    frame:    FLOW_MOVES.frame.color,
+    list:     FLOW_MOVES.list.color,
+    optimize: FLOW_MOVES.optimize.color,
+    win:      FLOW_MOVES.win.color,
   }
   const STAGE_ICON: Record<FlowStep, string> = {
-    frame:    'crop_free',
-    list:     'format_list_bulleted',
-    optimize: 'tune',
-    win:      'emoji_events',
+    frame:    FLOW_MOVES.frame.icon,
+    list:     FLOW_MOVES.list.icon,
+    optimize: FLOW_MOVES.optimize.icon,
+    win:      FLOW_MOVES.win.icon,
   }
   const STEP_LABEL: Record<FlowStep, string> = {
     frame:    'Frame',

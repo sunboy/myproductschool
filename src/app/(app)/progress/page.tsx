@@ -9,6 +9,7 @@ import { Md } from '@/components/ui/Md'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
+import { FLOW_MOVES as FLOW_MOVE_DEFS } from '@/lib/flow/moves'
 
 /* ── Humanize snake_case archetype labels ─────────────────────────── */
 
@@ -37,13 +38,13 @@ const EVENT_LABELS: Record<string, { icon: string; label: (p: Record<string, unk
   live_interview_end: { icon: 'mic', label: () => 'Finished a live interview' },
 }
 
-/* ── FLOW paradigm palette - matches /explore FLOW strip ─────────── */
+/* ── FLOW paradigm palette - canonical FLOW move colors/icons ─────── */
 
 const FLOW_MOVES = [
-  { k: 'Frame',    move: 'frame',    sub: 'Define the right problem',  color: '#4a7c59', bg: '#cfe3d3', icon: 'center_focus_strong' },
-  { k: 'List',     move: 'list',     sub: 'Generate quality options',  color: '#6b8275', bg: '#dfe7e1', icon: 'format_list_bulleted' },
-  { k: 'Optimize', move: 'optimize', sub: 'Pick and sharpen the best', color: '#c9933a', bg: '#f3e2b9', icon: 'tune' },
-  { k: 'Win',      move: 'win',      sub: 'Drive durable outcomes',    color: '#a878d6', bg: '#ecdeff', icon: 'emoji_events' },
+  { k: 'Frame',    move: 'frame',    sub: 'Define the right problem',  color: FLOW_MOVE_DEFS.frame.color,    bg: FLOW_MOVE_DEFS.frame.soft,    icon: FLOW_MOVE_DEFS.frame.icon },
+  { k: 'List',     move: 'list',     sub: 'Generate quality options',  color: FLOW_MOVE_DEFS.list.color,     bg: FLOW_MOVE_DEFS.list.soft,     icon: FLOW_MOVE_DEFS.list.icon },
+  { k: 'Optimize', move: 'optimize', sub: 'Pick and sharpen the best', color: FLOW_MOVE_DEFS.optimize.color, bg: FLOW_MOVE_DEFS.optimize.soft, icon: FLOW_MOVE_DEFS.optimize.icon },
+  { k: 'Win',      move: 'win',      sub: 'Drive durable outcomes',    color: FLOW_MOVE_DEFS.win.color,      bg: FLOW_MOVE_DEFS.win.soft,      icon: FLOW_MOVE_DEFS.win.icon },
 ] as const
 
 interface RecentAttempt {

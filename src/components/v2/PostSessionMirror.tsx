@@ -11,6 +11,7 @@ import {
   QUALITY_BADGE, STEP_ICONS,
   qualityToVerdict,
 } from './flow-constants'
+import { FLOW_MOVES } from '@/lib/flow/moves'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -77,10 +78,10 @@ const STEP_LABELS: Record<string, string> = {
 }
 
 const STEP_COLORS: Record<string, string> = {
-  frame: '#4a7c59',
-  list: '#6b8275',
-  optimize: '#c9933a',
-  win: '#a878d6',
+  frame: FLOW_MOVES.frame.color,
+  list: FLOW_MOVES.list.color,
+  optimize: FLOW_MOVES.optimize.color,
+  win: FLOW_MOVES.win.color,
 }
 
 const STEP_COMPETENCY_KEYS: Record<string, string[]> = {
