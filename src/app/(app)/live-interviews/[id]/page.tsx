@@ -534,6 +534,10 @@ export default function SessionPage({
   const preflightStreamRef = useRef<MediaStream | null>(null)
   const preflightCtxRef = useRef<AudioContext | null>(null)
   const preflightRafRef = useRef<number | null>(null)
+  // Bumped on every teardown so a getUserMedia() promise that resolves AFTER
+  // teardown (user already left the modal / started the session) drops its
+  // stream instead of reassigning the refs and recreating a preview stream.
+  const preflightGenerationRef = useRef(0)
   const [voiceFallback, setVoiceFallback] = useState(false) // user chose "Continue in chat instead"
 
   const eventSourceRef = useRef<EventSource | null>(null)
@@ -1138,6 +1142,9 @@ export default function SessionPage({
 
   /** Tear down the pre-flight audio graph so the live session can claim the mic cleanly. */
   const teardownPreflight = useCallback(() => {
+    // Invalidate any in-flight startMicPreflight: a getUserMedia() that resolves
+    // after this point will see a newer generation and drop its stream.
+    preflightGenerationRef.current += 1
     if (preflightRafRef.current !== null) {
       cancelAnimationFrame(preflightRafRef.current)
       preflightRafRef.current = null
@@ -1149,8 +1156,9 @@ export default function SessionPage({
   }, [])
 
   const startMicPreflight = useCallback(async (deviceId?: string) => {
-    // Stop any existing preflight first
+    // Stop any existing preflight first (this bumps the generation).
     teardownPreflight()
+    const generation = preflightGenerationRef.current
     setMicCheckState('checking')
     setMicLevel(0)
     setMicSeenSignal(false)
@@ -1162,6 +1170,12 @@ export default function SessionPage({
           : { echoCancellation: true, noiseSuppression: false },
       }
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      // Stale resolve: the user already left the modal or started the session.
+      // Drop this stream rather than wiring it up.
+      if (generation !== preflightGenerationRef.current) {
+        stream.getTracks().forEach((t) => t.stop())
+        return
+      }
       preflightStreamRef.current = stream
 
       // After grant, enumerate devices (labels are only populated post-permission)
@@ -1180,6 +1194,13 @@ export default function SessionPage({
         }
       } catch {
         // enumeration failure is non-fatal
+      }
+
+      // enumerateDevices awaited above; re-check we are still the live preflight
+      // before standing up an AudioContext on what may now be a torn-down stream.
+      if (generation !== preflightGenerationRef.current) {
+        stream.getTracks().forEach((t) => t.stop())
+        return
       }
 
       const ctx = new AudioContext({ latencyHint: 'interactive' })
@@ -1226,6 +1247,17 @@ export default function SessionPage({
     teardownPreflight()
     handleStartInterview()
   }, [teardownPreflight, handleStartInterview])
+
+  // Any exit from the ready modal (backdrop, close X, "Back to interviews")
+  // must release the mic preview before leaving.
+  const leaveReadyModal = useCallback(() => {
+    teardownPreflight()
+    router.push('/live-interviews')
+  }, [teardownPreflight, router])
+
+  // Safety net: release any held mic preview on unmount (route change, browser
+  // back) so a preflight stream/AudioContext never outlives this screen.
+  useEffect(() => teardownPreflight, [teardownPreflight])
 
   const handleSendChatMessage = useCallback(async (text: string) => {
     const userTurn: TranscriptTurn = { id: crypto.randomUUID(), role: 'user', content: text, source: 'chat' }
@@ -1589,7 +1621,7 @@ export default function SessionPage({
       <div
         className="fixed inset-0 flex items-center justify-center overflow-y-auto py-6"
         style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 200 }}
-        onClick={(e) => { if (e.target === e.currentTarget) router.push('/live-interviews') }}
+        onClick={(e) => { if (e.target === e.currentTarget) leaveReadyModal() }}
       >
         <div
           className="relative flex flex-col items-center gap-5 text-center mx-4 w-full"
@@ -1605,7 +1637,7 @@ export default function SessionPage({
         >
           {/* Close button */}
           <button
-            onClick={() => router.push('/live-interviews')}
+            onClick={leaveReadyModal}
             className="absolute top-4 right-4 flex items-center justify-center rounded-full transition-colors"
             style={{ width: 32, height: 32, background: 'rgba(255,255,255,0.07)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.14)' }}
@@ -1813,11 +1845,11 @@ export default function SessionPage({
               Continue in chat instead
             </button>
             <button
-              onClick={() => router.push('/live-interviews')}
+              onClick={leaveReadyModal}
               className="w-full rounded-full py-2 font-label text-xs font-semibold transition-colors"
-              style={{ background: 'transparent', color: 'rgba(255,255,255,0.28)' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.5)' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.28)' }}
+              style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.7)' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.5)' }}
             >
               Back to interviews
             </button>
@@ -1866,21 +1898,21 @@ export default function SessionPage({
 
   return (
     <div
-      className="fixed inset-0 flex flex-col overflow-hidden"
-      style={{ background: '#0d1410', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200, animation: 'darkRoomEnter 0.3s ease-out' }}
+      className="dark-room-enter fixed inset-0 flex flex-col overflow-hidden"
+      style={{ background: '#0d1410', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200 }}
     >
       <InterviewTourMount active={interviewPhase === 'active'} ready={turns.length > 0} />
       <style jsx global>{`
-        @media (prefers-reduced-motion: no-preference) {
-          @keyframes darkRoomEnter {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
+        @keyframes darkRoomEnter {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .dark-room-enter {
+          animation: darkRoomEnter 0.3s ease-out;
         }
         @media (prefers-reduced-motion: reduce) {
-          @keyframes darkRoomEnter {
-            from { opacity: 1; }
-            to { opacity: 1; }
+          .dark-room-enter {
+            animation: none;
           }
         }
         @keyframes orbRingAnim {
