@@ -3,6 +3,7 @@
 import { Component, use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { FLOW_MOVES } from '@/lib/flow/moves'
 import { cn } from '@/lib/utils'
 import { DEFAULT_PLAN_LIMITS } from '@/lib/usage/plan-limits-shared'
 import type { HatchAvatarState } from '@/components/live-interview/HatchAvatar'
@@ -142,18 +143,19 @@ interface TranscriptTurn {
 
 type InterviewPhase = 'loading' | 'ready' | 'active' | 'ended'
 
+// FLOW move colors + names resolved from the single source of truth.
 const FLOW_COLORS: Record<string, string> = {
-  frame: '#4a7c59',
-  list: '#6b8275',
-  optimize: '#c9933a',
-  win: '#a878d6',
+  frame: FLOW_MOVES.frame.color,
+  list: FLOW_MOVES.list.color,
+  optimize: FLOW_MOVES.optimize.color,
+  win: FLOW_MOVES.win.color,
 }
 
 const FLOW_NAMES: Record<string, string> = {
-  frame: 'Frame',
-  list: 'List',
-  optimize: 'Optimize',
-  win: 'Win',
+  frame: FLOW_MOVES.frame.label,
+  list: FLOW_MOVES.list.label,
+  optimize: FLOW_MOVES.optimize.label,
+  win: FLOW_MOVES.win.label,
 }
 
 const COMPETENCY_LABELS: Record<string, string> = {

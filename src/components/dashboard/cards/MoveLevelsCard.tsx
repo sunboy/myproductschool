@@ -1,3 +1,5 @@
+import { FLOW_MOVES, type FlowMoveKey } from '@/lib/flow/moves'
+
 interface MoveLevel {
   move: string
   icon: string
@@ -9,12 +11,11 @@ interface MoveLevelsCardProps {
   levels: MoveLevel[]
 }
 
-// FLOW move accent colors
-const MOVE_COLORS: Record<string, { bar: string; bg: string; text: string }> = {
-  Frame:    { bar: '#3b82f6', bg: 'rgba(59,130,246,0.10)',  text: '#3b82f6' },
-  List:     { bar: '#10b981', bg: 'rgba(16,185,129,0.10)',  text: '#10b981' },
-  Optimize: { bar: '#f59e0b', bg: 'rgba(245,158,11,0.10)',  text: '#b45309' },
-  Win:      { bar: '#8b5cf6', bg: 'rgba(139,92,246,0.10)',  text: '#7c3aed' },
+// FLOW move accent colors — resolved from the single source of truth.
+function moveColors(move: string): { bar: string; bg: string; text: string } {
+  const m = FLOW_MOVES[move.toLowerCase() as FlowMoveKey]
+  if (!m) return { bar: '#4a7c59', bg: 'rgba(74,124,89,0.10)', text: '#4a7c59' }
+  return { bar: m.color, bg: m.soft, text: m.color }
 }
 
 export function MoveLevelsCard({ levels }: MoveLevelsCardProps) {
@@ -27,7 +28,7 @@ export function MoveLevelsCard({ levels }: MoveLevelsCardProps) {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {levels.map((lvl) => {
-          const colors = MOVE_COLORS[lvl.move] ?? { bar: '#4a7c59', bg: 'rgba(74,124,89,0.10)', text: '#4a7c59' }
+          const colors = moveColors(lvl.move)
           return (
             <div
               key={lvl.move}
