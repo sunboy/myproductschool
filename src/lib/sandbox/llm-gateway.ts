@@ -67,6 +67,17 @@ export async function mintSessionVirtualKey(
   // the moment it's up, instead of one long hang. 5 attempts × (9s + backoff)
   // covers a ~40-50s cold boot.
   const ATTEMPT_TIMEOUT_MS = parseInt(process.env.CC_MINT_ATTEMPT_TIMEOUT_MS ?? '9000', 10)
+  const keyAlias = `cc-${sessionId}`
+  // One-shot guard so a duplicate-alias recovery can't loop: provisionSession can
+  // run more than once per sessionId (the provision route is killed at Vercel's 60s
+  // ceiling AFTER /key/generate persisted the key in LiteLLM but BEFORE the host is
+  // saved, then the client retries). The retry re-mints the SAME alias, which newer
+  // LiteLLM rejects with 400 from _enforce_unique_key_alias. We delete the orphaned
+  // alias once and regenerate — the stale key has ~$0 spend (it was never handed to
+  // a live container), and the alias MUST stay `cc-<sessionId>` because spend
+  // tracking parses it via alias.slice(3). (Without this, the 400 was fatal and the
+  // session stuck in `provisioning` → "Sandbox took too long".)
+  let recoveredDup = false
   for (let attempt = 0; attempt < 5; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * attempt))
     try {
@@ -74,7 +85,7 @@ export async function mintSessionVirtualKey(
         method: 'POST',
         headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          key_alias: `cc-${sessionId}`,
+          key_alias: keyAlias,
           max_budget: budgetUsd,
           // Hard duration so a key can't be reused indefinitely; matches session TTL.
           duration: `${Math.max(60, ttlSeconds)}s`,
@@ -89,6 +100,23 @@ export async function mintSessionVirtualKey(
         // a real client error (bad master key, bad model) → fail fast.
         if (res.status >= 500) {
           lastErr = new Error(`LiteLLM key/generate ${res.status}: ${detail.slice(0, 200)}`)
+          continue
+        }
+        // Duplicate-alias 400: a prior (killed) provision already created this
+        // session's key. Delete it ONCE, then regenerate against the freed alias.
+        if (
+          res.status === 400 &&
+          !recoveredDup &&
+          /alias/i.test(detail) &&
+          /(exist|already|unique)/i.test(detail)
+        ) {
+          recoveredDup = true
+          await fetch(`${baseUrl}/key/delete`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key_aliases: [keyAlias] }),
+            signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
+          }).catch(() => {}) // best-effort; the regenerate is the source of truth
           continue
         }
         throw new TerminalKeyError(`LiteLLM key/generate failed (${res.status}): ${detail.slice(0, 300)}`)

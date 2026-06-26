@@ -13,6 +13,7 @@
 //   active        → revision Ready, wss_url set, usage recorded
 //   failed        → a step errored (client shows retry)
 
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
 import type { SessionEnv } from '@/lib/sandbox/types'
@@ -20,6 +21,14 @@ import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
 import { mintSessionVirtualKey, isGatewayConfigured, warmGateway } from '@/lib/sandbox/llm-gateway'
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { recordUsageEvent } from '@/lib/usage/check-limit'
+import { captureServerImmediate } from '@/lib/posthog/server'
+
+/**
+ * Step where provisioning died — surfaced to Sentry/PostHog so the next incident
+ * is diagnosable in minutes (this feature had ZERO failure instrumentation, so the
+ * gateway-400 root cause took a deep log dive to find).
+ */
+type ProvisionFailureCode = 'sql_wake_timeout' | 'gateway_key_mint' | 'create_session' | 'readiness_timeout'
 
 // Readiness is the REVISION Ready condition (control-plane truth the container
 // is up). On Vercel Hobby a function is KILLED at 60s, so we do NOT block the
@@ -93,7 +102,12 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
       const sql = await ensureSqlRunnable(SQL_WAKE_MS)
       if (!sql.ready) {
         console.error('[cc/provision] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
-        await markFailed(admin, sessionId)
+        await markFailed(admin, sessionId, {
+          code: 'sql_wake_timeout',
+          userId: input.userId,
+          challengeId: input.challengeId,
+          error: new Error(`cc-llm-db not RUNNABLE in time (state: ${sql.state})`),
+        })
         return {
           ok: false,
           status: 503,
@@ -118,7 +132,19 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     // FAIL CLOSED when the gateway is configured — never hand a session the
     // shared uncapped key. Only the no-gateway (local/dev) path may fall back.
     if (isGatewayConfigured()) {
-      await markFailed(admin, sessionId)
+      // Pull the upstream gateway HTTP status out of the mint error message
+      // (`LiteLLM key/generate failed (400): ...`) so Sentry tags it — a surfaced
+      // 400 "key_alias already exists" is self-diagnosing.
+      const gatewayStatus = Number(
+        (err instanceof Error ? err.message : '').match(/\((\d{3})\)/)?.[1],
+      ) || undefined
+      await markFailed(admin, sessionId, {
+        code: 'gateway_key_mint',
+        userId: input.userId,
+        challengeId: input.challengeId,
+        gatewayStatus,
+        error: err,
+      })
       return {
         ok: false,
         status: 503,
@@ -164,7 +190,12 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
         .destroySession(partialHostId)
         .catch((e) => console.error('[cc/provision] partial teardown failed:', e))
     }
-    await markFailed(admin, sessionId)
+    await markFailed(admin, sessionId, {
+      code: 'create_session',
+      userId: input.userId,
+      challengeId: input.challengeId,
+      error: err,
+    })
     return { ok: false, status: 503, error: 'Sandbox provisioning failed. Please try again.' }
   }
 
@@ -246,9 +277,51 @@ async function markActiveAndMeter(
 async function markFailed(
   admin: ReturnType<typeof createAdminClient>,
   sessionId: string,
+  failure?: {
+    code: ProvisionFailureCode
+    userId?: string
+    challengeId?: string
+    /** The HTTP status from the upstream dependency (e.g. gateway 400), if known. */
+    gatewayStatus?: number
+    error?: unknown
+  },
 ): Promise<void> {
   await admin
     .from('claude_code_sessions')
     .update({ status: 'failed', ended_at: new Date().toISOString() })
     .eq('id', sessionId)
+
+  if (!failure) return
+
+  // Surface the failure to both observability planes. Before this, the start/
+  // provision path captured NOTHING — the user saw a friendly string and the real
+  // reason (e.g. gateway "400 key_alias already exists") was discarded.
+  const err =
+    failure.error instanceof Error
+      ? failure.error
+      : new Error(`cc provision failed: ${failure.code}`)
+  try {
+    Sentry.captureException(err, {
+      tags: {
+        feature: 'claude_code_analytics',
+        cc_failure_code: failure.code,
+        ...(failure.gatewayStatus ? { gateway_http_status: String(failure.gatewayStatus) } : {}),
+      },
+      extra: { sessionId, challengeId: failure.challengeId },
+    })
+  } catch {
+    /* never let observability break teardown */
+  }
+  await captureServerImmediate({
+    distinctId: failure.userId ?? 'server-anonymous',
+    event: 'cc_session_provision_failed',
+    properties: {
+      session_id: sessionId,
+      challenge_id: failure.challengeId,
+      failure_code: failure.code,
+      gateway_http_status: failure.gatewayStatus ?? null,
+      message: err.message.slice(0, 300),
+      ...(failure.userId ? {} : { $process_person_profile: false }),
+    },
+  }).catch(() => {})
 }

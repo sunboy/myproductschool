@@ -44,7 +44,7 @@ export async function POST(
   // --- Load the session row (ownership + status gate) ---
   const { data: session } = await admin
     .from('claude_code_sessions')
-    .select('id, user_id, challenge_id, status, wss_url, expires_at, transcript_uri')
+    .select('id, user_id, challenge_id, status, host_instance_id, wss_url, expires_at, transcript_uri')
     .eq('id', sessionId)
     .maybeSingle()
 
@@ -55,6 +55,22 @@ export async function POST(
   // Already live — return the connection (handles a double-call / reconnect).
   if (session.status === 'active' && session.wss_url) {
     return NextResponse.json({ status: 'active', wss_url: session.wss_url, expires_at: session.expires_at })
+  }
+
+  // Idempotency: a provisioning row whose revision was already PATCHed (host + wss
+  // persisted) must NOT re-enter provisionSession — re-minting the same key alias
+  // 400s on LiteLLM's _enforce_unique_key_alias, and re-creating the revision is
+  // wasted work. The client keeps polling /state, which finishes readiness. This is
+  // the common double-provision case (client double-fire / killed-then-retried AFTER
+  // host persist). The narrow window where the kill happened BEFORE host persist
+  // (host still NULL) falls through and is handled by the mint's duplicate-alias
+  // recovery in llm-gateway.ts.
+  if (session.status === 'provisioning' && session.host_instance_id && session.wss_url) {
+    return NextResponse.json({
+      status: 'provisioning',
+      wss_url: session.wss_url,
+      expires_at: session.expires_at,
+    })
   }
 
   // Anything other than a fresh provisioning row: tell the client to restart.
