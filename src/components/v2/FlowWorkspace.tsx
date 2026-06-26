@@ -1086,26 +1086,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiChallengeType, isCanvasChallenge])
 
-  // Canvas blank-state paralysis fix: open the Hatch dock the FIRST time a user
-  // lands on a canvas challenge so the coach is visibly present instead of a
-  // blank Excalidraw. Respects a one-time flag, so a user who later collapses
-  // it keeps it collapsed on subsequent canvas challenges.
-  useEffect(() => {
-    if (!isCanvasChallenge) return
-    if (typeof window === 'undefined') return
-    try {
-      const KEY = 'canvas-hatch-dock:auto-opened'
-      if (!localStorage.getItem(KEY)) {
-        setChatPanelOpen(true)
-        localStorage.setItem(KEY, '1')
-      }
-    } catch {
-      // localStorage unavailable (private mode) — open anyway; it's the safer
-      // default for a first canvas visit.
-      setChatPanelOpen(true)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCanvasChallenge])
+  // Canvas blank-state paralysis fix: the Hatch dock auto-opens the first time a
+  // user lands on a canvas challenge via CanvasChatPanel's autoOpenKey below (the
+  // dock owns its open state through useHatchDockState, so setChatPanelOpen can't
+  // drive it). One-shot, so a later collapse sticks.
 
   useEffect(() => {
     function handleOpenWorkspaceHatch(event: Event) {
@@ -4527,6 +4511,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 queuedPrompt={queuedHatchPrompt}
                 isOpen={chatPanelOpen}
                 onToggle={() => setChatPanelOpen((v) => !v)}
+                autoOpenKey="canvas"
                 onCanvasActions={handleCanvasActions}
                 proactiveNudge={proactiveNudge}
                 onDismissNudge={() => setProactiveNudge(null)}

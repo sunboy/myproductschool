@@ -35,6 +35,11 @@ interface CanvasChatPanelProps {
   queuedPrompt?: { id: string; text: string; autoSend?: boolean } | null
   isOpen: boolean
   onToggle: () => void
+  /** When set, the dock auto-opens (docked) the FIRST time this key is seen,
+   *  then never again. The panel owns its open state via useHatchDockState, so a
+   *  parent `isOpen` cannot force it; this is the supported way to open it once.
+   *  Used for first-session coaching on canvas and analytics. */
+  autoOpenKey?: string
   onCanvasActions?: (response: { message: string; actions: unknown[] }) => void | Promise<void>
   feedbackMode?: boolean
   grade?: InterviewGrade | null
@@ -161,6 +166,7 @@ export function CanvasChatPanel({
   queuedPrompt,
   isOpen,
   onToggle,
+  autoOpenKey,
   onCanvasActions,
   feedbackMode = false,
   grade = null,
@@ -235,6 +241,26 @@ export function CanvasChatPanel({
   // Suppress unused variable warnings - grade is reserved for future use; isOpen kept for callers
   void grade
   void isOpen
+
+  // First-session coaching: open the dock once (docked) the first time autoOpenKey
+  // is seen, then never again. The dock state lives in useHatchDockState (a parent
+  // isOpen can't drive it), so this is the supported one-shot open.
+  useEffect(() => {
+    if (!autoOpenKey) return
+    if (typeof window === 'undefined') return
+    try {
+      const k = `hatch-dock-autoopen:${autoOpenKey}`
+      if (!localStorage.getItem(k)) {
+        localStorage.setItem(k, '1')
+        if (mode === 'closed') setMode('docked')
+      }
+    } catch {
+      if (mode === 'closed') setMode('docked')
+    }
+  // Run once on mount for this key; mode/setMode are stable enough and we only
+  // act when currently closed.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenKey])
 
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault()

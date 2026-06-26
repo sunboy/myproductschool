@@ -26,6 +26,9 @@ export interface CcAnalyticsFrontDoor {
   entryChallengeSlug: string | null
   /** Title of the entry challenge, for the CTA label. */
   entryChallengeTitle: string | null
+  /** True when the entry challenge is an in-progress attempt (resume, not start),
+   *  so the CTA label can match what the link actually does. */
+  isResume: boolean
   /** Most recent completed analytics attempt, if any. */
   lastSession: {
     challengeTitle: string | null
@@ -41,6 +44,7 @@ const EMPTY: CcAnalyticsFrontDoor = {
   skillsCount: 0,
   entryChallengeSlug: null,
   entryChallengeTitle: null,
+  isResume: false,
   lastSession: null,
 }
 
@@ -71,6 +75,7 @@ export async function getCcAnalyticsFrontDoor(
     skillsCount,
     entryChallengeSlug: entry.slug,
     entryChallengeTitle: entry.title,
+    isResume: entry.isResume,
     lastSession,
   }
 }
@@ -92,11 +97,12 @@ async function countSkills(admin: SupabaseClient, userId: string): Promise<numbe
 }
 
 // Prefer a challenge the user has an in-progress attempt on (resume); else the
-// first published analytics challenge (start).
+// first published analytics challenge (start). isResume lets the CTA label match
+// what the link actually does.
 async function resolveEntryChallenge(
   admin: SupabaseClient,
   userId: string,
-): Promise<{ slug: string | null; title: string | null }> {
+): Promise<{ slug: string | null; title: string | null; isResume: boolean }> {
   try {
     const { data: inProgress } = await admin
       .from('challenge_attempts')
@@ -108,7 +114,7 @@ async function resolveEntryChallenge(
       .limit(1)
       .maybeSingle()
     const ipChallenge = (inProgress as { challenges?: { slug?: string; title?: string } } | null)?.challenges
-    if (ipChallenge?.slug) return { slug: ipChallenge.slug, title: ipChallenge.title ?? null }
+    if (ipChallenge?.slug) return { slug: ipChallenge.slug, title: ipChallenge.title ?? null, isResume: true }
 
     const { data: first } = await admin
       .from('challenges')
@@ -118,9 +124,9 @@ async function resolveEntryChallenge(
       .order('created_at', { ascending: true })
       .limit(1)
       .maybeSingle()
-    return { slug: (first?.slug as string) ?? null, title: (first?.title as string) ?? null }
+    return { slug: (first?.slug as string) ?? null, title: (first?.title as string) ?? null, isResume: false }
   } catch {
-    return { slug: null, title: null }
+    return { slug: null, title: null, isResume: false }
   }
 }
 

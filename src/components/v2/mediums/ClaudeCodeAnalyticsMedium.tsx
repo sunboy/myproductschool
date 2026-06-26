@@ -132,22 +132,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   useEffect(() => {
     setShowOnboarding(shouldShowOnboarding())
   }, [])
-
-  // First-session coaching: open the Hatch dock the FIRST time a user runs an
-  // analytics session so the coach is visibly present (it can see the terminal,
-  // active step, and MCP/skills state). One-time flag, so later collapses stick.
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      const KEY = 'cc-analytics-hatch-dock:auto-opened'
-      if (!localStorage.getItem(KEY)) {
-        setHatchOpen(true)
-        localStorage.setItem(KEY, '1')
-      }
-    } catch {
-      setHatchOpen(true)
-    }
-  }, [])
+  // First-session coaching: the dock is opened once via CanvasChatPanel's
+  // autoOpenKey below (the panel owns its open state, so setHatchOpen can't
+  // drive it).
 
   // Start + provision session. The flow is split so it fits Vercel Hobby's 60s
   // function ceiling on a cold start:
@@ -920,6 +907,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             scene={{ elementCount: 0, entities: [], connections: [], groups: [], freeText: [], foreignKeys: [] }}
             isOpen={hatchOpen}
             onToggle={() => setHatchOpen((v) => !v)}
+            autoOpenKey="cc-analytics"
             proactiveNudge={proactiveNudge ? { id: 'idle', text: proactiveNudge } : null}
             onDismissNudge={() => setProactiveNudge(null)}
             terminalTail={terminalTail.slice(-3000)}

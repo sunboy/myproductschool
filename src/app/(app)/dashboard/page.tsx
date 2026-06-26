@@ -167,16 +167,14 @@ export default async function DashboardPage() {
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  // Anchor feature front door (Zone 3). Resolves access + skills compounded +
-  // last scorecard + start/resume challenge. Fails soft to a disabled tile.
-  const ccAnalytics = userId
-    ? await getCcAnalyticsFrontDoor(adminClient, userId).catch(() => null)
-    : null
-
-  // Grounded coach read for the hero (Zone 1). getHatchContext returns the
-  // user's six competency scores+trends, weakest competency, and recent
-  // completions. Empty/new users fall back gracefully inside CoachSpineCard.
-  const hatchContext = userId ? await getHatchContext(userId).catch(() => null) : null
+  // Two independent reads, run in parallel so the front-door fetch (which may
+  // decompress the skills tarball) doesn't serialize before the coach read:
+  //  - ccAnalytics: anchor front door (access + skills + last scorecard + entry).
+  //  - hatchContext: grounded coach read for the hero (competencies + completions).
+  const [ccAnalytics, hatchContext] = await Promise.all([
+    userId ? getCcAnalyticsFrontDoor(adminClient, userId).catch(() => null) : Promise.resolve(null),
+    userId ? getHatchContext(userId).catch(() => null) : Promise.resolve(null),
+  ])
   const weakestCompetency = hatchContext?.weakestCompetency ?? null
   const weakest = weakestCompetency
     ? hatchContext?.competencies.find(c => c.competency === weakestCompetency) ?? null

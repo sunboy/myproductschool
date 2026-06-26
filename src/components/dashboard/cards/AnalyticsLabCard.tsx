@@ -22,8 +22,13 @@ export function AnalyticsLabCard({ data }: AnalyticsLabCardProps) {
     ? `/workspace/challenges/${data.entryChallengeSlug}`
     : '/challenges?discipline=analytics'
 
-  const resuming = Boolean(data.lastSession) === false && data.skillsCount > 0
-  const ctaLabel = data.lastSession ? 'Start a new run' : resuming ? 'Resume your session' : 'Start your first run'
+  // Label matches what the link does: resume when there's an in-progress attempt,
+  // else "new run" if they've finished one before, else "first run".
+  const ctaLabel = data.isResume
+    ? 'Resume your session'
+    : data.lastSession
+    ? 'Start a new run'
+    : 'Start your first run'
 
   return (
     <div
