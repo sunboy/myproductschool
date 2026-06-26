@@ -17,7 +17,7 @@ export default async function ConceptDetailPage({ params }: { params: Promise<{ 
       <AppBreadcrumbs
         items={[
           { label: 'Explore', href: '/explore' },
-          ...(domain ? [{ label: domain.title, href: `/domains/${domain.slug}` }] : []),
+          ...(domain ? [{ label: domain.title, href: `/explore/domains/${domain.slug}` }] : []),
           { label: concept.title },
         ]}
       />

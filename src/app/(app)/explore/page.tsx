@@ -561,7 +561,7 @@ function DomainRow({ domain, index }: { domain: DomainWithProgress; index: numbe
 
   return (
     <Link
-      href={`/domains/${domain.slug}`}
+      href={`/explore/domains/${domain.slug}`}
       data-hatch-sound="open"
       className="animate-fade-in-up group relative flex min-h-[112px] items-center gap-3 overflow-hidden rounded-xl border border-outline-variant/35 p-4 no-underline shadow-[0_16px_38px_-32px_rgba(46,50,48,0.72)] ring-1 ring-white/35 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_26px_52px_-34px_rgba(46,50,48,0.82)]"
       style={{ background: theme.bg, animationDelay: `${index * 55}ms` }}
