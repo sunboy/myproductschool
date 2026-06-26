@@ -21,6 +21,8 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useHatchContext } from '@/context/HatchContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { CanvasCoachCard } from '@/components/challenge/CanvasCoachCard'
+import { CanvasEmptyState } from '@/components/challenge/CanvasEmptyState'
+import { canvasStarterTemplate } from '@/lib/hatch/canvasSeeds'
 import { CanvasReadinessMeter } from '@/components/challenge/CanvasReadinessMeter'
 import { CanvasThinkingDock } from '@/components/challenge/CanvasThinkingDock'
 import { TourRunner } from '@/components/shell/TourRunner'
@@ -1050,6 +1052,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     })
   }, [])
 
+  // Drop the starter skeleton onto the canvas from the branded empty-state.
+  // Reuses the same executeActions path Hatch uses, so the layout engine places
+  // and connects the boxes; the empty-state un-mounts as soon as elements land.
+  const handleUseTemplate = useCallback(() => {
+    if (apiChallengeType !== 'system_design' && apiChallengeType !== 'data_modeling') return
+    handleCanvasActions({
+      message: 'starter template',
+      actions: canvasStarterTemplate(apiChallengeType),
+    })
+  }, [apiChallengeType, handleCanvasActions])
+
   // Seed type-specific default field labels when challenge type is known
   useEffect(() => {
     if (!isCanvasChallenge) return
@@ -1063,6 +1076,27 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiChallengeType, isCanvasChallenge])
+
+  // Canvas blank-state paralysis fix: open the Hatch dock the FIRST time a user
+  // lands on a canvas challenge so the coach is visibly present instead of a
+  // blank Excalidraw. Respects a one-time flag, so a user who later collapses
+  // it keeps it collapsed on subsequent canvas challenges.
+  useEffect(() => {
+    if (!isCanvasChallenge) return
+    if (typeof window === 'undefined') return
+    try {
+      const KEY = 'canvas-hatch-dock:auto-opened'
+      if (!localStorage.getItem(KEY)) {
+        setChatPanelOpen(true)
+        localStorage.setItem(KEY, '1')
+      }
+    } catch {
+      // localStorage unavailable (private mode) — open anyway; it's the safer
+      // default for a first canvas visit.
+      setChatPanelOpen(true)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCanvasChallenge])
 
   useEffect(() => {
     function handleOpenWorkspaceHatch(event: Event) {
@@ -4432,13 +4466,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     exportRef={canvasExportRef}
                   />
                   <CanvasTourMount active={isCanvasChallenge && !isSubmittingInterview} />
-                  <CanvasCoachCard
-                    challengeType={apiChallengeType as CanvasChallengeType}
-                    guidance={guidance}
-                    forceOpen={hintForceOpen}
-                    onOpenNotes={openContextPack}
-                    onAskHatch={queueHatchPrompt}
-                  />
+                  {/* Branded empty-state: replaces the blank-Excalidraw paralysis
+                      with a centered Hatch + three first moves. Shown only while
+                      the canvas has no entity; un-mounts the moment one lands. */}
+                  {scene.entities.length === 0 && (
+                    <CanvasEmptyState
+                      challengeType={apiChallengeType as CanvasChallengeType}
+                      guidance={guidance}
+                      onUseTemplate={handleUseTemplate}
+                      onAskHatch={queueHatchPrompt}
+                      onOpenNotes={openContextPack}
+                    />
+                  )}
+                  {/* The compact coach card carries the later phases once the user
+                      has drawn; hidden while the full empty-state is up. */}
+                  {scene.entities.length > 0 && (
+                    <CanvasCoachCard
+                      challengeType={apiChallengeType as CanvasChallengeType}
+                      guidance={guidance}
+                      forceOpen={hintForceOpen}
+                      onOpenNotes={openContextPack}
+                      onAskHatch={queueHatchPrompt}
+                    />
+                  )}
                   {/* Exit fullscreen - only visible when maximised, since the
                       topChrome (which holds the toggle in the unmaximised view)
                       is hidden behind the fixed overlay. */}
