@@ -497,9 +497,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const fromPlan = props.fromPlan
   const fromDomain = props.fromDomain
   const nextChallengeSlug = props.nextChallengeSlug
-  const nextChallengeHref = nextChallengeSlug
-    ? `/workspace/challenges/${nextChallengeSlug}${props.returnTo ? `?${new URLSearchParams({ returnTo: props.returnTo }).toString()}` : ''}`
-    : null
+  const nextChallengeHref = (() => {
+    if (!nextChallengeSlug) return null
+    // Carry the origin (plan / domain / returnTo) onto the next challenge so its
+    // breadcrumb trail and side index panel stay in the same context instead of
+    // silently resetting to generic Practice.
+    const qs = new URLSearchParams()
+    if (fromPlan) qs.set('from_plan', fromPlan)
+    if (fromDomain) qs.set('from_domain', fromDomain)
+    if (props.returnTo) qs.set('returnTo', props.returnTo)
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return `/workspace/challenges/${nextChallengeSlug}${suffix}`
+  })()
 
   // Declare step state first so it's available for the hook call below
   const [currentStep, setCurrentStep] = useState<FlowStep>('frame')
@@ -2286,8 +2295,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               step_signals: data.step_signals ?? [],
             }
             setCompletionData(cd)
-            if (fromPlan) {
-              window.dispatchEvent(new CustomEvent('challenge-completed', { detail: { challengeId, fromPlan } }))
+            // Refresh whichever origin index panel is mounted. StudyPlanIndexPanel
+            // keys off fromPlan, DomainIndexPanel off fromDomain — send both so the
+            // side rail never goes stale after a completion.
+            if (fromPlan || fromDomain) {
+              window.dispatchEvent(new CustomEvent('challenge-completed', { detail: { challengeId, fromPlan, fromDomain } }))
             }
             completeSession(cd, finalStepResults)
             // Reconcile the optimistic inline record (pushed above) with the full
