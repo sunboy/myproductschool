@@ -250,6 +250,16 @@ export async function POST(req: NextRequest) {
       status: 'provisioning',
       // Carry the prior workspace forward so provision can presign + restore it.
       transcript_uri: resumeSnapshotUri,
+      // CRITICAL: this upsert REPLACES a prior reaped/terminated row for the same
+      // attempt_id (onConflict). The prior row carries a stale host_instance_id +
+      // wss_url pointing at a revision that's gone. If we don't null them, the
+      // provision route's idempotency guard (status==='provisioning' && host &&
+      // wss_url) short-circuits and hands the client the DEAD revision/token →
+      // "Connecting…" forever against a 404 host. Reset them so provision runs
+      // fresh and derives a new revision + token from this new sessionId.
+      host_instance_id: null,
+      wss_url: null,
+      ended_at: null,
     },
     { onConflict: 'attempt_id', ignoreDuplicates: false },
   )
