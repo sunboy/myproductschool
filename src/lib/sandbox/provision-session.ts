@@ -132,11 +132,13 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     // FAIL CLOSED when the gateway is configured — never hand a session the
     // shared uncapped key. Only the no-gateway (local/dev) path may fall back.
     if (isGatewayConfigured()) {
-      // Pull the upstream gateway HTTP status out of the mint error message
-      // (`LiteLLM key/generate failed (400): ...`) so Sentry tags it — a surfaced
-      // 400 "key_alias already exists" is self-diagnosing.
+      // Pull the upstream gateway HTTP status out of the mint error message so
+      // Sentry tags it — a surfaced 400 "key_alias already exists" is self-
+      // diagnosing. Covers both mint error formats: terminal `... failed (400):`
+      // and retry-exhausted `... key/generate 500:`.
+      const msg = err instanceof Error ? err.message : ''
       const gatewayStatus = Number(
-        (err instanceof Error ? err.message : '').match(/\((\d{3})\)/)?.[1],
+        msg.match(/\((\d{3})\)/)?.[1] ?? msg.match(/key\/generate (\d{3})[: ]/)?.[1],
       ) || undefined
       await markFailed(admin, sessionId, {
         code: 'gateway_key_mint',
@@ -286,12 +288,18 @@ async function markFailed(
     error?: unknown
   },
 ): Promise<void> {
-  await admin
+  // CAS guard: only fail a row that is still `provisioning`. If a concurrent
+  // provision attempt for the same session already flipped it to `active`, this
+  // update matches nothing and we must NOT clobber the live session or emit a
+  // bogus failure event. (Codex review: two provisions racing before host persist.)
+  const { data: flipped } = await admin
     .from('claude_code_sessions')
     .update({ status: 'failed', ended_at: new Date().toISOString() })
     .eq('id', sessionId)
+    .eq('status', 'provisioning')
+    .select('id')
 
-  if (!failure) return
+  if (!failure || !flipped || flipped.length === 0) return
 
   // Surface the failure to both observability planes. Before this, the start/
   // provision path captured NOTHING — the user saw a friendly string and the real
