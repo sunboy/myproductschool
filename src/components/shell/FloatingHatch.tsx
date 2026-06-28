@@ -92,7 +92,8 @@ export function FloatingHatch() {
   const { muted, toggleMuted, play } = useHatchSonics()
 
   // Suppress on the challenge workspace - workspace has its own Hatch affordance
-  // (HatchSidePanel for FLOW, CanvasChatPanel for system_design/data_modeling)
+  // (the in-workspace coach dock for FLOW/coding, CanvasChatPanel for
+  // system_design/data_modeling).
   const isInWorkspace = /^\/workspace\/challenges\/[^/]+/.test(pathname)
 
   // Chat messages live in context so they persist across page navigations
