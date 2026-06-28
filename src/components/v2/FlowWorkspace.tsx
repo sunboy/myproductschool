@@ -569,6 +569,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [historyCodingLanguage, setHistoryCodingLanguage] = useState<SupportedLanguage | null>(null)
   const [historySubmittedCode, setHistorySubmittedCode] = useState<string | null>(null)
   const [historyGradeLoading, setHistoryGradeLoading] = useState(false)
+  // Cache /api/attempts/[id]/grade payloads by attemptId so re-clicking a past
+  // submission is instant (no spinner, no refetch). Only canvas/coding attempts
+  // ever populate this — FLOW renders from sessionHistory.stepResults directly.
+  const historyGradeCacheRef = useRef<Map<string, {
+    grade?: InterviewGrade | GradingFeedback | null
+    challengeType?: string | null
+    code?: string | null
+    language?: SupportedLanguage | null
+    correctness?: RunResult | null
+  }>>(new Map())
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
   const [contextPackOpen, setContextPackOpen] = useState(true)
   const [contextPack, setContextPack] = useState<ContextPackState>(EMPTY_CONTEXT_PACK_FIELDS)
@@ -782,6 +792,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [submissionsCount, setSubmissionsCount] = useState(0)
 
   // Load the persisted feedback payload when a history record is selected.
+  // FLOW attempts have no interview_grades/test_results row, so the grade
+  // endpoint always 404s for them — their detail renders from the in-memory
+  // sessionHistory record instead. Only canvas/coding attempts need the fetch,
+  // and once fetched the payload is cached so re-clicking a row is instant.
   useEffect(() => {
     if (selectedHistoryIdx === null) {
       setHistoryInterviewGrade(null)
@@ -789,10 +803,61 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setHistoryCodingCorrectness(null)
       setHistoryCodingLanguage(null)
       setHistorySubmittedCode(null)
+      setHistoryGradeLoading(false)
       return
     }
     const record = sessionHistory[selectedHistoryIdx]
     if (!record?.attemptId) return
+
+    const applyGrade = (data: {
+      grade?: InterviewGrade | GradingFeedback | null
+      challengeType?: string | null
+      code?: string | null
+      language?: SupportedLanguage | null
+      correctness?: RunResult | null
+    } | null) => {
+      const historyChallengeType = data?.challengeType ?? record.challengeType ?? apiChallengeType ?? null
+      if (historyChallengeType === 'sql' || historyChallengeType === 'algorithm') {
+        setHistoryCodingFeedback((data?.grade as GradingFeedback | null) ?? null)
+        setHistoryCodingCorrectness(data?.correctness ?? null)
+        setHistoryCodingLanguage(data?.language ?? null)
+        setHistorySubmittedCode(data?.code ?? null)
+        setHistoryInterviewGrade(null)
+      } else if (data?.grade) {
+        setHistoryInterviewGrade(data.grade as InterviewGrade)
+        setHistoryCodingFeedback(null)
+        setHistoryCodingCorrectness(null)
+        setHistoryCodingLanguage(null)
+        setHistorySubmittedCode(null)
+      } else {
+        setHistoryInterviewGrade(null)
+        setHistoryCodingFeedback(null)
+        setHistoryCodingCorrectness(null)
+        setHistoryCodingLanguage(null)
+        setHistorySubmittedCode(null)
+      }
+    }
+
+    // FLOW (and any non-canvas/non-coding type): no persisted grade row to load.
+    // Render directly from sessionHistory; skip the guaranteed-404 round-trip.
+    const recordType = record.challengeType ?? apiChallengeType ?? null
+    const needsGradeFetch = recordType === 'sql' || recordType === 'algorithm'
+      || recordType === 'system_design' || recordType === 'data_modeling'
+    if (!needsGradeFetch) {
+      setHistoryGradeLoading(false)
+      applyGrade(null)
+      return
+    }
+
+    // Cache hit — show the detail instantly, no spinner.
+    const cached = historyGradeCacheRef.current.get(record.attemptId)
+    if (cached) {
+      setHistoryGradeLoading(false)
+      applyGrade(cached)
+      return
+    }
+
+    let cancelled = false
     setHistoryGradeLoading(true)
     setHistoryInterviewGrade(null)
     setHistoryCodingFeedback(null)
@@ -808,18 +873,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         language?: SupportedLanguage | null
         correctness?: RunResult | null
       } | null) => {
-        const historyChallengeType = data?.challengeType ?? record.challengeType ?? apiChallengeType ?? null
-        if (historyChallengeType === 'sql' || historyChallengeType === 'algorithm') {
-          setHistoryCodingFeedback((data?.grade as GradingFeedback | null) ?? null)
-          setHistoryCodingCorrectness(data?.correctness ?? null)
-          setHistoryCodingLanguage(data?.language ?? null)
-          setHistorySubmittedCode(data?.code ?? null)
-        } else if (data?.grade) {
-          setHistoryInterviewGrade(data.grade as InterviewGrade)
-        }
+        if (data) historyGradeCacheRef.current.set(record.attemptId!, data)
+        if (!cancelled) applyGrade(data)
       })
       .catch(() => { /* leave null - render handles empty state */ })
-      .finally(() => setHistoryGradeLoading(false))
+      .finally(() => { if (!cancelled) setHistoryGradeLoading(false) })
+    return () => { cancelled = true }
   }, [apiChallengeType, selectedHistoryIdx, sessionHistory])
 
   // Load past completed attempts for this challenge from the DB. Reusable so it
@@ -913,17 +972,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Cheap count for the Submissions tab pill — a head-only count query, no
   // feedback_json payload — so the pill can show the prior-attempt count on
-  // mount without eagerly loading the full (heavy) history.
+  // mount without eagerly loading the full (heavy) history. When the count is
+  // non-zero we ALSO warm the full history in the background (idle-scheduled,
+  // off the mount critical path) so the first Submissions-tab open is instant
+  // instead of flashing a skeleton while the list loads.
   useEffect(() => {
     if (!isApiMode || !challengeId) return
     let cancelled = false
     fetch(`/api/attempts?challenge_id=${encodeURIComponent(challengeId)}&count=1`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { count?: number } | null) => {
-        if (!cancelled && typeof d?.count === 'number') setSubmissionsCount(d.count)
+        if (cancelled || typeof d?.count !== 'number') return
+        setSubmissionsCount(d.count)
+        if (d.count > 0 && !submissionsLoaded && !submissionsLoading) {
+          const warm = () => { if (!cancelled) void loadSubmissionHistory() }
+          // Defer so it never competes with first paint or the active question.
+          const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback
+          if (typeof ric === 'function') ric(warm, { timeout: 1500 })
+          else setTimeout(warm, 600)
+        }
       })
       .catch(() => { /* pill just stays hidden on failure */ })
     return () => { cancelled = true }
+    // submissionsLoaded/Loading are read for the warm guard but intentionally
+    // excluded from deps — this effect should run once per challenge on mount,
+    // and loadSubmissionHistory's own guards prevent a duplicate fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApiMode, challengeId])
 
   // Tab pill count: the loaded history is authoritative once present; before
