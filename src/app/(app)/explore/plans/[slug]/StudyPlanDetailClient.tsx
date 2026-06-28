@@ -137,7 +137,7 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug, nextItemId, planPct
                 value={Math.round((completedInChapter / totalInChapter) * 100)}
                 state="active"
                 trackClassName="h-[3px] bg-[#ede6d6]"
-                barClassName="bg-[#4a7c59]"
+                barClassName="bg-primary"
               />
               <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: '#78715f' }}>in progress</span>
             </div>

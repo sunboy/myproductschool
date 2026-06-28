@@ -157,7 +157,7 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
                   <span className="font-headline text-xl font-bold text-[#2d5a3d]">L{level.level}</span>
                 </div>
                 <div className="mt-3 h-2 rounded-full bg-[#e7e0d5]">
-                  <div className="h-full rounded-full bg-[#4a7c59]" style={{ width: `${level.progressPct}%` }} />
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${level.progressPct}%` }} />
                 </div>
               </div>
             ))}

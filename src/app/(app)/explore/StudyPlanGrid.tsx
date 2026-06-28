@@ -107,7 +107,7 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
 
       <div className="relative">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#4a7c59] text-white shadow-[0_12px_24px_-18px_rgba(0,0,0,0.78)]">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-[0_12px_24px_-18px_rgba(0,0,0,0.78)]">
             <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
               {icon}
             </span>
@@ -126,7 +126,7 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
       </div>
 
       <div className="relative mt-5 flex justify-end">
-        <span className="inline-flex items-center gap-1 rounded-md bg-[#4a7c59] px-2.5 py-1 font-label text-[12px] font-extrabold text-white shadow-[0_10px_20px_-16px_rgba(0,0,0,0.78)]">
+        <span className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 font-label text-[12px] font-extrabold text-white shadow-[0_10px_20px_-16px_rgba(0,0,0,0.78)]">
           Continue
           <span className="material-symbols-outlined text-[14px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
         </span>
