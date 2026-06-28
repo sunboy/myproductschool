@@ -64,7 +64,7 @@ interface CompetencyRadarDatum {
   trend: DNACompetency['trend']
 }
 
-const FLOW_MOVES: FlowMove[] = ['frame', 'list', 'weigh', 'sell']
+const FLOW_MOVES: FlowMove[] = ['frame', 'list', 'optimize', 'win']
 
 const COMPETENCY_META: Array<{ key: Competency; label: string; shortLabel: string }> = [
   { key: 'motivation_theory', label: 'Motivation Theory', shortLabel: 'Motivation' },
@@ -78,17 +78,17 @@ const COMPETENCY_META: Array<{ key: Competency; label: string; shortLabel: strin
 const COMPETENCY_KEYS = new Set<Competency>(COMPETENCY_META.map(item => item.key))
 
 const MOVE_META: Record<FlowMove, { label: string; icon: string; description: string }> = {
-  frame:  { label: 'Frame',    icon: 'crop_free',            description: 'Find the real problem behind the surface complaint' },
-  list:   { label: 'List',     icon: 'account_tree',         description: 'Generate structurally distinct options across stakeholders' },
-  weigh:  { label: 'Optimize', icon: 'balance',              description: 'Name the tradeoff and the criterion that resolves it' },
-  sell:   { label: 'Win',      icon: 'flag',                 description: 'Frame the win so the decision-maker feels heard' },
+  frame:    { label: 'Frame',    icon: 'crop_free',            description: 'Find the real problem behind the surface complaint' },
+  list:     { label: 'List',     icon: 'account_tree',         description: 'Generate structurally distinct options across stakeholders' },
+  optimize: { label: 'Optimize', icon: 'balance',              description: 'Name the tradeoff and the criterion that resolves it' },
+  win:      { label: 'Win',      icon: 'flag',                 description: 'Frame the win so the decision-maker feels heard' },
 }
 
 const MOVE_LEVEL_NAMES: Record<FlowMove, string[]> = {
-  frame: ['Frame Finder',    'Frame Builder',    'Frame Strategist',    'Frame Expert',    'Frame Master'],
-  list:  ['List Finder',     'List Builder',     'List Strategist',     'List Expert',     'List Master'],
-  weigh: ['Optimize Finder', 'Optimize Builder', 'Optimize Strategist', 'Optimize Expert', 'Optimize Master'],
-  sell:  ['Win Finder',      'Win Builder',      'Win Strategist',      'Win Expert',      'Win Master'],
+  frame:    ['Frame Finder',    'Frame Builder',    'Frame Strategist',    'Frame Expert',    'Frame Master'],
+  list:     ['List Finder',     'List Builder',     'List Strategist',     'List Expert',     'List Master'],
+  optimize: ['Optimize Finder', 'Optimize Builder', 'Optimize Strategist', 'Optimize Expert', 'Optimize Master'],
+  win:      ['Win Finder',      'Win Builder',      'Win Strategist',      'Win Expert',      'Win Master'],
 }
 
 function toRecord(value: unknown): Record<string, unknown> {
