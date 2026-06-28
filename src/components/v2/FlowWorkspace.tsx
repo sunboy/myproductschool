@@ -2739,7 +2739,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {companyTags.map(tag => (
               <Link key={tag} href={practiceFilterHref('company', tag)} title={`Browse ${formatCompany(tag)} practice`} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: '#1e3528', color: '#9ee0b8',
+                background: 'var(--color-hero-forest)', color: '#9ee0b8',
                 fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
                 padding: '3px 9px', borderRadius: 999,
                 fontFamily: 'var(--font-label)', textDecoration: 'none',
@@ -3728,12 +3728,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       background: 'var(--color-surface)',
       flexShrink: 0,
     }}>
-      {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when collapsed) */}
-      <div style={{ width: leftCollapsed ? 32 : `${leftWidth}%`, display: 'flex', alignItems: 'flex-end', gap: 2, padding: leftCollapsed ? '6px 4px 0' : '6px 8px 0', flexShrink: 0 }}>
+      {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when
+          collapsed). minWidth:0 + overflowX:auto keep the four tab buttons
+          inside the panel: they scroll horizontally within it instead of
+          spilling past leftWidth into the centre answer pane. */}
+      <div className="no-scrollbar" style={{ width: leftCollapsed ? 32 : `${leftWidth}%`, minWidth: 0, display: 'flex', alignItems: 'flex-end', gap: 2, padding: leftCollapsed ? '6px 4px 0' : '6px 8px 0', flexShrink: 0, overflowX: leftCollapsed ? 'visible' : 'auto', overflowY: 'hidden' }}>
         <button
           onClick={props.onExit ?? (() => window.history.back())}
           className="btn btn--ghost"
-          style={{ padding: '6px 8px', fontSize: 12, marginBottom: 4, display: 'inline-flex', alignItems: 'center' }}
+          style={{ padding: '6px 8px', fontSize: 12, marginBottom: 4, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
         </button>
@@ -3744,7 +3747,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               key={t}
               onClick={() => setLeftTab(t)}
               style={{
-                padding: '7px 14px',
+                padding: '7px 11px',
                 fontSize: 13,
                 fontWeight: active ? 700 : 600,
                 color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
@@ -3759,6 +3762,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6,
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
               }}
             >
               <span>{t}</span>
@@ -3819,6 +3824,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               fontSize: 11,
               gap: 2,
               fontFamily: 'inherit',
+              flexShrink: 0,
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>chevron_left</span>
@@ -3899,7 +3905,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 className="btn btn--ghost"
                 style={{
                   padding: '6px 10px', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: hintOpen ? '#f3e2b9' : undefined,
+                  background: hintOpen ? 'var(--color-amber-soft)' : undefined,
                   color: hintOpen ? '#5c3a00' : undefined,
                   borderRadius: 8,
                 }}
