@@ -67,7 +67,7 @@ function StudyPlanCard({ pl, index }: { pl: PlanItem; index: number }) {
           </span>
         </div>
 
-        <div className="font-headline text-[17px] font-bold leading-tight text-[#1e1b14]">
+        <div className="font-headline text-[17px] font-bold leading-tight text-hero-ink">
           {pl.title}
         </div>
         <div className="mt-1 text-[12.5px] font-label font-semibold leading-snug text-black/55">
@@ -101,7 +101,7 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
     <Link
       href={`/explore/plans/${plan.slug}`}
       data-hatch-sound="open"
-      className="animate-fade-in-up group relative flex min-h-[164px] flex-col justify-between overflow-hidden rounded-xl border border-[#7ee099]/20 bg-[#1e3528] p-4 no-underline shadow-[0_24px_50px_-34px_rgba(30,53,40,0.95)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-[#7ee099]/35 hover:shadow-[0_34px_66px_-38px_rgba(30,53,40,1)]"
+      className="animate-fade-in-up group relative flex min-h-[164px] flex-col justify-between overflow-hidden rounded-xl border border-on-hero-accent/20 bg-hero-forest p-4 no-underline shadow-[0_24px_50px_-34px_rgba(30,53,40,0.95)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-on-hero-accent/35 hover:shadow-[0_34px_66px_-38px_rgba(30,53,40,1)]"
     >
       <PlanTexture color="#7ee099" dark />
 
@@ -112,15 +112,15 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
               {icon}
             </span>
           </span>
-          <span className="rounded-md bg-[#7ee099]/12 px-2 py-0.5 font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#9ee0b8] ring-1 ring-[#7ee099]/18">
+          <span className="rounded-md bg-on-hero-accent/12 px-2 py-0.5 font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-on-hero-accent-soft ring-1 ring-on-hero-accent/18">
             Your plan
           </span>
         </div>
 
-        <div className="font-headline text-[17px] font-bold leading-tight text-[#f3ede0]">
+        <div className="font-headline text-[17px] font-bold leading-tight text-on-hero">
           {plan.title}
         </div>
-        <div className="mt-1 line-clamp-2 text-[12.5px] font-label font-semibold leading-snug text-[#f3ede0]/58">
+        <div className="mt-1 line-clamp-2 text-[12.5px] font-label font-semibold leading-snug text-on-hero/58">
           {plan.description ?? 'Sequenced across product, systems, data, SQL, and coding based on your FLOW profile.'}
         </div>
       </div>

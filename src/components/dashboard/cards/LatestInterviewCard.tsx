@@ -18,7 +18,7 @@ export function LatestInterviewCard({ data }: LatestInterviewCardProps) {
   const scoreDisplay = data.overallScore.toFixed(1)
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-[#edf5e9] p-4 shadow-[0_18px_46px_-38px_rgba(38,74,52,0.78)]">
+    <div className="relative overflow-hidden rounded-2xl border border-primary/20 p-4 shadow-[0_18px_46px_-38px_rgba(38,74,52,0.78)]" style={{ background: '#edf5e9' }}>
       <svg className="pointer-events-none absolute inset-y-0 right-0 h-full w-44 opacity-[0.16]" viewBox="0 0 220 150" fill="none" aria-hidden="true">
         <path d="M40 112 C74 52, 116 126, 176 42" stroke="#4a7c59" strokeWidth="7" strokeLinecap="round" />
         <path d="M114 34 H184 V102" stroke="#2e3230" strokeWidth="1.5" strokeDasharray="5 8" />
@@ -43,12 +43,12 @@ export function LatestInterviewCard({ data }: LatestInterviewCardProps) {
       </div>
 
       <div className="relative mt-3 grid gap-3 sm:grid-cols-[8.5rem_1fr]">
-        <div className="rounded-xl bg-[#203b2b] px-3 py-2.5 text-[#f7f1e6] shadow-[0_16px_30px_-22px_rgba(20,48,32,0.95)]">
+        <div className="rounded-xl bg-hero-forest px-3 py-2.5 text-on-hero shadow-[0_16px_30px_-22px_rgba(20,48,32,0.95)]">
           <div className="flex items-baseline gap-1.5">
             <span className="font-headline text-[32px] font-semibold leading-none tabular-nums">
               {scoreDisplay}
             </span>
-            <span className="font-label text-xs font-bold text-[#f7f1e6]/62">
+            <span className="font-label text-xs font-bold text-on-hero/62">
               / {FLOW_MAX_SCORE}
             </span>
           </div>

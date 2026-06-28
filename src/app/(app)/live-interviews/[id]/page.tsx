@@ -1831,7 +1831,7 @@ export default function SessionPage({
               {micCheckState === 'idle' ? 'Check mic above first' : micCheckState === 'checking' ? 'Checking mic…' : "I'm ready"}
             </button>
             {!canStartWithVoice && !isMicDenied && micCheckState === 'idle' && (
-              <p className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>
+              <p className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.52)' }}>
                 Allow mic access above so voice works, or continue in chat below.
               </p>
             )}

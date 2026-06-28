@@ -893,7 +893,7 @@ export default function ProgressPage() {
                   </div>
                 ) : (
                   <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.62)' }}>
-                    Complete a challenge to unlock your first reflection.
+                    Complete a challenge to see your first reflection.
                   </p>
                 )}
               </div>

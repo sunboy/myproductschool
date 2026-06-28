@@ -78,10 +78,10 @@ const COMPETENCY_META: Array<{ key: Competency; label: string; shortLabel: strin
 const COMPETENCY_KEYS = new Set<Competency>(COMPETENCY_META.map(item => item.key))
 
 const MOVE_META: Record<FlowMove, { label: string; icon: string; description: string }> = {
-  frame:  { label: 'Frame',    icon: 'frame_inspect',        description: 'Find the real problem behind the surface complaint' },
-  list:   { label: 'List',     icon: 'format_list_bulleted', description: 'Generate structurally distinct options across stakeholders' },
+  frame:  { label: 'Frame',    icon: 'crop_free',            description: 'Find the real problem behind the surface complaint' },
+  list:   { label: 'List',     icon: 'account_tree',         description: 'Generate structurally distinct options across stakeholders' },
   weigh:  { label: 'Optimize', icon: 'balance',              description: 'Name the tradeoff and the criterion that resolves it' },
-  sell:   { label: 'Win',      icon: 'campaign',             description: 'Frame the win so the decision-maker feels heard' },
+  sell:   { label: 'Win',      icon: 'flag',                 description: 'Frame the win so the decision-maker feels heard' },
 }
 
 const MOVE_LEVEL_NAMES: Record<FlowMove, string[]> = {
@@ -304,7 +304,7 @@ function SkillLadderContent() {
             <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant relative before:content-[''] before:absolute before:-left-2 before:top-4 before:w-4 before:h-4 before:bg-surface-container-low before:rotate-45 before:border-l before:border-b before:border-outline-variant">
               <p className="text-sm font-medium text-on-surface">
                 {moveLevel < 5
-                  ? `You're ${Math.ceil((1 - moveProgress / 100) * 8)} challenges away from Level ${moveLevel + 1}. Here's exactly what that unlocks.`
+                  ? `You're ${Math.ceil((1 - moveProgress / 100) * 8)} challenges away from Level ${moveLevel + 1}. Here's exactly what you gain.`
                   : `You've reached Level 5, the highest rung. Here's how to keep that edge sharp.`}
               </p>
             </div>

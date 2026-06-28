@@ -120,8 +120,10 @@
   --color-hero-forest:              #1e3528;
   --color-hero-forest-deep:         #14241c;
   --color-hero-forest-deepest:      #0e1a14;
+  --color-hero-ink:                 #1e1b14;
   --color-on-hero:                  #f3ede0;
   --color-on-hero-accent:           #7ee099;
+  --color-on-hero-accent-soft:      #9ee0b8;
 
   /* Extended radius scale */
   --radius-xs:  0.5rem;

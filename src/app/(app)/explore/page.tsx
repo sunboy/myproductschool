@@ -252,22 +252,22 @@ export default async function ExplorePage() {
           <Link
             href={personalisedPlan ? `/explore/plans/${personalisedPlan.slug}` : '/challenges'}
             data-hatch-sound="open"
-            className="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border border-[#7ee099]/20 bg-[#1e3528] p-4 no-underline shadow-[0_22px_48px_-30px_rgba(30,53,40,0.85)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_62px_-34px_rgba(30,53,40,0.95)]"
+            className="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border border-on-hero-accent/20 bg-hero-forest p-4 no-underline shadow-[0_22px_48px_-30px_rgba(30,53,40,0.85)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_62px_-34px_rgba(30,53,40,0.95)]"
           >
             <DarkPathTexture accent="#7ee099" />
             <PathMiniArt kind="plans" accent="#7ee099" className="absolute -right-4 -bottom-6 h-24 w-32 opacity-30 transition-transform duration-500 group-hover:scale-105" />
             <div className="relative min-w-0">
-              <div className="font-label text-[11px] font-bold uppercase tracking-[0.10em] text-[#9ee0b8]">
+              <div className="font-label text-[11px] font-bold uppercase tracking-[0.10em] text-on-hero-accent-soft">
                 {personalisedPlan ? 'Current plan' : 'Start here'}
               </div>
-              <div className="mt-1 truncate font-headline text-base font-bold text-[#f3ede0]">
+              <div className="mt-1 truncate font-headline text-base font-bold text-on-hero">
                 {personalisedPlan?.title ?? 'Find a practice rep'}
               </div>
-              <div className="mt-1 text-[11px] font-semibold text-[#f3ede0]/55">
+              <div className="mt-1 text-[11px] font-semibold text-on-hero/55">
                 {personalisedPlan ? 'Continue where you left off' : 'Hatch will adapt as you practice'}
               </div>
             </div>
-            <span className="material-symbols-outlined relative shrink-0 text-[20px] text-[#7ee099] transition-transform group-hover:translate-x-0.5">
+            <span className="material-symbols-outlined relative shrink-0 text-[20px] text-on-hero-accent transition-transform group-hover:translate-x-0.5">
               arrow_forward
             </span>
           </Link>
@@ -484,14 +484,14 @@ function ModuleCard({ module, index }: {
         >
           {DIFFICULTY_LABELS[coerceDifficulty(module.difficulty) ?? 'easy']}
         </span>
-        <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-[#f3ede0]">
+        <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-on-hero">
           {module.name}
         </span>
-        <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-[#f3ede0]/65">
+        <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-on-hero/65">
           {module.tagline}
         </span>
       </span>
-      <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-[#f3ede0]/55">
+      <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-on-hero/55">
         <span>{module.chapter_count} chapters · {module.est_minutes} min</span>
         <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5" style={{ color: module.accent_color }}>
           arrow_forward
