@@ -67,8 +67,14 @@ export function HatchDirector() {
   const emittedForRef = useRef<string | null>(null)
   const onboardingDone = Boolean(session.profile?.onboarding_completed_at)
 
+  // HatchProvider's context value is a fresh object each render, so keep emitCue
+  // in a ref and DON'T depend on hatchCtx identity — otherwise the effect would
+  // re-run (and rebuild the timer) on every provider render.
+  const emitCueRef = useRef(hatchCtx?.emitCue)
+  emitCueRef.current = hatchCtx?.emitCue
+
   useEffect(() => {
-    if (!hatchCtx || !pathname) return
+    if (!pathname) return
     // Don't coach until onboarding is finished; the tour owns that moment.
     if (!onboardingDone) return
     // Don't re-emit for the same route within a single visit.
@@ -82,7 +88,7 @@ export function HatchDirector() {
     // Let the page settle so the bubble doesn't fight the route transition,
     // then emit. emitCue self-suppresses if this cooldownKey was snoozed today.
     const timer = window.setTimeout(() => {
-      hatchCtx.emitCue({
+      emitCueRef.current?.({
         surface: 'hub',
         source: 'route',
         message: hub.message,
@@ -96,7 +102,7 @@ export function HatchDirector() {
     }, 1400)
 
     return () => window.clearTimeout(timer)
-  }, [pathname, hatchCtx, onboardingDone])
+  }, [pathname, onboardingDone])
 
   return null
 }
