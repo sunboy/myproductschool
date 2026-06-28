@@ -73,7 +73,7 @@ function buildCoachLine(opts: {
       : ''
 
   const headline = `${completionsCtx}${label} is the gap right now.`
-  const sub = [trendLine, scoreCtx ? `${scoreCtx.charAt(0).toUpperCase() + scoreCtx.slice(1)} — ${nextMove} is the highest-leverage next rep.` : `${nextMove.charAt(0).toUpperCase() + nextMove.slice(1)} is the highest-leverage next rep.`]
+  const sub = [trendLine, scoreCtx ? `${scoreCtx.charAt(0).toUpperCase() + scoreCtx.slice(1)}. ${nextMove.charAt(0).toUpperCase() + nextMove.slice(1)} is the rep that moves you most.` : `${nextMove.charAt(0).toUpperCase() + nextMove.slice(1)} is the rep that moves you most.`]
     .filter(Boolean)
     .join(' ')
 

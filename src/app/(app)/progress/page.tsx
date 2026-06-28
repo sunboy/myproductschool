@@ -1019,7 +1019,7 @@ export default function ProgressPage() {
 
       {/* ── Streak heatmap ───────────────────────────────────────── */}
       <section data-testid="streak-heatmap" className="mb-6">
-        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Activity — last 12 weeks</h2>
+        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Activity, last 12 weeks</h2>
         <StreakHeatmap activeDates={streakDates} />
       </section>
 

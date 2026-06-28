@@ -35,7 +35,7 @@ function screenContent(stepCount: number): Record<Screen, ScreenContent> {
     },
     step2: {
       title: 'Use the prompts as a starting point',
-      body: 'The chips below the terminal suggest what to type next. Click one to load it into the terminal. Edit it before you run it — they are a starting point, not a script.',
+      body: 'The chips below the terminal suggest what to type next. Click one to load it into the terminal. Edit it before you run it. They are a starting point, not a script.',
       icon: 'tips_and_updates',
       hatchState: 'listening',
     },
