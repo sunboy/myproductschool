@@ -83,11 +83,18 @@ export function HatchDirector() {
     const hub = matchHubRoot(pathname)
     if (!hub) return
 
-    emittedForRef.current = pathname
-
     // Let the page settle so the bubble doesn't fight the route transition,
-    // then emit. emitCue self-suppresses if this cooldownKey was snoozed today.
+    // then emit. emitCue self-suppresses if this cooldownKey was snoozed today
+    // (i.e. the user dismissed it earlier). Mark the route emitted only AFTER
+    // the cue actually fires, so navigating away within the 1.4s window doesn't
+    // permanently suppress a cue that never appeared.
+    //
+    // Note: an IGNORED cue auto-hides after 9s without snoozing, so it may fire
+    // once more on a later visit to the same hub. A DISMISSED cue snoozes for
+    // the day. That asymmetry is intentional: respect an explicit "no", give a
+    // single gentle retry to a cue the user simply never looked at.
     const timer = window.setTimeout(() => {
+      emittedForRef.current = pathname
       emitCueRef.current?.({
         surface: 'hub',
         source: 'route',
