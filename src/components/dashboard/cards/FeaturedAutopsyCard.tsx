@@ -51,7 +51,8 @@ export function FeaturedAutopsyCard({
         {visual && (
           <Link
             href={storyHref}
-            className="relative hidden h-[92px] overflow-hidden rounded-xl border border-outline-variant/40 bg-[#102018] sm:block"
+            className="relative hidden h-[92px] overflow-hidden rounded-xl border border-outline-variant/40 sm:block"
+            style={{ background: 'var(--color-hero-forest-deepest)' }}
             aria-label={`Read ${story.title}`}
           >
             <Image

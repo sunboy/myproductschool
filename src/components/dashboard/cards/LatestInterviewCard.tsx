@@ -85,7 +85,7 @@ export function LatestInterviewCard({ data }: LatestInterviewCardProps) {
                 </div>
               )}
               {data.topGrowth && (
-                <div className="grid grid-cols-[3px_1fr] gap-2 rounded-lg bg-[#f5e2bc]/60 px-2.5 py-1.5">
+                <div className="grid grid-cols-[3px_1fr] gap-2 rounded-lg px-2.5 py-1.5" style={{ background: 'color-mix(in srgb, var(--color-amber-soft) 60%, transparent)' }}>
                   <span className="mt-1 h-4 rounded-full bg-tertiary" />
                   <p className="line-clamp-2 font-body text-[12px] font-semibold leading-snug text-on-surface-variant">{data.topGrowth}</p>
                 </div>

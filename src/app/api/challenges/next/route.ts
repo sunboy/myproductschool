@@ -47,8 +47,8 @@ function moveTip(move: string, challengeTitle: string, weakestCompetency: string
   const tips: Record<string, string> = {
     frame: `Practice defining the right problem before jumping to solutions.`,
     list: `Work on breaking "${challengeTitle}" into its core components - this sharpens your List move.`,
-    weigh: `This is a great exercise in trade-off thinking - your Weigh move needs the most practice.`,
-    sell: `Focus on how you'd explain your reasoning to a stakeholder - that's your growth area.`,
+    weigh: `This is a great exercise in trade-off thinking. Your Optimize move needs the most practice.`,
+    sell: `Focus on how you'd explain your reasoning to a stakeholder. That's your growth area.`,
     win: `Use this to land a clear recommendation, success metric, and tradeoff.`,
   }
   if (weakestCompetency) {

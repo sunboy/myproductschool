@@ -11,11 +11,15 @@ export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
   recommendation_strength: 'Recommendation Strength',
 }
 
+// Display labels for the FLOW moves. The internal keys stay 'weigh'/'sell'
+// (they are URL segments + DB/API query keys in challenges/next, move-levels,
+// flow-detector — migrating them is a separate DB-coupled change), but the
+// user-facing labels MUST read Optimize/Win per the canonical vocabulary.
 export const FLOW_MOVE_LABELS: Record<FlowMove, string> = {
   frame: 'Frame',
   list: 'List',
-  weigh: 'Weigh',
-  sell: 'Sell',
+  weigh: 'Optimize',
+  sell: 'Win',
 }
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
