@@ -1211,6 +1211,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const lastWorkspaceProgressRef = useRef(Date.now())
   const lastWorkspaceCueRef = useRef(0)
 
+  // The nudge rate-limit + per-attempt cap refs are component-lifetime, so a new
+  // attempt in the same mounted component (e.g. a retry without remount) would
+  // otherwise inherit the prior attempt's cap and never nudge. Reset them when the
+  // attempt changes so each attempt gets its own fresh nudge budget.
+  useEffect(() => {
+    lastNudgeAtRef.current = 0
+    nudgeCountRef.current = 0
+    lastWorkspaceCueRef.current = 0
+    lastWorkspaceProgressRef.current = Date.now()
+  }, [attemptId])
+
   // Snapshot of the user's live workspace state, read inside the idle-nudge timer
   // at fire time (the timer is declared before these values exist, and we don't
   // want to re-subscribe the interval on every keystroke). Populated by the
@@ -1500,17 +1511,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       sql_schema?: unknown
       supported_languages?: SupportedLanguage[]
     }
-    if (apiChallengeType === 'sql' || meta.sql_schema) {
-      setCurrentLanguage('sql')
-      return
-    }
-    // Algorithm challenges never run SQL. Keep the active language in the
-    // non-SQL set even when metadata is missing or wrongly lists sql.
+    // Algorithm challenges never run SQL. Check this FIRST so a stale sql_schema
+    // wrongly attached to an algorithm challenge can't force the language to sql
+    // (the SQL option is also hidden from the selector for these). Keep the active
+    // language in the non-SQL set even when metadata is missing or lists sql.
     if (apiChallengeType === 'algorithm') {
       const NON_SQL_DEFAULTS: SupportedLanguage[] = ['python', 'javascript', 'java', 'cpp', 'go']
       const allowed = (meta.supported_languages ?? []).filter(l => l !== 'sql')
       const effective = allowed.length > 0 ? allowed : NON_SQL_DEFAULTS
       if (!effective.includes(currentLanguage)) setCurrentLanguage(effective[0])
+      return
+    }
+    if (apiChallengeType === 'sql' || meta.sql_schema) {
+      setCurrentLanguage('sql')
       return
     }
     const supported = meta.supported_languages

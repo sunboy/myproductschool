@@ -152,33 +152,14 @@ export const POST = withRoute(async (
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Record daily streak first (RPC is service_role-only, so use the admin client)
-  // so the XP streak multiplier reflects today's rep.
   const admin = createAdminClient()
-  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
-  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
 
-  // Award XP, same canonical formula as FLOW (total XP only — canvas challenges
-  // have no FLOW move levels). Reaching here means a grade is being newly recorded
-  // (a true re-submit 409s above on the existing interview_grades row), so XP is
-  // granted exactly once per completion. Non-FLOW types do NOT touch move_levels.
-  const { data: xpProfile } = await admin
-    .from('profiles')
-    .select('xp_total, streak_days')
-    .eq('id', user.id)
-    .single()
-  const xp_awarded = calculateChallengeXp(grade.overall_score, 5, challenge?.difficulty, xpProfile?.streak_days ?? 0)
-  if (xpProfile) {
-    await admin
-      .from('profiles')
-      .update({ xp_total: (xpProfile.xp_total ?? 0) + xp_awarded })
-      .eq('id', user.id)
-  }
-
-  // Grading succeeded - NOW mark the attempt completed. Persist score + label +
-  // xp_awarded onto the attempt row (mirroring coding-submit) so the Submissions/
-  // history tab and /api/attempts show a real score and reward, not a stale default.
-  await supabase
+  // Atomically claim this completion. The conditional flip (status != 'completed')
+  // decides whether THIS request owns the completion: concurrent submits race here
+  // and only one flips a row (no double-award), and an orphan attempt (already
+  // 'completed' but missing a grade row) flips zero rows so XP is NOT re-awarded on
+  // re-grade, while the grade insert below still recovers the orphan.
+  const { data: claimedRows } = await supabase
     .from('challenge_attempts')
     .update({
       status: 'completed',
@@ -186,9 +167,33 @@ export const POST = withRoute(async (
       total_score: grade.overall_score,
       max_score: 5,
       grade_label: gradeLabelForScore(grade.overall_score),
-      feedback_json: { xp_awarded, total_score: grade.overall_score, max_score: 5 },
     })
     .eq('id', attemptId)
+    .neq('status', 'completed')
+    .select('id')
+  const isFirstCompletion = (claimedRows?.length ?? 0) > 0
+
+  // Only the request that won the completion records the streak + XP, exactly once.
+  // Total XP only - canvas challenges have no FLOW move levels.
+  let xp_awarded = 0
+  if (isFirstCompletion) {
+    const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
+    if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
+    const { data: xpProfile } = await admin
+      .from('profiles')
+      .select('streak_days')
+      .eq('id', user.id)
+      .single()
+    xp_awarded = calculateChallengeXp(grade.overall_score, 5, challenge?.difficulty, xpProfile?.streak_days ?? 0)
+    const { error: xpError } = await admin.rpc('increment_user_xp', { p_user_id: user.id, p_amount: xp_awarded })
+    if (xpError) console.error('[xp] increment_user_xp failed:', xpError.message)
+    // Persist the real reward onto the attempt so Submissions/history + /api/attempts
+    // show it, not a stale default.
+    await supabase
+      .from('challenge_attempts')
+      .update({ feedback_json: { xp_awarded, total_score: grade.overall_score, max_score: 5 } })
+      .eq('id', attemptId)
+  }
 
   // Persist grade
   await supabase.from('interview_grades').insert({
