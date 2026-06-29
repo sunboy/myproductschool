@@ -31,11 +31,11 @@ const supabaseStorageImagePattern = (() => {
 
 const contentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.stripe.com challenges.cloudflare.com *.posthog.com va.vercel-scripts.com https://cdn.jsdelivr.net",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.stripe.com challenges.cloudflare.com *.posthog.com va.vercel-scripts.com https://cdn.jsdelivr.net www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline' fonts.googleapis.com https://cdn.jsdelivr.net",
   "img-src 'self' data: blob: https:",
   "font-src 'self' fonts.gstatic.com https://cdn.jsdelivr.net data:",
-  "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com *.posthog.com api.resend.com *.upstash.io *.vercel-insights.com vitals.vercel-insights.com *.sentry.io ws: wss: http://localhost:* http://127.0.0.1:*",
+  "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com *.posthog.com api.resend.com *.upstash.io *.vercel-insights.com vitals.vercel-insights.com *.sentry.io www.googletagmanager.com www.google-analytics.com *.google-analytics.com www.google.com googleads.g.doubleclick.net ws: wss: http://localhost:* http://127.0.0.1:*",
   "frame-src 'self' *.stripe.com challenges.cloudflare.com",
   "media-src 'self' data: blob: https:",
   "worker-src 'self' blob:",
