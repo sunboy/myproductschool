@@ -23,18 +23,39 @@ export function graftSteppedTrace(
   metadata: Record<string, unknown> | null | undefined,
   tags: string[],
 ): GraftResult {
+  // The model is NEVER allowed to author a stepped diagram (trace_verified lives
+  // in the same untrusted envelope, so a marker the model set cannot be trusted).
+  // Strip any model-supplied stepped diagram from every approach up front, then
+  // attach only the harness-built one. This is the single source of stepped diagrams.
+  const stripped = content.approaches.map((a) =>
+    a.diagram?.kind === 'stepped' ? { ...a, diagram: undefined } : a,
+  )
+  const base = { ...content, approaches: stripped }
+
   // Only algorithm solutions are array-trace eligible in this phase.
-  if (content.challenge_type !== 'algorithm' || !metadata) return { content, grafted: false }
+  if (content.challenge_type !== 'algorithm' || !metadata) {
+    const recheck = SolutionContentSchema.safeParse(base)
+    return { content: recheck.success ? recheck.data : content, grafted: false }
+  }
 
   const candidate = buildSteppedTraceFromMetadata(metadata, tags)
-  if (!candidate) return { content, grafted: false }
+  if (!candidate) {
+    const recheck = SolutionContentSchema.safeParse(base)
+    return { content: recheck.success ? recheck.data : content, grafted: false }
+  }
 
-  const approaches = content.approaches.map((a) => ({ ...a }))
+  const approaches = stripped.map((a) => ({ ...a }))
   const optimal = approaches[approaches.length - 1]
-  if (!optimal || optimal.diagram?.kind === 'stepped') return { content, grafted: false }
+  if (!optimal) {
+    const recheck = SolutionContentSchema.safeParse(base)
+    return { content: recheck.success ? recheck.data : content, grafted: false }
+  }
 
   optimal.diagram = candidate.diagram
   const recheck = SolutionContentSchema.safeParse({ ...content, approaches })
-  if (!recheck.success) return { content, grafted: false }
+  if (!recheck.success) {
+    const fallback = SolutionContentSchema.safeParse(base)
+    return { content: fallback.success ? fallback.data : content, grafted: false }
+  }
   return { content: recheck.data, grafted: true }
 }

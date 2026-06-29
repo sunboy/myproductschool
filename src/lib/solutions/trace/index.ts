@@ -9,7 +9,7 @@
  * its static diagram). The model never authors the deltas.
  */
 
-import { runArrayTrace, buildSteppedArrayDiagram, type ArrayPattern } from './arrayTrace'
+import { runArrayTrace, buildSteppedArrayDiagram, computeAnswer, type ArrayPattern } from './arrayTrace'
 import type { InteractiveStepDiagram } from '@/lib/solutions/schema'
 
 interface VisibleTestCase {
@@ -100,22 +100,34 @@ export function buildSteppedTraceFromMetadata(
   const testCases = Array.isArray(metadata.test_cases) ? (metadata.test_cases as VisibleTestCase[]) : []
   const visible = testCases.filter((tc) => !(tc as { hidden?: boolean }).hidden && !(tc as { is_hidden?: boolean }).is_hidden)
 
-  // Try each visible case until one yields a clean (>=3 frame) walkthrough.
+  // The pattern must be certified by EVERY visible case we can extract an array
+  // input from: each such case must carry an `expected` value and the canonical
+  // run's answer must agree with it. One coincidental match is not enough, and a
+  // case missing `expected` cannot certify the pattern, so it disqualifies it.
+  // The first case that also yields a clean (>=3 frame, complete) trace supplies
+  // the diagram. If any extractable case disagrees or lacks `expected`, we bail.
+  let diagramTrace: ReturnType<typeof runArrayTrace> | null = null
+  let certifiedCount = 0
+
   for (const tc of visible) {
     const input = extractArrayInput(tc, pattern)
-    if (!input) continue
-    const trace = runArrayTrace(pattern, input.values, input.param)
-    if (!trace) continue
+    if (!input) continue // case shape we can't map to this pattern; ignore it
+    if (tc.expected === undefined) return null // an extractable case with no oracle: cannot certify
 
-    // Cross-check: the canonical run's answer must agree with the challenge's
-    // own expected output. If they disagree, this pattern is not what the
-    // challenge wants, so it is NOT stepped eligible.
-    if (tc.expected !== undefined && !answersAgree(trace.answer, tc.expected)) continue
+    // Run the canonical algorithm to completion to get the true answer for this
+    // input (independent of frame-cap display limits).
+    const answer = computeAnswer(pattern, input.values, input.param)
+    if (answer === null || !answersAgree(answer, tc.expected)) return null
+    certifiedCount++
 
-    const diagram = buildSteppedArrayDiagram(trace)
-    return { diagram, pattern }
+    if (!diagramTrace) {
+      const trace = runArrayTrace(pattern, input.values, input.param)
+      if (trace) diagramTrace = trace
+    }
   }
-  return null
+
+  if (certifiedCount === 0 || !diagramTrace) return null
+  return { diagram: buildSteppedArrayDiagram(diagramTrace), pattern }
 }
 
 /** Loose structural agreement: index, index pair, or scalar, order-insensitive for pairs. */

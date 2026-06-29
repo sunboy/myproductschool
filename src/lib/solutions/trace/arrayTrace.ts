@@ -53,7 +53,7 @@ function tooBig(values: number[]): boolean {
  * Binary search. Records lo/mid/hi each iteration, the discarded half, and the
  * compared cell. Returns the found index or -1.
  */
-function traceBinarySearch(values: number[], target: number): { frames: ArrayTraceFrame[]; answer: number } {
+function traceBinarySearch(values: number[], target: number): { frames: ArrayTraceFrame[]; answer: number; complete: boolean } {
   const frames: ArrayTraceFrame[] = []
   let lo = 0
   let hi = values.length - 1
@@ -76,14 +76,17 @@ function traceBinarySearch(values: number[], target: number): { frames: ArrayTra
       hi = mid - 1
     }
   }
-  return { frames, answer }
+  // Complete iff the loop exited by finding the target or exhausting the range,
+  // not by hitting the frame cap. lo > hi means the range was fully consumed.
+  const complete = answer !== -1 || lo > hi
+  return { frames, answer, complete }
 }
 
 /**
  * Two pointers converging from both ends toward a target pair sum (the classic
  * sorted-array two-sum / pair shape). Returns the [lo, hi] index pair or [].
  */
-function traceTwoPointers(values: number[], target: number): { frames: ArrayTraceFrame[]; answer: number[] } {
+function traceTwoPointers(values: number[], target: number): { frames: ArrayTraceFrame[]; answer: number[]; complete: boolean } {
   const frames: ArrayTraceFrame[] = []
   let lo = 0
   let hi = values.length - 1
@@ -103,16 +106,18 @@ function traceTwoPointers(values: number[], target: number): { frames: ArrayTrac
       hi -= 1
     }
   }
-  return { frames, answer }
+  // Complete iff a pair was found or the pointers crossed (lo >= hi), not the cap.
+  const complete = answer.length > 0 || lo >= hi
+  return { frames, answer, complete }
 }
 
 /**
  * Fixed-size sliding window maximum sum of size k. Records the window [l..r] and
  * the running sum. Returns the best sum.
  */
-function traceSlidingWindow(values: number[], k: number): { frames: ArrayTraceFrame[]; answer: number } {
+function traceSlidingWindow(values: number[], k: number): { frames: ArrayTraceFrame[]; answer: number; complete: boolean } {
   const frames: ArrayTraceFrame[] = []
-  if (k < 1 || k > values.length) return { frames, answer: 0 }
+  if (k < 1 || k > values.length) return { frames, answer: 0, complete: false }
   let windowSum = 0
   for (let i = 0; i < k; i++) windowSum += values[i]
   let best = windowSum
@@ -131,7 +136,18 @@ function traceSlidingWindow(values: number[], k: number): { frames: ArrayTraceFr
   if (frames.length) {
     frames[frames.length - 1] = { ...frames[frames.length - 1], found: true, note: `best window starts at ${bestL}, sum = ${best}` }
   }
-  return { frames, answer: best }
+  // Complete iff every window was visited (the last window ends at the last index)
+  // rather than the loop stopping early at the frame cap.
+  const complete = frames.length > 0 && (frames[frames.length - 1].pointerAt.r === values.length - 1)
+  return { frames, answer: best, complete }
+}
+
+/** A non-decreasing array is required for the sorted-array discard invariants. */
+function isNonDecreasing(values: number[]): boolean {
+  for (let i = 1; i < values.length; i++) {
+    if (values[i] < values[i - 1]) return false
+  }
+  return true
 }
 
 function range(a: number, b: number): number[] {
@@ -159,13 +175,63 @@ export function runArrayTrace(
 ): ArrayTraceResult | null {
   if (tooBig(values)) return null
 
-  let run: { frames: ArrayTraceFrame[]; answer: unknown }
+  // binary_search and two_pointers depend on a sorted array for their discard
+  // invariants. An unsorted input could coincidentally produce a matching answer
+  // while the displayed pointer moves would be nonsense, so reject it.
+  if ((pattern === 'binary_search' || pattern === 'two_pointers') && !isNonDecreasing(values)) return null
+
+  let run: { frames: ArrayTraceFrame[]; answer: unknown; complete: boolean }
   if (pattern === 'binary_search') run = traceBinarySearch(values, param)
   else if (pattern === 'two_pointers') run = traceTwoPointers(values, param)
   else run = traceSlidingWindow(values, param)
 
+  // Reject a run that stopped at the frame cap before reaching a terminal state:
+  // an incomplete trace would assert an answer the walkthrough never reached.
+  if (!run.complete) return null
   if (run.frames.length < 3) return null
   return { pattern, pointers: POINTERS[pattern], values, frames: run.frames, answer: run.answer }
+}
+
+/**
+ * Compute the canonical pattern's TRUE answer on an input, uncapped by the
+ * display frame limit. Used by the cross-check so a frame-capped display trace
+ * can never weaken the correctness oracle. Returns null on unusable input.
+ */
+export function computeAnswer(pattern: ArrayPattern, values: number[], param: number): unknown {
+  if (values.length < 2) return null
+  if (pattern === 'binary_search') {
+    if (!isNonDecreasing(values)) return null
+    let lo = 0, hi = values.length - 1
+    while (lo <= hi) {
+      const mid = lo + Math.floor((hi - lo) / 2)
+      if (values[mid] === param) return mid
+      if (values[mid] < param) lo = mid + 1
+      else hi = mid - 1
+    }
+    return -1
+  }
+  if (pattern === 'two_pointers') {
+    if (!isNonDecreasing(values)) return null
+    let lo = 0, hi = values.length - 1
+    while (lo < hi) {
+      const sum = values[lo] + values[hi]
+      if (sum === param) return [lo, hi]
+      if (sum < param) lo += 1
+      else hi -= 1
+    }
+    return []
+  }
+  // sliding_window: best fixed-size-k window sum
+  const k = param
+  if (k < 1 || k > values.length) return null
+  let windowSum = 0
+  for (let i = 0; i < k; i++) windowSum += values[i]
+  let best = windowSum
+  for (let r = k; r < values.length; r++) {
+    windowSum += values[r] - values[r - k]
+    if (windowSum > best) best = windowSum
+  }
+  return best
 }
 
 /**
