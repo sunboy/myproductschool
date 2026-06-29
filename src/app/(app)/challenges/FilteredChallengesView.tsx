@@ -312,10 +312,16 @@ export function FilteredChallengesView({
     ? DISCIPLINES
     : DISCIPLINES.filter((d) => d.key !== 'analytics')
 
+  // Match the desktop column count to the number of cards so the row stays a
+  // single, evenly-filled band instead of orphaning the last card on a second
+  // row (7 cards in a 6-col grid left "Coding" alone, misaligned). Literal
+  // classes only — Tailwind cannot see interpolated class names.
+  const lgGridColsClass = visibleDisciplines.length >= 7 ? 'lg:grid-cols-7' : 'lg:grid-cols-6'
+
   return (
     <div className="-mx-4 flex min-w-0 flex-col sm:-mx-6">
       <section data-tour-target="practice-filters" className="px-4 pb-4 sm:px-6">
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
+        <div className={`grid grid-cols-2 gap-2 md:grid-cols-4 ${lgGridColsClass}`}>
           {visibleDisciplines.map((entry) => {
             const active = discipline === entry.key
             const count = countFor(entry.key)
