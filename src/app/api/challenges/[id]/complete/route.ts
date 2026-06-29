@@ -8,7 +8,7 @@ import { aggregateChallenge } from '@/lib/v2/skills/score-aggregator'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
-import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
+import { calculateChallengeXp } from '@/lib/scoring/xp-calculator'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
 import { checkAndGrantAchievements } from '@/lib/achievements/check'
 import { FLOW_MAX_SCORE, MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
@@ -239,19 +239,8 @@ export const POST = withRoute(async (
     admin.from('profiles').select('xp_total, streak_days').eq('id', userId).single(),
   ])
 
-  // XP = difficulty base * score (0–1)
-  // Base by canonical bucket: easy=50, medium=100, hard=150. Coerce so legacy
-  // DB values (warmup/standard/advanced/staff_plus) score correctly until R2
-  // rewrites the column.
-  const DIFFICULTY_BASE: Record<PracticeDifficulty, number> = { easy: 50, medium: 100, hard: 150 }
-  const bucket = coerceDifficulty(challenge?.difficulty) ?? 'easy'
-  const difficultyBase = DIFFICULTY_BASE[bucket]
-  const baseXp = Math.round(difficultyBase * (total_score / max_score))
-
-  // Streak multiplier: +5% per streak day, capped at 1.5× (hits cap at 10 days)
-  const streakDays = currentProfile?.streak_days ?? 0
-  const streakMultiplier = Math.min(1 + streakDays * 0.05, 1.5)
-  const xp_earned = Math.round(baseXp * streakMultiplier)
+  // XP via the shared canonical formula (difficulty base × score, streak multiplier).
+  const xp_earned = calculateChallengeXp(total_score, max_score, challenge?.difficulty, currentProfile?.streak_days ?? 0)
 
   // Update profiles.xp_total
   if (currentProfile) {

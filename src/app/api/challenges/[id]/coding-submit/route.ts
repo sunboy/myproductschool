@@ -8,6 +8,7 @@ import type { SessionEvent } from '@/lib/coding-grading/grader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
+import { calculateChallengeXp } from '@/lib/scoring/xp-calculator'
 import { withRoute } from '@/lib/api/withRoute'
 
 const TestResultSchema = z.object({
@@ -398,7 +399,31 @@ export const POST = withRoute(async (
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Grading succeeded - mark attempt completed
+  // Record daily streak (RPC is service_role-only, so use the admin client).
+  // Run before the XP calc so the streak multiplier reflects today's rep.
+  const admin = createAdminClient()
+  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
+  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
+
+  // Award XP, same canonical formula as FLOW (total XP only — coding/SQL have no
+  // FLOW move levels). Reaching here means a grade is being newly recorded (a true
+  // re-submit 409s above on the existing interview_grades row), so XP is granted
+  // exactly once per problem completion. Non-FLOW types do NOT touch move_levels.
+  const { data: xpProfile } = await admin
+    .from('profiles')
+    .select('xp_total, streak_days')
+    .eq('id', user.id)
+    .single()
+  const xp_awarded = calculateChallengeXp(grade.overall_score, 5, challenge.difficulty, xpProfile?.streak_days ?? 0)
+  if (xpProfile) {
+    await admin
+      .from('profiles')
+      .update({ xp_total: (xpProfile.xp_total ?? 0) + xp_awarded })
+      .eq('id', user.id)
+  }
+
+  // Grading succeeded - mark attempt completed (persist xp_awarded in feedback_json
+  // so the Submissions tab and /api/attempts show the real reward, not +0).
   await supabase
     .from('challenge_attempts')
     .update({
@@ -407,13 +432,9 @@ export const POST = withRoute(async (
       total_score: grade.overall_score,
       max_score: 5,
       grade_label: getGradeLabel(grade.overall_score),
+      feedback_json: { xp_awarded, total_score: grade.overall_score, max_score: 5 },
     })
     .eq('id', attemptId)
-
-  // Record daily streak (RPC is service_role-only, so use the admin client)
-  const admin = createAdminClient()
-  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
-  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
 
   // Persist grade to interview_grades
   await supabase.from('interview_grades').insert({
@@ -446,5 +467,5 @@ export const POST = withRoute(async (
     ],
   })
 
-  return NextResponse.json({ grade })
+  return NextResponse.json({ grade, xp_awarded })
 }, { name: 'challenges.coding-submit' })

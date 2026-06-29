@@ -1990,7 +1990,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           gradeLabel: scoreToGradeLabel(score),
           totalScore: score,
           maxScore: 5,
-          xpAwarded: 0,
+          xpAwarded: typeof data.xp_awarded === 'number' ? data.xp_awarded : 0,
           stepResults: [],
           competencyDeltas: [],
           canvasPngUrl: canvasPngUrl ?? null,
@@ -2068,7 +2068,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           throw new Error(payload?.details ?? payload?.error ?? `Grading failed: ${gradingRes.status}`)
         }
 
-        const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback }
+        const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback; xp_awarded?: number }
         if (gradingPayload.grade) {
           setCodingFeedback(gradingPayload.grade)
           // Surface this submission in the history tab immediately (coding types:
@@ -2082,7 +2082,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               gradeLabel: scoreToGradeLabel(score),
               totalScore: score,
               maxScore: 5,
-              xpAwarded: 0,
+              xpAwarded: gradingPayload.xp_awarded ?? 0,
               stepResults: [],
               competencyDeltas: [],
               canvasPngUrl: null,
@@ -2140,7 +2140,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }
         throw new Error(payload?.details ?? payload?.error ?? `Grading failed: ${gradingRes.status}`)
       }
-      const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback }
+      const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback; xp_awarded?: number }
       if (gradingPayload.grade) {
         setCodingGradingError(undefined)
         setCodingFeedback(gradingPayload.grade)
@@ -2152,7 +2152,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           gradeLabel: scoreToGradeLabel(score),
           totalScore: score,
           maxScore: 5,
-          xpAwarded: 0,
+          // A retry doesn't re-award XP (server 409s the second grade); the
+          // background refetch reconciles the originally-awarded value.
+          xpAwarded: gradingPayload.xp_awarded ?? 0,
           stepResults: [],
           competencyDeltas: [],
           canvasPngUrl: null,
@@ -3696,9 +3698,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-on-surface)' }}>
                 {record.totalScore} / {record.maxScore} pts
               </span>
-              <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: 'var(--color-on-surface-variant)' }}>
-                +{record.xpAwarded} XP
-              </span>
+              {/* Show the reward only when XP was actually granted. A re-attempt
+                  earns 0 (XP is once per problem), so a "+0 XP" chip there would
+                  read as unrewarding rather than informative. */}
+              {record.xpAwarded > 0 && (
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: 'var(--color-primary)', fontWeight: 700 }}>
+                  +{record.xpAwarded} XP
+                </span>
+              )}
             </div>
             <div style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', marginTop: 4 }}>
               {record.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
