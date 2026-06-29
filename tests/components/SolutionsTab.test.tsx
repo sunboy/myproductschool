@@ -167,7 +167,7 @@ describe('solution diagrams', () => {
 })
 
 describe('SolutionContent', () => {
-  it('renders approach title, tagline, AI-collaboration card, prompts, pitfalls, and takeaways', () => {
+  it('renders approach title, tagline, collapsed AI-collaboration card, and takeaways', () => {
     const html = renderToStaticMarkup(
       <SolutionContent
         content={MOCK_SOLUTION_CONTENT}
@@ -178,10 +178,11 @@ describe('SolutionContent', () => {
     )
     expect(html).toContain('The reasoning walkthrough')
     expect(html).toContain('Frame the friction')
+    // The AI-collaboration card is collapsed by default (lighten the workspace);
+    // only its header + toggle render statically, the prompts/pitfalls mount on expand.
     expect(html).toContain('Working this problem with AI')
-    expect(html).toContain('Prompts worth stealing')
-    expect(html).toContain('Stress-test your frame')
-    expect(html).toContain('Where AI work goes wrong here')
+    expect(html).toContain('aria-expanded="false"')
+    expect(html).not.toContain('Prompts worth stealing')
     expect(html).toContain('Key takeaways')
     expect(html).toContain('Name the friction before designing the fix.')
   })
