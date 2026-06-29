@@ -4493,7 +4493,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 in place of the canvas, matching product sense PostSessionMirror UX.
                 Renders for both fresh submissions (interviewGrade) and history view
                 (historyInterviewGrade fetched by attempt id). */}
-            {isCanvasChallenge && phase === 'complete' && interviewGrade && (
+            {isCanvasChallenge && phase === 'complete' && interviewGrade && !historyRecord && (
               <div className="flex-1 min-h-0 overflow-y-auto animate-step-enter">
                 <InterviewFeedback
                   grade={interviewGrade}
