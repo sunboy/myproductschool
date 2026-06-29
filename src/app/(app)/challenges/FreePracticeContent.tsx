@@ -133,7 +133,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 space-y-4">
+      <div className="mb-4 space-y-3">
         <AppBreadcrumbs
           items={[
             { label: 'Practice' },
@@ -150,10 +150,15 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
         </div>
       </div>
 
-      {/* Hatch's Pick */}
-      <HatchPick />
-
-      <BillingUsageFromProfile className="mb-6" />
+      {/* Hatch's Pick + usage meter share one band so the question list sits
+          higher. On large screens the meter rides alongside the pick; it stacks
+          below on narrow screens. */}
+      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-stretch">
+        <div className="lg:flex-1 lg:min-w-0">
+          <HatchPick className="h-full" />
+        </div>
+        <BillingUsageFromProfile className="lg:w-72 lg:flex-shrink-0" />
+      </div>
 
       {/* Featured Challenges - only when editorially pinned challenges exist and no search query */}
       {featuredChallenges.length > 0 && !hasNonDisciplineFilter && (
