@@ -16,6 +16,8 @@ interface Props {
   onGoToDescription: () => void
   activeApproachId: string | null
   onApproachChange: (id: string) => void
+  /** Surfaces the active step of an interactive walkthrough (Hatch awareness). */
+  onSteppedStepChange?: (step: { index: number; title: string; decision?: string }) => void
 }
 
 function CenteredState({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
@@ -60,6 +62,7 @@ export function SolutionsPane({
   onGoToDescription,
   activeApproachId,
   onApproachChange,
+  onSteppedStepChange,
 }: Props) {
   const [maximized, setMaximized] = useState(false)
 
@@ -207,6 +210,7 @@ export function SolutionsPane({
           size="pane"
           activeApproachId={activeApproachId}
           onApproachChange={onApproachChange}
+          onSteppedStepChange={onSteppedStepChange}
         />
       </div>
 
@@ -227,6 +231,7 @@ export function SolutionsPane({
               size="modal"
               activeApproachId={activeApproachId}
               onApproachChange={onApproachChange}
+              onSteppedStepChange={onSteppedStepChange}
             />
           </div>
         </DialogContent>

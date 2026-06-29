@@ -82,7 +82,7 @@ interface CanvasChatPanelProps {
   // Solutions tab awareness — set while the user has the official solution open,
   // so Hatch can coach relative to the approach they are reading.
   solutionsOpen?: boolean
-  activeSolutionApproach?: { title: string; tagline: string } | null
+  activeSolutionApproach?: { title: string; tagline: string; stepTitle?: string; stepDecision?: string } | null
 }
 
 // Defensive guard: a chat turn should be prose, but a malformed structured-output
@@ -342,6 +342,10 @@ export function CanvasChatPanel({
         solutions_tab_open: solutionsOpen,
         solution_approach_title: activeSolutionApproach?.title ?? null,
         solution_approach_tagline: activeSolutionApproach?.tagline ?? null,
+        // The walkthrough step the learner is viewing, debounced to send-time
+        // (this body is built per message-send, not on every step tick).
+        solution_step_title: activeSolutionApproach?.stepTitle ?? null,
+        solution_step_decision: activeSolutionApproach?.stepDecision ?? null,
       }
 
       const codingBody = challengeType === 'coding' ? {

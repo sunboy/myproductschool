@@ -15,6 +15,8 @@ interface Props {
   size: 'pane' | 'modal'
   activeApproachId: string | null
   onApproachChange: (id: string) => void
+  /** Surfaces the active step of an interactive walkthrough (Hatch awareness). */
+  onSteppedStepChange?: (step: { index: number; title: string; decision?: string }) => void
 }
 
 // Coding approaches often weave the full solution into body_md as a fenced
@@ -196,7 +198,7 @@ function AiCollaborationSection({ content }: { content: SolutionContentV1 }) {
  * Pure renderer for a solution document. Shared between the in-workspace pane
  * and the maximized dialog (size widens type and spacing in the modal).
  */
-export function SolutionContent({ content, size, activeApproachId, onApproachChange }: Props) {
+export function SolutionContent({ content, size, activeApproachId, onApproachChange, onSteppedStepChange }: Props) {
   const active = content.approaches.find((a) => a.id === activeApproachId) ?? content.approaches[0]
   const isModal = size === 'modal'
 
@@ -262,7 +264,7 @@ export function SolutionContent({ content, size, activeApproachId, onApproachCha
           {active.tagline}
         </p>
         <ComplexityChips approach={active} />
-        {active.diagram && <SolutionDiagram spec={active.diagram} />}
+        {active.diagram && <SolutionDiagram spec={active.diagram} onSteppedStepChange={onSteppedStepChange} />}
         <SolutionMd>{stripDuplicateCodeFence(active.body_md, active.code?.source)}</SolutionMd>
         {active.code && (
           <div style={{ margin: '14px 0' }}>

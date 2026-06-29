@@ -757,6 +757,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [solutionLoading, setSolutionLoading] = useState(false)
   const [solutionLoaded, setSolutionLoaded] = useState(false)
   const [activeApproachId, setActiveApproachId] = useState<string | null>(null)
+  // Which step of an interactive walkthrough the learner is viewing, so Hatch
+  // can reason about it ("why does mid move here?"). Reset when the approach changes.
+  const [activeSolutionStep, setActiveSolutionStep] = useState<{ index: number; title: string; decision?: string } | null>(null)
   const solutionGenerateTriggeredRef = useRef(false)
   const solutionStateRef = useRef<SolutionTabResponse | null>(null)
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
@@ -2650,7 +2653,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (!challengeId) return
     setSolutionLoading(true)
     try {
-      const res = await fetch(`/api/challenges/${challengeId}/solution`)
+      // QA affordance: in mock mode, ?mock=stepped on the workspace URL surfaces
+      // the interactive binary-search walkthrough. No effect outside mock mode.
+      const steppedMock = typeof window !== 'undefined'
+        && new URLSearchParams(window.location.search).get('mock') === 'stepped'
+      const qs = steppedMock ? '?mock=stepped' : ''
+      const res = await fetch(`/api/challenges/${challengeId}/solution${qs}`)
       if (res.ok) {
         const data: SolutionTabResponse = await res.json()
         setSolution(data)
@@ -2707,8 +2715,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (!solution || solution.locked || solution.status !== 'ready') return null
     const approaches = solution.content.approaches
     const approach = approaches.find((a) => a.id === activeApproachId) ?? approaches[0]
-    return approach ? { title: approach.title, tagline: approach.tagline } : null
-  }, [solution, activeApproachId])
+    if (!approach) return null
+    return {
+      title: approach.title,
+      tagline: approach.tagline,
+      // The walkthrough step the learner is on, so Hatch can coach the move itself.
+      ...(activeSolutionStep
+        ? { stepTitle: activeSolutionStep.title, stepDecision: activeSolutionStep.decision }
+        : {}),
+    }
+  }, [solution, activeApproachId, activeSolutionStep])
   const solutionsOpen = leftTab === 'Solutions' && activeSolutionApproach !== null
 
   // A completed submission unlocks the tab for free users without a reload.
@@ -3735,7 +3751,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       onRetry={() => { void triggerSolutionGeneration() }}
       onGoToDescription={() => setLeftTab('Description')}
       activeApproachId={activeApproachId}
-      onApproachChange={setActiveApproachId}
+      onApproachChange={(id) => { setActiveApproachId(id); setActiveSolutionStep(null) }}
+      onSteppedStepChange={setActiveSolutionStep}
     />
   )
 
