@@ -43,10 +43,14 @@ interface DropdownDef {
   /** Static options list. When undefined, options are computed dynamically from the active discipline. */
   options?: string[]
   disciplines: Discipline[]  // which discipline tabs show this dropdown; empty = all
+  /** Discipline tabs where this dropdown is hidden even though `disciplines` is empty (all). */
+  excludeDisciplines?: Discipline[]
 }
 
 const DROPDOWNS: DropdownDef[] = [
-  { key: 'paradigm', label: 'Paradigm', options: PARADIGM_OPTIONS, disciplines: [] },
+  // Paradigm is a product-thinking operating mode; it has no meaning on pure
+  // algorithm/SQL coding problems, so hide it on those two tabs.
+  { key: 'paradigm', label: 'Paradigm', options: PARADIGM_OPTIONS, disciplines: [], excludeDisciplines: ['algorithm', 'sql'] },
   { key: 'difficulty', label: 'Difficulty', options: DIFFICULTY_OPTIONS, disciplines: [] },
   { key: 'role', label: 'Role', options: ROLE_OPTIONS, disciplines: [] },
   { key: 'company', label: 'Company', options: COMPANY_OPTIONS, disciplines: [] },
@@ -136,7 +140,9 @@ function MultiSelectDropdown({
 
 export function FilterDropdownBar({ discipline, filters, onChange, resultCount, onOpenMobileSheet, listView, onToggleView, showViewToggle = true }: Props) {
   const visibleDropdowns = DROPDOWNS.filter(
-    (d) => d.disciplines.length === 0 || d.disciplines.includes(discipline)
+    (d) =>
+      (d.disciplines.length === 0 || d.disciplines.includes(discipline)) &&
+      !(d.excludeDisciplines?.includes(discipline))
   )
 
   // Compute discipline-aware topic + technique options

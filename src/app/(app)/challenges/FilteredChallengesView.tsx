@@ -261,6 +261,10 @@ export function FilteredChallengesView({
       params.delete('type')
       params.delete('topic')
       params.delete('technique')
+      // Paradigm has no meaning on the pure coding tabs and its control is hidden
+      // there - drop any active paradigm filter so results aren't silently scoped
+      // by a filter the user can no longer see or remove.
+      if (nextDiscipline === 'algorithm' || nextDiscipline === 'sql') params.delete('paradigm')
       if (nextDiscipline === 'all') params.delete('discipline')
       else params.set('discipline', nextDiscipline)
     })
