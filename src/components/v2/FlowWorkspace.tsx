@@ -1423,6 +1423,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setCurrentLanguage('sql')
       return
     }
+    // Algorithm challenges never run SQL. Keep the active language in the
+    // non-SQL set even when metadata is missing or wrongly lists sql.
+    if (apiChallengeType === 'algorithm') {
+      const NON_SQL_DEFAULTS: SupportedLanguage[] = ['python', 'javascript', 'java', 'cpp', 'go']
+      const allowed = (meta.supported_languages ?? []).filter(l => l !== 'sql')
+      const effective = allowed.length > 0 ? allowed : NON_SQL_DEFAULTS
+      if (!effective.includes(currentLanguage)) setCurrentLanguage(effective[0])
+      return
+    }
     const supported = meta.supported_languages
     if (supported && supported.length > 0 && !supported.includes(currentLanguage)) {
       setCurrentLanguage(supported[0])
@@ -4690,7 +4699,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   {/* Language selector */}
                   {(() => {
                     const metadata = (isApiMode ? detail?.challenge?.metadata : null) as { supported_languages?: string[] } | null | undefined
-                    const supportedLangs = (metadata?.supported_languages ?? []) as SupportedLanguage[]
+                    const metaLangs = (metadata?.supported_languages ?? []) as SupportedLanguage[]
+                    // Guard the option list by challenge type so the wrong language
+                    // can't appear regardless of (often empty) metadata: SQL
+                    // challenges only offer SQL; algorithm challenges never offer
+                    // SQL. Falls back to a sensible per-type default when metadata
+                    // is missing, instead of showing all six languages.
+                    const NON_SQL_DEFAULTS: SupportedLanguage[] = ['python', 'javascript', 'java', 'cpp', 'go']
+                    let supportedLangs: SupportedLanguage[]
+                    if (apiChallengeType === 'sql') {
+                      supportedLangs = ['sql']
+                    } else if (apiChallengeType === 'algorithm') {
+                      const fromMeta = metaLangs.filter(l => l !== 'sql')
+                      supportedLangs = fromMeta.length > 0 ? fromMeta : NON_SQL_DEFAULTS
+                    } else {
+                      supportedLangs = metaLangs
+                    }
                     return (
                       <LanguageSelector
                         value={currentLanguage}
