@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { InteractiveStepDiagram as SteppedSpec } from '@/lib/solutions/schema'
 import { trackEvent } from '@/lib/posthog/client'
 import { ArrayStage } from './stages/ArrayStage'
+import { PipelineStage } from './stages/PipelineStage'
+import { FlowStage } from './stages/FlowStage'
 
 interface Props {
   spec: SteppedSpec
@@ -83,8 +85,14 @@ export function InteractiveStepDiagram({ spec, reducedMotion, onStepChange }: Pr
     if (spec.base.kind === 'array' && step.delta.base === 'array') {
       return <ArrayStage base={spec.base} delta={step.delta} reducedMotion={reducedMotion} />
     }
-    // Other bases (pipeline/flow) render in a later phase; fail soft to nothing
-    // rather than crash, so unknown shapes never break an existing solution.
+    if (spec.base.kind === 'pipeline' && step.delta.base === 'pipeline') {
+      return <PipelineStage base={spec.base} delta={step.delta} reducedMotion={reducedMotion} />
+    }
+    if (spec.base.kind === 'flow' && step.delta.base === 'flow') {
+      return <FlowStage base={spec.base} delta={step.delta} reducedMotion={reducedMotion} />
+    }
+    // Unknown/future base: fail soft to nothing rather than crash, so an
+    // unrecognized stepped shape never breaks an existing solution.
     return null
   }
 

@@ -20,6 +20,7 @@ import { readFileSync, readdirSync, statSync, writeFileSync, existsSync } from '
 import { join } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { SolutionContentSchema } from '../../src/lib/solutions/schema'
+import { graftSteppedTrace } from '../../src/lib/solutions/trace/graft'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -79,7 +80,7 @@ async function main() {
       // Confirm the challenge exists and is the type the content claims.
       const { data: challenge } = await supabase
         .from('challenges')
-        .select('id, challenge_type')
+        .select('id, challenge_type, metadata, topic_tags, technique_tags')
         .eq('id', item.id)
         .maybeSingle()
       if (!challenge) {
@@ -93,13 +94,26 @@ async function main() {
         continue
       }
 
+      // Attach a machine-verified interactive walkthrough where eligible (same
+      // logic as the lazy generation route). Fail-soft: keeps the static diagram
+      // if the challenge is not array-trace eligible.
+      const tags = [
+        ...((challenge.topic_tags as string[] | null) ?? []),
+        ...((challenge.technique_tags as string[] | null) ?? []),
+      ]
+      const { content: finalContent, grafted } = graftSteppedTrace(
+        parsed.data,
+        (challenge.metadata as Record<string, unknown> | null) ?? null,
+        tags,
+      )
+
       if (WRITE) {
         const { error } = await supabase
           .from('challenge_solutions')
           .upsert({
             challenge_id: item.id,
             schema_version: 1,
-            content: parsed.data,
+            content: finalContent,
             generation_status: 'ready',
             generation_error: null,
             generated_by: 'backfill',
@@ -115,7 +129,7 @@ async function main() {
         writeFileSync(CHECKPOINT, JSON.stringify([...applied], null, 2))
       }
       upserts++
-      console.log(`${WRITE ? '✓ applied' : '· would apply'} ${item.id} (${parsed.data.approaches.length} approaches)`)
+      console.log(`${WRITE ? '✓ applied' : '· would apply'} ${item.id} (${finalContent.approaches.length} approaches${grafted ? ', +verified walkthrough' : ''})`)
     }
   }
 
