@@ -9,6 +9,12 @@ import type { SolutionChallengeType } from './schema'
  *    embeds this verbatim into INSTRUCTIONS.md for Claude Code sub-agents)
  */
 
+// When a challenge is stepped-eligible, the server attaches a machine-VERIFIED
+// interactive walkthrough (its step states come from executing the real
+// algorithm, not from the model). The model is told NOT to author that diagram,
+// only to optionally narrate it. This block is appended for eligible types only.
+const STEPPED_TRACE_NOTE = `A verified interactive step-by-step walkthrough of the optimal approach will be ATTACHED to your solution automatically. Its visual states are computed by executing the real algorithm, so do NOT author a "stepped" diagram yourself and do NOT restate the per-step mechanics blow-by-blow in body_md. Write the body_md as the conceptual explanation (the invariant, why each move is safe, the boundary traps); the attached walkthrough handles the step-by-step animation. You MAY still include a complexity_curves diagram contrasting approaches.`
+
 const JSON_CONTRACT = `Return ONLY a JSON object, no markdown fence, matching this exact shape:
 
 {
@@ -93,10 +99,14 @@ const STYLE_RULES = `Writing style (hard rules, violations fail validation):
 - Never attribute reasoning patterns to named authors or frameworks-with-authors.
 - Markdown: use ## headings to structure long bodies, code fences with language tags, tables where they genuinely compress information. Solutions are read in a narrow pane; prefer short paragraphs.`
 
-export function buildSolutionSystemPrompt(challengeType: SolutionChallengeType): string {
+export function buildSolutionSystemPrompt(
+  challengeType: SolutionChallengeType,
+  opts: { hasVerifiedTrace?: boolean } = {},
+): string {
+  const steppedNote = opts.hasVerifiedTrace ? `\n\n${STEPPED_TRACE_NOTE}` : ''
   return `You write the official solution document for a practice challenge on an AI-native education platform for tech workers (engineers practicing product thinking, system design, SQL, and algorithms). The solution appears in a "Solutions" tab after a learner has attempted the challenge. It must teach the reasoning, not just present the answer.
 
-${TYPE_RULES[challengeType]}
+${TYPE_RULES[challengeType]}${steppedNote}
 
 ${AI_COLLABORATION_RULES}
 

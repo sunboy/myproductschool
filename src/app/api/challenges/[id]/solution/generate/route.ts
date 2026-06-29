@@ -5,6 +5,7 @@ import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import { getSolutionAccess } from '@/lib/solutions/access'
 import { buildSolutionSystemPrompt } from '@/lib/solutions/prompt'
 import { buildSolutionSourceContext } from '@/lib/solutions/source-context'
+import { buildSteppedTraceFromMetadata } from '@/lib/solutions/trace'
 import { SolutionContentSchema, type SolutionContentV1, type SolutionTabResponse } from '@/lib/solutions/schema'
 import { MOCK_SOLUTION_CONTENT } from '@/lib/solutions/mock'
 import { IS_MOCK } from '@/lib/mock'
@@ -121,7 +122,32 @@ export const POST = withRoute(async (
     return apiError(500, 'no_source_context', 'Could not assemble challenge source material')
   }
 
-  const systemPrompt = buildSolutionSystemPrompt(source.challengeType)
+  // Stepped eligibility: only algorithm challenges, and only when a verified
+  // trace can be built from the real reference + test case. If so, the model is
+  // told the walkthrough is auto-attached and the server grafts the verified
+  // diagram after validation, so the model never authors the step states.
+  let steppedCandidate: ReturnType<typeof buildSteppedTraceFromMetadata> = null
+  if (source.challengeType === 'algorithm') {
+    const { data: meta } = await admin
+      .from('challenges')
+      .select('metadata, topic_tags, technique_tags')
+      .eq('id', identity.id)
+      .maybeSingle()
+    if (meta) {
+      const tags = [
+        ...((meta.topic_tags as string[] | null) ?? []),
+        ...((meta.technique_tags as string[] | null) ?? []),
+      ]
+      steppedCandidate = buildSteppedTraceFromMetadata(
+        (meta.metadata as Record<string, unknown> | null) ?? {},
+        tags,
+      )
+    }
+  }
+
+  const systemPrompt = buildSolutionSystemPrompt(source.challengeType, {
+    hasVerifiedTrace: Boolean(steppedCandidate),
+  })
 
   try {
     let content: SolutionContentV1 | null = null
@@ -152,6 +178,28 @@ export const POST = withRoute(async (
     }
 
     if (!content) throw new Error(`Solution failed validation after retry: ${lastIssues.slice(0, 500)}`)
+
+    // Attach the machine-verified walkthrough to the optimal approach (the last
+    // one, by the brute-force -> optimal convention). The deltas are never the
+    // model's; only the surrounding solution prose is. Re-validate so the
+    // one-stepped-per-solution and verified-trace gates still hold.
+    if (steppedCandidate) {
+      const approaches = content.approaches.map((a) => ({ ...a }))
+      const optimal = approaches[approaches.length - 1]
+      if (optimal && optimal.diagram?.kind !== 'stepped') {
+        optimal.diagram = steppedCandidate.diagram
+        const grafted = { ...content, approaches }
+        const recheck = SolutionContentSchema.safeParse(grafted)
+        if (recheck.success) {
+          content = recheck.data
+        } else {
+          logger.warn('[challenges.solution.generate] stepped graft failed revalidation, keeping static diagram', {
+            challengeId: identity.id,
+            issues: recheck.error.issues.map((i) => i.message).join('; ').slice(0, 300),
+          })
+        }
+      }
+    }
 
     await admin
       .from('challenge_solutions')
