@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Suspense, type ReactNode } from 'react'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getCachedUser } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   getHotChallenges,
@@ -28,7 +28,7 @@ import { CadenceRibbon } from '@/components/dashboard/cards/CadenceRibbon'
 import { AnalyticsLabCard } from '@/components/dashboard/cards/AnalyticsLabCard'
 import { getCcAnalyticsFrontDoor } from '@/lib/data/cc-analytics-frontdoor'
 import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
-import { getHatchContext } from '@/lib/hatch-context'
+import { getDashboardCoachSummary } from '@/lib/hatch-context'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
@@ -119,8 +119,11 @@ function LockOverlay({ children, label = 'Unlocks after calibration' }: { childr
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  // getCachedUser() memoizes the auth round-trip for this RSC render, so any
+  // nested server component/loader that also needs the user reuses it instead of
+  // re-hitting Supabase Auth. createClient() is still needed for the RLS-bound
+  // reads below.
+  const [{ user }, supabase] = await Promise.all([getCachedUser(), createClient()])
 
   let displayName = 'there'
   let streakDays = 0
@@ -170,19 +173,20 @@ export default async function DashboardPage() {
   // Two independent reads, run in parallel so the front-door fetch (which may
   // decompress the skills tarball) doesn't serialize before the coach read:
   //  - ccAnalytics: anchor front door (access + skills + last scorecard + entry).
-  //  - hatchContext: grounded coach read for the hero (competencies + completions).
-  const [ccAnalytics, hatchContext] = await Promise.all([
+  //  - coachSummary: lightweight coach read for the hero (only the 4 fields the
+  //    dashboard renders), instead of the full ~12-query getHatchContext.
+  const [ccAnalytics, coachSummary] = await Promise.all([
     userId ? getCcAnalyticsFrontDoor(adminClient, userId).catch(() => null) : Promise.resolve(null),
-    userId ? getHatchContext(userId).catch(() => null) : Promise.resolve(null),
+    userId ? getDashboardCoachSummary(userId).catch(() => null) : Promise.resolve(null),
   ])
-  const weakestCompetency = hatchContext?.weakestCompetency ?? null
+  const weakestCompetency = coachSummary?.weakestCompetency ?? null
   const weakest = weakestCompetency
-    ? hatchContext?.competencies.find(c => c.competency === weakestCompetency) ?? null
+    ? coachSummary?.competencies.find(c => c.competency === weakestCompetency) ?? null
     : null
   const coachCompetencyScore = weakest ? Math.round(weakest.score) : null
   const coachCompetencyTrend = weakest?.trend ?? null
-  const coachOverallLevel = hatchContext?.overallLevel ?? 'Beginner'
-  const coachRecentCompletions = hatchContext?.recentCompletions.length ?? 0
+  const coachOverallLevel = coachSummary?.overallLevel ?? 'Beginner'
+  const coachRecentCompletions = coachSummary?.recentCompletions.length ?? 0
 
   const [hotChallenges, leaderboard, enrolledPlans, latestInterview, featuredAutopsy, activePlanResult] = await Promise.all([
     getHotChallenges(),
@@ -460,9 +464,9 @@ export default async function DashboardPage() {
       <div className="flex flex-col gap-7">
 
         {/* ZONE 1 — Coach Spine: personalized, data-grounded hero.
-            getHatchContext is awaited above and its output (weakest competency,
-            score, trend) threads into CoachSpineCard. Falls back gracefully
-            for new users with no competency data yet. */}
+            getDashboardCoachSummary is awaited above and its output (weakest
+            competency, score, trend) threads into CoachSpineCard. Falls back
+            gracefully for new users with no competency data yet. */}
         <CoachSpineCard
           displayName={displayName}
           streakDays={streakDays}
