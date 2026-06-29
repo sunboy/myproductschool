@@ -728,6 +728,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isCodingChallenge = apiChallengeType === 'sql' || apiChallengeType === 'algorithm'
   // Either canvas or coding - both are full-panel interview modes (no MCQ FLOW steps)
   const isInterviewChallenge = isCanvasChallenge || isCodingChallenge
+  // The MCQ FLOW stepper (Frame/List/Optimize/Win). API mode only - the idle nudge
+  // posts to an authed endpoint keyed on a real challenge + attempt, which the
+  // autopsy/showcase adapter path does not have.
+  const isFlowChallenge = isApiMode && !isInterviewChallenge
 
   // On a phone, FLOW/MCQ challenges stack vertically. Canvas/coding challenges
   // are gated to a "best on desktop" notice instead (see Fork C below).
@@ -1207,6 +1211,30 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const lastWorkspaceProgressRef = useRef(Date.now())
   const lastWorkspaceCueRef = useRef(0)
 
+  // Snapshot of the user's live workspace state, read inside the idle-nudge timer
+  // at fire time (the timer is declared before these values exist, and we don't
+  // want to re-subscribe the interval on every keystroke). Populated by the
+  // effect just below. Lets the idle nudge be grounded in what the user is
+  // actually doing — the current FLOW question + selections, or the current code
+  // + last test run — instead of a canned "stuck?" line.
+  const nudgeGroundingRef = useRef<{
+    flowStep: string | null
+    flowQuestion: string | null
+    flowSelectedLabels: string[]
+    codeLanguage: string | null
+    codeTail: string | null
+    testsPassed: number | null
+    testsTotal: number | null
+  }>({
+    flowStep: null,
+    flowQuestion: null,
+    flowSelectedLabels: [],
+    codeLanguage: null,
+    codeTail: null,
+    testsPassed: null,
+    testsTotal: null,
+  })
+
   useEffect(() => {
     chatPanelOpenRef.current = chatPanelOpen
   }, [chatPanelOpen])
@@ -1277,35 +1305,86 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     selectedOptionId,
   ])
 
+  // Uniform idle nudge. When the user goes quiet on a question (FLOW), in the
+  // editor (coding), or on a populated canvas (system design / data modeling),
+  // ask Hatch — via the same /api/hatch/canvas/nudge endpoint the analytics
+  // medium uses — whether it has one grounded thing to say. This replaces the
+  // old canned "Stuck on your X?" line so every challenge type gets the same
+  // gentle, dismissible, context-aware nudge instead of a generic prompt.
   useEffect(() => {
     if (!emitHatchCue || phase !== 'question') return
+
+    const fireNudge = async () => {
+      const apiType = isFlowChallenge ? 'flow' : apiChallengeType
+      const ground = nudgeGroundingRef.current
+
+      // Per-type body. Canvas reuses the scene path (with a synthetic delta so the
+      // trivial-change gate lets the current scene through on an idle tick).
+      const body: Record<string, unknown> = {
+        challengeId,
+        challengeType: apiType,
+        attemptId: attemptId ?? challengeId,
+        lastNudgeAt: lastNudgeAtRef.current || undefined,
+        nudgeCount: nudgeCountRef.current,
+      }
+      if (isFlowChallenge) {
+        if (!ground.flowQuestion) return
+        body.flow_step = ground.flowStep
+        body.flow_question = ground.flowQuestion
+        body.flow_selected_labels = ground.flowSelectedLabels
+      } else if (isCodingChallenge) {
+        if (!ground.codeTail && ground.testsTotal == null) return
+        body.code_language = ground.codeLanguage
+        body.code_tail = ground.codeTail
+        body.tests_passed = ground.testsPassed
+        body.tests_total = ground.testsTotal
+      } else if (isCanvasChallenge) {
+        if (!scene || scene.elementCount < 2) return
+        body.scene = scene
+        body.recentDelta = { added: 1 }
+      } else {
+        return
+      }
+
+      try {
+        const res = await fetch('/api/hatch/canvas/nudge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) return
+        const data = (await res.json()) as { nudge: string | null }
+        if (!data.nudge) return
+
+        lastNudgeAtRef.current = Date.now()
+        nudgeCountRef.current += 1
+        const target = isInterviewChallenge ? 'workspace-hatch-chat' : 'workspace-answer-area'
+        if (chatPanelOpenRef.current) {
+          setProactiveNudge({ id: `idle-${Date.now()}`, text: data.nudge })
+        }
+        emitHatchCue?.({
+          surface: 'workspace',
+          message: data.nudge,
+          state: 'intrigued',
+          animation: 'nudging',
+          target,
+          source: 'nudge',
+          priority: 5,
+          cooldownKey: `workspace-stuck:${attemptId ?? challengeId}`,
+          cta: isInterviewChallenge
+            ? { label: 'Open Hatch', action: 'open-workspace-chat' as const }
+            : { label: 'Show a hint', action: 'open-workspace-chat' as const },
+        })
+      } catch { /* a missed nudge is non-critical */ }
+    }
 
     const timer = window.setInterval(() => {
       if (activeHatchCue) return
       const now = Date.now()
       if (now - lastWorkspaceProgressRef.current < 90_000) return
       if (now - lastWorkspaceCueRef.current < 120_000) return
-
       lastWorkspaceCueRef.current = now
-      const workspaceKind = isCanvasChallenge
-        ? apiChallengeType === 'data_modeling' ? 'data model' : 'system design'
-        : isCodingChallenge ? 'code' : 'answer'
-      const target = isInterviewChallenge ? 'workspace-hatch-chat' : 'workspace-answer-area'
-      const cta = isInterviewChallenge
-        ? { label: 'Open Hatch', action: 'open-workspace-chat' as const }
-        : { label: 'Show a hint', action: 'open-workspace-chat' as const }
-
-      emitHatchCue({
-        surface: 'workspace',
-        message: `Stuck on your ${workspaceKind}? I can give you a hint.`,
-        state: 'intrigued',
-        animation: 'stuck-check',
-        target,
-        source: 'workspace',
-        priority: 5,
-        cooldownKey: `workspace-stuck:${attemptId ?? challengeId}`,
-        cta,
-      })
+      void fireNudge()
     }, 10_000)
 
     return () => window.clearInterval(timer)
@@ -1317,8 +1396,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     emitHatchCue,
     isCanvasChallenge,
     isCodingChallenge,
+    isFlowChallenge,
     isInterviewChallenge,
     phase,
+    scene,
   ])
 
   // Autosave canvas snapshot and Context Pack every 10s when changed
@@ -1607,6 +1688,43 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const activeStepData = isApiMode ? stepData : adapterStepData
   const currentQuestion = activeStepData?.questions[questionIdx] ?? null
   const activeSubmitting = isApiMode ? submitting : adapterSubmitting
+
+  // Keep the idle-nudge grounding snapshot current. Reads the live FLOW question
+  // + the labels of options the user leaned toward, or the current code + last
+  // test run, so the idle timer (declared above, before these values exist) can
+  // build a grounded nudge body without re-subscribing on every keystroke.
+  useEffect(() => {
+    const selectedLabels: string[] = []
+    if (currentQuestion) {
+      const picked = currentQuestion.allow_multiple
+        ? selectedOptionIds
+        : selectedOptionId
+          ? [selectedOptionId]
+          : []
+      for (const oid of picked) {
+        const opt = currentQuestion.options.find(o => o.id === oid)
+        if (opt?.option_text) selectedLabels.push(opt.option_text)
+      }
+    }
+    nudgeGroundingRef.current = {
+      flowStep: currentStep ?? null,
+      flowQuestion: currentQuestion?.question_text ?? null,
+      flowSelectedLabels: selectedLabels,
+      codeLanguage: isCodingChallenge ? currentLanguage : null,
+      codeTail: isCodingChallenge && currentCode ? currentCode.slice(-1500) : null,
+      testsPassed: lastRunResult ? lastRunResult.testsPassed : null,
+      testsTotal: lastRunResult ? lastRunResult.testsTotal : null,
+    }
+  }, [
+    currentQuestion,
+    selectedOptionId,
+    selectedOptionIds,
+    currentStep,
+    currentCode,
+    currentLanguage,
+    lastRunResult,
+    isCodingChallenge,
+  ])
 
   // Rehydrate MCQ step drafts from the persisted snapshot once per attempt, but
   // only when the saved snapshot is for the step the server resumed us into.
@@ -4930,6 +5048,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     queuedPrompt={queuedHatchPrompt}
                     isOpen={chatPanelOpen}
                     onToggle={() => setChatPanelOpen((v) => !v)}
+                    autoOpenKey="coding"
+                    proactiveNudge={proactiveNudge}
+                    onDismissNudge={() => setProactiveNudge(null)}
                     onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
                     currentCode={currentCode}
                     currentLanguage={currentLanguage}
