@@ -38,6 +38,11 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // The composer starts as a plain box. The format toolbar + markdown hint only
+  // appear once the user engages (focus or any typed content), so an empty
+  // discussion tab reads as one calm "write something" field, not a wall of chrome.
+  const [engaged, setEngaged] = useState(false)
+  const expanded = engaged || content.length > 0
   const validation = validateDiscussionContent(content)
   const validationMessage = content.trim()
     ? validation.errors[0] ?? validation.warnings[0] ?? null
@@ -149,28 +154,31 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
         <span className="material-symbols-outlined text-outline text-lg">person</span>
       </div>
       <div className="min-w-0 flex-grow">
-        <div className="flex items-center gap-0.5 mb-1">
-          {TOOLBAR_BUTTONS.map(({ kind, icon, label }) => (
-            <button
-              key={kind}
-              type="button"
-              aria-label={label}
-              title={label}
-              onMouseDown={e => e.preventDefault()}
-              onClick={() => applyFormat(kind)}
-              disabled={submitting}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors disabled:opacity-40"
-            >
-              <span className="material-symbols-outlined text-[18px]">{icon}</span>
-            </button>
-          ))}
-        </div>
+        {expanded && (
+          <div className="flex items-center gap-0.5 mb-1">
+            {TOOLBAR_BUTTONS.map(({ kind, icon, label }) => (
+              <button
+                key={kind}
+                type="button"
+                aria-label={label}
+                title={label}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => applyFormat(kind)}
+                disabled={submitting}
+                className="w-7 h-7 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors disabled:opacity-40"
+              >
+                <span className="material-symbols-outlined text-[18px]">{icon}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <textarea
-          className="w-full border border-outline-variant rounded-xl bg-surface-container-low focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm leading-relaxed px-3 py-2.5 placeholder:text-on-surface-variant/60 text-on-surface focus:outline-none resize-y min-h-[120px] transition-colors"
-          placeholder="Add to the discussion… markdown supported (**bold**, `code`, lists)"
-          rows={5}
+          className={`w-full border border-outline-variant rounded-xl bg-surface-container-low focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm leading-relaxed px-3 py-2.5 placeholder:text-on-surface-variant/60 text-on-surface focus:outline-none resize-y transition-[min-height,background-color] ${expanded ? 'min-h-[120px]' : 'min-h-[48px]'}`}
+          placeholder="Add to the discussion…"
+          rows={expanded ? 5 : 1}
           ref={textarea}
           value={content}
+          onFocus={() => setEngaged(true)}
           onChange={e => {
             setContent(e.target.value.slice(0, MAX_LENGTH))
             if (error) setError(null)
@@ -184,12 +192,14 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
             }
           }}
         />
-        <div className="flex items-center justify-between gap-3 mt-1.5">
-          <p className="text-[11px] font-medium text-on-surface-variant/80">
-            Direct, specific, no slop. Markdown supported. <span className="opacity-70">⌘/Ctrl+Enter to post</span>
-          </p>
-          <span className="text-[11px] font-medium text-on-surface-variant/60 whitespace-nowrap">{content.length}/{MAX_LENGTH}</span>
-        </div>
+        {expanded && (
+          <div className="flex items-center justify-between gap-3 mt-1.5">
+            <p className="text-[11px] font-medium text-on-surface-variant/80">
+              Direct, specific, no slop. Markdown supported. <span className="opacity-70">⌘/Ctrl+Enter to post</span>
+            </p>
+            <span className="text-[11px] font-medium text-on-surface-variant/60 whitespace-nowrap">{content.length}/{MAX_LENGTH}</span>
+          </div>
+        )}
         {validationMessage && (
           <p className="text-xs font-medium text-tertiary">{validationMessage}</p>
         )}

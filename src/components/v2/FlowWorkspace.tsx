@@ -2886,7 +2886,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     win:      'Finish',
   }
 
-  const tabs = ['Description', 'Discussions', 'Submissions', 'Solutions'] as const
+  const tabs = ['Description', 'Solutions', 'Discussions', 'Submissions'] as const
 
   // Derived: active coding parts from detail (only meaningful for coding challenges)
   const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])

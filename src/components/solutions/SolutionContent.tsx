@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { mdRehypePlugins, mdRemarkPlugins, safeMarkdownUrl } from '@/components/ui/Md'
 import { CopyablePre, solutionMarkdownComponents } from '@/components/challenge/markdownComponents'
@@ -113,6 +114,10 @@ function Tradeoffs({ approach }: { approach: SolutionApproach }) {
 
 function AiCollaborationSection({ content }: { content: SolutionContentV1 }) {
   const ai = content.ai_collaboration
+  // Collapsed by default so the official solution leads. The AI angle is a
+  // disclosure the reader opens once they want it, not a banner competing with
+  // the answer above it.
+  const [open, setOpen] = useState(false)
   return (
     <section
       data-testid="solution-ai-collaboration"
@@ -121,12 +126,21 @@ function AiCollaborationSection({ content }: { content: SolutionContentV1 }) {
         background: 'linear-gradient(135deg, #f7f3ea 0%, #eef5ee 100%)',
         border: '1px solid rgba(74,124,89,0.22)',
         borderRadius: 16,
-        padding: '16px 18px',
+        padding: open ? '16px 18px' : '12px 16px',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+          background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left',
+          marginBottom: open ? 10 : 0,
+        }}
+      >
         <HatchGlyph size={30} state="speaking" className="text-primary" />
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15.5, fontWeight: 700, color: 'var(--color-on-surface)', lineHeight: 1.25 }}>
             Working this problem with AI
           </div>
@@ -134,39 +148,46 @@ function AiCollaborationSection({ content }: { content: SolutionContentV1 }) {
             Where an AI pair speeds you up here, and where it leads you astray.
           </div>
         </div>
-      </div>
+        <span className="material-symbols-outlined" style={{ color: 'var(--color-on-surface-variant)', fontSize: 22, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+          expand_more
+        </span>
+      </button>
 
-      <SolutionMd>{ai.body_md}</SolutionMd>
+      {open && (
+        <>
+          <SolutionMd>{ai.body_md}</SolutionMd>
 
-      <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-primary)', margin: '14px 0 8px' }}>
-        Prompts worth stealing
-      </div>
-      <div style={{ display: 'grid', gap: 10 }}>
-        {ai.prompts.map((prompt, i) => (
-          <div key={i}>
-            <div style={{ fontFamily: 'var(--font-label)', fontSize: 12.5, fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: 5 }}>
-              {prompt.title}
-            </div>
-            <CopyablePre>
-              <span style={{ whiteSpace: 'pre-wrap', fontFamily: 'var(--font-body)', fontSize: 12.5 }}>{prompt.prompt}</span>
-            </CopyablePre>
-            <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-on-surface-variant)', marginTop: -6, lineHeight: 1.5 }}>
-              {prompt.why}
-            </div>
+          <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-primary)', margin: '14px 0 8px' }}>
+            Prompts worth stealing
           </div>
-        ))}
-      </div>
+          <div style={{ display: 'grid', gap: 10 }}>
+            {ai.prompts.map((prompt, i) => (
+              <div key={i}>
+                <div style={{ fontFamily: 'var(--font-label)', fontSize: 12.5, fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: 5 }}>
+                  {prompt.title}
+                </div>
+                <CopyablePre>
+                  <span style={{ whiteSpace: 'pre-wrap', fontFamily: 'var(--font-body)', fontSize: 12.5 }}>{prompt.prompt}</span>
+                </CopyablePre>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-on-surface-variant)', marginTop: -6, lineHeight: 1.5 }}>
+                  {prompt.why}
+                </div>
+              </div>
+            ))}
+          </div>
 
-      <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-tertiary)', margin: '16px 0 6px' }}>
-        Where AI work goes wrong here
-      </div>
-      <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
-        {ai.pitfalls.map((pitfall, i) => (
-          <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.55, color: 'var(--color-on-surface)' }}>
-            {pitfall}
-          </li>
-        ))}
-      </ul>
+          <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-tertiary)', margin: '16px 0 6px' }}>
+            Where AI work goes wrong here
+          </div>
+          <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+            {ai.pitfalls.map((pitfall, i) => (
+              <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.55, color: 'var(--color-on-surface)' }}>
+                {pitfall}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </section>
   )
 }

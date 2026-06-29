@@ -85,6 +85,29 @@ interface CanvasChatPanelProps {
   activeSolutionApproach?: { title: string; tagline: string } | null
 }
 
+// Defensive guard: a chat turn should be prose, but a malformed structured-output
+// response could arrive wrapped in a ```json fence or as a bare { "message": "..." }
+// object. Hatch must never show raw JSON to a user, so unwrap the common shapes
+// before rendering. Anything we can't cleanly unwrap passes through unchanged.
+function sanitizeHatchText(raw: string): string {
+  let text = (raw ?? '').trim()
+  if (!text) return text
+  // Strip a leading/trailing markdown code fence (```json ... ``` or ``` ... ```).
+  const fence = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
+  if (fence) text = fence[1].trim()
+  // If what remains is a JSON object carrying a text field, surface that field.
+  if (text.startsWith('{') && text.endsWith('}')) {
+    try {
+      const obj = JSON.parse(text) as Record<string, unknown>
+      const field = obj.message ?? obj.nudge ?? obj.text ?? obj.reply ?? obj.content
+      if (typeof field === 'string' && field.trim()) return field.trim()
+    } catch {
+      // not valid JSON - leave as-is rather than mangle real prose with braces
+    }
+  }
+  return text
+}
+
 function getInitialMessage(
   challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics',
   phase?: GuidancePhase,
@@ -396,16 +419,17 @@ export function CanvasChatPanel({
         throw new Error('coach call failed')
       }
       const data = (await res.json()) as CanvasInterpretResponse
+      const safeMessage = sanitizeHatchText(data.message)
       const willBuild = data.actions.length > 0 && !!onCanvasActions
       if (willBuild && onCanvasActions) {
-        onCanvasActions({ message: data.message, actions: data.actions })
+        onCanvasActions({ message: safeMessage, actions: data.actions })
       }
       play(willBuild ? 'draw' : 'reply')
       setMessages((prev) => [
         ...prev,
         {
           role: 'hatch',
-          content: data.message,
+          content: safeMessage,
           kind: willBuild ? 'canvas_action' : 'chat',
         },
       ])
