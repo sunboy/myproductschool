@@ -61,6 +61,11 @@ export async function proxy(request: NextRequest) {
   const isPublicScorecard = PUBLIC_SCORECARD_ROUTE.test(pathname)
   const isApi       = pathname.startsWith('/api/')
   const isAdminApi  = pathname.startsWith('/api/admin')
+  // Admin UI routes (the (admin) route group). The admin layout self-guards with
+  // isCurrentUserAdmin(), but we still keep these out of the prefetch fast-path
+  // below so a prefetch can never return a protected-page RSC payload without an
+  // auth check (defense in depth — do not rely solely on per-page guards).
+  const isAdminUi   = pathname === '/admin' || pathname.startsWith('/admin/')
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
   const isPureMarketing = (isMarketing && !isRoot && !isWaitlist) || isExactMarketing
@@ -71,6 +76,22 @@ export async function proxy(request: NextRequest) {
   // path in each of those blocks still serves the page, so an auth-service
   // hiccup degrades to "show the public page", never a hard block.
   if (isPureMarketing || isAuthCallback || isPublicScorecard || (isApi && !isAdminApi)) {
+    return NextResponse.next()
+  }
+
+  // Skip auth validation for <Link> prefetch requests. Next.js prefetches the
+  // RSC payload of routes the user may visit (on hover / in viewport); validating
+  // the token here would fire a Supabase Auth round-trip (getUser) for pages the
+  // user never opens. The prefetched response is never used to gate navigation —
+  // the real navigation re-runs this proxy and applies the redirect/deny rules —
+  // so letting the prefetch through costs nothing and removes the prefetch-driven
+  // auth-call storm. Excluded: admin APIs (handled above) and admin UI routes, so
+  // a prefetch can never return a protected admin RSC payload unauthenticated.
+  const isPrefetch =
+    request.headers.get('next-router-prefetch') === '1' ||
+    request.headers.get('purpose') === 'prefetch' ||
+    request.headers.get('sec-purpose')?.includes('prefetch')
+  if (isPrefetch && !isAdminUi) {
     return NextResponse.next()
   }
 
