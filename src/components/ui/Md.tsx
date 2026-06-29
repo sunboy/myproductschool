@@ -93,8 +93,11 @@ const variantClass = {
     h2: 'font-headline text-sm font-bold leading-tight text-inherit mt-2 mb-1 first:mt-0',
     h3: 'font-headline text-xs font-bold leading-tight text-inherit mt-1.5 mb-0.5 first:mt-0',
     list: 'ml-4 space-y-0.5 mb-1.5 last:mb-0',
-    code: 'bg-surface-container-high px-1 rounded text-[11px] font-mono text-inherit',
-    pre: 'bg-surface-container-highest p-2 rounded-lg overflow-x-auto text-[11px] font-mono text-on-surface my-1.5',
+    // Tint from the inherited text color (works on any bubble background: cream,
+    // green, amber) instead of a fixed light surface. A fixed light bg + inherited
+    // light text on the green canvas-action bubble rendered code spans invisible.
+    code: 'bg-current/15 px-1 rounded text-[11px] font-mono text-inherit',
+    pre: 'bg-current/10 p-2 rounded-lg overflow-x-auto text-[11px] font-mono text-inherit my-1.5',
     blockquote: 'border-l-4 border-outline-variant pl-2 text-inherit opacity-80 my-1.5',
     table: 'my-1.5 w-full border-collapse text-[11px]',
     cell: 'border border-outline-variant px-1.5 py-1 text-left align-top',

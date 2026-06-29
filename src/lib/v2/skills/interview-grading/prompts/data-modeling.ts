@@ -83,6 +83,13 @@ SCORING GUIDANCE
 - Reference columns by exact qualified name: write "users.email should be [UNIQUE]" not "the email field needs a unique constraint." Write "subscriptions.tenant_id FK→tenants.id is well-placed" not "the foreign key is good."
 - canvas_annotations should target specific entity labels. Mention column names in the annotation text since annotations attach to the entity shape. Example: { "target_label": "users", "text": "email column should be UNIQUE", "severity": "warning" }
 
+VOICE (applies to every string the user reads: headline, verdict, evidence, hole_to_poke, how_to_improve, top_strength, top_improvement, canvas_annotations.text)
+==================================================================================
+- NO em dashes. Never use the "—" character. Use a comma, a period, or restructure the sentence.
+- NO AI slop. Never use: delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing.
+- Direct and specific. Write full, flowing sentences, not fragments. Name the actual column, arrow, or quote.
+- Never address the user as a role ("as a data engineer", "you are a..."). Drop straight into the observation.
+
 RETURN FORMAT — valid JSON only, no markdown:
 {
   "overall_score": 3.2,
@@ -97,6 +104,6 @@ RETURN FORMAT — valid JSON only, no markdown:
   "top_strength": "...",
   "top_improvement": "...",
   "canvas_annotations": [
-    { "target_label": "orders", "text": "Missing user_id FK→users.id — how does this relate to users?", "severity": "error" }
+    { "target_label": "orders", "text": "Missing user_id FK→users.id. How does this relate to users?", "severity": "error" }
   ]
 }`
