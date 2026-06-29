@@ -55,6 +55,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // explicitly starts it, not on page load — so we incur infra cost only once
   // they commit to working the challenge. The dev stub skips the gate.
   const [started, setStarted] = useState<boolean>(USE_DEV_STUB)
+  // True while the mount-time check for an already-live sandbox is in flight (e.g.
+  // after a browser refresh). Holds back the "Start sandbox" button so it doesn't
+  // flash before we know whether to auto-reconnect. Init false in the dev stub.
+  const [resuming, setResuming] = useState<boolean>(!USE_DEV_STUB)
   // True once a prior session for this attempt was reaped/expired and its work
   // can be restored — flips the start CTA to "Resume". Shown the idle-reap modal
   // when idle near the reap threshold.
@@ -133,6 +137,55 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     setShowOnboarding(shouldShowOnboarding())
   }, [])
 
+  // Mount-time auto-resume. On a page refresh the client loses sessionId/wssUrl,
+  // so without this we'd show "Start sandbox" even when a container is still live.
+  // GET /session/current is a READ-ONLY probe (never provisions), so this respects
+  // the cost gate: no live session → it returns `none` and we fall through to the
+  // Start button. A live session → reconnect straight into the terminal.
+  useEffect(() => {
+    if (USE_DEV_STUB) return // stub renders the mock terminal; resuming is already false
+    let cancelled = false
+    ;(async () => {
+      try {
+        const params = new URLSearchParams({ challenge_id: challenge.id })
+        // Anchor the probe to a specific attempt when we have one so a refresh
+        // never reconnects to a sibling in-progress attempt for this challenge.
+        if (attemptId) params.set('attempt_id', attemptId)
+        const res = await fetch(`/api/claude-code/session/current?${params.toString()}`)
+        if (!res.ok) {
+          if (!cancelled) setResuming(false)
+          return
+        }
+        const data = (await res.json()) as {
+          status?: string
+          session_id?: string
+          wss_url?: string | null
+          sub_problems?: AnalyticsSubProblem[]
+        }
+        if (!cancelled && data.status === 'active' && data.wss_url && data.session_id) {
+          setSessionId(data.session_id) // → usage poll + finalize (keyed on sessionId)
+          setWssUrl(data.wss_url) // → terminal renders (first branch) + idle-reap watcher
+          setStarted(true) // keep the invariant: started ⟺ committed to a session
+          // Re-apply the per-challenge arc overrides so a resumed session shows the
+          // same guided steps the original start did (not the default arc).
+          if (data.sub_problems?.length) {
+            setSubProblems(mergeArc(challenge.difficulty, data.sub_problems))
+          }
+          sessionStartRef.current = Date.now()
+          setResuming(false)
+        } else if (!cancelled) {
+          setResuming(false) // none/unknown → normal Start button
+        }
+      } catch {
+        if (!cancelled) setResuming(false) // network error → Start button
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Start + provision session. The flow is split so it fits Vercel Hobby's 60s
   // function ceiling on a cold start:
   //   1. POST /session/start    → fast: gates + create a `provisioning` row.
@@ -144,6 +197,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     // Provision only after the user clicks "Start sandbox" (started=true). The
     // dev stub sets started=true up front so the UX renders without real infra.
     if (USE_DEV_STUB || !started) return
+    // Mount-resume already reconnected (set wssUrl + started together) — don't
+    // re-provision. On a normal Start click wssUrl is null when started flips, so
+    // this guard is false and provisioning proceeds unchanged.
+    if (wssUrl) return
 
     let cancelled = false
     let pollTimer: ReturnType<typeof setInterval> | null = null
@@ -824,6 +881,26 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                     />
                   )}
                 </>
+              ) : resuming ? (
+                // Mount-time check for an already-live sandbox (e.g. after a page
+                // refresh). Held until /session/current resolves so the Start
+                // button never flashes before we know whether to auto-reconnect.
+                // Copy is deliberately honest — the probe may resolve to "none".
+                <div style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: '#1c1f1e', borderRadius: 12,
+                  flexDirection: 'column', gap: 14, padding: 24, textAlign: 'center',
+                }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 30, color: '#8ecf9e', animation: 'spin 1s linear infinite' }}
+                  >
+                    progress_activity
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(232,228,220,0.85)' }}>
+                    Checking for a running sandbox…
+                  </span>
+                </div>
               ) : !started ? (
                 // Pre-start: the sandbox is NOT provisioned yet. The user starts
                 // it explicitly so we only spin a live container once they commit.

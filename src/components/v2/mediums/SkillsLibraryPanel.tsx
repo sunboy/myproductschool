@@ -55,20 +55,35 @@ export function SkillsLibraryPanel({
   const [error, setError] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
 
+  // Fetch the PERSISTED skills store. This reads the cc-user-state tarball, which
+  // the sandbox's 30s autosave loop refreshes with ~/.claude/skills — so it's the
+  // authoritative, disk-truth source for a live session (lags a write by up to one
+  // autosave cycle). We poll it while a session is live (replRunning) so a skill
+  // the terminal regex missed still surfaces, and so the real entry (with Load +
+  // preview) supersedes any "In session" placeholder once persisted.
   useEffect(() => {
     let cancelled = false
-    fetch('/api/claude-code/skills')
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((data: { skills?: UserSkill[] }) => {
-        if (!cancelled) setSkills(Array.isArray(data.skills) ? data.skills : [])
-      })
-      .catch(() => {
-        if (!cancelled) setError(true)
-      })
+    const fetchSkills = () => {
+      fetch('/api/claude-code/skills')
+        .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+        .then((data: { skills?: UserSkill[] }) => {
+          if (!cancelled) {
+            setSkills(Array.isArray(data.skills) ? data.skills : [])
+            setError(false) // a later poll recovering clears a transient error banner
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setError(true)
+        })
+    }
+    fetchSkills()
+    // Re-poll only while the REPL is live — never on a dead/idle tab.
+    const interval = replRunning ? setInterval(fetchSkills, 20000) : null
     return () => {
       cancelled = true
+      if (interval) clearInterval(interval)
     }
-  }, [])
+  }, [replRunning])
 
   function loadSkill(skill: UserSkill) {
     const path = skill.filename.startsWith('.claude/')
@@ -131,7 +146,7 @@ export function SkillsLibraryPanel({
         </span>
       </div>
 
-      {skills === null && !error && (
+      {skills === null && !error && !hasSkills && (
         <p style={{ fontSize: 12, color: 'var(--color-on-surface-variant)', margin: 0 }}>Loading…</p>
       )}
 
