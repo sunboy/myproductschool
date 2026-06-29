@@ -146,3 +146,95 @@ test('structure warnings expect a flow_steps diagram on flow types', () => {
   const warnings = solutionStructureWarnings(content)
   assert.ok(warnings.some((w) => w.includes('flow_steps')))
 })
+
+// ── Stepped (interactive) diagram ─────────────────────────────────────────────
+
+function steppedArrayDiagram(overrides: Record<string, unknown> = {}) {
+  return {
+    kind: 'stepped',
+    title: 'Binary search on a sorted array',
+    base: {
+      kind: 'array',
+      cells: [{ value: '2' }, { value: '4' }, { value: '7' }, { value: '9' }, { value: '11' }, { value: '13' }, { value: '18' }, { value: '21' }, { value: '29' }],
+      pointers: ['lo', 'mid', 'hi'],
+      rangeTrack: true,
+    },
+    trace_verified: true,
+    steps: [
+      { title: 'Check the middle', explanation: 'mid is 11, target is greater, discard the left half.', decision: 'Move lo to mid+1', delta: { base: 'array', pointerAt: { lo: 0, mid: 4, hi: 8 }, highlight: [4] } },
+      { title: 'Search the right half', explanation: 'mid is 18, target is greater, keep narrowing.', decision: 'Move lo to mid+1', delta: { base: 'array', pointerAt: { lo: 5, mid: 6, hi: 8 }, discarded: [0, 1, 2, 3, 4] } },
+      { title: 'Find the target', explanation: 'mid is 21, equals target, return the index.', decision: 'Return mid', delta: { base: 'array', pointerAt: { lo: 7, mid: 7, hi: 8 }, discarded: [0, 1, 2, 3, 4, 5, 6], found: true } },
+    ],
+    ...overrides,
+  }
+}
+
+test('valid stepped array diagram parses', () => {
+  const result = SolutionDiagramSchema.safeParse(steppedArrayDiagram())
+  assert.equal(result.success, true)
+})
+
+test('stepped diagram with fewer than 3 steps fails', () => {
+  const diagram = steppedArrayDiagram()
+  ;(diagram as { steps: unknown[] }).steps = (diagram as { steps: unknown[] }).steps.slice(0, 2)
+  const result = SolutionDiagramSchema.safeParse(diagram)
+  assert.equal(result.success, false)
+})
+
+test('stepped diagram rejects out-of-range pointer index', () => {
+  const diagram = steppedArrayDiagram()
+  ;(diagram as { steps: { delta: { pointerAt: Record<string, number> } }[] }).steps[0].delta.pointerAt.hi = 99
+  const result = SolutionDiagramSchema.safeParse(diagram)
+  assert.equal(result.success, false)
+})
+
+test('stepped diagram rejects an unknown pointer name', () => {
+  const diagram = steppedArrayDiagram()
+  ;(diagram as { steps: { delta: { pointerAt: Record<string, number> } }[] }).steps[0].delta.pointerAt.ghost = 1
+  const result = SolutionDiagramSchema.safeParse(diagram)
+  assert.equal(result.success, false)
+})
+
+test('stepped diagram rejects a delta.base that mismatches base.kind', () => {
+  const diagram = steppedArrayDiagram()
+  ;(diagram as { steps: { delta: { base: string } }[] }).steps[1].delta.base = 'pipeline'
+  const result = SolutionDiagramSchema.safeParse(diagram)
+  assert.equal(result.success, false)
+})
+
+test('verified base without a trace marker fails', () => {
+  const diagram = steppedArrayDiagram({ trace_verified: false })
+  const result = SolutionDiagramSchema.safeParse(diagram)
+  assert.equal(result.success, false)
+})
+
+test('authored flow base does not require a trace marker', () => {
+  const result = SolutionDiagramSchema.safeParse({
+    kind: 'stepped',
+    base: { kind: 'flow', nodes: [{ id: 'client', label: 'Client' }, { id: 'api', label: 'API' }, { id: 'db', label: 'Database' }] },
+    steps: [
+      { title: 'Request', explanation: 'The client sends a write to the API.', delta: { base: 'flow', activeNode: 'client' } },
+      { title: 'Route', explanation: 'The API validates and forwards it.', delta: { base: 'flow', activeNode: 'api', visited: ['client'] } },
+      { title: 'Persist', explanation: 'The database commits the row.', delta: { base: 'flow', activeNode: 'db', visited: ['client', 'api'] } },
+    ],
+  })
+  assert.equal(result.success, true)
+})
+
+test('more than one stepped diagram per solution fails', () => {
+  const content = baseContent()
+  content.approaches[0].diagram = steppedArrayDiagram() as never
+  content.approaches[1].diagram = steppedArrayDiagram() as never
+  const result = SolutionContentSchema.safeParse(content)
+  assert.equal(result.success, false)
+})
+
+test('a stepped diagram on a flow challenge type fails', () => {
+  const content = baseContent({ challenge_type: 'flow' })
+  content.approaches = [content.approaches[0]]
+  delete content.approaches[0].code
+  delete content.approaches[0].complexity
+  content.approaches[0].diagram = steppedArrayDiagram() as never
+  const result = SolutionContentSchema.safeParse(content)
+  assert.equal(result.success, false)
+})
