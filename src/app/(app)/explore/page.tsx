@@ -10,7 +10,6 @@ import type { AutopsyCompanyWithStories } from '@/lib/autopsies/types'
 import { createClient } from '@/lib/supabase/server'
 import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StudyPlanGrid } from './StudyPlanGrid'
@@ -220,13 +219,6 @@ export default async function ExplorePage() {
   return (
     <main className="animate-fade-in-up relative isolate mx-auto max-w-[1440px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
       <ExplorePageBackdrop />
-
-      <AppBreadcrumbs
-        className="relative mb-5"
-        items={[
-          { label: 'Explore' },
-        ]}
-      />
 
       <header data-tour-target="explore-hero" className="relative mb-8 grid overflow-hidden rounded-[26px] border border-outline-variant/35 bg-surface-container-low/85 p-5 shadow-[0_24px_70px_-58px_rgba(46,50,48,0.7)] backdrop-blur-sm sm:p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
         <ExploreHeroPattern />
