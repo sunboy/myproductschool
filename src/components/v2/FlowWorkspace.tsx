@@ -11,6 +11,7 @@ import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, Syntheti
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
 import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
+import { usageEventBus } from '@/lib/usage/event-bus'
 import { FLOW_MOVES } from '@/lib/flow/moves'
 import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
@@ -1017,6 +1018,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       return [record, ...withoutDupe]
     })
     setSelectedHistoryIdx(0)
+    // A successful submit (coding / canvas / interview) consumes a rep. Refresh
+    // every usage surface: profile-stats-updated re-pulls SessionContext (which
+    // backs useUsage / the at-limit checks) and the usage pill; usageEventBus is
+    // the pill's in-app channel. The pill no longer polls, so these signals are
+    // what keep it fresh. The FLOW MCQ path emits separately (not via here).
+    window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'challenge-submit' } }))
+    usageEventBus.emit()
   }, [])
 
   // Hint card open/close state (right pane)
@@ -2488,6 +2496,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         setSessionHistory((prev) => [record, ...prev])
         setSelectedHistoryIdx(0)
         setPhase('complete')
+        // FLOW completion consumes a rep; refresh every usage surface (SessionContext
+        // + the no-longer-polling pill). See recordSubmission for the rationale.
+        window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'flow-complete' } }))
+        usageEventBus.emit()
       }
 
       if (isApiMode) {
