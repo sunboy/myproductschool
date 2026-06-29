@@ -1250,6 +1250,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     chatPanelOpenRef.current = chatPanelOpen
   }, [chatPanelOpen])
 
+  // True when the docked Hatch panel (CanvasChatPanel) is actually visible. The
+  // panel owns its open state in useHatchDockState('canvas'), persisted to this
+  // localStorage key for both canvas and coding - the parent `chatPanelOpen`
+  // boolean does NOT track the dock opening itself (auto-open, restore, FAB), so
+  // reading the dock's own state is the only reliable signal at nudge fire-time.
+  // FLOW (MCQ) challenges have no docked panel, so this is always false for them
+  // and their nudges correctly fall through to the floating cue.
+  const dockIsOpenNow = useCallback(() => {
+    if (!isInterviewChallenge) return false
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('hatch-mode:canvas') !== 'closed'
+  }, [isInterviewChallenge])
+
   const requestNudge = useCallback(async (added: number) => {
     if (!isCanvasChallenge || !attemptId) return
     pendingDeltaRef.current += added
@@ -1277,21 +1290,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         if (data.nudge) {
           lastNudgeAtRef.current = Date.now()
           nudgeCountRef.current += 1
-          if (chatPanelOpenRef.current) {
+          // One surface at a time: in-panel card when the dock is open, floating
+          // cue only as the fallback when it is closed (its CTA opens the dock).
+          if (dockIsOpenNow()) {
             setProactiveNudge({ id: `n-${Date.now()}`, text: data.nudge })
+          } else {
+            emitHatchCue?.({
+              id: `canvas-nudge-${Date.now()}`,
+              surface: 'workspace',
+              message: data.nudge,
+              state: 'intrigued',
+              animation: 'nudging',
+              target: 'workspace-hatch-chat',
+              source: 'nudge',
+              priority: 6,
+              cooldownKey: `canvas-nudge:${attemptId}`,
+              cta: { label: 'Open Hatch', action: 'open-workspace-chat' },
+            }, { force: true })
           }
-          emitHatchCue?.({
-            id: `canvas-nudge-${Date.now()}`,
-            surface: 'workspace',
-            message: data.nudge,
-            state: 'intrigued',
-            animation: 'nudging',
-            target: 'workspace-hatch-chat',
-            source: 'nudge',
-            priority: 6,
-            cooldownKey: `canvas-nudge:${attemptId}`,
-            cta: { label: 'Open Hatch', action: 'open-workspace-chat' },
-          }, { force: true })
         }
       } catch { /* swallow */ }
     }, 4000)
@@ -1369,23 +1385,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
         lastNudgeAtRef.current = Date.now()
         nudgeCountRef.current += 1
-        const target = isInterviewChallenge ? 'workspace-hatch-chat' : 'workspace-answer-area'
-        if (chatPanelOpenRef.current) {
+        // One surface at a time. If the docked Hatch panel is already open, the
+        // nudge lands as its in-panel "Hatch noticed" card - do NOT also raise the
+        // floating cue + FAB (that's the redundant double-bubble). The floating cue
+        // is only the fallback for when the panel is closed, and its "Open Hatch"
+        // CTA exists precisely to open the panel.
+        if (dockIsOpenNow()) {
           setProactiveNudge({ id: `idle-${Date.now()}`, text: data.nudge })
+        } else {
+          const target = isInterviewChallenge ? 'workspace-hatch-chat' : 'workspace-answer-area'
+          emitHatchCue?.({
+            surface: 'workspace',
+            message: data.nudge,
+            state: 'intrigued',
+            animation: 'nudging',
+            target,
+            source: 'nudge',
+            priority: 5,
+            cooldownKey: `workspace-stuck:${attemptId ?? challengeId}`,
+            cta: isInterviewChallenge
+              ? { label: 'Open Hatch', action: 'open-workspace-chat' as const }
+              : { label: 'Show a hint', action: 'open-workspace-chat' as const },
+          })
         }
-        emitHatchCue?.({
-          surface: 'workspace',
-          message: data.nudge,
-          state: 'intrigued',
-          animation: 'nudging',
-          target,
-          source: 'nudge',
-          priority: 5,
-          cooldownKey: `workspace-stuck:${attemptId ?? challengeId}`,
-          cta: isInterviewChallenge
-            ? { label: 'Open Hatch', action: 'open-workspace-chat' as const }
-            : { label: 'Show a hint', action: 'open-workspace-chat' as const },
-        })
       } catch { /* a missed nudge is non-critical */ }
     }
 
@@ -1404,6 +1426,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     apiChallengeType,
     attemptId,
     challengeId,
+    dockIsOpenNow,
     emitHatchCue,
     isCanvasChallenge,
     isCodingChallenge,
