@@ -66,9 +66,14 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
   ) {
     // Latch so we only emit the REPL-running signal once per launch.
     const replSignalledRef = useRef(false)
-    // Skills already reported via the terminal-scan fast path, so a path that
-    // stays on screen (or re-prints) doesn't re-fire onSkillWritten every frame.
+    // Latch the MCP-connected signal so the connect line lingering in the rolling
+    // tail doesn't re-fire every frame. (Reset on WS close — see ws.onclose.)
+    const mcpSignalledRef = useRef(false)
+    // Skills + report paths already reported via the terminal-scan fast path, so a
+    // path that stays on screen (or re-prints) doesn't re-fire its callback every
+    // frame — while a genuinely NEW path still fires (dedup by value, not a latch).
     const seenSkillsRef = useRef<Set<string>>(new Set())
+    const seenReportsRef = useRef<Set<string>>(new Set())
     const containerRef = useRef<HTMLDivElement>(null)
     const termRef = useRef<import('xterm').Terminal | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
@@ -385,26 +390,30 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           tailRef.current = (tailRef.current + text).slice(-TAIL_MAX_BYTES)
           onOutput?.(tailRef.current)
 
-          // Detect MCP connection
-          if (MCP_CONNECTED_RE.test(text)) {
+          // ANSI-stripped rolling tail. EVERY status detector scans this (not the
+          // raw chunk) so a signal split across WS frames or wrapped/colored by the
+          // TUI is still matched. The `claude mcp list` "✓ Connected" line and the
+          // skill/report write lines are all ANSI-colored, so stripping is required.
+          const scan = tailRef.current.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')
+
+          // Detect MCP connection. Latch once — the "Added stdio MCP server bigquery"
+          // / "bigquery ✓ Connected" line stays in the tail and we only need to flip
+          // the strip to Connected one time.
+          if (!mcpSignalledRef.current && MCP_CONNECTED_RE.test(scan)) {
+            mcpSignalledRef.current = true
             onMcpStatusChange?.(true)
           }
 
-          // Detect the `claude` REPL launching. Test the rolling tail (not just
-          // this chunk) since the banner can arrive split across frames. Latch
-          // so we signal once per launch.
-          if (!replSignalledRef.current && CLAUDE_REPL_RE.test(tailRef.current)) {
+          // Detect the `claude` REPL launching. Latch so we signal once per launch.
+          if (!replSignalledRef.current && CLAUDE_REPL_RE.test(scan)) {
             replSignalledRef.current = true
             onReplStatusChange?.(true)
           }
 
-          // Detect skill file writes. Scan the rolling tail (not just this chunk)
-          // with ANSI stripped, since the write line can arrive split across WS
-          // frames or wrapped/colored by the TUI. The global regex finds every
+          // Detect skill file writes. The global regex finds every
           // .claude/skills/<...>.md occurrence; we emit each unique one once.
           // (The SkillsLibraryPanel's /api/claude-code/skills re-fetch is the
           // authoritative source — this is just the no-refresh fast path.)
-          const scan = tailRef.current.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')
           SKILL_PATH_RE.lastIndex = 0
           let m: RegExpExecArray | null
           while ((m = SKILL_PATH_RE.exec(scan)) !== null) {
@@ -415,9 +424,13 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
             }
           }
 
-          // Detect a report artifact written to the workspace
-          const reportMatch = REPORT_WRITTEN_RE.exec(text)
-          if (reportMatch?.[1]) {
+          // Detect a report artifact written to the workspace. Dedup per PATH (not
+          // a one-shot latch) so the same path lingering in the tail doesn't re-fire
+          // every frame, while a genuinely new report path later in the session
+          // (e.g. the user re-runs the report step) still fires.
+          const reportMatch = REPORT_WRITTEN_RE.exec(scan)
+          if (reportMatch?.[1] && !seenReportsRef.current.has(reportMatch[1])) {
+            seenReportsRef.current.add(reportMatch[1])
             onReportWritten?.(reportMatch[1])
           }
         }
@@ -434,6 +447,15 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
         ws.onclose = (ev) => {
           if (!mountedRef.current) return
           onMcpStatusChange?.(false)
+          // Reset the MCP latch so the replayed scrollback after a reconnect
+          // (e.g. a refresh reattaching to the live PTY) re-detects the
+          // "Connected" line and flips the strip back, instead of staying Waiting.
+          // Clear the rolling tail in lockstep: otherwise the first post-reconnect
+          // chunk would scan stale PRE-close text and re-fire MCP-connected from a
+          // line that's no longer true (e.g. the MCP was removed). The replayed
+          // scrollback rebuilds the tail, so real signals are re-detected cleanly.
+          mcpSignalledRef.current = false
+          tailRef.current = ''
 
           // Clean close — nothing to do.
           if (ev.code === 1000 || ev.code === 1001) {
