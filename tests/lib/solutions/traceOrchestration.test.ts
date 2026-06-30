@@ -255,18 +255,23 @@ test('graft strips a model-authored stepped diagram even if it self-claims trace
   }
 
   // No metadata -> not eligible to attach a real trace, but the model's stepped
-  // diagram MUST still be stripped (it could be wrong and self-claims verified).
+  // diagram MUST still be stripped (it could be wrong and self-claims verified)
+  // and no top-level walkthrough is produced.
   const { content: out, grafted } = await graftSteppedTrace(content, null, [])
   assert.equal(grafted, false)
   assert.equal(out.approaches.every((a) => a.diagram?.kind !== 'stepped'), true)
+  assert.equal(out.walkthrough, undefined)
 
-  // With real metadata, the model's stepped diagram is replaced by the verified one.
+  // With real metadata, the model's stepped diagram is replaced by the verified
+  // one, which now lands on the TOP-LEVEL walkthrough field (not on an approach).
   const { content: out2, grafted: grafted2 } = await graftSteppedTrace(content, BINARY_SEARCH_META, ['binary-search'])
   assert.equal(grafted2, true)
-  const stepped = out2.approaches.filter((a) => a.diagram?.kind === 'stepped')
-  assert.equal(stepped.length, 1)
+  // No approach carries a stepped diagram anymore — the trace moved up.
+  assert.equal(out2.approaches.every((a) => a.diagram?.kind !== 'stepped'), true)
+  assert.ok(out2.walkthrough)
+  assert.equal(out2.walkthrough!.kind, 'stepped')
   // the surviving stepped diagram is the harness one (9 cells from the real test case), not the fake 3-cell one
-  const diagram = stepped[0].diagram as typeof fakeStepped
+  const diagram = out2.walkthrough as typeof fakeStepped
   assert.equal(diagram.base.cells.length, 9)
 })
 
@@ -309,9 +314,9 @@ test('overlay copies the model per-step prose by index but never its deltas', as
 
   const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(modelStepped), BINARY_SEARCH_META, ['binary-search'])
   assert.equal(grafted, true)
-  const stepped = out.approaches.filter((a) => a.diagram?.kind === 'stepped')
-  assert.equal(stepped.length, 1)
-  const diagram = stepped[0].diagram as typeof harness
+  assert.equal(out.approaches.every((a) => a.diagram?.kind !== 'stepped'), true)
+  assert.ok(out.walkthrough)
+  const diagram = out.walkthrough as typeof harness
 
   // Prose IS the model's, by index.
   assert.deepEqual(diagram.steps.map((s) => s.title), ['Probe the middle', 'Shift right', 'Land on the answer'])
@@ -344,7 +349,8 @@ test('overlay is fail-soft when the model step count differs from the trace', as
 
   const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(modelStepped), BINARY_SEARCH_META, ['binary-search'])
   assert.equal(grafted, true)
-  const diagram = (out.approaches.find((a) => a.diagram?.kind === 'stepped')!.diagram) as typeof harness
+  assert.ok(out.walkthrough)
+  const diagram = out.walkthrough as typeof harness
   assert.equal(diagram.steps.length, 3)
   // Harness prose stands; none of the model titles leak in.
   assert.deepEqual(diagram.steps.map((s) => s.title), harnessTitles)
@@ -369,7 +375,8 @@ test('overlay is fail-soft when the model base.kind differs from the harness bas
 
   const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(modelStepped), BINARY_SEARCH_META, ['binary-search'])
   assert.equal(grafted, true)
-  const diagram = (out.approaches.find((a) => a.diagram?.kind === 'stepped')!.diagram) as typeof harness
+  assert.ok(out.walkthrough)
+  const diagram = out.walkthrough as typeof harness
   assert.equal(diagram.base.kind, 'array')
   assert.deepEqual(diagram.steps.map((s) => s.title), harnessTitles)
 })
@@ -394,7 +401,8 @@ test('overlay falls back to harness prose when a borrowed field breaks the schem
 
   const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(modelStepped), BINARY_SEARCH_META, ['binary-search'])
   assert.equal(grafted, true)
-  const diagram = (out.approaches.find((a) => a.diagram?.kind === 'stepped')!.diagram) as typeof harness
+  assert.ok(out.walkthrough)
+  const diagram = out.walkthrough as typeof harness
   // Reverted to harness prose; the over-length title never ships.
   assert.deepEqual(diagram.steps.map((s) => s.title), harnessTitles)
   assert.equal(diagram.steps.some((s) => s.title.length > 80), false)
@@ -413,8 +421,78 @@ test('a non-stepped model diagram on the optimal approach contributes no prose o
   }
   const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(curves), BINARY_SEARCH_META, ['binary-search'])
   assert.equal(grafted, true)
-  const stepped = out.approaches.filter((a) => a.diagram?.kind === 'stepped')
-  assert.equal(stepped.length, 1)
-  const diagram = stepped[0].diagram as typeof harness
+  // The non-stepped diagram stays on its approach; the harness trace lands top-level.
+  assert.equal(out.approaches.some((a) => a.diagram?.kind === 'complexity_curves'), true)
+  assert.ok(out.walkthrough)
+  const diagram = out.walkthrough as typeof harness
   assert.deepEqual(diagram.steps.map((s) => s.title), harnessTitles)
+})
+
+// ── Migration: an existing approach-level stepped diagram is moved up in place ──
+
+test('an existing approach-level stepped diagram is migrated up to content.walkthrough and stripped from the approach', async () => {
+  // Simulate already-stored content (old layout) whose optimal approach carries a
+  // legacy stepped diagram. Re-grafting must move the trace up to .walkthrough,
+  // strip it from the approach, and keep the model's per-step prose by index.
+  const harness = buildSteppedTraceFromMetadata(BINARY_SEARCH_META, ['binary-search'])!.diagram
+  const legacyStepped = {
+    kind: 'stepped' as const,
+    trace_verified: true,
+    base: { kind: 'array' as const, cells: [{ value: '0' }, { value: '0' }], pointers: ['lo', 'mid', 'hi'] },
+    steps: [
+      { title: 'Legacy probe', explanation: 'Halve the sorted range to discard the impossible half.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 0 } } },
+      { title: 'Legacy shift', explanation: 'The midpoint is below the target, so search the upper half.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 0 } } },
+      { title: 'Legacy land', explanation: 'The midpoint equals the target, so the index is returned.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 0 }, found: true } },
+    ],
+  }
+
+  const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(legacyStepped), BINARY_SEARCH_META, ['binary-search'])
+  assert.equal(grafted, true)
+  // Migrated UP: no approach keeps a stepped diagram.
+  assert.equal(out.approaches.every((a) => a.diagram?.kind !== 'stepped'), true)
+  assert.ok(out.walkthrough)
+  const diagram = out.walkthrough as typeof harness
+  // Prose from the legacy approach diagram is preserved by index.
+  assert.deepEqual(diagram.steps.map((s) => s.title), ['Legacy probe', 'Legacy shift', 'Legacy land'])
+  // Base + deltas remain harness-owned (9 real cells).
+  assert.equal((diagram.base as { cells: unknown[] }).cells.length, 9)
+})
+
+// ── Idempotence: a prior top-level walkthrough is rebuilt in place, not duplicated ─
+
+test('a prior content.walkthrough is rebuilt in place and its prose is preserved', async () => {
+  const harness = buildSteppedTraceFromMetadata(BINARY_SEARCH_META, ['binary-search'])!.diagram
+
+  const priorWalkthrough = {
+    kind: 'stepped' as const,
+    trace_verified: true,
+    base: { kind: 'array' as const, cells: [{ value: '0' }, { value: '0' }], pointers: ['lo', 'mid', 'hi'] },
+    steps: [
+      { title: 'Prior probe', explanation: 'Halve the sorted range to discard the impossible half.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 0 } } },
+      { title: 'Prior shift', explanation: 'The midpoint is below the target, so search the upper half.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 0 } } },
+      { title: 'Prior land', explanation: 'The midpoint equals the target, so the index is returned.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 0 }, found: true } },
+    ],
+  }
+
+  const content: SolutionContentV1 = {
+    version: 1,
+    challenge_type: 'algorithm',
+    overview_md: 'tests the sorted-array invariant.',
+    approaches: [
+      { id: 'brute', title: 'Brute', tagline: 'scan', body_md: 'scan', code: { language: 'python', source: 'x=1' }, complexity: { time: 'O(n)', space: 'O(1)' } },
+      { id: 'optimal', title: 'Binary search', tagline: 'halve', body_md: 'halve', code: { language: 'python', source: 'y=2' }, complexity: { time: 'O(log n)', space: 'O(1)' } },
+    ],
+    ai_collaboration: { body_md: 'pair', prompts: [{ title: 't', prompt: 'p', why: 'w' }], pitfalls: ['x'] },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    walkthrough: priorWalkthrough as any,
+  }
+
+  const { content: out, grafted } = await graftSteppedTrace(content, BINARY_SEARCH_META, ['binary-search'])
+  assert.equal(grafted, true)
+  assert.equal(out.approaches.every((a) => a.diagram?.kind !== 'stepped'), true)
+  assert.ok(out.walkthrough)
+  const diagram = out.walkthrough as typeof harness
+  // Prior prose is preserved by index; deltas/base stay harness-owned.
+  assert.deepEqual(diagram.steps.map((s) => s.title), ['Prior probe', 'Prior shift', 'Prior land'])
+  assert.equal((diagram.base as { cells: unknown[] }).cells.length, 9)
 })

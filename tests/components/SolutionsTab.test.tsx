@@ -5,11 +5,20 @@ import { ArchitectureDiagram } from '../../src/components/solutions/diagrams/Arc
 import { ComparisonBarsDiagram } from '../../src/components/solutions/diagrams/ComparisonBarsDiagram'
 import { ComplexityCurvesDiagram } from '../../src/components/solutions/diagrams/ComplexityCurvesDiagram'
 import { SchemaTablesDiagram } from '../../src/components/solutions/diagrams/SchemaTablesDiagram'
+import { InteractiveStepDiagram as Stepper } from '../../src/components/solutions/diagrams/InteractiveStepDiagram'
 import { SolutionContent, stripDuplicateCodeFence } from '../../src/components/solutions/SolutionContent'
 import { SolutionsPane } from '../../src/components/solutions/SolutionsPane'
 import { codingMarkdownComponents } from '../../src/components/challenge/markdownComponents'
 import { MOCK_SOLUTION_CONTENT } from '../../src/lib/solutions/mock'
-import type { SolutionContentV1 } from '../../src/lib/solutions/schema'
+import { runArrayTrace, buildSteppedArrayDiagram } from '../../src/lib/solutions/trace/arrayTrace'
+import type { InteractiveStepDiagram, SolutionContentV1 } from '../../src/lib/solutions/schema'
+
+// A real, schema-valid top-level walkthrough built from the trace harness.
+const WALKTHROUGH: InteractiveStepDiagram = buildSteppedArrayDiagram(
+  runArrayTrace('binary_search', [2, 4, 7, 9, 11, 13, 18, 21, 29], 21)!,
+  { title: 'Searching for 21' }
+)
+const CONTENT_WITH_WALKTHROUGH: SolutionContentV1 = { ...MOCK_SOLUTION_CONTENT, walkthrough: WALKTHROUGH }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const MdCode = codingMarkdownComponents.code as any
@@ -217,6 +226,50 @@ describe('SolutionContent', () => {
     expect(html).toContain('O(n)')
     expect(html).toContain('def solution(): pass')
     expect(html).toContain('aria-selected="true"')
+  })
+
+  it('shows NO top-level view switch when there is no walkthrough', () => {
+    const html = renderToStaticMarkup(
+      <SolutionContent content={MOCK_SOLUTION_CONTENT} size="pane" activeApproachId={null} onApproachChange={() => {}} />
+    )
+    expect(html).not.toContain('data-testid="solution-top-view-switch"')
+    expect(html).not.toContain('Visual walkthrough')
+    // The answer renders directly (no tab chrome).
+    expect(html).toContain('data-testid="solution-answer-panel"')
+    expect(html).toContain('The reasoning walkthrough')
+  })
+
+  it('shows a Visual walkthrough tab with a discoverability badge when a walkthrough exists', () => {
+    const html = renderToStaticMarkup(
+      <SolutionContent content={CONTENT_WITH_WALKTHROUGH} size="pane" activeApproachId={null} onApproachChange={() => {}} />
+    )
+    // Top-level switch with both tabs.
+    expect(html).toContain('data-testid="solution-top-view-switch"')
+    expect(html).toContain('data-testid="solution-top-tab-solution"')
+    expect(html).toContain('data-testid="solution-top-tab-visual"')
+    expect(html).toContain('Visual walkthrough')
+    // Discoverability affordance: play_circle icon + accent dot.
+    expect(html).toContain('play_circle')
+    expect(html).toContain('data-testid="solution-visual-badge-dot"')
+    // Default active view is Solution (the answer leads); the Visual panel is
+    // one click away and not yet in the initial paint.
+    expect(html).toContain('data-testid="solution-answer-panel"')
+    expect(html).not.toContain('data-testid="solution-visual-panel"')
+    // The Solution tab is the selected one on first paint (its button carries
+    // aria-selected="true" and the visual tab does not).
+    expect(html).toMatch(/aria-selected="true"[^>]*data-testid="solution-top-tab-solution"/)
+    expect(html).toMatch(/aria-selected="false"[^>]*data-testid="solution-top-tab-visual"/)
+  })
+
+  it('feeds the top-level walkthrough into the interactive stepper (Visual panel content)', () => {
+    // The Visual panel renders <InteractiveStepDiagram spec={content.walkthrough}>.
+    // Static markup defaults to the Solution view (useState can't flip in SSR),
+    // so render the stepper directly with the exact spec the panel passes it to
+    // prove that, once the Visual tab is active, a working stepper appears.
+    const html = renderToStaticMarkup(<Stepper spec={WALKTHROUGH} reducedMotion={false} />)
+    expect(html).toContain('role="tablist"')
+    expect(html).toContain('Next step')
+    expect(html).toContain('aria-live="polite"')
   })
 })
 

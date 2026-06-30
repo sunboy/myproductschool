@@ -359,22 +359,34 @@ export const SolutionContentSchema = z.object({
   approaches: z.array(SolutionApproachSchema).min(1).max(4),
   ai_collaboration: AiCollaborationSchema,
   key_takeaways: z.array(z.string().min(1).max(400)).max(6).optional(),
+  /**
+   * Top-level interactive walkthrough, surfaced as its own "Visual" tab in the
+   * solution UI (not inline on an approach). Server-owned: the graft writes the
+   * verified/authored stepped diagram here in place, separate from the per-approach
+   * static `diagram` field. The verified-base-needs-trace_verified rule is enforced
+   * by InteractiveStepDiagramSchema and applies to this field automatically.
+   */
+  walkthrough: InteractiveStepDiagramSchema.optional(),
 }).superRefine((content, ctx) => {
   const ids = new Set(content.approaches.map((a) => a.id))
   if (ids.size !== content.approaches.length) {
     ctx.addIssue({ code: 'custom', message: 'approach ids must be unique' })
   }
 
-  // "Not excessive" gate: at most one stepped (interactive) diagram per solution.
-  // A solution that animates every approach is noise; the walkthrough earns its
-  // place once, on the approach where the mechanism is the lesson.
-  const steppedCount = content.approaches.filter((a) => a.diagram?.kind === 'stepped').length
+  // "Not excessive" gate: at most one stepped (interactive) diagram per solution,
+  // counting BOTH the top-level walkthrough and any per-approach stepped diagram.
+  // The walkthrough is the new home for the interactive trace; the normal case is
+  // a top-level walkthrough with no approach carrying a stepped diagram. A solution
+  // may have the walkthrough OR one approach stepped diagram, never both.
+  const approachSteppedCount = content.approaches.filter((a) => a.diagram?.kind === 'stepped').length
+  const steppedCount = approachSteppedCount + (content.walkthrough ? 1 : 0)
   if (steppedCount > 1) {
     ctx.addIssue({ code: 'custom', message: `a solution may contain at most one stepped diagram (found ${steppedCount})` })
   }
 
-  // Stepped diagrams only belong on challenge types whose answer is a mechanism
-  // that transitions through real states. Product-reasoning types get flow_steps.
+  // Stepped diagrams (top-level walkthrough or approach-level) only belong on
+  // challenge types whose answer is a mechanism that transitions through real
+  // states. Product-reasoning types get flow_steps.
   if (steppedCount > 0 && !STEPPED_ELIGIBLE_TYPES.has(content.challenge_type)) {
     ctx.addIssue({ code: 'custom', message: `stepped diagrams are not allowed on ${content.challenge_type} solutions` })
   }

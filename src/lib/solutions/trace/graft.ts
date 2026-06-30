@@ -3,13 +3,19 @@
  * route and the backfill apply script, so the two paths never drift.
  *
  * Given validated solution content + the challenge's metadata/tags, build the
- * server-owned interactive walkthrough that fits the challenge type and graft it
- * onto the optimal approach (the last one, by the brute-force -> optimal
- * convention). The walkthrough is chosen by challenge_type:
+ * server-owned interactive walkthrough that fits the challenge type and write it
+ * to the TOP-LEVEL `content.walkthrough` field, where the solution UI surfaces it
+ * as its own "Visual" tab (not inline on an approach). The walkthrough is chosen
+ * by challenge_type:
  *   - algorithm      -> verified array trace, else verified grid (DP) trace
  *   - sql            -> verified pipeline (CTE chain) trace
  *   - system_design  -> authored request-flow walkthrough (derived from the
  *   - data_modeling     architecture diagram on the optimal approach)
+ *
+ * This runs IN PLACE on existing stored content WITHOUT regenerating prose: it
+ * only moves/strips the stepped diagram. Any model-authored stepped diagram is
+ * stripped from every approach (the server is the sole source of stepped diagrams),
+ * and a prior approach-level stepped diagram is migrated up to .walkthrough.
  *
  * For the verified bases (array / grid / pipeline) the deltas are computed by
  * executing the real reference, never by the model; the flow base asserts no
@@ -131,19 +137,23 @@ export async function graftSteppedTrace(
   // The model is NEVER allowed to author a stepped diagram's structure or deltas
   // (trace_verified lives in the same untrusted envelope, so a marker the model
   // set cannot be trusted). It MAY author per-step prose, which we copy by index
-  // onto the harness steps below. Capture the optimal approach's stepped diagram
-  // BEFORE stripping so we can borrow only its text fields, then strip every
-  // model-supplied stepped diagram from every approach. This is the single source
-  // of stepped diagrams.
+  // onto the harness steps below. Capture any existing stepped diagram BEFORE
+  // stripping so we can borrow only its text fields. We accept either a prior
+  // top-level walkthrough (the new home) or a legacy stepped diagram on the
+  // optimal approach (the old home), preferring the top-level one. Then strip
+  // every model-supplied stepped diagram from every approach AND clear any prior
+  // top-level walkthrough. The server is the single source of stepped diagrams.
   const optimalIndex = content.approaches.length - 1
   const capturedOptimal = content.approaches[optimalIndex]?.diagram
-  const modelStepped =
+  const capturedApproachStepped =
     capturedOptimal?.kind === 'stepped' ? capturedOptimal : null
+  const modelStepped = content.walkthrough ?? capturedApproachStepped
 
   const stripped = content.approaches.map((a) =>
     a.diagram?.kind === 'stepped' ? { ...a, diagram: undefined } : a,
   )
-  const base = { ...content, approaches: stripped }
+  // Clear any prior walkthrough as well — it is rebuilt below (migrate-up case).
+  const base = { ...content, approaches: stripped, walkthrough: undefined }
 
   // Build the type-appropriate walkthrough against the STRIPPED content so the
   // flow harness reads the real (model-authored) architecture diagram, never a
@@ -176,15 +186,10 @@ export async function graftSteppedTrace(
     if (!diagramCheck.success) diagram = candidate
   }
 
-  const approaches = stripped.map((a) => ({ ...a }))
-  const optimal = approaches[approaches.length - 1]
-  if (!optimal) {
-    const recheck = SolutionContentSchema.safeParse(base)
-    return { content: recheck.success ? recheck.data : content, grafted: false }
-  }
-
-  optimal.diagram = diagram
-  const recheck = SolutionContentSchema.safeParse({ ...content, approaches })
+  // Write the verified walkthrough to the TOP-LEVEL field (not onto an approach),
+  // keeping every approach's stepped diagram stripped. Re-validate; on failure
+  // fall back to the stripped base (no walkthrough) rather than shipping invalid.
+  const recheck = SolutionContentSchema.safeParse({ ...base, walkthrough: diagram })
   if (!recheck.success) {
     const fallback = SolutionContentSchema.safeParse(base)
     return { content: fallback.success ? fallback.data : content, grafted: false }

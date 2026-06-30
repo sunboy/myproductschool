@@ -1,12 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { mdRehypePlugins, mdRemarkPlugins, safeMarkdownUrl } from '@/components/ui/Md'
 import { CopyablePre, solutionMarkdownComponents } from '@/components/challenge/markdownComponents'
 import { SolutionDiagram } from './diagrams/SolutionDiagram'
+import { InteractiveStepDiagram } from './diagrams/InteractiveStepDiagram'
+import { usePrefersReducedMotion } from './diagrams/hooks'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { SolutionApproach, SolutionContentV1 } from '@/lib/solutions/schema'
+
+type TopView = 'solution' | 'visual'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 
@@ -201,9 +205,80 @@ function AiCollaborationSection({ content }: { content: SolutionContentV1 }) {
 export function SolutionContent({ content, size, activeApproachId, onApproachChange, onSteppedStepChange }: Props) {
   const active = content.approaches.find((a) => a.id === activeApproachId) ?? content.approaches[0]
   const isModal = size === 'modal'
+  const hasWalkthrough = !!content.walkthrough
+
+  // Top-level view: the answer ("Solution") leads; the interactive walkthrough
+  // ("Visual walkthrough") is one click away but clearly present. The switch
+  // only renders when a walkthrough exists, so the no-walkthrough case is byte
+  // for byte the old layout with no extra chrome.
+  const [topView, setTopView] = useState<TopView>('solution')
+  const topTabsRef = useRef<HTMLDivElement>(null)
+  const reducedMotion = usePrefersReducedMotion()
+
+  // If a walkthrough disappears (content swap), never strand the user on a tab
+  // that no longer exists.
+  useEffect(() => {
+    if (!hasWalkthrough && topView === 'visual') setTopView('solution')
+  }, [hasWalkthrough, topView])
+
+  const onTopTabKeyDown = (e: React.KeyboardEvent) => {
+    if (!hasWalkthrough) return
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); setTopView('visual'); focusTopTab(topTabsRef, 'visual') }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); setTopView('solution'); focusTopTab(topTabsRef, 'solution') }
+    else if (e.key === 'Home') { e.preventDefault(); setTopView('solution'); focusTopTab(topTabsRef, 'solution') }
+    else if (e.key === 'End') { e.preventDefault(); setTopView('visual'); focusTopTab(topTabsRef, 'visual') }
+  }
 
   return (
     <div style={{ maxWidth: isModal ? 760 : undefined, margin: isModal ? '0 auto' : undefined }}>
+      {/* Top-level view switch: Solution vs Visual walkthrough. Only shown when a
+          walkthrough exists so the plain case renders exactly as before. */}
+      {hasWalkthrough && (
+        <div
+          ref={topTabsRef}
+          role="tablist"
+          aria-label="Solution view"
+          onKeyDown={onTopTabKeyDown}
+          data-testid="solution-top-view-switch"
+          style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}
+        >
+          <TopViewTab
+            view="solution"
+            active={topView === 'solution'}
+            onSelect={() => setTopView('solution')}
+            label="Solution"
+            icon="article"
+          />
+          <TopViewTab
+            view="visual"
+            active={topView === 'visual'}
+            onSelect={() => setTopView('visual')}
+            label="Visual walkthrough"
+            icon="play_circle"
+            badge
+          />
+        </div>
+      )}
+
+      {/* Visual walkthrough view: the interactive stepper fills the tab. Render
+          the stepper directly (no SolutionDiagram figure wrapper) so it does not
+          get double-framed inside this view. Only the visible surface reports its
+          step to Hatch, consistent with the pane/modal single-surface rule. */}
+      {hasWalkthrough && topView === 'visual' && content.walkthrough && (
+        <div role="tabpanel" aria-label="Visual walkthrough" data-testid="solution-visual-panel" style={{ marginTop: 2 }}>
+          <InteractiveStepDiagram
+            spec={content.walkthrough}
+            reducedMotion={reducedMotion}
+            onStepChange={onSteppedStepChange}
+          />
+        </div>
+      )}
+
+      {/* Solution view: the existing approach-based content. Kept mounted-or-not
+          purely by the switch; the no-walkthrough case skips the switch and
+          renders this directly. */}
+      {(!hasWalkthrough || topView === 'solution') && (
+      <div role={hasWalkthrough ? 'tabpanel' : undefined} aria-label={hasWalkthrough ? 'Solution' : undefined} data-testid="solution-answer-panel">
       {/* Overview */}
       <SolutionMd>{content.overview_md}</SolutionMd>
 
@@ -264,7 +339,10 @@ export function SolutionContent({ content, size, activeApproachId, onApproachCha
           {active.tagline}
         </p>
         <ComplexityChips approach={active} />
-        {active.diagram && <SolutionDiagram spec={active.diagram} onSteppedStepChange={onSteppedStepChange} />}
+        {/* Inline approach diagrams are the 5 STATIC kinds only. The interactive
+            stepped walkthrough lives in the top-level Visual tab now, so guard
+            against any legacy approach-level stepped diagram surviving here. */}
+        {active.diagram && active.diagram.kind !== 'stepped' && <SolutionDiagram spec={active.diagram} />}
         <SolutionMd>{stripDuplicateCodeFence(active.body_md, active.code?.source)}</SolutionMd>
         {active.code && (
           <div style={{ margin: '14px 0' }}>
@@ -303,6 +381,76 @@ export function SolutionContent({ content, size, activeApproachId, onApproachCha
           </div>
         </section>
       )}
+      </div>
+      )}
     </div>
   )
+}
+
+/** A top-level view tab (Solution / Visual walkthrough). The Visual tab carries
+ *  a play-circle icon + an accent dot so a reader knows a walkthrough exists. */
+function TopViewTab({
+  view, active, onSelect, label, icon, badge,
+}: {
+  view: TopView
+  active: boolean
+  onSelect: () => void
+  label: string
+  icon: string
+  badge?: boolean
+}) {
+  return (
+    <button
+      role="tab"
+      type="button"
+      aria-selected={active}
+      tabIndex={active ? 0 : -1}
+      data-testid={`solution-top-tab-${view}`}
+      onClick={onSelect}
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 7,
+        padding: '8px 16px',
+        borderRadius: 999,
+        border: active ? '1.5px solid var(--color-primary)' : '1px solid var(--color-outline-variant)',
+        background: active ? 'var(--color-primary-fixed)' : 'var(--color-surface-container-low)',
+        color: 'var(--color-on-surface)',
+        fontFamily: 'var(--font-label)',
+        fontSize: 13,
+        fontWeight: 800,
+        cursor: 'pointer',
+      }}
+    >
+      <span
+        className="material-symbols-outlined"
+        style={{ fontSize: 18, color: badge ? 'var(--color-primary)' : 'var(--color-on-surface-variant)' }}
+      >
+        {icon}
+      </span>
+      {label}
+      {badge && (
+        // Discoverability accent: a small primary dot marks the tab that holds
+        // the interactive visual, so it stands out from the plain Solution tab.
+        <span
+          aria-hidden
+          data-testid="solution-visual-badge-dot"
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: 999,
+            background: 'var(--color-primary)',
+            marginLeft: 1,
+          }}
+        />
+      )}
+    </button>
+  )
+}
+
+/** Move keyboard focus to the named top-level tab button after an arrow-key nav. */
+function focusTopTab(ref: React.RefObject<HTMLDivElement | null>, view: TopView) {
+  const el = ref.current?.querySelector<HTMLButtonElement>(`[data-testid="solution-top-tab-${view}"]`)
+  el?.focus()
 }

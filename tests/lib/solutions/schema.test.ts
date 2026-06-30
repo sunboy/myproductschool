@@ -238,3 +238,35 @@ test('a stepped diagram on a flow challenge type fails', () => {
   const result = SolutionContentSchema.safeParse(content)
   assert.equal(result.success, false)
 })
+
+test('a top-level walkthrough alone is valid (no approach carries a stepped diagram)', () => {
+  const content = baseContent() as Record<string, unknown>
+  content.walkthrough = steppedArrayDiagram()
+  const result = SolutionContentSchema.safeParse(content)
+  assert.equal(result.success, true)
+})
+
+test('a top-level walkthrough AND an approach stepped diagram fails the at-most-one gate', () => {
+  const content = baseContent()
+  content.approaches[0].diagram = steppedArrayDiagram() as never
+  ;(content as Record<string, unknown>).walkthrough = steppedArrayDiagram()
+  const result = SolutionContentSchema.safeParse(content)
+  assert.equal(result.success, false)
+})
+
+test('a top-level walkthrough on a flow challenge type fails', () => {
+  const content = baseContent({ challenge_type: 'flow' })
+  content.approaches = [content.approaches[0]]
+  delete content.approaches[0].code
+  delete content.approaches[0].complexity
+  ;(content as Record<string, unknown>).walkthrough = steppedArrayDiagram()
+  const result = SolutionContentSchema.safeParse(content)
+  assert.equal(result.success, false)
+})
+
+test('a top-level walkthrough on a verified base without trace_verified fails', () => {
+  const content = baseContent() as Record<string, unknown>
+  content.walkthrough = steppedArrayDiagram({ trace_verified: false })
+  const result = SolutionContentSchema.safeParse(content)
+  assert.equal(result.success, false)
+})
