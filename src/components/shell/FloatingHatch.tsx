@@ -275,7 +275,7 @@ export function FloatingHatch() {
     : getPagePrompt(pathname)
 
   const cueMessage = activeCue?.message ?? contextMessage
-  const suppressPageBubble = pathname.startsWith('/live-interviews')
+  const suppressPageBubble = pathname.startsWith('/live-interviews') || pathname.startsWith('/dashboard')
   const showBubble = !open && (
     Boolean(activeCue) ||
     (!suppressPageBubble && bubble && !bubbleDismissed && messages.length === 0)

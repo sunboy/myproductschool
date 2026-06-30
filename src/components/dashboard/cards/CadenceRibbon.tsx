@@ -18,8 +18,6 @@ interface WeekDate {
 
 interface CadenceRibbonProps {
   streakDays: number
-  xpTotal: number
-  dailyDone: number
   todaysPathSteps: PathStep[]
   todaysPathCompleted: number
   weekDates: WeekDate[]
@@ -38,26 +36,21 @@ export function CadenceRibbon({
   if (!hasTodaysPath && !hasWeek) return null
 
   return (
-    <div className="rounded-2xl border border-outline-variant/40 bg-surface overflow-hidden">
-      <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-outline-variant/30">
-
-        {/* Streak week view */}
+    <section className="overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface">
+      <div className="flex flex-col divide-y divide-outline-variant/30 lg:flex-row lg:divide-x lg:divide-y-0">
         {hasWeek && (
-          <div className="flex items-center gap-4 px-5 py-4 md:min-w-[260px] md:max-w-[320px]">
+          <div className="flex items-center gap-3 px-4 py-3 lg:min-w-[236px] lg:max-w-[276px]">
             <span
-              className="material-symbols-outlined text-[22px] shrink-0"
+              className="material-symbols-outlined shrink-0 text-[20px]"
               style={{ fontVariationSettings: "'FILL' 1", color: '#c9933a' }}
             >
               local_fire_department
             </span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-2">
+            <div className="min-w-0 flex-1">
+              <div className="mb-1.5 flex items-center justify-between gap-3">
                 <span className="text-[12px] font-label font-bold text-on-surface">This week</span>
                 {streakDays > 0 && (
-                  <span
-                    className="text-[10px] font-label font-bold px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(201,147,58,0.15)', color: '#c9933a' }}
-                  >
+                  <span className="rounded-full bg-[rgba(201,147,58,0.15)] px-2 py-0.5 text-[10px] font-label font-bold text-[#a36f19]">
                     {streakDays}d
                   </span>
                 )}
@@ -65,9 +58,9 @@ export function CadenceRibbon({
               <div className="grid grid-cols-7 gap-1">
                 {weekDates.map((d, i) => (
                   <div
-                    key={i}
+                    key={`${d.dateLabel}-${i}`}
                     title={d.dateLabel}
-                    className="h-5 rounded flex items-center justify-center"
+                    className="flex h-5 items-center justify-center rounded"
                     style={{
                       background: d.completed
                         ? 'rgba(74,124,89,0.85)'
@@ -82,23 +75,16 @@ export function CadenceRibbon({
                     }}
                   >
                     {d.completed && (
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: 10, color: '#fff', fontVariationSettings: "'FILL' 1" }}
-                      >
+                      <span className="material-symbols-outlined text-[10px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>
                         check
                       </span>
                     )}
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-1 mt-0.5">
+              <div className="mt-0.5 grid grid-cols-7 gap-1">
                 {weekDates.map((d, i) => (
-                  <div
-                    key={i}
-                    className="text-center text-on-surface-variant font-label font-semibold"
-                    style={{ fontSize: 9 }}
-                  >
+                  <div key={`${d.dateLabel}-label-${i}`} className="text-center text-[9px] font-label font-semibold text-on-surface-variant">
                     {d.dayLabel}
                   </div>
                 ))}
@@ -107,24 +93,25 @@ export function CadenceRibbon({
           </div>
         )}
 
-        {/* Today's path steps — horizontal strip */}
         {hasTodaysPath && (
-          <div className="flex-1 px-5 py-4 min-w-0">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[12px] font-label font-bold text-on-surface flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>today</span>
+          <div className="min-w-0 flex-1 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-1.5 text-[12px] font-label font-bold text-on-surface">
+                <span className="material-symbols-outlined text-[15px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  today
+                </span>
                 Today&apos;s path
               </span>
-              <span className="text-[10px] font-label font-bold px-2 py-0.5 rounded-full bg-primary-fixed text-on-surface">
+              <span className="rounded-full bg-primary-fixed px-2 py-0.5 text-[10px] font-label font-bold text-on-surface">
                 {todaysPathCompleted} / {totalSteps}
               </span>
             </div>
 
-            <div className="flex items-center gap-2 min-w-0 flex-wrap sm:flex-nowrap">
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5 xl:flex-nowrap">
               {todaysPathSteps.map((step, i) => {
                 const content = (
                   <div
-                    className={`flex items-center gap-2 rounded-xl px-3 py-2 min-w-0 transition-colors ${
+                    className={`flex min-w-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors ${
                       step.active
                         ? 'bg-primary-container text-on-primary-container'
                         : step.done
@@ -133,7 +120,7 @@ export function CadenceRibbon({
                     }`}
                   >
                     <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                      className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
                       style={{
                         background: step.done || step.active
                           ? 'var(--color-primary)'
@@ -141,33 +128,23 @@ export function CadenceRibbon({
                         color: step.done || step.active ? '#fff' : 'var(--color-on-surface-variant)',
                       }}
                     >
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: 11, fontVariationSettings: step.done ? "'FILL' 1" : "'FILL' 0" }}
-                      >
+                      <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: step.done ? "'FILL' 1" : "'FILL' 0" }}>
                         {step.done ? 'check' : step.icon}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[11.5px] font-bold font-label leading-tight truncate">{step.label}</div>
-                      <div className="text-[10px] opacity-70 leading-tight truncate">{step.sub}</div>
+                      <div className="truncate text-[10.5px] font-label font-bold leading-tight">{step.label}</div>
+                      <div className="truncate text-[9.5px] leading-tight opacity-70">{step.sub}</div>
                     </div>
-                    {step.active && (
-                      <span className="material-symbols-outlined text-[14px] shrink-0">play_arrow</span>
-                    )}
+                    {step.active && <span className="material-symbols-outlined shrink-0 text-[13px]">play_arrow</span>}
                   </div>
                 )
 
                 return (
-                  <div key={i} className="flex items-center gap-2 min-w-0">
-                    {i > 0 && (
-                      <div
-                        className="hidden sm:block w-5 h-0.5 rounded-full bg-outline-variant/50 shrink-0"
-                        aria-hidden
-                      />
-                    )}
+                  <div key={`${step.label}-${i}`} className="flex min-w-0 items-center gap-1.5">
+                    {i > 0 && <div className="hidden h-0.5 w-3 shrink-0 rounded-full bg-outline-variant/50 sm:block" aria-hidden />}
                     {step.href && !step.done ? (
-                      <Link href={step.href} className="block min-w-0" data-hatch-target={step.active ? 'dashboard-path-active' : undefined}>
+                      <Link href={step.href} className="block min-w-0 no-underline" data-hatch-target={step.active ? 'dashboard-path-active' : undefined}>
                         {content}
                       </Link>
                     ) : (
@@ -180,6 +157,6 @@ export function CadenceRibbon({
           </div>
         )}
       </div>
-    </div>
+    </section>
   )
 }

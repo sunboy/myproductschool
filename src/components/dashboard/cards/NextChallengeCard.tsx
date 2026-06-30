@@ -17,14 +17,14 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, hatc
     ? `/workspace/challenges/${challengeId}?from_plan=${encodeURIComponent(activePlanSlug)}`
     : `/workspace/challenges/${challengeId}`
   return (
-    <div className="bg-surface-container-low rounded-2xl p-5 flex flex-col gap-3 border border-outline-variant/30" data-hatch-target="dashboard-next-challenge">
+    <div className="flex flex-col gap-3 rounded-2xl border border-outline-variant/30 bg-surface-container-low p-4 shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-next-challenge">
       <div className="flex items-center gap-2">
-        <HatchGlyph size={22} state="idle" />
+        <HatchGlyph size={20} state="idle" />
         <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-label">For you</span>
       </div>
 
-      <div className="flex-1 flex flex-col gap-2.5">
-        <h3 className="font-headline font-semibold text-[15px] text-on-surface leading-snug">{title}</h3>
+      <div className="flex flex-col gap-2">
+        <h3 className="line-clamp-2 font-headline text-[15px] font-semibold leading-snug text-on-surface">{title}</h3>
         <div className="flex items-center gap-1.5 flex-wrap">
           {catalogNumber && (
             <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant">
@@ -41,18 +41,18 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, hatc
       </div>
 
       {hatchInsight && (
-        <div className="flex items-start gap-2 bg-primary-fixed/60 rounded-xl p-3">
+        <div className="flex items-start gap-2 rounded-xl bg-primary-fixed/60 p-2.5">
           <span className="material-symbols-outlined text-primary text-[14px] mt-0.5 shrink-0">auto_awesome</span>
-          <p className="text-[12px] text-on-surface font-label font-semibold leading-relaxed">{hatchInsight}</p>
+          <p className="line-clamp-3 text-[11.5px] font-label font-semibold leading-5 text-on-surface">{hatchInsight}</p>
         </div>
       )}
 
       <Link
         href={href}
         data-hatch-target="dashboard-next-challenge-start"
-        className="bg-on-surface text-inverse-on-surface rounded-full px-5 py-2 text-sm font-label font-semibold text-center hover:bg-on-surface/85 active:scale-95 transition-all duration-150"
+        className="rounded-full bg-on-surface px-4 py-2 text-center font-label text-sm font-semibold text-inverse-on-surface transition-all duration-150 hover:bg-on-surface/85 active:scale-95"
       >
-        Start Challenge
+        Start challenge
       </Link>
     </div>
   )

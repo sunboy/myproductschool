@@ -9,10 +9,6 @@ interface AnalyticsLabCardProps {
   data: CcAnalyticsFrontDoor
 }
 
-// The anchor feature's dashboard front door. A dominant, dark-terminal-toned
-// tile that makes Claude Code Analytics the thing you reach for. Entitled users
-// get start/resume + their compounding skills + last scorecard; users without
-// the tier get an honest unlock tile that opens the paywall (no dead-end).
 export function AnalyticsLabCard({ data }: AnalyticsLabCardProps) {
   const [paywallOpen, setPaywallOpen] = useState(false)
 
@@ -21,108 +17,94 @@ export function AnalyticsLabCard({ data }: AnalyticsLabCardProps) {
   const entryHref = data.entryChallengeSlug
     ? `/workspace/challenges/${data.entryChallengeSlug}`
     : '/challenges?discipline=analytics'
-
-  // Label matches what the link does: resume when there's an in-progress attempt,
-  // else "new run" if they've finished one before, else "first run".
   const ctaLabel = data.isResume
-    ? 'Resume your session'
+    ? 'Resume session'
     : data.lastSession
-    ? 'Start a new run'
-    : 'Start your first run'
+    ? 'Start new run'
+    : 'Start first run'
 
   return (
-    <div
-      className="relative overflow-hidden rounded-2xl p-6 text-inverse-on-surface"
-      style={{
-        background:
-          'radial-gradient(120% 120% at 0% 0%, #1f2b24 0%, #16201b 55%, #0f1813 100%)',
-      }}
+    <article
+      className="relative overflow-hidden rounded-[22px] p-4 text-inverse-on-surface shadow-[0_22px_44px_-30px_rgba(15,24,19,0.95)] sm:p-5"
+      style={{ background: 'radial-gradient(120% 120% at 0% 0%, #203126 0%, #17221c 54%, #101812 100%)' }}
     >
-      {/* faint terminal-grid texture */}
       <div
         aria-hidden
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
+        className="pointer-events-none absolute inset-0 opacity-[0.055]"
         style={{
           backgroundImage:
             'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
           backgroundSize: '28px 28px',
         }}
       />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(142,207,158,0.2), transparent 62%)' }}
+      />
 
-      <div className="relative">
-        <div className="flex items-center gap-2 mb-3">
-          <span
-            className="material-symbols-outlined text-[18px]"
-            style={{ color: '#8ecf9e', fontVariationSettings: "'FILL' 1" }}
-          >
+      <div className="relative flex min-h-[218px] flex-col">
+        <div className="mb-2.5 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px] text-[#8ecf9e]" style={{ fontVariationSettings: "'FILL' 1" }}>
             terminal
           </span>
-          <span className="font-label text-[11px] font-extrabold uppercase tracking-[0.12em]" style={{ color: '#8ecf9e' }}>
+          <span className="font-label text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#8ecf9e]">
             Analytics Lab
           </span>
-          <span className="ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-label font-bold" style={{ background: 'rgba(142,207,158,0.14)', color: '#8ecf9e' }}>
-            <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
+          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-label font-bold text-[#8ecf9e]">
             Anchor
           </span>
         </div>
 
-        <h3 className="font-headline text-2xl font-semibold tracking-tight leading-tight">
-          Drive a real analysis with Claude Code
-        </h3>
-        <p className="mt-1.5 font-body text-sm leading-relaxed" style={{ color: 'rgba(245,240,232,0.72)' }}>
-          A live terminal wired to BigQuery. You direct, Claude queries, Hatch grades
-          how you think. Every skill you write makes the next run sharper.
+        <h2 className="max-w-[13ch] text-balance font-headline text-[23px] font-semibold leading-[0.98] tracking-tight text-[#f5f0e8] sm:text-[26px]">
+          Drive a live AI analyst.
+        </h2>
+        <p className="mt-2 max-w-[34ch] font-body text-[13px] leading-5 text-[#f5f0e8]/70">
+          A real terminal wired to warehouse data. You direct, Claude queries, Hatch grades the judgment.
         </p>
 
-        {/* Stat strip: skills compounded + last scorecard */}
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
-            <span className="material-symbols-outlined text-[18px]" style={{ color: '#8ecf9e', fontVariationSettings: "'FILL' 1" }}>construction</span>
-            <span className="font-headline text-lg font-bold tabular-nums">{data.skillsCount}</span>
-            <span className="font-label text-[11px]" style={{ color: 'rgba(245,240,232,0.7)' }}>
-              skill{data.skillsCount === 1 ? '' : 's'} compounded
-            </span>
-          </div>
-
-          {data.lastSession?.gradeLabel && (
-            <div className="inline-flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <span className="material-symbols-outlined text-[18px]" style={{ color: '#c4a66a', fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
-              <span className="font-headline text-sm font-bold">{data.lastSession.gradeLabel}</span>
-              <span className="font-label text-[11px]" style={{ color: 'rgba(245,240,232,0.7)' }}>last run</span>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl bg-white/[0.065] px-3 py-2.5">
+            <div className="font-headline text-xl font-bold tabular-nums text-[#f5f0e8]">{data.skillsCount}</div>
+            <div className="mt-0.5 text-[11px] font-label font-semibold text-[#f5f0e8]/60">
+              reusable skill{data.skillsCount === 1 ? '' : 's'}
             </div>
-          )}
+          </div>
+          <div className="rounded-2xl bg-white/[0.065] px-3 py-2.5">
+            <div className="truncate font-headline text-[15px] font-bold text-[#f5f0e8]">
+              {data.lastSession?.gradeLabel ?? 'No grade yet'}
+            </div>
+            <div className="mt-1 text-[11px] font-label font-semibold text-[#f5f0e8]/60">last scorecard</div>
+          </div>
         </div>
 
-        {/* CTAs */}
-        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        <div className="mt-auto flex flex-wrap items-center gap-2.5 pt-4">
           {data.hasAccess ? (
             <Link
               href={entryHref}
-              className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 font-label text-sm font-bold transition-opacity hover:opacity-90"
-              style={{ background: '#8ecf9e', color: '#0f1813' }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#8ecf9e] px-4 py-2.5 font-label text-sm font-bold text-[#101812] transition-opacity hover:opacity-90"
             >
               <span className="material-symbols-outlined text-[18px]">play_arrow</span>
               {ctaLabel}
             </Link>
           ) : (
             <button
+              type="button"
               onClick={() => setPaywallOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 font-label text-sm font-bold transition-opacity hover:opacity-90"
-              style={{ background: '#8ecf9e', color: '#0f1813' }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#8ecf9e] px-4 py-2.5 font-label text-sm font-bold text-[#101812] transition-opacity hover:opacity-90"
             >
               <span className="material-symbols-outlined text-[18px]">lock_open</span>
-              Unlock Analytics Lab
+              Unlock lab
             </button>
           )}
 
           {data.lastSession?.shareId && data.lastSession.challengeSlug && (
             <Link
               href={`/workspace/challenges/${data.lastSession.challengeSlug}/share/${data.lastSession.shareId}`}
-              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 font-label text-sm font-semibold transition-colors"
-              style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(245,240,232,0.9)' }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-2.5 font-label text-sm font-semibold text-[#f5f0e8]/90 transition-colors hover:bg-white/[0.14]"
             >
               <span className="material-symbols-outlined text-[17px]">ios_share</span>
-              Last scorecard
+              Scorecard
             </Link>
           )}
         </div>
@@ -136,6 +118,6 @@ export function AnalyticsLabCard({ data }: AnalyticsLabCardProps) {
           onClose={() => setPaywallOpen(false)}
         />
       )}
-    </div>
+    </article>
   )
 }

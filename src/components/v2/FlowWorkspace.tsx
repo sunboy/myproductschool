@@ -3992,91 +3992,100 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
+  function workspaceTabBadge(count: number, active: boolean) {
+    return (
+      <span style={{
+        minWidth: 18,
+        height: 18,
+        padding: '0 5px',
+        borderRadius: 99,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 10.5,
+        fontWeight: 800,
+        lineHeight: 1,
+        background: active ? 'var(--color-primary)' : 'var(--color-surface-container-high)',
+        color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+      }}>
+        {count}
+      </span>
+    )
+  }
+
   // Shared top chrome - spans full width so the borderBottom is continuous
   const topChrome = (
     <div style={{
       display: 'flex',
-      alignItems: 'flex-end',
+      alignItems: 'center',
       borderBottom: '1px solid var(--color-outline-faint)',
       background: 'var(--color-surface)',
       flexShrink: 0,
     }}>
-      {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when
-          collapsed). minWidth:0 + overflowX:auto keep the four tab buttons
-          inside the panel: they scroll horizontally within it instead of
-          spilling past leftWidth into the centre answer pane. */}
-      <div className="no-scrollbar" style={{ width: leftCollapsed ? 32 : `${leftWidth}%`, minWidth: 0, display: 'flex', alignItems: 'flex-end', gap: 2, padding: leftCollapsed ? '6px 4px 0' : '6px 8px 0', flexShrink: 0, overflowX: leftCollapsed ? 'visible' : 'auto', overflowY: 'hidden' }}>
+      {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when collapsed) */}
+      <div style={{
+        width: leftCollapsed ? 32 : `${leftWidth}%`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: leftCollapsed ? '6px 4px' : '6px 8px',
+        flexShrink: 0,
+        minWidth: 0,
+        overflow: 'hidden',
+      }}>
         <button
           onClick={props.onExit ?? (() => window.history.back())}
           className="btn btn--ghost"
-          style={{ padding: '6px 8px', fontSize: 12, marginBottom: 4, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
+          aria-label="Back"
+          style={{ padding: '6px 8px', fontSize: 12, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
         </button>
-        {!leftCollapsed && tabs.map(t => {
-          const active = leftTab === t
-          return (
-            <button
-              key={t}
-              onClick={() => setLeftTab(t)}
-              style={{
-                padding: '7px 11px',
-                fontSize: 13,
-                fontWeight: active ? 700 : 600,
-                color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
-                background: active ? 'var(--color-surface-container-low)' : 'transparent',
-                border: active ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
-                borderBottom: active ? '1px solid var(--color-surface-container-low)' : '1px solid transparent',
-                borderRadius: '8px 8px 0 0',
-                cursor: 'pointer',
-                marginBottom: active ? -1 : 0,
-                fontFamily: 'inherit',
-                transition: 'color 120ms',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                flexShrink: 0,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span>{t}</span>
-              {t === 'Discussions' && discussionsLoaded && (
-                <span style={{
-                  minWidth: 18,
-                  height: 18,
-                  padding: '0 5px',
-                  borderRadius: 99,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 11,
-                  fontWeight: 800,
-                  background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
-                  color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-                }}>
-                  {discussions.length}
-                </span>
-              )}
-              {t === 'Submissions' && submissionBadgeCount > 0 && (
-                <span style={{
-                  minWidth: 18,
-                  height: 18,
-                  padding: '0 5px',
-                  borderRadius: 99,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 11,
-                  fontWeight: 800,
-                  background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
-                  color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-                }}>
-                  {submissionBadgeCount}
-                </span>
-              )}
-            </button>
-          )
-        })}
+        {!leftCollapsed && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            minWidth: 0,
+            flex: 1,
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+          }}>
+            {tabs.map(t => {
+              const active = leftTab === t
+              return (
+                <button
+                  key={t}
+                  onClick={() => setLeftTab(t)}
+                  style={{
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    padding: '6.5px 10px',
+                    fontSize: 12.5,
+                    fontWeight: active ? 800 : 650,
+                    color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+                    background: active ? 'var(--color-primary-fixed)' : 'transparent',
+                    border: `1px solid ${active ? 'rgba(74,124,89,0.24)' : 'transparent'}`,
+                    borderRadius: 999,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    transition: 'background 140ms ease, border-color 140ms ease, color 140ms ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    minHeight: 32,
+                  }}
+                >
+                  <span>{t}</span>
+                  {t === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, active)}
+                  {t === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, active)}
+                </button>
+              )
+            })}
+          </div>
+        )}
         {/* Collapse button - only shown when expanded and on coding challenges */}
         {!leftCollapsed && isCodingChallenge && (
           <button
@@ -4084,8 +4093,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             onClick={() => setLeftCollapsed(true)}
             title="Collapse panel"
             style={{
-              marginLeft: 'auto',
-              marginBottom: 4,
+              marginLeft: 2,
               padding: '4px 6px',
               borderRadius: 6,
               border: '1px solid var(--color-outline-variant)',
@@ -4305,13 +4313,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // consts are only consumed inside the `isMobile`/`mobileStacked` branches of the
   // return trees below; on desktop they evaluate to null so no extra work is done.
   const mobileTabBadge = (count: number, active: boolean) => (
-    <span style={{
-      minWidth: 18, height: 18, padding: '0 5px', borderRadius: 99,
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 11, fontWeight: 800,
-      background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
-      color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-    }}>{count}</span>
+    workspaceTabBadge(count, active)
   )
 
   // Top bar: back button + horizontally scrollable tabs (no clipping).
@@ -4325,7 +4327,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       >
         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_back</span>
       </button>
-      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', flex: 1 }}>
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', overflowY: 'hidden', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', flex: 1, scrollbarWidth: 'none' }}>
         {tabs.map(t => {
           const active = leftTab === t
           return (
@@ -4333,13 +4335,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               key={t}
               onClick={() => { setLeftTab(t); setMobileDescOpen(true) }}
               style={{
-                flexShrink: 0, whiteSpace: 'nowrap', padding: '7px 14px', fontSize: 13,
-                fontWeight: active ? 700 : 600,
-                color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
-                background: active ? 'var(--color-surface-container-low)' : 'transparent',
-                border: '1px solid ' + (active ? 'var(--color-outline-faint)' : 'transparent'),
+                flexShrink: 0, whiteSpace: 'nowrap', padding: '6.5px 11px', fontSize: 12.5,
+                fontWeight: active ? 800 : 650,
+                color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+                background: active ? 'var(--color-primary-fixed)' : 'transparent',
+                border: `1px solid ${active ? 'rgba(74,124,89,0.24)' : 'transparent'}`,
                 borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
                 display: 'inline-flex', alignItems: 'center', gap: 6,
+                minHeight: 32,
               }}
             >
               <span>{t}</span>

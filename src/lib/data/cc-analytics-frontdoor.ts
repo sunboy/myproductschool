@@ -1,35 +1,14 @@
-/**
- * Dashboard front-door data for the Claude Code Analytics anchor feature.
- *
- * Resolves everything the dominant Bench tile needs in one server call:
- *  - whether the feature is on at all, and whether THIS user is entitled,
- *  - how many reusable skills they've compounded across sessions,
- *  - their most recent analyst scorecard (grade + share),
- *  - the challenge to start or resume.
- *
- * Designed to fail soft: any sub-fetch error degrades to a sane default rather
- * than throwing, so a flaky skills tarball never takes down the dashboard.
- */
-
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getAnalyticsAccess, isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
 import { listUserSkills } from '@/lib/coding-grading/workspace-inspector'
 
 export interface CcAnalyticsFrontDoor {
-  /** Feature globally on? When false, render nothing. */
   enabled: boolean
-  /** This user entitled? When false but enabled, render the locked/upsell tile. */
   hasAccess: boolean
-  /** Reusable skills the user has compounded across all sessions. */
   skillsCount: number
-  /** Slug of the challenge to start or resume. Null when none is published. */
   entryChallengeSlug: string | null
-  /** Title of the entry challenge, for the CTA label. */
   entryChallengeTitle: string | null
-  /** True when the entry challenge is an in-progress attempt (resume, not start),
-   *  so the CTA label can match what the link actually does. */
   isResume: boolean
-  /** Most recent completed analytics attempt, if any. */
   lastSession: {
     challengeTitle: string | null
     gradeLabel: string | null
@@ -52,7 +31,7 @@ export async function getCcAnalyticsFrontDoor(
   admin: SupabaseClient,
   userId: string,
 ): Promise<CcAnalyticsFrontDoor> {
-  if (!isAnalyticsFeatureEnabled()) return EMPTY
+  if (!isAnalyticsFeatureEnabled() || !userId) return EMPTY
 
   let access: { enabled: boolean; hasAccess: boolean }
   try {
@@ -62,7 +41,6 @@ export async function getCcAnalyticsFrontDoor(
   }
   if (!access.enabled) return EMPTY
 
-  // Run the rest concurrently; each guards its own failure.
   const [skillsCount, entry, lastSession] = await Promise.all([
     countSkills(admin, userId),
     resolveEntryChallenge(admin, userId),
@@ -96,9 +74,6 @@ async function countSkills(admin: SupabaseClient, userId: string): Promise<numbe
   }
 }
 
-// Prefer a challenge the user has an in-progress attempt on (resume); else the
-// first published analytics challenge (start). isResume lets the CTA label match
-// what the link actually does.
 async function resolveEntryChallenge(
   admin: SupabaseClient,
   userId: string,

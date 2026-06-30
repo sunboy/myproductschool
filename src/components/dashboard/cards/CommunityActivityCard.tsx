@@ -17,41 +17,40 @@ function eventMeta(event: ActivityFeedEvent): string {
 }
 
 export function CommunityActivityCard({ events }: { events: ActivityFeedEvent[] }) {
+  const visibleEvents = events.slice(0, 3)
+
   return (
-    <section className="rounded-2xl border border-outline-variant/50 bg-surface-container-low p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <section className="rounded-2xl border border-outline-variant/50 bg-surface-container-low p-3.5">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[10px] font-label font-extrabold uppercase tracking-[0.12em] text-primary">
-            Community pulse
-          </div>
-          <h3 className="mt-1 font-headline text-lg font-bold text-on-surface">What peers are doing</h3>
+          <h3 className="font-headline text-base font-bold text-on-surface">What peers are doing</h3>
         </div>
         <Link
           href="/cohort"
-          className="inline-flex shrink-0 items-center gap-1 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary-fixed"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full border border-outline-variant px-2.5 py-1 text-[11px] font-bold text-primary no-underline hover:bg-primary-fixed"
         >
-          Weekly Room
+          Weekly room
           <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
         </Link>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {events.length === 0 && (
-          <div className="rounded-xl bg-background p-4 text-sm text-on-surface-variant">
+          <div className="rounded-xl bg-background p-3 text-xs text-on-surface-variant">
             The first shared answers and badges will show up here.
           </div>
         )}
-        {events.map(event => (
-          <div key={event.id} className="flex gap-3 rounded-xl bg-background p-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-primary">
-              <span className="material-symbols-outlined text-[18px]">{eventIcon(event)}</span>
+        {visibleEvents.map(event => (
+          <div key={event.id} className="flex gap-2.5 rounded-xl bg-background p-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-primary">
+              <span className="material-symbols-outlined text-[16px]">{eventIcon(event)}</span>
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold leading-5 text-on-surface">
+              <div className="line-clamp-2 text-[12px] font-semibold leading-4 text-on-surface">
                 {formatCommunityDisplayName(event.display_mode, event.actor_display_name)}
                 <span className="font-normal text-on-surface-variant"> | {event.headline}</span>
               </div>
-              <div className="mt-0.5 truncate text-xs font-semibold text-on-surface-variant">
+              <div className="mt-0.5 truncate text-[11px] font-semibold text-on-surface-variant">
                 {eventMeta(event)}
               </div>
             </div>
