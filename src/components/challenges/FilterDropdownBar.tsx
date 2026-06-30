@@ -43,10 +43,14 @@ interface DropdownDef {
   /** Static options list. When undefined, options are computed dynamically from the active discipline. */
   options?: string[]
   disciplines: Discipline[]  // which discipline tabs show this dropdown; empty = all
+  /** Discipline tabs where this dropdown is hidden even though `disciplines` is empty (all). */
+  excludeDisciplines?: Discipline[]
 }
 
 const DROPDOWNS: DropdownDef[] = [
-  { key: 'paradigm', label: 'Paradigm', options: PARADIGM_OPTIONS, disciplines: [] },
+  // Paradigm is a product-thinking operating mode; it has no meaning on pure
+  // algorithm/SQL coding problems, so hide it on those two tabs.
+  { key: 'paradigm', label: 'Paradigm', options: PARADIGM_OPTIONS, disciplines: [], excludeDisciplines: ['algorithm', 'sql'] },
   { key: 'difficulty', label: 'Difficulty', options: DIFFICULTY_OPTIONS, disciplines: [] },
   { key: 'role', label: 'Role', options: ROLE_OPTIONS, disciplines: [] },
   { key: 'company', label: 'Company', options: COMPANY_OPTIONS, disciplines: [] },
@@ -64,11 +68,20 @@ const DROPDOWN_HELP: Record<FilterKey, string> = {
   real_interview: 'Show only challenges sourced from confirmed real interview questions.',
 }
 
+/** One selectable option in a multi-select dropdown. `value` is the stored filter
+ *  value (a slug for topic/technique); `label` is the human display text; `count`
+ *  is the live result count shown alongside (omitted for static dropdowns). */
+type DropdownOption = { value: string; label: string; count?: number }
+
 interface Props {
   discipline: Discipline
   filters: FilterState
   onChange: (filters: FilterState) => void
   resultCount: number
+  /** Live per-topic counts for the active discipline (drives Topic dropdown options). */
+  topicCounts?: Record<string, number>
+  /** Live per-technique counts for the active discipline (drives Technique dropdown options). */
+  techniqueCounts?: Record<string, number>
   onOpenMobileSheet: () => void
   listView: boolean
   onToggleView: () => void
@@ -79,7 +92,7 @@ interface Props {
 function MultiSelectDropdown({
   label, options, selected, onToggle, helpText,
 }: {
-  label: string; options: string[]; selected: string[]; onToggle: (v: string) => void; helpText?: string
+  label: string; options: DropdownOption[]; selected: string[]; onToggle: (v: string) => void; helpText?: string
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -114,17 +127,20 @@ function MultiSelectDropdown({
         </button>
 
         {open && (
-          <div className="absolute top-full left-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-lg z-50 min-w-40 py-1">
+          <div className="absolute top-full left-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-lg z-50 min-w-44 max-h-72 overflow-y-auto py-1">
             {options.map((opt) => (
               <button
-                key={opt}
-                onClick={() => onToggle(opt)}
+                key={opt.value}
+                onClick={() => onToggle(opt.value)}
                 className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-label text-on-surface hover:bg-surface-container-low text-left"
               >
-                <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${selected.includes(opt) ? 'bg-primary border-primary' : 'border-outline-variant'}`}>
-                  {selected.includes(opt) && <span className="material-symbols-outlined text-on-primary text-[10px] leading-none">check</span>}
+                <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${selected.includes(opt.value) ? 'bg-primary border-primary' : 'border-outline-variant'}`}>
+                  {selected.includes(opt.value) && <span className="material-symbols-outlined text-on-primary text-[10px] leading-none">check</span>}
                 </span>
-                {opt}
+                <span className="flex-1 min-w-0 truncate">{opt.label}</span>
+                {opt.count !== undefined && (
+                  <span className="ml-auto shrink-0 tabular-nums text-on-surface-variant/60 text-[10px]">{opt.count}</span>
+                )}
               </button>
             ))}
           </div>
@@ -134,24 +150,32 @@ function MultiSelectDropdown({
   )
 }
 
-export function FilterDropdownBar({ discipline, filters, onChange, resultCount, onOpenMobileSheet, listView, onToggleView, showViewToggle = true }: Props) {
+export function FilterDropdownBar({ discipline, filters, onChange, resultCount, topicCounts = {}, techniqueCounts = {}, onOpenMobileSheet, listView, onToggleView, showViewToggle = true }: Props) {
   const visibleDropdowns = DROPDOWNS.filter(
-    (d) => d.disciplines.length === 0 || d.disciplines.includes(discipline)
+    (d) =>
+      (d.disciplines.length === 0 || d.disciplines.includes(discipline)) &&
+      !(d.excludeDisciplines?.includes(discipline))
   )
 
-  // Compute discipline-aware topic + technique options
+  // Compute discipline-aware, count-aware topic + technique options. Each option
+  // carries its human label and live count; zero-count options are dropped so a
+  // dead slug (no live challenges) never shows up — mirroring the old chip cloud.
   const taxonomyDiscipline = UI_TO_TAXONOMY[discipline]
-  const topicOptions = taxonomyDiscipline
-    ? getTopicsForDiscipline(taxonomyDiscipline).map(t => t.slug)
+  const topicOptionObjs: DropdownOption[] = taxonomyDiscipline
+    ? getTopicsForDiscipline(taxonomyDiscipline)
+        .map((t) => ({ value: t.slug, label: t.label, count: topicCounts[t.slug] ?? 0 }))
+        .filter((o) => (o.count ?? 0) > 0)
     : [] // 'all' - too broad to show a meaningful topic list
-  const techniqueOptions = taxonomyDiscipline
-    ? getTechniquesForDiscipline(taxonomyDiscipline).map(t => t.slug)
+  const techniqueOptionObjs: DropdownOption[] = taxonomyDiscipline
+    ? getTechniquesForDiscipline(taxonomyDiscipline)
+        .map((t) => ({ value: t.slug, label: t.label, count: techniqueCounts[t.slug] ?? 0 }))
+        .filter((o) => (o.count ?? 0) > 0)
     : []
 
-  function resolveOptions(d: DropdownDef): string[] {
-    if (d.key === 'topic') return topicOptions
-    if (d.key === 'technique') return techniqueOptions
-    return d.options ?? []
+  function resolveOptions(d: DropdownDef): DropdownOption[] {
+    if (d.key === 'topic') return topicOptionObjs
+    if (d.key === 'technique') return techniqueOptionObjs
+    return (d.options ?? []).map((s) => ({ value: s, label: s }))
   }
 
   function toggleArray(key: ArrayFilterKey, value: string) {
@@ -182,9 +206,9 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
 
         {visibleDropdowns.map((d) => {
           const opts = resolveOptions(d)
+          // No live options → hide the dropdown. This also drops Topic/Technique
+          // for 'all' (empty taxonomy) and before their counts have loaded.
           if (opts.length === 0) return null
-          // Skip topic/technique here — handled by TopicChipCloud
-          if (d.key === 'topic' || d.key === 'technique') return null
           return (
             <MultiSelectDropdown
               key={d.key}

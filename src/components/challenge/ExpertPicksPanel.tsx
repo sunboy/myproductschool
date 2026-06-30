@@ -13,7 +13,7 @@ const EXPERT_PICKS = [
 
 export function ExpertPicksPanel() {
   return (
-    <div className="bg-[#fdf8ed] border-l-[3px] border-tertiary-container text-on-surface rounded-lg p-6 editorial-shadow ghost-border relative overflow-hidden">
+    <div className="bg-surface-container-low text-on-surface rounded-xl p-6 editorial-shadow ghost-border relative overflow-hidden">
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-8 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary-container">

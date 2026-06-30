@@ -9,6 +9,33 @@ import type { SolutionChallengeType } from './schema'
  *    embeds this verbatim into INSTRUCTIONS.md for Claude Code sub-agents)
  */
 
+// When a challenge is stepped-eligible, the server attaches a server-owned
+// interactive walkthrough of the optimal approach. The VISUAL STATES (array
+// pointers, SQL stage tables, request-flow nodes) are always the platform's: for
+// algorithm/SQL they are computed by executing the real reference, for design
+// types they are derived from the architecture diagram the model provides. The
+// model may write the per-step PROSE (a short title and explanation per step);
+// the platform keeps that prose and replaces the visuals with the verified
+// trace, matching the model's steps to the trace BY INDEX. So the step count and
+// order are decided by the trace, not the model: write a clean walkthrough and
+// the platform aligns it to the real states, ignoring any extra steps and
+// falling back to its own captions if the counts do not line up.
+function steppedTraceNote(challengeType: SolutionChallengeType): string {
+  const common =
+    'You MAY author a "stepped" diagram for the optimal approach with concise per-step title and explanation text (and an optional one-line decision). The platform keeps your prose but OWNS the visual states: it replaces them with the verified trace and matches your steps to that trace by index, so your step count and order will be aligned to the real states (extra steps are ignored, and if the counts do not match the platform uses its own captions). Do NOT invent pointer positions, intermediate tables, or cell values in the diagram, and do NOT restate the per-step mechanics blow-by-blow in body_md. Keep each explanation insight, not instruction, in one or two short sentences, with no em dashes and no slop.'
+  switch (challengeType) {
+    case 'algorithm':
+      return `A verified interactive step-by-step walkthrough of the optimal approach will be ATTACHED to your solution automatically; its visual states are computed by executing the real algorithm. ${common} Focus the body_md on the invariant, why each move is safe, and the boundary traps. You MAY still include a complexity_curves diagram contrasting approaches.`
+    case 'sql':
+      return `A verified interactive walkthrough of the optimal query will be ATTACHED to your solution automatically; it animates each query stage by executing the real query against the real setup data, one CTE at a time through to the final result. ${common} Focus the body_md on why the query is built in those stages and what each stage establishes. You MAY still include a schema_tables or comparison_bars diagram.`
+    case 'system_design':
+    case 'data_modeling':
+      return `An interactive request-flow walkthrough of the optimal approach will be ATTACHED to your solution automatically; it is derived from the architecture diagram you provide and lights up each node as a request travels the path. ${common} Make sure the optimal approach carries a clear architecture diagram (the walkthrough is built from it). Focus the body_md on the data flow, the bottleneck, and when this alternative wins.`
+    default:
+      return `An interactive step-by-step walkthrough of the optimal approach will be ATTACHED to your solution automatically. ${common}`
+  }
+}
+
 const JSON_CONTRACT = `Return ONLY a JSON object, no markdown fence, matching this exact shape:
 
 {
@@ -93,10 +120,14 @@ const STYLE_RULES = `Writing style (hard rules, violations fail validation):
 - Never attribute reasoning patterns to named authors or frameworks-with-authors.
 - Markdown: use ## headings to structure long bodies, code fences with language tags, tables where they genuinely compress information. Solutions are read in a narrow pane; prefer short paragraphs.`
 
-export function buildSolutionSystemPrompt(challengeType: SolutionChallengeType): string {
+export function buildSolutionSystemPrompt(
+  challengeType: SolutionChallengeType,
+  opts: { hasVerifiedTrace?: boolean } = {},
+): string {
+  const steppedNote = opts.hasVerifiedTrace ? `\n\n${steppedTraceNote(challengeType)}` : ''
   return `You write the official solution document for a practice challenge on an AI-native education platform for tech workers (engineers practicing product thinking, system design, SQL, and algorithms). The solution appears in a "Solutions" tab after a learner has attempted the challenge. It must teach the reasoning, not just present the answer.
 
-${TYPE_RULES[challengeType]}
+${TYPE_RULES[challengeType]}${steppedNote}
 
 ${AI_COLLABORATION_RULES}
 

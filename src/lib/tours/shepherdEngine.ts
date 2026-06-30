@@ -120,9 +120,9 @@ export function buildStepTour(
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   const tour = new Shepherd.Tour({
-    // No dimming modal overlay: its rectangular cutout clashes with rounded
-    // cards (ugly light corners). We highlight the target with a pulsing border
-    // instead (see .shepherd-target styles in shepherd-theme.css).
+    // No dimming modal overlay (its rectangular cutout clashes with rounded
+    // cards) and no target ring: the popover + its arrow point at the target on
+    // their own. The old pulsing-green ring read as a stray floating pointer.
     useModalOverlay: false,
     exitOnEsc: true,
     keyboardNavigation: false, // we own Next/Back via buttons + cursor
@@ -173,7 +173,19 @@ export function buildStepTour(
     if (roots.length === 0) return
     const pending = roots.splice(0, roots.length)
     // Defer so we never unmount synchronously during React's render phase.
-    setTimeout(() => pending.forEach((r) => r.unmount()), 0)
+    // By the time this fires Shepherd may have already torn the popover (and our
+    // mounted span) out of the DOM, so unmounting would touch a detached node and
+    // throw "Cannot read properties of null (reading 'parentNode')". Guard each
+    // unmount and swallow the teardown race (HACKPRODUCT-F / HACKPRODUCT-T).
+    setTimeout(() => {
+      pending.forEach((r) => {
+        try {
+          r.unmount()
+        } catch {
+          // Node already removed by Shepherd; nothing left to clean up.
+        }
+      })
+    }, 0)
   }
 
   tour.addStep({

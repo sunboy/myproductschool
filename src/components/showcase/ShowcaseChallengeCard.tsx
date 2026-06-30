@@ -33,12 +33,11 @@ export function ShowcaseChallengeCard({
   return (
     <div
       onClick={onSelect}
-      className={`border-2 rounded-xl p-3 cursor-pointer transition-all border-l-4 ${
+      className={`rounded-xl p-3 cursor-pointer transition-all ${
         isActive
-          ? 'border-primary bg-white shadow-sm'
-          : 'border-transparent bg-surface-container hover:bg-surface-container-high'
+          ? 'ring-2 ring-primary bg-surface-container-low editorial-shadow'
+          : 'bg-surface-container hover:bg-surface-container-high'
       }`}
-      style={{ borderLeftColor: isActive ? undefined : 'transparent' }}
     >
       {/* Top row: badges */}
       <div className="flex items-center justify-between">

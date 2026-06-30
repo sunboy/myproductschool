@@ -113,6 +113,8 @@ const RequestSchema = z.object({
   solutions_tab_open: z.boolean().optional(),
   solution_approach_title: z.string().max(300).nullable().optional(),
   solution_approach_tagline: z.string().max(500).nullable().optional(),
+  solution_step_title: z.string().max(200).nullable().optional(),
+  solution_step_decision: z.string().max(200).nullable().optional(),
 })
 
 function retryAfterSeconds(resetAt: Date) {
@@ -320,8 +322,16 @@ function solutionsContextBlock(body: InterpretBody): string | null {
   const reading = title
     ? `, reading the approach "${title}"${tagline ? ` (${tagline})` : ''}`
     : ''
+  // If the approach carries an interactive walkthrough, the learner may be paused
+  // on a specific step. Tell Hatch exactly which move they are looking at so it
+  // can explain THAT transition rather than the algorithm in general.
+  const stepTitle = body.solution_step_title?.trim()
+  const stepDecision = body.solution_step_decision?.trim()
+  const onStep = stepTitle
+    ? ` They are paused on the walkthrough step "${stepTitle}"${stepDecision ? ` (the move: ${stepDecision})` : ''}. If they ask why this step happens, explain this specific transition and the invariant that justifies it.`
+    : ''
   return (
-    `# Solutions tab\nThe user has the official solution open${reading}. ` +
+    `# Solutions tab\nThe user has the official solution open${reading}.${onStep} ` +
     `Coach relative to it: contrast their own attempt with this approach, ask what tradeoff ` +
     `the approach makes that theirs does not, and point at the reasoning move it demonstrates. ` +
     `Never just restate the solution text back to them.`

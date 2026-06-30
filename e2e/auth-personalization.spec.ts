@@ -115,7 +115,7 @@ test.describe('Authenticated shell', () => {
     }
   })
 
-  test('NavRail daily goal shows real data (not hardcoded 3/5)', async ({ page }) => {
+  test('Dashboard daily goal shows real data (not hardcoded 3/5)', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await loginUser(page)
     if (page.url().includes('onboarding')) {

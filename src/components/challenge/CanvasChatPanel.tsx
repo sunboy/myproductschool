@@ -35,6 +35,11 @@ interface CanvasChatPanelProps {
   queuedPrompt?: { id: string; text: string; autoSend?: boolean } | null
   isOpen: boolean
   onToggle: () => void
+  /** When set, the dock auto-opens (docked) the FIRST time this key is seen,
+   *  then never again. The panel owns its open state via useHatchDockState, so a
+   *  parent `isOpen` cannot force it; this is the supported way to open it once.
+   *  Used for first-session coaching on canvas and analytics. */
+  autoOpenKey?: string
   onCanvasActions?: (response: { message: string; actions: unknown[] }) => void | Promise<void>
   feedbackMode?: boolean
   grade?: InterviewGrade | null
@@ -77,7 +82,30 @@ interface CanvasChatPanelProps {
   // Solutions tab awareness — set while the user has the official solution open,
   // so Hatch can coach relative to the approach they are reading.
   solutionsOpen?: boolean
-  activeSolutionApproach?: { title: string; tagline: string } | null
+  activeSolutionApproach?: { title: string; tagline: string; stepTitle?: string; stepDecision?: string } | null
+}
+
+// Defensive guard: a chat turn should be prose, but a malformed structured-output
+// response could arrive wrapped in a ```json fence or as a bare { "message": "..." }
+// object. Hatch must never show raw JSON to a user, so unwrap the common shapes
+// before rendering. Anything we can't cleanly unwrap passes through unchanged.
+function sanitizeHatchText(raw: string): string {
+  let text = (raw ?? '').trim()
+  if (!text) return text
+  // Strip a leading/trailing markdown code fence (```json ... ``` or ``` ... ```).
+  const fence = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
+  if (fence) text = fence[1].trim()
+  // If what remains is a JSON object carrying a text field, surface that field.
+  if (text.startsWith('{') && text.endsWith('}')) {
+    try {
+      const obj = JSON.parse(text) as Record<string, unknown>
+      const field = obj.message ?? obj.nudge ?? obj.text ?? obj.reply ?? obj.content
+      if (typeof field === 'string' && field.trim()) return field.trim()
+    } catch {
+      // not valid JSON - leave as-is rather than mangle real prose with braces
+    }
+  }
+  return text
 }
 
 function getInitialMessage(
@@ -161,6 +189,7 @@ export function CanvasChatPanel({
   queuedPrompt,
   isOpen,
   onToggle,
+  autoOpenKey,
   onCanvasActions,
   feedbackMode = false,
   grade = null,
@@ -236,6 +265,26 @@ export function CanvasChatPanel({
   void grade
   void isOpen
 
+  // First-session coaching: open the dock once (docked) the first time autoOpenKey
+  // is seen, then never again. The dock state lives in useHatchDockState (a parent
+  // isOpen can't drive it), so this is the supported one-shot open.
+  useEffect(() => {
+    if (!autoOpenKey) return
+    if (typeof window === 'undefined') return
+    try {
+      const k = `hatch-dock-autoopen:${autoOpenKey}`
+      if (!localStorage.getItem(k)) {
+        localStorage.setItem(k, '1')
+        if (mode === 'closed') setMode('docked')
+      }
+    } catch {
+      if (mode === 'closed') setMode('docked')
+    }
+  // Run once on mount for this key; mode/setMode are stable enough and we only
+  // act when currently closed.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenKey])
+
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     dragRef.current = { startX: e.clientX, startWidth: panelWidth }
@@ -293,6 +342,10 @@ export function CanvasChatPanel({
         solutions_tab_open: solutionsOpen,
         solution_approach_title: activeSolutionApproach?.title ?? null,
         solution_approach_tagline: activeSolutionApproach?.tagline ?? null,
+        // The walkthrough step the learner is viewing, debounced to send-time
+        // (this body is built per message-send, not on every step tick).
+        solution_step_title: activeSolutionApproach?.stepTitle ?? null,
+        solution_step_decision: activeSolutionApproach?.stepDecision ?? null,
       }
 
       const codingBody = challengeType === 'coding' ? {
@@ -370,16 +423,17 @@ export function CanvasChatPanel({
         throw new Error('coach call failed')
       }
       const data = (await res.json()) as CanvasInterpretResponse
+      const safeMessage = sanitizeHatchText(data.message)
       const willBuild = data.actions.length > 0 && !!onCanvasActions
       if (willBuild && onCanvasActions) {
-        onCanvasActions({ message: data.message, actions: data.actions })
+        onCanvasActions({ message: safeMessage, actions: data.actions })
       }
       play(willBuild ? 'draw' : 'reply')
       setMessages((prev) => [
         ...prev,
         {
           role: 'hatch',
-          content: data.message,
+          content: safeMessage,
           kind: willBuild ? 'canvas_action' : 'chat',
         },
       ])

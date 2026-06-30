@@ -11,7 +11,7 @@ interface HatchPickData {
   is_calibrated: boolean
 }
 
-export function HatchPick() {
+export function HatchPick({ className = 'mb-6' }: { className?: string }) {
   const router = useRouter()
   const [data, setData] = useState<HatchPickData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -26,11 +26,11 @@ export function HatchPick() {
 
   if (loading) {
     return (
-      <div className="bg-primary-container/20 border border-primary-container/30 rounded-xl p-4 mb-6 flex items-center gap-4 animate-pulse">
-        <div className="w-10 h-10 rounded-full bg-primary-container/40 flex-shrink-0" />
-        <div className="flex-1 space-y-2">
-          <div className="h-3 w-48 bg-primary-container/40 rounded" />
-          <div className="h-3 w-72 bg-primary-container/30 rounded" />
+      <div className={`bg-primary-container/20 border border-primary-container/30 rounded-xl p-4 flex items-center gap-4 animate-pulse ${className}`}>
+        <div className="w-11 h-11 rounded-full bg-primary-container/40 flex-shrink-0" />
+        <div className="flex-1 space-y-2.5">
+          <div className="h-4 w-52 bg-primary-container/40 rounded" />
+          <div className="h-3 w-80 bg-primary-container/30 rounded" />
         </div>
       </div>
     )
@@ -50,13 +50,14 @@ export function HatchPick() {
 
   return (
     <div
-      className="rounded-xl p-4 mb-6 flex items-center gap-4"
-      style={{ background: 'linear-gradient(90deg, #cfe3d3 0%, #d8ead9 100%)', border: '1px solid rgba(74,124,89,0.15)' }}
+      className={`rounded-xl px-4 py-3 flex items-center gap-4 shadow-[0_12px_32px_-20px_rgba(30,53,40,0.35)] ${className}`}
+      style={{ background: 'linear-gradient(135deg, #cfe3d3 0%, #d8ead9 60%, #e8f2eb 100%)', border: '1px solid rgba(74,124,89,0.20)' }}
     >
-      <HatchGlyph size={40} state="speaking" className="text-primary flex-shrink-0" />
-      <div>
-        <p className="text-sm font-bold text-primary">Hatch&apos;s Pick: {challengeTitle}</p>
-        <p className="text-xs text-on-surface-variant font-semibold">{tip}</p>
+      <HatchGlyph size={44} state="speaking" className="text-primary flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-primary/70 font-label mb-0.5">Hatch&apos;s Pick</p>
+        <p className="text-[15px] font-bold text-on-surface font-headline leading-snug truncate">{challengeTitle}</p>
+        <p className="text-[12.5px] text-on-surface-variant font-semibold mt-0.5 leading-snug line-clamp-1">{tip}</p>
       </div>
       <button
         type="button"
@@ -65,7 +66,7 @@ export function HatchPick() {
           setNavigating(true)
           router.push(href)
         }}
-        className="ml-auto text-xs font-bold px-4 py-2 rounded-full transition-colors whitespace-nowrap hover:-translate-y-px active:translate-y-0 duration-[120ms] disabled:opacity-70 disabled:cursor-wait"
+        className="flex-shrink-0 text-sm font-bold px-5 py-2 rounded-full transition-all whitespace-nowrap hover:-translate-y-px active:translate-y-0 duration-[120ms] disabled:opacity-70 disabled:cursor-wait shadow-[0_8px_20px_-12px_rgba(30,53,40,0.55)]"
         style={{ backgroundColor: '#1f2421', color: '#f0ede4' }}
         onMouseEnter={e => { if (!navigating) e.currentTarget.style.backgroundColor = '#111614' }}
         onMouseLeave={e => { if (!navigating) e.currentTarget.style.backgroundColor = '#1f2421' }}

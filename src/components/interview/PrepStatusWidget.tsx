@@ -38,7 +38,7 @@ export function PrepStatusWidget({
       </div>
 
       {comparativeInsight && (
-        <p className="text-xs text-on-surface-variant italic border-l-2 border-primary pl-3">
+        <p className="text-xs text-on-surface-variant italic bg-surface-container-low rounded-lg px-3 py-2">
           {comparativeInsight}
         </p>
       )}

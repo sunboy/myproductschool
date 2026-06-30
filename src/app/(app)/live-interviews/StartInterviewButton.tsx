@@ -81,6 +81,12 @@ export default function StartInterviewButton({
 
       if (!res.ok) throw new Error('Failed to start interview')
       const data = await res.json()
+      // Starting an interview consumes an interview rep server-side
+      // (recordUsageEvent in /api/live-interview/start), so refresh the usage
+      // surfaces now. profile-stats-updated re-pulls SessionContext (which backs
+      // useUsage / the at-limit check) and the usage pill, which both listen for
+      // it; the pill no longer polls.
+      window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'interview-start' } }))
       setSessionId(data.sessionId)
       // Cache company/role/discipline for modal display and URL params
       if (data.companyName) setModalCompany(data.companyName)

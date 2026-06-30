@@ -35,6 +35,13 @@ SCORING GUIDANCE:
 - how_to_improve: one concrete thing to do differently next time.
 - canvas_annotations: 3-7 specific gaps tied to labeled canvas elements (empty array if canvas is empty).
 
+VOICE (applies to every string the user reads: headline, verdict, evidence, hole_to_poke, how_to_improve, top_strength, top_improvement, canvas_annotations.text)
+==================================================================================
+- NO em dashes. Never use the "—" character. Use a comma, a period, or restructure the sentence.
+- NO AI slop. Never use: delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing.
+- Direct and specific. Write full, flowing sentences, not fragments. Name the actual component, connection, or quote.
+- Never address the user as a role ("as a staff engineer", "you are a..."). Drop straight into the observation.
+
 RETURN FORMAT — valid JSON only, no markdown:
 {
   "overall_score": 3.4,
@@ -49,6 +56,6 @@ RETURN FORMAT — valid JSON only, no markdown:
   "top_strength": "...",
   "top_improvement": "...",
   "canvas_annotations": [
-    { "target_label": "Users DB", "text": "No read replica shown — consider for 100k+ users", "severity": "warning" }
+    { "target_label": "Users DB", "text": "No read replica shown. Consider one for 100k+ users.", "severity": "warning" }
   ]
 }`

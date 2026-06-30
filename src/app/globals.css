@@ -65,11 +65,35 @@
   --color-error-container:          #ffdad8;
   --color-on-error-container:       #690005;
 
-  /* FLOW Move Colors */
-  --color-flow-frame:               #3b82f6;
-  --color-flow-lens:                #10b981;
-  --color-flow-optimize:            #f59e0b;
-  --color-flow-win:                 #8b5cf6;
+  /* ── shadcn/ui semantic tokens, mapped onto the Terra (M3) palette ──
+     The shadcn primitives (Button, Card, Input, Badge, Dialog, Select…)
+     reference these names. Without them the primitives render with undefined
+     colors. Each is aliased to its closest Material 3 Terra equivalent so the
+     component layer is finally usable and on-brand. */
+  --color-foreground:               #2e3230;  /* = on-surface */
+  --color-card:                     #faf6f0;  /* = surface */
+  --color-card-foreground:          #2e3230;  /* = on-surface */
+  --color-popover:                  #ffffff;  /* = surface-container-lowest */
+  --color-popover-foreground:       #2e3230;
+  --color-primary-foreground:       #ffffff;  /* = on-primary */
+  --color-secondary-foreground:     #5e5548;  /* = on-secondary-container */
+  --color-muted:                    #f0ece4;  /* = surface-container */
+  --color-muted-foreground:         #4a4e4a;  /* = on-surface-variant */
+  --color-accent:                   #f0ece4;  /* = surface-container */
+  --color-accent-foreground:        #2e3230;  /* = on-surface */
+  --color-destructive:              #b83230;  /* = error */
+  --color-destructive-foreground:   #ffffff;  /* = on-error */
+  --color-border:                   #c4c8bc;  /* = outline-variant */
+  --color-input:                    #c4c8bc;  /* = outline-variant */
+  --color-ring:                     #4a7c59;  /* = primary */
+
+  /* FLOW Move Colors — one accent family (forest green → warm brown), NOT four
+     unrelated hues. Mirror of src/lib/flow/moves.ts (keep in sync). */
+  --color-flow-frame:               #4a7c59;
+  --color-flow-list:                #37706f;
+  --color-flow-lens:                #37706f;  /* legacy alias for -list */
+  --color-flow-optimize:            #a9772f;
+  --color-flow-win:                 #7a5d33;
 
   /* Typography */
   --font-headline: var(--font-literata), 'Literata', serif;
@@ -96,8 +120,10 @@
   --color-hero-forest:              #1e3528;
   --color-hero-forest-deep:         #14241c;
   --color-hero-forest-deepest:      #0e1a14;
+  --color-hero-ink:                 #1e1b14;
   --color-on-hero:                  #f3ede0;
   --color-on-hero-accent:           #7ee099;
+  --color-on-hero-accent-soft:      #9ee0b8;
 
   /* Extended radius scale */
   --radius-xs:  0.5rem;
@@ -270,6 +296,19 @@ body::before {
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-scroll { animation: none; }
+}
+
+/* Global reduced-motion guard: near-instant transitions/animations and no
+   transform-based motion (e.g. the shared Button's active:scale press, card
+   hover lifts). Keeps the UI usable for motion-sensitive users without us
+   having to annotate every component. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── Hatch Glow ────────────────────────────────────────────────── */

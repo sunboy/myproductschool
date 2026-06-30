@@ -10,7 +10,7 @@ interface DomainCardProps {
 export function DomainCard({ domain, duration = '~20 min', isFree = true }: DomainCardProps) {
   return (
     <Link
-      href={`/domains/${domain.slug}`}
+      href={`/explore/domains/${domain.slug}`}
       className="group flex flex-col p-5 bg-surface-container rounded-2xl border border-outline-variant hover:bg-surface-container-high hover:border-primary/30 transition-all"
     >
       <div className="flex items-start justify-between mb-4">

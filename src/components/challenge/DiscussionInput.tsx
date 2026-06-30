@@ -144,12 +144,36 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-outline-variant flex items-start gap-4">
-      <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest flex-shrink-0 flex items-center justify-center mt-0.5">
-        <span className="material-symbols-outlined text-outline text-lg">person</span>
-      </div>
-      <div className="min-w-0 flex-grow">
-        <div className="flex items-center gap-0.5 mb-1">
+    <div className="rounded-2xl border border-outline-variant/70 bg-surface px-3 py-2.5 shadow-[0_12px_26px_-24px_rgba(30,27,20,0.45)] transition-colors focus-within:border-primary/70 focus-within:ring-2 focus-within:ring-primary/15">
+      <textarea
+        aria-label="Add to the discussion"
+        className="min-h-[82px] w-full resize-y border-0 bg-transparent px-0.5 py-1 text-sm leading-relaxed text-on-surface outline-none placeholder:text-on-surface-variant/55 disabled:opacity-60"
+        placeholder="Add to the discussion..."
+        rows={3}
+        ref={textarea}
+        value={content}
+        onChange={e => {
+          setContent(e.target.value.slice(0, MAX_LENGTH))
+          if (error) setError(null)
+        }}
+        disabled={submitting}
+        onKeyDown={e => {
+          // Enter inserts a newline (multi-line composing). Cmd/Ctrl+Enter posts.
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault()
+            handleSubmit()
+          }
+        }}
+      />
+
+      {(validationMessage || error) && (
+        <p className={`mt-1 text-xs font-medium ${error ? 'text-error' : 'text-tertiary'}`}>
+          {error ?? validationMessage}
+        </p>
+      )}
+
+      <div className="mt-2 flex items-center justify-between gap-3 border-t border-outline-variant/50 pt-2">
+        <div className="flex items-center gap-0.5">
           {TOOLBAR_BUTTONS.map(({ kind, icon, label }) => (
             <button
               key={kind}
@@ -159,58 +183,40 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
               onMouseDown={e => e.preventDefault()}
               onClick={() => applyFormat(kind)}
               disabled={submitting}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface disabled:opacity-40"
             >
               <span className="material-symbols-outlined text-[18px]">{icon}</span>
             </button>
           ))}
         </div>
-        <textarea
-          className="w-full border border-outline-variant rounded-xl bg-surface-container-low focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm leading-relaxed px-3 py-2.5 placeholder:text-on-surface-variant/60 text-on-surface focus:outline-none resize-y min-h-[120px] transition-colors"
-          placeholder="Add to the discussion… markdown supported (**bold**, `code`, lists)"
-          rows={5}
-          ref={textarea}
-          value={content}
-          onChange={e => {
-            setContent(e.target.value.slice(0, MAX_LENGTH))
-            if (error) setError(null)
-          }}
-          disabled={submitting}
-          onKeyDown={e => {
-            // Enter inserts a newline (multi-line composing). Cmd/Ctrl+Enter posts.
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-              e.preventDefault()
-              handleSubmit()
-            }
-          }}
-        />
-        <div className="flex items-center justify-between gap-3 mt-1.5">
-          <p className="text-[11px] font-medium text-on-surface-variant/80">
-            Direct, specific, no slop. Markdown supported. <span className="opacity-70">⌘/Ctrl+Enter to post</span>
-          </p>
-          <span className="text-[11px] font-medium text-on-surface-variant/60 whitespace-nowrap">{content.length}/{MAX_LENGTH}</span>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden whitespace-nowrap text-[11px] font-medium tabular-nums text-on-surface-variant/55 sm:inline">
+            {content.length}/{MAX_LENGTH}
+          </span>
+          {submitted ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary-fixed px-3 py-1.5 text-xs font-bold text-primary">
+              Posted
+              <span className="material-symbols-outlined text-sm">check_circle</span>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting || !content.trim() || !validation.valid}
+              className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-on-primary transition-opacity hover:opacity-90 disabled:opacity-45"
+            >
+              {submitting ? 'Posting...' : 'Post'}
+            </button>
+          )}
         </div>
-        {validationMessage && (
-          <p className="text-xs font-medium text-tertiary">{validationMessage}</p>
-        )}
-        {error && (
-          <p className="text-xs font-medium text-error">{error}</p>
-        )}
       </div>
-      {submitted ? (
-        <div className="flex items-center gap-1 text-primary font-bold text-sm whitespace-nowrap mt-1.5">
-          Posted!
-          <span className="material-symbols-outlined text-sm">check_circle</span>
-        </div>
-      ) : (
-        <button
-          onClick={handleSubmit}
-          disabled={submitting || !content.trim() || !validation.valid}
-          className="bg-primary text-white px-6 py-2 rounded-xl font-bold text-sm shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap mt-1"
-        >
-          {submitting ? 'Posting...' : 'Post'}
-        </button>
-      )}
+
+      <div className="sr-only" aria-live="polite">
+        {submitted && 'Posted'}
+        {validationMessage && !error ? validationMessage : ''}
+        {error ?? ''}
+      </div>
     </div>
   )
 }

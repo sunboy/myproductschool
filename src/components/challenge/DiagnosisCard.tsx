@@ -25,7 +25,7 @@ export function DiagnosisCard({ pattern, occurrenceCount, isNew = false, intervi
       </div>
 
       {pattern.evidence && (
-        <blockquote className="border-l-2 border-primary pl-4 italic text-sm text-on-surface-variant">
+        <blockquote className="bg-surface-container-low rounded-lg px-4 py-3 italic text-sm text-on-surface-variant">
           <FeedbackText className="text-on-surface-variant">{pattern.evidence}</FeedbackText>
         </blockquote>
       )}

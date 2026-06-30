@@ -965,8 +965,8 @@ export default function FlowMarketingPage() {
                 {/* Scenario */}
                 <div
                   data-reveal
-                  className="border-l-4 pl-4 py-2 mb-6 opacity-0 translate-y-4 transition-all duration-500"
-                  style={{ borderColor: move.accentColor, transitionDelay: '240ms' }}
+                  className="bg-surface-container-low rounded-lg px-4 py-3 mb-6 opacity-0 translate-y-4 transition-all duration-500"
+                  style={{ transitionDelay: '240ms' }}
                 >
                   <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">{move.scenario.label}</p>
                   <p className="font-body text-sm text-on-surface leading-relaxed">{move.scenario.text}</p>

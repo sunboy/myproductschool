@@ -11,6 +11,8 @@ import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, Syntheti
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
 import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
+import { usageEventBus } from '@/lib/usage/event-bus'
+import { FLOW_MOVES } from '@/lib/flow/moves'
 import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
 import { StepReveal } from './StepReveal'
@@ -20,6 +22,8 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useHatchContext } from '@/context/HatchContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { CanvasCoachCard } from '@/components/challenge/CanvasCoachCard'
+import { CanvasEmptyState } from '@/components/challenge/CanvasEmptyState'
+import { canvasStarterTemplate } from '@/lib/hatch/canvasSeeds'
 import { CanvasReadinessMeter } from '@/components/challenge/CanvasReadinessMeter'
 import { CanvasThinkingDock } from '@/components/challenge/CanvasThinkingDock'
 import { TourRunner } from '@/components/shell/TourRunner'
@@ -40,10 +44,13 @@ import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
 import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { workspaceBreadcrumbs, workspaceExitHref } from '@/lib/workspace/breadcrumbs'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
 import type { SchemaDiagramData } from '@/components/challenge/SchemaDiagram'
+import { formatCompany } from '@/lib/format/company'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import type { ChallengeDiscussion } from '@/lib/types'
@@ -445,8 +452,8 @@ function scoreToGradeLabel(score: number): string {
 }
 
 type FlowWorkspaceProps =
-  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; nextChallengeSlug?: string; returnTo?: string }
-  | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; nextChallengeSlug?: string; returnTo?: string }
+  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
+  | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
 
 // First-entry tour for the canvas workspace. Auto-fires once when a canvas
 // challenge is interactive (desktop only), and on demand via 'start-canvas-tour'.
@@ -489,10 +496,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const initialRoleId = isApiMode ? props.initialRoleId : 'engineer' as UserRoleV2
   const onPaywall = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).onPaywall : undefined
   const fromPlan = props.fromPlan
+  const fromDomain = props.fromDomain
   const nextChallengeSlug = props.nextChallengeSlug
-  const nextChallengeHref = nextChallengeSlug
-    ? `/workspace/challenges/${nextChallengeSlug}${props.returnTo ? `?${new URLSearchParams({ returnTo: props.returnTo }).toString()}` : ''}`
-    : null
+  const nextChallengeHref = (() => {
+    if (!nextChallengeSlug) return null
+    // Carry the origin (plan / domain / returnTo) onto the next challenge so its
+    // breadcrumb trail and side index panel stay in the same context instead of
+    // silently resetting to generic Practice.
+    const qs = new URLSearchParams()
+    if (fromPlan) qs.set('from_plan', fromPlan)
+    if (fromDomain) qs.set('from_domain', fromDomain)
+    if (props.returnTo) qs.set('returnTo', props.returnTo)
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return `/workspace/challenges/${nextChallengeSlug}${suffix}`
+  })()
 
   // Declare step state first so it's available for the hook call below
   const [currentStep, setCurrentStep] = useState<FlowStep>('frame')
@@ -553,6 +570,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [historyCodingLanguage, setHistoryCodingLanguage] = useState<SupportedLanguage | null>(null)
   const [historySubmittedCode, setHistorySubmittedCode] = useState<string | null>(null)
   const [historyGradeLoading, setHistoryGradeLoading] = useState(false)
+  // Cache /api/attempts/[id]/grade payloads by attemptId so re-clicking a past
+  // submission is instant (no spinner, no refetch). Only canvas/coding attempts
+  // ever populate this — FLOW renders from sessionHistory.stepResults directly.
+  const historyGradeCacheRef = useRef<Map<string, {
+    grade?: InterviewGrade | GradingFeedback | null
+    challengeType?: string | null
+    code?: string | null
+    language?: SupportedLanguage | null
+    correctness?: RunResult | null
+  }>>(new Map())
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
   const [contextPackOpen, setContextPackOpen] = useState(true)
   const [contextPack, setContextPack] = useState<ContextPackState>(EMPTY_CONTEXT_PACK_FIELDS)
@@ -614,7 +641,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Mobile (phone) layout. On phones the desktop two-pane split is replaced by a
   // vertical stack; the description becomes a collapsible top drawer (collapsed
   // by default so the question is visible first).
-  const isMobile = useIsMobile()
+  // Use the stacked single-column layout through the TABLET range (≤1023px), not
+  // just phones. The desktop two-pane chrome (left description panel + right
+  // answer panel + centered FLOW stepper + the Description/Discussions/Submissions
+  // tab row) needs ≥1024px; at 768px it collided ("Frame" sitting on the tab row).
+  const isMobile = useIsMobile('(max-width: 1023px)')
   const [mobileDescOpen, setMobileDescOpen] = useState(false)
 
   // Derived: dock fade-out fires when answer has been submitted (phase leaves 'question')
@@ -698,6 +729,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isCodingChallenge = apiChallengeType === 'sql' || apiChallengeType === 'algorithm'
   // Either canvas or coding - both are full-panel interview modes (no MCQ FLOW steps)
   const isInterviewChallenge = isCanvasChallenge || isCodingChallenge
+  // The MCQ FLOW stepper (Frame/List/Optimize/Win). API mode only - the idle nudge
+  // posts to an authed endpoint keyed on a real challenge + attempt, which the
+  // autopsy/showcase adapter path does not have.
+  const isFlowChallenge = isApiMode && !isInterviewChallenge
 
   // On a phone, FLOW/MCQ challenges stack vertically. Canvas/coding challenges
   // are gated to a "best on desktop" notice instead (see Fork C below).
@@ -722,6 +757,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [solutionLoading, setSolutionLoading] = useState(false)
   const [solutionLoaded, setSolutionLoaded] = useState(false)
   const [activeApproachId, setActiveApproachId] = useState<string | null>(null)
+  // Which step of an interactive walkthrough the learner is viewing, so Hatch
+  // can reason about it ("why does mid move here?"). Reset when the approach changes.
+  const [activeSolutionStep, setActiveSolutionStep] = useState<{ index: number; title: string; decision?: string } | null>(null)
   const solutionGenerateTriggeredRef = useRef(false)
   const solutionStateRef = useRef<SolutionTabResponse | null>(null)
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
@@ -762,6 +800,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [submissionsCount, setSubmissionsCount] = useState(0)
 
   // Load the persisted feedback payload when a history record is selected.
+  // FLOW attempts have no interview_grades/test_results row, so the grade
+  // endpoint always 404s for them — their detail renders from the in-memory
+  // sessionHistory record instead. Only canvas/coding attempts need the fetch,
+  // and once fetched the payload is cached so re-clicking a row is instant.
   useEffect(() => {
     if (selectedHistoryIdx === null) {
       setHistoryInterviewGrade(null)
@@ -769,10 +811,61 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setHistoryCodingCorrectness(null)
       setHistoryCodingLanguage(null)
       setHistorySubmittedCode(null)
+      setHistoryGradeLoading(false)
       return
     }
     const record = sessionHistory[selectedHistoryIdx]
     if (!record?.attemptId) return
+
+    const applyGrade = (data: {
+      grade?: InterviewGrade | GradingFeedback | null
+      challengeType?: string | null
+      code?: string | null
+      language?: SupportedLanguage | null
+      correctness?: RunResult | null
+    } | null) => {
+      const historyChallengeType = data?.challengeType ?? record.challengeType ?? apiChallengeType ?? null
+      if (historyChallengeType === 'sql' || historyChallengeType === 'algorithm') {
+        setHistoryCodingFeedback((data?.grade as GradingFeedback | null) ?? null)
+        setHistoryCodingCorrectness(data?.correctness ?? null)
+        setHistoryCodingLanguage(data?.language ?? null)
+        setHistorySubmittedCode(data?.code ?? null)
+        setHistoryInterviewGrade(null)
+      } else if (data?.grade) {
+        setHistoryInterviewGrade(data.grade as InterviewGrade)
+        setHistoryCodingFeedback(null)
+        setHistoryCodingCorrectness(null)
+        setHistoryCodingLanguage(null)
+        setHistorySubmittedCode(null)
+      } else {
+        setHistoryInterviewGrade(null)
+        setHistoryCodingFeedback(null)
+        setHistoryCodingCorrectness(null)
+        setHistoryCodingLanguage(null)
+        setHistorySubmittedCode(null)
+      }
+    }
+
+    // FLOW (and any non-canvas/non-coding type): no persisted grade row to load.
+    // Render directly from sessionHistory; skip the guaranteed-404 round-trip.
+    const recordType = record.challengeType ?? apiChallengeType ?? null
+    const needsGradeFetch = recordType === 'sql' || recordType === 'algorithm'
+      || recordType === 'system_design' || recordType === 'data_modeling'
+    if (!needsGradeFetch) {
+      setHistoryGradeLoading(false)
+      applyGrade(null)
+      return
+    }
+
+    // Cache hit — show the detail instantly, no spinner.
+    const cached = historyGradeCacheRef.current.get(record.attemptId)
+    if (cached) {
+      setHistoryGradeLoading(false)
+      applyGrade(cached)
+      return
+    }
+
+    let cancelled = false
     setHistoryGradeLoading(true)
     setHistoryInterviewGrade(null)
     setHistoryCodingFeedback(null)
@@ -788,18 +881,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         language?: SupportedLanguage | null
         correctness?: RunResult | null
       } | null) => {
-        const historyChallengeType = data?.challengeType ?? record.challengeType ?? apiChallengeType ?? null
-        if (historyChallengeType === 'sql' || historyChallengeType === 'algorithm') {
-          setHistoryCodingFeedback((data?.grade as GradingFeedback | null) ?? null)
-          setHistoryCodingCorrectness(data?.correctness ?? null)
-          setHistoryCodingLanguage(data?.language ?? null)
-          setHistorySubmittedCode(data?.code ?? null)
-        } else if (data?.grade) {
-          setHistoryInterviewGrade(data.grade as InterviewGrade)
-        }
+        if (data) historyGradeCacheRef.current.set(record.attemptId!, data)
+        if (!cancelled) applyGrade(data)
       })
       .catch(() => { /* leave null - render handles empty state */ })
-      .finally(() => setHistoryGradeLoading(false))
+      .finally(() => { if (!cancelled) setHistoryGradeLoading(false) })
+    return () => { cancelled = true }
   }, [apiChallengeType, selectedHistoryIdx, sessionHistory])
 
   // Load past completed attempts for this challenge from the DB. Reusable so it
@@ -893,17 +980,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Cheap count for the Submissions tab pill — a head-only count query, no
   // feedback_json payload — so the pill can show the prior-attempt count on
-  // mount without eagerly loading the full (heavy) history.
+  // mount without eagerly loading the full (heavy) history. When the count is
+  // non-zero we ALSO warm the full history in the background (idle-scheduled,
+  // off the mount critical path) so the first Submissions-tab open is instant
+  // instead of flashing a skeleton while the list loads.
   useEffect(() => {
     if (!isApiMode || !challengeId) return
     let cancelled = false
     fetch(`/api/attempts?challenge_id=${encodeURIComponent(challengeId)}&count=1`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { count?: number } | null) => {
-        if (!cancelled && typeof d?.count === 'number') setSubmissionsCount(d.count)
+        if (cancelled || typeof d?.count !== 'number') return
+        setSubmissionsCount(d.count)
+        if (d.count > 0 && !submissionsLoaded && !submissionsLoading) {
+          const warm = () => { if (!cancelled) void loadSubmissionHistory() }
+          // Defer so it never competes with first paint or the active question.
+          const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback
+          if (typeof ric === 'function') ric(warm, { timeout: 1500 })
+          else setTimeout(warm, 600)
+        }
       })
       .catch(() => { /* pill just stays hidden on failure */ })
     return () => { cancelled = true }
+    // submissionsLoaded/Loading are read for the warm guard but intentionally
+    // excluded from deps — this effect should run once per challenge on mount,
+    // and loadSubmissionHistory's own guards prevent a duplicate fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApiMode, challengeId])
 
   // Tab pill count: the loaded history is authoritative once present; before
@@ -919,6 +1021,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       return [record, ...withoutDupe]
     })
     setSelectedHistoryIdx(0)
+    // A successful submit (coding / canvas / interview) consumes a rep. Refresh
+    // every usage surface: profile-stats-updated re-pulls SessionContext (which
+    // backs useUsage / the at-limit checks) and the usage pill; usageEventBus is
+    // the pill's in-app channel. The pill no longer polls, so these signals are
+    // what keep it fresh. The FLOW MCQ path emits separately (not via here).
+    window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'challenge-submit' } }))
+    usageEventBus.emit()
   }, [])
 
   // Hint card open/close state (right pane)
@@ -1041,6 +1150,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     })
   }, [])
 
+  // Drop the starter skeleton onto the canvas from the branded empty-state.
+  // Reuses the same executeActions path Hatch uses, so the layout engine places
+  // and connects the boxes; the empty-state un-mounts as soon as elements land.
+  const handleUseTemplate = useCallback(() => {
+    if (apiChallengeType !== 'system_design' && apiChallengeType !== 'data_modeling') return
+    handleCanvasActions({
+      message: 'starter template',
+      actions: canvasStarterTemplate(apiChallengeType),
+    })
+  }, [apiChallengeType, handleCanvasActions])
+
   // Seed type-specific default field labels when challenge type is known
   useEffect(() => {
     if (!isCanvasChallenge) return
@@ -1054,6 +1174,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiChallengeType, isCanvasChallenge])
+
+  // Canvas blank-state paralysis fix: the Hatch dock auto-opens the first time a
+  // user lands on a canvas challenge via CanvasChatPanel's autoOpenKey below (the
+  // dock owns its open state through useHatchDockState, so setChatPanelOpen can't
+  // drive it). One-shot, so a later collapse sticks.
 
   useEffect(() => {
     function handleOpenWorkspaceHatch(event: Event) {
@@ -1097,9 +1222,57 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const lastWorkspaceProgressRef = useRef(Date.now())
   const lastWorkspaceCueRef = useRef(0)
 
+  // The nudge rate-limit + per-attempt cap refs are component-lifetime, so a new
+  // attempt in the same mounted component (e.g. a retry without remount) would
+  // otherwise inherit the prior attempt's cap and never nudge. Reset them when the
+  // attempt changes so each attempt gets its own fresh nudge budget.
+  useEffect(() => {
+    lastNudgeAtRef.current = 0
+    nudgeCountRef.current = 0
+    lastWorkspaceCueRef.current = 0
+    lastWorkspaceProgressRef.current = Date.now()
+  }, [attemptId])
+
+  // Snapshot of the user's live workspace state, read inside the idle-nudge timer
+  // at fire time (the timer is declared before these values exist, and we don't
+  // want to re-subscribe the interval on every keystroke). Populated by the
+  // effect just below. Lets the idle nudge be grounded in what the user is
+  // actually doing — the current FLOW question + selections, or the current code
+  // + last test run — instead of a canned "stuck?" line.
+  const nudgeGroundingRef = useRef<{
+    flowStep: string | null
+    flowQuestion: string | null
+    flowSelectedLabels: string[]
+    codeLanguage: string | null
+    codeTail: string | null
+    testsPassed: number | null
+    testsTotal: number | null
+  }>({
+    flowStep: null,
+    flowQuestion: null,
+    flowSelectedLabels: [],
+    codeLanguage: null,
+    codeTail: null,
+    testsPassed: null,
+    testsTotal: null,
+  })
+
   useEffect(() => {
     chatPanelOpenRef.current = chatPanelOpen
   }, [chatPanelOpen])
+
+  // True when the docked Hatch panel (CanvasChatPanel) is actually visible. The
+  // panel owns its open state in useHatchDockState('canvas'), persisted to this
+  // localStorage key for both canvas and coding - the parent `chatPanelOpen`
+  // boolean does NOT track the dock opening itself (auto-open, restore, FAB), so
+  // reading the dock's own state is the only reliable signal at nudge fire-time.
+  // FLOW (MCQ) challenges have no docked panel, so this is always false for them
+  // and their nudges correctly fall through to the floating cue.
+  const dockIsOpenNow = useCallback(() => {
+    if (!isInterviewChallenge) return false
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('hatch-mode:canvas') !== 'closed'
+  }, [isInterviewChallenge])
 
   const requestNudge = useCallback(async (added: number) => {
     if (!isCanvasChallenge || !attemptId) return
@@ -1128,21 +1301,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         if (data.nudge) {
           lastNudgeAtRef.current = Date.now()
           nudgeCountRef.current += 1
-          if (chatPanelOpenRef.current) {
+          // One surface at a time: in-panel card when the dock is open, floating
+          // cue only as the fallback when it is closed (its CTA opens the dock).
+          if (dockIsOpenNow()) {
             setProactiveNudge({ id: `n-${Date.now()}`, text: data.nudge })
+          } else {
+            emitHatchCue?.({
+              id: `canvas-nudge-${Date.now()}`,
+              surface: 'workspace',
+              message: data.nudge,
+              state: 'intrigued',
+              animation: 'nudging',
+              target: 'workspace-hatch-chat',
+              source: 'nudge',
+              priority: 6,
+              cooldownKey: `canvas-nudge:${attemptId}`,
+              cta: { label: 'Open Hatch', action: 'open-workspace-chat' },
+            }, { force: true })
           }
-          emitHatchCue?.({
-            id: `canvas-nudge-${Date.now()}`,
-            surface: 'workspace',
-            message: data.nudge,
-            state: 'intrigued',
-            animation: 'nudging',
-            target: 'workspace-hatch-chat',
-            source: 'nudge',
-            priority: 6,
-            cooldownKey: `canvas-nudge:${attemptId}`,
-            cta: { label: 'Open Hatch', action: 'open-workspace-chat' },
-          }, { force: true })
         }
       } catch { /* swallow */ }
     }, 4000)
@@ -1167,35 +1343,92 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     selectedOptionId,
   ])
 
+  // Uniform idle nudge. When the user goes quiet on a question (FLOW), in the
+  // editor (coding), or on a populated canvas (system design / data modeling),
+  // ask Hatch — via the same /api/hatch/canvas/nudge endpoint the analytics
+  // medium uses — whether it has one grounded thing to say. This replaces the
+  // old canned "Stuck on your X?" line so every challenge type gets the same
+  // gentle, dismissible, context-aware nudge instead of a generic prompt.
   useEffect(() => {
     if (!emitHatchCue || phase !== 'question') return
+
+    const fireNudge = async () => {
+      const apiType = isFlowChallenge ? 'flow' : apiChallengeType
+      const ground = nudgeGroundingRef.current
+
+      // Per-type body. Canvas reuses the scene path (with a synthetic delta so the
+      // trivial-change gate lets the current scene through on an idle tick).
+      const body: Record<string, unknown> = {
+        challengeId,
+        challengeType: apiType,
+        attemptId: attemptId ?? challengeId,
+        lastNudgeAt: lastNudgeAtRef.current || undefined,
+        nudgeCount: nudgeCountRef.current,
+      }
+      if (isFlowChallenge) {
+        if (!ground.flowQuestion) return
+        body.flow_step = ground.flowStep
+        body.flow_question = ground.flowQuestion
+        body.flow_selected_labels = ground.flowSelectedLabels
+      } else if (isCodingChallenge) {
+        if (!ground.codeTail && ground.testsTotal == null) return
+        body.code_language = ground.codeLanguage
+        body.code_tail = ground.codeTail
+        body.tests_passed = ground.testsPassed
+        body.tests_total = ground.testsTotal
+      } else if (isCanvasChallenge) {
+        if (!scene || scene.elementCount < 2) return
+        body.scene = scene
+        body.recentDelta = { added: 1 }
+      } else {
+        return
+      }
+
+      try {
+        const res = await fetch('/api/hatch/canvas/nudge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) return
+        const data = (await res.json()) as { nudge: string | null }
+        if (!data.nudge) return
+
+        lastNudgeAtRef.current = Date.now()
+        nudgeCountRef.current += 1
+        // One surface at a time. If the docked Hatch panel is already open, the
+        // nudge lands as its in-panel "Hatch noticed" card - do NOT also raise the
+        // floating cue + FAB (that's the redundant double-bubble). The floating cue
+        // is only the fallback for when the panel is closed, and its "Open Hatch"
+        // CTA exists precisely to open the panel.
+        if (dockIsOpenNow()) {
+          setProactiveNudge({ id: `idle-${Date.now()}`, text: data.nudge })
+        } else {
+          const target = isInterviewChallenge ? 'workspace-hatch-chat' : 'workspace-answer-area'
+          emitHatchCue?.({
+            surface: 'workspace',
+            message: data.nudge,
+            state: 'intrigued',
+            animation: 'nudging',
+            target,
+            source: 'nudge',
+            priority: 5,
+            cooldownKey: `workspace-stuck:${attemptId ?? challengeId}`,
+            cta: isInterviewChallenge
+              ? { label: 'Open Hatch', action: 'open-workspace-chat' as const }
+              : { label: 'Show a hint', action: 'open-workspace-chat' as const },
+          })
+        }
+      } catch { /* a missed nudge is non-critical */ }
+    }
 
     const timer = window.setInterval(() => {
       if (activeHatchCue) return
       const now = Date.now()
       if (now - lastWorkspaceProgressRef.current < 90_000) return
       if (now - lastWorkspaceCueRef.current < 120_000) return
-
       lastWorkspaceCueRef.current = now
-      const workspaceKind = isCanvasChallenge
-        ? apiChallengeType === 'data_modeling' ? 'data model' : 'system design'
-        : isCodingChallenge ? 'code' : 'answer'
-      const target = isInterviewChallenge ? 'workspace-hatch-chat' : 'workspace-answer-area'
-      const cta = isInterviewChallenge
-        ? { label: 'Open Hatch', action: 'open-workspace-chat' as const }
-        : { label: 'Show a hint', action: 'open-workspace-chat' as const }
-
-      emitHatchCue({
-        surface: 'workspace',
-        message: `Looks like the ${workspaceKind} has gone quiet. Want a thread to pull on?`,
-        state: 'intrigued',
-        animation: 'stuck-check',
-        target,
-        source: 'workspace',
-        priority: 5,
-        cooldownKey: `workspace-stuck:${attemptId ?? challengeId}`,
-        cta,
-      })
+      void fireNudge()
     }, 10_000)
 
     return () => window.clearInterval(timer)
@@ -1204,11 +1437,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     apiChallengeType,
     attemptId,
     challengeId,
+    dockIsOpenNow,
     emitHatchCue,
     isCanvasChallenge,
     isCodingChallenge,
+    isFlowChallenge,
     isInterviewChallenge,
     phase,
+    scene,
   ])
 
   // Autosave canvas snapshot and Context Pack every 10s when changed
@@ -1308,6 +1544,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const meta = detail.challenge.metadata as {
       sql_schema?: unknown
       supported_languages?: SupportedLanguage[]
+    }
+    // Algorithm challenges never run SQL. Check this FIRST so a stale sql_schema
+    // wrongly attached to an algorithm challenge can't force the language to sql
+    // (the SQL option is also hidden from the selector for these). Keep the active
+    // language in the non-SQL set even when metadata is missing or lists sql.
+    if (apiChallengeType === 'algorithm') {
+      const NON_SQL_DEFAULTS: SupportedLanguage[] = ['python', 'javascript', 'java', 'cpp', 'go']
+      const allowed = (meta.supported_languages ?? []).filter(l => l !== 'sql')
+      const effective = allowed.length > 0 ? allowed : NON_SQL_DEFAULTS
+      if (!effective.includes(currentLanguage)) setCurrentLanguage(effective[0])
+      return
     }
     if (apiChallengeType === 'sql' || meta.sql_schema) {
       setCurrentLanguage('sql')
@@ -1488,6 +1735,43 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const activeStepData = isApiMode ? stepData : adapterStepData
   const currentQuestion = activeStepData?.questions[questionIdx] ?? null
   const activeSubmitting = isApiMode ? submitting : adapterSubmitting
+
+  // Keep the idle-nudge grounding snapshot current. Reads the live FLOW question
+  // + the labels of options the user leaned toward, or the current code + last
+  // test run, so the idle timer (declared above, before these values exist) can
+  // build a grounded nudge body without re-subscribing on every keystroke.
+  useEffect(() => {
+    const selectedLabels: string[] = []
+    if (currentQuestion) {
+      const picked = currentQuestion.allow_multiple
+        ? selectedOptionIds
+        : selectedOptionId
+          ? [selectedOptionId]
+          : []
+      for (const oid of picked) {
+        const opt = currentQuestion.options.find(o => o.id === oid)
+        if (opt?.option_text) selectedLabels.push(opt.option_text)
+      }
+    }
+    nudgeGroundingRef.current = {
+      flowStep: currentStep ?? null,
+      flowQuestion: currentQuestion?.question_text ?? null,
+      flowSelectedLabels: selectedLabels,
+      codeLanguage: isCodingChallenge ? currentLanguage : null,
+      codeTail: isCodingChallenge && currentCode ? currentCode.slice(-1500) : null,
+      testsPassed: lastRunResult ? lastRunResult.testsPassed : null,
+      testsTotal: lastRunResult ? lastRunResult.testsTotal : null,
+    }
+  }, [
+    currentQuestion,
+    selectedOptionId,
+    selectedOptionIds,
+    currentStep,
+    currentCode,
+    currentLanguage,
+    lastRunResult,
+    isCodingChallenge,
+  ])
 
   // Rehydrate MCQ step drafts from the persisted snapshot once per attempt, but
   // only when the saved snapshot is for the step the server resumed us into.
@@ -1880,7 +2164,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           gradeLabel: scoreToGradeLabel(score),
           totalScore: score,
           maxScore: 5,
-          xpAwarded: 0,
+          xpAwarded: typeof data.xp_awarded === 'number' ? data.xp_awarded : 0,
           stepResults: [],
           competencyDeltas: [],
           canvasPngUrl: canvasPngUrl ?? null,
@@ -1958,7 +2242,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           throw new Error(payload?.details ?? payload?.error ?? `Grading failed: ${gradingRes.status}`)
         }
 
-        const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback }
+        const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback; xp_awarded?: number }
         if (gradingPayload.grade) {
           setCodingFeedback(gradingPayload.grade)
           // Surface this submission in the history tab immediately (coding types:
@@ -1972,7 +2256,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               gradeLabel: scoreToGradeLabel(score),
               totalScore: score,
               maxScore: 5,
-              xpAwarded: 0,
+              xpAwarded: gradingPayload.xp_awarded ?? 0,
               stepResults: [],
               competencyDeltas: [],
               canvasPngUrl: null,
@@ -2030,7 +2314,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }
         throw new Error(payload?.details ?? payload?.error ?? `Grading failed: ${gradingRes.status}`)
       }
-      const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback }
+      const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback; xp_awarded?: number }
       if (gradingPayload.grade) {
         setCodingGradingError(undefined)
         setCodingFeedback(gradingPayload.grade)
@@ -2042,7 +2326,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           gradeLabel: scoreToGradeLabel(score),
           totalScore: score,
           maxScore: 5,
-          xpAwarded: 0,
+          // A retry doesn't re-award XP (server 409s the second grade); the
+          // background refetch reconciles the originally-awarded value.
+          xpAwarded: gradingPayload.xp_awarded ?? 0,
           stepResults: [],
           competencyDeltas: [],
           canvasPngUrl: null,
@@ -2213,6 +2499,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         setSessionHistory((prev) => [record, ...prev])
         setSelectedHistoryIdx(0)
         setPhase('complete')
+        // FLOW completion consumes a rep; refresh every usage surface (SessionContext
+        // + the no-longer-polling pill). See recordSubmission for the rationale.
+        window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'flow-complete' } }))
+        usageEventBus.emit()
       }
 
       if (isApiMode) {
@@ -2243,8 +2533,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               step_signals: data.step_signals ?? [],
             }
             setCompletionData(cd)
-            if (fromPlan) {
-              window.dispatchEvent(new CustomEvent('challenge-completed', { detail: { challengeId, fromPlan } }))
+            // Refresh whichever origin index panel is mounted. StudyPlanIndexPanel
+            // keys off fromPlan, DomainIndexPanel off fromDomain — send both so the
+            // side rail never goes stale after a completion.
+            if (fromPlan || fromDomain) {
+              window.dispatchEvent(new CustomEvent('challenge-completed', { detail: { challengeId, fromPlan, fromDomain } }))
             }
             completeSession(cd, finalStepResults)
             // Reconcile the optimistic inline record (pushed above) with the full
@@ -2360,7 +2653,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (!challengeId) return
     setSolutionLoading(true)
     try {
-      const res = await fetch(`/api/challenges/${challengeId}/solution`)
+      // QA affordance: in mock mode, ?mock=stepped on the workspace URL surfaces
+      // the interactive binary-search walkthrough. No effect outside mock mode.
+      const steppedMock = typeof window !== 'undefined'
+        && new URLSearchParams(window.location.search).get('mock') === 'stepped'
+      const qs = steppedMock ? '?mock=stepped' : ''
+      const res = await fetch(`/api/challenges/${challengeId}/solution${qs}`)
       if (res.ok) {
         const data: SolutionTabResponse = await res.json()
         setSolution(data)
@@ -2417,8 +2715,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (!solution || solution.locked || solution.status !== 'ready') return null
     const approaches = solution.content.approaches
     const approach = approaches.find((a) => a.id === activeApproachId) ?? approaches[0]
-    return approach ? { title: approach.title, tagline: approach.tagline } : null
-  }, [solution, activeApproachId])
+    if (!approach) return null
+    return {
+      title: approach.title,
+      tagline: approach.tagline,
+      // The walkthrough step the learner is on, so Hatch can coach the move itself.
+      ...(activeSolutionStep
+        ? { stepTitle: activeSolutionStep.title, stepDecision: activeSolutionStep.decision }
+        : {}),
+    }
+  }, [solution, activeApproachId, activeSolutionStep])
   const solutionsOpen = leftTab === 'Solutions' && activeSolutionApproach !== null
 
   // A completed submission unlocks the tab for free users without a reload.
@@ -2572,7 +2878,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Resolve challenge display data across both modes
   const challengeTitle = isApiMode ? detail?.challenge.title : adapterChallenge?.title
   const challengeScenarioQ = isApiMode ? detail?.challenge.scenario_question : adapterChallenge?.scenario_question
-  const scenarioRole = isApiMode ? detail?.challenge.scenario_role : adapterChallenge?.scenario_role
   const scenarioContext = isApiMode ? detail?.challenge.scenario_context : adapterChallenge?.scenario_context
   const scenarioTrigger = isApiMode ? detail?.challenge.scenario_trigger : adapterChallenge?.scenario_trigger
   const challenge = isApiMode ? detail?.challenge : adapterChallenge
@@ -2621,16 +2926,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }
 
   const STAGE_COLOR: Record<FlowStep, string> = {
-    frame:    '#4a7c59',
-    list:     '#6b8275',
-    optimize: '#c9933a',
-    win:      '#a878d6',
+    frame:    FLOW_MOVES.frame.color,
+    list:     FLOW_MOVES.list.color,
+    optimize: FLOW_MOVES.optimize.color,
+    win:      FLOW_MOVES.win.color,
   }
   const STAGE_ICON: Record<FlowStep, string> = {
-    frame:    'crop_free',
-    list:     'format_list_bulleted',
-    optimize: 'tune',
-    win:      'emoji_events',
+    frame:    FLOW_MOVES.frame.icon,
+    list:     FLOW_MOVES.list.icon,
+    optimize: FLOW_MOVES.optimize.icon,
+    win:      FLOW_MOVES.win.icon,
   }
   const STEP_LABEL: Record<FlowStep, string> = {
     frame:    'Frame',
@@ -2645,7 +2950,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     win:      'Finish',
   }
 
-  const tabs = ['Description', 'Discussions', 'Submissions', 'Solutions'] as const
+  const tabs = ['Description', 'Solutions', 'Discussions', 'Submissions'] as const
 
   // Derived: active coding parts from detail (only meaningful for coding challenges)
   const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])
@@ -2692,21 +2997,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
                   padding: '3px 9px', borderRadius: 999,
                   fontFamily: 'var(--font-label)', textDecoration: 'none',
+                  position: 'relative', zIndex: 0,
                 }}>
                   {label}
                 </Link>
               )
             })()}
             {companyTags.map(tag => (
-              <Link key={tag} href={practiceFilterHref('company', tag)} title={`Browse ${tag} practice`} style={{
+              <Link key={tag} href={practiceFilterHref('company', tag)} title={`Browse ${formatCompany(tag)} practice`} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: '#1e3528', color: '#9ee0b8',
+                background: 'var(--color-hero-forest)', color: '#9ee0b8',
                 fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
                 padding: '3px 9px', borderRadius: 999,
                 fontFamily: 'var(--font-label)', textDecoration: 'none',
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>apartment</span>
-                {tag}
+                {formatCompany(tag)}
               </Link>
             ))}
             {topicTags.map(tag => (
@@ -2733,12 +3039,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </h2>
       )}
 
-      {/* Meta row */}
-      {scenarioRole && (
-        <div style={{ display: 'flex', gap: 12, fontSize: 12, fontWeight: 650, color: 'var(--color-on-surface-variant)', marginBottom: 20, fontFamily: 'var(--font-label)' }}>
-          <span>{scenarioRole}</span>
-        </div>
-      )}
+      {/* Role is metadata, never user-facing copy (voice rule: no role framing).
+          The scenario_role line that used to render here leaked labels like
+          "staff engineer" under the title — dropped. */}
 
       {/* Problem statement: technical types render as one continuous document
           (structure from the content's ## headings); flow/quick_take keep the
@@ -3448,7 +3751,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       onRetry={() => { void triggerSolutionGeneration() }}
       onGoToDescription={() => setLeftTab('Description')}
       activeApproachId={activeApproachId}
-      onApproachChange={setActiveApproachId}
+      onApproachChange={(id) => { setActiveApproachId(id); setActiveSolutionStep(null) }}
+      onSteppedStepChange={setActiveSolutionStep}
     />
   )
 
@@ -3586,9 +3890,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-on-surface)' }}>
                 {record.totalScore} / {record.maxScore} pts
               </span>
-              <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: 'var(--color-on-surface-variant)' }}>
-                +{record.xpAwarded} XP
-              </span>
+              {/* Show the reward only when XP was actually granted. A re-attempt
+                  earns 0 (XP is once per problem), so a "+0 XP" chip there would
+                  read as unrewarding rather than informative. */}
+              {record.xpAwarded > 0 && (
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: 'var(--color-primary)', fontWeight: 700 }}>
+                  +{record.xpAwarded} XP
+                </span>
+              )}
             </div>
             <div style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', marginTop: 4 }}>
               {record.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -3669,86 +3978,114 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </section>
   )
 
+  // Origin-aware breadcrumb strip, rendered above the tab chrome on every
+  // workspace type so the trail and exit are identical across FLOW / canvas /
+  // coding (mirrors the analytics shell header). Deep-linking or arriving via
+  // grading no longer drops the user out of the app.
+  const workspaceCrumbs = workspaceBreadcrumbs(challengeTitle || 'Challenge', { fromPlan, fromDomain })
+  const breadcrumbBar = (
+    <div
+      className="hidden md:flex items-center h-9 px-4 shrink-0 border-b"
+      style={{ borderColor: 'var(--color-outline-faint)', background: 'var(--color-surface)' }}
+    >
+      <AppBreadcrumbs items={workspaceCrumbs} className="min-w-0" />
+    </div>
+  )
+
+  function workspaceTabBadge(count: number, active: boolean) {
+    return (
+      <span style={{
+        minWidth: 18,
+        height: 18,
+        padding: '0 5px',
+        borderRadius: 99,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 10.5,
+        fontWeight: 800,
+        lineHeight: 1,
+        background: active ? 'var(--color-primary)' : 'var(--color-surface-container-high)',
+        color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+      }}>
+        {count}
+      </span>
+    )
+  }
+
   // Shared top chrome - spans full width so the borderBottom is continuous
   const topChrome = (
     <div style={{
       display: 'flex',
-      alignItems: 'flex-end',
+      alignItems: 'center',
       borderBottom: '1px solid var(--color-outline-faint)',
       background: 'var(--color-surface)',
       flexShrink: 0,
     }}>
       {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when collapsed) */}
-      <div style={{ width: leftCollapsed ? 32 : `${leftWidth}%`, display: 'flex', alignItems: 'flex-end', gap: 2, padding: leftCollapsed ? '6px 4px 0' : '6px 8px 0', flexShrink: 0 }}>
+      <div style={{
+        width: leftCollapsed ? 32 : `${leftWidth}%`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: leftCollapsed ? '6px 4px' : '6px 8px',
+        flexShrink: 0,
+        minWidth: 0,
+        overflow: 'hidden',
+      }}>
         <button
           onClick={props.onExit ?? (() => window.history.back())}
           className="btn btn--ghost"
-          style={{ padding: '6px 8px', fontSize: 12, marginBottom: 4, display: 'inline-flex', alignItems: 'center' }}
+          aria-label="Back"
+          style={{ padding: '6px 8px', fontSize: 12, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
         </button>
-        {!leftCollapsed && tabs.map(t => {
-          const active = leftTab === t
-          return (
-            <button
-              key={t}
-              onClick={() => setLeftTab(t)}
-              style={{
-                padding: '7px 14px',
-                fontSize: 13,
-                fontWeight: active ? 700 : 600,
-                color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
-                background: active ? 'var(--color-surface-container-low)' : 'transparent',
-                border: active ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
-                borderBottom: active ? '1px solid var(--color-surface-container-low)' : '1px solid transparent',
-                borderRadius: '8px 8px 0 0',
-                cursor: 'pointer',
-                marginBottom: active ? -1 : 0,
-                fontFamily: 'inherit',
-                transition: 'color 120ms',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <span>{t}</span>
-              {t === 'Discussions' && discussionsLoaded && (
-                <span style={{
-                  minWidth: 18,
-                  height: 18,
-                  padding: '0 5px',
-                  borderRadius: 99,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 11,
-                  fontWeight: 800,
-                  background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
-                  color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-                }}>
-                  {discussions.length}
-                </span>
-              )}
-              {t === 'Submissions' && submissionBadgeCount > 0 && (
-                <span style={{
-                  minWidth: 18,
-                  height: 18,
-                  padding: '0 5px',
-                  borderRadius: 99,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 11,
-                  fontWeight: 800,
-                  background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
-                  color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-                }}>
-                  {submissionBadgeCount}
-                </span>
-              )}
-            </button>
-          )
-        })}
+        {!leftCollapsed && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            minWidth: 0,
+            flex: 1,
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+          }}>
+            {tabs.map(t => {
+              const active = leftTab === t
+              return (
+                <button
+                  key={t}
+                  onClick={() => setLeftTab(t)}
+                  style={{
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    padding: '6.5px 10px',
+                    fontSize: 12.5,
+                    fontWeight: active ? 800 : 650,
+                    color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+                    background: active ? 'var(--color-primary-fixed)' : 'transparent',
+                    border: `1px solid ${active ? 'rgba(74,124,89,0.24)' : 'transparent'}`,
+                    borderRadius: 999,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    transition: 'background 140ms ease, border-color 140ms ease, color 140ms ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    minHeight: 32,
+                  }}
+                >
+                  <span>{t}</span>
+                  {t === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, active)}
+                  {t === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, active)}
+                </button>
+              )
+            })}
+          </div>
+        )}
         {/* Collapse button - only shown when expanded and on coding challenges */}
         {!leftCollapsed && isCodingChallenge && (
           <button
@@ -3756,8 +4093,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             onClick={() => setLeftCollapsed(true)}
             title="Collapse panel"
             style={{
-              marginLeft: 'auto',
-              marginBottom: 4,
+              marginLeft: 2,
               padding: '4px 6px',
               borderRadius: 6,
               border: '1px solid var(--color-outline-variant)',
@@ -3769,6 +4105,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               fontSize: 11,
               gap: 2,
               fontFamily: 'inherit',
+              flexShrink: 0,
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>chevron_left</span>
@@ -3849,7 +4186,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 className="btn btn--ghost"
                 style={{
                   padding: '6px 10px', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: hintOpen ? '#f3e2b9' : undefined,
+                  background: hintOpen ? 'var(--color-amber-soft)' : undefined,
                   color: hintOpen ? '#5c3a00' : undefined,
                   borderRadius: 8,
                 }}
@@ -3929,17 +4266,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 {copied && <span style={{ fontSize: 11 }}>Copied!</span>}
               </button>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 999, background: '#4a7c59', display: 'inline-block' }} />
-              3,589 online
-            </div>
           </>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 999, background: '#4a7c59', display: 'inline-block' }} />
-            3,589 online
-          </div>
-        )}
+        ) : null}
       </div>
       {/* Drag handle spacer - matches drag handle visibility */}
       <div style={{ width: leftCollapsed ? 0 : 6, flexShrink: 0 }} />
@@ -3985,13 +4313,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // consts are only consumed inside the `isMobile`/`mobileStacked` branches of the
   // return trees below; on desktop they evaluate to null so no extra work is done.
   const mobileTabBadge = (count: number, active: boolean) => (
-    <span style={{
-      minWidth: 18, height: 18, padding: '0 5px', borderRadius: 99,
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 11, fontWeight: 800,
-      background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
-      color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-    }}>{count}</span>
+    workspaceTabBadge(count, active)
   )
 
   // Top bar: back button + horizontally scrollable tabs (no clipping).
@@ -4005,7 +4327,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       >
         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_back</span>
       </button>
-      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', flex: 1 }}>
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', overflowY: 'hidden', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', flex: 1, scrollbarWidth: 'none' }}>
         {tabs.map(t => {
           const active = leftTab === t
           return (
@@ -4013,13 +4335,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               key={t}
               onClick={() => { setLeftTab(t); setMobileDescOpen(true) }}
               style={{
-                flexShrink: 0, whiteSpace: 'nowrap', padding: '7px 14px', fontSize: 13,
-                fontWeight: active ? 700 : 600,
-                color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
-                background: active ? 'var(--color-surface-container-low)' : 'transparent',
-                border: '1px solid ' + (active ? 'var(--color-outline-faint)' : 'transparent'),
+                flexShrink: 0, whiteSpace: 'nowrap', padding: '6.5px 11px', fontSize: 12.5,
+                fontWeight: active ? 800 : 650,
+                color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+                background: active ? 'var(--color-primary-fixed)' : 'transparent',
+                border: `1px solid ${active ? 'rgba(74,124,89,0.24)' : 'transparent'}`,
                 borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
                 display: 'inline-flex', alignItems: 'center', gap: 6,
+                minHeight: 32,
               }}
             >
               <span>{t}</span>
@@ -4118,7 +4441,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <p className="font-body text-sm text-on-surface-variant">
         {isCodingChallenge
           ? 'This coding challenge uses a full code editor that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.'
-          : 'This system design challenge uses a drawing canvas that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.'}
+          : `This ${apiChallengeType === 'data_modeling' ? 'data modeling' : 'system design'} challenge uses a drawing canvas that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.`}
       </p>
       <a
         href="/challenges"
@@ -4158,6 +4481,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
         {/* Same full-width top chrome as question phase (desktop only - on mobile
             the feedback fills the width and carries its own navigation). */}
+        {!isMobile && breadcrumbBar}
         {!isMobile && topChrome}
 
         {/* Middle: resizable two-pane content on desktop, single column on mobile */}
@@ -4201,12 +4525,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 in place of the canvas, matching product sense PostSessionMirror UX.
                 Renders for both fresh submissions (interviewGrade) and history view
                 (historyInterviewGrade fetched by attempt id). */}
-            {isCanvasChallenge && phase === 'complete' && interviewGrade && (
+            {isCanvasChallenge && phase === 'complete' && interviewGrade && !historyRecord && (
               <div className="flex-1 min-h-0 overflow-y-auto animate-step-enter">
                 <InterviewFeedback
                   grade={interviewGrade}
                   challengeType={apiChallengeType ?? 'system_design'}
                   canvasPngUrl={submittedCanvasPngUrl}
+                  nextChallengeHref={nextChallengeHref}
+                  backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   onRetry={() => window.location.reload()}
                   onBackToCanvas={() => {
                     setPhase('question')
@@ -4227,6 +4553,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     grade={historyInterviewGrade}
                     challengeType={apiChallengeType ?? 'system_design'}
                     canvasPngUrl={historyRecord.canvasPngUrl}
+                    nextChallengeHref={nextChallengeHref}
+                    backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   />
                 </div>
               ) : (
@@ -4378,7 +4706,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           {mobileDrawer}
           {mobileStepperBar}
         </>
-      ) : topChrome}
+      ) : (
+        <>
+          {breadcrumbBar}
+          {topChrome}
+        </>
+      )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
       <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden'}>
@@ -4415,13 +4748,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     exportRef={canvasExportRef}
                   />
                   <CanvasTourMount active={isCanvasChallenge && !isSubmittingInterview} />
-                  <CanvasCoachCard
-                    challengeType={apiChallengeType as CanvasChallengeType}
-                    guidance={guidance}
-                    forceOpen={hintForceOpen}
-                    onOpenNotes={openContextPack}
-                    onAskHatch={queueHatchPrompt}
-                  />
+                  {/* Branded empty-state: replaces the blank-Excalidraw paralysis
+                      with a centered Hatch + three first moves. Shown only while
+                      the canvas has no entity; un-mounts the moment one lands. */}
+                  {scene.entities.length === 0 && (
+                    <CanvasEmptyState
+                      challengeType={apiChallengeType as CanvasChallengeType}
+                      guidance={guidance}
+                      onUseTemplate={handleUseTemplate}
+                      onAskHatch={queueHatchPrompt}
+                      onOpenNotes={openContextPack}
+                    />
+                  )}
+                  {/* The compact coach card carries the later phases once the user
+                      has drawn; hidden while the full empty-state is up. */}
+                  {scene.entities.length > 0 && (
+                    <CanvasCoachCard
+                      challengeType={apiChallengeType as CanvasChallengeType}
+                      guidance={guidance}
+                      forceOpen={hintForceOpen}
+                      onOpenNotes={openContextPack}
+                      onAskHatch={queueHatchPrompt}
+                    />
+                  )}
                   {/* Exit fullscreen - only visible when maximised, since the
                       topChrome (which holds the toggle in the unmaximised view)
                       is hidden behind the fixed overlay. */}
@@ -4448,6 +4797,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 queuedPrompt={queuedHatchPrompt}
                 isOpen={chatPanelOpen}
                 onToggle={() => setChatPanelOpen((v) => !v)}
+                autoOpenKey="canvas"
                 onCanvasActions={handleCanvasActions}
                 proactiveNudge={proactiveNudge}
                 onDismissNudge={() => setProactiveNudge(null)}
@@ -4535,7 +4885,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   {/* Language selector */}
                   {(() => {
                     const metadata = (isApiMode ? detail?.challenge?.metadata : null) as { supported_languages?: string[] } | null | undefined
-                    const supportedLangs = (metadata?.supported_languages ?? []) as SupportedLanguage[]
+                    const metaLangs = (metadata?.supported_languages ?? []) as SupportedLanguage[]
+                    // Guard the option list by challenge type so the wrong language
+                    // can't appear regardless of (often empty) metadata: SQL
+                    // challenges only offer SQL; algorithm challenges never offer
+                    // SQL. Falls back to a sensible per-type default when metadata
+                    // is missing, instead of showing all six languages.
+                    const NON_SQL_DEFAULTS: SupportedLanguage[] = ['python', 'javascript', 'java', 'cpp', 'go']
+                    let supportedLangs: SupportedLanguage[]
+                    if (apiChallengeType === 'sql') {
+                      supportedLangs = ['sql']
+                    } else if (apiChallengeType === 'algorithm') {
+                      const fromMeta = metaLangs.filter(l => l !== 'sql')
+                      supportedLangs = fromMeta.length > 0 ? fromMeta : NON_SQL_DEFAULTS
+                    } else {
+                      supportedLangs = metaLangs
+                    }
                     return (
                       <LanguageSelector
                         value={currentLanguage}
@@ -4751,6 +5116,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     queuedPrompt={queuedHatchPrompt}
                     isOpen={chatPanelOpen}
                     onToggle={() => setChatPanelOpen((v) => !v)}
+                    autoOpenKey="coding"
+                    proactiveNudge={proactiveNudge}
+                    onDismissNudge={() => setProactiveNudge(null)}
                     onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
                     currentCode={currentCode}
                     currentLanguage={currentLanguage}

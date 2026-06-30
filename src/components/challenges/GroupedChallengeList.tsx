@@ -8,6 +8,7 @@ import { appendReturnTo } from '@/lib/navigation/return-to'
 import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 import { coerceDifficulty, DIFFICULTY_PILL_CLASSES } from '@/lib/practice/difficulty'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
+import { askedAtLabel } from '@/lib/format/company'
 import { deriveChallengeStatus } from '@/lib/challenges/status'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { ChallengeWithDomain } from '@/lib/types'
@@ -161,7 +162,7 @@ function ChallengeRow({ challenge, locked = false, returnHref, collectionParam }
                 >
                   verified
                 </span>
-                {challenge.company_tags![0]}
+                {askedAtLabel(challenge.company_tags![0])}
               </span>
             )}
           </div>

@@ -92,7 +92,7 @@ export default function TransferHubPage() {
               </p>
             </div>
             <Link
-              href={`/domains/${scenario.pmSkill}`}
+              href={`/explore/domains/${scenario.pmSkill}`}
               className="text-xs text-primary hover:underline flex items-center gap-1"
             >
               <span className="material-symbols-outlined text-base">school</span>

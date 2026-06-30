@@ -119,7 +119,7 @@ export function V3PricingSection() {
               className="btn btn-amber pricing-cta"
               next={`/pricing?plan=${proBilling}&checkout=1`}
             >
-              Start training with Hatch
+              Start your free trial
             </PricingCta>
           </article>
 

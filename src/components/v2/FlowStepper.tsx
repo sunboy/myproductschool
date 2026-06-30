@@ -3,6 +3,7 @@
 import { useRef, useEffect } from 'react'
 import gsap from 'gsap'
 import type { FlowStep } from '@/lib/types'
+import { FLOW_MOVES, FLOW_MOVE_ORDER } from '@/lib/flow/moves'
 
 interface FlowStepperProps {
   currentStep: FlowStep
@@ -12,12 +13,15 @@ interface FlowStepperProps {
   questionCount?: number
 }
 
-const STEPS: Array<{ id: FlowStep; label: string; icon: string; color: string }> = [
-  { id: 'frame',    label: 'Frame',    icon: 'center_focus_strong', color: '#4a7c59' },
-  { id: 'list',     label: 'List',     icon: 'format_list_bulleted', color: '#6b8275' },
-  { id: 'optimize', label: 'Optimize', icon: 'tune',                 color: '#c9933a' },
-  { id: 'win',      label: 'Win',      icon: 'emoji_events',         color: '#a878d6' },
-]
+// Single source of truth for FLOW move identity (label / icon / one-accent
+// color). Keeps the stepper in lockstep with the dashboard card and skill ladder.
+const STEPS: Array<{ id: FlowStep; label: string; icon: string; color: string }> =
+  FLOW_MOVE_ORDER.map((key) => ({
+    id: key as FlowStep,
+    label: FLOW_MOVES[key].label,
+    icon: FLOW_MOVES[key].icon,
+    color: FLOW_MOVES[key].color,
+  }))
 
 function hexToRgb(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16)

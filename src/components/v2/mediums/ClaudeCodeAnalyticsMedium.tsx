@@ -136,6 +136,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   useEffect(() => {
     setShowOnboarding(shouldShowOnboarding())
   }, [])
+  // First-session coaching: the dock is opened once via CanvasChatPanel's
+  // autoOpenKey below (the panel owns its open state, so setHatchOpen can't
+  // drive it).
 
   // Mount-time auto-resume. On a page refresh the client loses sessionId/wssUrl,
   // so without this we'd show "Start sandbox" even when a container is still live.
@@ -683,7 +686,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   return (
     <>
       {showOnboarding && (
-        <AnalyticsOnboardingOverlay onDone={() => setShowOnboarding(false)} />
+        <AnalyticsOnboardingOverlay
+          onDone={() => setShowOnboarding(false)}
+          stepCount={subProblems.length}
+        />
       )}
 
       <div style={{
@@ -978,6 +984,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             scene={{ elementCount: 0, entities: [], connections: [], groups: [], freeText: [], foreignKeys: [] }}
             isOpen={hatchOpen}
             onToggle={() => setHatchOpen((v) => !v)}
+            autoOpenKey="cc-analytics"
             proactiveNudge={proactiveNudge ? { id: 'idle', text: proactiveNudge } : null}
             onDismissNudge={() => setProactiveNudge(null)}
             terminalTail={terminalTail.slice(-3000)}

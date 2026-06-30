@@ -8,55 +8,6 @@ import { AnalystDimensionChart } from '@/components/analytics/AnalystDimensionCh
 import type { AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 import type { MarkedFinding } from './types'
 
-interface AnalystDimension {
-  key: string
-  label: string
-  icon: string
-  accent: string
-  accentBg: string
-  headline: string
-  detail: string
-}
-
-const ANALYST_DIMENSIONS: AnalystDimension[] = [
-  {
-    key: 'data_connection',
-    label: 'Data Connection',
-    icon: 'database',
-    accent: 'var(--color-primary)',
-    accentBg: 'var(--color-primary-fixed)',
-    headline: 'Connected and queried',
-    detail: 'You got BigQuery talking to Claude. That is the first move.',
-  },
-  {
-    key: 'exploratory_analysis',
-    label: 'Exploratory Analysis',
-    icon: 'query_stats',
-    accent: '#1565c0',
-    accentBg: 'rgba(21,101,192,0.1)',
-    headline: 'Found the drop',
-    detail: 'You named a real number from the data, not a guess.',
-  },
-  {
-    key: 'segmentation',
-    label: 'Segmentation',
-    icon: 'splitscreen',
-    accent: '#ad1457',
-    accentBg: 'rgba(173,20,87,0.1)',
-    headline: 'Broke it apart',
-    detail: 'Segmenting by dimension surfaces the signal worth acting on.',
-  },
-  {
-    key: 'skill_construction',
-    label: 'Skill Construction',
-    icon: 'construction',
-    accent: 'var(--color-tertiary)',
-    accentBg: 'var(--color-tertiary-container)',
-    headline: 'Wrote a reusable skill',
-    detail: 'Teaching Claude a skill compounds. Every future session starts smarter.',
-  },
-]
-
 interface AnalyticsSessionMirrorProps {
   markedFindings: MarkedFinding[]
   sessionDurationSeconds: number
@@ -105,12 +56,14 @@ export function AnalyticsSessionMirror({
   }, [reportDownloadUrl])
 
   const passCount = markedFindings.filter(f => f.verdict === 'pass').length
+  // The number of analyst moves the user actually worked, not a hardcoded count.
+  const stepCount = markedFindings.length
 
   const summaryLine =
-    passCount === ANALYST_DIMENSIONS.length
+    stepCount > 0 && passCount === stepCount
       ? 'Full run. Every analyst move landed.'
       : passCount >= 2
-      ? `You covered ${passCount} of ${ANALYST_DIMENSIONS.length} analyst moves.`
+      ? `You covered ${passCount} of ${stepCount} analyst moves.`
       : 'Session complete. The breakdown shows where each move landed.'
 
   const durationLabel = sessionDurationSeconds < 60
@@ -159,7 +112,7 @@ export function AnalyticsSessionMirror({
         >
           <HatchGlyph
             size={48}
-            state={passCount >= ANALYST_DIMENSIONS.length ? 'celebrating' : passCount >= 2 ? 'speaking' : 'idle'}
+            state={stepCount > 0 && passCount === stepCount ? 'celebrating' : passCount >= 2 ? 'speaking' : 'idle'}
             className="text-primary"
           />
           <div style={{ flex: 1 }}>
@@ -182,7 +135,9 @@ export function AnalyticsSessionMirror({
               display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap',
             }}>
               <StatChip label="Duration" value={durationLabel} />
-              <StatChip label="Steps done" value={`${passCount}/${ANALYST_DIMENSIONS.length}`} />
+              {stepCount > 0 && (
+                <StatChip label="Steps done" value={`${passCount}/${stepCount}`} />
+              )}
               {skillsWritten.length > 0 && (
                 <StatChip label="Skills written" value={String(skillsWritten.length)} />
               )}
@@ -190,120 +145,66 @@ export function AnalyticsSessionMirror({
           </div>
         </div>
 
-        {/* Analyst dimension cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-          {ANALYST_DIMENSIONS.map((dim, i) => {
-            const finding = markedFindings.find(f =>
-              f.id === dim.key ||
-              // try to match by ordinal position
-              markedFindings.indexOf(f) === i
-            )
-            const passed = finding?.verdict === 'pass'
-            const partial = finding?.verdict === 'partial'
+        {/* Analyst scorecard — the real graded analyst_v1 dimensions (7). This
+            replaced a stale hardcoded 4-card grid that matched findings by
+            ordinal position and never reflected the actual grade. */}
+        {dimensions && dimensions.length > 0 && (
+          <div ref={el => { cardRefs.current[0] = el }}>
+            <AnalystDimensionChart dimensions={dimensions} variant="mirror" />
+          </div>
+        )}
 
-            return (
-              <div
-                key={dim.key}
-                ref={el => { cardRefs.current[i] = el }}
-                style={{
-                  background: 'var(--color-surface)',
-                  border: `1px solid ${passed ? dim.accent + '40' : 'var(--color-outline-variant)'}`,
-                  borderRadius: 14,
-                  padding: '14px 14px',
-                  display: 'flex', flexDirection: 'column', gap: 8,
-                  position: 'relative', overflow: 'hidden',
-                }}
-              >
-                {/* Accent bar */}
-                <div style={{
-                  position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-                  background: passed ? dim.accent : 'var(--color-outline-variant)',
-                  borderRadius: '14px 14px 0 0',
-                  transition: 'background 400ms',
-                }} />
-
-                {/* Icon + label */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                  <div style={{
-                    width: 32, height: 32,
-                    background: passed ? dim.accentBg : 'var(--color-surface-container-high)',
-                    borderRadius: 8,
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                    transition: 'background 400ms',
+        {/* What the user marked, in their own words — the per-step findings that
+            fed the grade, shown verbatim so the debrief cites real receipts. */}
+        {markedFindings.length > 0 && (
+          <div
+            ref={el => { cardRefs.current[1] = el }}
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-outline-variant)',
+              borderRadius: 14,
+              padding: '14px',
+              display: 'flex', flexDirection: 'column', gap: 10,
+            }}
+          >
+            <div style={{
+              fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em',
+              color: 'var(--color-on-surface-variant)',
+            }}>
+              Your marked findings
+            </div>
+            {markedFindings.map((finding, i) => {
+              const passed = finding.verdict === 'pass'
+              const partial = finding.verdict === 'partial'
+              const accent = passed ? 'var(--color-primary)' : partial ? '#c9933a' : 'var(--color-outline)'
+              return (
+                <div key={finding.id ?? i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span className="material-symbols-outlined" style={{
+                    fontSize: 18, marginTop: 1, color: accent,
+                    fontVariationSettings: "'FILL' 1, 'wght' 400",
                   }}>
-                    <span className="material-symbols-outlined" style={{
-                      fontSize: 17,
-                      color: passed ? dim.accent : 'var(--color-on-surface-variant)',
-                      fontVariationSettings: `'FILL' ${passed ? 1 : 0}, 'wght' 400`,
-                      transition: 'color 400ms',
-                    }}>
-                      {dim.icon}
-                    </span>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                      {dim.label}
-                    </div>
-                    <div style={{
-                      fontSize: 12, fontWeight: 700,
-                      color: passed ? dim.accent : 'var(--color-on-surface-variant)',
-                      marginTop: 1,
-                    }}>
-                      {passed ? dim.headline : partial ? 'Partially done' : 'Not reached'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Detail */}
-                <p style={{
-                  fontSize: 11.5, lineHeight: 1.55,
-                  color: 'var(--color-on-surface-variant)',
-                  margin: 0,
-                }}>
-                  {dim.detail}
-                </p>
-
-                {/* Finding */}
-                {finding?.text && (
-                  <div style={{
-                    fontSize: 11, lineHeight: 1.5,
-                    color: 'var(--color-on-surface)',
-                    background: 'var(--color-surface-container-low)',
-                    borderRadius: 8, padding: '6px 10px',
-                    borderLeft: `3px solid ${dim.accent}`,
-                    wordBreak: 'break-word',
-                  }}>
-                    &ldquo;{finding.text}&rdquo;
-                  </div>
-                )}
-
-                {/* Verdict badge */}
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                  fontSize: 10, fontWeight: 700,
-                  padding: '3px 8px', borderRadius: 99,
-                  background: passed
-                    ? `${dim.accent}18`
-                    : partial
-                    ? 'rgba(201,147,58,0.12)'
-                    : 'var(--color-surface-container-high)',
-                  color: passed ? dim.accent : partial ? '#c9933a' : 'var(--color-on-surface-variant)',
-                  alignSelf: 'flex-start',
-                }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1, 'wght' 400" }}>
                     {passed ? 'check_circle' : partial ? 'pending' : 'radio_button_unchecked'}
                   </span>
-                  {passed ? 'Done' : partial ? 'Partial' : 'Missed'}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {finding.text && (
+                      <p style={{
+                        fontSize: 12.5, lineHeight: 1.5, margin: 0,
+                        color: 'var(--color-on-surface)', wordBreak: 'break-word',
+                      }}>
+                        &ldquo;{finding.text}&rdquo;
+                      </p>
+                    )}
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                      color: accent,
+                    }}>
+                      {passed ? 'Done' : partial ? 'Partial' : 'Missed'}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Analyst scorecard — the graded analyst_v1 dimensions. */}
-        {dimensions && dimensions.length > 0 && (
-          <AnalystDimensionChart dimensions={dimensions} variant="mirror" />
+              )
+            })}
+          </div>
         )}
 
         {/* Charts from the report's tables (funnel, time series, breakdowns). */}

@@ -12,22 +12,26 @@ const BENCHMARK_LEVELS = [
   { title: 'Principal / Lead', percentile: 95 },
 ]
 
+// We do not have a real cohort percentile, so this message must never claim the
+// user is "ahead of X% of learners" — that would be fabricated. It reads the
+// user's own demonstrated level (avg score → benchmark ladder) and their real
+// strongest/weakest competency, and frames growth against that, not a fake rank.
 function buildHatchMessage(
-  userPercentile: number,
+  avgScore: number,
+  userLevel: string,
   strongestCompetency: string | null,
   weakestCompetency: string | null,
 ): string {
-  if (userPercentile === 0) {
-    return 'Keep practising to build your benchmark.'
+  if (avgScore === 0) {
+    return 'Run a few challenges and Hatch will map where your reasoning sits.'
   }
-  const topPct = 100 - userPercentile
-  if (topPct <= 20 && strongestCompetency) {
-    return `You're in the top ${topPct}% of product thinkers - your ${strongestCompetency} is your standout strength.`
+  if (avgScore >= 80 && strongestCompetency) {
+    return `Your reasoning is reading at ${userLevel} level — ${strongestCompetency} is your standout strength.`
   }
   if (weakestCompetency) {
-    return `Solid foundation - you're ahead of ${userPercentile}% of learners. Push your ${weakestCompetency} to break into the top tier.`
+    return `Your reasoning is reading at ${userLevel} level. Sharpen your ${weakestCompetency} to push into the next tier.`
   }
-  return `You're ahead of ${userPercentile}% of learners - keep going to climb further.`
+  return `Your reasoning is reading at ${userLevel} level. Keep stacking reps to climb further.`
 }
 
 export async function GET() {
@@ -35,7 +39,7 @@ export async function GET() {
     return NextResponse.json({
       levels: BENCHMARK_LEVELS,
       user_level: 'Senior Engineer',
-      hatch_message: "You're in the top 20% of product thinkers - strong work so far.",
+      hatch_message: "Your reasoning is reading at Senior Engineer level — strong work so far.",
     })
   }
 
@@ -82,7 +86,7 @@ export async function GET() {
   const strongestCompetency = competencies.length > 0
     ? [...competencies].sort((a, b) => b.score - a.score)[0].competency
     : null
-  const hatchMessage = buildHatchMessage(userPercentile, strongestCompetency, hatchCtx?.weakestCompetency ?? null)
+  const hatchMessage = buildHatchMessage(avgScore, userLevel, strongestCompetency, hatchCtx?.weakestCompetency ?? null)
 
   return NextResponse.json({
     levels: BENCHMARK_LEVELS,

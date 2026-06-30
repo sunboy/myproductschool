@@ -12,6 +12,7 @@ import {
   EVENT_STUDY_PLAN_CHAPTER_OPENED,
   EVENT_STUDY_PLAN_COMPLETED,
 } from '@/lib/posthog/events'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug, nextItemId, planPct
                 value={Math.round((completedInChapter / totalInChapter) * 100)}
                 state="active"
                 trackClassName="h-[3px] bg-[#ede6d6]"
-                barClassName="bg-[#4a7c59]"
+                barClassName="bg-primary"
               />
               <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: '#78715f' }}>in progress</span>
             </div>
@@ -317,6 +318,16 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 64px' }}>
 
+      {/* ── Breadcrumb ── */}
+      <AppBreadcrumbs
+        className="mb-4"
+        items={[
+          { label: 'Explore', href: '/explore' },
+          { label: 'Study Plans', href: '/explore/plans' },
+          { label: plan.title },
+        ]}
+      />
+
       {/* ── Hero card ── */}
       <div style={{
         borderRadius: 32, overflow: 'hidden', marginBottom: 32,
@@ -333,19 +344,6 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
         }}>
           {/* Left */}
           <div>
-            {/* Breadcrumb */}
-            <div style={{
-              fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 700,
-              color: 'rgba(243,237,224,0.45)',
-              display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20,
-            }}>
-              <Link href="/explore" style={{ color: 'inherit', textDecoration: 'none' }}>Explore</Link>
-              <span className="material-symbols-outlined" style={{ fontSize: 13 }}>chevron_right</span>
-              <Link href="/explore/plans" style={{ color: 'inherit', textDecoration: 'none' }}>Study Plans</Link>
-              <span className="material-symbols-outlined" style={{ fontSize: 13 }}>chevron_right</span>
-              <span style={{ color: 'rgba(243,237,224,0.70)' }}>{plan.title}</span>
-            </div>
-
             {/* Icon + title row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
               <div style={{

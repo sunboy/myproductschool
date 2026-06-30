@@ -27,7 +27,7 @@ export function EnrolledPlansCard({ plans }: EnrolledPlansCardProps) {
   const hiddenCount = plans.length - visiblePlans.length
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-tertiary/20 bg-[#f7ecd2] p-4 shadow-[0_18px_46px_-38px_rgba(112,92,48,0.82)]">
+    <div className="relative overflow-hidden rounded-2xl border border-tertiary/20 p-4 shadow-[0_18px_46px_-38px_rgba(112,92,48,0.82)]" style={{ background: 'var(--color-amber-soft)' }}>
       <svg className="pointer-events-none absolute inset-y-0 right-0 h-full w-44 opacity-[0.17]" viewBox="0 0 220 150" fill="none" aria-hidden="true">
         <path d="M48 116 C72 72, 104 102, 132 66 S164 34, 190 52" stroke="#c9933a" strokeWidth="7" strokeLinecap="round" />
         <path d="M92 46 H184 M92 76 H154 M92 106 H176" stroke="#2e3230" strokeWidth="1.5" strokeDasharray="5 8" />

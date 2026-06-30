@@ -31,26 +31,26 @@ export function CookieBanner() {
   if (!visible) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[70] border-t border-outline-variant bg-surface-container-low/95 px-4 py-4 shadow-[0_-12px_40px_rgba(0,0,0,0.12)] backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="fixed inset-x-2 bottom-2 z-[70] rounded-2xl border border-outline-variant bg-surface-container-low/95 px-3 py-3 shadow-[0_-10px_34px_rgba(0,0,0,0.12)] backdrop-blur sm:inset-x-0 sm:bottom-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:px-4 sm:py-4">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="max-w-3xl">
-          <p className="text-sm font-black text-on-surface">Cookie choices</p>
-          <p className="mt-1 text-sm leading-6 text-on-surface-variant">
+          <p className="text-[13px] font-black text-on-surface sm:text-sm">Cookie choices</p>
+          <p className="mt-0.5 text-xs leading-5 text-on-surface-variant sm:mt-1 sm:text-sm sm:leading-6">
             HackProduct uses essential storage for login, security, billing, and core product state. Optional analytics help us see what needs fixing.
           </p>
         </div>
-        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+        <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex sm:flex-row">
           <button
             type="button"
             onClick={() => choose('essential')}
-            className="rounded-md border border-outline-variant px-4 py-2 text-sm font-black text-on-surface transition-colors hover:bg-surface-container"
+            className="rounded-md border border-outline-variant px-3 py-2 text-xs font-black text-on-surface transition-colors hover:bg-surface-container sm:px-4 sm:text-sm"
           >
             Essential only
           </button>
           <button
             type="button"
             onClick={() => choose('all')}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-black text-on-primary transition-opacity hover:opacity-90"
+            className="rounded-md bg-primary px-3 py-2 text-xs font-black text-on-primary transition-opacity hover:opacity-90 sm:px-4 sm:text-sm"
           >
             Accept all
           </button>

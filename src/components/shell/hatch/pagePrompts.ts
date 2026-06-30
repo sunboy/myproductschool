@@ -11,8 +11,8 @@ export interface PagePrompt {
 export const PAGE_PROMPTS: PagePrompt[] = [
   { pattern: /^\/workspace\/challenges\//, message: 'Need a nudge on your approach?' },
   { pattern: /^\/challenges\/[^/]+\/feedback/, message: 'Want to dig into your feedback?' },
-  { pattern: /^\/explore\/modules\//, message: 'Want me to unpack this chapter?' },
-  { pattern: /^\/learn\//, message: 'Want me to unpack this chapter?' },
+  { pattern: /^\/explore\/modules\//, message: 'Want me to walk you through this chapter?' },
+  { pattern: /^\/learn\//, message: 'Want me to walk you through this chapter?' },
   { pattern: /^\/explore\/plans\//, message: 'Thinking about this plan? I can tell you if it fits your gaps.' },
   { pattern: /^\/explore\/domains\//, message: 'Want to know which challenges here will help you most?' },
   { pattern: /^\/explore/, message: 'Not sure where to start? Tell me your role.' },

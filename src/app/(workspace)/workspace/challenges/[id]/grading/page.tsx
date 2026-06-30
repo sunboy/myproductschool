@@ -69,10 +69,25 @@ export default function GradingPage() {
   const pollCount = useRef(0)
   const [stage, setStage] = useState<GradingStage>('queued')
 
+  // Carry the origin (plan / domain / returnTo) onto the feedback URL so its
+  // breadcrumb trail and "back to practice" stay in the same context instead of
+  // resetting to a generic Practice root.
+  const originSuffix = (() => {
+    const qs = new URLSearchParams()
+    const fromPlan = searchParams.get('from_plan')
+    const fromDomain = searchParams.get('from_domain')
+    const returnTo = searchParams.get('returnTo')
+    if (fromPlan) qs.set('from_plan', fromPlan)
+    if (fromDomain) qs.set('from_domain', fromDomain)
+    if (returnTo) qs.set('returnTo', returnTo)
+    const s = qs.toString()
+    return s ? `&${s}` : ''
+  })()
+
   useEffect(() => {
     // Mock mode: redirect immediately
     if (!attemptId || attemptId === 'mock') {
-      router.replace(`/challenges/${challengeId}/feedback?attempt=mock`)
+      router.replace(`/challenges/${challengeId}/feedback?attempt=mock${originSuffix}`)
       return
     }
 
@@ -96,7 +111,7 @@ export default function GradingPage() {
           if (!cancelled) {
             setStage('complete')
             setTimeout(() => {
-              if (!cancelled) router.replace(`/challenges/${challengeId}/feedback?attempt=${attemptId}`)
+              if (!cancelled) router.replace(`/challenges/${challengeId}/feedback?attempt=${attemptId}${originSuffix}`)
             }, 420)
           }
           return
@@ -111,7 +126,7 @@ export default function GradingPage() {
     function scheduleNext() {
       if (cancelled || pollCount.current >= MAX_POLLS) {
         // Timed out - redirect anyway to show partial/mock feedback
-        if (!cancelled) router.replace(`/challenges/${challengeId}/feedback?attempt=${attemptId}`)
+        if (!cancelled) router.replace(`/challenges/${challengeId}/feedback?attempt=${attemptId}${originSuffix}`)
         return
       }
       setTimeout(poll, POLL_INTERVAL_MS)
@@ -119,7 +134,7 @@ export default function GradingPage() {
 
     poll()
     return () => { cancelled = true }
-  }, [attemptId, challengeId, router])
+  }, [attemptId, challengeId, router, originSuffix])
 
   const stageCopy = GRADING_STAGES[stage]
 

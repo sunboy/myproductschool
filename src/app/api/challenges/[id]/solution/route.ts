@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import { getSolutionAccess } from '@/lib/solutions/access'
-import { MOCK_SOLUTION_CONTENT } from '@/lib/solutions/mock'
+import { MOCK_SOLUTION_CONTENT, MOCK_STEPPED_SOLUTION_CONTENT } from '@/lib/solutions/mock'
 import { IS_MOCK } from '@/lib/mock'
 import { apiError } from '@/lib/api/error'
 import { withRoute } from '@/lib/api/withRoute'
@@ -18,13 +18,18 @@ import type { ChallengeSolutionRow, SolutionTabResponse } from '@/lib/solutions/
  * reach a client by any path.
  */
 export const GET = withRoute(async (
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
   const { id } = await params
 
   if (IS_MOCK) {
-    const body: SolutionTabResponse = { locked: false, status: 'ready', content: MOCK_SOLUTION_CONTENT }
+    // ?mock=stepped serves the interactive binary-search walkthrough so the
+    // stepped renderer can be exercised without a DB or AI call.
+    const content = req.nextUrl.searchParams.get('mock') === 'stepped'
+      ? MOCK_STEPPED_SOLUTION_CONTENT
+      : MOCK_SOLUTION_CONTENT
+    const body: SolutionTabResponse = { locked: false, status: 'ready', content }
     return NextResponse.json(body)
   }
 

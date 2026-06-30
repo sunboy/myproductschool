@@ -58,6 +58,11 @@ export function TopNav() {
     router.refresh()
   }
 
+  function openUpgrade() {
+    window.dispatchEvent(new CustomEvent('open-upgrade-modal'))
+    setMenuOpen(false)
+  }
+
   const streak = profile?.streak_days ?? 0
   const xp = profile?.xp_total ?? 0
   const isPro = profile?.plan === 'pro'
@@ -138,8 +143,11 @@ export function TopNav() {
                   <button
                     data-hatch-sound={active ? undefined : 'open'}
                     data-hatch-target={item.id === 'home' ? 'nav-dashboard' : `nav-${item.id}`}
+                    aria-label={item.label}
                     className={cn(
-                      'inline-flex items-center gap-[7px] px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
+                      // Icon-only in the md→lg range (where 5 labelled pills + brand
+                      // + right cluster used to collide), labels return at lg.
+                      'inline-flex items-center gap-[7px] px-2.5 lg:px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
                       'text-[13px] font-bold transition-[background,color] duration-200',
                       active
                         ? 'text-white'
@@ -157,7 +165,7 @@ export function TopNav() {
                     >
                       {item.icon}
                     </span>
-                    {item.label}
+                    <span className="hidden lg:inline">{item.label}</span>
                   </button>
                 </Link>
               </AppTooltip>
@@ -232,6 +240,21 @@ export function TopNav() {
             </div>
           )}
 
+          {!isPro && (
+            <AppTooltip label="Upgrade for more practice, mock loops, and Analytics Lab." side="bottom" className="hidden lg:inline-flex">
+              <button
+                type="button"
+                onClick={openUpgrade}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary-fixed px-3 py-1.5 text-xs font-label font-extrabold text-primary transition-colors hover:bg-primary-fixed-dim focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/35"
+              >
+                <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  workspace_premium
+                </span>
+                Upgrade
+              </button>
+            </AppTooltip>
+          )}
+
           {/* Avatar button + dropdown */}
           <div className="relative" ref={menuRef}>
             <button
@@ -271,6 +294,18 @@ export function TopNav() {
                 <div className="px-3 py-2">
                   <FreemiumUsageSummary plan={profile?.plan} compact />
                 </div>
+                {!isPro && (
+                  <button
+                    type="button"
+                    onClick={openUpgrade}
+                    className="mx-3 mb-1 flex w-[calc(100%-1.5rem)] items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-label font-black text-on-primary transition-opacity hover:opacity-90"
+                  >
+                    <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      workspace_premium
+                    </span>
+                    Upgrade plan
+                  </button>
+                )}
                 <Link
                   href="/affiliates"
                   data-hatch-sound="open"

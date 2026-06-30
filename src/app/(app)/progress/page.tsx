@@ -5,10 +5,28 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppTooltip } from '@/components/ui/AppTooltip'
+import { Md } from '@/components/ui/Md'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
-import { formatScore } from '@/lib/format/score'
 import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
+import { FLOW_MOVES as FLOW_MOVE_DEFS } from '@/lib/flow/moves'
+
+/* ── Humanize snake_case archetype labels ─────────────────────────── */
+
+function humanizeArchetype(value: string | null | undefined): string {
+  if (!value) return 'Not set'
+  return value
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+/** Display an interview score on the canonical /100 scale. */
+function formatInterviewScore(score: number | null | undefined): string | null {
+  if (score == null) return null
+  // overallScore from the API is on a 0–100 scale; show it as "82/100"
+  return `${Math.round(score)}/100`
+}
 
 /* ── Event label map for activity feed ────────────────────────────── */
 
@@ -20,16 +38,17 @@ const EVENT_LABELS: Record<string, { icon: string; label: (p: Record<string, unk
   live_interview_end: { icon: 'mic', label: () => 'Finished a live interview' },
 }
 
-/* ── FLOW paradigm palette - matches /explore FLOW strip ─────────── */
+/* ── FLOW paradigm palette - canonical FLOW move colors/icons ─────── */
 
 const FLOW_MOVES = [
-  { k: 'Frame',    move: 'frame',    sub: 'Define the right problem',  color: '#4a7c59', bg: '#cfe3d3', icon: 'center_focus_strong' },
-  { k: 'List',     move: 'list',     sub: 'Generate quality options',  color: '#6b8275', bg: '#dfe7e1', icon: 'format_list_bulleted' },
-  { k: 'Optimize', move: 'optimize', sub: 'Pick and sharpen the best', color: '#c9933a', bg: '#f3e2b9', icon: 'tune' },
-  { k: 'Win',      move: 'win',      sub: 'Drive durable outcomes',    color: '#a878d6', bg: '#ecdeff', icon: 'emoji_events' },
+  { k: 'Frame',    move: 'frame',    sub: 'Define the right problem',  color: FLOW_MOVE_DEFS.frame.color,    bg: FLOW_MOVE_DEFS.frame.soft,    icon: FLOW_MOVE_DEFS.frame.icon },
+  { k: 'List',     move: 'list',     sub: 'Generate quality options',  color: FLOW_MOVE_DEFS.list.color,     bg: FLOW_MOVE_DEFS.list.soft,     icon: FLOW_MOVE_DEFS.list.icon },
+  { k: 'Optimize', move: 'optimize', sub: 'Pick and sharpen the best', color: FLOW_MOVE_DEFS.optimize.color, bg: FLOW_MOVE_DEFS.optimize.soft, icon: FLOW_MOVE_DEFS.optimize.icon },
+  { k: 'Win',      move: 'win',      sub: 'Drive durable outcomes',    color: FLOW_MOVE_DEFS.win.color,      bg: FLOW_MOVE_DEFS.win.soft,      icon: FLOW_MOVE_DEFS.win.icon },
 ] as const
 
 interface RecentAttempt {
+  id: string
   challenge_id: string
   challenge_title: string
   challenge_type?: string | null
@@ -116,8 +135,8 @@ const DISCIPLINE_LENSES = [
     title: 'Product sense',
     href: '/challenges?discipline=product_sense',
     icon: 'psychology',
-    accent: '#4a7c59',
-    bg: '#dfe7e1',
+    accent: FLOW_MOVE_DEFS.frame.color,
+    bg: FLOW_MOVE_DEFS.frame.soft,
     frame: 'User job + business outcome',
     list: 'Segments, options, counter-moves',
     optimize: 'Metric tradeoffs',
@@ -127,8 +146,8 @@ const DISCIPLINE_LENSES = [
     title: 'System design',
     href: '/challenges?discipline=system_design',
     icon: 'hub',
-    accent: '#7a5c2e',
-    bg: '#f3e2b9',
+    accent: FLOW_MOVE_DEFS.optimize.color,
+    bg: FLOW_MOVE_DEFS.optimize.soft,
     frame: 'Scale, latency, consistency',
     list: 'Components + data flows',
     optimize: 'Reliability vs. cost',
@@ -138,8 +157,8 @@ const DISCIPLINE_LENSES = [
     title: 'Data modeling',
     href: '/challenges?discipline=data_modeling',
     icon: 'account_tree',
-    accent: '#5b6f4d',
-    bg: '#d8e4cf',
+    accent: FLOW_MOVE_DEFS.list.color,
+    bg: FLOW_MOVE_DEFS.list.soft,
     frame: 'Entities and grain',
     list: 'Facts, dimensions, events',
     optimize: 'Read/write tradeoffs',
@@ -149,8 +168,8 @@ const DISCIPLINE_LENSES = [
     title: 'SQL',
     href: '/challenges?discipline=sql',
     icon: 'database',
-    accent: '#5a3a7c',
-    bg: '#ecdeff',
+    accent: FLOW_MOVE_DEFS.win.color,
+    bg: FLOW_MOVE_DEFS.win.soft,
     frame: 'Question and dataset shape',
     list: 'Joins, filters, edge cases',
     optimize: 'Correctness then speed',
@@ -160,8 +179,8 @@ const DISCIPLINE_LENSES = [
     title: 'Coding',
     href: '/challenges?discipline=algorithm',
     icon: 'data_object',
-    accent: '#3a5a7c',
-    bg: '#e1ecff',
+    accent: FLOW_MOVE_DEFS.frame.color,
+    bg: FLOW_MOVE_DEFS.frame.soft,
     frame: 'Constraints + examples',
     list: 'Approaches and invariants',
     optimize: 'Time/space tradeoff',
@@ -177,10 +196,10 @@ const TRAJECTORY_MOVE_LABELS: Record<TrajectoryMove, string> = {
 }
 
 const TREND_META: Record<TrajectoryTrend, { label: string; icon: string; color: string }> = {
-  improving: { label: 'Improving', icon: 'trending_up', color: '#4a7c59' },
-  declining: { label: 'Needs attention', icon: 'trending_down', color: '#b05a4d' },
-  steady: { label: 'Steady', icon: 'trending_flat', color: '#6b8275' },
-  insufficient_data: { label: 'Low signal', icon: 'fiber_manual_record', color: '#8a8175' },
+  improving: { label: 'Improving', icon: 'trending_up', color: '#4a7c59' },   // primary green
+  declining: { label: 'Needs attention', icon: 'trending_down', color: '#b83230' }, // error red
+  steady: { label: 'Steady', icon: 'trending_flat', color: '#4a4e4a' },        // on-surface-variant grey
+  insufficient_data: { label: 'Low signal', icon: 'fiber_manual_record', color: '#4a4e4a' }, // on-surface-variant grey
 }
 
 function StreakHeatmap({ activeDates }: { activeDates: string[] }) {
@@ -231,7 +250,7 @@ function ReadinessMap({
       sub: hasActivity ? 'Library touched' : 'Start with one challenge',
       href: '/challenges',
       icon: 'track_changes',
-      color: '#4a7c59',
+      color: FLOW_MOVE_DEFS.frame.color,      // primary forest green
       pct: attemptedPct,
       help: 'How much of the full challenge library you have attempted.',
     },
@@ -241,7 +260,7 @@ function ReadinessMap({
       sub: 'Challenges at 80+',
       href: '/progress/skill-ladder',
       icon: 'verified',
-      color: '#c9933a',
+      color: FLOW_MOVE_DEFS.list.color,       // teal-green, same family
       pct: masteredPct,
       help: 'The share of completed reps where Hatch scored you 80 or higher.',
     },
@@ -251,7 +270,7 @@ function ReadinessMap({
       sub: latestInterviewScore != null ? 'Latest Hatch debrief' : 'Run a mock loop',
       href: '/live-interviews',
       icon: 'graphic_eq',
-      color: '#8b46d4',
+      color: FLOW_MOVE_DEFS.optimize.color,   // Terra amber, same family
       pct: latestInterviewScore ?? 18,
       help: 'Your most recent mock interview score, or a prompt to start one.',
     },
@@ -261,7 +280,7 @@ function ReadinessMap({
       sub: 'Blended signal',
       href: '/progress',
       icon: 'workspace_premium',
-      color: '#3b6ed4',
+      color: FLOW_MOVE_DEFS.win.color,        // deep warm brown, same family
       pct: overallPct,
       help: 'A blended signal from completed reps and FLOW move levels.',
     },
@@ -409,6 +428,17 @@ function ReasoningTrajectorySection({
   const lowSignal = trajectory?.summary.lowSignalCells ?? 0
   const totalSignals = trajectory?.summary.totalSignals ?? 0
 
+  // Show the full matrix only when there is meaningful signal.
+  // Threshold: at least 3 disciplines must have at least one cell with sampleSize > 0.
+  const hasEnoughSignal = (() => {
+    if (!trajectory) return false
+    if (totalSignals === 0) return false
+    const disciplinesWithAnySignal = trajectory.disciplines.filter(d =>
+      Object.values(d.cells).some(cell => cell.sampleSize > 0)
+    ).length
+    return disciplinesWithAnySignal >= 3
+  })()
+
   // Dedupe evidence by href (same challenge can appear multiple times across moves)
   const dedupedEvidence = (() => {
     if (!trajectory) return []
@@ -450,83 +480,96 @@ function ReasoningTrajectorySection({
           </div>
         ) : (
           <>
-            <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_280px]">
-              <div className="rounded-xl bg-background p-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-fixed text-primary">
-                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>monitoring</span>
-                  </span>
-                  <div>
-                    <h3 className="m-0 font-headline text-[17px] font-bold leading-tight text-on-surface">
-                      Cross-discipline FLOW signal
-                    </h3>
-                    <p className="m-0 mt-0.5 text-[11.5px] font-semibold text-on-surface-variant">
-                      Each cell blends recent challenge, workspace, and interview evidence. Low signal is shown instead of faked confidence.
-                    </p>
+            {hasEnoughSignal ? (
+              <>
+                <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_280px]">
+                  <div className="rounded-xl bg-background p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-fixed text-primary">
+                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>monitoring</span>
+                      </span>
+                      <div>
+                        <h3 className="m-0 font-headline text-[17px] font-bold leading-tight text-on-surface">
+                          Cross-discipline FLOW signal
+                        </h3>
+                        <p className="m-0 mt-0.5 text-[11.5px] font-semibold text-on-surface-variant">
+                          Each cell blends recent challenge, workspace, and interview evidence. Low signal is shown instead of faked confidence.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <TrajectoryStat label="Signals" value={String(totalSignals)} />
+                    <TrajectoryStat label="Practice" value={String(trajectory.summary.challengeReps)} />
+                    <TrajectoryStat label="Gaps" value={String(lowSignal)} />
                   </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-3 gap-1.5">
-                <TrajectoryStat label="Signals" value={String(totalSignals)} />
-                <TrajectoryStat label="Practice" value={String(trajectory.summary.challengeReps)} />
-                <TrajectoryStat label="Gaps" value={String(lowSignal)} />
-              </div>
-            </div>
 
-            <div className="overflow-x-auto">
-              <div className="min-w-[780px]">
-                <p className="mb-2 px-1 text-xs text-on-surface-variant font-label">
-                  Score · Δ vs last week · reps · confidence
-                </p>
-                <div
-                  className="mb-1 grid items-center gap-1.5 px-1 text-[10px] font-label font-black uppercase tracking-[0.10em] text-on-surface-muted"
-                  style={{ gridTemplateColumns: '170px repeat(4, minmax(132px, 1fr))' }}
-                >
-                  <div>Discipline</div>
-                  {trajectory.moves.map(move => (
-                    <div key={move}>{TRAJECTORY_MOVE_LABELS[move]}</div>
-                  ))}
-                </div>
-                <div className="space-y-1.5">
-                  {trajectory.disciplines.map(discipline => (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[780px]">
+                    <p className="mb-2 px-1 text-xs text-on-surface-variant font-label">
+                      Score · Δ vs last week · reps · confidence
+                    </p>
                     <div
-                      key={discipline.key}
-                      className="grid items-stretch gap-1.5"
+                      className="mb-1 grid items-center gap-1.5 px-1 text-[10px] font-label font-black uppercase tracking-[0.10em] text-on-surface-muted"
                       style={{ gridTemplateColumns: '170px repeat(4, minmax(132px, 1fr))' }}
                     >
-                      <Link
-                        href={discipline.href}
-                        className="flex min-w-0 items-center gap-2 rounded-xl border border-outline-variant/55 bg-background p-2 no-underline transition-transform hover:-translate-y-0.5"
-                      >
-                        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white" style={{ background: discipline.color }}>
-                          <span className="material-symbols-outlined text-[17px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                            {discipline.icon}
-                          </span>
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[12.5px] font-label font-extrabold text-on-surface">
-                            {discipline.label}
-                          </span>
-                          <span className="mt-0.5 flex items-center gap-1.5 text-[10.5px] font-bold text-on-surface-variant">
-                            {discipline.score === null ? 'No score' : `${discipline.score}%`}
-                            <TrendDot trend={discipline.trend} delta={discipline.delta} />
-                          </span>
-                        </span>
-                      </Link>
+                      <div>Discipline</div>
                       {trajectory.moves.map(move => (
-                        <TrajectoryCellCard
-                          key={`${discipline.key}-${move}`}
-                          cell={discipline.cells[move]}
-                          color={discipline.color}
-                          move={move}
-                          discipline={discipline.label}
-                        />
+                        <div key={move}>{TRAJECTORY_MOVE_LABELS[move]}</div>
                       ))}
                     </div>
-                  ))}
+                    <div className="space-y-1.5">
+                      {trajectory.disciplines.map(discipline => (
+                        <div
+                          key={discipline.key}
+                          className="grid items-stretch gap-1.5"
+                          style={{ gridTemplateColumns: '170px repeat(4, minmax(132px, 1fr))' }}
+                        >
+                          <Link
+                            href={discipline.href}
+                            className="flex min-w-0 items-center gap-2 rounded-xl border border-outline-variant/55 bg-background p-2 no-underline transition-transform hover:-translate-y-0.5"
+                          >
+                            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white" style={{ background: discipline.color }}>
+                              <span className="material-symbols-outlined text-[17px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                {discipline.icon}
+                              </span>
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-[12.5px] font-label font-extrabold text-on-surface">
+                                {discipline.label}
+                              </span>
+                              <span className="mt-0.5 flex items-center gap-1.5 text-[10.5px] font-bold text-on-surface-variant">
+                                {discipline.score === null ? 'No score' : `${discipline.score}%`}
+                                <TrendDot trend={discipline.trend} delta={discipline.delta} />
+                              </span>
+                            </span>
+                          </Link>
+                          {trajectory.moves.map(move => (
+                            <TrajectoryCellCard
+                              key={`${discipline.key}-${move}`}
+                              cell={discipline.cells[move]}
+                              color={discipline.color}
+                              move={move}
+                              discipline={discipline.label}
+                            />
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+              </>
+            ) : (
+              <div className="mb-3 flex items-center gap-3 rounded-xl bg-background px-4 py-3">
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-fixed text-primary">
+                  <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>monitoring</span>
+                </span>
+                <p className="m-0 text-[12.5px] font-semibold text-on-surface-variant">
+                  This fills in as you complete reps across disciplines.
+                </p>
               </div>
-            </div>
+            )}
 
             <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <div className="rounded-xl border border-primary/15 bg-primary-fixed p-3">
@@ -845,16 +888,12 @@ export default function ProgressPage() {
                     <div style={{ height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 4, width: '66%' }} />
                   </div>
                 ) : reflection ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {reflection.split('\n\n').map((para, i) => (
-                      <p key={i} style={{ margin: 0, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.82)' }}>
-                        {para}
-                      </p>
-                    ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.82)' }}>
+                    <Md variant="chat" tone="inherit">{reflection}</Md>
                   </div>
                 ) : (
                   <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.62)' }}>
-                    Complete a challenge to unlock your first reflection.
+                    Complete a challenge to see your first reflection.
                   </p>
                 )}
               </div>
@@ -866,7 +905,7 @@ export default function ProgressPage() {
               <HeroStat k="Challenges mastered" v={total > 0 ? `${mastered} of ${total}` : 'None yet'} />
               <HeroStat
                 k="Archetype"
-                v={profile?.archetype ?? 'Not set'}
+                v={humanizeArchetype(profile?.archetype)}
                 small={!profile?.archetype}
               />
             </div>
@@ -980,7 +1019,7 @@ export default function ProgressPage() {
 
       {/* ── Streak heatmap ───────────────────────────────────────── */}
       <section data-testid="streak-heatmap" className="mb-6">
-        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Activity — last 12 weeks</h2>
+        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Activity, last 12 weeks</h2>
         <StreakHeatmap activeDates={streakDates} />
       </section>
 
@@ -1062,7 +1101,7 @@ export default function ProgressPage() {
                         return (
                           <Link
                             key={i}
-                            href={`/challenges/${a.challenge_id}/feedback`}
+                            href={`/challenges/${a.challenge_id}/feedback${a.id ? `?attempt=${a.id}` : ''}`}
                             className="hover:bg-surface-container"
                             style={{
                               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -1117,7 +1156,7 @@ export default function ProgressPage() {
                       const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-'
                       const date = s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
                       const displayName = s.companyName && s.companyName !== 'Unknown' ? s.companyName : 'Practice interview'
-                      const formattedScore = formatScore(s.overallScore)
+                      const formattedScore = formatInterviewScore(s.overallScore)
                       return (
                         <Link
                           key={s.id}

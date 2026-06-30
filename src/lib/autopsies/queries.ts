@@ -30,24 +30,51 @@ function getLocalAutopsyLibrary() {
   }
 }
 
-const getAutopsyLibrary = cache(async () => {
+// React cache() dedupes within a single render pass only. During `next build`,
+// every static autopsy page renders separately, so the heavy library fetch
+// (companies + stories + versions + images + the legacy showcase fan-out) would
+// re-run once per page and hammer Supabase until a statement hits the 8s 57014
+// timeout. A module-level promise memoizes it across renders within each build
+// worker, so the chain runs once per process instead of once per page.
+type AutopsyLibraryResult = Awaited<ReturnType<typeof getSupabaseAutopsyLibrary>>
+let autopsyLibraryPromise: Promise<AutopsyLibraryResult> | null = null
+
+// Static export should degrade, not crash the whole build, if a single library
+// fetch times out transiently. Enabled automatically during production build.
+function shouldDegradeOnBuildTimeout() {
+  return process.env.NEXT_PHASE === 'phase-production-build'
+}
+
+async function loadAutopsyLibrary(): Promise<AutopsyLibraryResult> {
   try {
     const library = await getSupabaseAutopsyLibrary()
     if (library.companies.length > 0 || library.stories.length > 0) {
       return library
     }
   } catch (error) {
-    if (!shouldUseLocalFallback()) {
-      throw error
+    if (shouldUseLocalFallback() || shouldDegradeOnBuildTimeout()) {
+      console.warn('[autopsies] Falling back to local autopsy data after Supabase query failed.', error)
+      return getLocalAutopsyLibrary()
     }
-    console.warn('[autopsies] Falling back to local autopsy data after Supabase query failed.', error)
+    // A memoized rejection would poison every later caller for the process, so
+    // clear the cache before rethrowing to allow a fresh attempt.
+    autopsyLibraryPromise = null
+    throw error
   }
 
   if (shouldUseLocalFallback()) {
     return getLocalAutopsyLibrary()
   }
 
+  autopsyLibraryPromise = null
   throw new Error('Supabase autopsy content is empty. Run scripts/sync-autopsy-content-supabase.ts before release.')
+}
+
+const getAutopsyLibrary = cache(async () => {
+  if (!autopsyLibraryPromise) {
+    autopsyLibraryPromise = loadAutopsyLibrary()
+  }
+  return autopsyLibraryPromise
 })
 
 export const getAutopsyCompanies = cache(async () => {

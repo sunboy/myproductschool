@@ -30,8 +30,9 @@ const DISCIPLINE_CHIPS: { key: Discipline; label: string }[] = [
   { key: 'sql', label: 'SQL' },
 ]
 
-const STATIC_GROUPS: { key: ArrayFilterKey; label: string; options: string[]; disciplines: Discipline[] }[] = [
-  { key: 'paradigm', label: 'Paradigm', options: ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'], disciplines: [] },
+const STATIC_GROUPS: { key: ArrayFilterKey; label: string; options: string[]; disciplines: Discipline[]; excludeDisciplines?: Discipline[] }[] = [
+  // Paradigm is a product-thinking operating mode; hide it on the pure coding tabs.
+  { key: 'paradigm', label: 'Paradigm', options: ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'], disciplines: [], excludeDisciplines: ['algorithm', 'sql'] },
   { key: 'difficulty', label: 'Difficulty', options: PRACTICE_DIFFICULTY_OPTIONS.map(o => o.label), disciplines: [] },
   { key: 'role', label: 'Role', options: ['SWE', 'Tech Lead', 'EM', 'ML Eng', 'Data Eng', 'DevOps', 'Founding Eng', 'PM', 'Designer', 'Data Scientist'], disciplines: [] },
   { key: 'company', label: 'Company', options: ['Google', 'Meta', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Amazon', 'Apple'], disciplines: [] },
@@ -84,12 +85,14 @@ export function FilterBottomSheet({
   const hasTechnique = techniqueOptions.length > 0
   const showChipTabs = hasTopic && hasTechnique
 
-  const dynamicGroups: { key: ArrayFilterKey; label: string; options: string[]; disciplines: Discipline[] }[] = []
+  const dynamicGroups: { key: ArrayFilterKey; label: string; options: string[]; disciplines: Discipline[]; excludeDisciplines?: Discipline[] }[] = []
   // Topic + Technique handled separately via chip cloud above the groups
 
   const allGroups = [...STATIC_GROUPS, ...dynamicGroups]
   const visibleGroups = allGroups.filter(
-    (g) => g.disciplines.length === 0 || g.disciplines.includes(discipline)
+    (g) =>
+      (g.disciplines.length === 0 || g.disciplines.includes(discipline)) &&
+      !(g.excludeDisciplines?.includes(discipline))
   )
 
   function toggle(key: ArrayFilterKey, value: string) {

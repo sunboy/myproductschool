@@ -95,14 +95,26 @@ const SEVERITY_CONFIG = {
 
 // Compact spend pill for TopNav — shown inline in the right cluster
 export function SpendIndicator() {
+  // No polling. Usage only changes when the user spends a rep, so we refetch on
+  // the same window events the rest of the shell already fires on a real change
+  // (challenge submit / interview / quick-take / settings), plus the in-app
+  // usageEventBus. A 30s timer + revalidateOnFocus previously hit /api/usage/me
+  // (1 auth round-trip + 3 usage_events queries) forever on every open tab.
   const { data, mutate } = useSWR<UsageApiData>('/api/usage/me', fetcher, {
-    refreshInterval: 30_000,
-    revalidateOnFocus: true,
+    revalidateOnFocus: false,
   })
   const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
-    return usageEventBus.subscribe(() => { mutate() })
+    const refresh = () => { mutate() }
+    const unsubscribe = usageEventBus.subscribe(refresh)
+    window.addEventListener('challenge-completed', refresh)
+    window.addEventListener('profile-stats-updated', refresh)
+    return () => {
+      unsubscribe()
+      window.removeEventListener('challenge-completed', refresh)
+      window.removeEventListener('profile-stats-updated', refresh)
+    }
   }, [mutate])
 
   if (!data || !data.severity) return null
@@ -193,13 +205,21 @@ export function SpendIndicator() {
 
 // Full usage summary card for dropdown menu
 export function FreemiumUsageSummary({ plan, compact = false, className = '' }: FreemiumUsageSummaryProps) {
+  // No polling — refetch only on a real usage change (see SpendIndicator above).
   const { data, mutate } = useSWR<UsageApiData>('/api/usage/me', fetcher, {
-    refreshInterval: 30_000,
-    revalidateOnFocus: true,
+    revalidateOnFocus: false,
   })
 
   useEffect(() => {
-    return usageEventBus.subscribe(() => { mutate() })
+    const refresh = () => { mutate() }
+    const unsubscribe = usageEventBus.subscribe(refresh)
+    window.addEventListener('challenge-completed', refresh)
+    window.addEventListener('profile-stats-updated', refresh)
+    return () => {
+      unsubscribe()
+      window.removeEventListener('challenge-completed', refresh)
+      window.removeEventListener('profile-stats-updated', refresh)
+    }
   }, [mutate])
 
   if (plan !== 'free') return null

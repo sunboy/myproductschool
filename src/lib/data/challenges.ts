@@ -531,6 +531,12 @@ export async function getChallengeById(id: string): Promise<Challenge | null> {
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
-  const { data } = await supabase.from('challenges').select('*').eq('id', id).single()
+  // Accept the canonical slug OR the raw id. Every challenge now has a unique
+  // URL-safe slug and no slug collides with a different challenge's id (verified
+  // by the slug backfill), so this is unambiguous. Lets pages reached by a slug
+  // URL (e.g. /challenges/<slug>/feedback) resolve without a separate helper.
+  const { data: bySlug } = await supabase.from('challenges').select('*').eq('slug', id).maybeSingle()
+  if (bySlug) return bySlug
+  const { data } = await supabase.from('challenges').select('*').eq('id', id).maybeSingle()
   return data
 }

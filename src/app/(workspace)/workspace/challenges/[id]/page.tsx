@@ -119,10 +119,10 @@ async function getNextChallengeInCategory(
 
 export default async function ChallengeWorkspacePage({ params, searchParams }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ role?: string; from_plan?: string; returnTo?: string }>
+  searchParams: Promise<{ role?: string; from_plan?: string; from_domain?: string; returnTo?: string }>
 }) {
   const { id } = await params
-  const { role, from_plan, returnTo } = await searchParams
+  const { role, from_plan, from_domain, returnTo } = await searchParams
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -138,6 +138,19 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
     if (identity?.id) {
       challengeId = identity.id
       challengeSlug = identity.slug ?? identity.id
+
+      // Canonical-URL redirect: if the user arrived via the raw id or a number
+      // slug (e.g. a UUID or "sql-2001"), send them to the clean text-slug URL
+      // so there is ONE canonical address per challenge. Preserve query params.
+      if (identity.slug && id !== identity.slug) {
+        const qs = new URLSearchParams()
+        if (role) qs.set('role', role)
+        if (from_plan) qs.set('from_plan', from_plan)
+        if (from_domain) qs.set('from_domain', from_domain)
+        if (returnTo) qs.set('returnTo', returnTo)
+        const suffix = qs.toString() ? `?${qs.toString()}` : ''
+        redirect(`/workspace/challenges/${identity.slug}${suffix}`)
+      }
     }
     challengeType = identity?.challenge_type ?? undefined
     // Quick takes don't have FLOW steps - send to challenges hub
@@ -180,6 +193,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
           challenge={challengeRow as never}
           scenario={scenario}
           returnTo={sanitizeReturnTo(returnTo)}
+          origin={{ fromPlan: from_plan ?? null, fromDomain: from_domain ?? null }}
           locked={analyticsLocked}
         />
       )
@@ -206,6 +220,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
       challengeSlug={challengeSlug}
       initialRoleId={roleId}
       fromPlan={from_plan}
+      fromDomain={from_domain}
       nextChallengeSlug={nextChallengeSlug}
       returnTo={sanitizeReturnTo(returnTo)}
     />

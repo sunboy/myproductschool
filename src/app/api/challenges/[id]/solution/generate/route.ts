@@ -5,6 +5,10 @@ import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import { getSolutionAccess } from '@/lib/solutions/access'
 import { buildSolutionSystemPrompt } from '@/lib/solutions/prompt'
 import { buildSolutionSourceContext } from '@/lib/solutions/source-context'
+import { buildSteppedTraceFromMetadata } from '@/lib/solutions/trace'
+import { buildSteppedGridFromMetadata } from '@/lib/solutions/trace/gridTrace'
+import { buildSteppedPipelineFromMetadata } from '@/lib/solutions/trace/pipelineTrace'
+import { graftSteppedTrace } from '@/lib/solutions/trace/graft'
 import { SolutionContentSchema, type SolutionContentV1, type SolutionTabResponse } from '@/lib/solutions/schema'
 import { MOCK_SOLUTION_CONTENT } from '@/lib/solutions/mock'
 import { IS_MOCK } from '@/lib/mock'
@@ -121,7 +125,49 @@ export const POST = withRoute(async (
     return apiError(500, 'no_source_context', 'Could not assemble challenge source material')
   }
 
-  const systemPrompt = buildSolutionSystemPrompt(source.challengeType)
+  // Stepped eligibility decides the hasVerifiedTrace prompt flag (so the model
+  // knows NOT to author a stepped diagram, because the server will attach one).
+  // The flag is type-aware:
+  //   - algorithm: a verified array OR grid (DP) trace builds from the real
+  //     reference + test cases.
+  //   - sql: a verified pipeline (CTE chain) trace builds from the real reference
+  //     + setup + expected_rows.
+  //   - system_design / data_modeling: the request-flow walkthrough is derived
+  //     from the architecture diagram the model is required to produce, so it is
+  //     eligible by type (the post-validation graft is still fail-soft if no
+  //     architecture diagram lands). It needs no metadata precompute here.
+  // The metadata/tags fetched here are reused by the post-validation graft so the
+  // work is done once.
+  let steppedMetadata: Record<string, unknown> | null = null
+  let steppedTags: string[] = []
+  let steppedEligible = false
+  if (source.challengeType === 'algorithm' || source.challengeType === 'sql') {
+    const { data: meta } = await admin
+      .from('challenges')
+      .select('metadata, topic_tags, technique_tags')
+      .eq('id', identity.id)
+      .maybeSingle()
+    if (meta) {
+      steppedMetadata = (meta.metadata as Record<string, unknown> | null) ?? {}
+      steppedTags = [
+        ...((meta.topic_tags as string[] | null) ?? []),
+        ...((meta.technique_tags as string[] | null) ?? []),
+      ]
+      if (source.challengeType === 'algorithm') {
+        steppedEligible =
+          Boolean(buildSteppedTraceFromMetadata(steppedMetadata, steppedTags)) ||
+          Boolean(buildSteppedGridFromMetadata(steppedMetadata, steppedTags))
+      } else {
+        steppedEligible = Boolean(await buildSteppedPipelineFromMetadata(steppedMetadata, steppedTags))
+      }
+    }
+  } else if (source.challengeType === 'system_design' || source.challengeType === 'data_modeling') {
+    steppedEligible = true
+  }
+
+  const systemPrompt = buildSolutionSystemPrompt(source.challengeType, {
+    hasVerifiedTrace: steppedEligible,
+  })
 
   try {
     let content: SolutionContentV1 | null = null
@@ -152,6 +198,12 @@ export const POST = withRoute(async (
     }
 
     if (!content) throw new Error(`Solution failed validation after retry: ${lastIssues.slice(0, 500)}`)
+
+    // Strip any model-authored stepped diagram and attach only the machine-
+    // verified walkthrough (graftSteppedTrace enforces this). The deltas are
+    // never the model's; trace_verified cannot be self-asserted by the model.
+    const { content: finalContent } = await graftSteppedTrace(content, steppedMetadata, steppedTags)
+    content = finalContent
 
     await admin
       .from('challenge_solutions')

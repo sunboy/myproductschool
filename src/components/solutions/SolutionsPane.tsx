@@ -16,6 +16,8 @@ interface Props {
   onGoToDescription: () => void
   activeApproachId: string | null
   onApproachChange: (id: string) => void
+  /** Surfaces the active step of an interactive walkthrough (Hatch awareness). */
+  onSteppedStepChange?: (step: { index: number; title: string; decision?: string }) => void
 }
 
 function CenteredState({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
@@ -60,6 +62,7 @@ export function SolutionsPane({
   onGoToDescription,
   activeApproachId,
   onApproachChange,
+  onSteppedStepChange,
 }: Props) {
   const [maximized, setMaximized] = useState(false)
 
@@ -203,10 +206,17 @@ export function SolutionsPane({
 
       <div data-testid="solution-pane-body" style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 28px' }}>
         <SolutionContent
+          // Remount when the modal closes so the pane re-reports its current
+          // step to Hatch (otherwise Hatch could stay on the modal's last step).
+          key={maximized ? 'pane-bg' : 'pane-active'}
           content={content}
           size="pane"
           activeApproachId={activeApproachId}
           onApproachChange={onApproachChange}
+          // Only the visible surface reports its step to Hatch. When the modal
+          // is open it owns reporting; this prevents the pane and modal (each
+          // with its own step cursor) from leaving Hatch on a stale step.
+          onSteppedStepChange={maximized ? undefined : onSteppedStepChange}
         />
       </div>
 
@@ -227,6 +237,7 @@ export function SolutionsPane({
               size="modal"
               activeApproachId={activeApproachId}
               onApproachChange={onApproachChange}
+              onSteppedStepChange={maximized ? onSteppedStepChange : undefined}
             />
           </div>
         </DialogContent>

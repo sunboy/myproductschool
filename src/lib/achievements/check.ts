@@ -41,20 +41,28 @@ export async function checkAndGrantAchievements(
   }
 
   if (newlyUnlocked.length > 0) {
-    await admin.from('user_achievements').insert(
-      newlyUnlocked.map((achievement_id: string) => ({ user_id: userId, achievement_id }))
-    )
+    // Idempotent insert: a concurrent run that computed the same newlyUnlocked set
+    // must not insert a duplicate row (and thus must not double-award its XP). We
+    // upsert ignoring conflicts on the (user_id, achievement_id) pair, then award
+    // XP only for the rows THIS call actually inserted.
+    const { data: inserted } = await admin
+      .from('user_achievements')
+      .upsert(
+        newlyUnlocked.map((achievement_id: string) => ({ user_id: userId, achievement_id })),
+        { onConflict: 'user_id,achievement_id', ignoreDuplicates: true }
+      )
+      .select('achievement_id')
+    const grantedIds = new Set((inserted ?? []).map((r: { achievement_id: string }) => r.achievement_id))
     const totalXP = definitions
-      .filter((d) => newlyUnlocked.includes(d.id))
+      .filter((d) => grantedIds.has(d.id))
       .reduce((sum: number, d) => sum + (d.xp_reward ?? 0), 0)
     if (totalXP > 0) {
-      const currentXp = profileResult.data?.xp_total ?? 0
-      await admin
-        .from('profiles')
-        .update({ xp_total: currentXp + totalXP })
-        .eq('id', userId)
+      // Atomic increment (no read-then-write race against the completion XP award).
+      const { error: xpErr } = await admin.rpc('increment_user_xp', { p_user_id: userId, p_amount: totalXP })
+      if (xpErr) console.error('[achievements] increment_user_xp failed:', xpErr.message)
     }
+    return definitions.filter((d) => grantedIds.has(d.id))
   }
 
-  return definitions.filter((d) => newlyUnlocked.includes(d.id))
+  return []
 }
