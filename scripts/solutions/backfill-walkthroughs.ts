@@ -134,14 +134,19 @@ async function selectEligible(
 }
 
 async function main() {
-  console.log(`Mode: ${WRITE ? 'WRITE (will upsert)' : 'DRY-RUN (no writes)'} | per-type cap: ${PER_TYPE_LIMIT}\n`)
+  // --type sql|system_design|data_modeling|algorithm restricts the sweep to one
+  // type (comma-separated for several). Default keeps the original mixed batch.
+  const typeFlag = flagValue('--type')
+  const onlyTypes = typeFlag ? new Set(typeFlag.split(',').map((t) => t.trim())) : null
+  const want = (t: string) => !onlyTypes || onlyTypes.has(t)
+  console.log(`Mode: ${WRITE ? 'WRITE (will upsert)' : 'DRY-RUN (no writes)'} | per-type cap: ${PER_TYPE_LIMIT}${onlyTypes ? ` | types: ${[...onlyTypes].join(',')}` : ''}\n`)
 
-  // SQL (3) + design (3 across system_design + data_modeling) + algorithm (3).
-  const sql = await selectEligible('sql', PER_TYPE_LIMIT)
-  const sysd = await selectEligible('system_design', PER_TYPE_LIMIT)
-  const dataM = sysd.length < PER_TYPE_LIMIT ? await selectEligible('data_modeling', PER_TYPE_LIMIT - sysd.length) : []
-  const design = [...sysd, ...dataM].slice(0, PER_TYPE_LIMIT)
-  const algo = await selectEligible('algorithm', PER_TYPE_LIMIT)
+  // SQL + design (system_design + data_modeling) + algorithm, each gated by --type.
+  const sql = want('sql') ? await selectEligible('sql', PER_TYPE_LIMIT) : []
+  const sysd = want('system_design') ? await selectEligible('system_design', PER_TYPE_LIMIT) : []
+  const dataM = want('data_modeling') ? await selectEligible('data_modeling', PER_TYPE_LIMIT) : []
+  const design = [...sysd, ...dataM]
+  const algo = want('algorithm') ? await selectEligible('algorithm', PER_TYPE_LIMIT) : []
 
   const candidates = [...sql, ...design, ...algo]
 
