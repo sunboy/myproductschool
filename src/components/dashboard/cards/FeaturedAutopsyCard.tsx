@@ -20,7 +20,7 @@ export function FeaturedAutopsyCard({
     : 'grid gap-3'
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3 shadow-[0_18px_42px_-38px_rgba(30,27,20,0.45)]">
+    <article className="h-full overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3 shadow-[0_18px_42px_-38px_rgba(30,27,20,0.45)]">
       <div className={gridClass}>
         {visual && (
           <Link

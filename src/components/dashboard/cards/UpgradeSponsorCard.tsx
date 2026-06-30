@@ -19,35 +19,35 @@ export function UpgradeSponsorCard({
   analyticsHasAccess = false,
 }: UpgradeSponsorCardProps) {
   const isFree = plan === 'free' || !plan
-  const focus = focusMove ? focusMove.toLowerCase() : 'highest-leverage'
+  const focus = focusMove ? focusMove.toLowerCase() : 'current'
   const showAnalyticsOffer = !isFree && analyticsEnabled && !analyticsHasAccess
 
   const promo = isFree
     ? {
         badge: 'Pro unlock',
         icon: 'workspace_premium',
-        title: 'More reps when the brief is working.',
-        body: `Keep momentum after today's ${focus} rep with deeper practice, mock loops, and AI feedback.`,
+        title: 'Get more practice once you find your footing.',
+        body: `After today's ${focus} work, Pro opens up more challenges, mock interviews, and detailed AI feedback.`,
         cta: dailyDone > 0 ? "Extend today's run" : 'Upgrade for more reps',
       }
     : showAnalyticsOffer
     ? {
         badge: 'Analytics tier',
         icon: 'terminal',
-        title: 'Add the analyst lab to your prep loop.',
-        body: 'Practice with a live terminal, warehouse-style data, and scored AI-agent judgment.',
+        title: 'Add the Claude Code Analytics Lab to your practice.',
+        body: 'Direct Claude Code in a real terminal against warehouse-style data, and get your judgment graded.',
         cta: 'Unlock Analytics Lab',
         href: '/pricing?plan=analytics_monthly&checkout=1',
       }
     : {
         badge: 'Live loop',
         icon: 'record_voice_over',
-        title: 'Turn this week into a mock loop.',
-        body: `Use your ${focus} focus to run one interview round, then review the scorecard while the signal is fresh.`,
+        title: 'Run a mock interview this week.',
+        body: `Do one interview round on your ${focus} work, then read the scorecard while it's still fresh.`,
         cta: 'Run a live loop',
         href: '/live-interviews',
       }
-  const promoHref = 'href' in promo ? promo.href : '/pricing'
+  const promoHref = ('href' in promo ? promo.href : undefined) ?? '/pricing'
 
   return (
     <aside className="relative overflow-hidden rounded-[22px] border border-primary/20 bg-primary-fixed/55 p-4 shadow-[0_18px_38px_-32px_rgba(74,124,89,0.85)] sm:p-5">

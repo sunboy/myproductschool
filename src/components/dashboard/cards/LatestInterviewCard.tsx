@@ -19,7 +19,7 @@ export function LatestInterviewCard({ data, compact = false }: LatestInterviewCa
   const scoreDisplay = data.overallScore.toFixed(1)
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl border border-primary/20 bg-[#edf5e9] shadow-[0_18px_46px_-38px_rgba(38,74,52,0.78)] ${compact ? 'p-3.5' : 'p-4'}`}>
+    <div className={`relative h-full overflow-hidden rounded-2xl border border-primary/20 bg-[#edf5e9] shadow-[0_18px_46px_-38px_rgba(38,74,52,0.78)] ${compact ? 'p-3.5' : 'p-4'}`}>
       <svg className={`pointer-events-none absolute inset-y-0 right-0 h-full opacity-[0.14] ${compact ? 'w-36' : 'w-44'}`} viewBox="0 0 220 150" fill="none" aria-hidden="true">
         <path d="M40 112 C74 52, 116 126, 176 42" stroke="#4a7c59" strokeWidth="7" strokeLinecap="round" />
         <path d="M114 34 H184 V102" stroke="#2e3230" strokeWidth="1.5" strokeDasharray="5 8" />

@@ -49,18 +49,18 @@ export function AnalyticsLabCard({ data }: AnalyticsLabCardProps) {
             terminal
           </span>
           <span className="font-label text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#8ecf9e]">
-            Analytics Lab
+            Claude Code Lab
           </span>
           <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-label font-bold text-[#8ecf9e]">
             Anchor
           </span>
         </div>
 
-        <h2 className="max-w-[13ch] text-balance font-headline text-[23px] font-semibold leading-[0.98] tracking-tight text-[#f5f0e8] sm:text-[26px]">
-          Drive a live AI analyst.
+        <h2 className="max-w-[14ch] text-balance font-headline text-[23px] font-semibold leading-[0.98] tracking-tight text-[#f5f0e8] sm:text-[26px]">
+          Run a live analysis with Claude Code.
         </h2>
-        <p className="mt-2 max-w-[34ch] font-body text-[13px] leading-5 text-[#f5f0e8]/70">
-          A real terminal wired to warehouse data. You direct, Claude queries, Hatch grades the judgment.
+        <p className="mt-2 max-w-[36ch] font-body text-[13px] leading-5 text-[#f5f0e8]/70">
+          A real terminal running Claude Code against warehouse data. You direct it, Claude Code writes and runs the queries, and Hatch grades your judgment.
         </p>
 
         <div className="mt-4 grid grid-cols-2 gap-2">

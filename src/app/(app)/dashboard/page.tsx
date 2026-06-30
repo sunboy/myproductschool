@@ -27,7 +27,7 @@ import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPee
 import { CommunityActivityCard } from '@/components/dashboard/cards/CommunityActivityCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
-import { AchievementsCard, ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
+import { ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
 import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
 import { DisciplineExplorer } from '@/components/flow-disciplines'
 import { FeaturedAutopsyCard } from '@/components/dashboard/cards/FeaturedAutopsyCard'
@@ -639,7 +639,7 @@ async function DashboardBodySection() {
 
   return (
     <div className="mt-5 flex flex-col gap-5">
-      <section className="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.48fr)]">
+      <section className="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.58fr)]">
         <div className="min-w-0 space-y-4">
           <CadenceRibbon
             streakDays={data.streakDays}
@@ -655,13 +655,13 @@ async function DashboardBodySection() {
           </div>
 
           <SectionHeading
-            title="Warm up, then do the hard rep."
+            title="Start with a quick warm-up, then take on a full challenge."
             href="/challenges"
             action="All practice"
           />
 
-          <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-            <div id="quick-take" className="scroll-mt-24">
+          <div className="grid min-w-0 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+            <div id="quick-take" className="scroll-mt-24 h-full">
               <QuickTakeCard
                 prompt={data.quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
                 challengeId={data.quickTakePrompt?.id ?? 'orientation'}
@@ -690,24 +690,28 @@ async function DashboardBodySection() {
             )}
           </div>
 
-          {data.featuredAutopsy && (
-            <FeaturedAutopsyCard story={data.featuredAutopsy.story} company={data.featuredAutopsy.company} />
-          )}
+          {/* FLOW discipline map sits high in the column so it anchors the page
+              instead of trailing at the bottom. */}
+          <DisciplineExplorer />
 
-          {(data.latestInterview || data.hotChallenges.length > 0) && (
-            <div className="grid min-w-0 grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,0.78fr)_minmax(280px,0.52fr)]">
-              {data.latestInterview && <LatestInterviewCard data={data.latestInterview} compact />}
-              {data.hotChallenges.length > 0 && <HotChallengesCard challenges={data.hotChallenges} compact limit={4} />}
+          {/* Featured autopsy + latest interview share a row when both exist; a
+              single present card spans the full width. Stacks on < xl. */}
+          {data.featuredAutopsy && data.latestInterview ? (
+            <div className="grid min-w-0 grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
+              <FeaturedAutopsyCard story={data.featuredAutopsy.story} company={data.featuredAutopsy.company} />
+              <LatestInterviewCard data={data.latestInterview} compact />
             </div>
-          )}
+          ) : data.featuredAutopsy ? (
+            <FeaturedAutopsyCard story={data.featuredAutopsy.story} company={data.featuredAutopsy.company} />
+          ) : data.latestInterview ? (
+            <LatestInterviewCard data={data.latestInterview} compact />
+          ) : null}
 
           {data.enrolledPlans.length > 0 && (
             <div className="xl:max-w-[640px]">
               <EnrolledPlansCard plans={data.enrolledPlans} />
             </div>
           )}
-
-          <DisciplineExplorer />
         </div>
 
         <aside className="min-w-0 space-y-4">
@@ -717,8 +721,6 @@ async function DashboardBodySection() {
             </Suspense>
           </div>
 
-          <SectionHeading title="Progress, peers, and live loops." />
-
           {data.pausedLoopData && (
             <PausedLoopCard
               loop={data.pausedLoopData.loop as unknown as InterviewLoop}
@@ -726,12 +728,20 @@ async function DashboardBodySection() {
             />
           )}
 
-          {data.achievementData.length > 0 && (
+          {/* Achievements card hidden for now (2026-06-30) to keep the dashboard
+              clean. Re-enable by restoring the AchievementsCard block below. */}
+          {/* {data.achievementData.length > 0 && (
             <AchievementsCard
               achievements={data.achievementData}
               unlockedCount={data.achievementData.filter(a => a.unlocked).length}
               totalCount={data.achievementData.length}
             />
+          )} */}
+
+          {/* Trending challenges live in the sidebar so the left column's height
+              comes down and both columns end closer together. */}
+          {data.hotChallenges.length > 0 && (
+            <HotChallengesCard challenges={data.hotChallenges} compact limit={4} />
           )}
 
           <LeaderboardPeekCard entries={data.leaderboard} userRank={data.userRank} />

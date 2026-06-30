@@ -41,7 +41,7 @@ function buildCoachLine(opts: {
   if (!weakestCompetency) {
     return {
       headline: "Let's find your starting point.",
-      sub: 'Start with one calibration rep and Hatch will turn the dashboard into a tighter brief.',
+      sub: 'Do one calibration challenge and Hatch will set up the rest of your dashboard around what you need.',
     }
   }
 

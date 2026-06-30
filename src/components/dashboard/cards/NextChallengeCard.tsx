@@ -17,7 +17,7 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, hatc
     ? `/workspace/challenges/${challengeId}?from_plan=${encodeURIComponent(activePlanSlug)}`
     : `/workspace/challenges/${challengeId}`
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-outline-variant/30 bg-surface-container-low p-4 shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-next-challenge">
+    <div className="flex h-full flex-col gap-3 rounded-2xl border border-outline-variant/40 bg-surface-container-low p-4 shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-next-challenge">
       <div className="flex items-center gap-2">
         <HatchGlyph size={20} state="idle" />
         <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-label">For you</span>

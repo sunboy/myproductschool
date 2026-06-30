@@ -12,7 +12,7 @@ export function HotChallengesCard({ challenges, compact = false, limit }: HotCha
   const visibleChallenges = typeof limit === 'number' ? challenges.slice(0, limit) : challenges
 
   return (
-    <div className={`flex flex-col rounded-2xl border border-outline-variant/30 bg-surface-container-low ${compact ? 'gap-2 p-3.5' : 'gap-3 p-5'}`}>
+    <div className={`flex flex-col rounded-2xl border border-outline-variant/40 bg-surface-container-low ${compact ? 'gap-2 p-3.5' : 'gap-3 p-5'}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span

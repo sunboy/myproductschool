@@ -91,7 +91,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
   if (state === 'done' && result) {
     const { label, color } = gradeLabel(result.score)
     return (
-      <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-quick-take">
+      <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-center gap-3 relative">
           <HatchGlyph size={30} state="celebrating" className="text-on-primary shrink-0" />
@@ -124,7 +124,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   if (state === 'loading-next') {
     return (
-      <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary" data-hatch-target="dashboard-quick-take">
+      <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-center gap-3 relative">
           <HatchGlyph size={30} state="reviewing" className="text-on-primary shrink-0" />
@@ -138,7 +138,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   if (state === 'writing' || state === 'submitting') {
     return (
-      <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary" data-hatch-target="dashboard-quick-take">
+      <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-start gap-3 relative">
           <HatchGlyph size={30} state="listening" className="text-on-primary shrink-0 mt-0.5" />
@@ -180,7 +180,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   // idle
   return (
-    <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-quick-take">
+    <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-quick-take">
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
       <div className="flex items-start gap-3 relative">
         <HatchGlyph size={30} state="speaking" className="text-on-primary shrink-0 mt-0.5" />

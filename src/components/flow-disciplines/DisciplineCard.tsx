@@ -290,7 +290,7 @@ export function DisciplineCard({
               opacity: isVisible ? 1 : 0,
             }}
           >
-            One reasoning loop. Different interview arenas.
+            The same four moves work across every kind of interview.
           </div>
           <div
             className="mt-3 transition-opacity duration-300"

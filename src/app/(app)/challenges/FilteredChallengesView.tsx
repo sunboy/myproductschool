@@ -9,7 +9,6 @@ import { FilterBottomSheet } from '@/components/challenges/FilterBottomSheet'
 import { MotionList } from '@/components/motion'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { TopicChipCloud } from '@/components/challenges/TopicChipCloud'
 import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
 import type { ChallengeWithDomain } from '@/lib/types'
@@ -67,32 +66,11 @@ const DISCIPLINES: Array<{
     accent: '#4a7c59',
   },
   {
-    key: 'product_sense',
-    label: 'Product sense',
-    description: 'MCQs and judgment drills for product-quality thinking.',
-    icon: 'psychology',
-    accent: '#4a7c59',
-  },
-  {
-    key: 'analytics',
-    label: 'Analytics',
-    description: 'Drive a live Claude Code agent against a real dataset to answer a business question.',
-    icon: 'analytics',
-    accent: '#1565c0',
-  },
-  {
-    key: 'system_design',
-    label: 'System design',
-    description: 'Architecture prompts, tradeoffs, scale, and context.',
-    icon: 'hub',
-    accent: '#7a5c2e',
-  },
-  {
-    key: 'data_modeling',
-    label: 'Data modeling',
-    description: 'Schema, entities, analytics thinking, and durable models.',
-    icon: 'account_tree',
-    accent: '#5b6f4d',
+    key: 'algorithm',
+    label: 'Coding/DSA',
+    description: 'DSA practice for implementation speed and correctness.',
+    icon: 'data_object',
+    accent: '#3a5a7c',
   },
   {
     key: 'sql',
@@ -102,22 +80,43 @@ const DISCIPLINES: Array<{
     accent: '#5a3a7c',
   },
   {
-    key: 'algorithm',
-    label: 'Coding',
-    description: 'DSA practice for implementation speed and correctness.',
-    icon: 'data_object',
-    accent: '#3a5a7c',
+    key: 'system_design',
+    label: 'System design',
+    description: 'Architecture prompts, tradeoffs, scale, and context.',
+    icon: 'hub',
+    accent: '#7a5c2e',
+  },
+  {
+    key: 'analytics',
+    label: 'AI Analytics',
+    description: 'Drive a live Claude Code agent against a real dataset to answer a business question.',
+    icon: 'analytics',
+    accent: '#1565c0',
+  },
+  {
+    key: 'data_modeling',
+    label: 'Data modeling',
+    description: 'Schema, entities, analytics thinking, and durable models.',
+    icon: 'account_tree',
+    accent: '#5b6f4d',
+  },
+  {
+    key: 'product_sense',
+    label: 'Product sense',
+    description: 'MCQs and judgment drills for product-quality thinking.',
+    icon: 'psychology',
+    accent: '#4a7c59',
   },
 ]
 
-const ALL_VIEW_DISCIPLINES = ['product_sense', 'analytics', 'system_design', 'data_modeling', 'sql', 'algorithm'] as const
+const ALL_VIEW_DISCIPLINES = ['algorithm', 'sql', 'system_design', 'analytics', 'data_modeling', 'product_sense'] as const
 const DISCIPLINE_LABELS: Record<string, string> = {
   product_sense: 'Product Sense',
-  analytics: 'Analytics',
+  analytics: 'AI Analytics',
   system_design: 'System Design',
   data_modeling: 'Data Modeling',
   sql: 'SQL',
-  algorithm: 'Coding',
+  algorithm: 'Coding/DSA',
 }
 const DISCIPLINE_COLORS: Record<string, string> = {
   product_sense: 'text-primary',
@@ -235,6 +234,10 @@ export function FilteredChallengesView({
   const parsedParams = useMemo(() => new URLSearchParams(searchString), [searchString])
 
   const discipline = getDiscipline(parsedParams)
+
+  // Live topic/technique counts for the active discipline (drives the count-aware
+  // Topic/Technique dropdowns in the filter bar). Skipped for 'all'.
+  const { topicCounts, techniqueCounts } = useTopicTechniqueCounts(discipline, searchString)
 
   const filters = useMemo<FilterState>(() => ({
     paradigm: readFilterValues(parsedParams, 'paradigm'),
@@ -374,21 +377,15 @@ export function FilteredChallengesView({
         </div>
       </section>
 
-      {/* Topic chip cloud — discipline-scoped topic/technique quick filters.
-          Counts come from the server (groupBy=topic|technique). */}
-      <TopicChipCloudLoader
-        discipline={discipline}
-        filters={filters}
-        onChange={handleFilterChange}
-        searchString={searchString}
-      />
-
-      {/* Secondary filter bar */}
+      {/* Secondary filter bar — includes count-aware Topic/Technique dropdowns
+          (discipline-scoped; counts from groupBy=topic|technique). */}
       <FilterDropdownBar
         discipline={discipline}
         filters={filters}
         onChange={handleFilterChange}
         resultCount={totalForDiscipline}
+        topicCounts={topicCounts}
+        techniqueCounts={techniqueCounts}
         onOpenMobileSheet={() => setMobileSheetOpen(true)}
         listView={listView}
         onToggleView={handleToggleView}
@@ -449,20 +446,12 @@ export function FilteredChallengesView({
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
- * Topic chip cloud loader — fetches topic/technique counts for the active
- * discipline from the server (no full-row payload) and feeds TopicChipCloud.
+ * Topic/technique count loader — fetches per-topic and per-technique live
+ * counts for the active discipline from the server (no full-row payload). These
+ * feed the count-aware Topic/Technique dropdowns in the filter bar: counts are
+ * shown per option and zero-count options are hidden. Skipped for 'all'.
  * ────────────────────────────────────────────────────────────────────────── */
-function TopicChipCloudLoader({
-  discipline,
-  filters,
-  onChange,
-  searchString,
-}: {
-  discipline: Discipline
-  filters: FilterState
-  onChange: (f: FilterState) => void
-  searchString: string
-}) {
+function useTopicTechniqueCounts(discipline: Discipline, searchString: string) {
   const [topicCounts, setTopicCounts] = useState<Record<string, number>>({})
   const [techniqueCounts, setTechniqueCounts] = useState<Record<string, number>>({})
 
@@ -488,15 +477,7 @@ function TopicChipCloudLoader({
     return () => { cancelled = true }
   }, [discipline, searchString])
 
-  return (
-    <TopicChipCloud
-      discipline={discipline}
-      filters={filters}
-      onChange={onChange}
-      topicCounts={topicCounts}
-      techniqueCounts={techniqueCounts}
-    />
-  )
+  return { topicCounts, techniqueCounts }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

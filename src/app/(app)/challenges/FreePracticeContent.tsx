@@ -12,7 +12,6 @@ import { ChallengeCard } from './ChallengeCard'
 import { ChallengeSearch } from './ChallengeSearch'
 import { HatchPick } from './HatchPick'
 import { FilteredChallengesView } from './FilteredChallengesView'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
 
@@ -131,27 +130,16 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-4 space-y-3">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex items-center gap-3">
-            <HatchGlyph size={36} state="listening" className="shrink-0 text-primary" />
-            <h1 className="font-headline text-3xl font-bold leading-tight text-on-surface">
-              Practice
-            </h1>
-          </div>
-          <ChallengeSearch total={counts.all} />
-        </div>
-      </div>
-
-      {/* Hatch's Pick + usage meter share one band so the question list sits
-          higher. On large screens the meter rides alongside the pick; it stacks
-          below on narrow screens. */}
+      {/* Top band: Hatch's Pick + search on one row, with the freemium usage
+          meter riding alongside on large screens so the question list sits
+          higher. Everything stacks on narrow screens. No page heading. */}
       <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-stretch">
-        <div className="lg:flex-1 lg:min-w-0">
-          <HatchPick className="h-full" />
-        </div>
-        <BillingUsageFromProfile className="lg:w-72 lg:flex-shrink-0" />
+        <HatchPick className="flex-1 min-w-0" />
+        <BillingUsageFromProfile className="lg:w-72 lg:flex-shrink-0 lg:self-center" />
+        <ChallengeSearch
+          total={counts.all}
+          className="w-full lg:w-auto lg:min-w-[240px] lg:max-w-[300px] lg:self-center"
+        />
       </div>
 
       {/* Featured Challenges - only when editorially pinned challenges exist and no search query */}

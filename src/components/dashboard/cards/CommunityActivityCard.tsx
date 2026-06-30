@@ -20,7 +20,7 @@ export function CommunityActivityCard({ events }: { events: ActivityFeedEvent[] 
   const visibleEvents = events.slice(0, 3)
 
   return (
-    <section className="rounded-2xl border border-outline-variant/50 bg-surface-container-low p-3.5">
+    <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-low p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h3 className="font-headline text-base font-bold text-on-surface">What peers are doing</h3>
