@@ -37,7 +37,7 @@ export function V3Nav() {
             className="btn btn-amber nav-cta"
             onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { mode: 'signup' } }))}
           >
-            Get started <span aria-hidden>→</span>
+            Start free <span aria-hidden>→</span>
           </button>
         </div>
       </div>

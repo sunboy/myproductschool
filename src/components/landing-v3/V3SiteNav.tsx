@@ -46,7 +46,7 @@ export function V3SiteNav() {
             Sign in
           </Link>
           <Link className="btn btn-amber nav-cta" href="/signup">
-            Get started <span aria-hidden>→</span>
+            Start free <span aria-hidden>→</span>
           </Link>
         </div>
       </div>
