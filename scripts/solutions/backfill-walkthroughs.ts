@@ -38,6 +38,8 @@ import { createClient } from '@supabase/supabase-js'
 import { SolutionContentSchema, type SolutionContentV1 } from '../../src/lib/solutions/schema'
 import { graftSteppedTrace } from '../../src/lib/solutions/trace/graft'
 import { buildSteppedTraceFromMetadata } from '../../src/lib/solutions/trace'
+import { buildSteppedGridFromMetadata } from '../../src/lib/solutions/trace/gridTrace'
+import { buildSteppedSequenceFromMetadata } from '../../src/lib/solutions/trace/sequenceTrace'
 import { buildSteppedPipelineFromMetadata } from '../../src/lib/solutions/trace/pipelineTrace'
 import { buildSteppedFlowFromContent } from '../../src/lib/solutions/trace/flowWalkthrough'
 
@@ -115,18 +117,25 @@ async function selectEligible(
     if (content.challenge_type !== type) continue
     const tags = tagsOf(row)
 
+    // Prefilter mirrors graft.ts's buildWalkthrough routing EXACTLY so the
+    // prefilter never disagrees with the graft's actual outcome. The graft is the
+    // authoritative gate in the main loop; here we only avoid fetching content for
+    // rows that obviously cannot graft.
     let eligible = false
     if (type === 'sql') {
-      // The pipeline builder can return a 2-step trace, but the diagram schema
-      // requires >= 3 steps, so the graft fail-closes those. Match that floor here
-      // so the prefilter agrees with the graft's actual outcome.
-      const pipeline = await buildSteppedPipelineFromMetadata(row.metadata ?? {}, tags)
-      eligible = pipeline != null && pipeline.diagram.steps.length >= 3
+      // Pipeline base floor is 2 (single-CTE = intermediate + result), set in the
+      // schema. The graft revalidates; do not impose a stricter floor here.
+      eligible = (await buildSteppedPipelineFromMetadata(row.metadata ?? {}, tags)) != null
     } else if (type === 'system_design' || type === 'data_modeling') {
       // Reads the optimal approach's architecture diagram from the stored content.
       eligible = buildSteppedFlowFromContent(content, row.metadata ?? null) != null
     } else if (type === 'algorithm') {
-      eligible = row.metadata ? buildSteppedTraceFromMetadata(row.metadata, tags) != null : false
+      // Try every algorithm base the graft tries: array -> grid (DP) -> sequence.
+      const meta = row.metadata ?? {}
+      eligible =
+        buildSteppedTraceFromMetadata(meta, tags) != null ||
+        buildSteppedGridFromMetadata(meta, tags) != null ||
+        buildSteppedSequenceFromMetadata(meta, tags) != null
     }
     if (eligible) out.push({ challenge: row, content })
   }
