@@ -112,7 +112,7 @@ export const SchemaTablesDiagramSchema = z.object({
 // model. Bases that only label a flow may be authored.
 
 /** Bases whose deltas assert computed state, so their trace must be machine-generated. */
-export const VERIFIED_STEPPED_BASES = ['array', 'pipeline', 'grid'] as const
+export const VERIFIED_STEPPED_BASES = ['array', 'pipeline', 'grid', 'sequence'] as const
 export type VerifiedSteppedBase = (typeof VERIFIED_STEPPED_BASES)[number]
 
 /** Tiny key/value chip shown in the step's explanation card (e.g. "target=21", "mid=4"). */
@@ -202,17 +202,47 @@ const GridDeltaSchema = z.object({
   })).max(8).optional(),
 })
 
+// Base: sequence (linked-list and ordered tree-traversal walks). The base is a
+// LINEAR row of labeled nodes drawn in a fixed left-to-right order: for a linked
+// list, the node order is the list order; for a tree traversal, it is the order
+// the nodes are VISITED (inorder, level-order flattened). Each step's delta marks
+// where the cursor sits, which nodes have been visited, and named pointers
+// (prev/curr/next for a reversal). The base declares only labels; the moving
+// state lives in the delta, never the base. A sequence asserts computed state
+// (the visit order and pointer hops are the algorithm's output), so it is a
+// verified base and its deltas must come from the trace harness, never the model.
+const SequenceStageSchema = z.object({
+  kind: z.literal('sequence'),
+  nodes: z.array(z.object({
+    id: z.string().min(1).max(24),
+    label: z.string().min(1).max(8),
+  })).min(2).max(12),
+})
+const SequenceDeltaSchema = z.object({
+  base: z.literal('sequence'),
+  /** The node the cursor currently sits on (index into base.nodes). */
+  activeIndex: z.number().int().min(0),
+  /** Nodes processed so far (cumulative through this step), for a settled tone. */
+  visited: z.array(z.number().int().min(0)).max(12).optional(),
+  /** Nodes to emphasize this step (e.g. the pair being re-linked), for accent. */
+  highlight: z.array(z.number().int().min(0)).max(12).optional(),
+  /** Named pointers over the row (prev/curr/next), each an index into base.nodes. */
+  pointers: z.record(z.string(), z.number().int().min(0)).optional(),
+})
+
 const SteppedBaseSchema = z.discriminatedUnion('kind', [
   ArrayStageSchema,
   PipelineStageSchema,
   FlowStageSchema,
   GridStageSchema,
+  SequenceStageSchema,
 ])
 const SteppedDeltaSchema = z.discriminatedUnion('base', [
   ArrayDeltaSchema,
   PipelineDeltaSchema,
   FlowDeltaSchema,
   GridDeltaSchema,
+  SequenceDeltaSchema,
 ])
 
 export const InteractiveStepDiagramSchema = z.object({
@@ -233,15 +263,27 @@ export const InteractiveStepDiagramSchema = z.object({
     decision: z.string().max(120).optional(),
     pills: z.array(StepPillSchema).max(5).optional(),
     delta: SteppedDeltaSchema,
-  })).min(3).max(8),
+  })).min(2).max(8),
 }).superRefine((diagram, ctx) => {
   const baseKind = diagram.base.kind
+
+  // Per-base step floor. A SQL pipeline's smallest honest unit is one CTE
+  // intermediate then the final result, a genuine 2-stage "build then assemble"
+  // walkthrough where both stages are separately executed against real data, so
+  // the pipeline base floor is 2. Every other base (array index walks, DP grid
+  // fills, flow request hops) needs at least 3 transitions to read as a motion,
+  // so they keep the 3-step floor. The array.max(8)/grid/flow caps are unchanged.
+  const minSteps = baseKind === 'pipeline' ? 2 : 3
+  if (diagram.steps.length < minSteps) {
+    ctx.addIssue({ code: 'custom', message: `stepped diagram on base "${baseKind}" needs at least ${minSteps} steps (found ${diagram.steps.length})` })
+  }
   const pointerNames = baseKind === 'array' ? new Set(diagram.base.pointers) : null
   const cellCount = baseKind === 'array' ? diagram.base.cells.length : 0
   const stageCount = baseKind === 'pipeline' ? diagram.base.stages.length : 0
   const nodeIds = baseKind === 'flow' ? new Set(diagram.base.nodes.map((n) => n.id)) : null
   const gridRows = baseKind === 'grid' ? diagram.base.rows : 0
   const gridCols = baseKind === 'grid' ? diagram.base.cols : 0
+  const seqNodeCount = baseKind === 'sequence' ? diagram.base.nodes.length : 0
 
   diagram.steps.forEach((step, i) => {
     if (step.delta.base !== baseKind) {
@@ -272,6 +314,16 @@ export const InteractiveStepDiagramSchema = z.object({
       for (const cell of cells) {
         if (cell.r >= gridRows) ctx.addIssue({ code: 'custom', message: `step ${i} references row ${cell.r} out of range (${gridRows} rows)` })
         if (cell.c >= gridCols) ctx.addIssue({ code: 'custom', message: `step ${i} references col ${cell.c} out of range (${gridCols} cols)` })
+      }
+    } else if (step.delta.base === 'sequence') {
+      if (step.delta.activeIndex >= seqNodeCount) ctx.addIssue({ code: 'custom', message: `step ${i} activeIndex ${step.delta.activeIndex} out of range (${seqNodeCount} nodes)` })
+      const refs = [
+        ...(step.delta.visited ?? []),
+        ...(step.delta.highlight ?? []),
+        ...Object.values(step.delta.pointers ?? {}),
+      ]
+      for (const idx of refs) {
+        if (idx >= seqNodeCount) ctx.addIssue({ code: 'custom', message: `step ${i} references node index ${idx} out of range (${seqNodeCount} nodes)` })
       }
     }
   })

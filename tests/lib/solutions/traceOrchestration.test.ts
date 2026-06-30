@@ -496,3 +496,207 @@ test('a prior content.walkthrough is rebuilt in place and its prose is preserved
   assert.deepEqual(diagram.steps.map((s) => s.title), ['Prior probe', 'Prior shift', 'Prior land'])
   assert.equal((diagram.base as { cells: unknown[] }).cells.length, 9)
 })
+
+// ── String patterns route from tags and cross-check against expected ──────────
+
+test('valid-palindrome certifies "A man, a plan, a canal: Panama" -> true via the oracle', () => {
+  // The famous 30-char string is too long for a displayable trace, so no diagram
+  // is built (certifiedCount may be >0 but diagramTrace stays null -> null). Prove
+  // the cross-check itself accepts the oracle here, then certify a short palindrome
+  // end-to-end below. This documents that the over-long canonical case is correctly
+  // rejected for DISPLAY while the boolean cross-check logic is exercised separately.
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'def solution(s):\n    lo,hi=0,len(s)-1\n    while lo<hi: ...',
+      test_cases: [{ args: ['A man, a plan, a canal: Panama'], expected: true }],
+    },
+    ['valid-palindrome'],
+  )
+  // Over-long input -> no displayable diagram, so the candidate is null even though
+  // the oracle agrees. This is the fail-closed display gate, not a cross-check fail.
+  assert.equal(candidate, null)
+})
+
+test('valid-palindrome certifies a short palindrome end-to-end and verifies the diagram', () => {
+  // "racecar" (7 chars) is short enough to display: the oracle is true, the expected
+  // is true, and the trace produces a clean 3-frame walkthrough.
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'def solution(s):\n    lo,hi=0,len(s)-1\n    while lo<hi: ...',
+      test_cases: [{ args: ['racecar'], expected: true }],
+    },
+    ['valid-palindrome'],
+  )
+  assert.ok(candidate)
+  assert.equal(candidate!.pattern, 'valid_palindrome')
+  assert.equal(candidate!.diagram.trace_verified, true)
+  assert.equal(SolutionDiagramSchema.safeParse(candidate!.diagram).success, true)
+  // Cells display characters.
+  const cells = (candidate!.diagram.base as { cells: { value: string }[] }).cells
+  assert.deepEqual(cells.map((c) => c.value), ['r', 'a', 'c', 'e', 'c', 'a', 'r'])
+})
+
+test('valid-palindrome accepts the expected encoded as the string "true"', () => {
+  // Some stored cases keep `expected` as a stringified boolean. The cross-check
+  // normalizes "true"/"false" so the boolean answer still certifies.
+  const candidate = buildSteppedTraceFromMetadata(
+    { reference_solution: 'palindrome', test_cases: [{ args: ['racecar'], expected: 'true' }] },
+    ['palindrome'],
+  )
+  assert.ok(candidate)
+  assert.equal(candidate!.pattern, 'valid_palindrome')
+})
+
+test('longest-substring "abcabcbb" -> 3 certifies and produces a verified diagram', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'def solution(s):\n    seen={}; l=0; best=0\n    for r,ch in enumerate(s): ...',
+      test_cases: [{ args: ['abcabcbb'], expected: 3 }],
+    },
+    ['longest-substring'],
+  )
+  assert.ok(candidate)
+  assert.equal(candidate!.pattern, 'longest_substring')
+  assert.equal(candidate!.diagram.trace_verified, true)
+  assert.equal(SolutionDiagramSchema.safeParse(candidate!.diagram).success, true)
+})
+
+test('longest-substring takes a lone string `input` field (not just args)', () => {
+  // Some cases store the input as `input: "abcabcbb"` rather than `args: [...]`.
+  const candidate = buildSteppedTraceFromMetadata(
+    { reference_solution: 'sliding window', test_cases: [{ input: 'abcabcbb', expected: 3 }] },
+    ['longest-substring-without-repeating-characters'],
+  )
+  assert.ok(candidate)
+  assert.equal(candidate!.pattern, 'longest_substring')
+})
+
+test('a wrong-expected STRING case returns null (cross-check rejects it)', () => {
+  // Longest substring of "abcabcbb" is 3, but the stored expected says 5. The
+  // oracle disagrees, so no misleading walkthrough ships.
+  const longestWrong = buildSteppedTraceFromMetadata(
+    { reference_solution: 'sliding window', test_cases: [{ args: ['abcabcbb'], expected: 5 }] },
+    ['longest-substring'],
+  )
+  assert.equal(longestWrong, null)
+
+  // Valid palindrome "racecar" is true, but the stored expected says false.
+  const palindromeWrong = buildSteppedTraceFromMetadata(
+    { reference_solution: 'palindrome', test_cases: [{ args: ['racecar'], expected: false }] },
+    ['valid-palindrome'],
+  )
+  assert.equal(palindromeWrong, null)
+})
+
+test('a string case missing `expected` disqualifies the pattern', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    { reference_solution: 'sliding window', test_cases: [{ args: ['abcabcbb'] /* no expected */ }] },
+    ['longest-substring'],
+  )
+  assert.equal(candidate, null)
+})
+
+test('one agreeing string case does not certify when another disagrees', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'sliding window',
+      test_cases: [
+        { args: ['abcabcbb'], expected: 3 }, // agrees
+        { args: ['pwwkew'], expected: 99 },  // wrong oracle (real answer 3) -> disqualify
+      ],
+    },
+    ['longest-substring'],
+  )
+  assert.equal(candidate, null)
+})
+
+test('valid-palindrome stays a string pattern through graft (cells show characters)', async () => {
+  const content: SolutionContentV1 = {
+    version: 1,
+    challenge_type: 'algorithm',
+    overview_md: 'tests the two-pointer string scan.',
+    approaches: [
+      { id: 'brute', title: 'Reverse', tagline: 'compare', body_md: 'reverse', code: { language: 'python', source: 'x=1' }, complexity: { time: 'O(n)', space: 'O(n)' } },
+      { id: 'optimal', title: 'Two pointers', tagline: 'converge', body_md: 'converge', code: { language: 'python', source: 'y=2' }, complexity: { time: 'O(n)', space: 'O(1)' } },
+    ],
+    ai_collaboration: { body_md: 'pair', prompts: [{ title: 't', prompt: 'p', why: 'w' }], pitfalls: ['x'] },
+  }
+  const meta = {
+    reference_solution: 'def solution(s):\n    lo,hi=0,len(s)-1\n    while lo<hi: ...',
+    test_cases: [{ args: ['racecar'], expected: true }],
+  }
+  const { content: out, grafted } = await graftSteppedTrace(content, meta, ['valid-palindrome'])
+  assert.equal(grafted, true)
+  assert.ok(out.walkthrough)
+  assert.equal(out.walkthrough!.kind, 'stepped')
+  const cells = (out.walkthrough!.base as { cells: { value: string }[] }).cells
+  assert.deepEqual(cells.map((c) => c.value), ['r', 'a', 'c', 'e', 'c', 'a', 'r'])
+})
+
+// ── Sequence harness reaches through the single graft seam (array -> grid -> sequence) ─
+
+/** Build an algorithm solution carrying no model stepped diagram. */
+function plainAlgoContent(): SolutionContentV1 {
+  return {
+    version: 1,
+    challenge_type: 'algorithm',
+    overview_md: 'tests pointer rewiring over a linked list.',
+    approaches: [
+      { id: 'recursive', title: 'Recursive', tagline: 'unwind', body_md: 'unwind', code: { language: 'python', source: 'x=1' }, complexity: { time: 'O(n)', space: 'O(n)' } },
+      { id: 'optimal', title: 'Iterative pointers', tagline: 'rewire', body_md: 'rewire', code: { language: 'python', source: 'y=2' }, complexity: { time: 'O(n)', space: 'O(1)' } },
+    ],
+    ai_collaboration: { body_md: 'pair', prompts: [{ title: 't', prompt: 'p', why: 'w' }], pitfalls: ['x'] },
+  }
+}
+
+test('reverse-linked-list flows through graft to a verified sequence walkthrough (array+grid yield, sequence fires)', async () => {
+  // Array and grid harnesses do not recognize a linked-list reversal, so for the
+  // algorithm case they return null and the sequence harness is reached. The
+  // graft seam must produce a top-level `sequence` walkthrough with the real
+  // node row, verified against the test cases' expected reversed output.
+  const meta = {
+    reference_solution: 'prev=None; curr=head; while curr: nxt=curr.next; curr.next=prev; prev=curr; curr=nxt',
+    test_cases: [
+      { id: 'tc1', args: [[1, 2, 3, 4]], expected: [4, 3, 2, 1], input_types: ['linked_list'] },
+      { id: 'tc2', args: [[1, 2]], expected: [2, 1], input_types: ['linked_list'] },
+    ],
+  }
+  const { content: out, grafted } = await graftSteppedTrace(plainAlgoContent(), meta, ['reverse-linked-list'])
+  assert.equal(grafted, true)
+  assert.ok(out.walkthrough)
+  assert.equal(out.walkthrough!.kind, 'stepped')
+  assert.equal(out.walkthrough!.base.kind, 'sequence')
+  // The display row is the original list order (the renderer rewires via pointers).
+  const nodes = (out.walkthrough!.base as { nodes: { label: string }[] }).nodes
+  assert.deepEqual(nodes.map((n) => n.label), ['1', '2', '3', '4'])
+  // No approach kept a stepped diagram; the trace lives on the top-level field.
+  assert.equal(out.approaches.every((a) => a.diagram?.kind !== 'stepped'), true)
+})
+
+test('inorder-traversal flows through graft to a verified sequence walkthrough', async () => {
+  const meta = {
+    reference_solution: 'def inorder(root): return inorder(root.left)+[root.val]+inorder(root.right)',
+    test_cases: [
+      { id: 'tc1', args: [[1, null, 2, 3]], expected: [1, 3, 2], input_types: ['tree'] },
+      { id: 'tc2', args: [[4, 2, 6, 1, 3, 5, 7]], expected: [1, 2, 3, 4, 5, 6, 7], input_types: ['tree'] },
+    ],
+  }
+  const { content: out, grafted } = await graftSteppedTrace(plainAlgoContent(), meta, ['inorder-traversal'])
+  assert.equal(grafted, true)
+  assert.ok(out.walkthrough)
+  assert.equal(out.walkthrough!.base.kind, 'sequence')
+})
+
+test('a wrong-variant tree-construction challenge is rejected by the graft seam (no walkthrough)', async () => {
+  // "Construct Binary Tree from Preorder and Inorder" is tagged `inorder` but its
+  // expected is a tree array, not the inorder of arg 0. Every algorithm harness
+  // declines, so graft produces NO walkthrough rather than a misleading one.
+  const meta = {
+    test_cases: [
+      { args: [[3, 9, 20, 15, 7], [9, 3, 15, 20, 7]], expected: [3, 9, 20, null, null, 15, 7] },
+    ],
+  }
+  const { content: out, grafted } = await graftSteppedTrace(plainAlgoContent(), meta, ['inorder'])
+  assert.equal(grafted, false)
+  assert.equal(out.walkthrough, undefined)
+})

@@ -7,8 +7,9 @@
  * to the TOP-LEVEL `content.walkthrough` field, where the solution UI surfaces it
  * as its own "Visual" tab (not inline on an approach). The walkthrough is chosen
  * by challenge_type:
- *   - algorithm      -> verified array trace, else verified grid (DP) trace
- *   - sql            -> verified pipeline (CTE chain) trace
+ *   - algorithm      -> verified array trace, else verified grid (DP) trace,
+ *                       else verified sequence (linked-list / tree) trace
+ *   - sql            -> verified pipeline (CTE chain) trace (now 2-step-capable)
  *   - system_design  -> authored request-flow walkthrough (derived from the
  *   - data_modeling     architecture diagram on the optimal approach)
  *
@@ -17,10 +18,11 @@
  * stripped from every approach (the server is the sole source of stepped diagrams),
  * and a prior approach-level stepped diagram is migrated up to .walkthrough.
  *
- * For the verified bases (array / grid / pipeline) the deltas are computed by
- * executing the real reference, never by the model; the flow base asserts no
- * computed state, so it is derived deterministically from the optimal approach's
- * architecture diagram (still server-owned, never free-authored by the model).
+ * For the verified bases (array / grid / sequence / pipeline) the deltas are
+ * computed by executing the real reference, never by the model; the flow base
+ * asserts no computed state, so it is derived deterministically from the optimal
+ * approach's architecture diagram (still server-owned, never free-authored by
+ * the model).
  *
  * PROSE OVERLAY (the only thing the model contributes to a stepped diagram):
  * the deltas, base, and trace_verified marker come ONLY from the harness. The
@@ -46,6 +48,7 @@ import {
 } from '@/lib/solutions/schema'
 import { buildSteppedTraceFromMetadata } from './index'
 import { buildSteppedGridFromMetadata } from './gridTrace'
+import { buildSteppedSequenceFromMetadata } from './sequenceTrace'
 import { buildSteppedPipelineFromMetadata } from './pipelineTrace'
 import { buildSteppedFlowFromContent } from './flowWalkthrough'
 import {
@@ -78,11 +81,20 @@ async function buildWalkthrough(
   switch (content.challenge_type) {
     case 'algorithm': {
       if (!metadata) return null
-      // Try the array harness first, then the grid (DP) harness; first non-null wins.
+      // Try each verified algorithm harness in order, first non-null wins:
+      //   array (incl. string + two-pointer-area/water variants)
+      //   -> grid (DP families: LCS/edit-distance/knapsack/coin-change/paths)
+      //   -> sequence (linked-list reverse + ordered tree traversal).
+      // Each harness only fires when it both recognizes the pattern AND its
+      // uncapped oracle agrees with every extractable test case's expected; a
+      // pattern it does not actually solve returns null rather than animating
+      // a misleading trace, so the next harness (or no walkthrough) is used.
       const array = buildSteppedTraceFromMetadata(metadata, tags)
       if (array) return array.diagram
       const grid = buildSteppedGridFromMetadata(metadata, tags)
-      return grid ? grid.diagram : null
+      if (grid) return grid.diagram
+      const sequence = buildSteppedSequenceFromMetadata(metadata, tags)
+      return sequence ? sequence.diagram : null
     }
     case 'sql': {
       if (!metadata) return null

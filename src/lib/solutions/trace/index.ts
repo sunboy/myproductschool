@@ -9,7 +9,15 @@
  * its static diagram). The model never authors the deltas.
  */
 
-import { runArrayTrace, buildSteppedArrayDiagram, computeAnswer, type ArrayPattern } from './arrayTrace'
+import {
+  runArrayTrace,
+  runStringArrayTrace,
+  buildSteppedArrayDiagram,
+  computeAnswer,
+  computeStringAnswer,
+  isStringPattern,
+  type ArrayPattern,
+} from './arrayTrace'
 import type { InteractiveStepDiagram } from '@/lib/solutions/schema'
 
 interface VisibleTestCase {
@@ -58,6 +66,50 @@ const PATTERN_TAGS: Record<string, ArrayPattern> = {
   'dutch national flag': 'partition',
   'three-way-partition': 'partition',
   'quickselect': 'partition',
+  // String two-pointers: Valid Palindrome converges from both ends, skipping
+  // non-alphanumerics. Tagged generically as a string two-pointers problem.
+  'valid-palindrome': 'valid_palindrome',
+  'valid palindrome': 'valid_palindrome',
+  'palindrome': 'valid_palindrome',
+  // String sliding window without a fixed size: Longest Substring Without
+  // Repeating Characters grows the window and shrinks it on a duplicate.
+  'longest-substring': 'longest_substring',
+  'longest substring': 'longest_substring',
+  'longest-substring-without-repeating-characters': 'longest_substring',
+  'longest-substring-without-repeating': 'longest_substring',
+  'no-repeat-substring': 'longest_substring',
+}
+
+/**
+ * The two-pointer tag ('two-pointers') maps to the classic pair-sum tracer by
+ * default, but two converging-pointer problems use the SAME tag while solving a
+ * different objective the pair-sum tracer does NOT compute:
+ *   - Container With Most Water: maximize min(height[lo],height[hi]) * (hi-lo),
+ *     moving the shorter wall inward. Signature in the reference: an area built
+ *     from min(...) times a width, kept as a running max.
+ *   - Trapping Rain Water: accumulate water bounded by the smaller side max,
+ *     tracking a left-max AND a right-max. Signature: both running maxima.
+ *
+ * We refine ONLY when the reference code shows that objective; a plain pair-sum
+ * two-pointer solution has neither signature and stays on `two_pointers`. The
+ * cross-check downstream still rejects a misroute, but this keeps a genuine area
+ * problem from running the pair-sum tracer (which would need a target it lacks).
+ */
+function refineTwoPointers(referenceSource: string): ArrayPattern {
+  const src = referenceSource.toLowerCase()
+  // Trapping water: the defining signature is a left-max AND a right-max tracked
+  // together. Check it FIRST because a trapping reference can also mention area-ish
+  // tokens, but only trapping carries both side-maxima.
+  const hasLeftMax = /\bleft_?max\b/.test(src) || /\bl_?max\b/.test(src)
+  const hasRightMax = /\bright_?max\b/.test(src) || /\br_?max\b/.test(src)
+  if (hasLeftMax && hasRightMax) return 'two_pointers_water'
+  // Max area: an explicit area objective (maxArea / max_area) or the min-times-width
+  // shape that defines a container area.
+  const hasAreaName = /\bmax_?area\b/.test(src) || /\bmaxarea\b/.test(src)
+  const hasMinTimesWidth = /\bmin\s*\(/.test(src) && /\bwidth\b/.test(src)
+  if (hasAreaName || hasMinTimesWidth) return 'two_pointers_area'
+  // No area/water signature: it is the classic pair-sum two-pointer.
+  return 'two_pointers'
 }
 
 /**
@@ -69,7 +121,13 @@ const PATTERN_TAGS: Record<string, ArrayPattern> = {
 function detectPattern(tags: string[], referenceSource: string): ArrayPattern | null {
   for (const tag of tags) {
     const hit = PATTERN_TAGS[tag.toLowerCase().trim()]
-    if (hit) return hit
+    if (hit) {
+      // The shared two-pointer tag may be an area / water variant; refine by the
+      // reference code's objective so a genuine area problem does not run the
+      // pair-sum tracer (and a pair-sum problem is never mislabeled as area).
+      if (hit === 'two_pointers') return refineTwoPointers(referenceSource)
+      return hit
+    }
   }
   const src = referenceSource.toLowerCase()
   // Conservative fallbacks: only fire on strong, unambiguous signals.
@@ -99,8 +157,14 @@ function extractArrayInput(tc: VisibleTestCase, pattern: ArrayPattern): { values
     return { values: firstArray, param: k }
   }
 
-  if (pattern === 'fast_slow' || pattern === 'kadane') {
-    // No scalar parameter; the array alone drives the walk / running sum.
+  if (
+    pattern === 'fast_slow' ||
+    pattern === 'kadane' ||
+    pattern === 'two_pointers_area' ||
+    pattern === 'two_pointers_water'
+  ) {
+    // No scalar parameter; the array alone drives the walk / running sum / the
+    // converging height comparison (max area, trapped water).
     return { values: firstArray, param: 0 }
   }
 
@@ -128,6 +192,71 @@ function extractRef(reference: unknown): string {
   return ''
 }
 
+/** Pull the positional args out of a visible test case (args, input-as-args, or a lone string). */
+function readArgs(tc: VisibleTestCase): unknown[] | null {
+  if (Array.isArray(tc.args)) return tc.args
+  if (Array.isArray(tc.input)) return tc.input as unknown[]
+  // A lone string input (input: "abc") is a one-arg case for the string patterns.
+  if (typeof tc.input === 'string') return [tc.input]
+  return null
+}
+
+/**
+ * Pull a STRING first-arg as cells for the string patterns. Each character becomes
+ * a cell, so the input is capped to the array MAX_CELLS (16); a longer string is
+ * rejected (returns null) rather than truncated, because a truncated trace would
+ * assert an answer the displayed cells do not support. A second string arg
+ * (a pattern/target for window-with-pattern problems) is captured too, though the
+ * tracers shipped here (longest substring, valid palindrome) take no second
+ * string. Returns null when there is no string first-arg.
+ */
+function extractStringInput(tc: VisibleTestCase): { value: string; param?: string } | null {
+  const args = readArgs(tc)
+  if (!args || args.length === 0) return null
+  const strings = args.filter((a) => typeof a === 'string') as string[]
+  if (strings.length === 0) return null
+  const value = strings[0]
+  if (Array.from(value).length > 16) return null
+  return { value, param: strings[1] }
+}
+
+/**
+ * Certify-and-build for the STRING patterns. Mirrors the numeric path's contract:
+ * EVERY visible case we can extract a string input from must carry an `expected`
+ * value, and the uncapped string oracle's answer must agree with it; one case
+ * disagreeing or missing `expected` disqualifies the pattern. The first case that
+ * also yields a clean (complete, >=3 frame) trace supplies the diagram. Returns
+ * null when nothing certifies or no clean trace is producible.
+ */
+function buildSteppedStringTraceFromMetadata(
+  metadata: Record<string, unknown>,
+  pattern: ArrayPattern,
+): SteppedTraceCandidate | null {
+  const testCases = Array.isArray(metadata.test_cases) ? (metadata.test_cases as VisibleTestCase[]) : []
+  const visible = testCases.filter((tc) => !(tc as { hidden?: boolean }).hidden && !(tc as { is_hidden?: boolean }).is_hidden)
+
+  let diagramTrace: ReturnType<typeof runStringArrayTrace> | null = null
+  let certifiedCount = 0
+
+  for (const tc of visible) {
+    const input = extractStringInput(tc)
+    if (!input) continue // not a string-shaped case for this pattern; ignore it
+    if (tc.expected === undefined) return null // extractable case with no oracle: cannot certify
+
+    const answer = computeStringAnswer(pattern, input.value)
+    if (answer === null || !answersAgree(pattern, answer, tc.expected, 0)) return null
+    certifiedCount++
+
+    if (!diagramTrace) {
+      const trace = runStringArrayTrace(pattern, input.value)
+      if (trace) diagramTrace = trace
+    }
+  }
+
+  if (certifiedCount === 0 || !diagramTrace) return null
+  return { diagram: buildSteppedArrayDiagram(diagramTrace), pattern }
+}
+
 /**
  * Build a verified stepped-array diagram for an algorithm challenge, or null if
  * it is not eligible. Pure (no DB): callers pass the metadata + tags they already
@@ -142,6 +271,10 @@ export function buildSteppedTraceFromMetadata(
   const reference = extractRef(metadata.reference_solution)
   const pattern = detectPattern(tags, reference)
   if (!pattern) return null
+
+  // String patterns (Valid Palindrome, Longest Substring) read a STRING input and
+  // trace over its characters, so they run a separate certify-and-build path.
+  if (isStringPattern(pattern)) return buildSteppedStringTraceFromMetadata(metadata, pattern)
 
   const testCases = Array.isArray(metadata.test_cases) ? (metadata.test_cases as VisibleTestCase[]) : []
   const visible = testCases.filter((tc) => !(tc as { hidden?: boolean }).hidden && !(tc as { is_hidden?: boolean }).is_hidden)
@@ -176,6 +309,27 @@ export function buildSteppedTraceFromMetadata(
   return { diagram: buildSteppedArrayDiagram(diagramTrace), pattern }
 }
 
+/**
+ * Coerce a stored `expected` boolean into a real boolean. Accepts a literal
+ * boolean, the strings "true"/"false" (case-insensitive, trimmed), or the numbers
+ * 1/0. Anything else returns null so the cross-check refuses to certify rather
+ * than guessing. Used only by the valid_palindrome boolean comparison.
+ */
+function normalizeBoolean(x: unknown): boolean | null {
+  if (typeof x === 'boolean') return x
+  if (typeof x === 'number') {
+    if (x === 1) return true
+    if (x === 0) return false
+    return null
+  }
+  if (typeof x === 'string') {
+    const s = x.trim().toLowerCase()
+    if (s === 'true') return true
+    if (s === 'false') return false
+  }
+  return null
+}
+
 /** A partition answer is region counts: { less, equal, greater }. */
 function isPartitionCounts(x: unknown): x is { less: number; equal: number; greater: number } {
   return (
@@ -202,6 +356,17 @@ function isPartitionCounts(x: unknown): x is { less: number; equal: number; grea
  * - everything else: index, index pair (order-insensitive), or scalar.
  */
 function answersAgree(pattern: ArrayPattern, canonical: unknown, expected: unknown, param: number): boolean {
+  // valid_palindrome: the canonical answer is a boolean. Compare against a literal
+  // boolean, the strings "true"/"false" (case-insensitive), or 1/0, but NEVER fall
+  // through to the numeric scalar coercion below (where Number(false) === 0 would
+  // make a `false` answer spuriously match an expected 0). A boolean is decided here.
+  if (pattern === 'valid_palindrome') {
+    if (typeof canonical !== 'boolean') return false
+    const e = normalizeBoolean(expected)
+    return e !== null && e === canonical
+  }
+  // longest_substring: the canonical answer is a length (a non-negative integer),
+  // handled by the scalar branch at the bottom (Number(canonical) === Number(expected)).
   if (pattern === 'partition') {
     if (!isPartitionCounts(canonical) || !Array.isArray(expected)) return false
     const arr = expected.map(Number)

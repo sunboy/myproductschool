@@ -7,6 +7,7 @@ import { ArrayStage } from './stages/ArrayStage'
 import { PipelineStage } from './stages/PipelineStage'
 import { FlowStage } from './stages/FlowStage'
 import { GridStage } from './stages/GridStage'
+import { SequenceStage } from './stages/SequenceStage'
 
 interface Props {
   spec: SteppedSpec
@@ -94,6 +95,9 @@ export function InteractiveStepDiagram({ spec, reducedMotion, onStepChange }: Pr
     }
     if (spec.base.kind === 'grid' && step.delta.base === 'grid') {
       return <GridStage base={spec.base} delta={step.delta} reducedMotion={reducedMotion} />
+    }
+    if (spec.base.kind === 'sequence' && step.delta.base === 'sequence') {
+      return <SequenceStage base={spec.base} delta={step.delta} reducedMotion={reducedMotion} />
     }
     // Unknown/future base: fail soft to nothing rather than crash, so an
     // unrecognized stepped shape never breaks an existing solution.

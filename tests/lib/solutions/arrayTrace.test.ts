@@ -1,6 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { runArrayTrace, buildSteppedArrayDiagram, computeAnswer } from '../../../src/lib/solutions/trace/arrayTrace'
+import {
+  runArrayTrace,
+  runStringArrayTrace,
+  buildSteppedArrayDiagram,
+  computeAnswer,
+  computeStringAnswer,
+  isStringPattern,
+} from '../../../src/lib/solutions/trace/arrayTrace'
 import { SolutionDiagramSchema } from '../../../src/lib/solutions/schema'
 
 test('binary search trace matches the hand-computed lo/mid/hi sequence', () => {
@@ -195,4 +202,128 @@ test('built diagrams from the new tracers pass the schema with the verified mark
     assert.equal(SolutionDiagramSchema.safeParse(diagram).success, true)
     assert.equal(diagram.trace_verified, true)
   }
+})
+
+// ── String patterns: longest substring (sliding window) ───────────────────────
+
+test('longest-substring trace on "abcabcbb" walks the window and answers 3', () => {
+  // "abcabcbb": the longest duplicate-free window is "abc" (length 3). r scans 0..7:
+  // window grows to [0..2] (abc), then each repeat jumps l forward, never exceeding 3.
+  const trace = runStringArrayTrace('longest_substring', 'abcabcbb')
+  assert.ok(trace)
+  assert.equal(trace!.answer, 3)
+  // 8 chars -> 8 frames (one per scanned character).
+  assert.equal(trace!.frames.length, 8)
+  // The window expands l/r without ever exceeding length 3.
+  assert.deepEqual(trace!.frames.slice(0, 4).map((f) => f.pointerAt), [
+    { l: 0, r: 0 },
+    { l: 0, r: 1 },
+    { l: 0, r: 2 },
+    { l: 1, r: 3 }, // 'a' repeats at 3, l jumps past index 0
+  ])
+  // The final frame lands on the best window [0..2] and is marked found.
+  const last = trace!.frames.at(-1)!
+  assert.equal(last.found, true)
+  assert.deepEqual(last.pointerAt, { l: 0, r: 2 })
+  assert.deepEqual(last.highlight, [0, 1, 2])
+})
+
+test('longest-substring cells display the characters, not numbers', () => {
+  const trace = runStringArrayTrace('longest_substring', 'abcabcbb')
+  assert.ok(trace)
+  const diagram = buildSteppedArrayDiagram(trace!)
+  assert.equal(diagram.base.kind, 'array')
+  const cells = (diagram.base as { cells: { value: string }[] }).cells
+  assert.deepEqual(cells.map((c) => c.value), ['a', 'b', 'c', 'a', 'b', 'c', 'b', 'b'])
+  assert.equal(SolutionDiagramSchema.safeParse(diagram).success, true)
+  assert.equal(diagram.trace_verified, true)
+})
+
+test('longest-substring with all-distinct characters answers the full length', () => {
+  // "abcdef": no repeats, the window spans the whole string, length 6.
+  const trace = runStringArrayTrace('longest_substring', 'abcdef')
+  assert.ok(trace)
+  assert.equal(trace!.answer, 6)
+  assert.equal(trace!.frames.at(-1)!.found, true)
+})
+
+test('longest-substring oracle agrees with the display trace and is uncapped', () => {
+  assert.equal(computeStringAnswer('longest_substring', 'abcabcbb'), 3)
+  assert.equal(computeStringAnswer('longest_substring', 'bbbbb'), 1)
+  assert.equal(computeStringAnswer('longest_substring', 'pwwkew'), 3)
+  // Past the display frame cap (a 12-char string the trace would not fully draw):
+  assert.equal(computeStringAnswer('longest_substring', 'abcdeafghijk'), 11)
+})
+
+// ── String patterns: valid palindrome (two pointers, alnum-only, case-insensitive) ─
+
+test('valid-palindrome trace on "racecar" converges and answers true', () => {
+  const trace = runStringArrayTrace('valid_palindrome', 'racecar')
+  assert.ok(trace)
+  assert.equal(trace!.answer, true)
+  // Three comparison frames before the pointers cross at the middle.
+  assert.deepEqual(trace!.frames.map((f) => f.pointerAt), [
+    { lo: 0, hi: 6 },
+    { lo: 1, hi: 5 },
+    { lo: 2, hi: 4 },
+  ])
+  const last = trace!.frames.at(-1)!
+  assert.equal(last.found, true)
+  assert.ok(last.note.includes('reads the same'))
+})
+
+test('valid-palindrome skips non-alphanumerics and compares case-insensitively', () => {
+  // "Madam!" -> cleaned "madam": M==m, a==a, d is the middle. The '!' is skipped.
+  const trace = runStringArrayTrace('valid_palindrome', 'Madam!')
+  assert.ok(trace)
+  assert.equal(trace!.answer, true)
+  // The first move skips the trailing '!' from the right (not alphanumeric).
+  assert.ok(trace!.frames.some((f) => f.note.includes('skip') && f.note.includes('!')))
+})
+
+test('valid-palindrome cells display the characters and pass the schema', () => {
+  const trace = runStringArrayTrace('valid_palindrome', 'racecar')
+  assert.ok(trace)
+  const diagram = buildSteppedArrayDiagram(trace!)
+  const cells = (diagram.base as { cells: { value: string }[] }).cells
+  assert.deepEqual(cells.map((c) => c.value), ['r', 'a', 'c', 'e', 'c', 'a', 'r'])
+  assert.equal(SolutionDiagramSchema.safeParse(diagram).success, true)
+  assert.equal(diagram.trace_verified, true)
+})
+
+test('valid-palindrome oracle handles the canonical "A man, a plan, a canal: Panama" -> true', () => {
+  // The famous LeetCode string is 30 characters (too long for a 16-cell display
+  // trace, so no diagram), but the uncapped oracle must still compute true: every
+  // alphanumeric pair matches once punctuation/spaces are skipped and case is folded.
+  assert.equal(computeStringAnswer('valid_palindrome', 'A man, a plan, a canal: Panama'), true)
+  // The display trace is correctly refused for the over-long input (fail-closed).
+  assert.equal(runStringArrayTrace('valid_palindrome', 'A man, a plan, a canal: Panama'), null)
+})
+
+test('valid-palindrome oracle returns false for a non-palindrome', () => {
+  assert.equal(computeStringAnswer('valid_palindrome', '0P'), false) // '0' != 'p'
+  assert.equal(computeStringAnswer('valid_palindrome', 'abca'), false)
+})
+
+// ── String-pattern guards: numeric and string entry points stay separated ──────
+
+test('runArrayTrace refuses string patterns; runStringArrayTrace refuses numeric ones', () => {
+  assert.equal(isStringPattern('longest_substring'), true)
+  assert.equal(isStringPattern('valid_palindrome'), true)
+  assert.equal(isStringPattern('binary_search'), false)
+  // A string pattern cannot be run through the numeric path (would mis-trace).
+  assert.equal(runArrayTrace('longest_substring', [1, 2, 3], 0), null)
+  assert.equal(runArrayTrace('valid_palindrome', [1, 2, 3], 0), null)
+  // A numeric pattern cannot be run through the string path.
+  assert.equal(runStringArrayTrace('binary_search', 'abc'), null)
+})
+
+test('a too-long string (>16 chars) is rejected for a clean walkthrough', () => {
+  const long = 'abcdefghijklmnopqrstuvwxyz' // 26 chars
+  assert.equal(runStringArrayTrace('longest_substring', long), null)
+})
+
+test('a too-short string (<2 chars) is rejected', () => {
+  assert.equal(runStringArrayTrace('longest_substring', 'a'), null)
+  assert.equal(runStringArrayTrace('valid_palindrome', 'a'), null)
 })

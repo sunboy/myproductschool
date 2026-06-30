@@ -27,10 +27,24 @@ import type { InteractiveStepDiagram } from '@/lib/solutions/schema'
 export type ArrayPattern =
   | 'binary_search'
   | 'two_pointers'
+  | 'two_pointers_area'
+  | 'two_pointers_water'
   | 'sliding_window'
   | 'fast_slow'
   | 'partition'
   | 'kadane'
+  | 'longest_substring'
+  | 'valid_palindrome'
+
+/** Patterns whose input is a STRING (cells display characters, not numbers). */
+export const STRING_PATTERNS: ReadonlySet<ArrayPattern> = new Set<ArrayPattern>([
+  'longest_substring',
+  'valid_palindrome',
+])
+
+export function isStringPattern(pattern: ArrayPattern): boolean {
+  return STRING_PATTERNS.has(pattern)
+}
 
 /** One recorded transition of the algorithm over the array. */
 export interface ArrayTraceFrame {
@@ -47,6 +61,12 @@ export interface ArrayTraceResult {
   pointers: string[]
   /** The numeric array the trace ran on (display tokens are derived from this). */
   values: number[]
+  /**
+   * Display tokens for the cells, used by string patterns so each cell shows a
+   * character (or escaped whitespace) instead of a number. When absent, the
+   * renderer derives tokens from `values`. Length always matches `values`.
+   */
+  cells?: string[]
   frames: ArrayTraceFrame[]
   /** Final answer the canonical run produced, for cross-checking vs the reference. */
   answer: unknown
@@ -119,6 +139,106 @@ function traceTwoPointers(values: number[], target: number): { frames: ArrayTrac
   // Complete iff a pair was found or the pointers crossed (lo >= hi), not the cap.
   const complete = answer.length > 0 || lo >= hi
   return { frames, answer, complete }
+}
+
+/**
+ * Two pointers for the MAX-AREA family (Container With Most Water). The pointers
+ * lo/hi start at the two ends and converge. At each step the container they form
+ * holds min(height[lo], height[hi]) * (hi - lo); we keep the best area seen. The
+ * pointer on the SHORTER wall moves inward, because moving the taller one can only
+ * shrink the width without ever raising the limiting height, so it cannot improve
+ * the area. This is a different objective from the pair-sum tracer: the answer is
+ * a scalar area, not an index pair, and the move rule reads heights, not a target.
+ * The array is NOT required to be sorted (heights are arbitrary). Returns the best
+ * area. Every recorded pointer is an index into the displayed array, so the cells
+ * the captions reference are exactly what the renderer draws.
+ */
+function traceTwoPointersArea(values: number[]): { frames: ArrayTraceFrame[]; answer: number; complete: boolean } {
+  const frames: ArrayTraceFrame[] = []
+  let lo = 0
+  let hi = values.length - 1
+  let best = 0
+  while (lo < hi && frames.length < MAX_FRAMES) {
+    const h = Math.min(values[lo], values[hi])
+    const width = hi - lo
+    const area = h * width
+    if (area > best) best = area
+    // Move the shorter wall inward; ties move the high pointer (deterministic).
+    const moveLo = values[lo] < values[hi]
+    const note = moveLo
+      ? `area min(${values[lo]},${values[hi]})*${width} = ${area}, best ${best}: left wall shorter, move lo right`
+      : `area min(${values[lo]},${values[hi]})*${width} = ${area}, best ${best}: right wall not taller, move hi left`
+    frames.push({ pointerAt: { lo, hi }, highlight: [lo, hi], note })
+    if (moveLo) lo += 1
+    else hi -= 1
+  }
+  // Mark the terminal frame so the renderer lands on a found state showing the answer.
+  if (frames.length) {
+    frames[frames.length - 1] = {
+      ...frames[frames.length - 1],
+      found: true,
+      note: `pointers met: largest container area = ${best}`,
+    }
+  }
+  // Complete iff the pointers met (lo >= hi) rather than the loop stopping at the cap.
+  const complete = lo >= hi
+  return { frames, answer: best, complete }
+}
+
+/**
+ * Two pointers for the TRAPPED-WATER family (Trapping Rain Water). The pointers
+ * lo/hi converge while tracking the tallest wall seen from each side (leftMax,
+ * rightMax). Water above a cell is bounded by the smaller of the two side maxima;
+ * the side with the smaller current height is the binding constraint, so we advance
+ * it and, when its wall does not raise that side's running max, accumulate the
+ * difference as trapped water. This is a distinct algorithm from both pair-sum and
+ * the max-area tracer: the answer is total trapped water, and the move rule compares
+ * the two current heights. The array is NOT required to be sorted. Every pointer is
+ * an index into the displayed array. Returns the total trapped water.
+ */
+function traceTwoPointersWater(values: number[]): { frames: ArrayTraceFrame[]; answer: number; complete: boolean } {
+  const frames: ArrayTraceFrame[] = []
+  let lo = 0
+  let hi = values.length - 1
+  let leftMax = 0
+  let rightMax = 0
+  let water = 0
+  while (lo < hi && frames.length < MAX_FRAMES) {
+    if (values[lo] <= values[hi]) {
+      let note: string
+      if (values[lo] >= leftMax) {
+        leftMax = values[lo]
+        note = `left ${values[lo]} <= right ${values[hi]}: raises left wall to ${leftMax}, no water, move lo right`
+      } else {
+        water += leftMax - values[lo]
+        note = `left ${values[lo]} below left wall ${leftMax}: traps ${leftMax - values[lo]}, total ${water}, move lo right`
+      }
+      frames.push({ pointerAt: { lo, hi }, highlight: [lo, hi], note })
+      lo += 1
+    } else {
+      let note: string
+      if (values[hi] >= rightMax) {
+        rightMax = values[hi]
+        note = `right ${values[hi]} < left ${values[lo]}: raises right wall to ${rightMax}, no water, move hi left`
+      } else {
+        water += rightMax - values[hi]
+        note = `right ${values[hi]} below right wall ${rightMax}: traps ${rightMax - values[hi]}, total ${water}, move hi left`
+      }
+      frames.push({ pointerAt: { lo, hi }, highlight: [lo, hi], note })
+      hi -= 1
+    }
+  }
+  // Mark the terminal frame so the renderer lands on a found state showing the answer.
+  if (frames.length) {
+    frames[frames.length - 1] = {
+      ...frames[frames.length - 1],
+      found: true,
+      note: `pointers met: total trapped water = ${water}`,
+    }
+  }
+  // Complete iff the pointers met (lo >= hi) rather than the loop stopping at the cap.
+  const complete = lo >= hi
+  return { frames, answer: water, complete }
 }
 
 /**
@@ -304,6 +424,135 @@ function traceKadane(values: number[]): { frames: ArrayTraceFrame[]; answer: num
   return { frames, answer: best, complete }
 }
 
+/**
+ * Longest substring without repeating characters, traced as an EXPANDING window
+ * [l..r] over the static string. We scan r left to right; when the incoming
+ * character already sits inside the current window, we advance l past its last
+ * occurrence so the window stays duplicate-free. The answer is the maximum window
+ * length seen. The string is never mutated; every frame describes the window over
+ * the cells exactly as displayed. Returns the max length.
+ */
+function traceLongestSubstring(chars: string[]): { frames: ArrayTraceFrame[]; answer: number; complete: boolean } {
+  const frames: ArrayTraceFrame[] = []
+  const n = chars.length
+  const lastSeen = new Map<string, number>()
+  let l = 0
+  let best = 0
+  let bestL = 0
+  let bestR = 0
+  // The window grows one cell per outer iteration. We record one frame per r so
+  // the learner watches the window expand and the left edge jump on a duplicate.
+  for (let r = 0; r < n && frames.length < MAX_FRAMES; r++) {
+    const ch = chars[r]
+    const prev = lastSeen.get(ch)
+    let jumped = false
+    if (prev !== undefined && prev >= l) {
+      l = prev + 1
+      jumped = true
+    }
+    lastSeen.set(ch, r)
+    const windowLen = r - l + 1
+    if (windowLen > best) {
+      best = windowLen
+      bestL = l
+      bestR = r
+    }
+    const note = jumped
+      ? `'${displayChar(ch)}' repeats: move l to ${l}, window [${l}..${r}] length ${windowLen}`
+      : `add '${displayChar(ch)}': window [${l}..${r}] length ${windowLen}`
+    frames.push({ pointerAt: { l, r }, highlight: range(l, r), note })
+  }
+  // Mark the best window on the final frame.
+  if (frames.length) {
+    frames[frames.length - 1] = {
+      ...frames[frames.length - 1],
+      found: true,
+      pointerAt: { l: bestL, r: bestR },
+      highlight: range(bestL, bestR),
+      note: `longest window [${bestL}..${bestR}], length ${best}`,
+    }
+  }
+  // Complete iff every character was scanned (r reached the last index) rather
+  // than the loop stopping early at the frame cap. We track the scan separately
+  // from the final best-window frame, so re-derive from how many frames we wrote.
+  const complete = frames.length === n && n >= 2
+  return { frames, answer: best, complete }
+}
+
+/**
+ * Valid palindrome by two pointers converging from both ends, skipping any
+ * non-alphanumeric character and comparing case-insensitively. Each frame shows
+ * the two cursors over the static string and the comparison made. The string is
+ * read-only. Returns a boolean: true iff the cleaned string reads the same both ways.
+ */
+function traceValidPalindrome(chars: string[]): { frames: ArrayTraceFrame[]; answer: boolean; complete: boolean } {
+  const frames: ArrayTraceFrame[] = []
+  const n = chars.length
+  let lo = 0
+  let hi = n - 1
+  let answer = true
+  let settled = false
+  while (lo < hi && frames.length < MAX_FRAMES) {
+    // Skip non-alphanumeric from the left.
+    if (!isAlphanumeric(chars[lo])) {
+      frames.push({ pointerAt: { lo, hi }, highlight: [lo], note: `skip '${displayChar(chars[lo])}' at ${lo}: not alphanumeric` })
+      lo += 1
+      continue
+    }
+    // Skip non-alphanumeric from the right.
+    if (!isAlphanumeric(chars[hi])) {
+      frames.push({ pointerAt: { lo, hi }, highlight: [hi], note: `skip '${displayChar(chars[hi])}' at ${hi}: not alphanumeric` })
+      hi -= 1
+      continue
+    }
+    const a = chars[lo].toLowerCase()
+    const b = chars[hi].toLowerCase()
+    if (a !== b) {
+      frames.push({ pointerAt: { lo, hi }, highlight: [lo, hi], note: `'${displayChar(chars[lo])}' != '${displayChar(chars[hi])}': not a palindrome` })
+      answer = false
+      settled = true
+      break
+    }
+    frames.push({ pointerAt: { lo, hi }, highlight: [lo, hi], note: `'${displayChar(chars[lo])}' == '${displayChar(chars[hi])}': matches, move both inward` })
+    lo += 1
+    hi -= 1
+  }
+  // If the pointers crossed without a mismatch, the (cleaned) string is a palindrome.
+  if (!settled && lo >= hi) {
+    settled = true
+    answer = true
+  }
+  // Mark the terminal frame so the renderer lands on a found state.
+  if (settled && frames.length) {
+    frames[frames.length - 1] = {
+      ...frames[frames.length - 1],
+      found: true,
+      note: answer ? `pointers met: every pair matched, it reads the same both ways` : frames[frames.length - 1].note,
+    }
+  }
+  // Complete iff we reached a verdict (a mismatch break or the pointers crossing),
+  // not the frame cap. settled captures exactly that.
+  return { frames, answer, complete: settled }
+}
+
+/** A single alphanumeric character (used by valid-palindrome skipping). */
+function isAlphanumeric(ch: string): boolean {
+  return /^[a-z0-9]$/i.test(ch)
+}
+
+/**
+ * Render a single character for a cell label and machine note. Spaces and other
+ * whitespace are escaped to a visible token so a blank cell never confuses the
+ * learner; everything else is shown as-is. Tokens stay within the schema's 8-char
+ * cell limit.
+ */
+function displayChar(ch: string): string {
+  if (ch === ' ') return '␣'
+  if (ch === '\t') return '\\t'
+  if (ch === '\n') return '\\n'
+  return ch
+}
+
 /** Every entry must be a valid index into the array (value-as-index invariant). */
 function isValidIndexArray(values: number[]): boolean {
   return values.every((v) => Number.isInteger(v) && v >= 0 && v < values.length)
@@ -326,10 +575,14 @@ function range(a: number, b: number): number[] {
 const POINTERS: Record<ArrayPattern, string[]> = {
   binary_search: ['lo', 'mid', 'hi'],
   two_pointers: ['lo', 'hi'],
+  two_pointers_area: ['lo', 'hi'],
+  two_pointers_water: ['lo', 'hi'],
   sliding_window: ['l', 'r'],
   fast_slow: ['slow', 'fast'],
   partition: ['low', 'mid', 'high'],
   kadane: ['i'],
+  longest_substring: ['l', 'r'],
+  valid_palindrome: ['lo', 'hi'],
 }
 
 /**
@@ -343,6 +596,10 @@ export function runArrayTrace(
   values: number[],
   param: number,
 ): ArrayTraceResult | null {
+  // String patterns run over characters, not numbers; route them away from the
+  // numeric path so a caller that picked the wrong entry point never traces a
+  // string as if it were an array of numbers.
+  if (isStringPattern(pattern)) return null
   if (tooBig(values)) return null
 
   // binary_search and two_pointers depend on a sorted array for their discard
@@ -357,6 +614,8 @@ export function runArrayTrace(
   let run: { frames: ArrayTraceFrame[]; answer: unknown; complete: boolean }
   if (pattern === 'binary_search') run = traceBinarySearch(values, param)
   else if (pattern === 'two_pointers') run = traceTwoPointers(values, param)
+  else if (pattern === 'two_pointers_area') run = traceTwoPointersArea(values)
+  else if (pattern === 'two_pointers_water') run = traceTwoPointersWater(values)
   else if (pattern === 'sliding_window') run = traceSlidingWindow(values, param)
   else if (pattern === 'fast_slow') run = traceFastSlow(values)
   else if (pattern === 'partition') run = tracePartition(values, param)
@@ -367,6 +626,74 @@ export function runArrayTrace(
   if (!run.complete) return null
   if (run.frames.length < 3) return null
   return { pattern, pointers: POINTERS[pattern], values, frames: run.frames, answer: run.answer }
+}
+
+/**
+ * Run a STRING-input pattern (longest substring / valid palindrome) over the
+ * characters of `input`. Each character becomes a read-only cell; the returned
+ * result carries `cells` (the display characters) so the renderer shows letters
+ * rather than numbers. The same eligibility gates apply: the string must be 2..16
+ * characters, the run must reach a terminal state (not the frame cap), and it must
+ * produce at least 3 frames (the schema floor). Returns null on unusable input.
+ */
+export function runStringArrayTrace(
+  pattern: ArrayPattern,
+  input: string,
+): ArrayTraceResult | null {
+  if (!isStringPattern(pattern)) return null
+  const chars = Array.from(input)
+  // Reuse the numeric cell bounds: 2..MAX_CELLS cells for a clean walkthrough.
+  if (chars.length < 2 || chars.length > MAX_CELLS) return null
+
+  let run: { frames: ArrayTraceFrame[]; answer: unknown; complete: boolean }
+  if (pattern === 'longest_substring') run = traceLongestSubstring(chars)
+  else run = traceValidPalindrome(chars)
+
+  if (!run.complete) return null
+  if (run.frames.length < 3) return null
+  // values keeps the array length (char codes) so length-based invariants still
+  // hold; cells carries the per-cell display token the renderer reads.
+  return {
+    pattern,
+    pointers: POINTERS[pattern],
+    values: chars.map((c) => c.charCodeAt(0)),
+    cells: chars.map(displayChar),
+    frames: run.frames,
+    answer: run.answer,
+  }
+}
+
+/**
+ * Compute a STRING-input pattern's TRUE answer, uncapped by the display frame
+ * limit. The cross-check oracle for the string patterns. Returns null on input
+ * too short to trace.
+ */
+export function computeStringAnswer(pattern: ArrayPattern, input: string): unknown {
+  const chars = Array.from(input)
+  if (chars.length < 2) return null
+  if (pattern === 'longest_substring') {
+    const lastSeen = new Map<string, number>()
+    let l = 0
+    let best = 0
+    for (let r = 0; r < chars.length; r++) {
+      const prev = lastSeen.get(chars[r])
+      if (prev !== undefined && prev >= l) l = prev + 1
+      lastSeen.set(chars[r], r)
+      best = Math.max(best, r - l + 1)
+    }
+    return best
+  }
+  // valid_palindrome: case-insensitive, alphanumeric-only.
+  let lo = 0
+  let hi = chars.length - 1
+  while (lo < hi) {
+    if (!isAlphanumeric(chars[lo])) { lo += 1; continue }
+    if (!isAlphanumeric(chars[hi])) { hi -= 1; continue }
+    if (chars[lo].toLowerCase() !== chars[hi].toLowerCase()) return false
+    lo += 1
+    hi -= 1
+  }
+  return true
 }
 
 /**
@@ -418,6 +745,38 @@ export function computeAnswer(pattern: ArrayPattern, values: number[], param: nu
     }
     if (p1 !== p2) return null
     return p1
+  }
+  if (pattern === 'two_pointers_area') {
+    // Max container area, uncapped. Converge lo/hi; track best area; move the
+    // shorter wall inward. Matches traceTwoPointersArea exactly.
+    let lo = 0, hi = values.length - 1
+    let best = 0
+    while (lo < hi) {
+      const area = Math.min(values[lo], values[hi]) * (hi - lo)
+      if (area > best) best = area
+      if (values[lo] < values[hi]) lo += 1
+      else hi -= 1
+    }
+    return best
+  }
+  if (pattern === 'two_pointers_water') {
+    // Total trapped water, uncapped. Converge lo/hi tracking each side's running
+    // max; accumulate the deficit below the binding wall. Matches the tracer.
+    let lo = 0, hi = values.length - 1
+    let leftMax = 0, rightMax = 0
+    let water = 0
+    while (lo < hi) {
+      if (values[lo] <= values[hi]) {
+        if (values[lo] >= leftMax) leftMax = values[lo]
+        else water += leftMax - values[lo]
+        lo += 1
+      } else {
+        if (values[hi] >= rightMax) rightMax = values[hi]
+        else water += rightMax - values[hi]
+        hi -= 1
+      }
+    }
+    return water
   }
   if (pattern === 'partition') {
     // 3-way partition around the pivot. The answer is the region COUNTS (an
@@ -502,6 +861,39 @@ function arrayStepProse(
         : `The current pair sums above the target. The array is sorted, so the only way to shrink the sum is to pull the high pointer to a smaller value.`,
     }
   }
+  if (pattern === 'two_pointers_area') {
+    if (frame.found) {
+      return {
+        title: 'Largest container settled',
+        explanation: `The two walls have met. The widest-times-tallest container seen along the way is the largest area, so that value is the answer.`,
+      }
+    }
+    const movedLo = frame.note.includes('move lo')
+    return {
+      title: index === 0 ? 'Start from the widest pair' : movedLo ? 'Move the left wall in' : 'Move the right wall in',
+      explanation: movedLo
+        ? `The left wall is the shorter of the two, so it caps the water this container can hold. Moving the taller right wall could only shrink the width, so the left wall steps inward in search of a taller one.`
+        : `The right wall is no taller than the left, so it caps the container. Moving the left wall could only lose width without raising the limit, so the right wall steps inward looking for more height.`,
+    }
+  }
+  if (pattern === 'two_pointers_water') {
+    if (frame.found) {
+      return {
+        title: 'All water counted',
+        explanation: `The two cursors have met, so every column has been measured. The sum of water trapped above each column along the way is the answer.`,
+      }
+    }
+    const traps = frame.note.includes('traps')
+    const movedLo = frame.note.includes('move lo')
+    return {
+      title: traps ? 'Trap water over this column' : 'Raise the wall',
+      explanation: traps
+        ? `This column sits below the tallest wall behind it on the binding side, so the gap fills with water. Add that deficit to the total and step the shorter side inward.`
+        : movedLo
+          ? `The left column is the shorter side and is at least as tall as every wall behind it, so it becomes the new left wall. Nothing is trapped here; step the left cursor inward.`
+          : `The right column is the shorter side and is at least as tall as every wall behind it, so it becomes the new right wall. Nothing is trapped here; step the right cursor inward.`,
+    }
+  }
   if (pattern === 'sliding_window') {
     if (index === 0) {
       return {
@@ -554,6 +946,42 @@ function arrayStepProse(
     return {
       title: 'Leave it in place',
       explanation: `The inspected value equals the pivot, so it is already in the middle band. Advance the scan cursor without moving anything.`,
+    }
+  }
+  if (pattern === 'longest_substring') {
+    if (frame.found) {
+      return {
+        title: 'Longest window settled',
+        explanation: `Every character has been scanned. The widest duplicate-free window seen along the way is highlighted, and its length is the answer.`,
+      }
+    }
+    const jumped = frame.note.includes('repeats')
+    return {
+      title: index === 0 ? 'Open the window' : jumped ? 'Slide past the repeat' : 'Grow the window',
+      explanation: jumped
+        ? `The incoming character already sits inside the window, so the left edge jumps past its earlier copy. The window stays free of repeats and keeps scanning.`
+        : `The incoming character is new to the window, so the right edge extends and the window grows by one. The running length updates as the window widens.`,
+    }
+  }
+  if (pattern === 'valid_palindrome') {
+    if (frame.found) {
+      const isMatch = frame.note.includes('reads the same')
+      return {
+        title: isMatch ? 'Reads the same both ways' : 'Mismatch found',
+        explanation: isMatch
+          ? `The two cursors crossed without ever disagreeing, so every meaningful pair matched. The cleaned string reads the same forward and backward.`
+          : `The characters under the two cursors differ once letters and digits are compared case-insensitively. A single mismatch is enough to rule it out.`,
+      }
+    }
+    if (frame.note.includes('skip')) {
+      return {
+        title: 'Skip the noise',
+        explanation: `The cursor sits on a character that is not a letter or digit, so it carries no meaning for the palindrome test. Step that cursor inward and keep the comparison honest.`,
+      }
+    }
+    return {
+      title: 'Compare the ends',
+      explanation: `Both cursors sit on letters or digits. Compared case-insensitively they match, so move both inward and test the next pair from the outside in.`,
     }
   }
   // kadane
@@ -612,12 +1040,19 @@ export function buildSteppedArrayDiagram(
     }
   })
 
+  // String patterns supply per-cell display tokens (characters); numeric patterns
+  // render the value itself. Either way the cell text stays within the schema's
+  // 8-char limit (single chars, escaped whitespace, or short numbers).
+  const cells = trace.cells
+    ? trace.cells.map((token) => ({ value: token }))
+    : trace.values.map((v) => ({ value: String(v) }))
+
   return {
     kind: 'stepped',
     title: opts.title,
     base: {
       kind: 'array',
-      cells: trace.values.map((v) => ({ value: String(v) })),
+      cells,
       pointers: trace.pointers,
       rangeTrack: trace.pattern === 'binary_search',
     },

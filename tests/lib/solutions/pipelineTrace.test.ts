@@ -390,3 +390,118 @@ test('SEV-5: a CTE named "result" does not collide with the final stage label', 
   // activeStage indices still line up 0..2.
   assert.deepEqual(trace!.deltas.map((d) => d.activeStage), [0, 1, 2])
 })
+
+// ---------------------------------------------------------------------------
+// SEV-6: single-CTE pipelines (one CTE -> final SELECT = 2 stages) are eligible.
+// The schema floor was lowered to 2 for the PIPELINE base only (array/grid stay
+// at >=3). A single-CTE query is a real "build the intermediate, then assemble
+// the result" walkthrough where both stages are separately executed against the
+// real data, so a 2-step verified pipeline is honest and worth showing. The
+// cross-check still runs on the FULL un-capped final result.
+// ---------------------------------------------------------------------------
+
+// Mirrors the live single-CTE shape (DoorDash: Top 3 Restaurants per City):
+// one CTE ranks rows, the final SELECT filters + projects. Two genuine stages.
+const TOP3_SETUP = `
+CREATE TABLE orders (order_id INTEGER, restaurant_id INTEGER, subtotal INTEGER, status TEXT);
+CREATE TABLE restaurants (restaurant_id INTEGER, city TEXT, name TEXT);
+INSERT INTO restaurants (restaurant_id, city, name) VALUES
+  (1, 'SF', 'Alpha'), (2, 'SF', 'Beta'), (3, 'SF', 'Gamma'), (4, 'SF', 'Delta');
+INSERT INTO orders (order_id, restaurant_id, subtotal, status) VALUES
+  (1, 1, 100, 'delivered'), (2, 1, 100, 'delivered'),
+  (3, 2, 150, 'delivered'),
+  (4, 3, 120, 'delivered'),
+  (5, 4, 50, 'delivered');
+`
+// rk: revenue per (city, restaurant) ranked desc. Final: keep rnk<=3, project.
+// Alpha=200(rnk1), Beta=150(rnk2), Gamma=120(rnk3), Delta=50(rnk4, dropped).
+const TOP3_SQL = `
+WITH rk AS (
+  SELECT r.city, r.name, SUM(o.subtotal) AS total_rev,
+         RANK() OVER (PARTITION BY r.city ORDER BY SUM(o.subtotal) DESC) AS rnk
+  FROM orders o
+  JOIN restaurants r ON o.restaurant_id = r.restaurant_id
+  WHERE o.status = 'delivered'
+  GROUP BY r.city, r.restaurant_id, r.name
+)
+SELECT city, name, total_rev, rnk
+FROM rk
+WHERE rnk <= 3
+ORDER BY city, rnk
+`
+const TOP3_EXPECTED = [
+  { city: 'SF', name: 'Alpha', total_rev: 200, rnk: 1 },
+  { city: 'SF', name: 'Beta', total_rev: 150, rnk: 2 },
+  { city: 'SF', name: 'Gamma', total_rev: 120, rnk: 3 },
+]
+
+test('SEV-6: a single-CTE query traces to exactly 2 stages (CTE intermediate -> final result)', async () => {
+  const trace = await runPipelineTrace(TOP3_SQL, TOP3_SETUP)
+  assert.ok(trace)
+  // 1 CTE + 1 final outer SELECT = 2 stages.
+  assert.deepEqual(trace!.stages, ['rk', 'result'])
+  assert.deepEqual(trace!.deltas.map((d) => d.activeStage), [0, 1])
+  // Stage 0 (rk) materializes all 4 ranked rows; the final filters to rnk<=3.
+  assert.equal(trace!.deltas[0].table!.rows.length, 4)
+  assert.equal(trace!.deltas[1].table!.rows.length, 3)
+})
+
+test('SEV-6: a single-CTE pipeline builds an eligible 2-step verified diagram that passes the schema', async () => {
+  const candidate = await buildSteppedPipelineFromMetadata({
+    sql_schema: { setup_script: TOP3_SETUP, dialect: 'sqlite' },
+    reference_solution: { sql: TOP3_SQL },
+    test_cases: [{ id: 't1', label: 'main', expected_rows: TOP3_EXPECTED }],
+  })
+  assert.ok(candidate)
+  assert.equal(candidate!.diagram.trace_verified, true)
+  assert.equal(candidate!.diagram.base.kind, 'pipeline')
+  // The 2-step diagram is now SCHEMA-VALID (the pipeline floor is 2, not 3).
+  assert.equal(candidate!.diagram.steps.length, 2)
+  assert.equal(SolutionDiagramSchema.safeParse(candidate!.diagram).success, true)
+  assert.equal(InteractiveStepDiagramSchema.safeParse(candidate!.diagram).success, true)
+})
+
+test('SEV-6: the 2-stage cross-check still rejects a wrong final result', async () => {
+  // The trace is a real, well-formed 2-stage pipeline, but the expected_rows claim
+  // a wrong total_rev for one row. The full-set cross-check must reject it so a
+  // single-CTE walkthrough is never shown with a result that disagrees with the
+  // challenge's own expected output.
+  const wrongExpected = [
+    { city: 'SF', name: 'Beta', total_rev: 999, rnk: 1 }, // wrong revenue
+    { city: 'SF', name: 'Alpha', total_rev: 200, rnk: 2 },
+    { city: 'SF', name: 'Gamma', total_rev: 120, rnk: 3 },
+  ]
+  const candidate = await buildSteppedPipelineFromMetadata({
+    sql_schema: { setup_script: TOP3_SETUP, dialect: 'sqlite' },
+    reference_solution: { sql: TOP3_SQL },
+    test_cases: [{ id: 't1', label: 'main', expected_rows: wrongExpected }],
+  })
+  assert.equal(candidate, null)
+})
+
+test('SEV-6: a 2-step pipeline diagram is schema-valid but a 2-step ARRAY diagram is NOT (floor stays 3 for array)', () => {
+  // The pipeline floor was lowered to 2; the array floor is unchanged at 3. Build a
+  // minimal 2-step diagram on each base and confirm only the pipeline one validates.
+  const twoStepPipeline = {
+    kind: 'stepped' as const,
+    trace_verified: true,
+    base: { kind: 'pipeline' as const, stages: ['cte', 'result'] },
+    steps: [
+      { title: 'Build the cte stage', explanation: 'The CTE materializes the intermediate rows.', delta: { base: 'pipeline' as const, activeStage: 0, table: { columns: ['v'], rows: [['1']] } } },
+      { title: 'Assemble the final result', explanation: 'The outer query reads the CTE and projects the answer.', delta: { base: 'pipeline' as const, activeStage: 1, table: { columns: ['v'], rows: [['1']] } } },
+    ],
+  }
+  assert.equal(SolutionDiagramSchema.safeParse(twoStepPipeline).success, true)
+
+  const twoStepArray = {
+    kind: 'stepped' as const,
+    trace_verified: true,
+    base: { kind: 'array' as const, cells: [{ value: '1' }, { value: '2' }], pointers: ['lo', 'hi'] },
+    steps: [
+      { title: 'A', explanation: 'first.', delta: { base: 'array' as const, pointerAt: { lo: 0, hi: 1 } } },
+      { title: 'B', explanation: 'second.', delta: { base: 'array' as const, pointerAt: { lo: 0, hi: 1 }, found: true } },
+    ],
+  }
+  // An array stepped diagram needs at least 3 steps; the 2-step one must be rejected.
+  assert.equal(SolutionDiagramSchema.safeParse(twoStepArray).success, false)
+})
