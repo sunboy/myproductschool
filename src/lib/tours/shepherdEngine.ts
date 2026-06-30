@@ -173,7 +173,19 @@ export function buildStepTour(
     if (roots.length === 0) return
     const pending = roots.splice(0, roots.length)
     // Defer so we never unmount synchronously during React's render phase.
-    setTimeout(() => pending.forEach((r) => r.unmount()), 0)
+    // By the time this fires Shepherd may have already torn the popover (and our
+    // mounted span) out of the DOM, so unmounting would touch a detached node and
+    // throw "Cannot read properties of null (reading 'parentNode')". Guard each
+    // unmount and swallow the teardown race (HACKPRODUCT-F / HACKPRODUCT-T).
+    setTimeout(() => {
+      pending.forEach((r) => {
+        try {
+          r.unmount()
+        } catch {
+          // Node already removed by Shepherd; nothing left to clean up.
+        }
+      })
+    }, 0)
   }
 
   tour.addStep({
