@@ -98,7 +98,140 @@ test('all-cases-agree certifies and produces a verified diagram', () => {
   assert.equal(candidate!.diagram.trace_verified, true)
 })
 
-test('graft strips a model-authored stepped diagram even if it self-claims trace_verified', () => {
+// ── New tracers route from tags and cross-check against expected ──────────────
+
+test('fast-slow-pointers tag routes to fast_slow and verifies against the duplicate', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'def solution(nums):\n    slow=nums[0]; fast=nums[nums[0]]\n    while slow!=fast: slow=nums[slow]; fast=nums[nums[fast]]\n    p=0\n    while p!=slow: p=nums[p]; slow=nums[slow]\n    return p',
+      test_cases: [{ args: [[1, 3, 4, 2, 2]], expected: 2 }],
+    },
+    ['fast-slow-pointers'],
+  )
+  assert.ok(candidate)
+  assert.equal(candidate!.pattern, 'fast_slow')
+  assert.equal(candidate!.diagram.trace_verified, true)
+})
+
+test('fast_slow cross-check rejects a wrong expected duplicate', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    { reference_solution: 'slow fast', test_cases: [{ args: [[1, 3, 4, 2, 2]], expected: 4 }] },
+    ['cycle-detection'],
+  )
+  assert.equal(candidate, null) // oracle says 2, expected says 4
+})
+
+test('kadane tag routes to kadane and verifies against the max-subarray sum', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'def solution(nums):\n    cur=best=nums[0]\n    for x in nums[1:]: cur=max(x,cur+x); best=max(best,cur)\n    return best',
+      test_cases: [{ args: [[-2, 1, -3, 4, -1, 2, 1]], expected: 6 }],
+    },
+    ['kadane'],
+  )
+  assert.ok(candidate)
+  assert.equal(candidate!.pattern, 'kadane')
+  assert.equal(candidate!.diagram.trace_verified, true)
+})
+
+test('kadane cross-check rejects a wrong expected sum', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    { reference_solution: 'max subarray', test_cases: [{ args: [[-2, 1, -3, 4, -1, 2, 1]], expected: 10 }] },
+    ['maximum-subarray'],
+  )
+  assert.equal(candidate, null) // oracle says 6, expected says 10
+})
+
+test('partition / dutch-national-flag tag routes to partition and verifies the partitioned array', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'def solution(nums, pivot):\n    low=mid=0; high=len(nums)-1\n    while mid<=high: ...',
+      test_cases: [{ args: [[2, 0, 2, 1, 1, 0], 1], expected: [0, 0, 1, 1, 2, 2] }],
+    },
+    ['dutch-national-flag'],
+  )
+  assert.ok(candidate)
+  assert.equal(candidate!.pattern, 'partition')
+  assert.equal(candidate!.diagram.trace_verified, true)
+})
+
+test('partition cross-check rejects an expected array that is not the partition result', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    { reference_solution: 'partition', test_cases: [{ args: [[2, 0, 2, 1, 1, 0], 1], expected: [0, 1, 2] }] },
+    ['partition'],
+  )
+  assert.equal(candidate, null) // wrong multiset / length
+})
+
+test('partition cross-check is ORDER-SENSITIVE: a mis-ordered same-multiset permutation is rejected', () => {
+  // Input [3,1,4,1,5] around pivot 3. Correct partition layout: the two <3 cells
+  // (1,1) first, then the one ==3 cell, then the two >3 cells (4,5):
+  //   [1,1,3,4,5]  -> certifies.
+  const ok = buildSteppedTraceFromMetadata(
+    { reference_solution: 'partition', test_cases: [{ args: [[3, 1, 4, 1, 5], 3], expected: [1, 1, 3, 4, 5] }] },
+    ['partition'],
+  )
+  assert.ok(ok, 'a correctly partitioned expected array should certify')
+
+  // The OLD order-insensitive check sorted both sides, so it certified ANY
+  // permutation of the same multiset. This expected array is the same five values
+  // but NOT partitioned around 3 (the ==3 cell sits in the lows band, a >3 cell
+  // leads). The order-sensitive check must reject it -> null.
+  const bad = buildSteppedTraceFromMetadata(
+    { reference_solution: 'partition', test_cases: [{ args: [[3, 1, 4, 1, 5], 3], expected: [5, 3, 1, 1, 4] }] },
+    ['partition'],
+  )
+  assert.equal(bad, null, 'a mis-ordered same-multiset permutation must NOT vacuously certify')
+})
+
+test('partition cross-check no longer certifies [2,1,3,5,4] against a fully sorted expected', () => {
+  // The auditor's concrete case: the input multiset {1,2,3,4,5} partitioned around
+  // pivot 3 has counts less=2, equal=1, greater=2, so the only valid layout is
+  // [<3,<3,3,>3,>3]. The arrangement [2,1,3,5,4] satisfies that (2,1 below; 3
+  // equal; 5,4 above) and certifies. But a different input order that the OLD
+  // sort-both check treated as identical, e.g. expected [1,2,4,3,5], puts a >3
+  // value (4) in the equal slot and the ==3 value in a highs slot -> rejected.
+  const certifies = buildSteppedTraceFromMetadata(
+    { reference_solution: 'partition', test_cases: [{ args: [[1, 2, 3, 4, 5], 3], expected: [2, 1, 3, 5, 4] }] },
+    ['partition'],
+  )
+  assert.ok(certifies)
+  const rejected = buildSteppedTraceFromMetadata(
+    { reference_solution: 'partition', test_cases: [{ args: [[1, 2, 3, 4, 5], 3], expected: [1, 2, 4, 3, 5] }] },
+    ['partition'],
+  )
+  assert.equal(rejected, null)
+})
+
+test('fast_slow long-cycle permutation is not stepped eligible and does not hang', () => {
+  // [1,2,3,4,5,6,7,8,9,0] is one long cycle. The display trace cannot reach the
+  // meeting point within the frame cap, so runArrayTrace returns null and the
+  // challenge keeps its static diagram. The orchestration must RETURN (no hang).
+  const started = Date.now()
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'slow fast',
+      test_cases: [{ args: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 0]], expected: 0 }],
+    },
+    ['fast-slow-pointers'],
+  )
+  assert.equal(candidate, null)
+  assert.ok(Date.now() - started < 1000, 'orchestration must not hang on a long-cycle permutation')
+})
+
+test('reference-code fallback infers fast_slow from a slow/fast pointer pair', () => {
+  const candidate = buildSteppedTraceFromMetadata(
+    {
+      reference_solution: 'slow = nums[0]\nfast = nums[nums[0]]\nwhile slow != fast:\n    slow = nums[slow]\n    fast = nums[nums[fast]]',
+      test_cases: [{ args: [[1, 3, 4, 2, 2]], expected: 2 }],
+    },
+    [],
+  )
+  assert.ok(candidate)
+  assert.equal(candidate!.pattern, 'fast_slow')
+})
+
+test('graft strips a model-authored stepped diagram even if it self-claims trace_verified', async () => {
   // A malicious/hallucinated model diagram with a fake verified marker and WRONG deltas.
   const fakeStepped = {
     kind: 'stepped' as const,
@@ -123,16 +256,165 @@ test('graft strips a model-authored stepped diagram even if it self-claims trace
 
   // No metadata -> not eligible to attach a real trace, but the model's stepped
   // diagram MUST still be stripped (it could be wrong and self-claims verified).
-  const { content: out, grafted } = graftSteppedTrace(content, null, [])
+  const { content: out, grafted } = await graftSteppedTrace(content, null, [])
   assert.equal(grafted, false)
   assert.equal(out.approaches.every((a) => a.diagram?.kind !== 'stepped'), true)
 
   // With real metadata, the model's stepped diagram is replaced by the verified one.
-  const { content: out2, grafted: grafted2 } = graftSteppedTrace(content, BINARY_SEARCH_META, ['binary-search'])
+  const { content: out2, grafted: grafted2 } = await graftSteppedTrace(content, BINARY_SEARCH_META, ['binary-search'])
   assert.equal(grafted2, true)
   const stepped = out2.approaches.filter((a) => a.diagram?.kind === 'stepped')
   assert.equal(stepped.length, 1)
   // the surviving stepped diagram is the harness one (9 cells from the real test case), not the fake 3-cell one
   const diagram = stepped[0].diagram as typeof fakeStepped
   assert.equal(diagram.base.cells.length, 9)
+})
+
+// ── Prose overlay: the model's TEXT lands by index; the deltas stay harness-owned ─
+
+/** Build an algorithm solution whose optimal approach carries `modelStepped`. */
+function contentWithModelStepped(modelStepped: unknown): SolutionContentV1 {
+  return {
+    version: 1,
+    challenge_type: 'algorithm',
+    overview_md: 'tests the sorted-array invariant.',
+    approaches: [
+      { id: 'brute', title: 'Brute', tagline: 'scan', body_md: 'scan', code: { language: 'python', source: 'x=1' }, complexity: { time: 'O(n)', space: 'O(1)' } },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { id: 'optimal', title: 'Binary search', tagline: 'halve', body_md: 'halve', code: { language: 'python', source: 'y=2' }, complexity: { time: 'O(log n)', space: 'O(1)' }, diagram: modelStepped as any },
+    ],
+    ai_collaboration: { body_md: 'pair', prompts: [{ title: 't', prompt: 'p', why: 'w' }], pitfalls: ['x'] },
+  }
+}
+
+test('overlay copies the model per-step prose by index but never its deltas', async () => {
+  // The harness binary-search trace on the prototype input has exactly 3 steps.
+  // The model supplies 3 steps of prose with the SAME base.kind ('array') and
+  // GARBAGE deltas. The overlay must keep the model's title/explanation/decision
+  // text and discard every model delta (the harness deltas survive untouched).
+  const harness = buildSteppedTraceFromMetadata(BINARY_SEARCH_META, ['binary-search'])!.diagram
+  assert.equal(harness.steps.length, 3)
+  const harnessPointerAt = harness.steps.map((s) => (s.delta as { pointerAt: Record<string, number> }).pointerAt)
+
+  const modelStepped = {
+    kind: 'stepped' as const,
+    trace_verified: true, // self-claimed; must be ignored
+    base: { kind: 'array' as const, cells: [{ value: '0' }, { value: '0' }], pointers: ['lo', 'mid', 'hi'] },
+    steps: [
+      { title: 'Probe the middle', explanation: 'Halving the sorted range removes the impossible half each comparison.', decision: 'check midpoint', delta: { base: 'array' as const, pointerAt: { lo: 9, mid: 9, hi: 9 } } },
+      { title: 'Shift right', explanation: 'The midpoint sits below the target, so the answer can only live above it.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 0 } } },
+      { title: 'Land on the answer', explanation: 'The midpoint now equals the target, so the index is returned.', delta: { base: 'array' as const, pointerAt: { lo: 5, mid: 5, hi: 5 }, found: true } },
+    ],
+  }
+
+  const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(modelStepped), BINARY_SEARCH_META, ['binary-search'])
+  assert.equal(grafted, true)
+  const stepped = out.approaches.filter((a) => a.diagram?.kind === 'stepped')
+  assert.equal(stepped.length, 1)
+  const diagram = stepped[0].diagram as typeof harness
+
+  // Prose IS the model's, by index.
+  assert.deepEqual(diagram.steps.map((s) => s.title), ['Probe the middle', 'Shift right', 'Land on the answer'])
+  assert.equal(diagram.steps[1].explanation, 'The midpoint sits below the target, so the answer can only live above it.')
+  // Base + cells stay harness-owned (9 real cells, not the model's 2).
+  assert.equal(diagram.base.kind, 'array')
+  assert.equal((diagram.base as { cells: unknown[] }).cells.length, 9)
+  // Every delta is the HARNESS delta, not the model's garbage pointers.
+  diagram.steps.forEach((s, i) => {
+    assert.deepEqual((s.delta as { pointerAt: Record<string, number> }).pointerAt, harnessPointerAt[i])
+  })
+  // The harness's verified marker is what survives (the model cannot self-assert it).
+  assert.equal(diagram.trace_verified, true)
+})
+
+test('overlay is fail-soft when the model step count differs from the trace', async () => {
+  const harness = buildSteppedTraceFromMetadata(BINARY_SEARCH_META, ['binary-search'])!.diagram
+  const harnessTitles = harness.steps.map((s) => s.title)
+
+  // Two model steps vs the harness's three: counts disagree, so the harness
+  // placeholder prose must stand (no partial overlay).
+  const modelStepped = {
+    kind: 'stepped' as const,
+    base: { kind: 'array' as const, cells: [{ value: '0' }, { value: '0' }], pointers: ['lo', 'mid', 'hi'] },
+    steps: [
+      { title: 'Model A', explanation: 'this prose must be ignored entirely.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 1 } } },
+      { title: 'Model B', explanation: 'this prose must be ignored entirely.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 1 }, found: true } },
+    ],
+  }
+
+  const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(modelStepped), BINARY_SEARCH_META, ['binary-search'])
+  assert.equal(grafted, true)
+  const diagram = (out.approaches.find((a) => a.diagram?.kind === 'stepped')!.diagram) as typeof harness
+  assert.equal(diagram.steps.length, 3)
+  // Harness prose stands; none of the model titles leak in.
+  assert.deepEqual(diagram.steps.map((s) => s.title), harnessTitles)
+  assert.equal(diagram.steps.some((s) => s.title === 'Model A' || s.title === 'Model B'), false)
+})
+
+test('overlay is fail-soft when the model base.kind differs from the harness base', async () => {
+  const harness = buildSteppedTraceFromMetadata(BINARY_SEARCH_META, ['binary-search'])!.diagram
+  const harnessTitles = harness.steps.map((s) => s.title)
+
+  // A flow-base model diagram (3 steps) cannot overlay an array harness: the
+  // base.kind must match, so the harness prose stands.
+  const modelStepped = {
+    kind: 'stepped' as const,
+    base: { kind: 'flow' as const, nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }] },
+    steps: [
+      { title: 'Flow A', explanation: 'ignored.', delta: { base: 'flow' as const, activeNode: 'a' } },
+      { title: 'Flow B', explanation: 'ignored.', delta: { base: 'flow' as const, activeNode: 'b' } },
+      { title: 'Flow C', explanation: 'ignored.', delta: { base: 'flow' as const, activeNode: 'a' } },
+    ],
+  }
+
+  const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(modelStepped), BINARY_SEARCH_META, ['binary-search'])
+  assert.equal(grafted, true)
+  const diagram = (out.approaches.find((a) => a.diagram?.kind === 'stepped')!.diagram) as typeof harness
+  assert.equal(diagram.base.kind, 'array')
+  assert.deepEqual(diagram.steps.map((s) => s.title), harnessTitles)
+})
+
+test('overlay falls back to harness prose when a borrowed field breaks the schema', async () => {
+  const harness = buildSteppedTraceFromMetadata(BINARY_SEARCH_META, ['binary-search'])!.diagram
+  const harnessTitles = harness.steps.map((s) => s.title)
+
+  // The model supplies a matching base.kind + step count, but one title exceeds
+  // the schema's 80-char cap. The overlaid diagram fails validation, so graft
+  // reverts to the harness diagram (its prose) rather than shipping invalid text.
+  const tooLong = 'T'.repeat(120)
+  const modelStepped = {
+    kind: 'stepped' as const,
+    base: { kind: 'array' as const, cells: [{ value: '0' }, { value: '0' }], pointers: ['lo', 'mid', 'hi'] },
+    steps: [
+      { title: tooLong, explanation: 'over-length title should force a fall back.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 1 } } },
+      { title: 'ok', explanation: 'fine.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 1 } } },
+      { title: 'ok', explanation: 'fine.', delta: { base: 'array' as const, pointerAt: { lo: 0, mid: 0, hi: 1 }, found: true } },
+    ],
+  }
+
+  const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(modelStepped), BINARY_SEARCH_META, ['binary-search'])
+  assert.equal(grafted, true)
+  const diagram = (out.approaches.find((a) => a.diagram?.kind === 'stepped')!.diagram) as typeof harness
+  // Reverted to harness prose; the over-length title never ships.
+  assert.deepEqual(diagram.steps.map((s) => s.title), harnessTitles)
+  assert.equal(diagram.steps.some((s) => s.title.length > 80), false)
+})
+
+test('a non-stepped model diagram on the optimal approach contributes no prose overlay', async () => {
+  const harness = buildSteppedTraceFromMetadata(BINARY_SEARCH_META, ['binary-search'])!.diagram
+  const harnessTitles = harness.steps.map((s) => s.title)
+
+  // The model attached a complexity_curves diagram (legit, non-stepped). There is
+  // no stepped diagram to borrow prose from, so the harness prose stands and the
+  // harness stepped diagram is still grafted.
+  const curves = {
+    kind: 'complexity_curves' as const,
+    curves: [{ label: 'Binary search O(log n)', shape: 'log' as const }],
+  }
+  const { content: out, grafted } = await graftSteppedTrace(contentWithModelStepped(curves), BINARY_SEARCH_META, ['binary-search'])
+  assert.equal(grafted, true)
+  const stepped = out.approaches.filter((a) => a.diagram?.kind === 'stepped')
+  assert.equal(stepped.length, 1)
+  const diagram = stepped[0].diagram as typeof harness
+  assert.deepEqual(diagram.steps.map((s) => s.title), harnessTitles)
 })

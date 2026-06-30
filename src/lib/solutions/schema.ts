@@ -112,7 +112,7 @@ export const SchemaTablesDiagramSchema = z.object({
 // model. Bases that only label a flow may be authored.
 
 /** Bases whose deltas assert computed state, so their trace must be machine-generated. */
-export const VERIFIED_STEPPED_BASES = ['array', 'pipeline'] as const
+export const VERIFIED_STEPPED_BASES = ['array', 'pipeline', 'grid'] as const
 export type VerifiedSteppedBase = (typeof VERIFIED_STEPPED_BASES)[number]
 
 /** Tiny key/value chip shown in the step's explanation card (e.g. "target=21", "mid=4"). */
@@ -170,15 +170,49 @@ const FlowDeltaSchema = z.object({
   visited: z.array(z.string().min(1).max(40)).max(8).optional(),
 })
 
+// Base: grid (2-D dynamic-programming tabulation: LCS, edit distance, knapsack).
+// The base only declares the table extent and axis labels; the computed cell
+// VALUES live in each step's delta, never in the base, so the table fills as the
+// learner steps. A grid asserts computed state, so it is a verified base and its
+// deltas must come from the trace harness, never the model.
+const GridStageSchema = z.object({
+  kind: z.literal('grid'),
+  rows: z.number().int().min(1).max(8),
+  cols: z.number().int().min(1).max(12),
+  rowLabels: z.array(z.string().max(24)).max(8).optional(),
+  colLabels: z.array(z.string().max(24)).max(12).optional(),
+})
+const GridDeltaSchema = z.object({
+  base: z.literal('grid'),
+  /** Every cell filled so far (cumulative through this step), with its value. */
+  fill: z.array(z.object({
+    r: z.number().int().min(0),
+    c: z.number().int().min(0),
+    value: z.string().min(1).max(8),
+  })).max(96),
+  /** The cell being computed on this step. */
+  active: z.object({
+    r: z.number().int().min(0),
+    c: z.number().int().min(0),
+  }).optional(),
+  /** Cells this step's value depends on (the recurrence inputs), for emphasis. */
+  highlight: z.array(z.object({
+    r: z.number().int().min(0),
+    c: z.number().int().min(0),
+  })).max(8).optional(),
+})
+
 const SteppedBaseSchema = z.discriminatedUnion('kind', [
   ArrayStageSchema,
   PipelineStageSchema,
   FlowStageSchema,
+  GridStageSchema,
 ])
 const SteppedDeltaSchema = z.discriminatedUnion('base', [
   ArrayDeltaSchema,
   PipelineDeltaSchema,
   FlowDeltaSchema,
+  GridDeltaSchema,
 ])
 
 export const InteractiveStepDiagramSchema = z.object({
@@ -206,6 +240,8 @@ export const InteractiveStepDiagramSchema = z.object({
   const cellCount = baseKind === 'array' ? diagram.base.cells.length : 0
   const stageCount = baseKind === 'pipeline' ? diagram.base.stages.length : 0
   const nodeIds = baseKind === 'flow' ? new Set(diagram.base.nodes.map((n) => n.id)) : null
+  const gridRows = baseKind === 'grid' ? diagram.base.rows : 0
+  const gridCols = baseKind === 'grid' ? diagram.base.cols : 0
 
   diagram.steps.forEach((step, i) => {
     if (step.delta.base !== baseKind) {
@@ -226,6 +262,16 @@ export const InteractiveStepDiagramSchema = z.object({
       if (!nodeIds!.has(step.delta.activeNode)) ctx.addIssue({ code: 'custom', message: `step ${i} activeNode "${step.delta.activeNode}" is not a base node` })
       for (const v of step.delta.visited ?? []) {
         if (!nodeIds!.has(v)) ctx.addIssue({ code: 'custom', message: `step ${i} visited "${v}" is not a base node` })
+      }
+    } else if (step.delta.base === 'grid') {
+      const cells = [
+        ...step.delta.fill,
+        ...(step.delta.active ? [step.delta.active] : []),
+        ...(step.delta.highlight ?? []),
+      ]
+      for (const cell of cells) {
+        if (cell.r >= gridRows) ctx.addIssue({ code: 'custom', message: `step ${i} references row ${cell.r} out of range (${gridRows} rows)` })
+        if (cell.c >= gridCols) ctx.addIssue({ code: 'custom', message: `step ${i} references col ${cell.c} out of range (${gridCols} cols)` })
       }
     }
   })

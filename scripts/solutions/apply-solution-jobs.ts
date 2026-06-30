@@ -94,14 +94,15 @@ async function main() {
         continue
       }
 
-      // Attach a machine-verified interactive walkthrough where eligible (same
-      // logic as the lazy generation route). Fail-soft: keeps the static diagram
-      // if the challenge is not array-trace eligible.
+      // Attach the server-owned interactive walkthrough where eligible (same logic
+      // as the lazy generation route): verified array/grid for algorithm, verified
+      // pipeline for sql, authored request-flow for system_design/data_modeling.
+      // Fail-soft: keeps the static diagram if the challenge is not eligible.
       const tags = [
         ...((challenge.topic_tags as string[] | null) ?? []),
         ...((challenge.technique_tags as string[] | null) ?? []),
       ]
-      const { content: finalContent, grafted } = graftSteppedTrace(
+      const { content: finalContent, grafted } = await graftSteppedTrace(
         parsed.data,
         (challenge.metadata as Record<string, unknown> | null) ?? null,
         tags,

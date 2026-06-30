@@ -2,46 +2,178 @@
  * Shared "attach the verified walkthrough" step used by both the lazy generation
  * route and the backfill apply script, so the two paths never drift.
  *
- * Given validated solution content + the challenge's metadata/tags, build a
- * machine-verified array walkthrough (if eligible) and graft it onto the optimal
- * approach (the last one, by the brute-force -> optimal convention). The deltas
- * are never the model's; only the surrounding prose is. Re-validates so the
- * one-stepped-per-solution and verified-trace gates still hold; on any failure
- * it returns the original content unchanged (fail-soft).
+ * Given validated solution content + the challenge's metadata/tags, build the
+ * server-owned interactive walkthrough that fits the challenge type and graft it
+ * onto the optimal approach (the last one, by the brute-force -> optimal
+ * convention). The walkthrough is chosen by challenge_type:
+ *   - algorithm      -> verified array trace, else verified grid (DP) trace
+ *   - sql            -> verified pipeline (CTE chain) trace
+ *   - system_design  -> authored request-flow walkthrough (derived from the
+ *   - data_modeling     architecture diagram on the optimal approach)
+ *
+ * For the verified bases (array / grid / pipeline) the deltas are computed by
+ * executing the real reference, never by the model; the flow base asserts no
+ * computed state, so it is derived deterministically from the optimal approach's
+ * architecture diagram (still server-owned, never free-authored by the model).
+ *
+ * PROSE OVERLAY (the only thing the model contributes to a stepped diagram):
+ * the deltas, base, and trace_verified marker come ONLY from the harness. The
+ * model may author per-step title/explanation/decision/pills, which we copy onto
+ * the harness steps BY INDEX. We capture the model's stepped diagram from the
+ * optimal approach BEFORE stripping, use only its text fields, and discard
+ * everything else it carried (its base, its deltas, its self-claimed
+ * trace_verified). The overlay is fail-soft: it applies only when the captured
+ * diagram has the SAME base.kind and the SAME number of steps as the harness;
+ * otherwise the harness placeholder prose stands. The model can never add,
+ * remove, or reorder steps, and never touch a delta. We re-validate with the
+ * schema after the overlay, and revert to harness prose if validation fails.
+ *
+ * Async because the SQL pipeline harness boots sql.js asynchronously; the array,
+ * grid, and flow paths are themselves sync but are awaited through one seam.
  */
 
-import { SolutionContentSchema, type SolutionContentV1 } from '@/lib/solutions/schema'
+import {
+  SolutionContentSchema,
+  InteractiveStepDiagramSchema,
+  type SolutionContentV1,
+  type InteractiveStepDiagram,
+} from '@/lib/solutions/schema'
 import { buildSteppedTraceFromMetadata } from './index'
+import { buildSteppedGridFromMetadata } from './gridTrace'
+import { buildSteppedPipelineFromMetadata } from './pipelineTrace'
+import { buildSteppedFlowFromContent } from './flowWalkthrough'
 
 export interface GraftResult {
   content: SolutionContentV1
   grafted: boolean
 }
 
-export function graftSteppedTrace(
+/** Only these text fields may be borrowed from the model, keyed by step index. */
+type StepProse = Pick<
+  InteractiveStepDiagram['steps'][number],
+  'title' | 'explanation' | 'decision' | 'pills'
+>
+
+/**
+ * Pick the server-owned stepped diagram for a solution by its challenge type, or
+ * null when none is eligible. Verified bases run their harness against the real
+ * reference + test cases; the flow base reads the optimal approach's architecture.
+ */
+async function buildWalkthrough(
   content: SolutionContentV1,
   metadata: Record<string, unknown> | null | undefined,
   tags: string[],
-): GraftResult {
-  // The model is NEVER allowed to author a stepped diagram (trace_verified lives
-  // in the same untrusted envelope, so a marker the model set cannot be trusted).
-  // Strip any model-supplied stepped diagram from every approach up front, then
-  // attach only the harness-built one. This is the single source of stepped diagrams.
+): Promise<InteractiveStepDiagram | null> {
+  switch (content.challenge_type) {
+    case 'algorithm': {
+      if (!metadata) return null
+      // Try the array harness first, then the grid (DP) harness; first non-null wins.
+      const array = buildSteppedTraceFromMetadata(metadata, tags)
+      if (array) return array.diagram
+      const grid = buildSteppedGridFromMetadata(metadata, tags)
+      return grid ? grid.diagram : null
+    }
+    case 'sql': {
+      if (!metadata) return null
+      const pipeline = await buildSteppedPipelineFromMetadata(metadata, tags)
+      return pipeline ? pipeline.diagram : null
+    }
+    case 'system_design':
+    case 'data_modeling': {
+      // The flow walkthrough is derived from the optimal approach's architecture
+      // diagram (already in `content`), not from metadata or tags.
+      const flow = buildSteppedFlowFromContent(content, metadata ?? null)
+      return flow ? flow.diagram : null
+    }
+    default:
+      return null
+  }
+}
+
+/**
+ * Overlay the model's per-step prose onto the harness diagram BY INDEX, keeping
+ * every delta, the base, and trace_verified exactly as the harness produced them.
+ *
+ * Applies only when the captured model diagram matches the harness on base.kind
+ * AND step count (so step i in the prose lines up with step i in the trace). On
+ * any mismatch, returns the harness diagram unchanged so its readable placeholder
+ * prose stands. The model never supplies deltas; only title/explanation/decision/
+ * pills are copied, and only onto steps the harness already verified.
+ */
+function overlayModelProse(
+  harness: InteractiveStepDiagram,
+  modelProse: StepProse[] | null,
+): InteractiveStepDiagram {
+  if (!modelProse) return harness
+  if (modelProse.length !== harness.steps.length) return harness
+
+  const steps = harness.steps.map((step, i) => {
+    const prose = modelProse[i]
+    return {
+      ...step,
+      title: prose.title,
+      explanation: prose.explanation,
+      // decision/pills are optional; only override when the model supplied them,
+      // otherwise keep the harness fallback for that field.
+      ...(prose.decision !== undefined ? { decision: prose.decision } : {}),
+      ...(prose.pills !== undefined ? { pills: prose.pills } : {}),
+    }
+  })
+
+  return { ...harness, steps }
+}
+
+export async function graftSteppedTrace(
+  content: SolutionContentV1,
+  metadata: Record<string, unknown> | null | undefined,
+  tags: string[],
+): Promise<GraftResult> {
+  // The model is NEVER allowed to author a stepped diagram's structure or deltas
+  // (trace_verified lives in the same untrusted envelope, so a marker the model
+  // set cannot be trusted). It MAY author per-step prose, which we copy by index
+  // onto the harness steps below. Capture the optimal approach's stepped diagram
+  // BEFORE stripping so we can borrow only its text fields, then strip every
+  // model-supplied stepped diagram from every approach. This is the single source
+  // of stepped diagrams.
+  const optimalIndex = content.approaches.length - 1
+  const capturedOptimal = content.approaches[optimalIndex]?.diagram
+  const modelStepped =
+    capturedOptimal?.kind === 'stepped' ? capturedOptimal : null
+
   const stripped = content.approaches.map((a) =>
     a.diagram?.kind === 'stepped' ? { ...a, diagram: undefined } : a,
   )
   const base = { ...content, approaches: stripped }
 
-  // Only algorithm solutions are array-trace eligible in this phase.
-  if (content.challenge_type !== 'algorithm' || !metadata) {
+  // Build the type-appropriate walkthrough against the STRIPPED content so the
+  // flow harness reads the real (model-authored) architecture diagram, never a
+  // stale stepped one.
+  const candidate = await buildWalkthrough(base, metadata, tags)
+  if (!candidate) {
     const recheck = SolutionContentSchema.safeParse(base)
     return { content: recheck.success ? recheck.data : content, grafted: false }
   }
 
-  const candidate = buildSteppedTraceFromMetadata(metadata, tags)
-  if (!candidate) {
-    const recheck = SolutionContentSchema.safeParse(base)
-    return { content: recheck.success ? recheck.data : content, grafted: false }
+  // Overlay the model's prose by index, but ONLY when its base.kind and step
+  // count match the harness (fail-soft otherwise). The harness owns base/deltas/
+  // trace_verified; the model contributes only title/explanation/decision/pills.
+  const modelProse =
+    modelStepped && modelStepped.base.kind === candidate.base.kind
+      ? modelStepped.steps.map((s) => ({
+          title: s.title,
+          explanation: s.explanation,
+          decision: s.decision,
+          pills: s.pills,
+        }))
+      : null
+  let diagram = overlayModelProse(candidate, modelProse)
+
+  // Re-validate the diagram on its own first: a borrowed-prose field could break
+  // a constraint (e.g. an over-length title). If the overlaid diagram fails,
+  // fall back to the untouched harness diagram (which already validated).
+  if (modelProse) {
+    const diagramCheck = InteractiveStepDiagramSchema.safeParse(diagram)
+    if (!diagramCheck.success) diagram = candidate
   }
 
   const approaches = stripped.map((a) => ({ ...a }))
@@ -51,7 +183,7 @@ export function graftSteppedTrace(
     return { content: recheck.success ? recheck.data : content, grafted: false }
   }
 
-  optimal.diagram = candidate.diagram
+  optimal.diagram = diagram
   const recheck = SolutionContentSchema.safeParse({ ...content, approaches })
   if (!recheck.success) {
     const fallback = SolutionContentSchema.safeParse(base)
