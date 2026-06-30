@@ -48,6 +48,11 @@ import { buildSteppedTraceFromMetadata } from './index'
 import { buildSteppedGridFromMetadata } from './gridTrace'
 import { buildSteppedPipelineFromMetadata } from './pipelineTrace'
 import { buildSteppedFlowFromContent } from './flowWalkthrough'
+import {
+  buildFlowNarrationContext,
+  narrateFlowViaApi,
+  type StepProse as FlowStepProse,
+} from './flowNarration'
 
 export interface GraftResult {
   content: SolutionContentV1
@@ -164,18 +169,40 @@ export async function graftSteppedTrace(
     return { content: recheck.success ? recheck.data : content, grafted: false }
   }
 
+  // FLOW NARRATION (system_design / data_modeling only): the deterministic
+  // placeholder prose is generic. For the flow base we ask the narrator to write
+  // grounded per-step prose bound to the REAL architecture edges + sublabels, then
+  // overlay it by index over the fixed structure. This takes priority over the
+  // legacy model-prose overlay below because it is grounded in the real path, not
+  // borrowed from an untrusted stepped diagram. Fail-soft: a null narration leaves
+  // the deterministic placeholder in place, and the verified bases are untouched.
+  let narratedProse: FlowStepProse[] | null = null
+  if (candidate.base.kind === 'flow') {
+    const narrationCtx = buildFlowNarrationContext(base)
+    if (narrationCtx && narrationCtx.nodes.length === candidate.steps.length) {
+      narratedProse = await narrateFlowViaApi(narrationCtx)
+    }
+  }
+
   // Overlay the model's prose by index, but ONLY when its base.kind and step
   // count match the harness (fail-soft otherwise). The harness owns base/deltas/
   // trace_verified; the model contributes only title/explanation/decision/pills.
+  // For the flow base, grounded narration (when present) wins over borrowed prose.
   const modelProse =
-    modelStepped && modelStepped.base.kind === candidate.base.kind
-      ? modelStepped.steps.map((s) => ({
+    narratedProse
+      ? narratedProse.map((s) => ({
           title: s.title,
           explanation: s.explanation,
           decision: s.decision,
-          pills: s.pills,
         }))
-      : null
+      : modelStepped && modelStepped.base.kind === candidate.base.kind
+        ? modelStepped.steps.map((s) => ({
+            title: s.title,
+            explanation: s.explanation,
+            decision: s.decision,
+            pills: s.pills,
+          }))
+        : null
   let diagram = overlayModelProse(candidate, modelProse)
 
   // Re-validate the diagram on its own first: a borrowed-prose field could break

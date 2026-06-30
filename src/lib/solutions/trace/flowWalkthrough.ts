@@ -145,17 +145,53 @@ function orderNodes(nodes: ArchNode[], edges: ArchEdge[]): ArchNode[] {
   return result
 }
 
-/** Default per-node prose. Coherent sentences, no AI-slop, no em dashes. */
+/**
+ * Default per-node prose, used when no narration is available. It is deliberately
+ * not the old "handles its part of the work" template: it leans on the node's role
+ * and its sublabel (the architecture's own "what it does" line) so a store reads
+ * differently from a queue from a plain service. Still deterministic, style-clean
+ * (coherent sentences, no AI-slop, no em dashes), and short.
+ */
 function placeholderExplanation(node: ArchNode, position: number, total: number): string {
   const label = node.label
-  const sub = node.sublabel ? ` ${node.sublabel}.` : ''
+  // The sublabel is the architecture's own description of the node's job. When it
+  // exists it carries the real signal, so it leads the sentence.
+  const job = node.sublabel ? node.sublabel.replace(/[.\s]+$/, '') : ''
+  const role = node.role ?? ''
+
   if (position === 0) {
-    return clamp(`The request starts at ${label}, the entry point for this flow.${sub}`, STEP_EXPLANATION_MAX)
+    const lead = `The request begins at ${label}, the entry point for this path`
+    return clamp(job ? `${lead}, where it ${lowerFirst(job)}.` : `${lead}.`, STEP_EXPLANATION_MAX)
   }
   if (position === total - 1) {
-    return clamp(`The path ends at ${label}, where the work for this request settles.${sub}`, STEP_EXPLANATION_MAX)
+    const lead =
+      role === 'store'
+        ? `The path settles at ${label}, where the data comes to rest`
+        : role === 'queue'
+          ? `The path ends at ${label}, where the work is buffered for later handling`
+          : `The path ends at ${label}, where this request resolves`
+    return clamp(job ? `${lead} and ${lowerFirst(job)}.` : `${lead}.`, STEP_EXPLANATION_MAX)
   }
-  return clamp(`The request reaches ${label}, which handles its part of the work before passing control on.${sub}`, STEP_EXPLANATION_MAX)
+
+  // Middle hops: name the node's job from its sublabel + role rather than a
+  // generic "handles its part of the work" line.
+  const verb =
+    role === 'store'
+      ? `reads or writes durable state at ${label}`
+      : role === 'queue'
+        ? `passes through ${label}, which buffers the work so the rest of the path is not blocked`
+        : role === 'external'
+          ? `calls out to ${label}, an outside dependency in the path`
+          : `reaches ${label}`
+  if (job) {
+    return clamp(`The request ${verb}, where it ${lowerFirst(job)}.`, STEP_EXPLANATION_MAX)
+  }
+  return clamp(`The request ${verb} before the next hop in the path.`, STEP_EXPLANATION_MAX)
+}
+
+/** Lowercase only the first character, so a sublabel folds into a sentence cleanly. */
+function lowerFirst(s: string): string {
+  return s.length === 0 ? s : s.charAt(0).toLowerCase() + s.slice(1)
 }
 
 function placeholderDecision(node: ArchNode): string | undefined {
