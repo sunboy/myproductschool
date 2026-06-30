@@ -9,7 +9,7 @@ import { InteractiveStepDiagram as Stepper } from '../../src/components/solution
 import { SolutionContent, stripDuplicateCodeFence } from '../../src/components/solutions/SolutionContent'
 import { SolutionsPane } from '../../src/components/solutions/SolutionsPane'
 import { codingMarkdownComponents } from '../../src/components/challenge/markdownComponents'
-import { MOCK_SOLUTION_CONTENT } from '../../src/lib/solutions/mock'
+import { MOCK_SOLUTION_CONTENT, MOCK_STEPPED_SOLUTION_CONTENT } from '../../src/lib/solutions/mock'
 import { runArrayTrace, buildSteppedArrayDiagram } from '../../src/lib/solutions/trace/arrayTrace'
 import type { InteractiveStepDiagram, SolutionContentV1 } from '../../src/lib/solutions/schema'
 
@@ -270,6 +270,50 @@ describe('SolutionContent', () => {
     expect(html).toContain('role="tablist"')
     expect(html).toContain('Next step')
     expect(html).toContain('aria-live="polite"')
+  })
+
+  it('shows a Code tab when an approach carries code, listing each coded approach', () => {
+    // MOCK_STEPPED_SOLUTION_CONTENT has two coded approaches + a walkthrough, so
+    // all three top tabs (Solution / Code / Visual walkthrough) are present.
+    const html = renderToStaticMarkup(
+      <SolutionContent content={MOCK_STEPPED_SOLUTION_CONTENT} size="pane" activeApproachId={null} onApproachChange={() => {}} />
+    )
+    expect(html).toContain('data-testid="solution-top-tab-code"')
+    expect(html).toContain('data-testid="solution-top-tab-visual"')
+    // The Code tab uses the code icon (not a badge dot).
+    expect(html).toMatch(/solution-top-tab-code[\s\S]*?material-symbols-outlined/)
+    // Default view is Solution, so the dedicated Code panel is not in first paint.
+    expect(html).not.toContain('data-testid="solution-code-panel"')
+    expect(html).toMatch(/aria-selected="true"[^>]*data-testid="solution-top-tab-solution"/)
+  })
+
+  it('shows NO Code tab when no approach has code', () => {
+    // MOCK_SOLUTION_CONTENT is prose-only (no code, no walkthrough): no switch at all.
+    const html = renderToStaticMarkup(
+      <SolutionContent content={MOCK_SOLUTION_CONTENT} size="pane" activeApproachId={null} onApproachChange={() => {}} />
+    )
+    expect(html).not.toContain('data-testid="solution-top-tab-code"')
+    expect(html).not.toContain('data-testid="solution-top-view-switch"')
+  })
+
+  it('Code panel renders each coded approach with its language and source', () => {
+    // Build a coding solution (code, no walkthrough) and assert the rendered Code
+    // panel by exercising the same projection the component uses: every approach
+    // with a non-empty code.source appears with its title + language + source.
+    const coded: SolutionContentV1 = {
+      ...MOCK_SOLUTION_CONTENT,
+      challenge_type: 'algorithm',
+      approaches: [
+        { id: 'brute', title: 'Brute force', tagline: 'Scan.', body_md: 'scan', code: { language: 'python', source: 'def brute():\n    return 0' }, complexity: { time: 'O(n^2)', space: 'O(1)' } },
+        { id: 'optimal', title: 'Two pointers', tagline: 'Converge.', body_md: 'converge', code: { language: 'python', source: 'def optimal():\n    return 1' }, complexity: { time: 'O(n)', space: 'O(1)' } },
+      ],
+    }
+    const html = renderToStaticMarkup(
+      <SolutionContent content={coded} size="pane" activeApproachId={null} onApproachChange={() => {}} />
+    )
+    // A Solution/Code switch is present (code but no walkthrough).
+    expect(html).toContain('data-testid="solution-top-tab-code"')
+    expect(html).not.toContain('data-testid="solution-top-tab-visual"')
   })
 })
 

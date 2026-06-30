@@ -10,7 +10,7 @@ import { usePrefersReducedMotion } from './diagrams/hooks'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { SolutionApproach, SolutionContentV1 } from '@/lib/solutions/schema'
 
-type TopView = 'solution' | 'visual'
+type TopView = 'solution' | 'code' | 'visual'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 
@@ -207,33 +207,47 @@ export function SolutionContent({ content, size, activeApproachId, onApproachCha
   const isModal = size === 'modal'
   const hasWalkthrough = !!content.walkthrough
 
-  // Top-level view: the answer ("Solution") leads; the interactive walkthrough
-  // ("Visual walkthrough") is one click away but clearly present. The switch
-  // only renders when a walkthrough exists, so the no-walkthrough case is byte
-  // for byte the old layout with no extra chrome.
+  // The approaches that carry a code solution, surfaced in a dedicated "Code" tab
+  // so a reader can jump straight to the implementation without scrolling the prose.
+  const codeApproaches = content.approaches.filter((a) => a.code && a.code.source.trim())
+  const hasCode = codeApproaches.length > 0
+
+  // The top-level tabs present for THIS solution, in display order. "Solution"
+  // always leads; "Code" appears when any approach has code; "Visual walkthrough"
+  // appears when a walkthrough exists. The switch renders only when there is more
+  // than one, so a plain prose-only solution is byte-for-byte the old layout.
+  const tabs: TopView[] = ['solution', ...(hasCode ? ['code' as const] : []), ...(hasWalkthrough ? ['visual' as const] : [])]
+  const hasSwitch = tabs.length > 1
+
+  // Top-level view: the answer ("Solution") leads; Code and the interactive
+  // walkthrough are one click away but clearly present.
   const [topView, setTopView] = useState<TopView>('solution')
   const topTabsRef = useRef<HTMLDivElement>(null)
   const reducedMotion = usePrefersReducedMotion()
 
-  // If a walkthrough disappears (content swap), never strand the user on a tab
+  // If the active tab disappears (content swap), never strand the user on a tab
   // that no longer exists.
   useEffect(() => {
-    if (!hasWalkthrough && topView === 'visual') setTopView('solution')
-  }, [hasWalkthrough, topView])
+    if (!tabs.includes(topView)) setTopView('solution')
+  }, [tabs, topView])
 
   const onTopTabKeyDown = (e: React.KeyboardEvent) => {
-    if (!hasWalkthrough) return
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); setTopView('visual'); focusTopTab(topTabsRef, 'visual') }
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); setTopView('solution'); focusTopTab(topTabsRef, 'solution') }
-    else if (e.key === 'Home') { e.preventDefault(); setTopView('solution'); focusTopTab(topTabsRef, 'solution') }
-    else if (e.key === 'End') { e.preventDefault(); setTopView('visual'); focusTopTab(topTabsRef, 'visual') }
+    if (!hasSwitch) return
+    const i = tabs.indexOf(topView)
+    let next: TopView | null = null
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = tabs[Math.min(i + 1, tabs.length - 1)]
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = tabs[Math.max(i - 1, 0)]
+    else if (e.key === 'Home') next = tabs[0]
+    else if (e.key === 'End') next = tabs[tabs.length - 1]
+    if (next) { e.preventDefault(); setTopView(next); focusTopTab(topTabsRef, next) }
   }
 
   return (
     <div style={{ maxWidth: isModal ? 760 : undefined, margin: isModal ? '0 auto' : undefined }}>
-      {/* Top-level view switch: Solution vs Visual walkthrough. Only shown when a
-          walkthrough exists so the plain case renders exactly as before. */}
-      {hasWalkthrough && (
+      {/* Top-level view switch: Solution / Code / Visual walkthrough. Only shown
+          when more than one tab is present so a plain prose-only solution renders
+          exactly as before. */}
+      {hasSwitch && (
         <div
           ref={topTabsRef}
           role="tablist"
@@ -249,14 +263,54 @@ export function SolutionContent({ content, size, activeApproachId, onApproachCha
             label="Solution"
             icon="article"
           />
-          <TopViewTab
-            view="visual"
-            active={topView === 'visual'}
-            onSelect={() => setTopView('visual')}
-            label="Visual walkthrough"
-            icon="play_circle"
-            badge
-          />
+          {hasCode && (
+            <TopViewTab
+              view="code"
+              active={topView === 'code'}
+              onSelect={() => setTopView('code')}
+              label="Code"
+              icon="code"
+            />
+          )}
+          {hasWalkthrough && (
+            <TopViewTab
+              view="visual"
+              active={topView === 'visual'}
+              onSelect={() => setTopView('visual')}
+              label="Visual walkthrough"
+              icon="play_circle"
+              badge
+            />
+          )}
+        </div>
+      )}
+
+      {/* Code view: just the code solution(s), one labeled block per approach that
+          carries code, so the implementation is one click away from the prose. */}
+      {hasCode && topView === 'code' && (
+        <div role="tabpanel" aria-label="Code" data-testid="solution-code-panel" style={{ marginTop: 2 }}>
+          {codeApproaches.map((approach, i) => (
+            <div key={approach.id} style={{ marginBottom: i < codeApproaches.length - 1 ? 22 : 4 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 800, color: 'var(--color-on-surface)' }}>
+                  {approach.title}
+                </span>
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+                  {approach.code!.language}
+                </span>
+              </div>
+              <CopyablePre>
+                <code style={{ fontFamily: 'var(--font-mono, ui-monospace, Menlo, monospace)', fontSize: 12.5 }}>
+                  {approach.code!.source}
+                </code>
+              </CopyablePre>
+              {approach.complexity && (
+                <div style={{ marginTop: 8 }}>
+                  <ComplexityChips approach={approach} />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -275,10 +329,9 @@ export function SolutionContent({ content, size, activeApproachId, onApproachCha
       )}
 
       {/* Solution view: the existing approach-based content. Kept mounted-or-not
-          purely by the switch; the no-walkthrough case skips the switch and
-          renders this directly. */}
-      {(!hasWalkthrough || topView === 'solution') && (
-      <div role={hasWalkthrough ? 'tabpanel' : undefined} aria-label={hasWalkthrough ? 'Solution' : undefined} data-testid="solution-answer-panel">
+          purely by the switch; the no-switch case renders this directly. */}
+      {(!hasSwitch || topView === 'solution') && (
+      <div role={hasSwitch ? 'tabpanel' : undefined} aria-label={hasSwitch ? 'Solution' : undefined} data-testid="solution-answer-panel">
       {/* Overview */}
       <SolutionMd>{content.overview_md}</SolutionMd>
 
