@@ -170,6 +170,10 @@ const COMPETENCY_LABELS: Record<string, string> = {
 const SNAPSHOT_CODE_MAX_CHARS = 40000
 const IDLE_FEELER_DELAY_MS = 45_000
 const IDLE_FEELER_COOLDOWN_MS = 120_000
+// Phrases Hatch uses when wrapping up. When one appears in a Hatch turn (voice OR
+// chat) we auto-route to the graded debrief. Shared so every reply path closes the
+// same way — chat mode previously never checked these, leaving sessions stuck 'active'.
+const CLOSING_PHRASES = ['wrap up', 'stop here', 'covered good ground', 'have what i need', 'call it', 'good session', 'shall we stop', 'want to stop']
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -542,6 +546,11 @@ export default function SessionPage({
 
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
+  // Guards against a double end→debrief. Multiple triggers can fire in the same
+  // tick (a closing phrase AND the grader's sessionPhase:'done'), and the isEnding
+  // state guard is async so both can pass it. A ref updates synchronously, so the
+  // first close wins and the rest no-op — preventing two POST /end + double navigation.
+  const endTriggeredRef = useRef<boolean>(false)
   const openingRequestedRef = useRef(false)
   const openingSpokenRef = useRef(false)
   const idleFeelerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -941,7 +950,8 @@ export default function SessionPage({
         if (isFocusSurfaceEvent(data.focusEvent)) {
           setRemoteFocusEvent(data.focusEvent)
         }
-        if (data.sessionPhase === 'done' && !isEnding) {
+        if (data.sessionPhase === 'done' && !isEnding && !endTriggeredRef.current) {
+          endTriggeredRef.current = true
           setTimeout(() => {
             setIsEnding(true)
             setInterviewPhase('ended')
@@ -951,7 +961,13 @@ export default function SessionPage({
                 window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
                 router.push(`/live-interviews/${sessionId}/debrief`)
               })
-              .catch(() => setError('Failed to generate debrief'))
+              .catch(() => {
+                setError('Failed to generate debrief')
+                setIsEnding(false)
+                // Allow a retry after a failed end; without this the interview is
+                // permanently locked out of ending (the ref stays true).
+                endTriggeredRef.current = false
+              })
           }, 2000)
         }
         if (data.done) es.close()
@@ -987,6 +1003,59 @@ export default function SessionPage({
       setIsMuted(true)
     }
   }, [isLimitReached, interviewPhase, showLimitModal])
+
+  // Shared auto-close: ends the session and routes to the graded debrief without the
+  // confirm dialog. Used by every automatic completion trigger (Hatch closing phrase
+  // in voice AND chat, SSE sessionPhase:'done') so an engaged session always reaches
+  // the debrief instead of silently sitting 'active' forever. Declared before the
+  // reply handlers that call it so its useCallback closure is available to them.
+  const autoEndToDebrief = useCallback(() => {
+    if (isEnding || endTriggeredRef.current) return
+    endTriggeredRef.current = true
+    setIsEnding(true)
+    setInterviewPhase('ended')
+    eventSourceRef.current?.close()
+    if (IS_MOCK) {
+      router.push(`/live-interviews/${sessionId}/debrief`)
+      return
+    }
+    const finish = async () => {
+      try {
+        if (centerMode !== 'orb' && sessionId) {
+          const snapshot = buildCurrentArtifactSnapshot()
+          if (snapshot) {
+            await fetch(`/api/live-interview/${sessionId}/snapshot`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ artifactSnapshot: snapshot }),
+            }).catch(() => { /* non-fatal, end still proceeds */ })
+          }
+        }
+        await fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
+        window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
+        router.push(`/live-interviews/${sessionId}/debrief`)
+      } catch {
+        setError('Failed to generate debrief')
+        setIsEnding(false)
+        setInterviewPhase('active')
+        // Allow a retry after a failed end.
+        endTriggeredRef.current = false
+      }
+    }
+    void finish()
+  }, [isEnding, sessionId, router, centerMode, buildCurrentArtifactSnapshot])
+
+  // Detects when Hatch signals the interview is wrapping up and auto-routes to the
+  // debrief. Called from EVERY Hatch reply path (voice transcript, chat reply, idle
+  // feeler) so chat-mode sessions close the same way voice ones do. The 2s delay lets
+  // the closing line land before we navigate.
+  const maybeAutoEndOnClosing = useCallback((hatchText: string) => {
+    if (!hatchText || isEnding) return
+    const lower = hatchText.toLowerCase()
+    if (CLOSING_PHRASES.some((phrase) => lower.includes(phrase))) {
+      setTimeout(() => autoEndToDebrief(), 2000)
+    }
+  }, [isEnding, autoEndToDebrief])
 
   const handleTranscript = useCallback((text: string, role: 'hatch' | 'user') => {
     const { cleanContent, signal } = parseGradingSignal(text)
@@ -1062,21 +1131,7 @@ export default function SessionPage({
       console.error('Failed to persist voice turn:', err)
     })
 
-    const CLOSING_PHRASES = ["wrap up", "stop here", "covered good ground", "have what i need", "call it", "good session", "shall we stop", "want to stop"]
-    const lower = cleanContent.toLowerCase()
-    if (role === 'hatch' && CLOSING_PHRASES.some((phrase) => lower.includes(phrase))) {
-      setTimeout(() => {
-        setIsEnding(true)
-        setInterviewPhase('ended')
-        eventSourceRef.current?.close()
-        fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
-          .then(() => {
-            window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
-            router.push(`/live-interviews/${sessionId}/debrief`)
-          })
-          .catch(() => setError('Failed to generate debrief'))
-      }, 2000)
-    }
+    if (role === 'hatch') maybeAutoEndOnClosing(cleanContent)
 
     if (role === 'user' && cleanContent) {
       const artifactSnapshot = buildCurrentArtifactSnapshot()
@@ -1109,7 +1164,7 @@ export default function SessionPage({
         }
       }).catch(() => {})
     }
-  }, [sessionId, router, totalTurns, buildCurrentArtifactSnapshot, turns])
+  }, [sessionId, totalTurns, buildCurrentArtifactSnapshot, turns, maybeAutoEndOnClosing])
 
   const handleAgentSpeaking = useCallback(() => {
     setHatchState('speaking')
@@ -1302,6 +1357,9 @@ export default function SessionPage({
         }
         setTurns((prev) => [...prev, hatchTurn])
         setTotalTurns((prev) => prev + 1)
+        // Chat mode previously skipped closing detection, so chat sessions never
+        // auto-closed. Route the reply through the same check voice uses.
+        maybeAutoEndOnClosing(reply)
       } else {
         setError(res.status === 410 ? 'This session has ended.' : await liveInterviewErrorMessage(res))
       }
@@ -1311,7 +1369,7 @@ export default function SessionPage({
       setHatchState('idle')
       setIsThinking(false)
     }
-  }, [buildCurrentArtifactSnapshot, sessionId])
+  }, [buildCurrentArtifactSnapshot, sessionId, maybeAutoEndOnClosing])
 
   const requestHatchFeeler = useCallback(async (idleSeconds: number) => {
     if (interviewPhase !== 'active' || isThinking || isChatSending || isEnding) return
@@ -1439,6 +1497,8 @@ export default function SessionPage({
   }, [isEnding])
 
   const confirmEndInterview = useCallback(async () => {
+    if (endTriggeredRef.current) return
+    endTriggeredRef.current = true
     setShowEndConfirm(false)
     setIsEnding(true)
     setInterviewPhase('ended')
@@ -1471,6 +1531,8 @@ export default function SessionPage({
       setError('Failed to generate debrief')
       setIsEnding(false)
       setInterviewPhase('active')
+      // Allow a retry after a failed end.
+      endTriggeredRef.current = false
     }
   }, [sessionId, router, centerMode, buildCurrentArtifactSnapshot])
 

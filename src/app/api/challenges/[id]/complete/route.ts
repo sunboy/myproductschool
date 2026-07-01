@@ -413,7 +413,10 @@ export const POST = withRoute(async (
     max_score,
   }
   if (isFirstCompletion) feedbackJson.xp_awarded = xp_earned
-  await admin
+  // The status flip + XP already happened atomically in the claim above, so this
+  // grade/feedback write failing does NOT strand the row 'in_progress'. Still capture
+  // the error and log it (non-fatal) so a silent metadata-write failure is visible.
+  const { error: gradeWriteError } = await admin
     .from('challenge_attempts')
     .update({
       total_score,
@@ -429,6 +432,14 @@ export const POST = withRoute(async (
         : {}),
     })
     .eq('id', attempt_id)
+
+  if (gradeWriteError) {
+    console.error('[challenge complete] graded + status flipped but failed to write grade/feedback columns', {
+      attemptId: attempt_id,
+      challengeId,
+      error: gradeWriteError.message,
+    })
+  }
 
   // Non-winner orphan recovery: backfill feedback_json ONLY if it is still null,
   // with the IS NULL guard in the SQL predicate (not a JS read-then-write) so a

@@ -432,14 +432,23 @@ export async function POST(
     )
   }
 
-  // Mark attempt completed
-  await supabase
+  // Mark attempt completed. The grade is already saved to interview_grades above,
+  // so a status-write failure shouldn't 500, but it must not be swallowed either:
+  // a silent failure leaves the attempt 'in_progress' forever. Log loudly; the
+  // stale-session reaper reconciles any row that fails to flip.
+  const { error: completionError } = await supabase
     .from('challenge_attempts')
     .update({
       status: 'completed',
       completed_at: new Date().toISOString(),
     })
     .eq('id', attemptId)
+  if (completionError) {
+    console.error('[finalize] graded but failed to mark attempt completed', {
+      attemptId,
+      error: completionError.message,
+    })
+  }
 
   // Record daily streak (RPC is service_role-only, so use the admin client)
   const admin = createAdminClient()

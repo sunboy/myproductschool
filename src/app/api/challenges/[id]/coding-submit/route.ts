@@ -408,7 +408,11 @@ export const POST = withRoute(async (
   // - an orphan attempt (already 'completed' but missing a grade row) flips zero
   //   rows here, so XP is NOT re-awarded on re-grade, while the grade row below
   //   still gets written to recover the orphan.
-  const { data: claimedRows } = await supabase
+  // Capture the error too: a silent failure here leaves the row 'in_progress'
+  // forever even though the user was graded (a top cause of stuck attempts). We log
+  // loudly rather than 500 because grading already succeeded; the stale-session
+  // reaper reconciles any row that fails to flip.
+  const { data: claimedRows, error: completionError } = await supabase
     .from('challenge_attempts')
     .update({
       status: 'completed',
@@ -420,6 +424,12 @@ export const POST = withRoute(async (
     .eq('id', attemptId)
     .neq('status', 'completed')
     .select('id')
+  if (completionError) {
+    console.error('[coding-submit] graded but failed to mark attempt completed', {
+      attemptId,
+      error: completionError.message,
+    })
+  }
   const isFirstCompletion = (claimedRows?.length ?? 0) > 0
 
   // Only the request that won the completion records the streak + XP, exactly once.
