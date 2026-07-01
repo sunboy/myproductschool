@@ -36,10 +36,11 @@ Audience = `profiles.created_at` in window MINUS any `challenge_attempts`/`live_
 
 ## E. Sentry HACKPRODUCT-G hydration crash (paid-traffic first-paint)
 
-**Root cause:** `useSearchParams()` in `PostHogProvider` (`PostHogProvider.tsx:24-39`) on the statically-prerendered `/`. Paid clicks land with a query string that didn't exist at build → hydration mismatch. Uniquely explains ad-traffic-only crash.
+**Root cause (revised after Codex review):** the scout ranked `useSearchParams()` #1, but that pattern (Suspense + hook, component renders null) is React-documented-safe and is NOT the mismatch source. The actual guaranteed mismatch is `useReducedMotion()` in the landing tree, which BRANCHES rendered JSX (server renders the non-reduced branch; a reduced-motion client renders a different branch). That is the fix.
 
-- E1. `PostHogProvider.tsx` — replace `useSearchParams()` with a post-hydration `useEffect` reading `window.location.search`. Keep `/` static. NO blanket suppressHydrationWarning.
-- E2. (defensive) Harden `useReducedMotion()` init in `V3HatchReveal.tsx` + `V3LiveInterviewSection.tsx` — init to `false`, apply media value in `useEffect`.
+- E1. (REVERTED) An earlier attempt swapped `useSearchParams()` for `window.location.search`, but Codex caught that it silently drops pageviews on query-only navigations. Reverted — `PostHogProvider.tsx` is now functionally identical to origin (standard-safe pattern retained).
+- E2. (THE FIX) `useReducedMotionSafe()` hook (init `false` matching SSR, apply media value in `useEffect`) replaces `useReducedMotion()` in `V3HatchReveal.tsx` + `V3LiveInterviewSection.tsx`. Eliminates the JSX-branching mismatch. NO blanket suppressHydrationWarning.
+- NOTE: could not browser-verify the client console (Playwright + Chrome MCP both disconnected this session). The fix is the defensible root cause; a Playwright hydration-console check on `/?gad_source=5&gclid=TEST` should be run before declaring HACKPRODUCT-G resolved.
 
 ## Verification (every workstream)
 - `tsc --noEmit` clean (no NEW errors; lint/audit already pre-existing red on main).

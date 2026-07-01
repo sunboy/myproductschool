@@ -2,8 +2,8 @@
 
 import posthog from 'posthog-js'
 import { PostHogProvider as PHProvider, usePostHog } from 'posthog-js/react'
-import { useEffect, useRef, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { useEffect, useRef, useState, Suspense } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
   COOKIE_CHOICE_EVENT,
   COOKIE_CHOICE_STORAGE_KEY,
@@ -21,25 +21,29 @@ function eventChoice(event: Event): CookieChoice | null {
   return typeof detail === 'string' && isCookieChoice(detail) ? detail : null
 }
 
-// Reads the query string from window.location inside the client-only effect rather than
-// via useSearchParams(). useSearchParams() forces the consuming subtree to reconcile
-// server-committed params against the live URL; on the statically-prerendered "/" route
-// the build-time HTML carries no query string, so a paid-traffic click landing on
-// /?gad_source=…&gclid=… hydrated against non-empty params and crashed first paint
-// (Sentry HACKPRODUCT-G). location.search is only touched post-hydration, so there is
-// nothing to reconcile and "/" stays statically generated.
+// Tracks pageviews across BOTH path changes and query-string-only navigations (filter/
+// search params on the same page). useSearchParams() is what makes the effect re-run on
+// query changes, and it is safe here: this component always renders null (capture is
+// deferred to an effect), so params never affect render output, and the Suspense boundary
+// in the provider below contains useSearchParams()'s dynamic opt-in to this leaf. This is
+// the standard App Router pattern and is NOT the source of the paid-traffic hydration
+// crash (HACKPRODUCT-G) — that was a JSX-branching mismatch from useReducedMotion() in the
+// landing tree, fixed via useReducedMotionSafe. Do not "optimize" this into reading
+// window.location.search: that silently drops pageviews on query-only navigations.
 function PostHogPageView({ enabled }: { enabled: boolean }) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const posthogClient = usePostHog()
   const lastPath = useRef<string | null>(null)
 
   useEffect(() => {
     if (!enabled) return
-    const url = pathname + window.location.search
+    const query = searchParams.toString()
+    const url = pathname + (query ? `?${query}` : '')
     if (url === lastPath.current) return
     lastPath.current = url
     posthogClient.capture('$pageview', { $current_url: window.location.href })
-  }, [enabled, pathname, posthogClient])
+  }, [enabled, pathname, searchParams, posthogClient])
 
   return null
 }
@@ -72,7 +76,9 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <PHProvider client={posthog}>
-      <PostHogPageView enabled={analyticsEnabled} />
+      <Suspense fallback={null}>
+        <PostHogPageView enabled={analyticsEnabled} />
+      </Suspense>
       {children}
     </PHProvider>
   )
