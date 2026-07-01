@@ -1237,6 +1237,7 @@ export const PUBLIC_DIRECTORY_PATHS = [
   ...ALTERNATIVE_DIRECTORIES.map((entry) => `/alternatives/${entry.slug}`),
   '/quiz/archetype',
   '/quiz/product-sense',
+  '/affiliate-program',
   '/pricing',
   '/contact',
   '/security',
