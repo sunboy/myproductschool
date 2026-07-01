@@ -17,6 +17,7 @@ export const MARKETING_ROUTES = [
   '/waitlist-quick',
   '/waitlist-flow',
   '/pricing',
+  '/offer',
   '/privacy',
   '/terms',
   '/help',
