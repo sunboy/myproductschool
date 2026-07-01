@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { identifyUser } from '@/lib/posthog/client'
+import { isInternalUser } from '@/lib/posthog/internal'
 
 // Session-scoped profile + usage, fetched ONCE per session from /api/profile
 // (which already returns profile fields, subscription, dunning, and usage).
@@ -89,9 +90,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       .then(data => {
         if (data) {
           // Tie PostHog events (client + server) to this user. No-ops until the
-          // user has consented and PostHog has initialized.
+          // user has consented and PostHog has initialized. is_internal flags
+          // the team's own accounts (sandeeptnvs@gmail.com + all @hackproduct.com,
+          // including e2e/paywall-audit/test seeds) so insights can filter them out.
           if (data.id) {
-            identifyUser(data.id, { plan: data.plan ?? null })
+            identifyUser(data.id, { plan: data.plan ?? null, is_internal: isInternalUser(data.email) })
           }
           setProfile({
             id: data.id,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
@@ -16,7 +16,7 @@ import {
 } from '@/lib/billing/plans'
 import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 import { trackEvent } from '@/lib/posthog/client'
-import { EVENT_CHECKOUT_STARTED } from '@/lib/posthog/events'
+import { EVENT_CHECKOUT_STARTED, EVENT_PAYWALL_SHOWN, EVENT_PAYWALL_DISMISSED, EVENT_UPGRADE_CLICKED } from '@/lib/posthog/events'
 
 // ── The single paywall modal for the whole app ──────────────────────────────
 // Every upgrade surface routes through this: limit-hit gates (challenges,
@@ -175,12 +175,32 @@ export function PaywallModal({
 
   const ctaLabel = isAnalytics ? 'Get Analytics' : 'Unlock Pro'
 
+  // Tracks whether the user has clicked the upgrade CTA at least once during this
+  // open session, so closeAll can tell a genuine dismissal apart from closing the
+  // modal after checkout was already kicked off (e.g. backing out of embedded
+  // checkout counts as abandoning that checkout, not dismissing the paywall pitch).
+  const upgradeClickedRef = useRef(false)
+
+  // paywall_shown: fire once per mount-with-open, carrying the same feature/used/
+  // limit context the modal renders with. Reset the upgrade-clicked guard so a
+  // reused modal instance (open toggled false→true again) tracks fresh state.
+  useEffect(() => {
+    if (!open) return
+    upgradeClickedRef.current = false
+    trackEvent(EVENT_PAYWALL_SHOWN, { feature, used, limit })
+  }, [open, feature, used, limit])
+
   const closeAll = useCallback(() => {
+    // paywall_dismissed: only a genuine close-without-upgrading, not a step back
+    // out of an already-started checkout.
+    if (!upgradeClickedRef.current) {
+      trackEvent(EVENT_PAYWALL_DISMISSED, { feature, used, limit })
+    }
     setCheckoutClientSecret(null)
     setCheckoutPlan(null)
     setError(null)
     onClose()
-  }, [onClose])
+  }, [onClose, feature, used, limit])
 
   // Close on Escape (only when dismissible).
   useEffect(() => {
@@ -201,6 +221,8 @@ export function PaywallModal({
     setLoading(true)
     setError(null)
     const planId = selectedPlan.id
+    upgradeClickedRef.current = true
+    trackEvent(EVENT_UPGRADE_CLICKED, { feature, plan: planId })
     // Fire checkout_started here — this modal is the dominant in-app upgrade surface,
     // and it previously emitted nothing, so the funnel's checkout_started stage read
     // ~0 despite users opening checkout. Mirrors the marketing pricing page.
