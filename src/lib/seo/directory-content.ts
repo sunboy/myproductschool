@@ -34,6 +34,52 @@ export interface CompanyDirectoryEntry {
   roles: string[]
   practiceAreas: string[]
   sampleQuestions: string[]
+  /** Optional primary CTA override. Defaults to the free-signin flow when absent. */
+  ctaLabel?: string
+  ctaHref?: string
+  secondaryLabel?: string
+  secondaryHref?: string
+}
+
+export interface RoleTransitionDirectoryEntry {
+  slug: string
+  title: string
+  shortTitle: string
+  eyebrow: string
+  metaTitle: string
+  metaDescription: string
+  keywords: string[]
+  heroTitle: string
+  heroSubtitle: string
+  summary: string
+  ctaLabel: string
+  ctaHref: string
+  secondaryLabel: string
+  secondaryHref: string
+  whatChanges: Array<{ title: string; body: string }>
+  flowTracks: Array<{ eyebrow: string; title: string; body: string }>
+  proofPoints: Array<{ title: string; body: string }>
+  audience: Array<{ title: string; body: string }>
+  faqs: Array<{ q: string; a: string }>
+}
+
+export interface AlternativeDirectoryEntry {
+  slug: string
+  competitor: string
+  eyebrow: string
+  metaTitle: string
+  metaDescription: string
+  keywords: string[]
+  heroTitle: string
+  summary: string
+  ctaLabel: string
+  ctaHref: string
+  secondaryLabel: string
+  secondaryHref: string
+  comparisons: Array<[dimension: string, competitor: string, hackproduct: string]>
+  betterFit: string[]
+  closingTitle: string
+  closingSubtitle: string
 }
 
 export interface StudyPlanDirectoryEntry {
@@ -420,6 +466,72 @@ export const COMPANY_DIRECTORIES: CompanyDirectoryEntry[] = [
       'Prioritize latency, quality, and adoption for a productivity feature.',
     ],
   },
+  {
+    slug: 'google-pm-interview',
+    name: 'Google PM',
+    metaTitle: 'Google PM Interview Prep for Product Sense and Strategy | HackProduct',
+    metaDescription:
+      'Practice the Google PM interview loop: product sense, analytical estimation, strategy, and technical reasoning, scored by Hatch and mapped to FLOW.',
+    summary:
+      'The Google PM loop rewards principled trade-offs, user-first product judgment, and reasoning you can defend from first principles rather than a memorized framework.',
+    interviewStyle:
+      'Open-ended prompts where the interviewer expects you to make assumptions explicit, structure the space, and show the reasoning behind the recommendation.',
+    roles: ['Associate Product Manager', 'Product Manager', 'Senior Product Manager', 'Technical Program Manager'],
+    practiceAreas: ['Product design', 'Product strategy', 'Analytical estimation', 'Metrics diagnosis', 'System reasoning'],
+    sampleQuestions: [
+      'How would you improve Google Maps for daily commuters?',
+      'Pick a metric for YouTube Shorts and defend why it matters.',
+      'A core Search feature loses 10% of queries after a launch. Where do you look first?',
+    ],
+    ctaLabel: 'Find your product-thinking archetype',
+    ctaHref: '/quiz/archetype',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+  },
+  {
+    slug: 'meta-product-sense',
+    name: 'Meta Product Sense',
+    metaTitle: 'Meta Product Sense Interview Prep for Engineers and PMs | HackProduct',
+    metaDescription:
+      'Prepare for the Meta product sense interview: framing ambiguity, choosing execution metrics, and defending trade-offs under a fast signal-heavy loop.',
+    summary:
+      'Meta product sense interviews move fast and read for signal. The bar is whether you can structure an ambiguous prompt, choose the metric that matters, and defend a decision without stalling.',
+    interviewStyle:
+      'Fast loops that reward a clean structure, a metric you can justify, and a recommendation you hold under follow-up pressure instead of retreating to hedged answers.',
+    roles: ['Product Manager', 'Software Engineer moving toward product', 'Data Engineer', 'Engineering Manager'],
+    practiceAreas: ['Product sense framing', 'Execution metrics', 'Growth reasoning', 'Trade-off communication', 'Follow-up pressure'],
+    sampleQuestions: [
+      'How would you improve discovery in Facebook Groups?',
+      'Reels creation dropped 12% week over week. Diagnose it.',
+      'Choose the north star metric for Instagram Threads and explain the guardrail.',
+    ],
+    ctaLabel: 'Find your product-thinking archetype',
+    ctaHref: '/quiz/archetype',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+  },
+  {
+    slug: 'stripe-interview-prep',
+    name: 'Stripe',
+    metaTitle: 'Stripe Interview Prep for Product-Minded Engineers | HackProduct',
+    metaDescription:
+      'Practice the Stripe interview loop: API taste, payments data modeling, reliability trade-offs, and developer-experience judgment, with Hatch coaching.',
+    summary:
+      'Stripe loops read for API taste and systems clarity. The work is developer-facing, so architecture and customer experience are judged as one decision, not two separate rounds.',
+    interviewStyle:
+      'Builder-focused loops where the interviewer ties technical architecture to the developer experience and expects you to reason about correctness, reliability, and API design together.',
+    roles: ['Software Engineer', 'Product Manager', 'Data Engineer', 'Engineering Manager'],
+    practiceAreas: ['API design', 'Payments data modeling', 'Reliability trade-offs', 'Developer experience', 'SQL analytics'],
+    sampleQuestions: [
+      'Design idempotent retry logic for a subscription billing product.',
+      'Model balances, payouts, disputes, and audit trails for a payments ledger.',
+      'Prioritize three developer-experience fixes for a checkout integration.',
+    ],
+    ctaLabel: 'Find your product-thinking archetype',
+    ctaHref: '/quiz/archetype',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+  },
 ]
 
 export const STUDY_PLAN_DIRECTORIES: StudyPlanDirectoryEntry[] = [
@@ -651,8 +763,430 @@ export const COMPARISON_DIRECTORIES = {
   },
 }
 
+export const ROLE_TRANSITION_DIRECTORIES: RoleTransitionDirectoryEntry[] = [
+  {
+    slug: 'swe-to-pm',
+    title: 'Software engineer to product manager',
+    shortTitle: 'SWE to PM',
+    eyebrow: 'Software engineer to PM',
+    metaTitle: 'Software Engineer to PM Transition Practice | HackProduct',
+    metaDescription:
+      'Move from software engineering into product management with reps on product sense, metrics, prioritization, and trade-off communication, scored by Hatch.',
+    keywords: [
+      'software engineer to product manager',
+      'swe to pm transition',
+      'engineer to pm interview',
+      'product sense for software engineers',
+      'become a product manager from engineering',
+    ],
+    heroTitle: 'You can ship the feature. Now practice choosing which feature is worth shipping.',
+    heroSubtitle:
+      'The move from software engineering to product management is not a vocabulary swap. The technical depth carries over. The judgment underneath a product decision, framing ambiguity, naming a trade-off, defending a recommendation, is a separate skill, and it is trainable with reps.',
+    summary:
+      'Software engineers already reason in systems and trade-offs. The PM transition routes that instinct toward user outcomes and business impact instead of implementation detail.',
+    ctaLabel: 'Find your product-thinking archetype',
+    ctaHref: '/quiz/archetype',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+    whatChanges: [
+      {
+        title: 'The question moves from how to why',
+        body: 'Writing the code proved the thing could be built. The PM question is whether it was worth building at all, and for whom, before anyone opens an editor.',
+      },
+      {
+        title: 'Ambiguity becomes the job',
+        body: 'A vague ticket used to mean someone skipped the spec. In product work the ambiguity is the assignment, and framing it well is the first move rather than a blocker.',
+      },
+      {
+        title: 'Trade-offs get said out loud',
+        body: 'Engineers make trade-offs constantly and keep most of them in their head. Product work means naming the trade-off in a room and defending the one you picked.',
+      },
+    ],
+    flowTracks: [
+      {
+        eyebrow: 'Frame',
+        title: 'Diagnose before you propose',
+        body: 'Take a vague signal, usage dropped or a competitor shipped something, and find the real problem before reaching for a fix.',
+      },
+      {
+        eyebrow: 'List',
+        title: 'Widen the option space',
+        body: 'Generate more than the first two ideas, including the option to do nothing, and account for everyone the decision touches.',
+      },
+      {
+        eyebrow: 'Optimize',
+        title: 'Pick a criterion and defend it',
+        body: 'State what you are optimizing for, name the metric and the guardrail, and say what you will give up to get it.',
+      },
+      {
+        eyebrow: 'Win',
+        title: 'Land a recommendation someone can act on',
+        body: 'Write the decision in one sentence: what you will do, how you will know it worked, and how you will know it failed.',
+      },
+    ],
+    proofPoints: [
+      {
+        title: 'Product sense reps built for technical backgrounds',
+        body: 'Scenarios that respect what you already know about systems and data, then push you to apply it to user and business outcomes.',
+      },
+      {
+        title: 'Hatch grades reasoning, not vocabulary',
+        body: 'Feedback targets the move you missed, a skipped stakeholder or a preference dressed up as a trade-off, instead of rewarding buzzwords.',
+      },
+      {
+        title: 'A skill map that shows where you actually stand',
+        body: 'Six competencies tracked from your practice history, not from a self-assessment form you filled out about yourself.',
+      },
+    ],
+    audience: [
+      {
+        title: 'Engineers interviewing for PM or APM roles',
+        body: 'Practice the product sense round the way it gets graded, with follow-up pressure instead of one static answer.',
+      },
+      {
+        title: 'Engineers doing product work without the title',
+        body: 'Senior engineers who already own roadmap calls and want sharper judgment, not a certificate.',
+      },
+      {
+        title: 'Founding engineers and early hires',
+        body: 'Small teams where the person writing the code also decides what to build next.',
+      },
+    ],
+    faqs: [
+      {
+        q: 'Do I need to leave engineering to benefit from this?',
+        a: 'No. The same reps sharpen product judgment whether you change titles or stay technical and start owning roadmap decisions.',
+      },
+      {
+        q: 'How is this different from reading PM frameworks?',
+        a: 'Frameworks tell you the moves. This gives you reps at making them under ambiguity, then critiques the reasoning you actually used.',
+      },
+    ],
+  },
+  {
+    slug: 'staff-engineer-promotion',
+    title: 'Staff engineer promotion prep',
+    shortTitle: 'Staff promotion',
+    eyebrow: 'Senior to staff engineer',
+    metaTitle: 'Staff Engineer Promotion Prep for Product Judgment | HackProduct',
+    metaDescription:
+      'Build the promotion signal that moves senior engineers to staff: product strategy, architecture trade-offs, and recommendations leaders can act on.',
+    keywords: [
+      'staff engineer promotion',
+      'senior to staff engineer',
+      'staff engineer interview prep',
+      'promotion to staff engineer',
+      'staff engineer product judgment',
+    ],
+    heroTitle: 'The staff jump is judgment, not more code.',
+    heroSubtitle:
+      'Senior engineers who reach staff make the next decision easier for everyone else in the room. That means framing ambiguous bets, connecting architecture to outcomes, and writing recommendations leaders can act on without a follow-up meeting. Those are the reps here.',
+    summary:
+      'Promotion to staff shows up when your answer reduces uncertainty for the whole team. This path trains the framing, trade-off, and communication moves that make that level visible.',
+    ctaLabel: 'Find your product-thinking archetype',
+    ctaHref: '/quiz/archetype',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+    whatChanges: [
+      {
+        title: 'Scope stops being a single system',
+        body: 'The senior job is to build the thing well. The staff job is to decide which thing, why now, and what it means for the systems next to it.',
+      },
+      {
+        title: 'Influence replaces raw output',
+        body: 'At staff level the signal is whether your framing changes what other people build, not how many lines you shipped this quarter.',
+      },
+      {
+        title: 'Executives read your reasoning',
+        body: 'A pull request is read by engineers. A staff recommendation is read by a director with five minutes who needs the trade-off in one sentence.',
+      },
+    ],
+    flowTracks: [
+      {
+        eyebrow: 'Frame',
+        title: 'Frame the bet before the design',
+        body: 'Turn an ambiguous initiative into a clear problem statement with the constraint that actually decides the outcome.',
+      },
+      {
+        eyebrow: 'List',
+        title: 'Map the option space and the blast radius',
+        body: 'Lay out structurally different approaches and name the systems and teams each one touches.',
+      },
+      {
+        eyebrow: 'Optimize',
+        title: 'Choose the criterion out loud',
+        body: 'Name what you are optimizing for across reliability, cost, and speed, and defend the sacrifice you accept.',
+      },
+      {
+        eyebrow: 'Win',
+        title: 'Write the recommendation leaders act on',
+        body: 'One decision, the metric that proves it worked, and the signal that would tell you to reverse course.',
+      },
+    ],
+    proofPoints: [
+      {
+        title: 'Staff-level reasoning reps, not trivia',
+        body: 'Scenarios that connect architecture choices to product outcomes, the exact bridge a promotion packet needs to show.',
+      },
+      {
+        title: 'Hatch critiques the missing move',
+        body: 'Feedback points at the skipped constraint or the trade-off you dodged, so you fix the reasoning, not the phrasing.',
+      },
+      {
+        title: 'A history that reads like promotion evidence',
+        body: 'Saved reps become an evidence trail of judgment across framing, trade-offs, and executive communication.',
+      },
+    ],
+    audience: [
+      {
+        title: 'Senior engineers targeting the staff jump',
+        body: 'Practice the judgment your promotion committee is looking for before the review cycle, not during it.',
+      },
+      {
+        title: 'Tech leads owning ambiguous bets',
+        body: 'Engineers already making calls that touch multiple teams who want sharper framing and defensible trade-offs.',
+      },
+      {
+        title: 'Staff candidates prepping the interview loop',
+        body: 'Practice the strategy and system-trade-off rounds with follow-up pressure instead of a rehearsed monologue.',
+      },
+    ],
+    faqs: [
+      {
+        q: 'Is this only for interview loops?',
+        a: 'No. The same reps build the on-the-job signal a promotion committee looks for and the answers an external staff loop tests.',
+      },
+      {
+        q: 'What is the promotion signal you keep referring to?',
+        a: 'It is whether your reasoning makes the next decision easier for everyone else. This path trains and surfaces exactly that.',
+      },
+    ],
+  },
+  {
+    slug: 'em-interview-prep',
+    title: 'Engineering manager interview prep',
+    shortTitle: 'EM interview prep',
+    eyebrow: 'IC to engineering manager',
+    metaTitle: 'Engineering Manager Interview Prep for Judgment and Trade-offs | HackProduct',
+    metaDescription:
+      'Prepare for the engineering manager interview: prioritization under constraints, cross-team trade-offs, and decisions you can defend to leadership.',
+    keywords: [
+      'engineering manager interview prep',
+      'em interview questions',
+      'engineering manager interview',
+      'ic to engineering manager',
+      'engineering manager product judgment',
+    ],
+    heroTitle: 'The EM loop tests decisions, not delegation theater.',
+    heroSubtitle:
+      'Engineering manager interviews read for judgment under constraint: how you prioritize when three teams want the same sprint, how you name a trade-off leadership can live with, and how you land a decision without stalling. That is the practice here, drop into the situation and make the call.',
+    summary:
+      'The EM interview is a judgment test wearing a management costume. This path trains prioritization, cross-team trade-offs, and clear recommendations under time pressure.',
+    ctaLabel: 'Find your product-thinking archetype',
+    ctaHref: '/quiz/archetype',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+    whatChanges: [
+      {
+        title: 'Priorities collide instead of queue',
+        body: 'The IC job is to finish the work. The EM job is to decide whose work waits when the sprint cannot hold all of it.',
+      },
+      {
+        title: 'You defend the trade-off, not the code',
+        body: 'The interview reads whether you can name what you gave up and why leadership should accept it, calmly, under follow-up.',
+      },
+      {
+        title: 'The decision has to be legible',
+        body: 'A good EM answer leaves the room knowing what was decided, how it will be measured, and what would change it.',
+      },
+    ],
+    flowTracks: [
+      {
+        eyebrow: 'Frame',
+        title: 'Frame the real constraint',
+        body: 'Separate the loud request from the underlying problem before committing a team to a direction.',
+      },
+      {
+        eyebrow: 'List',
+        title: 'Lay out the options and who they affect',
+        body: 'Put structurally different plans on the table and account for every team and stakeholder each one touches.',
+      },
+      {
+        eyebrow: 'Optimize',
+        title: 'Prioritize against a named criterion',
+        body: 'Say what you are optimizing for, name the metric and the guardrail, and hold the line on the sacrifice.',
+      },
+      {
+        eyebrow: 'Win',
+        title: 'Make the call and make it reversible',
+        body: 'Land one recommendation with a measure of success and a visible path to change course if the bet is wrong.',
+      },
+    ],
+    proofPoints: [
+      {
+        title: 'Scenarios that read like real management calls',
+        body: 'Competing priorities, cross-team friction, and a leadership audience, the situations the EM loop actually probes.',
+      },
+      {
+        title: 'Hatch grades the decision quality',
+        body: 'Feedback targets the stakeholder you skipped or the criterion you never named, not the tone of your answer.',
+      },
+      {
+        title: 'Follow-up pressure built in',
+        body: 'Practice holding a decision when the interviewer pushes back, which is where most EM answers unravel.',
+      },
+    ],
+    audience: [
+      {
+        title: 'ICs moving into their first management loop',
+        body: 'Practice the judgment rounds before the interview, so the leap feels like a rep you have already run.',
+      },
+      {
+        title: 'Tech leads formalizing into management',
+        body: 'Engineers already coordinating teams who want to defend prioritization calls under scrutiny.',
+      },
+      {
+        title: 'EMs interviewing for a bigger scope',
+        body: 'Managers targeting a senior EM or director loop who need cross-team trade-off reps.',
+      },
+    ],
+    faqs: [
+      {
+        q: 'Do you cover people-management scenarios too?',
+        a: 'The focus is decision judgment, prioritization, and trade-off communication, the part of the EM loop that separates candidates most.',
+      },
+      {
+        q: 'Is this useful if I already manage a team?',
+        a: 'Yes. The reps sharpen the framing and trade-off moves that a larger-scope loop or a promotion review tests.',
+      },
+    ],
+  },
+]
+
+export const ALTERNATIVE_DIRECTORIES: AlternativeDirectoryEntry[] = [
+  {
+    slug: 'exponent-alternative',
+    competitor: 'Exponent',
+    eyebrow: 'Exponent alternative',
+    metaTitle: 'Exponent Alternative for Product Sense and Live Interview Reps | HackProduct',
+    metaDescription:
+      'HackProduct is an Exponent alternative built on graded reps: product sense, system design, SQL, and live interview pressure with Hatch feedback.',
+    keywords: [
+      'exponent alternative',
+      'exponent interview prep alternative',
+      'product sense practice alternative',
+      'ai interview coaching',
+      'live mock interview practice',
+    ],
+    heroTitle: 'Practice the reps, not the lecture library.',
+    summary:
+      'Exponent leans on course videos and peer mocks. HackProduct is rep-based: you answer real scenarios, Hatch critiques the reasoning move you missed, and the product tracks which part of your judgment keeps breaking.',
+    ctaLabel: 'Try a product-sense rep',
+    ctaHref: '/quiz/product-sense',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+    comparisons: [
+      ['Core format', 'Course videos plus scheduled peer mocks', 'Graded reps with instant Hatch feedback'],
+      ['Feedback source', 'Peers and coaches when available', 'Hatch critiques your reasoning on every attempt'],
+      ['Progress signal', 'Videos watched and mocks booked', 'A skill map of six competencies from your practice history'],
+      ['AI-era coverage', 'Product and PM interview tracks', 'Product sense, systems, SQL, coding, and AI-native workflows'],
+    ],
+    betterFit: [
+      'You want feedback on reasoning quality, not only a video walkthrough.',
+      'You would rather run a rep now than schedule a peer mock for next week.',
+      'You are an engineer who wants product judgment reps, not a PM-only curriculum.',
+      'You want a running map of where your judgment breaks, not a course-completion bar.',
+    ],
+    closingTitle: 'Keep the videos if you like them. Add the reps that grade your reasoning.',
+    closingSubtitle:
+      'Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress.',
+  },
+  {
+    slug: 'igotanoffer-alternative',
+    competitor: 'IGotAnOffer',
+    eyebrow: 'IGotAnOffer alternative',
+    metaTitle: 'IGotAnOffer Alternative for Practice Reps and AI Feedback | HackProduct',
+    metaDescription:
+      'HackProduct is an IGotAnOffer alternative built on graded practice reps and Hatch feedback across product sense, systems, SQL, and live interviews.',
+    keywords: [
+      'igotanoffer alternative',
+      'igotanoffer interview prep alternative',
+      'product interview practice alternative',
+      'ai interview feedback',
+      'product sense reps',
+    ],
+    heroTitle: 'Read the guides anywhere. Get the reps and feedback here.',
+    summary:
+      'IGotAnOffer sells answer guides and coach hours. HackProduct trains judgment through graded reps: you make the call, Hatch names the move you skipped, and your history becomes evidence of how you reason.',
+    ctaLabel: 'Try a product-sense rep',
+    ctaHref: '/quiz/product-sense',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+    comparisons: [
+      ['Core format', 'Written answer guides and paid coach sessions', 'Graded reps with instant Hatch feedback'],
+      ['Cost model', 'Per-hour coaching adds up fast', 'Practice as many reps as you want, then upgrade for depth'],
+      ['Feedback loop', 'Delayed, tied to a booked session', 'Immediate critique on the reasoning you just used'],
+      ['Skill tracking', 'None beyond the guide you bought', 'A competency map that updates as you practice'],
+    ],
+    betterFit: [
+      'You want to practice the move, not memorize a model answer.',
+      'You would rather get feedback now than wait for a coaching slot.',
+      'You are an engineer who wants judgment reps across disciplines, not one track.',
+      'You want proof of progress you can point at, not a folder of guides.',
+    ],
+    closingTitle: 'Keep the guides for reference. Add the reps that build the judgment.',
+    closingSubtitle:
+      'Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress.',
+  },
+  {
+    slug: 'leetcode-for-product',
+    competitor: 'LeetCode',
+    eyebrow: 'LeetCode for product',
+    metaTitle: 'LeetCode for Product: Practice Product Judgment, Not Just Algorithms | HackProduct',
+    metaDescription:
+      'HackProduct is LeetCode for product thinking: graded reps on product sense, system design, SQL, and live interview communication with Hatch feedback.',
+    keywords: [
+      'leetcode for product',
+      'leetcode for product managers',
+      'product sense practice',
+      'product interview reps',
+      'product thinking practice',
+    ],
+    heroTitle: 'The rep engine, pointed at product judgment.',
+    summary:
+      'LeetCode made algorithm practice a daily habit through sheer volume of graded reps. HackProduct does the same thing for the judgment layer: product sense, systems, SQL, and live interview communication, each scored and tracked.',
+    ctaLabel: 'Try a product-sense rep',
+    ctaHref: '/quiz/product-sense',
+    secondaryLabel: 'Start free',
+    secondaryHref: '/signup',
+    comparisons: [
+      ['Primary skill', 'Algorithm recall and coding speed', 'Product-minded judgment across disciplines'],
+      ['Rep model', 'Endless graded coding problems', 'Endless graded product and reasoning scenarios'],
+      ['Feedback', 'Pass or fail test cases', 'Hatch critique across framing, trade-offs, and recommendation quality'],
+      ['AI-era relevance', 'Narrows as code generation improves', 'Built around deciding what to build and why'],
+    ],
+    betterFit: [
+      'You liked the daily-rep habit of LeetCode and want it for product thinking.',
+      'You want feedback on reasoning, not only a green or red test result.',
+      'You are an engineer who wants product judgment reps alongside coding.',
+      'You want a competency map that shows which reasoning move keeps failing.',
+    ],
+    closingTitle: 'Keep LeetCode for algorithms. Add HackProduct for product judgment.',
+    closingSubtitle:
+      'Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress.',
+  },
+]
+
 export function getSkill(slug: string) {
   return SKILL_DIRECTORIES.find((entry) => entry.slug === slug) ?? null
+}
+
+export function getRoleTransition(slug: string) {
+  return ROLE_TRANSITION_DIRECTORIES.find((entry) => entry.slug === slug) ?? null
+}
+
+export function getAlternative(slug: string) {
+  return ALTERNATIVE_DIRECTORIES.find((entry) => entry.slug === slug) ?? null
 }
 
 export function getCompany(slug: string) {
@@ -677,6 +1211,8 @@ export const PUBLIC_DIRECTORY_PATHS = [
   '/about',
   '/interview-prep',
   '/role-transitions',
+  '/role-transitions/engineer-to-product-manager',
+  ...ROLE_TRANSITION_DIRECTORIES.map((entry) => `/role-transitions/${entry.slug}`),
   '/uplevel',
   '/salary-negotiation',
   '/flow',
@@ -698,6 +1234,10 @@ export const PUBLIC_DIRECTORY_PATHS = [
   '/interviews/live-ai-interviews',
   '/claude-code-analytics',
   '/alternatives/leetcode',
+  ...ALTERNATIVE_DIRECTORIES.map((entry) => `/alternatives/${entry.slug}`),
+  '/quiz/archetype',
+  '/quiz/product-sense',
+  '/affiliate-program',
   '/pricing',
   '/contact',
   '/security',

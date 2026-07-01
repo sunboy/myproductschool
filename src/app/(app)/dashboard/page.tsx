@@ -35,6 +35,9 @@ import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
+import { getAppFlag } from '@/lib/config/app-flags'
+import { getCuratedFirstRepSlug, FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
+import { CalibrationCtaCard } from '@/components/dashboard/cards/CalibrationCtaCard'
 
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
@@ -170,6 +173,9 @@ async function loadDashboardLeadUncached() {
     allMoveLevels: [] as { move: string; xp: number; level: number; progress_pct: number }[],
     weakestMove: 'frame',
     hatchContext: null as HatchUserContext | null,
+    valueFirst: false,
+    hasAnyAttempts: true,
+    firstRepHref: FIRST_REP_FALLBACK_HREF,
   }
 
   if (!user?.id) return defaults
@@ -178,7 +184,7 @@ async function loadDashboardLeadUncached() {
   const adminClient = createAdminClient()
   const profilePromise = supabase
     .from('profiles')
-    .select('display_name, onboarding_completed_at, streak_days, xp_total, plan')
+    .select('display_name, onboarding_completed_at, streak_days, xp_total, plan, preferred_role')
     .eq('id', user.id)
     .single()
   const dailyCountPromise = supabase
@@ -186,20 +192,40 @@ async function loadDashboardLeadUncached() {
     .select('id', { count: 'exact', head: true })
     .eq('user_id', user.id)
     .gte('created_at', today)
+  const totalAttemptsPromise = supabase
+    .from('challenge_attempts')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
   const moveLevelsPromise = adminClient
     .from('move_levels')
     .select('move, xp, level, progress_pct')
     .eq('user_id', user.id)
     .order('xp', { ascending: true })
   const hatchContextPromise = withSoftTimeout<HatchUserContext | null>(getHatchContext(user.id), 1200, null)
+  const valueFirstPromise = getAppFlag('onboarding_value_first', false)
 
-  const [{ data: profile }, { count: dailyCount }, { data: moveLevelsData }, hatchContext] = await Promise.all([
+  const [{ data: profile }, { count: dailyCount }, { count: totalAttempts }, { data: moveLevelsData }, hatchContext, valueFirst] = await Promise.all([
     profilePromise,
     dailyCountPromise,
+    totalAttemptsPromise,
     moveLevelsPromise,
     hatchContextPromise,
+    valueFirstPromise,
   ])
   const allMoveLevels = (moveLevelsData ?? []) as { move: string; xp: number; level: number; progress_pct: number }[]
+  const preferredRole = ((profile as Record<string, unknown> | null)?.preferred_role as string | null) ?? null
+
+  let firstRepHref = FIRST_REP_FALLBACK_HREF
+  if (valueFirst) {
+    const slug = getCuratedFirstRepSlug(preferredRole)
+    const { data: challengeRow } = await adminClient
+      .from('challenges')
+      .select('id, slug, challenge_type, display_number')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .maybeSingle()
+    if (challengeRow) firstRepHref = challengePath(challengeRow)
+  }
 
   return {
     userId: user.id,
@@ -212,6 +238,9 @@ async function loadDashboardLeadUncached() {
     allMoveLevels,
     weakestMove: allMoveLevels[0]?.move ?? 'frame',
     hatchContext,
+    valueFirst,
+    hasAnyAttempts: (totalAttempts ?? 0) > 0,
+    firstRepHref,
   }
 }
 
@@ -563,6 +592,9 @@ export default function DashboardPage() {
           <Suspense fallback={<FlowLeadSkeleton />}>
             <FlowLeadSection />
           </Suspense>
+          <Suspense fallback={null}>
+            <CalibrationCtaSection />
+          </Suspense>
         </aside>
       </section>
 
@@ -579,6 +611,7 @@ async function CoachBriefSection() {
   const competency = weakestCompetency
     ? data.hatchContext?.competencies.find(c => c.competency === weakestCompetency)
     : null
+  const isFirstRep = data.valueFirst && !data.hasAnyAttempts
 
   return (
     <CoachSpineCard
@@ -595,6 +628,8 @@ async function CoachBriefSection() {
       competencyScore={competency?.score ?? null}
       competencyTrend={competency?.trend ?? null}
       recentCompletions={data.hatchContext?.recentCompletions.length ?? 0}
+      isFirstRep={isFirstRep}
+      firstRepHref={data.firstRepHref}
     />
   )
 }
@@ -619,13 +654,31 @@ async function FlowLeadSection() {
   const data = await getDashboardLead()
   const card = <FlowMoveLevelsCard levels={data.allMoveLevels} variant="compact" />
 
-  return data.isCalibrated ? (
+  // Value-first users get onboarding_completed_at set immediately (see
+  // /api/onboarding/quick-start) without ever running real calibration, so
+  // move_levels stays empty until they do. Flag-off behavior is untouched:
+  // isCalibrated alone still gates the lock for the full-calibration path.
+  const hasRealFlowData = !data.valueFirst || data.allMoveLevels.length > 0
+  const unlocked = data.isCalibrated && hasRealFlowData
+
+  return unlocked ? (
     card
   ) : (
     <LockOverlay label="Calibrate to personalize FLOW">
       {card}
     </LockOverlay>
   )
+}
+
+// Deferred-calibration CTA: only surfaces for the value-first cohort (they
+// already completed onboarding via the one-tap role path, so the full
+// CalibrationHero-style card would be redundant) who hasn't run real
+// calibration yet. Flag-off users never see this — they still get the full
+// CalibrationFlow modal as the only calibration entry point.
+async function CalibrationCtaSection() {
+  const data = await getDashboardLead()
+  if (!data.valueFirst || !data.isCalibrated || data.allMoveLevels.length > 0) return null
+  return <CalibrationCtaCard />
 }
 
 async function AnalyticsLabSection() {

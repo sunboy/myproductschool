@@ -5,6 +5,8 @@ import { HatchGlyph, type HatchState } from '@/components/shell/HatchGlyph'
 import { QUESTIONS, FEEDBACK_BY_TIER } from '@/lib/calibration/questions'
 import { clearOnboardingState, getOnboardingState, saveOnboardingState } from '@/lib/onboarding/state-client'
 import type { OptionQuality } from '@/lib/types'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_ONBOARDING_STEP } from '@/lib/posthog/events'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -433,6 +435,11 @@ export function CalibrationFlow({
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('calibration-screen-change', { detail: screen }))
     }
+  }, [screen])
+
+  // ── Funnel instrumentation: fire onboarding_step on every screen transition ──
+  useEffect(() => {
+    trackEvent(EVENT_ONBOARDING_STEP, { step: screen, step_index: CAL_SCREENS.indexOf(screen) })
   }, [screen])
 
   // ── Intro: Hatch celebrates → speaking ────────────────────────────────────
