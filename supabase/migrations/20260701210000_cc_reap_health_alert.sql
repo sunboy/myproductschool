@@ -1,0 +1,35 @@
+-- Reaper-health alert for Claude Code Analytics. Backstop for the failure that
+-- caused the June GCP bill: the cc-reap idle reaper (job 'cc-reap-10min') returned
+-- 401 for 39 days because the prod CRON_SECRET env was empty, so nothing was ever
+-- reaped and cc-llm-db was never stopped — silently, because cron.job_run_details
+-- reported 'succeeded' (pg_net got a response; the response was 401).
+--
+-- This adds an INDEPENDENT watcher: a second pg_cron job that inspects the newest
+-- net._http_response for the reaper and emails admin (via Resend, direct from
+-- Postgres) when it is non-200, timed out, or absent. It lives OUTSIDE the Next.js
+-- endpoint on purpose — an in-endpoint check can't fire when the endpoint itself is
+-- rejecting at the auth gate (exactly the 401 case).
+--
+-- One-time setup NOT in this migration (run once, out of band — needs a secret):
+--
+--   1. store the Resend API key in Vault:
+--        select vault.create_secret('<RESEND_API_KEY>', 'resend_api_key',
+--                                    'Resend key for pg_cron reaper-health alert');
+--   2. create table public.cc_reap_alert_state (single-row throttle: last_alert_at,
+--      last_status) and function public.check_cc_reap_health() — see the live DB.
+--      The function: finds the newest net._http_response in the last 25 min (the
+--      reap job is the only recurring pg_net http call, so newest == last reap),
+--      flags null / timed_out / status<>200, throttles email to once/60min via the
+--      state table, and POSTs to https://api.resend.com/emails with the Vault key.
+--   3. schedule it, offset 5 min after the reaper so each run has landed:
+--        select cron.schedule(
+--          'cc-reap-health-5-15-25-35-45-55',
+--          '5,15,25,35,45,55 * * * *',
+--          $cmd$ select public.check_cc_reap_health(); $cmd$
+--        );
+--
+-- Applied to the live project on 2026-07-01 (job 'cc-reap-health-...', jobid 6).
+-- Alert chain end-to-end verified (Resend accepted a test send, HTTP 200 + id).
+-- Documented here for reproducibility; performs no DDL so `db push` can't fail on
+-- pre-existing pg_cron/Vault state.
+select 1;

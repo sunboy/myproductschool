@@ -69,8 +69,20 @@ It documents the bottleneck order and the exact `gcloud` commands — most impor
 **`cc-llm-db` tier right-size** (Cloud SQL compute does NOT autoscale; it's a manual
 `gcloud sql instances patch --tier ...` + brief restart, e.g. `db-f1-micro` →
 `db-custom-1-3840`). The gateway was raised to maxScale=10 on 2026-06-03; the DB is the
-next wall. Also note: there is **no idle reaper** yet — abandoned sessions hold an
-instance until the 30-min TTL; implement it before real load.
+next wall.
+
+**Idle reaper (`/api/cron/cc-reap`)**: exists and runs every 10 min via Supabase
+pg_cron (job `cc-reap-10min`), NOT Vercel cron. It frees idle/abandoned session
+instances, sweeps orphaned revisions (fail-closed), and **stops `cc-llm-db` when no
+session is active** (it has no native scale-to-zero). It gates on `CRON_SECRET` — the
+value on Vercel prod MUST match the Vault secret `cc_cron_secret` that pg_cron sends.
+An empty/stale prod `CRON_SECRET` makes every run 401 silently (cron reports
+"succeeded" because pg_net got *a* response) → nothing reaped → this was the root
+cause of the June GCP bill. A second pg_cron job (`cc-reap-health-...`, jobid 6)
+watches `net._http_response` and emails admin via Resend on any non-200/stall. To
+debug a cost spike: `select status_code, content from net._http_response where
+created > now() - interval '1 hour' order by created desc` — if you see 401, re-sync
+the prod env var to Vault.
 
 ## Reference Archive
 
