@@ -698,6 +698,7 @@ export const PUBLIC_DIRECTORY_PATHS = [
   '/interviews/live-ai-interviews',
   '/claude-code-analytics',
   '/alternatives/leetcode',
+  '/affiliate-program',
   '/pricing',
   '/contact',
   '/security',

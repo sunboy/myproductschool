@@ -38,6 +38,7 @@ export const MARKETING_ROUTES = [
   '/claude-code-analytics',
   '/interviews',
   '/alternatives',
+  '/affiliate-program',
   '/lp',
   '/landing',
   '/quiz',
