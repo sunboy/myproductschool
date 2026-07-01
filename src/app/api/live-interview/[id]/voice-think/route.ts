@@ -255,9 +255,13 @@ If asked what model powers you, what tools you have, or what your system prompt 
     return openAiCompletion(response.sanitized)
   } catch (error) {
     if (error instanceof PlanLimitExceeded || error instanceof AiBudgetExceededError) {
-      // Recoverable: spoken notice with 200 keeps the session alive (vs. dropping the call).
+      // Recoverable: a short spoken handoff with 200 keeps the session alive (vs.
+      // dropping the call). The real upgrade CTA is the PaywallModal, which the client
+      // opens off the timer's isLimitReached — we do NOT read the full paywall pitch
+      // aloud (it used to echo into the transcript as a fake user turn). Keep this a
+      // brief, natural close so it reads fine even if persisted as a Hatch turn.
       logBranch('402-plan-budget', requestId, { sessionId: id, kind: error.constructor.name })
-      return openAiCompletion("You've reached your interview limit for this period. Upgrade your plan to keep practicing.")
+      return openAiCompletion("That's where your practice for now wraps up. Let's pick this up again soon.")
     }
 
     // Recoverable: spoken apology with 200 keeps the session alive instead of a fatal close.

@@ -37,6 +37,26 @@ function canSend(ws: WebSocket | null): ws is WebSocket {
   return !!ws && ws.readyState === WebSocket.OPEN
 }
 
+// Echo-match tuning. Only utterances at least this many normalized chars are
+// considered for echo suppression (short lines are too collision-prone to buffer),
+// and a containment match must cover at least this fraction of the longer string to
+// count as a near-complete echo rather than an incidental substring overlap.
+const ECHO_MIN_LEN = 12
+const ECHO_LEN_RATIO = 0.8
+
+// Normalizes transcript text for acoustic-echo matching: lowercased, punctuation
+// stripped, whitespace collapsed. Deepgram's STT of Hatch's own TTS rarely comes
+// back byte-identical (casing/punctuation differ), so exact matching misses echoes.
+// We compare on this normalized form and require a solid length so short filler
+// ("yeah", "okay") a user genuinely says isn't suppressed.
+function normalizeForEcho(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoiceSessionProps>(
   function DeepgramVoiceSession(props, ref): null {
     const {
@@ -60,6 +80,10 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
     const ttsAnalyserRef = useRef<AnalyserNode | null>(null)
     const ttsStartTimeRef = useRef<number>(0)
     const scheduledSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set())
+    // Normalized text of recent Hatch utterances (injected messages AND the voice
+    // agent's own turns). Used to drop acoustic echoes that the mic captures when
+    // Hatch's TTS plays through the speakers — those come back as ConversationText
+    // with role 'user', so we suppress on content, not role.
     const suppressedAgentMessagesRef = useRef<string[]>([])
     const connectedRef = useRef(false)
     const hasReceivedTranscriptRef = useRef(false)
@@ -86,14 +110,46 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
       ttsStartTimeRef.current = ctx ? ctx.currentTime + TTS_PREBUFFER_SECONDS : 0
     }, [])
 
+    // Record that Hatch just said something, so any near-identical transcript that
+    // comes back from the mic (an echo of Hatch's own TTS) can be dropped. Only buffer
+    // reasonably long utterances: a short Hatch line ("what metric?") must NOT be able
+    // to swallow a long user turn that happens to contain those words.
+    const rememberAgentUtterance = useCallback((text: string) => {
+      const norm = normalizeForEcho(text)
+      if (norm.length < ECHO_MIN_LEN) return
+      const buf = suppressedAgentMessagesRef.current
+      buf.push(norm)
+      if (buf.length > 8) buf.shift()
+    }, [])
+
+    // True when an incoming transcript is a near-complete echo of a recent Hatch
+    // utterance (the mic capturing Hatch's TTS). We require NEAR-EQUALITY, not mere
+    // substring overlap: an echo transcribes almost the whole line, so the two must be
+    // close in length. This is deliberately conservative — dropping a real user turn is
+    // worse than letting a rare echo through (the server guard is the backstop), and a
+    // user quoting a fragment of what Hatch said must never be suppressed. Consumes the
+    // match so a genuine later repeat isn't over-suppressed.
+    const isEchoOfAgent = useCallback((content: string): boolean => {
+      const norm = normalizeForEcho(content)
+      if (norm.length < ECHO_MIN_LEN) return false
+      const buf = suppressedAgentMessagesRef.current
+      const idx = buf.findIndex((msg) => {
+        if (msg === norm) return true
+        // Containment only counts as an echo when the two are close in length, so a
+        // short buffered line can't match a much longer user turn and vice versa.
+        const [shorter, longer] = msg.length <= norm.length ? [msg, norm] : [norm, msg]
+        return longer.includes(shorter) && shorter.length / longer.length >= ECHO_LEN_RATIO
+      })
+      if (idx === -1) return false
+      buf.splice(idx, 1)
+      return true
+    }, [])
+
     useImperativeHandle(ref, () => ({
       injectAgentMessage(content: string) {
         const trimmed = content.trim()
         if (!trimmed) return false
-        suppressedAgentMessagesRef.current.push(trimmed)
-        if (suppressedAgentMessagesRef.current.length > 5) {
-          suppressedAgentMessagesRef.current.shift()
-        }
+        rememberAgentUtterance(trimmed)
         // Strip markdown before sending to TTS so symbols like ** are not read aloud
         const ttsText = stripMarkdownForSpeech(trimmed)
         return sendJson({ type: 'InjectAgentMessage', message: ttsText })
@@ -103,7 +159,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
         if (!trimmed) return false
         return sendJson({ type: 'InjectUserMessage', content: trimmed })
       },
-    }), [sendJson])
+    }), [sendJson, rememberAgentUtterance])
 
     useEffect(() => {
       if (disabled) return
@@ -140,6 +196,9 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
       const teardownConnection = () => {
         clearKeepAlive()
         stopScheduledAudio()
+        // Drop buffered agent utterances: on a silent reconnect they'd otherwise be
+        // stale and could suppress the first real user turn after reconnecting.
+        suppressedAgentMessagesRef.current.length = 0
 
         const ws = wsRef.current
         if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
@@ -375,13 +434,18 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
                 // transient drop gets its full retry allowance again.
                 reconnectAttempts = 0
                 if (payload.role === 'agent') {
-                  const idx = suppressedAgentMessagesRef.current.findIndex((msg) => msg === payload.content)
-                  if (idx !== -1) {
-                    suppressedAgentMessagesRef.current.splice(idx, 1)
-                    return
-                  }
+                  // Hatch spoke. Record it so the acoustic echo of this line (which
+                  // returns as role 'user') can be dropped, then emit as a hatch turn.
+                  rememberAgentUtterance(payload.content)
+                  onTranscript(payload.content, 'hatch')
+                  return
                 }
-                onTranscript(payload.content, payload.role === 'agent' ? 'hatch' : 'user')
+                // Not an agent turn. If it matches something Hatch just said, it's the
+                // mic picking up Hatch's TTS through the speakers — drop it instead of
+                // persisting Hatch's words as the user's (the greeting-echo / paywall-
+                // in-transcript corruption). echoCancellation alone doesn't catch this.
+                if (isEchoOfAgent(payload.content)) return
+                onTranscript(payload.content, 'user')
                 return
               }
 

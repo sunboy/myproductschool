@@ -307,7 +307,10 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
       if (!requireTurnstileToken()) return
 
       try {
-        const dest = resolvedRedirectTo('/dashboard')
+        // Fresh signups with no explicit redirect go to /first-run (one role tap into
+        // a pre-warmed interview) instead of the dashboard. An explicit redirectTo — a
+        // pricing/checkout deep-link — still wins, so intent-to-pay users aren't diverted.
+        const dest = resolvedRedirectTo('/first-run')
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
           ...validation.data,
           turnstileToken,
