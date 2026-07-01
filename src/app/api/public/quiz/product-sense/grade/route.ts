@@ -16,20 +16,53 @@ import type { CalibrationMove } from '@/lib/calibration/deriveArchetype'
  * Public, no-auth grader for the product-sense taste test at
  * `/quiz/product-sense`. Grades the single Win freeform server-side.
  *
- * Cost guards (this is an unauthenticated endpoint, so cost is the risk):
- *  - Strict per-IP rate limit: 5 grades / 10 min + a coarse 30 / day ceiling.
- *  - Input hard-capped at 1200 chars; anything longer is truncated before the
- *    model ever sees it, so a single request can never blow the token budget.
- *  - Cheap model (Haiku) with a tiny max_tokens, no budget object (public).
- *  - AI can be switched off entirely with PUBLIC_QUIZ_AI_GRADING=false, in which
- *    case grading falls back to the deterministic keyword/length heuristic. Any
- *    AI error also falls back, so the endpoint never fails on the model.
+ * Cost guards (this is an unauthenticated endpoint, so cost is the risk).
+ * Defense in depth, because the per-IP limiter trusts proxy headers and (until
+ * Upstash is wired) is per-instance in-memory, i.e. spoofable and not durable:
+ *  1. Per-IP rate limit: 5 grades / 10 min + a coarse 30 / day ceiling. Uses the
+ *     same limiter as signup/login. Best-effort, not the last line of defense.
+ *  2. A GLOBAL per-instance daily ceiling on *paid AI* grades. Even if the per-IP
+ *     limit is bypassed (rotated x-forwarded-for) or reset (cold start), total AI
+ *     spend per instance is hard-bounded: past the ceiling everyone falls back to
+ *     the free deterministic heuristic. This is the guard that actually caps cost.
+ *  3. Input hard-capped at 1200 chars before the model sees it, so a single
+ *     request can never blow the token budget.
+ *  4. Cheap model (Haiku), tiny max_tokens (200), temperature 0 (deterministic,
+ *     so the shared result slug is stable), no budget object (public).
+ *  5. AI can be switched off entirely with PUBLIC_QUIZ_AI_GRADING=false, in which
+ *     case grading falls back to the deterministic keyword/length heuristic. Any
+ *     AI error also falls back, so the endpoint never fails on the model.
  */
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const MAX_FREEFORM_CHARS = 1200
+
+// Global per-instance ceiling on paid AI grades per UTC day. Sized well above
+// legitimate demand for a top-of-funnel quiz but low enough that a determined
+// abuser rotating IPs still can't run up a meaningful bill on any one instance:
+// worst case ~ CEILING * (Haiku cost per ~600-token call) before AI shuts off
+// and everyone gets the free heuristic. Override with PUBLIC_QUIZ_AI_DAILY_CAP.
+const AI_DAILY_CAP = Math.max(0, Number(process.env.PUBLIC_QUIZ_AI_DAILY_CAP ?? '2000'))
+let aiCallsToday = 0
+let aiWindowDay = ''
+
+function currentUtcDay(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+/** Claims one AI-grade slot against the per-instance daily ceiling. */
+function claimAiSlot(): boolean {
+  const day = currentUtcDay()
+  if (day !== aiWindowDay) {
+    aiWindowDay = day
+    aiCallsToday = 0
+  }
+  if (aiCallsToday >= AI_DAILY_CAP) return false
+  aiCallsToday += 1
+  return true
+}
 
 const BodySchema = z.object({
   // The two MCQ answers (Frame + Optimize). Scored deterministically here so the
@@ -83,7 +116,10 @@ function parseAiJson(raw: string): AiGrade | null {
 async function gradeFreeformPublic(text: string): Promise<{ score: number; strength: string; gap: string; graded_by: 'ai' | 'heuristic' }> {
   const heuristic = scoreFreeformHeuristic(text)
 
-  if (!aiGradingEnabled()) {
+  // Fall back to the free deterministic heuristic when AI is disabled OR when the
+  // per-instance daily AI ceiling is already spent. claimAiSlot() is only called
+  // once aiGradingEnabled() is true so a disabled instance never burns the cap.
+  if (!aiGradingEnabled() || !claimAiSlot()) {
     return { score: heuristic.score, ...heuristicCopy(heuristic), graded_by: 'heuristic' }
   }
 
@@ -98,6 +134,7 @@ ${text}`
     const response = await guardedCachedMessage(SYSTEM_PROMPT, prompt, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
+      temperature: 0,
     })
     const block = response.content.find((b) => b.type === 'text')
     const rawText = block?.type === 'text' ? block.text : ''

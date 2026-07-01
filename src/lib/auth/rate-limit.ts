@@ -11,10 +11,17 @@ export interface AuthRateLimitBlock {
 }
 
 export function getClientIp(request: Request) {
+  // Order matters: prefer headers the hosting proxy sets authoritatively over
+  // ones the client can forge. On Vercel, `x-real-ip` and `x-vercel-forwarded-for`
+  // are injected by the edge and overwrite anything the client sent, so they are
+  // trustworthy; the raw `x-forwarded-for` first hop and `cf-connecting-ip` are
+  // client-controllable here (there is no Cloudflare in front) and come last.
+  const vercelForwarded = request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()
   const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
   return (
-    request.headers.get('cf-connecting-ip') ??
     request.headers.get('x-real-ip') ??
+    vercelForwarded ??
+    request.headers.get('cf-connecting-ip') ??
     forwardedFor ??
     'unknown'
   )
