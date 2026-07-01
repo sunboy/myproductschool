@@ -753,13 +753,33 @@ function detectGridPatternFromReference(src: string): GridPattern | null {
 }
 
 /**
+ * The specific family technique_tag the auto-tagger writes for each DP family it
+ * recognizes. Each value re-detects to its key through GRID_PATTERN_TAGS (write the
+ * canonical family tag, and detectGridPattern routes it back to the same family).
+ * A DP challenge should carry BOTH the umbrella 'dynamic-programming' topic AND this
+ * family tag; the family tag is what makes the specific walkthrough eligible.
+ * GENERIC_DP_TAG is the umbrella an eager tagger emits alongside the family tag.
+ */
+export const GRID_PATTERN_TO_CANONICAL_TAG: Record<GridPattern, string> = {
+  lcs: 'longest-common-subsequence',
+  edit_distance: 'edit-distance',
+  knapsack: 'knapsack',
+  coin_change_min: 'coin-change',
+  unique_paths: 'unique-paths',
+  min_path_sum: 'min-path-sum',
+}
+
+/** The umbrella DP topic tag the auto-tagger emits alongside a specific family tag. */
+export const GENERIC_DP_TAG = 'dynamic-programming'
+
+/**
  * Infer the DP family from tags, then a reference-code fallback. A family-specific
  * tag wins outright. A bare 'dynamic-programming' tag (no family) routes to the
  * reference-code discriminator, since the live content names the family only in the
  * title. With neither a family tag nor a recognizable reference signature, there is
  * no family to trace, so we return null and the challenge keeps its static diagram.
  */
-function detectGridPattern(tags: string[], referenceSource: string): GridPattern | null {
+export function detectGridPattern(tags: string[], referenceSource: string): GridPattern | null {
   for (const tag of tags) {
     const norm = tag.toLowerCase().trim()
     const hit = GRID_PATTERN_TAGS[norm]

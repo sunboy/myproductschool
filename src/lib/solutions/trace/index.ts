@@ -113,12 +113,33 @@ function refineTwoPointers(referenceSource: string): ArrayPattern {
 }
 
 /**
+ * The ONE canonical technique_tag the auto-tagger writes for each array pattern it
+ * recognizes. Every value here re-detects to its key through PATTERN_TAGS (the
+ * round-trip an eager tagger relies on: write the canonical tag, and detectPattern
+ * routes it back to the same pattern). The two-pointer variants (area / water) map
+ * to the shared 'two-pointers' tag because they are refined from the reference
+ * code's objective, not the tag; see refineTwoPointers.
+ */
+export const PATTERN_TO_CANONICAL_TAG: Record<ArrayPattern, string> = {
+  binary_search: 'binary-search',
+  two_pointers: 'two-pointers',
+  sliding_window: 'sliding-window',
+  fast_slow: 'cycle-detection',
+  kadane: 'maximum-subarray',
+  partition: 'dutch-national-flag',
+  valid_palindrome: 'valid-palindrome',
+  longest_substring: 'longest-substring',
+  two_pointers_area: 'two-pointers',
+  two_pointers_water: 'two-pointers',
+}
+
+/**
  * Infer the array pattern from technique/topic tags, then a conservative
  * reference-code fallback. The fallbacks fire only on strong, unambiguous signals
  * so an unrelated solution is never mislabeled (a wrong label fails the cross-check
  * downstream anyway, but a cheap textual gate avoids running a doomed trace).
  */
-function detectPattern(tags: string[], referenceSource: string): ArrayPattern | null {
+export function detectPattern(tags: string[], referenceSource: string): ArrayPattern | null {
   for (const tag of tags) {
     const hit = PATTERN_TAGS[tag.toLowerCase().trim()]
     if (hit) {

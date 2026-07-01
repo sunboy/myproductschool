@@ -457,7 +457,7 @@ export interface ChallengeSolutionRow {
   generation_status: 'pending' | 'generating' | 'ready' | 'failed'
   generation_started_at: string | null
   generation_error: string | null
-  generated_by: 'backfill' | 'lazy' | null
+  generated_by: 'backfill' | 'lazy' | 'eager' | null
   model: string | null
   created_at: string
   updated_at: string

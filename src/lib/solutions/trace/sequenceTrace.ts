@@ -392,6 +392,18 @@ const SEQUENCE_PATTERN_TAGS: Record<string, SequencePattern> = {
 }
 
 /**
+ * The ONE canonical technique_tag the auto-tagger writes for each sequence pattern
+ * it recognizes. Every value re-detects to its key through SEQUENCE_PATTERN_TAGS
+ * (write the canonical tag, and detectSequencePattern routes it back to the same
+ * pattern), so an eager tagger can emit exactly the tag that makes the walkthrough
+ * eligible on the next view.
+ */
+export const SEQUENCE_PATTERN_TO_CANONICAL_TAG: Record<SequencePattern, string> = {
+  reverse_linked_list: 'reverse-linked-list',
+  inorder_traversal: 'inorder-traversal',
+}
+
+/**
  * Infer the sequence pattern from technique/topic tags. The 'linked-list' family
  * maps to reversal (the one linked-list shape this harness traces); a generic
  * tree/traversal tag maps to inorder. A challenge tagged for a different shape
@@ -399,7 +411,7 @@ const SEQUENCE_PATTERN_TAGS: Record<string, SequencePattern> = {
  * fail the cross-check downstream because the emitted answer will not match its
  * expected output, so a misroute is rejected, never animated wrongly.
  */
-function detectSequencePattern(tags: string[]): SequencePattern | null {
+export function detectSequencePattern(tags: string[]): SequencePattern | null {
   for (const tag of tags) {
     const hit = SEQUENCE_PATTERN_TAGS[tag.toLowerCase().trim()]
     if (hit) return hit

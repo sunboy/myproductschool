@@ -14,6 +14,8 @@ import * as path from 'path'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import { validateDescription } from '../src/lib/content/description-spec'
+import { detectTechniqueTags } from '../src/lib/content/auto-tag-technique'
+import { ensureSolutionForChallenge } from '../src/lib/solutions/ensure-solution'
 
 // ---------------------------------------------------------------------------
 // Types for the parts schema
@@ -62,12 +64,16 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 // ── CLI args ──────────────────────────────────────────────────────────────────
 // --source <name>   Only commit staged entries whose metadata.source matches.
 // --dry-run         Print what would be committed, write nothing.
+// --no-solution     Skip eager solution/walkthrough generation (fast, offline commits).
+//                   By default a coding/SQL row gets its verified walkthrough generated
+//                   right after insert, so it is ready before the first Solutions-tab view.
 const cliArgs = process.argv.slice(2)
 const SOURCE_FILTER = (() => {
   const i = cliArgs.indexOf('--source')
   return i >= 0 ? cliArgs[i + 1] : undefined
 })()
 const DRY_RUN = cliArgs.includes('--dry-run')
+const NO_SOLUTION = cliArgs.includes('--no-solution')
 
 function kebab(input: string): string {
   return input
@@ -248,6 +254,25 @@ async function main() {
     const sourceUrl = (md.source_url as string) ?? null
     const isRealInterview = Boolean(md.source) // anything imported from a real source
 
+    // ── Auto-tag verified walkthrough technique(s) (algorithm/sql only) ──────────
+    // A new coding row often arrives UNTAGGED, so it silently misses the verified
+    // stepped walkthrough it would earn if tagged. detectTechniqueTags probes the
+    // SAME verified tracers the walkthrough uses and returns a canonical tag ONLY
+    // when the tracer certifies against the challenge's own expected output. It is
+    // pure and fail-soft; a detector hiccup simply adds nothing and never blocks the
+    // commit. We detect against topic + technique tags, but only merge into technique.
+    if (challengeType === 'algorithm' || challengeType === 'sql') {
+      try {
+        const added = detectTechniqueTags(challengeType, md, [...topicTags, ...techniqueTags])
+        for (const tag of added) {
+          techniqueTags.push(tag)
+          console.log(`  auto-tagged ${c.title} +${tag}`)
+        }
+      } catch (tagErr) {
+        console.warn(`  auto-tag skipped for ${c.title}: ${(tagErr as Error).message}`)
+      }
+    }
+
     // Per docs/CHALLENGE_DESCRIPTION_SPEC.md: trigger/question must never restate or
     // pad the body. Coding types get the standard editor lines; SQL's ask lives in the
     // body's ## Output section; canvas types rely on buildChallengeBrief defaults.
@@ -297,7 +322,9 @@ async function main() {
       scenario_context: c.problem_statement_markdown,
       scenario_trigger: scenarioTrigger,
       scenario_question: scenarioQuestion,
-      metadata: md,
+      // Keep metadata.technique_tags in sync with the column after any auto-tagging,
+      // so an audit or re-import reads the same technique tags from either place.
+      metadata: { ...md, technique_tags: techniqueTags },
       company_tags: companyTags,
       topic_tags: topicTags,
       technique_tags: techniqueTags,
@@ -335,6 +362,27 @@ async function main() {
         console.log(`    → inserted ${parts.length} part(s) into flow_steps/step_questions`)
       } catch (partsErr) {
         console.error(`    Failed inserting parts for ${c.title}: ${(partsErr as Error).message}`)
+      }
+    }
+
+    // ── Eager solution + verified walkthrough generation (algorithm/sql only) ────
+    // Generate the solution now so the walkthrough is ready before the first
+    // Solutions-tab view, instead of waiting for a user to trigger the lazy route.
+    // FAIL-SOFT and NON-BLOCKING for the batch: ensureSolutionForChallenge never
+    // throws, and this await is wrapped so a slow or failed generation for one row
+    // never aborts the commit of the rest. Skip with --no-solution. Note: this
+    // bills Anthropic tokens (one Sonnet generation per coding row, deduped by the
+    // helper's atomic claim), matching the existing lazy route's per-challenge cost.
+    if (!NO_SOLUTION && (challengeType === 'algorithm' || challengeType === 'sql')) {
+      try {
+        const gen = await ensureSolutionForChallenge(challengeId)
+        if (gen.status === 'ready') {
+          console.log(`    → solution generated${gen.grafted ? ' (walkthrough attached)' : ''}`)
+        } else if (gen.status === 'failed') {
+          console.warn(`    solution generation failed for ${c.title} (row still published)`)
+        }
+      } catch (genErr) {
+        console.warn(`    solution generation error for ${c.title}: ${(genErr as Error).message}`)
       }
     }
   }
