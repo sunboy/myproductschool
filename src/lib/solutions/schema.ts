@@ -112,7 +112,7 @@ export const SchemaTablesDiagramSchema = z.object({
 // model. Bases that only label a flow may be authored.
 
 /** Bases whose deltas assert computed state, so their trace must be machine-generated. */
-export const VERIFIED_STEPPED_BASES = ['array', 'pipeline', 'grid', 'sequence'] as const
+export const VERIFIED_STEPPED_BASES = ['array', 'pipeline', 'grid', 'sequence', 'execution'] as const
 export type VerifiedSteppedBase = (typeof VERIFIED_STEPPED_BASES)[number]
 
 /** Tiny key/value chip shown in the step's explanation card (e.g. "target=21", "mid=4"). */
@@ -230,12 +230,54 @@ const SequenceDeltaSchema = z.object({
   pointers: z.record(z.string(), z.number().int().min(0)).optional(),
 })
 
+// Base: execution (the universal fallback). When no pattern-tracer (array/grid/
+// sequence/pipeline) recognizes an algorithm, the generic tracer sys.settrace-s
+// the REAL reference solution on one real test case and the reducer collapses the
+// timeline to <=8 steps. The result is correct by construction: the state shown IS
+// what the reference computed. Unlike the other bases the execution base carries no
+// fixed structural shape; it declares only the source listing and a detected `viz`
+// mode, and each step carries the sanitized locals the renderer draws. Because it
+// asserts computed state it is a verified base (trace_verified required).
+//
+// The shapes below mirror ReducedExecution / ReducedExecutionStep in
+// src/lib/solutions/trace/executionReduce.ts so graft maps one onto the other with
+// no lossy translation. `locals`/`container` are open JSON (z.unknown()) because the
+// tracer emits arbitrary sanitized values; the renderer treats unknown shapes as a
+// value table and never crashes.
+const ExecutionStageSchema = z.object({
+  kind: z.literal('execution'),
+  /** Detected render family for the reduced trace. */
+  viz: z.enum(['matrix', 'array', 'ribbon', 'callstack', 'table']),
+  /** The (class-adapted) reference source, one entry per line. */
+  sourceLines: z.array(z.string().max(400)).max(400),
+  /** Name of the star container local (array/matrix/ribbon). Absent for table/callstack. */
+  star: z.string().min(1).max(40).optional(),
+  /** Which upstream safety caps tripped, so the renderer can mark an incomplete trace. */
+  capped: z.object({ frames: z.boolean(), time: z.boolean() }).optional(),
+})
+const ExecutionDeltaSchema = z.object({
+  base: z.literal('execution'),
+  /** 1-based source line (line N => sourceLines[N-1]). */
+  line: z.number().int().min(0),
+  /** Sanitized locals visible after this line executed. Open JSON by design. */
+  locals: z.record(z.string(), z.unknown()),
+  /** For matrix viz: the (r,c) cell the scalar loop indices point at, if resolvable. */
+  cursor: z.object({ r: z.number().int().min(0), c: z.number().int().min(0) }).optional(),
+  /** For array/ribbon viz: named scalar indices over the star container. */
+  pointers: z.record(z.string(), z.number().int()).optional(),
+  /** Snapshot of the star container's value at this step. Open JSON by design. */
+  container: z.unknown().optional(),
+  /** For callstack viz: reconstructed call-nesting depth (0 = top-level entry). */
+  depth: z.number().int().min(0).optional(),
+})
+
 const SteppedBaseSchema = z.discriminatedUnion('kind', [
   ArrayStageSchema,
   PipelineStageSchema,
   FlowStageSchema,
   GridStageSchema,
   SequenceStageSchema,
+  ExecutionStageSchema,
 ])
 const SteppedDeltaSchema = z.discriminatedUnion('base', [
   ArrayDeltaSchema,
@@ -243,6 +285,7 @@ const SteppedDeltaSchema = z.discriminatedUnion('base', [
   FlowDeltaSchema,
   GridDeltaSchema,
   SequenceDeltaSchema,
+  ExecutionDeltaSchema,
 ])
 
 export const InteractiveStepDiagramSchema = z.object({
@@ -284,6 +327,7 @@ export const InteractiveStepDiagramSchema = z.object({
   const gridRows = baseKind === 'grid' ? diagram.base.rows : 0
   const gridCols = baseKind === 'grid' ? diagram.base.cols : 0
   const seqNodeCount = baseKind === 'sequence' ? diagram.base.nodes.length : 0
+  const sourceLineCount = baseKind === 'execution' ? diagram.base.sourceLines.length : 0
 
   diagram.steps.forEach((step, i) => {
     if (step.delta.base !== baseKind) {
@@ -325,6 +369,13 @@ export const InteractiveStepDiagramSchema = z.object({
       for (const idx of refs) {
         if (idx >= seqNodeCount) ctx.addIssue({ code: 'custom', message: `step ${i} references node index ${idx} out of range (${seqNodeCount} nodes)` })
       }
+    } else if (step.delta.base === 'execution') {
+      // line is 1-based (line N => sourceLines[N-1]); 0 means "no line" and is allowed.
+      // Only flag a positive line that overruns the listing. locals/container are open
+      // JSON, so there is nothing further to bound structurally.
+      if (step.delta.line > sourceLineCount && sourceLineCount > 0) {
+        ctx.addIssue({ code: 'custom', message: `step ${i} line ${step.delta.line} out of range (${sourceLineCount} source lines)` })
+      }
     }
   })
 
@@ -352,6 +403,8 @@ export type InteractiveStepDiagram = z.infer<typeof InteractiveStepDiagramSchema
 export type SteppedBase = z.infer<typeof SteppedBaseSchema>
 export type SteppedDelta = z.infer<typeof SteppedDeltaSchema>
 export type StepPill = z.infer<typeof StepPillSchema>
+export type ExecutionStage = z.infer<typeof ExecutionStageSchema>
+export type ExecutionDelta = z.infer<typeof ExecutionDeltaSchema>
 
 // ── Solution content ────────────────────────────────────────────────────────
 

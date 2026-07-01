@@ -8,8 +8,11 @@
  * as its own "Visual" tab (not inline on an approach). The walkthrough is chosen
  * by challenge_type:
  *   - algorithm      -> verified array trace, else verified grid (DP) trace,
- *                       else verified sequence (linked-list / tree) trace
- *   - sql            -> verified pipeline (CTE chain) trace (now 2-step-capable)
+ *                       else verified sequence (linked-list / tree) trace, else the
+ *                       ceiling-free generic execution trace (real reference under
+ *                       the Python tracer, reduced to <=8 steps)
+ *   - sql            -> verified pipeline (CTE chain) trace (now 2-step-capable),
+ *                       else the generic execution trace when a Python reference exists
  *   - system_design  -> authored request-flow walkthrough (derived from the
  *   - data_modeling     architecture diagram on the optimal approach)
  *
@@ -18,8 +21,8 @@
  * stripped from every approach (the server is the sole source of stepped diagrams),
  * and a prior approach-level stepped diagram is migrated up to .walkthrough.
  *
- * For the verified bases (array / grid / sequence / pipeline) the deltas are
- * computed by executing the real reference, never by the model; the flow base
+ * For the verified bases (array / grid / sequence / pipeline / execution) the
+ * deltas are computed by executing the real reference, never by the model; the flow base
  * asserts no computed state, so it is derived deterministically from the optimal
  * approach's architecture diagram (still server-owned, never free-authored by
  * the model).
@@ -51,6 +54,7 @@ import { buildSteppedGridFromMetadata } from './gridTrace'
 import { buildSteppedSequenceFromMetadata } from './sequenceTrace'
 import { buildSteppedPipelineFromMetadata } from './pipelineTrace'
 import { buildSteppedFlowFromContent } from './flowWalkthrough'
+import { buildSteppedExecutionFromMetadata } from './executionTrace'
 import {
   buildFlowNarrationContext,
   narrateFlowViaApi,
@@ -73,6 +77,12 @@ type StepProse = Pick<
  * null when none is eligible. Verified bases run their harness against the real
  * reference + test cases; the flow base reads the optimal approach's architecture.
  */
+/** The challenge title from metadata, for the execution diagram's cosmetic title. */
+function titleOf(metadata: Record<string, unknown> | null | undefined): string | undefined {
+  const t = metadata?.title
+  return typeof t === 'string' && t.trim().length > 0 ? t : undefined
+}
+
 async function buildWalkthrough(
   content: SolutionContentV1,
   metadata: Record<string, unknown> | null | undefined,
@@ -94,12 +104,23 @@ async function buildWalkthrough(
       const grid = buildSteppedGridFromMetadata(metadata, tags)
       if (grid) return grid.diagram
       const sequence = buildSteppedSequenceFromMetadata(metadata, tags)
-      return sequence ? sequence.diagram : null
+      if (sequence) return sequence.diagram
+      // LAST fallback (ceiling-free): no pattern-tracer recognized this algorithm,
+      // so trace the REAL reference solution under the generic Python tracer and
+      // reduce it to a verified execution walkthrough. Correct by construction; it
+      // only fires when the traced answer matches the challenge's own expected.
+      const execution = await buildSteppedExecutionFromMetadata(metadata, titleOf(metadata))
+      return execution ? execution.diagram : null
     }
     case 'sql': {
       if (!metadata) return null
       const pipeline = await buildSteppedPipelineFromMetadata(metadata, tags)
-      return pipeline ? pipeline.diagram : null
+      if (pipeline) return pipeline.diagram
+      // The generic execution tracer is Python-only, so it only helps a SQL
+      // challenge that happens to carry a Python reference; buildSteppedExecution*
+      // returns null otherwise, keeping the static diagram.
+      const execution = await buildSteppedExecutionFromMetadata(metadata, titleOf(metadata))
+      return execution ? execution.diagram : null
     }
     case 'system_design':
     case 'data_modeling': {

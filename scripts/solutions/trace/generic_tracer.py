@@ -258,7 +258,13 @@ def _shallow(v, _depth=0):
             out.append("...<+%d>" % (len(v) - _MAX_ELEMS))
         return out
     if isinstance(v, set):
-        items = list(v)
+        # Sets have no stable iteration order across Python processes, which would
+        # make the reduced walkthrough non-deterministic. Sort by a total, type-safe
+        # key (type name then repr) so the serialized set is byte-identical every run.
+        try:
+            items = sorted(v, key=lambda x: (type(x).__name__, repr(x)))
+        except Exception:
+            items = sorted((repr(x) for x in v))
         out = [_shallow(x, _depth + 1) for x in items[:_MAX_ELEMS]]
         if len(items) > _MAX_ELEMS:
             out.append("...<+%d>" % (len(items) - _MAX_ELEMS))
