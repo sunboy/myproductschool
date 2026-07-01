@@ -11,6 +11,8 @@ import {
 } from '@/lib/onboarding/calibration-submit'
 import { scoreMove, deriveArchetype, observationFor } from '@/lib/calibration/deriveArchetype'
 import { embedAndStoreContext } from '@/lib/notes/embeddings'
+import { captureServerImmediate } from '@/lib/posthog/server'
+import { EVENT_CALIBRATION_COMPLETED } from '@/lib/posthog/events'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = CalibrationSubmitSchema
@@ -292,6 +294,17 @@ export async function POST(request: Request) {
       { company: target_company }
     ).catch(() => {})
   }
+
+  // Fire-and-forget: the calibration response already succeeded, so an analytics
+  // capture failure must not affect it (captureServerImmediate never throws).
+  void captureServerImmediate({
+    distinctId: user.id,
+    event: EVENT_CALIBRATION_COMPLETED,
+    properties: {
+      weakest_move: weak,
+      total_score: avg,
+    },
+  })
 
   return NextResponse.json({
     attempt_id: attemptRes.data?.id ?? 'scored',
