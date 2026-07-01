@@ -87,6 +87,24 @@ function tagsOf(c: ChallengeRow): string[] {
 }
 
 /**
+ * Cheap gate for the generic execution fallback: does the metadata carry a Python
+ * reference AND at least one test case? This mirrors what buildSteppedExecution*
+ * needs to even attempt a trace, so the prefilter lets the row through and the
+ * graft's single subprocess trace is the authoritative gate (no double-trace).
+ */
+function hasRunnableReference(metadata: Record<string, unknown> | null | undefined): boolean {
+  if (!metadata) return false
+  const ref = metadata.reference_solution
+  const hasPython =
+    (typeof ref === 'string' && ref.trim().length > 0) ||
+    (!!ref && typeof ref === 'object' &&
+      (typeof (ref as Record<string, unknown>).python === 'string' ||
+        typeof (ref as Record<string, unknown>).py === 'string'))
+  const hasTests = Array.isArray(metadata.test_cases) && metadata.test_cases.length > 0
+  return hasPython && hasTests
+}
+
+/**
  * Find up to `limit` challenges of `type` that already have a ready solution and
  * pass the type-appropriate eligibility check (the SAME inputs the runtime graft
  * uses). Returns the challenge rows alongside their stored content so we don't
@@ -124,18 +142,27 @@ async function selectEligible(
     let eligible = false
     if (type === 'sql') {
       // Pipeline base floor is 2 (single-CTE = intermediate + result), set in the
-      // schema. The graft revalidates; do not impose a stricter floor here.
-      eligible = (await buildSteppedPipelineFromMetadata(row.metadata ?? {}, tags)) != null
+      // schema. The graft revalidates; do not impose a stricter floor here. A SQL
+      // challenge with a Python reference can also reach the execution fallback, so
+      // let a runnable reference through even when the pipeline harness misses.
+      eligible =
+        (await buildSteppedPipelineFromMetadata(row.metadata ?? {}, tags)) != null ||
+        hasRunnableReference(row.metadata)
     } else if (type === 'system_design' || type === 'data_modeling') {
       // Reads the optimal approach's architecture diagram from the stored content.
       eligible = buildSteppedFlowFromContent(content, row.metadata ?? null) != null
     } else if (type === 'algorithm') {
-      // Try every algorithm base the graft tries: array -> grid (DP) -> sequence.
+      // The graft tries array -> grid (DP) -> sequence -> generic execution. The
+      // first three are cheap synchronous detectors; the execution fallback is an
+      // async subprocess we do NOT want to run twice (prefilter + graft), so for the
+      // execution path we let any challenge with a runnable Python reference + test
+      // cases through and let the graft's single trace be the authoritative gate.
       const meta = row.metadata ?? {}
       eligible =
         buildSteppedTraceFromMetadata(meta, tags) != null ||
         buildSteppedGridFromMetadata(meta, tags) != null ||
-        buildSteppedSequenceFromMetadata(meta, tags) != null
+        buildSteppedSequenceFromMetadata(meta, tags) != null ||
+        hasRunnableReference(meta)
     }
     if (eligible) out.push({ challenge: row, content })
   }
