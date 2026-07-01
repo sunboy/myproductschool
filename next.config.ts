@@ -15,9 +15,25 @@ if (
   }
 }
 
-const projectRoot = process.cwd().includes(`${path.sep}.worktrees${path.sep}`)
-  ? path.resolve(process.cwd(), '../..')
-  : process.cwd()
+// Turbopack/output-tracing root. In a git worktree the cwd sits under a nested
+// worktrees dir, and Turbopack otherwise mis-infers the workspace root. Handle both
+// conventions this repo uses — `<repo>/.worktrees/<name>` and
+// `<repo>/.claude/worktrees/<name>` — by walking up to the segment before the
+// worktrees dir, so the root resolves regardless of nesting depth. Outside a worktree
+// this is just process.cwd().
+const projectRoot = (() => {
+  const cwd = process.cwd()
+  const segments = cwd.split(path.sep)
+  // `<repo>/.worktrees/<name>`: the marker segment is literally `.worktrees`.
+  const dotWtIndex = segments.lastIndexOf('.worktrees')
+  if (dotWtIndex > 0) return segments.slice(0, dotWtIndex).join(path.sep) || cwd
+  // `<repo>/.claude/worktrees/<name>`: marker is `worktrees` nested under `.claude`.
+  const wtIndex = segments.lastIndexOf('worktrees')
+  if (wtIndex > 0 && segments[wtIndex - 1] === '.claude') {
+    return segments.slice(0, wtIndex - 1).join(path.sep) || cwd
+  }
+  return cwd
+})()
 const sentrySourceMapsConfigured = Boolean(
   process.env.SENTRY_AUTH_TOKEN
   && process.env.SENTRY_ORG

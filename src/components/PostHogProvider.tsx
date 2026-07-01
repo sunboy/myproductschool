@@ -2,7 +2,7 @@
 
 import posthog from 'posthog-js'
 import { PostHogProvider as PHProvider, usePostHog } from 'posthog-js/react'
-import { useEffect, useRef, Suspense, useState } from 'react'
+import { useEffect, useRef, useState, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import {
   COOKIE_CHOICE_EVENT,
@@ -21,6 +21,15 @@ function eventChoice(event: Event): CookieChoice | null {
   return typeof detail === 'string' && isCookieChoice(detail) ? detail : null
 }
 
+// Tracks pageviews across BOTH path changes and query-string-only navigations (filter/
+// search params on the same page). useSearchParams() is what makes the effect re-run on
+// query changes, and it is safe here: this component always renders null (capture is
+// deferred to an effect), so params never affect render output, and the Suspense boundary
+// in the provider below contains useSearchParams()'s dynamic opt-in to this leaf. This is
+// the standard App Router pattern and is NOT the source of the paid-traffic hydration
+// crash (HACKPRODUCT-G) — that was a JSX-branching mismatch from useReducedMotion() in the
+// landing tree, fixed via useReducedMotionSafe. Do not "optimize" this into reading
+// window.location.search: that silently drops pageviews on query-only navigations.
 function PostHogPageView({ enabled }: { enabled: boolean }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -29,7 +38,8 @@ function PostHogPageView({ enabled }: { enabled: boolean }) {
 
   useEffect(() => {
     if (!enabled) return
-    const url = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
+    const query = searchParams.toString()
+    const url = pathname + (query ? `?${query}` : '')
     if (url === lastPath.current) return
     lastPath.current = url
     posthogClient.capture('$pageview', { $current_url: window.location.href })

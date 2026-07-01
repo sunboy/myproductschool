@@ -4,8 +4,10 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { FeedbackText } from '@/components/ui/FeedbackText'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import CompetencyRadar from '@/components/live-interview/CompetencyRadar'
+import { DebriefUpgradeCard } from '@/components/live-interview/DebriefUpgradeCard'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserPlan } from '@/lib/billing/entitlements'
 import { IS_MOCK } from '@/lib/mock'
 import { MOCK_LIVE_DEBRIEF, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 import type { LiveInterviewDebrief, LiveInterviewTurn } from '@/lib/mock-live-interviews'
@@ -56,6 +58,18 @@ const COMPETENCY_LABELS: Record<string, string> = {
   domain_expertise: 'Domain Expertise',
 }
 
+function getFocusArea(debrief: LiveInterviewDebrief): string {
+  const weakestSignal = debrief.competencySignals[0]
+  if (weakestSignal) {
+    const label = COMPETENCY_LABELS[weakestSignal.competency] ?? weakestSignal.competency
+    return label.toLowerCase()
+  }
+  if (debrief.improvements[0]) {
+    return debrief.improvements[0].toLowerCase()
+  }
+  return 'your next round'
+}
+
 export default async function DebriefPage({ params }: DebriefPageProps) {
   const { id } = await params
 
@@ -66,6 +80,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
   let sessionDate = ''
   let durationMins = 0
   let turns: LiveInterviewTurn[] = []
+  let userPlan: 'free' | 'pro' = 'free'
 
   if (IS_MOCK) {
     debrief = MOCK_LIVE_DEBRIEF
@@ -84,6 +99,9 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
     if (!user) redirect('/login')
 
     const adminClient = createAdminClient()
+    const { plan } = await getEffectiveUserPlan(adminClient, user.id)
+    userPlan = plan
+
     const { data: session } = await adminClient
       .from('live_interview_sessions')
       .select('debrief_json, company_id, role_id, flow_coverage, total_turns, started_at, ended_at')
@@ -526,6 +544,15 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
               <CompetencyRadar signals={debrief.competencySignals} />
             </div>
           </div>
+        )}
+
+        {/* Upgrade moment (free users only) */}
+        {userPlan !== 'pro' && (
+          <DebriefUpgradeCard
+            scorePercent={scoreToPercent(debrief.overallScore)}
+            grade={debrief.grade}
+            focusArea={getFocusArea(debrief)}
+          />
         )}
 
         {/* Action buttons */}

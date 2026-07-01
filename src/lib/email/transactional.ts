@@ -31,6 +31,9 @@ type TransactionalEmailKind =
   | 'resume_article'
   | 'promotion'
   | 'paid_insight'
+  | 'activation_day1'
+  | 'activation_day3'
+  | 'activation_day7'
 
 interface BaseTransactionalInput {
   dedupeKey: string
@@ -131,6 +134,10 @@ interface PaidInsightInput extends BaseTransactionalInput {
   focusCompetency?: string | null
   focusLabel?: string | null
   recentWins?: string[] | null
+  url?: string | null
+}
+
+interface ActivationDripInput extends BaseTransactionalInput {
   url?: string | null
 }
 
@@ -868,5 +875,50 @@ export function sendPaidInsightEmail(admin: SupabaseClient, input: PaidInsightIn
     valueBullets: input.recentWins && input.recentWins.length > 0 ? input.recentWins : null,
     ctaLabel: 'See your progress',
     ctaUrl: input.url ?? appUrl('/progress'),
+  })
+}
+
+export function sendActivationDay1Email(admin: SupabaseClient, input: ActivationDripInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'activation_day1',
+    subject: 'Your first mock interview takes about 4 minutes',
+    eyebrow: 'Still waiting on you',
+    heading: 'One rep is all it takes to see how this works',
+    heroImageUrl: EMAIL_ART['hatch-point'],
+    heroAlt: 'Hatch pointing toward your first challenge',
+    body: 'You signed up but have not run a single interview or challenge yet. The first one takes about 4 minutes, and Hatch grades it the moment you submit so you can see exactly what a real evaluator would flag.',
+    ctaLabel: 'Start your first interview',
+    ctaUrl: input.url ?? appUrl('/first-run'),
+  })
+}
+
+export function sendActivationDay3Email(admin: SupabaseClient, input: ActivationDripInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'activation_day3',
+    subject: 'A real product decision, broken down',
+    eyebrow: 'Worth four minutes',
+    heading: 'See how a real product call gets graded',
+    heroImageUrl: EMAIL_ART['hatch-point'],
+    heroAlt: 'Hatch gesturing toward unfinished work',
+    body: 'Most people judge a tool like this by trying it once, not by reading about it. HackProduct has autopsies of real product decisions, plus short interview reps that Hatch grades against the same criteria a real panel would use. Pick one and see where you land.',
+    ctaLabel: 'Start your first interview',
+    ctaUrl: input.url ?? appUrl('/first-run'),
+  })
+}
+
+export function sendActivationDay7Email(admin: SupabaseClient, input: ActivationDripInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'activation_day7',
+    subject: 'Last nudge: your account is set up and waiting',
+    eyebrow: 'Last check-in',
+    heading: 'Your account is ready whenever you are',
+    heroImageUrl: EMAIL_ART['hatch-point'],
+    heroAlt: 'Hatch waiting by an unfinished challenge',
+    body: 'A week in and the account is still sitting untouched. No pressure, this is the last email in this series. If product interviews or sharpening product thinking is still something you care about, the first rep takes about 4 minutes and Hatch will tell you exactly where you stand.',
+    ctaLabel: 'Start your first interview',
+    ctaUrl: input.url ?? appUrl('/first-run'),
   })
 }

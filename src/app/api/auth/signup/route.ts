@@ -14,11 +14,32 @@ import { apiError } from '@/lib/api/error'
 import { sendWelcomeEmail } from '@/lib/email/transactional'
 import { captureServerImmediate, captureServerAnonymous } from '@/lib/posthog/server'
 import { EVENT_USER_SIGNED_UP, EVENT_AUTH_SIGNUP_FAILED } from '@/lib/posthog/events'
+import { archetypeBySlug } from '@/lib/calibration/deriveArchetype'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = protectedSignupSchema.extend({
   redirectTo: z.string().trim().max(2048).optional(),
+  // Carried from the public archetype quiz (`/quiz/archetype?a=<slug>` -> signup CTA)
+  // so a quiz taker's result claims their profile the moment they create an account.
+  // Optional and best-effort: an invalid/missing slug never blocks signup.
+  archetype: z.string().trim().max(64).optional(),
 })
+
+// Fire-and-forget: writes the quiz archetype onto the new profile. Never awaited
+// by the caller, and any failure is swallowed — claiming a quiz result is a nice-to-have,
+// not a signup requirement.
+async function claimQuizArchetype(admin: ReturnType<typeof createAdminClient>, userId: string, slug: string) {
+  const archetype = archetypeBySlug(slug)
+  if (!archetype) return
+  try {
+    await admin
+      .from('profiles')
+      .update({ archetype: archetype.name, archetype_description: archetype.description })
+      .eq('id', userId)
+  } catch (e) {
+    console.error('[signup] quiz archetype claim failed:', e)
+  }
+}
 
 // Every failure response also lands in PostHog so signup success rate is a
 // real funnel (attempts vs. completions), independent of error masking.
@@ -106,6 +127,9 @@ export async function POST(request: NextRequest) {
       event: EVENT_USER_SIGNED_UP,
       properties: { method: 'email_password' },
     })
+    if (body.archetype) {
+      void claimQuizArchetype(admin, data.user.id, body.archetype)
+    }
   }
 
   return NextResponse.json({

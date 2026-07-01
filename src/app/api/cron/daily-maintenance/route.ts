@@ -4,6 +4,7 @@ const DAILY_CRON_PATHS = [
   '/api/cron/streak-reminders',
   '/api/cron/trial-ending',
   '/api/cron/reap-stale-sessions',
+  '/api/cron/activation-drip',
 ] as const
 
 function unauthorized() {
