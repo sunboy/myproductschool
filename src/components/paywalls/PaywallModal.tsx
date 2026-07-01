@@ -15,6 +15,8 @@ import {
   type BillingPlanConfig,
 } from '@/lib/billing/plans'
 import { usePlanLimits } from '@/lib/usage/use-plan-limits'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_CHECKOUT_STARTED } from '@/lib/posthog/events'
 
 // ── The single paywall modal for the whole app ──────────────────────────────
 // Every upgrade surface routes through this: limit-hit gates (challenges,
@@ -199,6 +201,10 @@ export function PaywallModal({
     setLoading(true)
     setError(null)
     const planId = selectedPlan.id
+    // Fire checkout_started here — this modal is the dominant in-app upgrade surface,
+    // and it previously emitted nothing, so the funnel's checkout_started stage read
+    // ~0 despite users opening checkout. Mirrors the marketing pricing page.
+    trackEvent(EVENT_CHECKOUT_STARTED, { plan: planId })
     try {
       const res = await fetch('/api/stripe/create-checkout', {
         method: 'POST',
