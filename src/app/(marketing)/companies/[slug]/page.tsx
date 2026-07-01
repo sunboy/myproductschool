@@ -89,8 +89,11 @@ export default async function CompanyDirectoryDetailPage({ params }: Props) {
         title={`Practice for ${company.name}-style product and technical interviews.`}
         subtitle={`${company.summary} ${company.interviewStyle}`}
         ctas={[
-          { label: 'Start free', href: '/login' },
-          { label: 'Browse practice previews', href: '/practice' },
+          { label: company.ctaLabel ?? 'Start free', href: company.ctaHref ?? '/login' },
+          {
+            label: company.secondaryLabel ?? 'Browse practice previews',
+            href: company.secondaryHref ?? '/practice',
+          },
         ]}
       />
 
@@ -132,7 +135,7 @@ export default async function CompanyDirectoryDetailPage({ params }: Props) {
       <V3CtaBand
         title={`Train for ${company.name} with live feedback.`}
         subtitle="Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress."
-        ctas={[{ label: 'Start a free rep', href: '/login' }]}
+        ctas={[{ label: company.ctaLabel ?? 'Start a free rep', href: company.ctaHref ?? '/login' }]}
       />
     </V3PageShell>
   )

@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { CalibrationFlow } from '@/components/onboarding/CalibrationFlow'
+import { QuickRoleSelect } from '@/components/onboarding/QuickRoleSelect'
 import { useOnboardingModal } from '@/context/OnboardingModalContext'
 
 // ── Illustration mapping ───────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ function screenToIllustration(screen: CalScreen): string {
 
 export function OnboardingModal() {
   const router = useRouter()
-  const { open, closeModal, markCompleted } = useOnboardingModal()
+  const { open, closeModal, markCompleted, valueFirst } = useOnboardingModal()
 
   // Track current screen so we can show the right illustration
   const [currentScreen, setCurrentScreen] = useState<CalScreen>('intro')
@@ -62,6 +63,30 @@ export function OnboardingModal() {
     } else {
       router.push('/challenges')
     }
+  }
+
+  function handleQuickStartRouted(href: string) {
+    markCompleted()
+    router.push(href)
+  }
+
+  // ── Value-first variant: single role-select screen, no illustration pane ──
+  if (valueFirst) {
+    return (
+      <Dialog open={open} onOpenChange={(o) => { if (!o) closeModal() }}>
+        <DialogContent
+          className="
+            p-0 gap-0 overflow-hidden border-0 shadow-2xl
+            w-full max-w-[calc(100%-1rem)]
+            sm:max-w-lg
+            rounded-2xl bg-background
+          "
+        >
+          <DialogTitle className="sr-only">Pick your role to get started</DialogTitle>
+          <QuickRoleSelect onRouted={handleQuickStartRouted} onSkip={closeModal} />
+        </DialogContent>
+      </Dialog>
+    )
   }
 
   return (

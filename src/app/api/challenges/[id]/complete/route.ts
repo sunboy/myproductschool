@@ -21,7 +21,7 @@ import {
 import { createCommunitySubmissionCandidate, recordCommunityCompletion } from '@/lib/data/community'
 import { withRoute } from '@/lib/api/withRoute'
 import { captureServerImmediate } from '@/lib/posthog/server'
-import { EVENT_CHALLENGE_COMPLETED } from '@/lib/posthog/events'
+import { EVENT_CHALLENGE_COMPLETED, EVENT_ACTIVATED } from '@/lib/posthog/events'
 
 const RequestSchema = z.object({
   attempt_id: z.string().uuid(),
@@ -495,6 +495,24 @@ export const POST = withRoute(async (
         from_plan: from_plan ?? null,
       },
     })
+
+    // Activation milestone: this attempt just became the winner of the atomic
+    // completion claim above, so it's a genuine completion (not an orphan/loser
+    // retry). Count how many completed attempts this user now has — if it's
+    // exactly 1, this IS their first-ever completed challenge_attempt.
+    const { count: completedCount } = await admin
+      .from('challenge_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+
+    if ((completedCount ?? 0) === 1) {
+      await captureServerImmediate({
+        distinctId: userId,
+        event: EVENT_ACTIVATED,
+        properties: { challenge_id: challengeId },
+      })
+    }
   }
 
   return NextResponse.json({

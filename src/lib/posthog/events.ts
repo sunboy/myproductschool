@@ -45,6 +45,17 @@ export interface CalibrationCompletedProps {
   total_score: number
 }
 
+/**
+ * Fired (server) the first time a user's challenge_attempt reaches `completed`,
+ * i.e. their first-ever finished rep. This is the activation milestone for the
+ * signup → activation funnel — distinct from EVENT_CHALLENGE_COMPLETED, which
+ * fires on every completion.
+ */
+export const EVENT_ACTIVATED = 'activated'
+export interface ActivatedProps {
+  challenge_id: string
+}
+
 // ─── Challenges ───────────────────────────────────────────────────────────────
 
 /**
@@ -125,6 +136,29 @@ export interface UpgradedProps {
   plan: string
   interval: 'month' | 'year'
   currency: string
+}
+
+/** Fired (client) when PaywallModal mounts with `open: true` — every gate/upsell surface routes through this one modal. */
+export const EVENT_PAYWALL_SHOWN = 'paywall_shown'
+export interface PaywallShownProps {
+  feature?: string
+  used?: number
+  limit?: number
+}
+
+/** Fired (client) when the user closes PaywallModal without starting checkout (backdrop, Escape, close button, secondary action). */
+export const EVENT_PAYWALL_DISMISSED = 'paywall_dismissed'
+export interface PaywallDismissedProps {
+  feature?: string
+  used?: number
+  limit?: number
+}
+
+/** Fired (client) when the user clicks the upgrade CTA in PaywallModal, before the checkout fetch starts. */
+export const EVENT_UPGRADE_CLICKED = 'upgrade_clicked'
+export interface UpgradeClickedProps {
+  feature?: string
+  plan: string
 }
 
 // ─── Study Plans ──────────────────────────────────────────────────────────────
@@ -221,6 +255,18 @@ export const EVENT_CHAPTER_COMPLETED = 'chapter_completed'
 export interface ChapterCompletedProps {
   module_slug: string
   chapter_slug: string
+}
+
+// ─── Onboarding: value-first variant (onboarding_value_first flag) ────────────
+
+/**
+ * Fired (client) when the user completes the one-screen role-quick path,
+ * reusing EVENT_ONBOARDING_STEP's shape with step: 'role_quick'.
+ */
+export const EVENT_FIRST_REP_ROUTED = 'first_rep_routed'
+export interface FirstRepRoutedProps {
+  role: string
+  challenge_href: string
 }
 
 // ─── Lead magnets ─────────────────────────────────────────────────────────────

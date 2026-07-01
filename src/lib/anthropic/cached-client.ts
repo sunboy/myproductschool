@@ -19,6 +19,10 @@ export interface CachedMessageOptions {
   max_tokens: number
   thinking?: { type: 'enabled'; budget_tokens: number } | { type: 'adaptive' }
   budget?: { userId: string; userPlan: string; route: string }
+  // Optional sampling temperature. Omit to use the model default. Set 0 when the
+  // caller needs deterministic output (e.g. a graded score that feeds a shareable
+  // result slug), so the same input maps to the same bucket every time.
+  temperature?: number
 }
 
 export function getAnthropicClient() {
@@ -50,6 +54,7 @@ export async function createCachedMessage(
     {
       model: options.model,
       max_tokens: options.max_tokens,
+      ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
       ...(options.thinking ? { thinking: options.thinking } : {}),
       system: [
         {
@@ -100,6 +105,7 @@ export async function createCachedMessageMultiSystem(
     {
       model: options.model,
       max_tokens: options.max_tokens,
+      ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
       ...(options.thinking ? { thinking: options.thinking } : {}),
       system: [
         {
