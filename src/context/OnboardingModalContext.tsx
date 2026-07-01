@@ -24,6 +24,8 @@ interface OnboardingModalState {
   open: boolean
   hasMeaningfulProgress: boolean
   completed: boolean
+  /** onboarding_value_first flag (src/lib/config/app-flags.ts), fetched once per session. */
+  valueFirst: boolean
 }
 
 interface OnboardingModalContextValue extends OnboardingModalState {
@@ -38,6 +40,7 @@ const OnboardingModalContext = createContext<OnboardingModalContextValue>({
   open: false,
   hasMeaningfulProgress: false,
   completed: false,
+  valueFirst: false,
   openModal: () => {},
   closeModal: () => {},
   markCompleted: () => {},
@@ -51,9 +54,23 @@ export function OnboardingModalProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [hasMeaningfulProgress, setHasMeaningfulProgress] = useState(false)
   const [completed, setCompleted] = useState(false)
+  const [valueFirst, setValueFirst] = useState(false)
 
   // Track whether we've done the one-time mount check so we don't re-run
   const mounted = useRef(false)
+
+  // Fetch the flag once per session, same pattern as usePlanLimits. Fails
+  // safe to false (current byte-for-byte behavior) on any error.
+  useEffect(() => {
+    let active = true
+    fetch('/api/config/flags')
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (active && data?.onboarding_value_first) setValueFirst(true)
+      })
+      .catch(() => {})
+    return () => { active = false }
+  }, [])
 
   // ── Mount effect: auto-launch logic ──────────────────────────────────────
   useEffect(() => {
@@ -124,7 +141,7 @@ export function OnboardingModalProvider({ children }: { children: ReactNode }) {
 
   return (
     <OnboardingModalContext.Provider
-      value={{ open, hasMeaningfulProgress, completed, openModal, closeModal, markCompleted }}
+      value={{ open, hasMeaningfulProgress, completed, valueFirst, openModal, closeModal, markCompleted }}
     >
       {children}
     </OnboardingModalContext.Provider>

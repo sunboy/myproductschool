@@ -222,3 +222,15 @@ export interface ChapterCompletedProps {
   module_slug: string
   chapter_slug: string
 }
+
+// ─── Onboarding: value-first variant (onboarding_value_first flag) ────────────
+
+/**
+ * Fired (client) when the user completes the one-screen role-quick path,
+ * reusing EVENT_ONBOARDING_STEP's shape with step: 'role_quick'.
+ */
+export const EVENT_FIRST_REP_ROUTED = 'first_rep_routed'
+export interface FirstRepRoutedProps {
+  role: string
+  challenge_href: string
+}

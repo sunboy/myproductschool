@@ -89,6 +89,10 @@ export interface CoachSpineCardProps {
   competencyScore?: number | null
   competencyTrend?: string | null
   recentCompletions?: number
+  /** True when the user has never completed a challenge attempt. Swaps the primary CTA to the curated first rep. */
+  isFirstRep?: boolean
+  /** Curated first-rep challenge link (src/lib/onboarding/curated-first-rep.ts), used only when isFirstRep is true. */
+  firstRepHref?: string
 }
 
 export function CoachSpineCard({
@@ -105,17 +109,24 @@ export function CoachSpineCard({
   competencyScore = null,
   competencyTrend = null,
   recentCompletions = 0,
+  isFirstRep = false,
+  firstRepHref,
 }: CoachSpineCardProps) {
   const [whyOpen, setWhyOpen] = useState(false)
   const { openModal } = useOnboardingModal()
   const hasRealData = isCalibrated && weakestCompetency !== null
 
-  const { headline, sub } = buildCoachLine({
-    weakestCompetency: hasRealData ? weakestCompetency : null,
-    competencyScore,
-    trend: competencyTrend,
-    recentCompletions,
-  })
+  const { headline, sub } = isCalibrated && isFirstRep
+    ? {
+        headline: "Let's get your first rep in.",
+        sub: 'One real scenario, about 7 minutes. Hatch scores it and starts building your FLOW profile from there.',
+      }
+    : buildCoachLine({
+        weakestCompetency: hasRealData ? weakestCompetency : null,
+        competencyScore,
+        trend: competencyTrend,
+        recentCompletions,
+      })
 
   const competencyLabel = weakestCompetency ? (COMPETENCY_LABELS[weakestCompetency] ?? weakestCompetency) : null
   const nextMove = weakestCompetency ? (COMPETENCY_TO_NEXT_MOVE[weakestCompetency] ?? 'a challenge') : null
@@ -199,7 +210,16 @@ export function CoachSpineCard({
         )}
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {isCalibrated ? (
+          {isCalibrated && isFirstRep && firstRepHref ? (
+            <Link
+              href={firstRepHref}
+              data-hatch-target="dashboard-first-rep"
+              className="animate-cta-pulse inline-flex max-w-full items-center justify-center gap-1.5 rounded-full bg-[#f3ede0] px-3.5 py-2 font-label text-[12px] font-bold text-[#1e1b14] no-underline transition-opacity hover:opacity-90 sm:px-5 sm:py-2.5 sm:text-sm"
+            >
+              <span className="material-symbols-outlined text-[18px]">play_arrow</span>
+              Do your first rep (~7 min)
+            </Link>
+          ) : isCalibrated ? (
             <>
               <Link
                 href={sessionHref}
