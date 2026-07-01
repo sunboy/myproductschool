@@ -22,6 +22,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
 import { recordSessionSpend } from '@/lib/sandbox/record-spend'
 import { runSpendSnapshot } from '@/lib/sandbox/spend-snapshot'
+import { stopSqlInstance, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -192,6 +193,39 @@ export async function GET(request: NextRequest) {
     console.error('[cc-reap] spend snapshot failed (best-effort):', err)
   }
 
+  // --- Stop the gateway's Cloud SQL when idle ---
+  // cc-llm-db is started on demand at session-start (cloud-sql-admin) and has no
+  // native scale-to-zero, so it would bill 24/7 if left running. After the sweeps
+  // above, if NO session is active/provisioning, stop it (activationPolicy=NEVER).
+  // Best-effort + idempotent (stopSqlInstance no-ops if already stopped). A
+  // session starting concurrently re-wakes it via session-start; a brief race
+  // (stop just as one starts) is self-correcting on the next start.
+  let sqlStopped = false
+  if (isSqlAutostartConfigured()) {
+    try {
+      // "Live" = active, OR provisioning that's still plausibly mid-start. A row
+      // stranded in `provisioning` (e.g. the start route was killed by a platform
+      // timeout before it could 503 + mark `failed`) must NOT pin the DB forever,
+      // so only count provisioning rows newer than this cutoff. Anything older is
+      // a dead start; the DB can be stopped despite it.
+      const provisioningCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+      const { count: activeCount } = await admin
+        .from('claude_code_sessions')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active')
+      const { count: freshProvisioning } = await admin
+        .from('claude_code_sessions')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'provisioning')
+        .gte('created_at', provisioningCutoff)
+      if ((activeCount ?? 0) === 0 && (freshProvisioning ?? 0) === 0) {
+        sqlStopped = await stopSqlInstance()
+      }
+    } catch (err) {
+      console.error('[cc-reap] sql stop check failed (best-effort):', err)
+    }
+  }
+
   return NextResponse.json({
     scanned: sessions.length,
     reaped,
@@ -202,5 +236,6 @@ export async function GET(request: NextRequest) {
     orphans_skipped: orphansSkipped,
     orphan_failures: orphanFailures.length,
     spend,
+    sql_stopped: sqlStopped,
   })
 }

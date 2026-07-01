@@ -338,8 +338,8 @@ export function buildAiPmReadinessReport(
         body: (
           <div>
             <p style={{ lineHeight: 1.65, color: 'var(--ink-2)', marginBottom: '1.1rem', fontSize: 14 }}>
-              Most candidates treat safety as a closing disclaimer: "and we would add a
-              disclaimer that this is not financial advice." That is not safety design. Safety
+              Most candidates treat safety as a closing disclaimer: &quot;and we would add a
+              disclaimer that this is not financial advice.&quot; That is not safety design. Safety
               that lives only in the output layer cannot enforce a data boundary, prevent
               speculation, or create an audit trail. Here is a skeleton where safety appears
               at the right layers from the start.
@@ -396,7 +396,7 @@ export function buildAiPmReadinessReport(
               <p style={{ color: 'var(--ink-2)', fontSize: 14, lineHeight: 1.6, margin: 0 }}>
                 Use this skeleton in any AI product-sense answer where a live product is
                 involved. Safety at framing first, data layer second, output layer third,
-                metrics last. If the interviewer asks "how did you think about safety?" and
+                metrics last. If the interviewer asks &quot;how did you think about safety?&quot; and
                 the only answer is a disclaimer, that is a gap signal. If the answer names a
                 mechanism at each layer, that is a pass signal.
               </p>

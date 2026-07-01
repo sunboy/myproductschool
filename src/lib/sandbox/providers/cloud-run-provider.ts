@@ -165,7 +165,19 @@ export class CloudRunProvider implements HostProvider {
             // start), and cpuIdle:false keeps the vCPU unthrottled for the whole
             // session so the PTY bridge + `claude` stay responsive (mirrors the
             // gateway's cpu-throttling=false).
+            //
+            // Memory MUST be set explicitly here, not inherited from the service
+            // template. The default 512Mi OOM-kills the instance the moment
+            // `claude` does real work (Claude Code TUI + node-pty + the BigQuery
+            // MCP subprocess + an in-flight query peaked at 512/512 MiB → SIGTERM
+            // → the WHOLE instance is replaced → the browser lands on a fresh PTY
+            // / bare shell, where xterm mouse reports echo as "11M"/"120" garbage).
+            // The PTY-persistence fix survives a transient WS drop but cannot
+            // survive an OOM that kills the process holding the PTY — so the real
+            // fix for "reconnecting → bare shell" is enough headroom. 2Gi gives
+            // Claude + the MCP query comfortable room on 1 vCPU.
             resources: {
+              limits: { cpu: '1', memory: '2Gi' },
               startupCpuBoost: true,
               cpuIdle: false,
             },

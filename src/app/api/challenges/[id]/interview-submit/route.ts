@@ -7,6 +7,7 @@ import type { ChallengeType } from '@/lib/types'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { withRoute } from '@/lib/api/withRoute'
+import { calculateChallengeXp } from '@/lib/scoring/xp-calculator'
 import { captureServerImmediate } from '@/lib/posthog/server'
 
 const RequestSchema = z.object({
@@ -104,10 +105,10 @@ export const POST = withRoute(async (
     // else fall through - re-grade this orphan attempt
   }
 
-  // Fetch challenge type
+  // Fetch challenge type + difficulty (difficulty feeds the XP formula)
   const { data: challenge } = await supabase
     .from('challenges')
-    .select('challenge_type')
+    .select('challenge_type, difficulty')
     .eq('id', id)
     .single()
 
@@ -151,10 +152,17 @@ export const POST = withRoute(async (
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Grading succeeded - NOW mark the attempt completed. Persist score + label
-  // onto the attempt row (mirroring coding-submit) so the Submissions/history
-  // tab and /api/attempts show a real score, not a stale default.
-  await supabase
+  const admin = createAdminClient()
+
+  // Atomically claim this completion. The conditional flip (status != 'completed')
+  // decides whether THIS request owns the completion: concurrent submits race here
+  // and only one flips a row (no double-award), and an orphan attempt (already
+  // 'completed' but missing a grade row) flips zero rows so XP is NOT re-awarded on
+  // re-grade, while the grade insert below still recovers the orphan.
+  // Capture the error too: grading succeeded and the grade is persisted to
+  // interview_grades below, so we don't 500, but a silent status-write failure
+  // would leave the attempt 'in_progress' forever. The reaper reconciles stragglers.
+  const { data: claimedRows, error: completionError } = await supabase
     .from('challenge_attempts')
     .update({
       status: 'completed',
@@ -164,11 +172,37 @@ export const POST = withRoute(async (
       grade_label: gradeLabelForScore(grade.overall_score),
     })
     .eq('id', attemptId)
+    .neq('status', 'completed')
+    .select('id')
+  if (completionError) {
+    console.error('[interview-submit] graded but failed to mark attempt completed', {
+      attemptId,
+      error: completionError.message,
+    })
+  }
+  const isFirstCompletion = (claimedRows?.length ?? 0) > 0
 
-  // Record daily streak (RPC is service_role-only, so use the admin client)
-  const admin = createAdminClient()
-  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
-  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
+  // Only the request that won the completion records the streak + XP, exactly once.
+  // Total XP only - canvas challenges have no FLOW move levels.
+  let xp_awarded = 0
+  if (isFirstCompletion) {
+    const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
+    if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
+    const { data: xpProfile } = await admin
+      .from('profiles')
+      .select('streak_days')
+      .eq('id', user.id)
+      .single()
+    xp_awarded = calculateChallengeXp(grade.overall_score, 5, challenge?.difficulty, xpProfile?.streak_days ?? 0)
+    const { error: xpError } = await admin.rpc('increment_user_xp', { p_user_id: user.id, p_amount: xp_awarded })
+    if (xpError) console.error('[xp] increment_user_xp failed:', xpError.message)
+    // Persist the real reward onto the attempt so Submissions/history + /api/attempts
+    // show it, not a stale default.
+    await supabase
+      .from('challenge_attempts')
+      .update({ feedback_json: { xp_awarded, total_score: grade.overall_score, max_score: 5 } })
+      .eq('id', attemptId)
+  }
 
   // Persist grade
   await supabase.from('interview_grades').insert({
@@ -192,5 +226,5 @@ export const POST = withRoute(async (
     },
   })
 
-  return NextResponse.json({ grade })
+  return NextResponse.json({ grade, xp_awarded })
 }, { name: 'challenges.interview-submit' })

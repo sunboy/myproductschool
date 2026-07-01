@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
-import { ARCHETYPE_OBSERVATIONS } from '@/lib/calibration/archetypes'
-import { scoreMove, deriveArchetype, scoreToLevel } from '@/lib/calibration/derive'
 import { IS_MOCK } from '@/lib/mock'
 import {
   CalibrationSubmitSchema,
@@ -11,6 +9,7 @@ import {
   type CalibrationMove,
   type CalibrationScores,
 } from '@/lib/onboarding/calibration-submit'
+import { scoreMove, deriveArchetype, observationFor, scoreToLevel } from '@/lib/calibration/deriveArchetype'
 import { embedAndStoreContext } from '@/lib/notes/embeddings'
 import { z, ZodError } from 'zod'
 
@@ -68,7 +67,7 @@ export async function POST(request: Request) {
       onboarding_completed_at: new Date().toISOString(),
       starting_levels: { frame: 3, list: 2, optimize: 2, win: 3 },
       hatch_observation: "You think in narratives and outcomes first. That's rare.",
-      personalised_plan_slug: 'optimize-under-pressure' as string | null,
+      personalised_plan_slug: 'staff-engineer-path' as string | null,
     })
   }
 
@@ -91,7 +90,7 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { answers, role, primary_goal, target_company, interview_date } = body
+  const { answers, role, primary_goal, prep_timeline, target_company, interview_date } = body
 
   const scores: CalibrationScores = {
     frame:    scoreMove('frame',    answers.frame    ?? ''),
@@ -102,7 +101,7 @@ export async function POST(request: Request) {
 
   const avg = (scores.frame + scores.list + scores.optimize + scores.win) / 4
   const archetypeResult = deriveArchetype(scores)
-  const observation = ARCHETYPE_OBSERVATIONS[archetypeResult.name] ?? ''
+  const observation = observationFor(archetypeResult.name)
   const weak = weakestMove(scores)
   const now = new Date().toISOString()
 
@@ -218,8 +217,22 @@ export async function POST(request: Request) {
   ])
   if (writeError) return NextResponse.json({ error: writeError.message }, { status: 500 })
 
-  // Compute personalised plan slug from weakness move + goal
-  const personalisedPlanSlug = computePersonalisedPlanSlug(weak, primary_goal ?? null)
+  // Compute personalised plan slug from role + goal + timeline, then verify it
+  // points at a published plan so the results CTA can never land on a 404.
+  let personalisedPlanSlug = computePersonalisedPlanSlug({
+    role: role ?? null,
+    primaryGoal: primary_goal ?? null,
+    prepTimeline: prep_timeline ?? null,
+  })
+  if (personalisedPlanSlug) {
+    const { data: planRow } = await adminClient
+      .from('study_plans')
+      .select('slug')
+      .eq('slug', personalisedPlanSlug)
+      .eq('is_published', true)
+      .maybeSingle()
+    if (!planRow) personalisedPlanSlug = null
+  }
 
   // Durable write of preferred_move (and any new personalization fields) into
   // profiles.interview_meta. Failure here doesn't fail the calibration response

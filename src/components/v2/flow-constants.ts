@@ -1,3 +1,5 @@
+import { FLOW_MOVES } from '@/lib/flow/moves'
+
 export type Verdict = 'pass' | 'partial' | 'miss'
 
 export const VERDICT_COLOR: Record<Verdict, string> = {
@@ -34,10 +36,10 @@ export const QUALITY_BADGE: Record<string, { label: string; color: string; bg: s
 }
 
 export const STEP_ICONS: Record<string, string> = {
-  frame:    'center_focus_strong',
-  list:     'format_list_bulleted',
-  optimize: 'tune',
-  win:      'emoji_events',
+  frame:    FLOW_MOVES.frame.icon,
+  list:     FLOW_MOVES.list.icon,
+  optimize: FLOW_MOVES.optimize.icon,
+  win:      FLOW_MOVES.win.icon,
 }
 
 /** Maps quality_label (from flow_options) → verdict */

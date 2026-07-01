@@ -10,7 +10,7 @@
 
 import type { LeadMagnetUnlockCopy } from '@/lib/lead-magnets/config'
 import type { MagnetResultPayload } from '@/lib/lead-magnets/quiz-types'
-import { ARCHETYPES, weakestMoveOf, type MoveScores, type CalibrationMoveKey } from '@/lib/calibration/derive'
+import { ARCHETYPES, weakestMoveOf, type MoveScores, type CalibrationMoveKey } from '@/lib/calibration/deriveArchetype'
 import { QUESTIONS } from '@/lib/calibration/questions'
 
 const MOVE_LABELS: Record<CalibrationMoveKey, string> = {

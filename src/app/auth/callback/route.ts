@@ -68,14 +68,19 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const { data: profile } = await admin
+  const { data: profile, error: profileError } = await admin
     .from('profiles')
     .select('onboarding_completed_at')
     .eq('id', data.user.id)
     .single()
 
-  const destination = profile?.onboarding_completed_at
-    ? safeNextPath(request) ?? '/dashboard'
-    : '/dashboard'
+  // Only route to /first-run when we KNOW the profile loaded and onboarding is unset
+  // (a genuine new user). On a read error we can't tell new from returning, so fail
+  // open to the returning-user path — this preserves a deep-link (?next=/pricing…) and
+  // avoids diverting an onboarded user into first-run on a transient DB hiccup.
+  const isNewUser = !profileError && profile != null && !profile.onboarding_completed_at
+  const destination = isNewUser
+    ? '/first-run'
+    : safeNextPath(request) ?? '/dashboard'
   return NextResponse.redirect(new URL(destination, request.url))
 }

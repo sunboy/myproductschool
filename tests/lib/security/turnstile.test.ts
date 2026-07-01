@@ -37,15 +37,15 @@ test('skips Turnstile in development when no secret is configured', async () => 
   assert.equal(result.skipped, true)
 })
 
-test('fails closed in production when no secret is configured', async () => {
+test('skips Turnstile in production when no secret is configured', async () => {
   delete mutableEnv.TURNSTILE_SECRET_KEY
   delete mutableEnv.TURNSTILE_E2E_FALLBACK
   mutableEnv.NODE_ENV = 'production'
 
   const result = await verifyTurnstileToken({ token: 'token' })
 
-  assert.equal(result.ok, false)
-  assert.equal(result.error, 'turnstile_not_configured')
+  assert.equal(result.ok, true)
+  assert.equal(result.skipped, true)
 })
 
 test('allows explicit e2e fallback in production-style local runs', async () => {

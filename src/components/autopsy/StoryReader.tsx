@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import type { AutopsyStory } from '@/lib/types'
 import { StorySection } from './StorySection'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 
 interface Props {
   story: AutopsyStory
@@ -93,17 +94,17 @@ export function StoryReader({ story, productName, productSlug, backHref, sidebar
 
       {/* Breadcrumb - light surface, matches app shell */}
       <div className={cn('fixed top-[52px] left-0 right-0 z-30 h-10 flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40', sidebarOffset && 'md:left-56')}>
-        <Link
-          href={backHref ?? `/explore/autopsies/${productSlug}`}
-          className="font-label text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
-        >
-          <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>arrow_back</span>
-          {productName}
-        </Link>
-        <span className="text-outline-variant/60 text-xs">·</span>
-        <span className="font-label text-xs text-on-surface-variant truncate">{story.title}</span>
-        <span className="text-outline-variant/60 text-xs">·</span>
-        <span className="font-label text-[11px] text-on-surface-variant/60 shrink-0">{story.read_time}</span>
+        <AppBreadcrumbs
+          items={[
+            { label: 'Explore', href: '/explore' },
+            { label: 'Autopsies', href: '/explore/autopsies' },
+            { label: productName, href: backHref ?? `/explore/autopsies/${productSlug}` },
+            { label: story.title },
+          ]}
+        />
+        {story.read_time && (
+          <span className="font-label text-[11px] text-on-surface-variant/60 shrink-0 ml-auto">{story.read_time}</span>
+        )}
       </div>
 
       {/* Section navigation dots - right side, hidden mobile */}

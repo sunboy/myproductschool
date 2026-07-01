@@ -7,7 +7,7 @@
 //     to /challenges); they are taken inline on the dashboard Quick Take card.
 //   - Feedback / discussion live under (app)/challenges/[id]/*
 //   - Practice browse filters live on /challenges via ?discipline / ?topic / ?technique
-//   - Study plans live under /prep/study-plans/[slug]
+//   - Study plans live under /explore/plans/[slug]
 //   - Learn modules live under /explore/modules/[slug]
 
 import { challengeNumberSlug } from '@/lib/challenges/challengeNumber'
@@ -57,7 +57,7 @@ export function urlForTechnique(slug: string): string {
 
 /** Study plan detail page. */
 export function urlForStudyPlan(slug: string): string {
-  return `/prep/study-plans/${slug}`
+  return `/explore/plans/${slug}`
 }
 
 /** Learn module detail page. */

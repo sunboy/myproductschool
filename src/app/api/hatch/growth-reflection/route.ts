@@ -12,7 +12,7 @@ import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 
 const MOCK_REFLECTION =
-  "You've been showing strong diagnostic precision, your frame move is your biggest strength right now. Keep pushing your weigh move next, that's where your next level is hiding."
+  "You've been showing strong diagnostic precision, your frame move is your biggest strength right now. Keep pushing your optimize move next, that's where your next level is hiding."
 
 const ROUTE_KEY = 'hatch_growth_reflection'
 

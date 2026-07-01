@@ -135,7 +135,7 @@ export function FeedbackAccordion({ dimensions, detectedPatterns }: FeedbackAcco
                         lightbulb
                       </span>
                       <p className="text-xs font-semibold text-on-tertiary-fixed-variant">
-                        Hatch suggests: &quot;Focus on strengthening this area in your next attempt. Prioritize {dim.label.toLowerCase()} to lift your overall score.&quot;
+                        Put your next rep into {dim.label.toLowerCase()}. That's the move that lifts your score the most from here.
                       </p>
                     </div>
                   )}
@@ -167,7 +167,7 @@ export function FeedbackAccordion({ dimensions, detectedPatterns }: FeedbackAcco
             <div className="bg-tertiary-fixed/30 p-3 rounded-md border border-tertiary/10 flex items-start gap-3 ml-8">
               <span className="material-symbols-outlined text-tertiary text-lg">psychology</span>
               <p className="text-xs font-semibold text-on-tertiary-fixed-variant">
-                Hatch suggests: &quot;See your Diagnosis for a personalized drill to address these patterns.&quot;
+                Open your Diagnosis for a drill I built around these patterns.
               </p>
             </div>
           )}

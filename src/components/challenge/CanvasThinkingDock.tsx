@@ -127,14 +127,15 @@ export function CanvasThinkingDock({
           data-tour-target="canvas-context-loop"
           onClick={onToggleExpanded}
           aria-expanded={expanded}
-          aria-label={`${expanded ? 'Collapse' : 'Expand'} Context loop. ${contextPackFilledCount} of ${contextPackTotal} notes. ${canvasSummary}.`}
-          className="inline-flex h-8 shrink-0 items-center rounded-lg border px-3 font-label text-[11px] font-black text-on-surface transition-colors hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/30"
+          aria-label={`${expanded ? 'Collapse' : 'Expand'} notes. ${contextPackFilledCount} of ${contextPackTotal} notes. ${canvasSummary}.`}
+          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-3 font-label text-[11px] font-black text-on-surface transition-colors hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/30"
           style={{
             background: expanded ? copy.soft : 'var(--color-surface-container-low)',
             borderColor: expanded ? `${copy.accent}66` : 'var(--color-outline-variant)',
           }}
         >
-          <span className="whitespace-nowrap">Context loop</span>
+          <span className="material-symbols-outlined text-[15px]">edit_note</span>
+          <span className="whitespace-nowrap">Notes</span>
         </button>
       </AppTooltip>
 

@@ -14,6 +14,8 @@ export interface SqlTestCase {
   hidden: boolean
   expected_rows: Record<string, unknown>[]
   match_mode: 'exact' | 'exact_unordered' | 'contains'
+  /** Per-test dataset; the worker runs this instead of the shared setup_script. */
+  setup_override?: string
 }
 
 export interface AlgorithmicTestCase {

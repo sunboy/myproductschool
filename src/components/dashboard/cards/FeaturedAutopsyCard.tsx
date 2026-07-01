@@ -15,10 +15,29 @@ export function FeaturedAutopsyCard({
     ?? story.images.find(image => image.role === 'hero')
   const storyHref = `/explore/autopsies/${story.companySlug}/stories/${story.slug}`
   const hubHref = `/explore/autopsies/${story.companySlug}`
+  const gridClass = visual
+    ? 'grid gap-3 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center'
+    : 'grid gap-3'
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3 shadow-[0_18px_42px_-38px_rgba(30,27,20,0.45)]">
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_126px] sm:items-center">
+    <article className="h-full overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3 shadow-[0_18px_42px_-38px_rgba(30,27,20,0.45)]">
+      <div className={gridClass}>
+        {visual && (
+          <Link
+            href={storyHref}
+            className="relative hidden h-[84px] overflow-hidden rounded-xl border border-outline-variant/40 bg-[#102018] sm:block"
+            aria-label={`Read ${story.title}`}
+          >
+            <Image
+              src={visual.src}
+              alt=""
+              width={visual.width}
+              height={visual.height}
+              className="h-full w-full object-cover opacity-85"
+            />
+            <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(16,32,24,0.18),rgba(201,147,58,0.18))]" />
+          </Link>
+        )}
         <div className="min-w-0">
           <div className="mb-1.5 flex items-center gap-2 font-label text-[10px] font-extrabold uppercase text-primary">
             <BookOpen size={13} />
@@ -26,13 +45,13 @@ export function FeaturedAutopsyCard({
             <span className="h-1 w-1 rounded-full bg-outline" aria-hidden="true" />
             <span className="text-on-surface-variant">{story.estimatedReadTime}</span>
           </div>
-          <h2 className="line-clamp-2 font-headline text-[18px] font-bold leading-tight text-on-surface sm:text-[19px]">
+          <h2 className="line-clamp-2 text-balance font-headline text-[17px] font-bold leading-tight text-on-surface sm:text-[18px]">
             {story.title}
           </h2>
-          <p className="mt-1.5 line-clamp-2 max-w-2xl text-[12.5px] font-semibold leading-5 text-on-surface-variant">
+          <p className="mt-1 line-clamp-2 max-w-2xl text-[12px] font-semibold leading-5 text-on-surface-variant">
             {story.dek}
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
             <Link
               href={storyHref}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[12px] font-label font-extrabold text-on-primary no-underline transition-transform hover:-translate-y-0.5"
@@ -48,23 +67,7 @@ export function FeaturedAutopsyCard({
             </Link>
           </div>
         </div>
-        {visual && (
-          <Link
-            href={storyHref}
-            className="relative hidden h-[92px] overflow-hidden rounded-xl border border-outline-variant/40 bg-[#102018] sm:block"
-            aria-label={`Read ${story.title}`}
-          >
-            <Image
-              src={visual.src}
-              alt=""
-              width={visual.width}
-              height={visual.height}
-              className="h-full w-full object-cover opacity-80"
-            />
-            <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(16,32,24,0.18),rgba(201,147,58,0.18))]" />
-          </Link>
-        )}
       </div>
-    </section>
+    </article>
   )
 }

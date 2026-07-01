@@ -12,17 +12,47 @@ import { protectedSignupSchema } from '@/lib/auth/validation'
 import { isHoneypotFilled, turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
 import { apiError } from '@/lib/api/error'
 import { sendWelcomeEmail } from '@/lib/email/transactional'
-import { captureServerImmediate } from '@/lib/posthog/server'
-import { EVENT_USER_SIGNED_UP, EVENT_SIGNUP_FROM_MAGNET } from '@/lib/posthog/events'
+import { captureServerImmediate, captureServerAnonymous } from '@/lib/posthog/server'
+import { EVENT_USER_SIGNED_UP, EVENT_AUTH_SIGNUP_FAILED, EVENT_SIGNUP_FROM_MAGNET } from '@/lib/posthog/events'
+import { archetypeBySlug } from '@/lib/calibration/deriveArchetype'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = protectedSignupSchema.extend({
   redirectTo: z.string().trim().max(2048).optional(),
+  // Carried from a /go/* lead-magnet's signup CTA so the new user can be
+  // attributed to the magnet that earned them. Optional and best-effort.
   magnetSource: z.string().trim().max(128).optional(),
+  // Carried from the public archetype quiz (`/quiz/archetype?a=<slug>` -> signup CTA)
+  // so a quiz taker's result claims their profile the moment they create an account.
+  // Optional and best-effort: an invalid/missing slug never blocks signup.
+  archetype: z.string().trim().max(64).optional(),
 })
 
-function rateLimitedResponse(retryAfter: number) {
-  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+// Fire-and-forget: writes the quiz archetype onto the new profile. Never awaited
+// by the caller, and any failure is swallowed — claiming a quiz result is a nice-to-have,
+// not a signup requirement.
+async function claimQuizArchetype(admin: ReturnType<typeof createAdminClient>, userId: string, slug: string) {
+  const archetype = archetypeBySlug(slug)
+  if (!archetype) return
+  try {
+    await admin
+      .from('profiles')
+      .update({ archetype: archetype.name, archetype_description: archetype.description })
+      .eq('id', userId)
+  } catch (e) {
+    console.error('[signup] quiz archetype claim failed:', e)
+  }
+}
+
+// Every failure response also lands in PostHog so signup success rate is a
+// real funnel (attempts vs. completions), independent of error masking.
+async function fail(status: number, code: string, message: string, details?: Record<string, unknown>) {
+  await captureServerAnonymous(EVENT_AUTH_SIGNUP_FAILED, { code, status })
+  return apiError(status, code, message, details)
+}
+
+async function rateLimitedResponse(retryAfter: number) {
+  const response = await fail(429, 'rate_limited', 'rate_limited', { retryAfter })
   response.headers.set('Retry-After', String(retryAfter))
   return response
 }
@@ -40,16 +70,16 @@ export async function POST(request: NextRequest) {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return apiError(400, 'invalid_request', 'Invalid request body', {
+      return fail(400, 'invalid_request', 'Invalid request body', {
         issues: validationIssues(error),
       })
     }
-    return apiError(400, 'invalid_json', 'Invalid JSON body')
+    return fail(400, 'invalid_json', 'Invalid JSON body')
   }
   const { email, password, name, turnstileToken, website, magnetSource } = body
 
   if (isHoneypotFilled(website)) {
-    return apiError(400, 'bot_trap_triggered', 'Unable to submit this form.')
+    return fail(400, 'bot_trap_triggered', 'Unable to submit this form.')
   }
 
   const ip = getClientIp(request)
@@ -61,7 +91,7 @@ export async function POST(request: NextRequest) {
 
   const turnstile = await verifyTurnstileToken({ token: turnstileToken, remoteIp: ip })
   if (!turnstile.ok) {
-    return apiError(400, 'turnstile_failed', turnstileErrorMessage(turnstile))
+    return fail(400, 'turnstile_failed', turnstileErrorMessage(turnstile))
   }
 
   const supabase = await createClient()
@@ -75,7 +105,7 @@ export async function POST(request: NextRequest) {
   })
 
   if (error) {
-    return apiError(400, 'signup_failed', error.message)
+    return fail(400, 'signup_failed', error.message)
   }
 
   if (data.user?.id) {
@@ -109,6 +139,9 @@ export async function POST(request: NextRequest) {
         event: EVENT_SIGNUP_FROM_MAGNET,
         properties: { source_slug: magnetSource },
       })
+    }
+    if (body.archetype) {
+      void claimQuizArchetype(admin, data.user.id, body.archetype)
     }
   }
 

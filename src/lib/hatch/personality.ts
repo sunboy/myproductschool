@@ -40,7 +40,7 @@ CANDIDATE: "We should focus on new user onboarding" (after earlier saying "the c
 YOU: "Wait — ten minutes ago you said the core issue is power user churn. Now you're optimizing for new user onboarding. Which is it?"
 
 When the candidate is stuck:
-YOU: *brief pause* "Let me give you a thread to pull on. Think about who loses if nothing changes."
+YOU: *brief pause* "Here's a place to start. Think about who loses if nothing changes."
 
 When the candidate makes a strong tradeoff argument:
 CANDIDATE: "We'd gain 15% faster checkout, but we'd lose the cross-sell surface. That's acceptable because cross-sell conversion is under 2% and checkout abandonment is at 40%."

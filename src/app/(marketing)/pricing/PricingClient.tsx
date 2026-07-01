@@ -8,11 +8,13 @@ import {
   ANALYTICS_PLANS,
   annualSavingsPercent,
   formatPlanPrice,
+  isAnyPlanId,
   type BillingInterval,
   type BillingPlanId,
   type AnyPlanId,
 } from '@/lib/billing/plans'
 import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
+import { DEFAULT_PLAN_LIMITS, type PublicPlanLimits } from '@/lib/usage/plan-limits-shared'
 import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_PRICING_VIEWED, EVENT_CHECKOUT_STARTED } from '@/lib/posthog/events'
 
@@ -34,19 +36,26 @@ interface BillingPrices {
   fetchedAt?: string
 }
 
-const FREE_LIMITS = [
-  '3 challenge starts per month',
-  'Starter Hatch AI budget',
-  'Core practice library',
-  'Progress history',
-]
+// Limit numbers come from plan_limits (via the server page) so edits in
+// /admin/paywall-config show up here without a deploy.
+function freeLimits(limits: PublicPlanLimits) {
+  return [
+    `${limits.free.challenges} challenge starts per month`,
+    `${limits.free.interviews} live AI interview starts per month`,
+    'Starter Hatch AI budget',
+    'Core practice library',
+    'Progress history',
+  ]
+}
 
-const PRO_LIMITS = [
-  '80 challenge starts per month',
-  '12 live AI interview starts per month',
-  'Fair-use Hatch AI coaching budget',
-  'Learner DNA, failure patterns, and study plans',
-]
+function proLimits(limits: PublicPlanLimits) {
+  return [
+    `${limits.pro.challenges} challenge starts per month`,
+    `${limits.pro.interviews} live AI interview starts per month`,
+    'Fair-use Hatch AI coaching budget',
+    'Learner DNA, failure patterns, and study plans',
+  ]
+}
 
 const ANALYTICS_LIMITS = [
   'Everything in Pro',
@@ -55,11 +64,12 @@ const ANALYTICS_LIMITS = [
   'Reusable skills and shareable analyst reports',
 ]
 
-const FEATURE_ROWS = [
+function featureRows(limits: PublicPlanLimits) {
+  return [
   {
     feature: 'Challenge starts',
-    free: '3 per month',
-    pro: '80 per month',
+    free: `${limits.free.challenges} per month`,
+    pro: `${limits.pro.challenges} per month`,
   },
   {
     feature: 'Hatch AI coaching',
@@ -68,8 +78,8 @@ const FEATURE_ROWS = [
   },
   {
     feature: 'Live AI interviews',
-    free: 'Not included',
-    pro: '12 starts per month',
+    free: `${limits.free.interviews} starts per month`,
+    pro: `${limits.pro.interviews} starts per month`,
   },
   {
     feature: 'Learner DNA',
@@ -86,7 +96,8 @@ const FEATURE_ROWS = [
     free: 'Free forever',
     pro: '7-day free trial, cancel anytime',
   },
-]
+  ]
+}
 
 function fallbackPrice(planId: AnyPlanId): PlanPrice {
   const plan = planId === 'analytics_monthly' || planId === 'analytics_annual'
@@ -149,7 +160,14 @@ const INITIAL_PRICES: BillingPrices = {
   annual: fallbackPrice('annual'),
 }
 
-export function PricingClient() {
+interface PricingClientProps {
+  limits?: PublicPlanLimits
+}
+
+export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientProps) {
+  const FREE_LIMITS = freeLimits(limits)
+  const PRO_LIMITS = proLimits(limits)
+  const FEATURE_ROWS = featureRows(limits)
   const analyticsEnabled = isAnalyticsFeatureEnabled()
   const [billing, setBilling] = useState<BillingCycle>('annual')
   const [prices, setPrices] = useState<BillingPrices>(INITIAL_PRICES)
@@ -167,8 +185,27 @@ export function PricingClient() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('plan') === 'monthly') setBilling('monthly')
+    const planParam = params.get('plan')
+    if (isAnyPlanId(planParam)) {
+      // Pre-select the toggle that matches the deep-linked plan.
+      if (planParam === 'analytics_monthly' || planParam === 'analytics_annual') {
+        setAnalyticsBilling(planParam === 'analytics_monthly' ? 'monthly' : 'annual')
+      } else {
+        setBilling(planParam)
+      }
+      // Resume checkout automatically only when we arrived here straight from auth
+      // (checkout=1). A user who types /pricing?plan=monthly by hand just gets the
+      // toggle pre-selected. Strip the params first so refresh/back never re-fires.
+      if (params.get('checkout') === '1') {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('checkout')
+        url.searchParams.delete('plan')
+        window.history.replaceState(null, '', url.toString())
+        startCheckout(planParam)
+      }
+    }
     trackEvent(EVENT_PRICING_VIEWED)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -216,7 +253,7 @@ export function PricingClient() {
       const data = await response.json().catch(() => ({}))
 
       if (response.status === 401) {
-        window.location.href = `/signup?next=${encodeURIComponent(`/pricing?plan=${plan}`)}`
+        window.location.href = `/signup?next=${encodeURIComponent(`/pricing?plan=${plan}&checkout=1`)}`
         return
       }
 

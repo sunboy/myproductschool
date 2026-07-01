@@ -25,6 +25,48 @@ function sameTurn(
   return turn?.role === role && turn.content.trim() === content
 }
 
+// Normalized comparison for echo detection: lowercased, punctuation stripped,
+// whitespace collapsed. Mirrors the client-side normalizer.
+function normalizeForEcho(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const ECHO_MIN_LEN = 12
+const ECHO_LEN_RATIO = 0.8
+
+// True when two normalized strings are near-complete echoes of each other: identical,
+// or one contains the other AND they're close in length. Mirrors the client heuristic.
+// Deliberately conservative — requiring near-equality (not any substring overlap) so a
+// user quoting a fragment of what Hatch said is never mistaken for an echo.
+function isNearEcho(a: string, b: string): boolean {
+  if (a === b) return true
+  const [shorter, longer] = a.length <= b.length ? [a, b] : [b, a]
+  return longer.includes(shorter) && shorter.length / longer.length >= ECHO_LEN_RATIO
+}
+
+// Safety net for the acoustic-echo bug: an incoming USER turn that near-matches a
+// recent HATCH turn is Hatch's own TTS echoed back through the mic, not the user. The
+// client suppresses these, but a role-inverted echo must never reach the DB (it
+// corrupts the transcript — see the greeting-echo bug), so we drop it server-side too.
+// Scans the recent hatch turns (not just the latest) to catch an echo that lands after
+// another turn slips in. Only fires user-echoing-hatch, never the reverse.
+function isRoleInvertedEcho(
+  recent: { role: string; content: string }[] | null | undefined,
+  role: 'hatch' | 'user',
+  content: string
+): boolean {
+  if (role !== 'user' || !recent?.length) return false
+  const incoming = normalizeForEcho(content)
+  if (incoming.length < ECHO_MIN_LEN) return false
+  return recent.some(
+    (t) => t.role === 'hatch' && isNearEcho(normalizeForEcho(t.content), incoming)
+  )
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -76,6 +118,11 @@ export async function POST(
   const latestTurn = recentTurns?.[0]
   if (sameTurn(latestTurn, body.role, body.content)) {
     return Response.json({ ok: true, duplicate: true, turnIndex: latestTurn.turn_index })
+  }
+  // Drop an acoustic echo of Hatch persisted as a user turn (defense in depth behind
+  // the client-side suppression). Scans the recent turns we already fetched.
+  if (isRoleInvertedEcho(recentTurns, body.role, body.content)) {
+    return Response.json({ ok: true, echoSuppressed: true })
   }
 
   const currentCount = count ?? recentTurns?.length ?? 0

@@ -119,10 +119,10 @@ async function getNextChallengeInCategory(
 
 export default async function ChallengeWorkspacePage({ params, searchParams }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ role?: string; from_plan?: string; returnTo?: string }>
+  searchParams: Promise<{ role?: string; from_plan?: string; from_domain?: string; returnTo?: string }>
 }) {
   const { id } = await params
-  const { role, from_plan, returnTo } = await searchParams
+  const { role, from_plan, from_domain, returnTo } = await searchParams
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -138,6 +138,19 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
     if (identity?.id) {
       challengeId = identity.id
       challengeSlug = identity.slug ?? identity.id
+
+      // Canonical-URL redirect: if the user arrived via the raw id or a number
+      // slug (e.g. a UUID or "sql-2001"), send them to the clean text-slug URL
+      // so there is ONE canonical address per challenge. Preserve query params.
+      if (identity.slug && id !== identity.slug) {
+        const qs = new URLSearchParams()
+        if (role) qs.set('role', role)
+        if (from_plan) qs.set('from_plan', from_plan)
+        if (from_domain) qs.set('from_domain', from_domain)
+        if (returnTo) qs.set('returnTo', returnTo)
+        const suffix = qs.toString() ? `?${qs.toString()}` : ''
+        redirect(`/workspace/challenges/${identity.slug}${suffix}`)
+      }
     }
     challengeType = identity?.challenge_type ?? undefined
     // Quick takes don't have FLOW steps - send to challenges hub
@@ -147,14 +160,17 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
   // Claude Code Analytics challenges use a dedicated live-terminal medium, not
   // the FLOW MCQ workspace. Route them to the analytics shell with the full row.
   if (challengeType === 'claude_code_analytics') {
-    // Entitlement + feature-flag gate. The feature ships dark: if the user has no
-    // access, send them to the gated pricing tier (when the feature is enabled) or
-    // fully hide it (redirect to Practice) when it's still off and they're not
-    // allowlisted. Mock mode bypasses (no auth/admin client).
+    // Entitlement + feature-flag gate. The feature ships dark. When it's still off
+    // and the user isn't allowlisted, fully hide it (redirect to Practice). When
+    // it's launched but the user lacks the tier, keep them in place and show the
+    // upgrade modal over a blurred preview (`locked`) — never a full-page redirect
+    // to the pricing page. Mock mode bypasses (no auth/admin client).
+    let analyticsLocked = false
     if (!IS_MOCK && user) {
       const access = await getAnalyticsAccess(createAdminClient(), user.id)
       if (!access.hasAccess) {
-        redirect(access.enabled ? '/pricing?tier=analytics' : '/challenges')
+        if (!access.enabled) redirect('/challenges')
+        analyticsLocked = true
       }
     }
     const { data: challengeRow } = await createAdminClient()
@@ -177,6 +193,8 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
           challenge={challengeRow as never}
           scenario={scenario}
           returnTo={sanitizeReturnTo(returnTo)}
+          origin={{ fromPlan: from_plan ?? null, fromDomain: from_domain ?? null }}
+          locked={analyticsLocked}
         />
       )
     }
@@ -202,6 +220,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
       challengeSlug={challengeSlug}
       initialRoleId={roleId}
       fromPlan={from_plan}
+      fromDomain={from_domain}
       nextChallengeSlug={nextChallengeSlug}
       returnTo={sanitizeReturnTo(returnTo)}
     />

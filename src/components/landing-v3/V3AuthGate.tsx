@@ -183,7 +183,7 @@ export function V3AuthGate() {
           <p>{modalMode === 'signup' ? 'Create your account' : 'Sign in to continue'}</p>
           <h2 id="v3-auth-modal-title">
             {modalMode === 'signup'
-              ? 'Start training with Hatch.'
+              ? 'Start free today.'
               : 'Train with Hatch in one connected loop.'}
           </h2>
         </div>

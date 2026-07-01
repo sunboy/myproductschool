@@ -6,8 +6,10 @@ import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakd
 import { AnimatedProgress, MotionSection } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { workspaceBreadcrumbs } from '@/lib/workspace/breadcrumbs'
 import { Md } from '@/components/ui/Md'
 import { FeedbackText } from '@/components/ui/FeedbackText'
+import { formatCompany } from '@/lib/format/company'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -41,18 +43,52 @@ function scorePercent(totalValue: unknown, maxValue: unknown): number | null {
 
 interface FeedbackPageProps {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ attempt?: string; returnTo?: string }>
+  searchParams: Promise<{ attempt?: string; returnTo?: string; from_plan?: string; from_domain?: string }>
 }
 
 export default async function FeedbackPage({ params, searchParams }: FeedbackPageProps) {
   const { id } = await params
-  const { attempt, returnTo: rawReturnTo } = await searchParams
+  const { attempt: attemptParam, returnTo: rawReturnTo, from_plan: fromPlan, from_domain: fromDomain } = await searchParams
   const returnTo = sanitizeReturnTo(rawReturnTo)
 
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()
 
-  const isMock = IS_MOCK || attempt === 'mock' || !attempt
+  // Explicit demo mode only. A real, signed-in user who lands here without an
+  // `attempt` id must NEVER be shown canned MOCK coaching — for an AI-coaching
+  // product that is the most corrosive possible bug. Instead, when no attempt
+  // is supplied we resolve their latest completed attempt for this challenge
+  // server-side and grade against THAT. If they have none, we render an honest
+  // "no graded attempt yet" state below — not fabricated praise.
+  const isMock = IS_MOCK || attemptParam === 'mock'
+
+  // Resolve the effective attempt id: the explicit param, else the user's most
+  // recent completed attempt on this challenge.
+  let attempt: string | undefined = attemptParam && attemptParam !== 'mock' ? attemptParam : undefined
+  let noGradedAttempt = false
+  if (!isMock && !attempt) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const adminClient = createAdminClient()
+      const { data: latest } = await adminClient
+        .from('challenge_attempts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('challenge_id', id)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (latest?.id) {
+        attempt = latest.id as string
+      } else {
+        noGradedAttempt = true
+      }
+    } else {
+      noGradedAttempt = true
+    }
+  }
 
   let feedback: HatchFeedbackItem[] = isMock ? MOCK_FEEDBACK : []
   let feedbackFull: typeof MOCK_FEEDBACK_FULL | undefined = isMock ? MOCK_FEEDBACK_FULL : undefined
@@ -90,7 +126,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           .select('feedback_json, completed_at, response_text, mental_models_breakdown, weakest_competency, total_score, max_score, grade_label, canvas_final_snapshot')
           .eq('id', attempt)
           .eq('user_id', user.id)
-          .single()
+          // Scope to THIS challenge + completed, so a crafted link with a foreign
+          // or in-progress attempt id can't render under this challenge URL.
+          .eq('challenge_id', id)
+          .eq('status', 'completed')
+          .maybeSingle()
 
         if (attemptData) {
           const feedbackJson = attemptData.feedback_json && typeof attemptData.feedback_json === 'object'
@@ -135,14 +175,18 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               ? (feedbackJson.improvements as string[])
               : []
 
+            // Real attempt: missing fields stay EMPTY, never backfilled from
+            // MOCK_FEEDBACK_FULL. Showing a real user mock "what worked" / key
+            // insight / percentile is the same fabricated-coaching bug as the
+            // mock page itself. Downstream UI hides empty sections.
             feedbackFull = {
               overall: typeof feedbackJson.overall_summary === 'string'
                 ? feedbackJson.overall_summary
                 : typeof feedbackJson.overall === 'string'
                   ? feedbackJson.overall
-                : (MOCK_FEEDBACK_FULL.overall),
-              what_worked: strengths.length > 0 ? strengths : MOCK_FEEDBACK_FULL.what_worked,
-              what_to_fix: improvements.length > 0 ? improvements : MOCK_FEEDBACK_FULL.what_to_fix,
+                : '',
+              what_worked: strengths,
+              what_to_fix: improvements,
               dimensions: feedback.map(f => ({
                 dimension: f.dimension,
                 score: f.score,
@@ -151,10 +195,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               })),
               key_insight: typeof feedbackJson.key_insight === 'string'
                 ? feedbackJson.key_insight
-                : MOCK_FEEDBACK_FULL.key_insight,
+                : '',
+              // percentile is not rendered on this page; 0 = "unknown" (never
+              // shown), so we don't carry a fabricated mock percentile.
               percentile: typeof feedbackJson.percentile === 'number'
                 ? feedbackJson.percentile
-                : MOCK_FEEDBACK_FULL.percentile,
+                : 0,
               detected_patterns: detectedPatterns.map(p => ({
                 pattern_id: String(p.pattern_id ?? ''),
                 pattern_name: String(p.pattern_name ?? ''),
@@ -193,19 +239,79 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           canvasAnnotations = gradeResult.data.canvas_annotations as CanvasAnnotation[]
         }
 
-        if (recommendationResult.data) {
-          const recommendedChallenge = recommendationResult.data as Record<string, unknown>
+        // Competency-targeted recommendation. ~92% of challenges have no
+        // competency tags, so this RPC frequently returns nothing — fall back to
+        // ANY unattempted published challenge so "Up next" is never empty.
+        let recommendedRow = recommendationResult.data as Record<string, unknown> | null
+        if (!recommendedRow && weakestCompetency) {
+          const fallback = await adminClient
+            .rpc('next_user_challenge', { p_user_id: user.id, p_competency: null })
+            .maybeSingle()
+          recommendedRow = (fallback.data as Record<string, unknown> | null) ?? null
+        }
+        if (recommendedRow) {
           nextChallenge = {
-            id: String(recommendedChallenge.id),
-            slug: typeof recommendedChallenge.slug === 'string' ? recommendedChallenge.slug : null,
-            title: String(recommendedChallenge.title),
+            id: String(recommendedRow.id),
+            slug: typeof recommendedRow.slug === 'string' ? recommendedRow.slug : null,
+            title: String(recommendedRow.title),
           }
         }
       }
     } catch {
-      feedback = MOCK_FEEDBACK
-      feedbackFull = MOCK_FEEDBACK_FULL
+      // A real attempt failed to load — show the honest empty/error state rather
+      // than fabricating coaching the user never received.
+      noGradedAttempt = true
     }
+  }
+
+  // If we're in a real (non-mock) flow but resolved no graded content at all
+  // (attempt belonged to another user, was deleted, or has no feedback), do not
+  // fall through to MOCK_FEEDBACK_FULL — show the honest empty state.
+  if (!isMock && feedback.length === 0 && !mentalModelsBreakdown) {
+    noGradedAttempt = true
+  }
+
+  if (noGradedAttempt) {
+    const browseHref = returnTo ?? '/challenges'
+    const retryHref = appendReturnTo(`/workspace/challenges/${id}`, returnTo)
+    return (
+      <div className="max-w-2xl mx-auto px-4 md:px-6 py-12">
+        <AppBreadcrumbs
+          className="mb-8"
+          items={[
+            { label: 'Practice', href: browseHref },
+            { label: challenge.title, href: retryHref },
+            { label: 'Feedback' },
+          ]}
+        />
+        <div className="bg-surface-container rounded-2xl p-8 md:p-10 text-center editorial-shadow">
+          <HatchGlyph size={56} state="idle" className="text-primary mx-auto mb-5" />
+          <h1 className="font-headline text-2xl font-bold text-on-surface mb-2">
+            No graded attempt yet
+          </h1>
+          <p className="text-sm text-on-surface-variant leading-relaxed max-w-md mx-auto mb-7">
+            Hatch grades your reasoning the moment you submit. Run this challenge and
+            it will read your actual work, then break down what landed and the one
+            move that closes the gap.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href={retryHref}
+              className="inline-flex items-center gap-1.5 bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-base">play_arrow</span>
+              Start this challenge
+            </Link>
+            <Link
+              href={browseHref}
+              className="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-container rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              Browse practice
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Compute overall score on /100 scale
@@ -215,7 +321,20 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
       ? Math.round(feedback.reduce((s, f) => s + f.score, 0) / feedback.length * 10)
       : 70
 
-  const full = feedbackFull ?? MOCK_FEEDBACK_FULL
+  // Only the mock/demo path may fall back to MOCK_FEEDBACK_FULL. On the real
+  // path (e.g. an attempt that has mental_models_breakdown but no feedback_json)
+  // we use an empty shell so no mock strengths/insight/percentile ever render.
+  const EMPTY_FEEDBACK_FULL: typeof MOCK_FEEDBACK_FULL = {
+    ...MOCK_FEEDBACK_FULL,
+    overall: '',
+    what_worked: [],
+    what_to_fix: [],
+    dimensions: [],
+    key_insight: '',
+    percentile: 0,
+    detected_patterns: [],
+  }
+  const full = feedbackFull ?? (isMock ? MOCK_FEEDBACK_FULL : EMPTY_FEEDBACK_FULL)
   const items = feedback.length > 0 ? feedback : (full.dimensions as HatchFeedbackItem[])
 
   // Determine score descriptor text
@@ -260,8 +379,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     confidence: p.confidence,
     evidence: p.evidence,
   })) ?? []
+  // Prefer the canonical text slug so the back-to-challenge link is clean and
+  // skips the id→slug redirect hop (challenge was resolved via getChallengeById,
+  // which returns the slug). Falls back to the route param if slug is absent.
+  const challengeCanonical = (challenge as { slug?: string | null }).slug ?? id
   const challengeHref = appendReturnTo(
-    `/workspace/challenges/${id}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
+    `/workspace/challenges/${challengeCanonical}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
     returnTo,
   )
   const nextChallengeHref = nextChallenge
@@ -274,7 +397,9 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
       <AppBreadcrumbs
         className="mb-4"
         items={[
-          { label: 'Practice', href: returnTo ?? '/challenges' },
+          // Origin-aware hub (Practice / Study Plans / Explore), matching the
+          // workspace trail, then the challenge (back to its workspace), then this.
+          ...workspaceBreadcrumbs(challenge.title, { fromPlan, fromDomain }).slice(0, -1),
           { label: challenge.title, href: challengeHref },
           { label: 'Feedback' },
         ]}
@@ -319,7 +444,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   key={tag}
                   className="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30"
                 >
-                  {tag}
+                  {formatCompany(tag)}
                 </span>
               ))}
             </div>
@@ -368,15 +493,15 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
 
           {/* Score Summary Card */}
-          <MotionSection className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
+          <MotionSection className="bg-surface-container p-5 rounded-xl editorial-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <HatchGlyph size={40} className="text-primary flex-shrink-0" />
+                <HatchGlyph size={40} state={overallScoreNum >= 75 ? 'celebrating' : 'reviewing'} className="text-primary flex-shrink-0" />
                 <div>
                   <h3 className="font-headline text-lg font-bold text-on-surface">
                     Hatch&apos;s Analysis
                   </h3>
-                  <p className="text-sm text-on-surface-variant">Hatch review</p>
+                  <p className="text-sm text-on-surface-variant">Here&apos;s what I saw in your reasoning.</p>
                 </div>
               </div>
               <div className="text-right">
@@ -389,7 +514,9 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <p className="text-sm text-on-surface-variant mb-4">{scoreDescriptor}</p>
 
             {/* Overall assessment */}
-            <FeedbackText className="mb-6 text-on-surface">{full.overall}</FeedbackText>
+            {full.overall && (
+              <FeedbackText className="mb-6 text-on-surface">{full.overall}</FeedbackText>
+            )}
 
             {/* Progress Bars for each dimension (summary) */}
             <div className="space-y-2">
@@ -425,45 +552,48 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </div>
           )}
 
-          {/* What Worked / What to Fix */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-surface border-l-4 border-primary rounded-xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
-                <h4 className="font-headline font-extrabold text-on-surface text-lg">What Worked</h4>
-              </div>
-              <ul className="space-y-2">
-                {full.what_worked.map((item, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                    <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
-                    <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
-                  </li>
-                ))}
-              </ul>
+          {/* What Worked / What to Fix — only render a side when it has content
+              (a real attempt with no strengths/improvements must not show an
+              empty box, and must never backfill mock items). */}
+          {(full.what_worked.length > 0 || full.what_to_fix.length > 0) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {full.what_worked.length > 0 && (
+                <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
+                    <h4 className="font-headline font-extrabold text-on-surface text-lg">What Worked</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {full.what_worked.map((item, i) => (
+                      <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
+                        <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
+                        <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {full.what_to_fix.length > 0 && (
+                <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                    <h4 className="font-headline font-extrabold text-on-surface text-lg">Areas for Growth</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {full.what_to_fix.map((item, i) => (
+                      <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
+                        <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
+                        <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-            <div className="bg-surface border-l-4 border-secondary rounded-xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-                <h4 className="font-headline font-extrabold text-on-surface text-lg">Areas for Growth</h4>
-              </div>
-              <ul className="space-y-2">
-                {full.what_to_fix.map((item, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                    <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
-                    <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          )}
 
-          {/* Dimension Expansion Panels (Accordions) */}
-          <FeedbackAccordion
-            dimensions={dimensionPanels}
-            detectedPatterns={detectedPatterns.length > 0 ? detectedPatterns : undefined}
-          />
-
-          {/* Mental Models Breakdown (v2 challenges) */}
+          {/* Mental Models Breakdown (v2 challenges) — the artifact replay leads,
+              so it sits above the per-dimension accordion. */}
           {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
             <MentalModelsBreakdown
               breakdown={mentalModelsBreakdown}
@@ -473,14 +603,22 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             />
           )}
 
-          {/* Key Insight */}
-          <div className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">
-            <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
-            <div>
-              <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
-              <FeedbackText className="text-on-tertiary-fixed-variant">{full.key_insight}</FeedbackText>
+          {/* Dimension Expansion Panels (Accordions) */}
+          <FeedbackAccordion
+            dimensions={dimensionPanels}
+            detectedPatterns={detectedPatterns.length > 0 ? detectedPatterns : undefined}
+          />
+
+          {/* Key Insight — hidden when a real attempt has none (no mock fallback) */}
+          {full.key_insight && (
+            <div className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">
+              <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
+              <div>
+                <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
+                <FeedbackText className="text-on-tertiary-fixed-variant">{full.key_insight}</FeedbackText>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Up next banner */}
           {nextChallenge && nextChallengeHref && (

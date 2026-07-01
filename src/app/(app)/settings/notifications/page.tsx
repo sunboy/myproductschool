@@ -70,12 +70,8 @@ const PREF_ITEMS: Array<{
     detail: 'Launches, announcements, and occasional offers.',
     icon: 'campaign',
   },
-  {
-    key: 'push_enabled',
-    label: 'Push notifications',
-    detail: 'Browser push controls for supported devices.',
-    icon: 'notifications_active',
-  },
+  // push_enabled intentionally omitted: browser push is not implemented yet.
+  // The DB column and preference key stay so the toggle can return with the feature.
 ]
 
 function mergePrefs(data: Partial<PreferenceResponse> | null): NotificationPrefs {
@@ -155,7 +151,7 @@ export default function NotificationSettingsPage() {
             Notifications
           </p>
           <h1 className="mt-1 font-headline text-[32px] font-bold leading-none text-on-surface" style={{ letterSpacing: '-0.03em' }}>
-            Email and push preferences
+            Email preferences
           </h1>
         </div>
 

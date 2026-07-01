@@ -367,6 +367,63 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
   }
 }
 
+// ── Dashboard coach summary (lightweight) ────────────────────
+// The dashboard hero only reads overallLevel, competencies, weakestCompetency,
+// and the count of recentCompletions. The full getHatchContext() above fans out
+// to ~12 queries (failure patterns, step attempts, live-interview history, hatch
+// insights, and four community-signal queries) that the dashboard never uses, so
+// it pays for two cheap reads instead. Keep this in sync with the same fields on
+// HatchUserContext.
+export interface DashboardCoachSummary {
+  overallLevel: HatchUserContext['overallLevel']
+  competencies: HatchUserContext['competencies']
+  weakestCompetency: string | null
+  recentCompletions: HatchUserContext['recentCompletions']
+}
+
+export async function getDashboardCoachSummary(userId: string): Promise<DashboardCoachSummary> {
+  try {
+    const admin = createAdminClient()
+    const [competenciesResult, completionsResult] = await Promise.all([
+      admin
+        .from('learner_competencies')
+        .select('competency, score, trend')
+        .eq('user_id', userId)
+        .then(({ data }) => data ?? [], () => []),
+      admin
+        .from('challenge_attempts')
+        .select('challenge_id, grade_label, total_score, completed_at')
+        .eq('user_id', userId)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false })
+        .limit(8)
+        .then(({ data }) => data ?? [], () => []),
+    ])
+
+    const competencies = competenciesResult as HatchUserContext['competencies']
+    const recentCompletions = (completionsResult as Array<{
+      challenge_id: string
+      grade_label: string | null
+      total_score: number | null
+      completed_at: string | null
+    }>).map((row) => ({
+      challengeId: row.challenge_id,
+      gradeLabel: row.grade_label ?? '',
+      totalScore: row.total_score ?? 0,
+      completedAt: row.completed_at ?? null,
+    }))
+
+    return {
+      overallLevel: deriveOverallLevel(competencies),
+      competencies,
+      weakestCompetency: deriveWeakestCompetency(competencies),
+      recentCompletions,
+    }
+  } catch {
+    return { overallLevel: 'Beginner', competencies: [], weakestCompetency: null, recentCompletions: [] }
+  }
+}
+
 // ── Context string builder ───────────────────────────────────
 
 function isEmptyContext(ctx: HatchUserContext): boolean {

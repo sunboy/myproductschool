@@ -561,7 +561,7 @@ export default function SettingsPage() {
           >
             <div className="min-w-0">
               <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Notifications</p>
-              <p className="mt-1 text-sm font-body font-semibold text-on-surface">Email and push preferences</p>
+              <p className="mt-1 text-sm font-body font-semibold text-on-surface">Email preferences</p>
             </div>
             <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">chevron_right</span>
           </Link>
@@ -937,7 +937,6 @@ export default function SettingsPage() {
         <div className="flex gap-4">
           <Link href="/privacy" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Privacy</Link>
           <Link href="/terms" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Terms</Link>
-          <a href="https://status.hackproduct.com" target="_blank" rel="noopener noreferrer" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Status</a>
         </div>
       </footer>
     </main>

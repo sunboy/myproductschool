@@ -32,7 +32,7 @@ export default function PastInterviews() {
     return (
       <section className="space-y-3">
         <p className="font-label font-bold text-xs text-on-surface-variant uppercase tracking-widest">Past interviews</p>
-        <div className="space-y-2 pl-4 border-l-2 border-outline-variant/30">
+        <div className="space-y-2 pl-4">
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-10 bg-surface-container rounded-lg animate-pulse" />
           ))}

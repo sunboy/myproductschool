@@ -258,7 +258,7 @@ export default async function WaitlistBPage() {
 
           {/* Hatch interjection 1 */}
           <div className="relative z-10 pt-40 flex justify-start pl-[15%]">
-            <div className="bg-secondary-container p-4 rounded-t-2xl rounded-br-2xl border-l-4 border-outline text-on-secondary-container font-label font-bold text-sm max-w-[200px]">
+            <div className="bg-secondary-container p-4 rounded-t-2xl rounded-br-2xl text-on-secondary-container font-label font-bold text-sm max-w-[200px]">
               &ldquo;Most engineers struggle in the Product Sense round. Hatch helps you win&rdquo;
             </div>
           </div>
@@ -313,7 +313,7 @@ export default async function WaitlistBPage() {
 
           {/* Hatch interjection 2 */}
           <div className="relative z-10 pt-20 flex justify-center">
-            <div className="bg-primary-container p-4 rounded-2xl border-b-4 border-primary text-on-primary-container font-label font-bold text-base text-center max-w-[250px]">
+            <div className="bg-primary-container p-4 rounded-2xl text-on-primary-container font-label font-bold text-base text-center max-w-[250px]">
               &ldquo;Look at that momentum! You&apos;re already in the top 10% of learners today!&rdquo;
             </div>
           </div>

@@ -75,7 +75,7 @@ export function VocabCard({ term, definition, formula, insight, isMastered, onTo
         <code className="bg-surface-container-highest rounded-lg px-3 py-2 text-xs font-mono text-on-surface block">{formula}</code>
       )}
       {insight && (
-        <p className="text-on-surface-variant text-xs italic border-l-2 border-primary pl-3">{insight}</p>
+        <p className="text-on-surface-variant text-xs italic bg-surface-container-low rounded-lg px-3 py-2">{insight}</p>
       )}
     </div>
   )

@@ -8,7 +8,7 @@ import { aggregateChallenge } from '@/lib/v2/skills/score-aggregator'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
-import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
+import { calculateChallengeXp } from '@/lib/scoring/xp-calculator'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
 import { checkAndGrantAchievements } from '@/lib/achievements/check'
 import { FLOW_MAX_SCORE, MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
@@ -95,7 +95,12 @@ export const POST = withRoute(async (
     return NextResponse.json({ error: 'Attempt not found or unauthorized' }, { status: 404 })
   }
 
-  if (attempt.status === 'completed') {
+  // Already completed AND graded: serve the stored result (idempotent re-open).
+  // A completed-but-ungraded orphan (status flipped but feedback_json never written,
+  // e.g. a crash between the claim and the grade write) falls THROUGH so the grade
+  // recovery below backfills it. The atomic claim will return 0 rows for it, so no
+  // XP/achievement is re-awarded; only the missing grade columns are recovered.
+  if (attempt.status === 'completed' && attempt.feedback_json) {
     return NextResponse.json(buildCompletedAttemptResult(attempt))
   }
 
@@ -219,62 +224,30 @@ export const POST = withRoute(async (
     FLOW_MAX_SCORE,
   )
 
-  // Upsert updated competencies to learner_competencies table, with trend data
-  if (updatedCompetencies.length > 0) {
-    await admin.from('learner_competencies').upsert(
-      updatedCompetencies.map((c) => {
-        const scores = competencySignalRows
-          .filter((row) => competenciesForSignalInput(row).includes(c.competency))
-          .map((row) => row.score ?? 0)
-        const { trend, slope } = analyzeTrend(scores)
-        return { ...c, user_id: userId, trend, trend_slope: slope }
-      }),
-      { onConflict: 'user_id,competency' }
-    )
-  }
+  // Trend-annotated competency rows to upsert, and per-move XP, are COMPUTED here
+  // but WRITTEN only after the completion is atomically claimed below, so a
+  // concurrent double-complete cannot apply competency/move-level gains twice.
+  const competencyRowsToUpsert = updatedCompetencies.map((c) => {
+    const scores = competencySignalRows
+      .filter((row) => competenciesForSignalInput(row).includes(c.competency))
+      .map((row) => row.score ?? 0)
+    const { trend, slope } = analyzeTrend(scores)
+    return { ...c, user_id: userId, trend, trend_slope: slope }
+  })
 
-  // Fetch challenge difficulty and current streak for XP calculation
-  const [{ data: challenge }, { data: currentProfile }] = await Promise.all([
-    admin.from('challenges').select('difficulty').eq('id', challengeId).single(),
-    admin.from('profiles').select('xp_total, streak_days').eq('id', userId).single(),
-  ])
-
-  // XP = difficulty base * score (0–1)
-  // Base by canonical bucket: easy=50, medium=100, hard=150. Coerce so legacy
-  // DB values (warmup/standard/advanced/staff_plus) score correctly until R2
-  // rewrites the column.
-  const DIFFICULTY_BASE: Record<PracticeDifficulty, number> = { easy: 50, medium: 100, hard: 150 }
-  const bucket = coerceDifficulty(challenge?.difficulty) ?? 'easy'
-  const difficultyBase = DIFFICULTY_BASE[bucket]
-  const baseXp = Math.round(difficultyBase * (total_score / max_score))
-
-  // Streak multiplier: +5% per streak day, capped at 1.5× (hits cap at 10 days)
-  const streakDays = currentProfile?.streak_days ?? 0
-  const streakMultiplier = Math.min(1 + streakDays * 0.05, 1.5)
-  const xp_earned = Math.round(baseXp * streakMultiplier)
-
-  // Update profiles.xp_total
-  if (currentProfile) {
-    await admin
-      .from('profiles')
-      .update({ xp_total: (currentProfile.xp_total ?? 0) + xp_earned })
-      .eq('id', userId)
-  }
-
-  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: userId })
-  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
-
-  // Update FLOW move levels based on per-step scores (awaited - direct DB call)
   const moveScores: Record<string, number> = {}
   for (const s of stepResults) {
     moveScores[s.step] = Math.round(s.step_score * MOVE_XP_MULTIPLIER)
   }
-  await applyMoveLevelXp(userId, moveScores, 'challenge')
 
-  // Grant any newly earned achievements (fire-and-forget so it never blocks/fails completion)
-  checkAndGrantAchievements(userId, admin).catch(err =>
-    console.error('[challenge-complete] achievement check failed:', err)
-  )
+  // Fetch challenge difficulty for XP calculation. The XP award itself is deferred
+  // until after we atomically claim the completion below, so two concurrent
+  // completes (which both pass the early status check) cannot double-award.
+  const { data: challenge } = await admin
+    .from('challenges')
+    .select('difficulty')
+    .eq('id', challengeId)
+    .single()
 
   const step_breakdown = stepResults.map((s) => ({
     step: s.step,
@@ -377,69 +350,152 @@ export const POST = withRoute(async (
       }
     })
 
-  // Update challenge_attempts - store step_breakdown + deltas in feedback_json so history can reconstruct the result
-  await admin
+  // Atomically claim this completion: the conditional flip (status != 'completed')
+  // is the single gate that decides whether THIS request owns the award. Two
+  // concurrent completes both pass the early status check (line 98) but only one
+  // flips a row here; the loser awards nothing. An orphan (already completed) flips
+  // zero rows, so XP/streak are not re-awarded. Streak runs before XP so the
+  // multiplier reflects today's rep, then XP is incremented atomically (no
+  // read-then-write race on xp_total). The grade/feedback columns are written
+  // unconditionally below so an orphan still gets its result recovered.
+  const { data: claimedRows } = await admin
+    .from('challenge_attempts')
+    .update({ status: 'completed', completed_at: new Date().toISOString() })
+    .eq('id', attempt_id)
+    .neq('status', 'completed')
+    .select('id')
+  const isFirstCompletion = (claimedRows?.length ?? 0) > 0
+
+  let xp_earned = 0
+  if (isFirstCompletion) {
+    // Competency + move-level gains apply exactly once, on the winning completion.
+    if (competencyRowsToUpsert.length > 0) {
+      await admin.from('learner_competencies').upsert(competencyRowsToUpsert, { onConflict: 'user_id,competency' })
+    }
+    await applyMoveLevelXp(userId, moveScores, 'challenge')
+
+    const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: userId })
+    if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
+    const { data: xpProfile } = await admin
+      .from('profiles')
+      .select('streak_days')
+      .eq('id', userId)
+      .single()
+    xp_earned = calculateChallengeXp(total_score, max_score, challenge?.difficulty, xpProfile?.streak_days ?? 0)
+    const { error: xpError } = await admin.rpc('increment_user_xp', { p_user_id: userId, p_amount: xp_earned })
+    // On an XP-RPC failure, do not report a positive award we did not persist.
+    if (xpError) { console.error('[xp] increment_user_xp failed:', xpError.message); xp_earned = 0 }
+
+    // Achievements are a per-completion award (and themselves increment XP), so
+    // they belong inside the winner-only gate. Fire-and-forget; the helper is now
+    // idempotent (upsert ignore-duplicates + atomic XP), so even a stray double
+    // call cannot double-grant.
+    checkAndGrantAchievements(userId, admin).catch(err =>
+      console.error('[challenge-complete] achievement check failed:', err)
+    )
+  }
+
+  // Write the grade + feedback columns. The grade/breakdown fields are deterministic
+  // for this attempt (derived from its step_attempts), so writing them unconditionally
+  // is idempotent and recovers an orphan (completed but ungraded) attempt. xp_awarded
+  // is the one divergent field — only the winner sets it, so a losing/orphan write can
+  // never overwrite the real award with 0.
+  const feedbackJson: Record<string, unknown> = {
+    step_breakdown,
+    step_signals: stepSignalsFromDB,
+    competency_deltas: deltaEntries,
+    mental_models_breakdown: competencyRollup.mentalModelsBreakdown,
+    primary_competency: competencyRollup.primaryCompetency,
+    weakest_competency: competencyRollup.weakestCompetency,
+    competency_scores: competencyRollup.competencyScores,
+    grade_label,
+    total_score,
+    max_score,
+  }
+  if (isFirstCompletion) feedbackJson.xp_awarded = xp_earned
+  // The status flip + XP already happened atomically in the claim above, so this
+  // grade/feedback write failing does NOT strand the row 'in_progress'. Still capture
+  // the error and log it (non-fatal) so a silent metadata-write failure is visible.
+  const { error: gradeWriteError } = await admin
     .from('challenge_attempts')
     .update({
-      status: 'completed',
       total_score,
       max_score,
       grade_label,
-      completed_at: new Date().toISOString(),
       mental_models_breakdown: competencyRollup.mentalModelsBreakdown,
       primary_competency: competencyRollup.primaryCompetency,
       weakest_competency: competencyRollup.weakestCompetency,
-      feedback_json: {
-        step_breakdown,
-        step_signals: stepSignalsFromDB,
-        competency_deltas: deltaEntries,
-        mental_models_breakdown: competencyRollup.mentalModelsBreakdown,
-        primary_competency: competencyRollup.primaryCompetency,
-        weakest_competency: competencyRollup.weakestCompetency,
-        competency_scores: competencyRollup.competencyScores,
-        grade_label,
-        total_score,
-        max_score,
-        xp_awarded: xp_earned,
-      },
+      ...(isFirstCompletion
+        ? { feedback_json: feedbackJson }
+        // Non-winner recovery: only set feedback_json if it is currently absent, so
+        // we never clobber the winner's row (which carries the real xp_awarded).
+        : {}),
     })
     .eq('id', attempt_id)
 
-  try {
+  if (gradeWriteError) {
+    console.error('[challenge complete] graded + status flipped but failed to write grade/feedback columns', {
+      attemptId: attempt_id,
+      challengeId,
+      error: gradeWriteError.message,
+    })
+  }
+
+  // Non-winner orphan recovery: backfill feedback_json ONLY if it is still null,
+  // with the IS NULL guard in the SQL predicate (not a JS read-then-write) so a
+  // winner's feedback_json landing in the window cannot be clobbered. The backfill
+  // omits xp_awarded since this request awarded nothing.
+  if (!isFirstCompletion) {
+    await admin
+      .from('challenge_attempts')
+      .update({ feedback_json: feedbackJson })
+      .eq('id', attempt_id)
+      .is('feedback_json', null)
+  }
+
+  // Community recording is a per-completion side-effect: gate it to the winner so a
+  // concurrent double-complete cannot create two submission candidates / completions.
+  if (isFirstCompletion) try {
     await createCommunitySubmissionCandidate({ userId, attemptId: attempt_id, challengeId })
     await recordCommunityCompletion({ userId, attemptId: attempt_id, challengeId, gradeLabel: grade_label })
   } catch (communityError) {
     console.warn('[community] failed to create completion candidate', communityError)
   }
 
-  const topDelta = deltaEntries.length > 0
-    ? [...deltaEntries].sort((a, b) => (b.after - b.before) - (a.after - a.before))[0]
-    : null
+  // Per-completion side-effects (a coaching-context row + the analytics event)
+  // belong to the winner only, so a concurrent double-complete or an orphan retry
+  // cannot insert a duplicate hatch_context row or emit a second
+  // EVENT_CHALLENGE_COMPLETED (which on a loser would carry xp_awarded: 0).
+  if (isFirstCompletion) {
+    const topDelta = deltaEntries.length > 0
+      ? [...deltaEntries].sort((a, b) => (b.after - b.before) - (a.after - a.before))[0]
+      : null
 
-  const contentStr = topDelta && topDelta.after > topDelta.before
-    ? `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}). Top competency shown: ${competencyRollup.primaryCompetency}. Watch: ${competencyRollup.weakestCompetency}.`
-    : `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}).`
+    const contentStr = topDelta && topDelta.after > topDelta.before
+      ? `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}). Top competency shown: ${competencyRollup.primaryCompetency}. Watch: ${competencyRollup.weakestCompetency}.`
+      : `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}).`
 
-  await admin.from('hatch_context').insert({
-    user_id: userId,
-    context_type: 'challenge_insight',
-    content: contentStr,
-    is_active: true,
-    created_at: new Date().toISOString(),
-  })
+    await admin.from('hatch_context').insert({
+      user_id: userId,
+      context_type: 'challenge_insight',
+      content: contentStr,
+      is_active: true,
+      created_at: new Date().toISOString(),
+    })
 
-  await captureServerImmediate({
-    distinctId: userId,
-    event: EVENT_CHALLENGE_COMPLETED,
-    properties: {
-      challenge_id: challengeId,
-      grade_label,
-      total_score,
-      max_score,
-      xp_awarded: xp_earned,
-      from_plan: from_plan ?? null,
-    },
-  })
+    await captureServerImmediate({
+      distinctId: userId,
+      event: EVENT_CHALLENGE_COMPLETED,
+      properties: {
+        challenge_id: challengeId,
+        grade_label,
+        total_score,
+        max_score,
+        xp_awarded: xp_earned,
+        from_plan: from_plan ?? null,
+      },
+    })
+  }
 
   return NextResponse.json({
     total_score,

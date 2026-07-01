@@ -10,10 +10,11 @@ import type { AutopsyCompanyWithStories } from '@/lib/autopsies/types'
 import { createClient } from '@/lib/supabase/server'
 import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { AppTooltip } from '@/components/ui/AppTooltip'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StudyPlanGrid } from './StudyPlanGrid'
 import { getCompanyLabel } from '@/lib/data/taxonomy'
+import { formatCompany } from '@/lib/format/company'
 
 interface PersonalisedPlan {
   slug: string
@@ -55,16 +56,17 @@ type ExploreAutopsyCardItem =
 
 const PLANS_STATIC: PlanItem[] = [
   { title: 'Staff Engineer Path', sub: '6 weeks', diff: 'Intermediate', color: '#4a7c59', bg: '#dfe7e1', enrolled: 1243, icon: 'route', slug: 'staff-engineer-path' },
-  { title: 'AI Product Foundations', sub: '3 weeks', diff: 'Beginner', color: '#3b6ed4', bg: '#e1ecff', enrolled: 892, icon: 'smart_toy', slug: 'ai-product-foundations' },
-  { title: 'Decision-Making Under Pressure', sub: '4 weeks', diff: 'Advanced', color: '#7a5c2e', bg: '#f3e2b9', enrolled: 441, icon: 'bolt', slug: 'decision-making-under-pressure' },
-  { title: 'From Engineer to PM', sub: '8 weeks', diff: 'Beginner', color: '#5b6f4d', bg: '#cfe3d3', enrolled: 2104, icon: 'trending_up', slug: 'from-engineer-to-pm' },
+  { title: 'AI Product Foundations', sub: '3 weeks', diff: 'Beginner', color: '#3a6e4a', bg: '#cfe3d3', enrolled: 892, icon: 'smart_toy', slug: 'ai-product-foundations' },
+  { title: 'Decision-Making Under Pressure', sub: '4 weeks', diff: 'Advanced', color: '#2e5e40', bg: '#b8d4bf', enrolled: 441, icon: 'bolt', slug: 'decision-making-under-pressure' },
+  { title: 'From Engineer to PM', sub: '8 weeks', diff: 'Beginner', color: '#5d9070', bg: '#e8f2eb', enrolled: 2104, icon: 'trending_up', slug: 'from-engineer-to-pm' },
 ]
 
+// Module covers use dark forest-green tint family — same hue, varying depth.
 const MODULES_STATIC = [
   { slug: 'flow-framework', name: 'The FLOW Framework', tagline: 'How product decisions get made.', cover_color: '#1e3528', accent_color: '#7ee099', chapter_count: 8, est_minutes: 90, difficulty: 'easy' },
-  { slug: 'product-sense', name: 'Product Sense', tagline: 'Developing taste and judgment.', cover_color: '#172240', accent_color: '#7aa7ff', chapter_count: 7, est_minutes: 75, difficulty: 'medium' },
-  { slug: 'agentic-pm', name: 'Agentic PM', tagline: 'Managing AI systems end-to-end.', cover_color: '#25143a', accent_color: '#c89df5', chapter_count: 6, est_minutes: 80, difficulty: 'hard' },
-  { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#301a0a', accent_color: '#f5a76c', chapter_count: 5, est_minutes: 60, difficulty: 'medium' },
+  { slug: 'product-sense', name: 'Product Sense', tagline: 'Developing taste and judgment.', cover_color: '#152e20', accent_color: '#8ed4a8', chapter_count: 7, est_minutes: 75, difficulty: 'medium' },
+  { slug: 'agentic-pm', name: 'Agentic PM', tagline: 'Managing AI systems end-to-end.', cover_color: '#102418', accent_color: '#6ec48e', chapter_count: 6, est_minutes: 80, difficulty: 'hard' },
+  { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#1a3022', accent_color: '#a0d8b8', chapter_count: 5, est_minutes: 60, difficulty: 'medium' },
 ] as const
 
 const PRIMARY_PATHS = [
@@ -83,8 +85,8 @@ const PRIMARY_PATHS = [
     body: 'Run a Hatch-led mock interview across product, systems, data, SQL, and coding.',
     href: '/live-interviews',
     icon: 'graphic_eq',
-    accent: '#6d4cc2',
-    bg: 'linear-gradient(135deg, #ecdeff 0%, #f4efe7 100%)',
+    accent: '#3a6e4a',
+    bg: 'linear-gradient(135deg, #cfe3d3 0%, #f5f1ea 100%)',
     art: 'interview',
     tooltip: 'Simulate live pressure with Hatch asking follow-ups and scoring your interview moves.',
   },
@@ -93,20 +95,21 @@ const PRIMARY_PATHS = [
     body: 'Follow a sequenced plan instead of browsing from scratch.',
     href: '/explore/plans',
     icon: 'route',
-    accent: '#c9933a',
-    bg: 'linear-gradient(135deg, #f3e2b9 0%, #f8f0dc 100%)',
+    accent: '#2e5e40',
+    bg: 'linear-gradient(135deg, #b8d4bf 0%, #f5f1ea 100%)',
     art: 'plans',
     tooltip: 'Let Hatch sequence a path across disciplines based on your role and current FLOW profile.',
   },
 ] as const
 
+// Single forest-green accent family — tint/lightness varies by index, not hue.
 const DOMAIN_THEMES = [
-  { bg: 'linear-gradient(135deg, #dfe7e1 0%, #f7efe2 100%)', accent: '#4a7c59', soft: 'rgba(74,124,89,0.14)' },
-  { bg: 'linear-gradient(135deg, #e1ecff 0%, #f7efe2 100%)', accent: '#3b6ed4', soft: 'rgba(59,110,212,0.13)' },
-  { bg: 'linear-gradient(135deg, #f3e2b9 0%, #fbf3df 100%)', accent: '#c9933a', soft: 'rgba(201,147,58,0.15)' },
-  { bg: 'linear-gradient(135deg, #ecdeff 0%, #f7efe2 100%)', accent: '#7c5fd8', soft: 'rgba(124,95,216,0.13)' },
-  { bg: 'linear-gradient(135deg, #d9efe6 0%, #f7efe2 100%)', accent: '#2f8b74', soft: 'rgba(47,139,116,0.13)' },
-  { bg: 'linear-gradient(135deg, #ffe1d2 0%, #f7efe2 100%)', accent: '#c66a3b', soft: 'rgba(198,106,59,0.13)' },
+  { bg: 'linear-gradient(135deg, #dfe7e1 0%, #f5f1ea 100%)', accent: '#4a7c59', soft: 'rgba(74,124,89,0.14)' },
+  { bg: 'linear-gradient(135deg, #cfe3d3 0%, #f5f1ea 100%)', accent: '#3a6e4a', soft: 'rgba(58,110,74,0.13)' },
+  { bg: 'linear-gradient(135deg, #c4dbc9 0%, #f5f1ea 100%)', accent: '#2f6040', soft: 'rgba(47,96,64,0.13)' },
+  { bg: 'linear-gradient(135deg, #b8d4bf 0%, #f5f1ea 100%)', accent: '#2e5e40', soft: 'rgba(46,94,64,0.13)' },
+  { bg: 'linear-gradient(135deg, #e8f2eb 0%, #f5f1ea 100%)', accent: '#5d9070', soft: 'rgba(93,144,112,0.13)' },
+  { bg: 'linear-gradient(135deg, #d5e8da 0%, #f5f1ea 100%)', accent: '#3e7450', soft: 'rgba(62,116,80,0.13)' },
 ] as const
 
 export default async function ExplorePage() {
@@ -214,23 +217,18 @@ export default async function ExplorePage() {
   const topDomains = domains.filter(d => (d.challenge_count ?? 0) >= 1).slice(0, 6)
 
   return (
-    <main className="animate-fade-in-up relative isolate mx-auto max-w-[1240px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
+    <main className="animate-fade-in-up relative isolate mx-auto max-w-[1440px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
       <ExplorePageBackdrop />
-
-      <AppBreadcrumbs
-        className="relative mb-5"
-        items={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Explore' },
-        ]}
-      />
 
       <header data-tour-target="explore-hero" className="relative mb-8 grid overflow-hidden rounded-[26px] border border-outline-variant/35 bg-surface-container-low/85 p-5 shadow-[0_24px_70px_-58px_rgba(46,50,48,0.7)] backdrop-blur-sm sm:p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
         <ExploreHeroPattern />
         <div className="relative">
-          <h1 className="font-headline text-[36px] font-bold leading-tight text-on-surface sm:text-[44px]">
-            Explore
-          </h1>
+          <div className="flex items-center gap-3">
+            <HatchGlyph size={40} state="idle" className="shrink-0 text-primary" />
+            <h1 className="font-headline text-[36px] font-bold leading-tight text-on-surface sm:text-[44px]">
+              Explore
+            </h1>
+          </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <MetaChip icon="menu_book" label={`${guidesCount} guides`} />
             {totalAutopsyHubs > 0 && <MetaChip icon="troubleshoot" label={`${totalAutopsyHubs} autopsy hubs`} />}
@@ -246,22 +244,22 @@ export default async function ExplorePage() {
           <Link
             href={personalisedPlan ? `/explore/plans/${personalisedPlan.slug}` : '/challenges'}
             data-hatch-sound="open"
-            className="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border border-[#7ee099]/20 bg-[#1e3528] p-4 no-underline shadow-[0_22px_48px_-30px_rgba(30,53,40,0.85)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_62px_-34px_rgba(30,53,40,0.95)]"
+            className="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border border-on-hero-accent/20 bg-hero-forest p-4 no-underline shadow-[0_22px_48px_-30px_rgba(30,53,40,0.85)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_62px_-34px_rgba(30,53,40,0.95)]"
           >
             <DarkPathTexture accent="#7ee099" />
             <PathMiniArt kind="plans" accent="#7ee099" className="absolute -right-4 -bottom-6 h-24 w-32 opacity-30 transition-transform duration-500 group-hover:scale-105" />
             <div className="relative min-w-0">
-              <div className="font-label text-[11px] font-bold uppercase tracking-[0.10em] text-[#9ee0b8]">
+              <div className="font-label text-[11px] font-bold uppercase tracking-[0.10em] text-on-hero-accent-soft">
                 {personalisedPlan ? 'Current plan' : 'Start here'}
               </div>
-              <div className="mt-1 truncate font-headline text-base font-bold text-[#f3ede0]">
+              <div className="mt-1 truncate font-headline text-base font-bold text-on-hero">
                 {personalisedPlan?.title ?? 'Find a practice rep'}
               </div>
-              <div className="mt-1 text-[11px] font-semibold text-[#f3ede0]/55">
+              <div className="mt-1 text-[11px] font-semibold text-on-hero/55">
                 {personalisedPlan ? 'Continue where you left off' : 'Hatch will adapt as you practice'}
               </div>
             </div>
-            <span className="material-symbols-outlined relative shrink-0 text-[20px] text-[#7ee099] transition-transform group-hover:translate-x-0.5">
+            <span className="material-symbols-outlined relative shrink-0 text-[20px] text-on-hero-accent transition-transform group-hover:translate-x-0.5">
               arrow_forward
             </span>
           </Link>
@@ -327,10 +325,10 @@ function ExplorePageBackdrop() {
       <svg className="absolute left-1/2 top-0 h-[460px] w-[1100px] -translate-x-1/2 opacity-[0.18]" viewBox="0 0 1100 460" fill="none">
         <path d="M56 216 C186 118, 302 316, 458 180 S752 80, 1032 220" stroke="#4a7c59" strokeWidth="1.5" strokeDasharray="8 12" />
         <path d="M38 312 C202 188, 356 388, 532 246 S802 140, 1068 294" stroke="#c9933a" strokeWidth="1.2" strokeDasharray="5 13" />
-        <path d="M154 96 C300 34, 380 188, 516 122 S764 20, 942 92" stroke="#3b6ed4" strokeWidth="1" strokeDasharray="4 14" />
+        <path d="M154 96 C300 34, 380 188, 516 122 S764 20, 942 92" stroke="#2e5e40" strokeWidth="1" strokeDasharray="4 14" />
         <circle cx="178" cy="152" r="5" fill="#4a7c59" />
         <circle cx="704" cy="96" r="5" fill="#c9933a" />
-        <circle cx="940" cy="238" r="5" fill="#3b6ed4" />
+        <circle cx="940" cy="238" r="5" fill="#2e5e40" />
       </svg>
     </div>
   )
@@ -343,7 +341,7 @@ function ExploreHeroPattern() {
       <path d="M92 52 H524 M92 92 H424 M92 132 H560 M92 172 H380" stroke="#2e3230" strokeWidth="1" strokeDasharray="4 10" opacity="0.36" />
       <rect x="388" y="50" width="86" height="60" rx="16" fill="#4a7c59" opacity="0.12" />
       <rect x="468" y="132" width="72" height="72" rx="18" fill="#c9933a" opacity="0.12" />
-      <circle cx="302" cy="110" r="34" fill="#3b6ed4" opacity="0.10" />
+      <circle cx="302" cy="110" r="34" fill="#2e5e40" opacity="0.10" />
     </svg>
   )
 }
@@ -478,14 +476,14 @@ function ModuleCard({ module, index }: {
         >
           {DIFFICULTY_LABELS[coerceDifficulty(module.difficulty) ?? 'easy']}
         </span>
-        <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-[#f3ede0]">
+        <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-on-hero">
           {module.name}
         </span>
-        <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-[#f3ede0]/65">
+        <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-on-hero/65">
           {module.tagline}
         </span>
       </span>
-      <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-[#f3ede0]/55">
+      <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-on-hero/55">
         <span>{module.chapter_count} chapters · {module.est_minutes} min</span>
         <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5" style={{ color: module.accent_color }}>
           arrow_forward
@@ -557,7 +555,7 @@ function DomainRow({ domain, index }: { domain: DomainWithProgress; index: numbe
 
   return (
     <Link
-      href={`/domains/${domain.slug}`}
+      href={`/explore/domains/${domain.slug}`}
       data-hatch-sound="open"
       className="animate-fade-in-up group relative flex min-h-[112px] items-center gap-3 overflow-hidden rounded-xl border border-outline-variant/35 p-4 no-underline shadow-[0_16px_38px_-32px_rgba(46,50,48,0.72)] ring-1 ring-white/35 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_26px_52px_-34px_rgba(46,50,48,0.82)]"
       style={{ background: theme.bg, animationDelay: `${index * 55}ms` }}
@@ -774,11 +772,7 @@ function AskedAtChallengeRow({ challenge, index, accent }: {
 }
 
 function getCompanyDisplayName(company: string) {
-  return getCompanyLabel(company) ?? company
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+  return getCompanyLabel(company) ?? formatCompany(company)
 }
 
 function getCompanyMark(label: string) {
@@ -791,13 +785,14 @@ function getCompanyMark(label: string) {
 }
 
 function getCompanyVisual(company: string) {
+  // Single forest-green family — six tint steps so adjacent companies look distinct.
   const palette = [
     { accent: '#4a7c59', soft: 'rgba(74,124,89,0.10)' },
-    { accent: '#7a5c2e', soft: 'rgba(201,147,58,0.13)' },
-    { accent: '#3b6ed4', soft: 'rgba(59,110,212,0.10)' },
-    { accent: '#6d4cc2', soft: 'rgba(109,76,194,0.10)' },
-    { accent: '#2f8b74', soft: 'rgba(47,139,116,0.10)' },
-    { accent: '#c66a3b', soft: 'rgba(198,106,59,0.11)' },
+    { accent: '#3a6e4a', soft: 'rgba(58,110,74,0.10)' },
+    { accent: '#2e5e40', soft: 'rgba(46,94,64,0.10)' },
+    { accent: '#5d9070', soft: 'rgba(93,144,112,0.10)' },
+    { accent: '#2f6040', soft: 'rgba(47,96,64,0.10)' },
+    { accent: '#3e7450', soft: 'rgba(62,116,80,0.10)' },
   ]
   const hash = [...company].reduce((sum, char) => sum + char.charCodeAt(0), 0)
 

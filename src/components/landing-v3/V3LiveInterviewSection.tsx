@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import Image from 'next/image'
 import { Code2, MessageSquareText, Mic2, PenTool, Play, Sparkles } from 'lucide-react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe'
 
 const INTRO_AUDIO_SRC = '/landing-v3/live-interviews/hatch-welcome.mp3'
 const INTRO_SESSION_KEY = 'v3LiveInterviewIntroPlayed'
@@ -35,7 +36,7 @@ export function V3LiveInterviewSection() {
   const [isActive, setIsActive] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [audioPlayed, setAudioPlayed] = useState(false)
-  const shouldReduce = useReducedMotion()
+  const shouldReduce = useReducedMotionSafe()
 
   const playIntro = useCallback(
     async ({ force = false }: { force?: boolean } = {}) => {

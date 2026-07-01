@@ -11,8 +11,8 @@ export interface PagePrompt {
 export const PAGE_PROMPTS: PagePrompt[] = [
   { pattern: /^\/workspace\/challenges\//, message: 'Need a nudge on your approach?' },
   { pattern: /^\/challenges\/[^/]+\/feedback/, message: 'Want to dig into your feedback?' },
-  { pattern: /^\/explore\/modules\//, message: 'Want me to unpack this chapter?' },
-  { pattern: /^\/learn\//, message: 'Want me to unpack this chapter?' },
+  { pattern: /^\/explore\/modules\//, message: 'Want me to walk you through this chapter?' },
+  { pattern: /^\/learn\//, message: 'Want me to walk you through this chapter?' },
   { pattern: /^\/explore\/plans\//, message: 'Thinking about this plan? I can tell you if it fits your gaps.' },
   { pattern: /^\/explore\/domains\//, message: 'Want to know which challenges here will help you most?' },
   { pattern: /^\/explore/, message: 'Not sure where to start? Tell me your role.' },
@@ -20,6 +20,10 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   { pattern: /^\/live-interviews/, message: 'Tell me the company, role, or discipline you want to practice.' },
   { pattern: /^\/progress/, message: 'Want to understand what your numbers actually mean?' },
   { pattern: /^\/dashboard/, message: 'Ready to pick your first challenge today?' },
+  { pattern: /^\/cohort/, message: 'Curious how your week compares? I can point out where to close the gap.' },
+  { pattern: /^\/settings/, message: 'Tuning your setup? I can explain what any of these settings change.' },
+  { pattern: /^\/simulation/, message: 'Mid-interview nerves are normal. Ask me anything between questions.' },
+  { pattern: /^\/notes/, message: 'Your notes feed my coaching. Want me to pull a theme out of them?' },
 ]
 
 export function getPagePrompt(pathname: string): string {

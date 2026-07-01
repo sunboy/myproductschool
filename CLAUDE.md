@@ -44,6 +44,18 @@ The script exits 0 on green, 1 on red. It validates 13 checks across env shape a
 
 For test-mode hygiene (CI / dev), run `scripts/audit/audit-stripe-config.ts` — same idea but enforces sk_test_ shape.
 
+## Changing limits, pricing, and promotions
+
+Operator runbook: [`docs/runbooks/limits-and-pricing.md`](./docs/runbooks/limits-and-pricing.md). Quick reference:
+
+| Want to... | Do this | Deploy? |
+|---|---|---|
+| Change any limit (free or Pro) | Edit it in `/admin/paywall-config` | No — enforcement AND all pricing/paywall copy update within ~60s |
+| Run a promo | `npx tsx scripts/billing/create-promo.ts --code LAUNCH50 --percent 50 --duration repeating --months 3` (point `ENV_PATH` at the prod env file for live mode) | No — code works at checkout immediately (`allow_promotion_codes` is on) |
+| Permanently change price | New price in Stripe Dashboard → swap `STRIPE_PRICE_MONTHLY`/`_ANNUAL` on Vercel → redeploy | Yes |
+
+How it works: the `plan_limits` table is the single source of truth. Enforcement (`checkUsageLimit`) and all user-facing copy (pricing page, comparison table, paywall gates, upgrade/limit modals) read it live via `getPublicPlanLimits` (server, 60s cache), `usePlanLimits` (client hook), and `GET /api/billing/limits`. **Never hardcode limit numbers in user-facing copy** — import from `src/lib/usage/plan-limits-shared.ts` (client-safe defaults) or thread the live values through. dev and prod share the Supabase DB, so a limit change is live everywhere at once; nothing reverts automatically after a promo — set a reminder to undo temporary bumps.
+
 ## Claude Code Analytics — infra & scaling
 
 The analytics feature runs **one pinned Cloud Run instance per active session**
@@ -93,7 +105,7 @@ These are the 24 frozen "Overhaul:" screens that define the v2 UI. Always fetch 
 | `d838e20649dc44abbd5883e47e590a7e` | Skill Ladder | `src/app/(app)/progress/skill-ladder/page.tsx` |
 | `b724c0423e5e45f5ab5281e90f33e04d` | Weekly Cohort Leaderboard | `src/app/(app)/cohort/page.tsx` |
 | `ef42e52bf4c24614b6315ffb88aff85a` | Settings | `src/app/(app)/settings/page.tsx` |
-| `aa9e904f90ac4bdbb5b399f3c6f60683` | Paywall Gate | `src/components/paywalls/ProPaywallGate.tsx` |
+| `aa9e904f90ac4bdbb5b399f3c6f60683` | Paywall Gate | `src/components/paywalls/PaywallModal.tsx` (single unified paywall/upgrade modal) |
 | `860565a797b74aeab2a8419b15412d8b` | Shareable Score Card | `src/app/(workspace)/challenges/[id]/share/page.tsx` |
 | `6b27d3cac3984d3181812883626d4f3a` | Streak Recovery Modal | `src/components/modals/StreakRecoveryModal.tsx` |
 
@@ -155,7 +167,7 @@ Architecture:
 - **Generic engine**: `src/lib/tours/shepherdEngine.ts` + `src/components/shell/TourRunner.tsx` (cursor in sessionStorage, per-route rebuild, cross-page navigation). Driven by a `TourConfig` (`src/lib/tours/types.ts`).
 - **Main intro tour**: `src/lib/tours/mainTour.ts`, 9 steps: a centered "Meet Hatch" intro (anchorless, plays the large waving `MaskoAvatar` mascot) then 6 areas (dashboard → explore → autopsies → study plans → practice → interviews → dashboard wrap). Auto-starts once after onboarding (`profiles.has_seen_hatch_intro`), or via the TopNav `tour` button / the "Take me around" button on the calibration results screen. Final step has a "Start a rep" CTA → `/challenges`. Driven by `src/components/shell/IntroTourController.tsx` (mounted in `(app)/layout.tsx`).
 - **Interview tour**: `src/lib/tours/interviewTour.ts`, single-route, fires on first `interviewPhase === 'active'` in `src/app/(app)/live-interviews/[id]/page.tsx` (localStorage `interview-tour:v1:done`). Waits for Hatch's opening transcript turn (with a 3.5s fallback) so it never talks over the intro. Step list is a superset across discipline modes; the engine auto-skips steps whose anchor is absent (canvas/editor by mode, transcript/FLOW below `lg`).
-- **Popovers**: most steps render the real `HatchGlyph` in the header (mounted via `react-dom/client` `createRoot` on Shepherd's `show` hook); a `mascot: true` step mounts the large `MaskoAvatar` video in the body instead. An anchorless step (`anchor` omitted) renders **centered** (no green ring). A step's optional `primaryCta` (`TourStep`) replaces Finish and navigates after ending. The highlight is a **pulsing green ring** on the target (`useModalOverlay: false`, no dimming mask). `prefers-reduced-motion` drops smooth scroll + ring pulse.
+- **Popovers**: most steps render the real `HatchGlyph` in the header (mounted via `react-dom/client` `createRoot` on Shepherd's `show` hook); a `mascot: true` step mounts the large `MaskoAvatar` video in the body instead. An anchorless step (`anchor` omitted) renders **centered**. A step's optional `primaryCta` (`TourStep`) replaces Finish and navigates after ending. There is **no target highlight ring** (`useModalOverlay: false`, no dimming mask) — the popover and its arrow point at the target on their own. The old pulsing-green ring read as a stray floating "pointer" and was removed in `shepherd-theme.css`.
 - **Anchors**: dashboard reuses `data-hatch-target`; hubs use `data-tour-target` on the sharpest "look here" element (Explore path cards, Practice discipline tabs, hub heroes); interview reuses existing `data-testid` where available.
 - **Triggers**: window events `start-intro-tour` (main) and `start-interview-tour` (interview).
 
@@ -519,6 +531,12 @@ All Hatch AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropi
 This is pre-existing design (introduced in commit `47872c1`). Always use `quality` for scoring, never derive points from a boolean.
 
 ## Content Authoring Pipeline
+
+**Challenge description standard:** every published challenge description must follow [`docs/CHALLENGE_DESCRIPTION_SPEC.md`](./docs/CHALLENGE_DESCRIPTION_SPEC.md) (per-type templates: algorithm gets `## Examples` from real test cases + `## Constraints`; sql gets `## Output`; canvas gets `## Requirements`/`## Scale`; flow gets single-ask questions). Enforced by `validateDescription` (`src/lib/content/description-spec.ts`) at commit time (`scripts/commit-interview-seeds.ts`) and in the FLOW validator. Audit the live DB anytime: `npx tsx --env-file=.env.local scripts/lint-descriptions.ts`.
+
+**Rewrite batch artifacts:** `scripts/content/rewrites/` holds the local batch files from the 2026-06-10 description rewrite (exports + sub-agent outputs + `checkpoint.json` of applied ids). Gitignored on purpose; do not commit or delete. Regenerate exports anytime with `scripts/export-descriptions-for-rewrite.ts`; apply with `scripts/apply-description-rewrites.ts` (originals are backed up in each row's `metadata._legacy_scenario`).
+
+**Grader integrity check:** before publishing coding/SQL content, run `npx tsx --env-file=.env.local scripts/audit/export-coding-content.ts && python3 scripts/audit/validate-challenge-content.py`. It executes every reference solution against its own test cases, replicating the Judge0 harness and the sql.js worker (including per-test `setup_override`). A failure means the challenge cannot pass its own grader. Known import pitfalls it catches: `date('now')` queries against fixed seed data, all-null `expected` graders, blanket `compare_mode: "set"`, missing `input_types` on tree/linked-list problems, `is_hidden`/missing `match_mode` keys.
 
 **Skill:** Use `hackproduct-tech-content` (Skill tool) for any Learn module authoring — writing, proofreading, image enrichment, or upsert work. The skill contains the full chapter format, slug rules, style bans, diagram conventions, Codex invocation, and upsert commands.
 

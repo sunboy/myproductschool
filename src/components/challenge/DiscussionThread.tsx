@@ -278,7 +278,7 @@ export function DiscussionThread({
   )
 
   const replyInput = !isHidden && showReply && (
-    <div className="mt-3 ml-4 border-l-2 border-outline-variant/30 pl-4 space-y-2">
+    <div className="mt-3 ml-4 pl-4 space-y-2">
       <textarea
         className="w-full text-sm bg-surface-container-low rounded-lg border border-outline-variant/40 p-3 resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/60"
         rows={3}
@@ -316,7 +316,7 @@ export function DiscussionThread({
   )
 
   const repliesList = !isHidden && replies.length > 0 && (
-    <div className="mt-3 ml-4 border-l-2 border-outline-variant/20 pl-4 space-y-3">
+    <div className="mt-3 ml-4 pl-4 space-y-3">
       {replies.map(r => {
         const replyName = r.display_name || r.username || 'Anonymous'
         const isHatchReply = r.display_name?.startsWith('Hatch')
@@ -347,9 +347,9 @@ export function DiscussionThread({
   )
 
   const frameClassName = displayAsOP
-    ? 'bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-primary'
+    ? 'bg-surface-container-low rounded-xl p-5 editorial-shadow'
     : displayAsExpertPick
-      ? 'bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-tertiary'
+      ? 'bg-surface-container-low rounded-xl p-5 editorial-shadow'
       : 'bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20'
 
   return (

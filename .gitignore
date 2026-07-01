@@ -103,3 +103,10 @@ seeds/chillinterview/
 docs/notes/ad-creatives/*/*.png
 docs/notes/ad-creatives/*/*.webm
 docs/notes/ad-creatives/*/*.mp4
+
+# Description-rewrite batch artifacts (reproducible via scripts/export-descriptions-for-rewrite.ts)
+scripts/content/rewrites/
+scripts/content/solutions/
+
+# Campaign ad creatives — marketing deliverables uploaded to ad platforms, not app-served assets
+public/hackproduct-marketing/

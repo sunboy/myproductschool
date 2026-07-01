@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { InterviewPaywallGate } from '@/components/paywalls/InterviewPaywallGate'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { useIsAtLimit, useUsage } from '@/context/UsageContext'
-import { useUpgrade } from '@/hooks/useUpgrade'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
@@ -33,7 +32,6 @@ export default function StartInterviewButton({
   label,
 }: StartInterviewButtonProps) {
   const router = useRouter()
-  const { startUpgrade } = useUpgrade()
   const [loading, setLoading] = useState(false)
   const [showPaywall, setShowPaywall] = useState(false)
   const [paywallData, setPaywallData] = useState<{ used: number; limit: number } | null>(null)
@@ -83,6 +81,12 @@ export default function StartInterviewButton({
 
       if (!res.ok) throw new Error('Failed to start interview')
       const data = await res.json()
+      // Starting an interview consumes an interview rep server-side
+      // (recordUsageEvent in /api/live-interview/start), so refresh the usage
+      // surfaces now. profile-stats-updated re-pulls SessionContext (which backs
+      // useUsage / the at-limit check) and the usage pill, which both listen for
+      // it; the pill no longer polls.
+      window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'interview-start' } }))
       setSessionId(data.sessionId)
       // Cache company/role/discipline for modal display and URL params
       if (data.companyName) setModalCompany(data.companyName)
@@ -290,19 +294,18 @@ export default function StartInterviewButton({
 
       {mounted && readyModal ? createPortal(readyModal, document.body) : null}
 
-      {showPaywall && paywallData && (
-        mounted
-          ? createPortal(
-              <InterviewPaywallGate
-                used={paywallData.used}
-                limit={paywallData.limit}
-                onUpgrade={startUpgrade}
-                onDismiss={() => setShowPaywall(false)}
-              />,
-              document.body
-            )
-          : null
-      )}
+      {mounted
+        ? createPortal(
+            <PaywallModal
+              open={showPaywall}
+              feature="interviews"
+              used={paywallData?.used}
+              limit={paywallData?.limit}
+              onClose={() => setShowPaywall(false)}
+            />,
+            document.body
+          )
+        : null}
     </>
   )
 }

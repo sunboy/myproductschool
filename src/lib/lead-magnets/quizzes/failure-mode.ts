@@ -10,7 +10,7 @@ import {
   deriveArchetype,
   weakestMoveOf,
   type MoveScores,
-} from '@/lib/calibration/derive'
+} from '@/lib/calibration/deriveArchetype'
 
 // Map calibration quality → instant-player tier for Hatch reactions.
 const QUALITY_TO_TIER: Record<string, 'best' | 'good' | 'surface' | 'wrong'> = {

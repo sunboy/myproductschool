@@ -1,6 +1,6 @@
 export default function ExploreLoading() {
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-7 pb-24 sm:px-6 lg:px-8" aria-busy="true">
+    <div className="mx-auto max-w-[1440px] px-4 py-7 pb-24 sm:px-6 lg:px-8" aria-busy="true">
       {/* Hero header */}
       <div className="mb-8 h-44 animate-pulse rounded-[26px] bg-surface-container-low" />
       {/* Three-up row */}

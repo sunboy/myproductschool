@@ -27,14 +27,6 @@ function cleanEnv(value: string | undefined) {
   return trimmed || null
 }
 
-export function isTurnstileConfigured() {
-  return Boolean(cleanEnv(process.env.TURNSTILE_SECRET_KEY))
-}
-
-export function isTurnstileRequired() {
-  return process.env.NODE_ENV === 'production' || isTurnstileConfigured()
-}
-
 function allowsTurnstileE2eFallback() {
   return process.env.TURNSTILE_E2E_FALLBACK === 'true'
 }
@@ -53,9 +45,12 @@ export async function verifyTurnstileToken({
     return { ok: true, skipped: true }
   }
 
+  // Fail open when no secret is configured: Turnstile is disabled until keys
+  // are provisioned (Cloudflare widget + TURNSTILE_SECRET_KEY +
+  // NEXT_PUBLIC_TURNSTILE_SITE_KEY). Setting the secret re-arms verification.
   if (!secret) {
     if (process.env.NODE_ENV === 'production') {
-      return { ok: false, error: 'turnstile_not_configured' }
+      console.warn('[turnstile] TURNSTILE_SECRET_KEY not set; skipping bot verification')
     }
     return { ok: true, skipped: true }
   }

@@ -50,31 +50,113 @@ export async function mintSessionVirtualKey(
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
   const budgetUsd = parseFloat(process.env.CC_SESSION_BUDGET_USD ?? '0.50')
 
-  const res = await fetch(`${baseUrl}/key/generate`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${master}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      key_alias: `cc-${sessionId}`,
-      max_budget: budgetUsd,
-      // Hard duration so a key can't be reused indefinitely; matches session TTL.
-      duration: `${Math.max(60, ttlSeconds)}s`,
-      models,
-      metadata: { feature: 'claude_code_analytics', session_id: sessionId },
-    }),
-  })
+  // Retry with backoff: the gateway is minScale=0 and its Cloud SQL may have just
+  // been woken on demand (see cloud-sql-admin), so the FIRST key/generate can hit
+  // a cold gateway whose Prisma connection to the fresh DB isn't ready yet (500 /
+  // connection error). A couple of retries absorb that without failing the session.
+  // A terminal error (4xx client error) is thrown directly and NOT retried; only
+  // transient failures (5xx, network) fall through to the retry loop. (A plain
+  // `throw` inside the try would be swallowed by the catch and retried 4×.)
+  class TerminalKeyError extends Error {}
 
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '')
-    throw new Error(`LiteLLM key/generate failed (${res.status}): ${detail.slice(0, 300)}`)
+  let lastErr: unknown
+  // Each attempt has its OWN timeout: a cold gateway accepts the TCP connection
+  // but never responds while LiteLLM boots, so a fetch with no timeout HANGS for
+  // the full ~40s cold-boot and eats the route's 60s budget. A 9s per-attempt
+  // timeout + retries means we re-probe a booting gateway every ~9s and connect
+  // the moment it's up, instead of one long hang. 5 attempts × (9s + backoff)
+  // covers a ~40-50s cold boot.
+  const ATTEMPT_TIMEOUT_MS = parseInt(process.env.CC_MINT_ATTEMPT_TIMEOUT_MS ?? '9000', 10)
+  const keyAlias = `cc-${sessionId}`
+  // One-shot guard so a duplicate-alias recovery can't loop: provisionSession can
+  // run more than once per sessionId (the provision route is killed at Vercel's 60s
+  // ceiling AFTER /key/generate persisted the key in LiteLLM but BEFORE the host is
+  // saved, then the client retries). The retry re-mints the SAME alias, which newer
+  // LiteLLM rejects with 400 from _enforce_unique_key_alias. We delete the orphaned
+  // alias once and regenerate — the stale key has ~$0 spend (it was never handed to
+  // a live container), and the alias MUST stay `cc-<sessionId>` because spend
+  // tracking parses it via alias.slice(3). (Without this, the 400 was fatal and the
+  // session stuck in `provisioning` → "Sandbox took too long".)
+  let recoveredDup = false
+  for (let attempt = 0; attempt < 5; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * attempt))
+    try {
+      const res = await fetch(`${baseUrl}/key/generate`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key_alias: keyAlias,
+          max_budget: budgetUsd,
+          // Hard duration so a key can't be reused indefinitely; matches session TTL.
+          duration: `${Math.max(60, ttlSeconds)}s`,
+          models,
+          metadata: { feature: 'claude_code_analytics', session_id: sessionId },
+        }),
+        signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
+      })
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '')
+        // 5xx / connection issues are transient (cold gateway/DB) → retry. 4xx is
+        // a real client error (bad master key, bad model) → fail fast.
+        if (res.status >= 500) {
+          lastErr = new Error(`LiteLLM key/generate ${res.status}: ${detail.slice(0, 200)}`)
+          continue
+        }
+        // Duplicate-alias 400: a prior (killed) provision already created this
+        // session's key. Delete it ONCE, then regenerate against the freed alias.
+        if (
+          res.status === 400 &&
+          !recoveredDup &&
+          /alias/i.test(detail) &&
+          /(exist|already|unique)/i.test(detail)
+        ) {
+          recoveredDup = true
+          await fetch(`${baseUrl}/key/delete`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key_aliases: [keyAlias] }),
+            signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
+          }).catch(() => {}) // best-effort; the regenerate is the source of truth
+          continue
+        }
+        throw new TerminalKeyError(`LiteLLM key/generate failed (${res.status}): ${detail.slice(0, 300)}`)
+      }
+      const data = (await res.json()) as { key?: string }
+      if (!data.key) throw new TerminalKeyError('LiteLLM key/generate returned no key')
+      return { key: data.key, baseUrl, budgetUsd }
+    } catch (err) {
+      // Don't retry a client-side / contract error — surface it immediately.
+      if (err instanceof TerminalKeyError) throw err
+      lastErr = err
+      // Network-level throw (gateway still cold) — retry unless it's the last try.
+    }
   }
+  throw lastErr ?? new Error('LiteLLM key/generate failed after retries')
+}
 
-  const data = (await res.json()) as { key?: string }
-  if (!data.key) throw new Error('LiteLLM key/generate returned no key')
-
-  return { key: data.key, baseUrl, budgetUsd }
+/**
+ * Fire-and-forget warm-up ping. The gateway is minScale=0; the first real request
+ * (key mint) otherwise eats the full cold-boot. Calling this when a session STARTS
+ * — before the user has finished reading the workspace and the provision step runs
+ * — lets the container boot in parallel, so the later mint hits a warm gateway.
+ * Never throws; a failure here is harmless (the mint's own retries are the
+ * backstop). Returns immediately; do not await for correctness.
+ */
+export async function warmGateway(): Promise<void> {
+  if (!isGatewayConfigured()) return
+  const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
+  const master = process.env.LLM_GATEWAY_MASTER_KEY!
+  try {
+    // /health/readiness boots the container + checks its DB connection — the exact
+    // dependency the mint needs. Short timeout: we only need to TRIGGER the boot.
+    await fetch(`${baseUrl}/health/readiness`, {
+      headers: { Authorization: `Bearer ${master}` },
+      signal: AbortSignal.timeout(8000),
+    })
+  } catch {
+    // Cold gateway won't answer in 8s — that's fine, the ping still triggered the
+    // boot. Swallow everything.
+  }
 }
 
 export interface KeySpend {

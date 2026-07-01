@@ -9,46 +9,56 @@ type Screen = 'intro' | 'step1' | 'step2' | 'step3'
 
 const SCREENS: Screen[] = ['intro', 'step1', 'step2', 'step3']
 
-const SCREEN_CONTENT: Record<Screen, {
+type ScreenContent = {
   title: string
   body: string
   icon: string
   hatchState: 'idle' | 'listening' | 'reviewing' | 'speaking' | 'celebrating'
-}> = {
-  intro: {
-    title: 'Drive a real analytics session',
-    body: 'This is a live Claude Code terminal connected to BigQuery. No scripts, no mock data. You type, Claude runs the queries and finds the answer.',
-    icon: 'terminal',
-    hatchState: 'idle',
-  },
-  step1: {
-    title: 'Work through four steps',
-    body: 'The stepper at the top shows where you are. Each step has a clear goal: connect the data, explore the drop, break it by segment, then write a skill that captures what you learned.',
-    icon: 'view_timeline',
-    hatchState: 'speaking',
-  },
-  step2: {
-    title: 'Use the prompts as a starting point',
-    body: 'The chips below the terminal suggest what to type next. Click one to load it into the terminal. Edit it before you run it — they are a starting point, not a script.',
-    icon: 'tips_and_updates',
-    hatchState: 'listening',
-  },
-  step3: {
-    title: 'Mark each step when you have an answer',
-    body: "When you find the answer for a step, paste it into the Objective card and mark it done. Hatch checks whether the finding is strong enough before you move on.",
-    icon: 'task_alt',
-    hatchState: 'reviewing',
-  },
+}
+
+// step1's copy is parameterized by the real arc length so the overlay never
+// promises "four steps" to a user whose difficulty produces eight.
+function screenContent(stepCount: number): Record<Screen, ScreenContent> {
+  const countWord = stepCount > 0 ? String(stepCount) : 'a few'
+  return {
+    intro: {
+      title: 'Drive a real analytics session',
+      body: 'This is a live Claude Code terminal connected to BigQuery. No scripts, no mock data. You type, Claude runs the queries and finds the answer.',
+      icon: 'terminal',
+      hatchState: 'idle',
+    },
+    step1: {
+      title: `Work through ${countWord} steps`,
+      body: 'The stepper at the top shows where you are. Each step has a clear goal: connect the data, explore the signal, break it by segment, then write a skill that captures what you learned.',
+      icon: 'view_timeline',
+      hatchState: 'speaking',
+    },
+    step2: {
+      title: 'Use the prompts as a starting point',
+      body: 'The chips below the terminal suggest what to type next. Click one to load it into the terminal. Edit it before you run it. They are a starting point, not a script.',
+      icon: 'tips_and_updates',
+      hatchState: 'listening',
+    },
+    step3: {
+      title: 'Mark each step when you have an answer',
+      body: "When you find the answer for a step, paste it into the Objective card and mark it done. Hatch checks whether the finding is strong enough before you move on.",
+      icon: 'task_alt',
+      hatchState: 'reviewing',
+    },
+  }
 }
 
 interface AnalyticsOnboardingOverlayProps {
   onDone: () => void
+  /** Number of steps in this session's arc (4 for beginner, 8 for advanced). */
+  stepCount?: number
 }
 
-export function AnalyticsOnboardingOverlay({ onDone }: AnalyticsOnboardingOverlayProps) {
+export function AnalyticsOnboardingOverlay({ onDone, stepCount = 0 }: AnalyticsOnboardingOverlayProps) {
   const [screenIdx, setScreenIdx] = useState(0)
+  const screenMap = screenContent(stepCount)
   const screen = SCREENS[screenIdx]
-  const content = SCREEN_CONTENT[screen]
+  const content = screenMap[screen]
   const isLast = screenIdx === SCREENS.length - 1
 
   function advance() {

@@ -39,7 +39,9 @@ self.onmessage = async ({ data }) => {
       const db = new SQL.Database()
 
       try {
-        db.run(baseSetupScript)
+        // A test case may carry its own dataset (setup_override) so different
+        // tests can probe different data shapes; falls back to the shared script.
+        db.run(tc.setup_override || baseSetupScript)
 
         const sqlResults = db.exec(userQuery)
 

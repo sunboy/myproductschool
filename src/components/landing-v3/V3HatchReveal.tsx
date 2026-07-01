@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
+import { motion, useMotionValue, useTransform } from 'framer-motion'
+import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe'
 
 const callouts = [
   {
@@ -24,7 +25,7 @@ const callouts = [
 
 export function V3HatchReveal() {
   const sectionRef = useRef<HTMLElement | null>(null)
-  const shouldReduce = useReducedMotion()
+  const shouldReduce = useReducedMotionSafe()
   const scrollProgress = useMotionValue(0)
 
   useEffect(() => {

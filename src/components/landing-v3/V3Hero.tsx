@@ -93,7 +93,7 @@ export function V3Hero() {
 
           <div className="hero-cta-row">
             <button type="button" className="btn btn-amber hero-cta" onClick={openSignup}>
-              Start training with Hatch <span aria-hidden>→</span>
+              Start free, no card needed <span aria-hidden>→</span>
             </button>
           </div>
 

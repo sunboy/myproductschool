@@ -35,8 +35,8 @@ function topicTip(challenge: { title?: string; move_tags?: string[]; prompt_text
   const movePhrases: Record<string, string> = {
     frame: 'how to frame ambiguous problems',
     list: 'how to break down complex systems',
-    weigh: 'how to evaluate trade-offs under uncertainty',
-    sell: 'how to communicate decisions to stakeholders',
+    optimize: 'how to evaluate trade-offs under uncertainty',
+    win: 'how to communicate decisions to stakeholders',
   }
   const movePhrase = move ? movePhrases[move] ?? 'product thinking' : 'product thinking'
   return `Start with ${title}. It gives you a clean ${discipline} rep on ${movePhrase}.`
@@ -46,10 +46,9 @@ function topicTip(challenge: { title?: string; move_tags?: string[]; prompt_text
 function moveTip(move: string, challengeTitle: string, weakestCompetency: string | null): string {
   const tips: Record<string, string> = {
     frame: `Practice defining the right problem before jumping to solutions.`,
-    list: `Work on breaking "${challengeTitle}" into its core components - this sharpens your List move.`,
-    weigh: `This is a great exercise in trade-off thinking - your Weigh move needs the most practice.`,
-    sell: `Focus on how you'd explain your reasoning to a stakeholder - that's your growth area.`,
-    win: `Use this to land a clear recommendation, success metric, and tradeoff.`,
+    list: `Work on breaking "${challengeTitle}" into its core components, this sharpens your List move.`,
+    optimize: `This is a great exercise in trade-off thinking. Your Optimize move needs the most practice.`,
+    win: `Focus on how you'd explain your reasoning to a stakeholder, then land a clear recommendation, success metric, and tradeoff.`,
   }
   if (weakestCompetency) {
     return `Use this next to work on ${weakestCompetency}. ${tips[move] ?? 'Keep the answer specific and action-oriented.'}`
@@ -68,10 +67,10 @@ function deriveHatchInsight(
   const moveEntry = moveLevels.find(m => m.move === weakestFlowMove)
   const level = moveEntry?.level ?? 1
   const moveLabels: Record<string, string> = {
-    frame: 'frame',
-    list: 'list',
-    weigh: 'weigh',
-    sell: 'sell',
+    frame: 'Frame',
+    list: 'List',
+    optimize: 'Optimize',
+    win: 'Win',
   }
   const label = moveLabels[weakestFlowMove] ?? weakestFlowMove
   return `Your ${label} move is at Level ${level}. This is the next useful rep.`

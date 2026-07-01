@@ -789,7 +789,7 @@ export default function WaitlistFlowPage() {
             Put FLOW to work<br />on a real challenge
           </h2>
           <p className="wf-body" style={{ fontSize: '1rem', color: 'rgba(14,27,21,.6)', lineHeight: 1.65, marginBottom: '2rem' }}>
-            Every HackProduct challenge runs you through all four moves - graded on how well you frame, list, weigh, and win. No multiple choice. No templates. Just your thinking, scored.
+            Every HackProduct challenge runs you through all four moves, graded on how well you frame, list, optimize, and win. No multiple choice. No templates. Just your thinking, scored.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
             <button className="wf-btn-primary" onClick={() => setWaitlistModal('FLOW')}>

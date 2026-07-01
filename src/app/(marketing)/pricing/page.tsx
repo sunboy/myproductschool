@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { buildMetadata } from '@/lib/seo/site'
 import { V3PageShell } from '@/components/landing-v3/V3PageShell'
+import { getPublicPlanLimits } from '@/lib/usage/public-limits'
 import { PricingClient } from './PricingClient'
 
 export const metadata: Metadata = buildMetadata({
@@ -17,10 +18,11 @@ export const metadata: Metadata = buildMetadata({
   ],
 })
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const limits = await getPublicPlanLimits()
   return (
     <V3PageShell>
-      <PricingClient />
+      <PricingClient limits={limits} />
     </V3PageShell>
   )
 }

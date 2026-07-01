@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useCallback, useRef } from 'react'
 
-export function ChallengeSearch({ total }: { total: number }) {
+export function ChallengeSearch({ total, className }: { total: number; className?: string }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -25,7 +25,7 @@ export function ChallengeSearch({ total }: { total: number }) {
   }
 
   return (
-    <div className="relative w-full sm:w-auto">
+    <div className={`relative w-full ${className ?? 'sm:w-auto'}`}>
       <span
         className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]"
         style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}

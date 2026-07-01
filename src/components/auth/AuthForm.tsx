@@ -12,6 +12,8 @@ import { consumeMagnetSource } from '@/lib/lead-magnets/utm'
 interface AuthFormProps {
   mode: 'login' | 'signup'
   redirectTo?: string
+  /** Archetype slug carried from the public /quiz/archetype CTA, claimed onto the new profile. */
+  archetype?: string
 }
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'magic'
@@ -124,7 +126,7 @@ function DisciplineSignalBoard() {
   )
 }
 
-export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
+export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormProps) {
   const [activeMode, setActiveMode] = useState<AuthMode>(initialMode)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -309,17 +311,29 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
 
       try {
         const magnetSource = consumeMagnetSource()
+        // Fresh signups with no explicit redirect go to /first-run (one role tap into
+        // a pre-warmed interview) instead of the dashboard. An explicit redirectTo — a
+        // pricing/checkout deep-link, or a /go/* magnet's post-signup CTA — still wins,
+        // so intent-to-pay and magnet-attributed users aren't diverted.
+        const dest = resolvedRedirectTo('/first-run')
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
           ...validation.data,
           turnstileToken,
           website,
-          redirectTo: `${siteOrigin()}/dashboard`,
+          // Route the email-confirmation link through /auth/callback so it commits
+          // the session AND forwards the user to their post-signup destination
+          // (e.g. a /pricing plan deep-link that resumes checkout), not just /dashboard.
+          redirectTo: `${siteOrigin()}/auth/callback?next=${encodeURIComponent(dest)}`,
+          // Best-effort claim of a /quiz/archetype result onto the new profile.
+          ...(archetype ? { archetype } : {}),
+          // Attribute the signup to the /go/* lead magnet that earned it, if any.
           ...(magnetSource ? { magnetSource } : {}),
         })
         if (data.hasSession) {
           play('success')
-          router.push('/dashboard')
-          router.refresh()
+          // Hard nav (like login) so the session cookie is committed before the proxy
+          // evaluates the destination, and so a plan deep-link resumes checkout.
+          window.location.href = dest
         } else {
           resetTurnstile()
           play('success')
@@ -426,15 +440,15 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
           <p
             className="font-body mt-3 max-w-[38ch] text-sm leading-relaxed text-white/55 sm:mt-4 sm:text-base md:text-white/45"
           >
-            Practice product sense, system design, SQL, and coding. Plus a live AI data analyst you drive with Claude Code.
+            Open a personalized daily brief for product sense, system design, SQL, coding, and the Analytics Lab.
           </p>
 
           {/* Feature bullets — desktop only */}
           <ul className="mt-10 hidden flex-col gap-3 min-[1200px]:flex">
             {[
-              'Drive a live AI data analyst on real data, using Claude Code',
-              'Product sense, system design, SQL, and coding in one place',
-              'Hatch coaches every answer and shows you the exact gap',
+              'Start with the rep Hatch thinks matters today',
+              'Move from autopsy reading to hands-on practice',
+              'Drive a live AI analyst on real data when you are ready',
             ].map(item => (
               <li key={item} className="flex items-center gap-3">
                 <span
@@ -513,8 +527,9 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
                 ) : (
                   <>
                     <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Email</label>
+                      <label htmlFor="auth-recovery-email" className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Email</label>
                       <input
+                        id="auth-recovery-email"
                         type="email"
                         value={email}
                         onChange={e => {
@@ -578,8 +593,9 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {activeMode === 'signup' && (
                     <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Name</label>
+                      <label htmlFor="auth-name" className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Name</label>
                       <input
+                        id="auth-name"
                         type="text"
                         value={name}
                         onChange={e => {
@@ -603,8 +619,9 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
                   )}
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Email</label>
+                    <label htmlFor="auth-email" className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Email</label>
                     <input
+                      id="auth-email"
                       type="email"
                       value={email}
                       onChange={e => {
@@ -619,9 +636,10 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Password</label>
+                    <label htmlFor="auth-password" className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Password</label>
                     <div className="relative">
                       <input
+                        id="auth-password"
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={e => {

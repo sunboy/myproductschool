@@ -8,6 +8,7 @@ import type { SessionEvent } from '@/lib/coding-grading/grader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
+import { calculateChallengeXp } from '@/lib/scoring/xp-calculator'
 import { withRoute } from '@/lib/api/withRoute'
 
 const TestResultSchema = z.object({
@@ -398,8 +399,20 @@ export const POST = withRoute(async (
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Grading succeeded - mark attempt completed
-  await supabase
+  const admin = createAdminClient()
+
+  // Atomically claim this completion. The conditional flip (status != 'completed')
+  // is the single gate that decides whether THIS request owns the completion:
+  // - two concurrent submits race here and only one flips a row; the loser awards
+  //   nothing (no double-award).
+  // - an orphan attempt (already 'completed' but missing a grade row) flips zero
+  //   rows here, so XP is NOT re-awarded on re-grade, while the grade row below
+  //   still gets written to recover the orphan.
+  // Capture the error too: a silent failure here leaves the row 'in_progress'
+  // forever even though the user was graded (a top cause of stuck attempts). We log
+  // loudly rather than 500 because grading already succeeded; the stale-session
+  // reaper reconciles any row that fails to flip.
+  const { data: claimedRows, error: completionError } = await supabase
     .from('challenge_attempts')
     .update({
       status: 'completed',
@@ -409,11 +422,39 @@ export const POST = withRoute(async (
       grade_label: getGradeLabel(grade.overall_score),
     })
     .eq('id', attemptId)
+    .neq('status', 'completed')
+    .select('id')
+  if (completionError) {
+    console.error('[coding-submit] graded but failed to mark attempt completed', {
+      attemptId,
+      error: completionError.message,
+    })
+  }
+  const isFirstCompletion = (claimedRows?.length ?? 0) > 0
 
-  // Record daily streak (RPC is service_role-only, so use the admin client)
-  const admin = createAdminClient()
-  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
-  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
+  // Only the request that won the completion records the streak + XP, exactly once.
+  let final_xp_awarded = 0
+  if (isFirstCompletion) {
+    // Record daily streak first (RPC is service_role-only) so the multiplier
+    // reflects today's rep, then recompute XP with the post-streak day count and
+    // increment atomically (no read-then-write race on xp_total).
+    const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: user.id })
+    if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
+    const { data: xpProfile } = await admin
+      .from('profiles')
+      .select('streak_days')
+      .eq('id', user.id)
+      .single()
+    final_xp_awarded = calculateChallengeXp(grade.overall_score, 5, challenge.difficulty, xpProfile?.streak_days ?? 0)
+    const { error: xpError } = await admin.rpc('increment_user_xp', { p_user_id: user.id, p_amount: final_xp_awarded })
+    if (xpError) console.error('[xp] increment_user_xp failed:', xpError.message)
+    // Persist the real reward onto the attempt so the Submissions tab and
+    // /api/attempts show it, not +0.
+    await supabase
+      .from('challenge_attempts')
+      .update({ feedback_json: { xp_awarded: final_xp_awarded, total_score: grade.overall_score, max_score: 5 } })
+      .eq('id', attemptId)
+  }
 
   // Persist grade to interview_grades
   await supabase.from('interview_grades').insert({
@@ -446,5 +487,5 @@ export const POST = withRoute(async (
     ],
   })
 
-  return NextResponse.json({ grade })
+  return NextResponse.json({ grade, xp_awarded: final_xp_awarded })
 }, { name: 'challenges.coding-submit' })

@@ -4,8 +4,10 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { FeedbackText } from '@/components/ui/FeedbackText'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import CompetencyRadar from '@/components/live-interview/CompetencyRadar'
+import { DebriefUpgradeCard } from '@/components/live-interview/DebriefUpgradeCard'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserPlan } from '@/lib/billing/entitlements'
 import { IS_MOCK } from '@/lib/mock'
 import { MOCK_LIVE_DEBRIEF, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 import type { LiveInterviewDebrief, LiveInterviewTurn } from '@/lib/mock-live-interviews'
@@ -56,6 +58,18 @@ const COMPETENCY_LABELS: Record<string, string> = {
   domain_expertise: 'Domain Expertise',
 }
 
+function getFocusArea(debrief: LiveInterviewDebrief): string {
+  const weakestSignal = debrief.competencySignals[0]
+  if (weakestSignal) {
+    const label = COMPETENCY_LABELS[weakestSignal.competency] ?? weakestSignal.competency
+    return label.toLowerCase()
+  }
+  if (debrief.improvements[0]) {
+    return debrief.improvements[0].toLowerCase()
+  }
+  return 'your next round'
+}
+
 export default async function DebriefPage({ params }: DebriefPageProps) {
   const { id } = await params
 
@@ -66,6 +80,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
   let sessionDate = ''
   let durationMins = 0
   let turns: LiveInterviewTurn[] = []
+  let userPlan: 'free' | 'pro' = 'free'
 
   if (IS_MOCK) {
     debrief = MOCK_LIVE_DEBRIEF
@@ -84,6 +99,9 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
     if (!user) redirect('/login')
 
     const adminClient = createAdminClient()
+    const { plan } = await getEffectiveUserPlan(adminClient, user.id)
+    userPlan = plan
+
     const { data: session } = await adminClient
       .from('live_interview_sessions')
       .select('debrief_json, company_id, role_id, flow_coverage, total_turns, started_at, ended_at')
@@ -170,7 +188,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
         {(() => {
           const overallPercent = scoreToPercent(debrief.overallScore)
           return (
-        <div className="bg-surface-container rounded-xl p-6 border-t-4 border-primary">
+        <div className="bg-surface-container rounded-xl p-6 editorial-shadow">
           <div className="flex items-center gap-4 mb-4">
             <HatchGlyph size={64} state="celebrating" className="text-primary shrink-0" />
             <div className="flex-1">
@@ -239,7 +257,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
               </span>
             </div>
             <p className="text-sm text-on-surface-variant mb-4">{artifactGrading.artifact_verdict}</p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {(
                 [
                   { key: 'completeness' as const, label: 'Completeness', icon: 'checklist' },
@@ -273,7 +291,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
         {/* Strengths & Improvements */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Strengths */}
-          <div className="bg-surface border-l-4 border-primary rounded-xl p-5 space-y-3">
+          <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
             <div className="flex items-center gap-2">
               <span
                 className="material-symbols-outlined text-primary text-2xl"
@@ -296,7 +314,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
           </div>
 
           {/* Improvements */}
-          <div className="bg-surface border-l-4 border-secondary rounded-xl p-5 space-y-3">
+          <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
             <div className="flex items-center gap-2">
               <span
                 className="material-symbols-outlined text-secondary text-2xl"
@@ -357,7 +375,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
               {debrief.failurePatternsDetected.map((pattern, i) => (
                 <div
                   key={i}
-                  className="bg-surface-container-high rounded-lg p-4 border-l-4 border-error"
+                  className="bg-surface-container-high rounded-lg p-4"
                 >
                   <p className="font-label font-semibold text-on-surface text-sm mb-1">
                     {pattern.patternName}
@@ -472,7 +490,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                   const timeStr = relTime != null ? `${Math.floor(relTime / 60)}:${String(relTime % 60).padStart(2, '0')}` : ''
 
                   return (
-                    <details key={pair.index} className="border-l-4 pl-4 py-3" style={{ borderLeftColor: borderColorValue }}>
+                    <details key={pair.index} className="bg-surface-container-low rounded-lg px-4 py-3">
                       <summary className="cursor-pointer select-none flex items-center gap-3">
                         <span className="font-label text-xs font-bold text-on-surface-variant w-6 shrink-0">
                           #{pair.index}
@@ -526,6 +544,15 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
               <CompetencyRadar signals={debrief.competencySignals} />
             </div>
           </div>
+        )}
+
+        {/* Upgrade moment (free users only) */}
+        {userPlan !== 'pro' && (
+          <DebriefUpgradeCard
+            scorePercent={scoreToPercent(debrief.overallScore)}
+            grade={debrief.grade}
+            focusArea={getFocusArea(debrief)}
+          />
         )}
 
         {/* Action buttons */}

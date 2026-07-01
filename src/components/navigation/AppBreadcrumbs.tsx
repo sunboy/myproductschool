@@ -11,7 +11,9 @@ interface AppBreadcrumbsProps {
 }
 
 export function AppBreadcrumbs({ items, className = '' }: AppBreadcrumbsProps) {
-  if (items.length === 0) return null
+  // A lone crumb only ever duplicates the page H1 (and the active nav pill), so
+  // render nothing. Multi-item trails (length >= 2) provide real context.
+  if (items.length <= 1) return null
 
   return (
     <nav

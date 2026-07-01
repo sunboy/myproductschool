@@ -157,7 +157,7 @@ export function buildSalaryReport(
                 lineHeight: 1.55,
               }}
             >
-              Two things to notice: the ask is specific (a number, not "more"), and it
+              Two things to notice: the ask is specific (a number, not &quot;more&quot;), and it
               opens a door on non-salary levers without being aggressive about them.
             </p>
           </div>

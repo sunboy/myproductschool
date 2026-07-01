@@ -2,6 +2,7 @@
 import type { ChallengeJson, DraftFlowStep, DraftQuestion } from '@/lib/types'
 import { isValidTopicAny, isValidTechniqueAny } from '@/lib/data/taxonomy'
 import { validateChallengeTags } from '@/lib/practice/policy'
+import { validateDescription } from '@/lib/content/description-spec'
 import {
   EM_DASH_PATTERNS,
   ROLE_FRAMING_PATTERNS,
@@ -181,6 +182,17 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
   if (!json.scenario?.trigger) errors.push({ path: 'scenario.trigger', message: 'Required' })
   if (!json.scenario?.question) errors.push({ path: 'scenario.question', message: 'Required' })
   if (!json.scenario?.explanation) errors.push({ path: 'scenario.explanation', message: 'Required' })
+
+  // Structural description checks (docs/CHALLENGE_DESCRIPTION_SPEC.md): single-ask
+  // question, one-sentence trigger. Voice checks are skipped; this validator already
+  // runs them below over a wider field set.
+  const descResult = validateDescription('flow', {
+    context: json.scenario?.context,
+    trigger: json.scenario?.trigger,
+    question: json.scenario?.question,
+  }, { skipVoice: true })
+  errors.push(...descResult.errors.map((e) => ({ path: `scenario.${e.field}`, message: e.message })))
+  warnings.push(...descResult.warnings.map((w) => ({ path: `scenario.${w.field}`, message: w.message })))
 
   if (json.flow_steps.length !== 4) {
     errors.push({ path: 'flow_steps', message: `Expected 4 FLOW steps, got ${json.flow_steps.length}` })

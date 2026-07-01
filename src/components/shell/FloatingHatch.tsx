@@ -92,7 +92,8 @@ export function FloatingHatch() {
   const { muted, toggleMuted, play } = useHatchSonics()
 
   // Suppress on the challenge workspace - workspace has its own Hatch affordance
-  // (HatchSidePanel for FLOW, CanvasChatPanel for system_design/data_modeling)
+  // (the in-workspace coach dock for FLOW/coding, CanvasChatPanel for
+  // system_design/data_modeling).
   const isInWorkspace = /^\/workspace\/challenges\/[^/]+/.test(pathname)
 
   // Chat messages live in context so they persist across page navigations
@@ -274,7 +275,7 @@ export function FloatingHatch() {
     : getPagePrompt(pathname)
 
   const cueMessage = activeCue?.message ?? contextMessage
-  const suppressPageBubble = pathname.startsWith('/live-interviews')
+  const suppressPageBubble = pathname.startsWith('/live-interviews') || pathname.startsWith('/dashboard')
   const showBubble = !open && (
     Boolean(activeCue) ||
     (!suppressPageBubble && bubble && !bubbleDismissed && messages.length === 0)
@@ -338,6 +339,8 @@ export function FloatingHatch() {
                 {currentPageType === 'challenge' ? 'Coaching on this challenge' :
                  currentPageType === 'learning_module' ? 'Reading this module with you' :
                  currentPageType === 'progress' ? 'Reviewing your progress' :
+                 currentPageType === 'live_interviews' ? 'Practicing an interview with you' :
+                 currentPageType === 'practice' ? 'Helping you pick the right rep' :
                  'Your product thinking coach'}
               </p>
             </div>

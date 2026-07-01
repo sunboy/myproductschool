@@ -19,7 +19,34 @@ const MCP_CONNECTED_RE = /added\s+(?:stdio\s+)?mcp\s+server\s+bigquery|bigquery.
 // banner ("Claude Code v2.1.x") and an `❯` input prompt with "accept edits on".
 // Matching the version banner is the most stable signal across CLI versions.
 const CLAUDE_REPL_RE = /Claude\s+Code\s+v\d|accept edits on|❯\s/i
-const SKILL_WRITTEN_RE = /Wrote?\s+\.claude\/skills\/([^\s]+\.md)/i
+// Detect a skill file landing under ~/.claude/skills/. Claude's TUI phrases a write
+// many ways depending on the tool + CLI version: "Wrote", "Created", "Updated",
+// "File created/modified", the diff-style "● Write(...)/Update(...)" tool-call lines,
+// or a bare `cat > ...`/`tee ...` shell redirect. The path is often the ABSOLUTE
+// /home/analyst/.claude/skills/... and may be ANSI-colored. We require a WRITE-VERB
+// context immediately before the path (within ~24 chars) so we don't false-positive
+// on Claude merely *mentioning* a skill path in conversational prose before any file
+// exists. A global, case-insensitive match collects every write in the scanned text;
+// group 1 is the file segment after skills/. The SkillsLibraryPanel store fetch is the
+// authoritative backstop — this is the no-refresh fast path.
+// A write-COMPLETION signal, then the skills path on the SAME line. We key only on
+// COMPLETED-action verbs (wrote/created/updated/modified/written), the
+// parenthesis-anchored tool-call forms (Write(/Update(), and shell redirects
+// (cat >/tee/>>). Bare imperatives (write/update/creating) are EXCLUDED — they
+// false-positive on instructional prose ("Please write .claude/skills/x next.").
+// Between the verb and the path we allow up to 80 chars on the SAME line, but the gap
+// may NOT cross a sentence boundary — the `(?![.!?]\s)` negative lookahead stops it at
+// ". " / "! " / "? ". That's exactly what separates Claude Code's real Write-tool
+// result, "⎿  Wrote 21 lines to /home/analyst/.claude/skills/foo/SKILL.md" (no sentence
+// break), from prose that merely mentions a path after a past-tense verb in an earlier
+// sentence ("Earlier I wrote some notes. To view ... .claude/skills/bar/SKILL.md").
+// Combined with the COMPLETED-action-only verb list (no bare imperatives), this matches
+// real writes — "Wrote N lines to <abs>", "File created: <abs>", "● Write(<abs>)",
+// "cat > <abs>" — with no known conversational false positive. The SkillsLibraryPanel
+// store fetch is the authoritative layer; this is the no-refresh fast path. group 1 =
+// the segment after skills/.
+const SKILL_PATH_RE =
+  /(?:wrote|created|updated|modified|written|Write\(|Update\(|tee|cat\s*>|>>?)(?:(?![.!?]\s)[^\n]){0,80}\.claude\/skills\/([A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*\.md)/gi
 // A report artifact landing in the workspace (e.g. "Wrote /workspace/report.md").
 const REPORT_WRITTEN_RE = /Wrote?\s+(\/workspace\/[^\s]*report[^\s]*\.md)/i
 
@@ -39,6 +66,14 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
   ) {
     // Latch so we only emit the REPL-running signal once per launch.
     const replSignalledRef = useRef(false)
+    // Latch the MCP-connected signal so the connect line lingering in the rolling
+    // tail doesn't re-fire every frame. (Reset on WS close — see ws.onclose.)
+    const mcpSignalledRef = useRef(false)
+    // Skills + report paths already reported via the terminal-scan fast path, so a
+    // path that stays on screen (or re-prints) doesn't re-fire its callback every
+    // frame — while a genuinely NEW path still fires (dedup by value, not a latch).
+    const seenSkillsRef = useRef<Set<string>>(new Set())
+    const seenReportsRef = useRef<Set<string>>(new Set())
     const containerRef = useRef<HTMLDivElement>(null)
     const termRef = useRef<import('xterm').Terminal | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
@@ -355,28 +390,47 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           tailRef.current = (tailRef.current + text).slice(-TAIL_MAX_BYTES)
           onOutput?.(tailRef.current)
 
-          // Detect MCP connection
-          if (MCP_CONNECTED_RE.test(text)) {
+          // ANSI-stripped rolling tail. EVERY status detector scans this (not the
+          // raw chunk) so a signal split across WS frames or wrapped/colored by the
+          // TUI is still matched. The `claude mcp list` "✓ Connected" line and the
+          // skill/report write lines are all ANSI-colored, so stripping is required.
+          const scan = tailRef.current.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')
+
+          // Detect MCP connection. Latch once — the "Added stdio MCP server bigquery"
+          // / "bigquery ✓ Connected" line stays in the tail and we only need to flip
+          // the strip to Connected one time.
+          if (!mcpSignalledRef.current && MCP_CONNECTED_RE.test(scan)) {
+            mcpSignalledRef.current = true
             onMcpStatusChange?.(true)
           }
 
-          // Detect the `claude` REPL launching. Test the rolling tail (not just
-          // this chunk) since the banner can arrive split across frames. Latch
-          // so we signal once per launch.
-          if (!replSignalledRef.current && CLAUDE_REPL_RE.test(tailRef.current)) {
+          // Detect the `claude` REPL launching. Latch so we signal once per launch.
+          if (!replSignalledRef.current && CLAUDE_REPL_RE.test(scan)) {
             replSignalledRef.current = true
             onReplStatusChange?.(true)
           }
 
-          // Detect skill file writes
-          const match = SKILL_WRITTEN_RE.exec(text)
-          if (match?.[1]) {
-            onSkillWritten?.(match[1])
+          // Detect skill file writes. The global regex finds every
+          // .claude/skills/<...>.md occurrence; we emit each unique one once.
+          // (The SkillsLibraryPanel's /api/claude-code/skills re-fetch is the
+          // authoritative source — this is just the no-refresh fast path.)
+          SKILL_PATH_RE.lastIndex = 0
+          let m: RegExpExecArray | null
+          while ((m = SKILL_PATH_RE.exec(scan)) !== null) {
+            const rel = m[1] // e.g. "funnel-dropoff/SKILL.md" or "foo.md"
+            if (!seenSkillsRef.current.has(rel)) {
+              seenSkillsRef.current.add(rel)
+              onSkillWritten?.(rel)
+            }
           }
 
-          // Detect a report artifact written to the workspace
-          const reportMatch = REPORT_WRITTEN_RE.exec(text)
-          if (reportMatch?.[1]) {
+          // Detect a report artifact written to the workspace. Dedup per PATH (not
+          // a one-shot latch) so the same path lingering in the tail doesn't re-fire
+          // every frame, while a genuinely new report path later in the session
+          // (e.g. the user re-runs the report step) still fires.
+          const reportMatch = REPORT_WRITTEN_RE.exec(scan)
+          if (reportMatch?.[1] && !seenReportsRef.current.has(reportMatch[1])) {
+            seenReportsRef.current.add(reportMatch[1])
             onReportWritten?.(reportMatch[1])
           }
         }
@@ -393,6 +447,15 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
         ws.onclose = (ev) => {
           if (!mountedRef.current) return
           onMcpStatusChange?.(false)
+          // Reset the MCP latch so the replayed scrollback after a reconnect
+          // (e.g. a refresh reattaching to the live PTY) re-detects the
+          // "Connected" line and flips the strip back, instead of staying Waiting.
+          // Clear the rolling tail in lockstep: otherwise the first post-reconnect
+          // chunk would scan stale PRE-close text and re-fire MCP-connected from a
+          // line that's no longer true (e.g. the MCP was removed). The replayed
+          // scrollback rebuilds the tail, so real signals are re-detected cleanly.
+          mcpSignalledRef.current = false
+          tailRef.current = ''
 
           // Clean close — nothing to do.
           if (ev.code === 1000 || ev.code === 1001) {

@@ -2,6 +2,7 @@ import { getConceptById } from '@/lib/data/concepts'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MOCK_DOMAINS } from '@/lib/mock-data'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 
 export default async function ConceptDetailPage({ params }: { params: Promise<{ conceptId: string }> }) {
   const { conceptId } = await params
@@ -13,13 +14,13 @@ export default async function ConceptDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-        <Link href="/vocabulary" className="hover:text-primary transition-colors">Vocabulary</Link>
-        <span>/</span>
-        {domain && <Link href={`/domains/${domain.slug}`} className="hover:text-primary transition-colors">{domain.title}</Link>}
-        <span>/</span>
-        <span className="text-on-surface">{concept.title}</span>
-      </div>
+      <AppBreadcrumbs
+        items={[
+          { label: 'Explore', href: '/explore' },
+          ...(domain ? [{ label: domain.title, href: `/explore/domains/${domain.slug}` }] : []),
+          { label: concept.title },
+        ]}
+      />
 
       {/* Title */}
       <div>

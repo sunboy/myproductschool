@@ -35,7 +35,7 @@ export function InterviewCountdownCard({ interviews = [] }: InterviewCountdownCa
         <div className="bg-surface-container rounded-xl p-5 flex flex-col items-center gap-3 text-center h-full justify-center">
           <span className="material-symbols-outlined text-5xl text-primary">event</span>
           <p className="font-headline font-bold text-base text-on-surface">Interview coming up?</p>
-          <p className="text-sm text-on-surface-variant">Track your countdown and hit your daily prep targets.</p>
+          <p className="text-sm text-on-surface-variant">See how many days are left and how much to practice before the date.</p>
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-label font-semibold hover:opacity-90 transition-opacity"

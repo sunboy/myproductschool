@@ -13,6 +13,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
+import { validateDescription } from '../src/lib/content/description-spec'
+import { detectTechniqueTags } from '../src/lib/content/auto-tag-technique'
+import { ensureSolutionForChallenge } from '../src/lib/solutions/ensure-solution'
 
 // ---------------------------------------------------------------------------
 // Types for the parts schema
@@ -61,12 +64,16 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 // ── CLI args ──────────────────────────────────────────────────────────────────
 // --source <name>   Only commit staged entries whose metadata.source matches.
 // --dry-run         Print what would be committed, write nothing.
+// --no-solution     Skip eager solution/walkthrough generation (fast, offline commits).
+//                   By default a coding/SQL row gets its verified walkthrough generated
+//                   right after insert, so it is ready before the first Solutions-tab view.
 const cliArgs = process.argv.slice(2)
 const SOURCE_FILTER = (() => {
   const i = cliArgs.indexOf('--source')
   return i >= 0 ? cliArgs[i + 1] : undefined
 })()
 const DRY_RUN = cliArgs.includes('--dry-run')
+const NO_SOLUTION = cliArgs.includes('--no-solution')
 
 function kebab(input: string): string {
   return input
@@ -232,11 +239,12 @@ async function main() {
 
   console.log(`Committing ${approved.length} approved challenges...${DRY_RUN ? ' (DRY RUN)' : ''}`)
 
+  let rejected = 0
+
   for (const c of approved) {
     const md = (c.metadata as Record<string, unknown>) ?? {}
     const isSql = Boolean((c as { is_sql?: boolean }).is_sql)
     const challengeType = (c.challenge_type as string) ?? (isSql ? 'sql' : 'algorithm')
-    const isCoding = challengeType === 'algorithm' || challengeType === 'sql'
 
     // Explore-surface fields: pulled from metadata so the "Asked at top companies"
     // query (is_published + is_real_interview + company_tags) can see this row.
@@ -246,13 +254,53 @@ async function main() {
     const sourceUrl = (md.source_url as string) ?? null
     const isRealInterview = Boolean(md.source) // anything imported from a real source
 
-    // Coding challenges render from a problem statement + metadata, not a canvas.
-    const scenarioTrigger = isCoding
+    // ── Auto-tag verified walkthrough technique(s) (algorithm/sql only) ──────────
+    // A new coding row often arrives UNTAGGED, so it silently misses the verified
+    // stepped walkthrough it would earn if tagged. detectTechniqueTags probes the
+    // SAME verified tracers the walkthrough uses and returns a canonical tag ONLY
+    // when the tracer certifies against the challenge's own expected output. It is
+    // pure and fail-soft; a detector hiccup simply adds nothing and never blocks the
+    // commit. We detect against topic + technique tags, but only merge into technique.
+    if (challengeType === 'algorithm' || challengeType === 'sql') {
+      try {
+        const added = detectTechniqueTags(challengeType, md, [...topicTags, ...techniqueTags])
+        for (const tag of added) {
+          techniqueTags.push(tag)
+          console.log(`  auto-tagged ${c.title} +${tag}`)
+        }
+      } catch (tagErr) {
+        console.warn(`  auto-tag skipped for ${c.title}: ${(tagErr as Error).message}`)
+      }
+    }
+
+    // Per docs/CHALLENGE_DESCRIPTION_SPEC.md: trigger/question must never restate or
+    // pad the body. Coding types get the standard editor lines; SQL's ask lives in the
+    // body's ## Output section; canvas types rely on buildChallengeBrief defaults.
+    const scenarioTrigger = challengeType === 'algorithm'
       ? 'Solve it in the editor. Run the tests as you go.'
-      : 'You have 30 minutes.'
-    const scenarioQuestion = isCoding
+      : challengeType === 'sql'
+        ? 'Write the query in the editor. Run the visible tests as you go.'
+        : null
+    const scenarioQuestion = challengeType === 'algorithm'
       ? 'Write a working solution. Use Hatch for coaching.'
-      : 'Design your solution on the canvas. Use Hatch for coaching.'
+      : null
+
+    // Reject entries that fail the description spec before they reach the DB.
+    const descCheck = validateDescription(challengeType, {
+      context: c.problem_statement_markdown as string,
+      trigger: scenarioTrigger,
+      question: scenarioQuestion,
+      metadata: md,
+    })
+    if (descCheck.errors.length > 0) {
+      console.error(`  ✗ REJECTED "${c.title}" (description spec):`)
+      for (const e of descCheck.errors) console.error(`      ${e.field}: ${e.message}`)
+      rejected += 1
+      continue
+    }
+    for (const w of descCheck.warnings) {
+      console.warn(`  ⚠ "${c.title}" ${w.field}: ${w.message}`)
+    }
 
     const challengeId = randomUUID()
     const slug = await uniqueSlug(c.title as string)
@@ -274,7 +322,9 @@ async function main() {
       scenario_context: c.problem_statement_markdown,
       scenario_trigger: scenarioTrigger,
       scenario_question: scenarioQuestion,
-      metadata: md,
+      // Keep metadata.technique_tags in sync with the column after any auto-tagging,
+      // so an audit or re-import reads the same technique tags from either place.
+      metadata: { ...md, technique_tags: techniqueTags },
       company_tags: companyTags,
       topic_tags: topicTags,
       technique_tags: techniqueTags,
@@ -314,8 +364,32 @@ async function main() {
         console.error(`    Failed inserting parts for ${c.title}: ${(partsErr as Error).message}`)
       }
     }
+
+    // ── Eager solution + verified walkthrough generation (algorithm/sql only) ────
+    // Generate the solution now so the walkthrough is ready before the first
+    // Solutions-tab view, instead of waiting for a user to trigger the lazy route.
+    // FAIL-SOFT and NON-BLOCKING for the batch: ensureSolutionForChallenge never
+    // throws, and this await is wrapped so a slow or failed generation for one row
+    // never aborts the commit of the rest. Skip with --no-solution. Note: this
+    // bills Anthropic tokens (one Sonnet generation per coding row, deduped by the
+    // helper's atomic claim), matching the existing lazy route's per-challenge cost.
+    if (!NO_SOLUTION && (challengeType === 'algorithm' || challengeType === 'sql')) {
+      try {
+        const gen = await ensureSolutionForChallenge(challengeId)
+        if (gen.status === 'ready') {
+          console.log(`    → solution generated${gen.grafted ? ' (walkthrough attached)' : ''}`)
+        } else if (gen.status === 'failed') {
+          console.warn(`    solution generation failed for ${c.title} (row still published)`)
+        }
+      } catch (genErr) {
+        console.warn(`    solution generation error for ${c.title}: ${(genErr as Error).message}`)
+      }
+    }
   }
 
+  if (rejected > 0) {
+    console.error(`\n${rejected} entr${rejected === 1 ? 'y' : 'ies'} rejected by the description spec. Fix and re-run. See docs/CHALLENGE_DESCRIPTION_SPEC.md`)
+  }
   console.log('\nDone. Check /challenges or /explore to see the new challenges.')
 }
 

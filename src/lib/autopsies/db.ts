@@ -228,7 +228,32 @@ async function getLegacyTeardownStubs() {
   }
 }
 
+// Postgres "canceling statement due to statement timeout". The autopsy queries
+// are sub-millisecond at the DB level; a 57014 here means transient pooler /
+// connection contention (e.g. 7 build workers firing at once), not a slow query,
+// so a short retry almost always clears it.
+function isStatementTimeout(error: unknown): boolean {
+  return Boolean(error && typeof error === 'object' && 'code' in error && (error as { code?: string }).code === '57014')
+}
+
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+
 export async function getSupabaseAutopsyLibrary(): Promise<SupabaseAutopsyLibrary> {
+  let lastError: unknown
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await fetchSupabaseAutopsyLibrary()
+    } catch (error) {
+      lastError = error
+      if (!isStatementTimeout(error)) throw error
+      // Backoff: 250ms, 750ms. Linear-ish, enough for pooler pressure to ease.
+      await sleep(250 + attempt * 500)
+    }
+  }
+  throw lastError
+}
+
+async function fetchSupabaseAutopsyLibrary(): Promise<SupabaseAutopsyLibrary> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

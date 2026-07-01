@@ -17,6 +17,10 @@ import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import type { CareerBenchmark, Competency, FlowMove } from '@/lib/types'
 
+// Intentional external-brand exception: LinkedIn's official button blue. Not a
+// design-system token because it must match LinkedIn's brand, not Terra.
+const LINKEDIN_BRAND_BLUE = '#0077b5'
+
 function buildLinkedInUrl(moveName: string, level: number): string {
   const now = new Date()
   const certName = encodeURIComponent(`HackProduct ${moveName} Move: Level ${level}`)
@@ -60,7 +64,7 @@ interface CompetencyRadarDatum {
   trend: DNACompetency['trend']
 }
 
-const FLOW_MOVES: FlowMove[] = ['frame', 'list', 'weigh', 'sell']
+const FLOW_MOVES: FlowMove[] = ['frame', 'list', 'optimize', 'win']
 
 const COMPETENCY_META: Array<{ key: Competency; label: string; shortLabel: string }> = [
   { key: 'motivation_theory', label: 'Motivation Theory', shortLabel: 'Motivation' },
@@ -74,17 +78,17 @@ const COMPETENCY_META: Array<{ key: Competency; label: string; shortLabel: strin
 const COMPETENCY_KEYS = new Set<Competency>(COMPETENCY_META.map(item => item.key))
 
 const MOVE_META: Record<FlowMove, { label: string; icon: string; description: string }> = {
-  frame:  { label: 'Frame', icon: 'frame_inspect', description: 'Find the real problem behind the surface complaint' },
-  list:   { label: 'List',  icon: 'format_list_bulleted', description: 'Generate structurally distinct options across stakeholders' },
-  weigh:  { label: 'Weigh', icon: 'balance', description: 'Name the tradeoff and the criterion that resolves it' },
-  sell:   { label: 'Sell',  icon: 'campaign', description: 'Frame the win so the decision-maker feels heard' },
+  frame:    { label: 'Frame',    icon: 'crop_free',            description: 'Find the real problem behind the surface complaint' },
+  list:     { label: 'List',     icon: 'account_tree',         description: 'Generate structurally distinct options across stakeholders' },
+  optimize: { label: 'Optimize', icon: 'balance',              description: 'Name the tradeoff and the criterion that resolves it' },
+  win:      { label: 'Win',      icon: 'flag',                 description: 'Frame the win so the decision-maker feels heard' },
 }
 
 const MOVE_LEVEL_NAMES: Record<FlowMove, string[]> = {
-  frame: ['Frame Finder', 'Frame Builder', 'Frame Strategist', 'Frame Expert', 'Frame Master'],
-  list:  ['List Finder',  'List Builder',  'List Strategist',  'List Expert',  'List Master'],
-  weigh: ['Weigh Finder', 'Weigh Builder', 'Weigh Strategist', 'Weigh Expert', 'Weigh Master'],
-  sell:  ['Sell Finder',  'Sell Builder',  'Sell Strategist',  'Sell Expert',  'Sell Master'],
+  frame:    ['Frame Finder',    'Frame Builder',    'Frame Strategist',    'Frame Expert',    'Frame Master'],
+  list:     ['List Finder',     'List Builder',     'List Strategist',     'List Expert',     'List Master'],
+  optimize: ['Optimize Finder', 'Optimize Builder', 'Optimize Strategist', 'Optimize Expert', 'Optimize Master'],
+  win:      ['Win Finder',      'Win Builder',      'Win Strategist',      'Win Expert',      'Win Master'],
 }
 
 function toRecord(value: unknown): Record<string, unknown> {
@@ -299,7 +303,9 @@ function SkillLadderContent() {
             </div>
             <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant relative before:content-[''] before:absolute before:-left-2 before:top-4 before:w-4 before:h-4 before:bg-surface-container-low before:rotate-45 before:border-l before:border-b before:border-outline-variant">
               <p className="text-sm font-medium text-on-surface">
-                You&apos;re {moveLevel < 5 ? `${Math.ceil((1 - moveProgress / 100) * 8)} challenges` : 'at the top'} away from Level {Math.min(moveLevel + 1, 5)}. Here&apos;s exactly what that unlocks.
+                {moveLevel < 5
+                  ? `You're ${Math.ceil((1 - moveProgress / 100) * 8)} challenges away from Level ${moveLevel + 1}. Here's exactly what you gain.`
+                  : `You've reached Level 5, the highest rung. Here's how to keep that edge sharp.`}
               </p>
             </div>
           </div>
@@ -317,7 +323,7 @@ function SkillLadderContent() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-sm">Level 1: {moveLevelNames[0]} · Beginner</h3>
-                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned</span>
+                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>military_tech</span> Earned</span>
                   </div>
                   <p className="text-xs text-white/80 mt-0.5">Typical: APM / Junior PM</p>
                 </div>
@@ -444,7 +450,7 @@ function SkillLadderContent() {
               target="_blank"
               rel="noopener noreferrer"
               className="w-full text-white py-2.5 rounded-full text-sm font-bold flex items-center justify-center gap-2 shadow transition-colors hover:opacity-90"
-              style={{ backgroundColor: '#0077b5' }}
+              style={{ backgroundColor: LINKEDIN_BRAND_BLUE }}
             >
               <span className="material-symbols-outlined text-lg">add_circle</span>
               Add to LinkedIn profile →
@@ -513,7 +519,7 @@ function SkillLadderContent() {
             <span className="material-symbols-outlined text-tertiary text-lg">info</span>
             <p className="text-[11px] text-tertiary font-medium leading-tight">
               <span className="font-bold block mb-0.5">FLOW Framework</span>
-              The {meta.label} move is one of 4 FLOW thinking moves: Frame · List · Weigh · Sell
+              The {meta.label} move is one of 4 FLOW thinking moves: Frame · List · Optimize · Win
             </p>
           </div>
         </div>
@@ -641,7 +647,7 @@ function CompletedRung({ level, label, tier }: { level: number; label: string; t
       <div className="flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="font-bold text-sm">Level {level}: {label} · {tier}</h3>
-          <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned</span>
+          <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>military_tech</span> Earned</span>
         </div>
       </div>
     </div>

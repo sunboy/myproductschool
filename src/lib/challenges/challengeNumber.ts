@@ -61,12 +61,17 @@ interface ChallengePathInput {
 /**
  * The single builder for challenge workspace links. The fallback order below
  * is the one control over what the address bar shows app-wide:
- *   `numberSlug ?? slug ?? id`  -> prefer the number  (/workspace/challenges/sql-2001)
  *   `slug ?? numberSlug ?? id`  -> prefer the text slug (/workspace/challenges/two-sum-variant)
+ *   `numberSlug ?? slug ?? id`  -> prefer the number  (/workspace/challenges/sql-2001)
  * Both forms always resolve (the resolver accepts number, slug, and id), so
  * flipping this never breaks a link.
+ *
+ * We prefer the TEXT slug: it's the human-readable, SEO-descriptive canonical
+ * URL, and the workspace route 301-redirects every other form (id, number slug)
+ * onto it — so emitting the text slug here avoids a redirect hop on navigation.
+ * The number slug stays a valid alias and lives on as the catalog badge.
  */
 export function challengePath(c: ChallengePathInput): string {
   const numberSlug = challengeNumberSlug(c.challenge_type, c.display_number)
-  return `/workspace/challenges/${numberSlug ?? c.slug ?? c.id}`
+  return `/workspace/challenges/${c.slug ?? numberSlug ?? c.id}`
 }

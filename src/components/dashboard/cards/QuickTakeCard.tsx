@@ -91,16 +91,16 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
   if (state === 'done' && result) {
     const { label, color } = gradeLabel(result.score)
     return (
-      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden" data-hatch-target="dashboard-quick-take">
+      <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-center gap-3 relative">
-          <HatchGlyph size={36} state="celebrating" className="text-on-primary shrink-0" />
+          <HatchGlyph size={30} state="celebrating" className="text-on-primary shrink-0" />
           <div>
             <h3 className="font-headline font-bold text-base leading-tight">Quick Take, graded</h3>
             <p className="text-on-primary/70 text-[11px] font-label mt-0.5">+{result.xp_earned} XP earned</p>
           </div>
         </div>
-        <div className="bg-black/20 rounded-xl p-4 flex flex-col gap-3 relative">
+        <div className="relative flex flex-col gap-2.5 rounded-xl bg-black/20 p-3">
           <div className="flex items-center gap-2">
             <span
               className="text-sm font-label font-bold px-2.5 py-0.5 rounded-full"
@@ -110,7 +110,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
             </span>
             <span className="text-on-primary/60 text-xs">{Math.round(result.score * 100)}%</span>
           </div>
-          <FeedbackText className="text-on-primary/90">{result.feedback_summary}</FeedbackText>
+          <FeedbackText className="line-clamp-4 text-on-primary/90">{result.feedback_summary}</FeedbackText>
         </div>
         <button
           onClick={handleTryAnother}
@@ -124,10 +124,10 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   if (state === 'loading-next') {
     return (
-      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden" data-hatch-target="dashboard-quick-take">
+      <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-center gap-3 relative">
-          <HatchGlyph size={36} state="reviewing" className="text-on-primary shrink-0" />
+          <HatchGlyph size={30} state="reviewing" className="text-on-primary shrink-0" />
           <div>
             <h3 className="font-headline font-bold text-base leading-tight">Loading next question…</h3>
           </div>
@@ -138,24 +138,23 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   if (state === 'writing' || state === 'submitting') {
     return (
-      <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden" data-hatch-target="dashboard-quick-take">
+      <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary" data-hatch-target="dashboard-quick-take">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-start gap-3 relative">
-          <HatchGlyph size={36} state="listening" className="text-on-primary shrink-0 mt-0.5" />
+          <HatchGlyph size={30} state="listening" className="text-on-primary shrink-0 mt-0.5" />
           <div>
             <h3 className="font-headline font-bold text-base leading-tight">Quick Take</h3>
             <p className="text-on-primary/70 text-[11px] font-label mt-0.5">90 seconds · instant grade</p>
           </div>
         </div>
-        <div className="bg-black/20 rounded-xl p-3 relative">
+        <div className="relative rounded-xl bg-black/20 p-3">
           <p className="text-on-primary/70 text-xs mb-2">&ldquo;{prompt}&rdquo;</p>
           <textarea
-            autoFocus
             value={response}
             onChange={e => setResponse(e.target.value)}
             placeholder="Your answer…"
             disabled={state === 'submitting'}
-            rows={4}
+            rows={3}
             className="w-full bg-transparent text-on-primary text-sm placeholder:text-on-primary/40 resize-none outline-none leading-relaxed"
           />
         </div>
@@ -181,22 +180,22 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
 
   // idle
   return (
-    <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden" data-hatch-target="dashboard-quick-take">
+    <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-quick-take">
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
       <div className="flex items-start gap-3 relative">
-        <HatchGlyph size={36} state="speaking" className="text-on-primary shrink-0 mt-0.5" />
+        <HatchGlyph size={30} state="speaking" className="text-on-primary shrink-0 mt-0.5" />
         <div>
           <h3 className="font-headline font-bold text-base leading-tight">Quick Take</h3>
           <p className="text-on-primary/70 text-[11px] font-label mt-0.5">90 seconds · instant grade</p>
         </div>
       </div>
-      <div className="bg-black/20 rounded-xl p-4 relative">
-        <p className="text-on-primary/90 text-sm leading-relaxed">&ldquo;{prompt}&rdquo;</p>
+      <div className="relative rounded-xl bg-black/20 p-3">
+        <p className="line-clamp-4 text-sm leading-relaxed text-on-primary/90">&ldquo;{prompt}&rdquo;</p>
       </div>
       {hatchContext && (
         <p className="text-xs text-on-primary/65 font-label flex items-start gap-1.5">
           <span className="material-symbols-outlined text-[13px] mt-0.5 shrink-0">auto_awesome</span>
-          {hatchContext}
+          <span className="line-clamp-2">{hatchContext}</span>
         </p>
       )}
       <button

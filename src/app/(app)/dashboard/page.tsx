@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Suspense, type ReactNode } from 'react'
+import { cache, Suspense, type ReactNode } from 'react'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -10,11 +10,16 @@ import {
 } from '@/lib/data/dashboard'
 import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
+import { getCcAnalyticsFrontDoor } from '@/lib/data/cc-analytics-frontdoor'
+import { getHatchContext, type HatchUserContext } from '@/lib/hatch-context'
 import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
-import { HeroGreeterCard } from '@/components/dashboard/cards/HeroGreeterCard'
+import { CoachSpineCard } from '@/components/dashboard/cards/CoachSpineCard'
+import { AnalyticsLabCard } from '@/components/dashboard/cards/AnalyticsLabCard'
+import { UpgradeSponsorCard } from '@/components/dashboard/cards/UpgradeSponsorCard'
+import { CadenceRibbon } from '@/components/dashboard/cards/CadenceRibbon'
 import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsCard'
 import { LatestInterviewCard } from '@/components/dashboard/cards/LatestInterviewCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
@@ -22,12 +27,9 @@ import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPee
 import { CommunityActivityCard } from '@/components/dashboard/cards/CommunityActivityCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
-import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
-import { AchievementsCard, ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
-import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarCard'
+import { ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
 import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
 import { DisciplineExplorer } from '@/components/flow-disciplines'
-import { BillingDashboardNudge } from '@/components/billing/BillingDashboardNudge'
 import { FeaturedAutopsyCard } from '@/components/dashboard/cards/FeaturedAutopsyCard'
 import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
 import type { UserInterview } from '@/lib/data/dashboard'
@@ -57,18 +59,11 @@ function moveHatchInsight(
   return goalLine ? `${goalLine} ${levelLine}` : levelLine
 }
 
-// Returns DB values used by `.in('difficulty', ...)` queries. Expands to the
-// union of legacy and canonical strings so the query works pre- and post-R2.
-// primary_goal and prep_timeline shift the difficulty band:
-//   - land_pm_adjacent / level_up_current → ramp one notch harder
-//   - explore → always stay gentle (easy/medium) regardless of XP
-//   - prep_timeline 'lt_1mo' → also ramp one notch harder
 function targetDifficulties(
   avgXp: number,
   primaryGoal?: string | null,
   prepTimeline?: string | null,
 ): string[] {
-  // explore goal always stays gentle
   if (primaryGoal === 'explore') {
     return expandDifficultiesForQuery(['easy', 'medium'])
   }
@@ -78,7 +73,6 @@ function targetDifficulties(
   else if (avgXp < 300) buckets = ['medium', 'hard']
   else buckets = ['hard']
 
-  // shift harder for goal-driven users or tight timelines
   const shiftHarder =
     primaryGoal === 'land_pm_adjacent' ||
     primaryGoal === 'level_up_current' ||
@@ -87,26 +81,57 @@ function targetDifficulties(
   if (shiftHarder) {
     if (buckets[0] === 'easy') buckets = ['medium', 'hard']
     else if (buckets[0] === 'medium' && buckets.length > 1) buckets = ['hard']
-    // already ['hard'] — no further shift possible
   }
 
   return expandDifficultiesForQuery(buckets)
 }
 
-type RawChallenge = { id: string; slug?: string | null; title: string; difficulty: string; display_number?: number | null; challenge_type?: string | null; domain?: { title: string }[] | { title: string } | null }
-type NextChallenge = { id: string; slug?: string | null; title: string; difficulty: string; display_number?: number | null; challenge_type?: string | null; domainName?: string | null; hatch_insight?: string | null }
+type RawChallenge = {
+  id: string
+  slug?: string | null
+  title: string
+  difficulty: string
+  display_number?: number | null
+  challenge_type?: string | null
+  domain?: { title: string }[] | { title: string } | null
+}
+type NextChallenge = {
+  id: string
+  slug?: string | null
+  title: string
+  difficulty: string
+  display_number?: number | null
+  challenge_type?: string | null
+  domainName?: string | null
+  hatch_insight?: string | null
+}
+type AttemptRow = {
+  challenge_id: string
+  created_at: string
+  challenges: { title: string; slug: string | null; challenge_type: string | null } | null
+}
+type PathStep = { label: string; sub: string; icon: string; done: boolean; active: boolean; href?: string }
+type WeekDate = { dayLabel: string; dateLabel: string; completed: boolean; isToday: boolean }
 
 function normalizeChallenge(raw: RawChallenge | null): NextChallenge | null {
   if (!raw) return null
   const d = raw.domain
   const domainName = Array.isArray(d) ? (d[0]?.title ?? null) : (d?.title ?? null)
-  return { id: raw.id, slug: raw.slug, title: raw.title, difficulty: raw.difficulty, display_number: raw.display_number, challenge_type: raw.challenge_type, domainName }
+  return {
+    id: raw.id,
+    slug: raw.slug,
+    title: raw.title,
+    difficulty: raw.difficulty,
+    display_number: raw.display_number,
+    challenge_type: raw.challenge_type,
+    domainName,
+  }
 }
 
 function LockOverlay({ children, label = 'Unlocks after calibration' }: { children: ReactNode; label?: string }) {
   return (
     <div className="relative">
-      <div className="opacity-40 blur-[1.5px] pointer-events-none select-none" aria-hidden>
+      <div className="pointer-events-none select-none opacity-40 blur-[1.5px]" aria-hidden>
         {children}
       </div>
       <div className="absolute inset-0 flex items-center justify-center">
@@ -119,92 +144,78 @@ function LockOverlay({ children, label = 'Unlocks after calibration' }: { childr
   )
 }
 
-function HatchOperatingSystemCard() {
-  const modes = [
-    {
-      label: 'Daily reps',
-      sub: 'Hatch picks the next highest-leverage challenge.',
-      href: '/challenges',
-      icon: 'track_changes',
-      tone: '#4a7c59',
-    },
-    {
-      label: 'Canvas studio',
-      sub: 'Design systems, schemas, and context packs.',
-      href: '/challenges?discipline=system_design',
-      icon: 'schema',
-      tone: '#3b6ed4',
-    },
-    {
-      label: 'AI interviews',
-      sub: 'Pressure test your thinking without scheduling anyone.',
-      href: '/live-interviews',
-      icon: 'graphic_eq',
-      tone: '#8b46d4',
-    },
-    {
-      label: 'Autopsies',
-      sub: 'Read the decision trees behind real products.',
-      href: '/explore/autopsies',
-      icon: 'biotech',
-      tone: '#c9933a',
-    },
-  ]
-
-  return (
-    <section
-      className="rounded-[24px] border border-outline-variant/50 bg-surface-container-low p-4 sm:p-5"
-      aria-label="Hatch operating system"
-      data-hatch-target="dashboard-hatch-os"
-    >
-      <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
-        <div>
-          <div className="text-[10px] font-label font-extrabold uppercase tracking-[0.12em] text-on-surface-variant mb-1">
-            Hatch OS
-          </div>
-          <h2 className="font-headline text-[22px] font-bold leading-none text-on-surface m-0">
-            One platform-run practice loop.
-          </h2>
-        </div>
-        <Link
-          href="/explore"
-          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-label font-bold text-primary no-underline hover:bg-primary-fixed"
-        >
-          Explore paths
-          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-        </Link>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
-        {modes.map(mode => (
-          <Link
-            key={mode.label}
-            href={mode.href}
-            className="group rounded-[18px] border border-outline-variant/40 bg-background px-4 py-3 no-underline transition-transform hover:-translate-y-0.5"
-          >
-            <div className="flex items-start gap-3">
-              <span
-                className="material-symbols-outlined mt-0.5 text-[21px]"
-                style={{ color: mode.tone, fontVariationSettings: "'FILL' 1" }}
-              >
-                {mode.icon}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[13px] font-label font-extrabold text-on-surface leading-tight">
-                  {mode.label}
-                </span>
-                <span className="mt-1 block text-[11.5px] font-body font-semibold leading-4 text-on-surface-variant">
-                  {mode.sub}
-                </span>
-              </span>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
-  )
+function withSoftTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  return Promise.race([
+    promise.catch(() => fallback),
+    new Promise<T>(resolve => {
+      timeout = setTimeout(() => resolve(fallback), ms)
+    }),
+  ]).finally(() => {
+    if (timeout) clearTimeout(timeout)
+  })
 }
 
-export default async function DashboardPage() {
+async function loadDashboardLeadUncached() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const defaults = {
+    userId: user?.id ?? '',
+    displayName: 'there',
+    streakDays: 0,
+    xpTotal: 0,
+    isCalibrated: false,
+    dailyDone: 0,
+    plan: 'free' as string | null,
+    allMoveLevels: [] as { move: string; xp: number; level: number; progress_pct: number }[],
+    weakestMove: 'frame',
+    hatchContext: null as HatchUserContext | null,
+  }
+
+  if (!user?.id) return defaults
+
+  const today = new Date().toISOString().split('T')[0]
+  const adminClient = createAdminClient()
+  const profilePromise = supabase
+    .from('profiles')
+    .select('display_name, onboarding_completed_at, streak_days, xp_total, plan')
+    .eq('id', user.id)
+    .single()
+  const dailyCountPromise = supabase
+    .from('challenge_attempts')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .gte('created_at', today)
+  const moveLevelsPromise = adminClient
+    .from('move_levels')
+    .select('move, xp, level, progress_pct')
+    .eq('user_id', user.id)
+    .order('xp', { ascending: true })
+  const hatchContextPromise = withSoftTimeout<HatchUserContext | null>(getHatchContext(user.id), 1200, null)
+
+  const [{ data: profile }, { count: dailyCount }, { data: moveLevelsData }, hatchContext] = await Promise.all([
+    profilePromise,
+    dailyCountPromise,
+    moveLevelsPromise,
+    hatchContextPromise,
+  ])
+  const allMoveLevels = (moveLevelsData ?? []) as { move: string; xp: number; level: number; progress_pct: number }[]
+
+  return {
+    userId: user.id,
+    displayName: profile?.display_name ?? 'there',
+    streakDays: profile?.streak_days ?? 0,
+    xpTotal: profile?.xp_total ?? 0,
+    isCalibrated: !!profile?.onboarding_completed_at,
+    dailyDone: dailyCount ?? 0,
+    plan: profile?.plan ?? 'free',
+    allMoveLevels,
+    weakestMove: allMoveLevels[0]?.move ?? 'frame',
+    hatchContext,
+  }
+}
+
+async function loadDashboardCoreUncached() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -218,8 +229,6 @@ export default async function DashboardPage() {
   let primaryGoal: string | null = null
   let prepTimeline: string | null = null
   let roleContext: string | null = null
-  // Raw display name (null when unset) for the leaderboard's "You" fallback,
-  // distinct from displayName which coalesces to 'there' for the greeting.
   let rawDisplayName: string | null = null
 
   if (user) {
@@ -245,13 +254,16 @@ export default async function DashboardPage() {
     isCalibrated = !!profile?.onboarding_completed_at
     dailyDone = dailyCount ?? 0
     plan = profile?.plan ?? 'free'
-    primaryGoal = (profile as Record<string, unknown>)?.primary_goal as string | null ?? null
-    prepTimeline = (profile as Record<string, unknown>)?.prep_timeline as string | null ?? null
-    roleContext = (profile as Record<string, unknown>)?.role_context as string | null ?? null
+    primaryGoal = ((profile as Record<string, unknown> | null)?.primary_goal as string | null) ?? null
+    prepTimeline = ((profile as Record<string, unknown> | null)?.prep_timeline as string | null) ?? null
+    roleContext = ((profile as Record<string, unknown> | null)?.role_context as string | null) ?? null
   }
 
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
+  const hatchContextPromise = userId
+    ? withSoftTimeout<HatchUserContext | null>(getHatchContext(userId), 2200, null)
+    : Promise.resolve(null)
 
   const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, featuredAutopsy, activePlanResult] = await Promise.all([
     getHotChallenges(),
@@ -272,41 +284,36 @@ export default async function DashboardPage() {
 
   const activePlanSlug = (activePlanResult?.data?.study_plans as unknown as { slug: string } | null)?.slug ?? null
 
-  // Fetch paused loops for PausedLoopCard
   let pausedLoopData: { loop: Record<string, unknown>; rounds: Record<string, unknown>[] } | null = null
-  try {
-    const { data: pausedLoops } = await adminClient
-      .from('interview_loops' as string)
-      .select('id, user_id, status, created_at, updated_at, scenario_id, company_id, round_count, config')
-      .eq('user_id', userId)
-      .eq('status', 'paused')
-      .order('created_at', { ascending: false })
-      .limit(1)
+  if (userId) {
+    try {
+      const { data: pausedLoops } = await adminClient
+        .from('interview_loops' as string)
+        .select('id, user_id, status, created_at, updated_at, scenario_id, company_id, round_count, config')
+        .eq('user_id', userId)
+        .eq('status', 'paused')
+        .order('created_at', { ascending: false })
+        .limit(1)
 
-    if (pausedLoops?.length) {
-      const { data: rounds } = await adminClient
-        .from('loop_rounds' as string)
-        .select('id, loop_id, round_index, status, score, feedback_json, created_at, updated_at')
-        .eq('loop_id', (pausedLoops[0] as { id: string }).id)
-        .order('round_index', { ascending: true })
-      pausedLoopData = { loop: pausedLoops[0] as Record<string, unknown>, rounds: rounds ?? [] }
+      if (pausedLoops?.length) {
+        const { data: rounds } = await adminClient
+          .from('loop_rounds' as string)
+          .select('id, loop_id, round_index, status, score, feedback_json, created_at, updated_at')
+          .eq('loop_id', (pausedLoops[0] as { id: string }).id)
+          .order('round_index', { ascending: true })
+        pausedLoopData = { loop: pausedLoops[0] as Record<string, unknown>, rounds: rounds ?? [] }
+      }
+    } catch {
+      pausedLoopData = null
     }
-  } catch {
-    // Don't fail the dashboard if loop fetch errors
   }
 
-  // ── Right-rail data: achievements + streak (fetched early, path built after challenges) ──
   let achievementData: { id: string; name: string; icon: string; unlocked: boolean; color: string }[] = []
-  let weekDates: { dayLabel: string; dateLabel: string; completed: boolean; isToday: boolean }[] = []
-  type AttemptRow = { challenge_id: string; created_at: string; challenges: { title: string; slug: string | null; challenge_type: string | null } | null }
+  let weekDates: WeekDate[] = []
   let todayAttempts: AttemptRow[] = []
 
-  // Built for any logged-in user. Uncalibrated users have no streak/achievement
-  // rows, so the week grid renders all-empty and every achievement shows locked —
-  // the genuine empty state, identical to a calibrated-but-inactive user.
   if (userId) {
     const now = new Date()
-    // Use local date parts to avoid UTC offset shifting dates
     const pad = (n: number) => String(n).padStart(2, '0')
     const localDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
     const todayStr = localDate(now)
@@ -392,7 +399,6 @@ export default async function DashboardPage() {
 
     const completedIdsArr = Array.from(completedIds)
 
-    // 1. Same move + right difficulty band
     let nextQuery = adminClient
       .from('challenges')
       .select('id, slug, title, difficulty, display_number, challenge_type, domain:domains(title)')
@@ -408,7 +414,6 @@ export default async function DashboardPage() {
     const { data: personalizedNext } = await nextQuery.limit(1).maybeSingle()
     nextChallenge = normalizeChallenge(personalizedNext ?? null)
 
-    // 2. Fallback: same move, any difficulty
     if (!nextChallenge) {
       let fallbackMoveQuery = adminClient
         .from('challenges')
@@ -424,7 +429,6 @@ export default async function DashboardPage() {
       nextChallenge = normalizeChallenge(fallbackMove ?? null)
     }
 
-    // 3. Fallback: any uncompleted challenge
     if (!nextChallenge && completedIdsArr.length > 0) {
       const anyQuery = adminClient
         .from('challenges')
@@ -438,7 +442,6 @@ export default async function DashboardPage() {
     }
   }
 
-  // 4. Final fallback: any published challenge
   if (!nextChallenge) {
     const { data: fallbackChallenge } = await adminClient
       .from('challenges')
@@ -450,16 +453,12 @@ export default async function DashboardPage() {
     nextChallenge = normalizeChallenge(fallbackChallenge ?? null)
   }
 
-  // Attach rule-based insight from move level data; no AI call.
   if (nextChallenge && allMoveLevels.length > 0) {
     const weakestLevel = allMoveLevels[0].level ?? 1
     nextChallenge = { ...nextChallenge, hatch_insight: moveHatchInsight(weakestMove, weakestLevel, primaryGoal) }
   }
 
-  // ── Build Today's Path (depends on quickTakePrompt + nextChallenge) ──
-  // Built for any logged-in user, calibrated or not. Uncalibrated users have no
-  // todayAttempts, so all steps render as not-done (the warm-up empty state).
-  let todaysPathSteps: { label: string; sub: string; icon: string; done: boolean; active: boolean; href?: string }[] = []
+  let todaysPathSteps: PathStep[] = []
   let todaysPathCompleted = 0
 
   if (userId) {
@@ -473,15 +472,12 @@ export default async function DashboardPage() {
         icon: 'bolt',
         done: doneQuickTake,
         active: !doneQuickTake,
-        // Quick-takes are answered inline on the dashboard card below, not in
-        // the workspace (that route redirects quick_take → /challenges). Anchor
-        // to the card so the step lands on something usable.
         href: '/dashboard#quick-take',
       },
       {
         label: 'Core challenge',
         sub: nextChallenge
-          ? `${capitalize(weakestMove)} · ${difficultyLabel(nextChallenge.difficulty)}`
+          ? `${capitalize(weakestMove)} / ${difficultyLabel(nextChallenge.difficulty)}`
           : 'Pick a challenge',
         icon: 'track_changes',
         done: doneFlowChallenge,
@@ -502,138 +498,333 @@ export default async function DashboardPage() {
 
   const userEntry = (leaderboard as { rank: number; isCurrentUser?: boolean }[]).find(e => e.isCurrentUser)
   const userRank = userEntry?.rank ?? 0
-
   const interviews: UserInterview[] = interviewDate
     ? [{ id: '0', user_id: userId, company: null, role: null, round: null, interview_date: interviewDate, notes: null, created_at: interviewDate }]
     : []
-  const hasFollowUpCards = Boolean(latestInterview || enrolledPlans.length > 0)
-  const showSplitFollowUps = Boolean(latestInterview && enrolledPlans.length > 0)
+  const hatchContext = await hatchContextPromise
 
+  return {
+    userId,
+    displayName,
+    streakDays,
+    xpTotal,
+    interviewDate,
+    isCalibrated,
+    dailyDone,
+    plan,
+    roleContext,
+    hotChallenges,
+    leaderboard,
+    enrolledPlans,
+    latestInterview,
+    communityActivity,
+    featuredAutopsy,
+    activePlanSlug,
+    pausedLoopData,
+    achievementData,
+    weekDates,
+    nextChallenge,
+    allMoveLevels,
+    weakestMove,
+    quickTakePrompt,
+    todaysPathSteps,
+    todaysPathCompleted,
+    userRank,
+    interviews,
+    hatchContext,
+  }
+}
+
+const getDashboardLead = cache(loadDashboardLeadUncached)
+const getDashboardCore = cache(loadDashboardCoreUncached)
+
+const getAnalyticsFrontDoor = cache(async () => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user?.id) return null
+  return getCcAnalyticsFrontDoor(createAdminClient(), user.id)
+})
+
+export default function DashboardPage() {
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7">
-
+    <main className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 sm:py-7">
       <Suspense fallback={null}>
         <UpgradedBanner />
       </Suspense>
 
-      {/* Unified dashboard — same layout for first-time and calibrated users.
-          Calibration-seeded cards (FLOW Levels) lock until calibration is done;
-          activity-driven cards render their genuine empty states. */}
-      <div className="grid min-w-0 grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_340px]">
-          {/* Main column */}
-          <div className="flex flex-col gap-6 min-w-0">
-            <HeroGreeterCard
-              displayName={displayName}
-              streakDays={streakDays}
-              xpTotal={xpTotal}
-              focusMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
-              focusLevel={allMoveLevels[0]?.level ?? 1}
-              dailyDone={dailyDone}
-              isCalibrated={isCalibrated}
-              sessionHref={
-                nextChallenge
-                  ? challengePath(nextChallenge)
-                  : '/challenges'
-              }
-              studyPlanHref={enrolledPlans.length > 0 ? `/explore/plans/${enrolledPlans[0].slug}` : '/explore/plans'}
-            />
+      <section className="grid min-w-0 grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.58fr)]">
+        <Suspense fallback={<CoachBriefSkeleton />}>
+          <CoachBriefSection />
+        </Suspense>
+        <aside className="grid min-w-0 content-start gap-4">
+          <Suspense fallback={<SponsorSkeleton />}>
+            <SponsorSection />
+          </Suspense>
+          <Suspense fallback={<FlowLeadSkeleton />}>
+            <FlowLeadSection />
+          </Suspense>
+        </aside>
+      </section>
 
-            <BillingDashboardNudge plan={plan} />
+      <Suspense fallback={<DashboardBodySkeleton />}>
+        <DashboardBodySection />
+      </Suspense>
+    </main>
+  )
+}
 
-            <HatchOperatingSystemCard />
+async function CoachBriefSection() {
+  const data = await getDashboardLead()
+  const weakestCompetency = data.hatchContext?.weakestCompetency ?? null
+  const competency = weakestCompetency
+    ? data.hatchContext?.competencies.find(c => c.competency === weakestCompetency)
+    : null
 
-            {featuredAutopsy && (
-              <FeaturedAutopsyCard story={featuredAutopsy.story} company={featuredAutopsy.company} />
-            )}
+  return (
+    <CoachSpineCard
+      displayName={data.displayName}
+      streakDays={data.streakDays}
+      xpTotal={data.xpTotal}
+      focusMove={capitalize(data.allMoveLevels[0]?.move ?? 'Frame')}
+      focusLevel={data.allMoveLevels[0]?.level ?? 1}
+      dailyDone={data.dailyDone}
+      isCalibrated={data.isCalibrated}
+      sessionHref="/challenges"
+      studyPlanHref="/explore/plans"
+      weakestCompetency={weakestCompetency}
+      competencyScore={competency?.score ?? null}
+      competencyTrend={competency?.trend ?? null}
+      recentCompletions={data.hatchContext?.recentCompletions.length ?? 0}
+    />
+  )
+}
 
-            {/* FLOW Disciplines explorer card */}
-            <DisciplineExplorer />
+async function SponsorSection() {
+  const [data, analytics] = await Promise.all([
+    getDashboardLead(),
+    getAnalyticsFrontDoor(),
+  ])
+  return (
+    <UpgradeSponsorCard
+      plan={data.plan}
+      focusMove={data.allMoveLevels[0]?.move ?? data.weakestMove}
+      dailyDone={data.dailyDone}
+      analyticsEnabled={analytics?.enabled ?? false}
+      analyticsHasAccess={analytics?.hasAccess ?? false}
+    />
+  )
+}
 
-            {/* Resume / Quick Take row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* scroll-mt offsets the fixed top bar when linked via #quick-take */}
-              <div id="quick-take" className="scroll-mt-24">
-                <QuickTakeCard
-                  prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
-                  challengeId={quickTakePrompt?.id ?? 'orientation'}
-                  hatchContext={null}
-                />
-              </div>
-              {nextChallenge?.domainName ? (
-                <NextChallengeCard
-                  title={nextChallenge.title}
-                  domain={nextChallenge.domainName}
-                  difficulty={nextChallenge.difficulty ?? 'standard'}
-                  challengeId={nextChallenge.slug ?? nextChallenge.id}
-                  catalogNumber={formatChallengeNumber(nextChallenge.challenge_type, nextChallenge.display_number)}
-                  hatchInsight={nextChallenge.hatch_insight ?? null}
-                  activePlanSlug={activePlanSlug}
-                />
-              ) : (
-                <NextChallengeCard
-                  title="Designing a Metric Dashboard for a B2B SaaS Tool"
-                  domain="Product Sense"
-                  difficulty="standard"
-                  challengeId="orientation"
-                  hatchInsight={null}
-                  activePlanSlug={activePlanSlug}
-                />
-              )}
+async function FlowLeadSection() {
+  const data = await getDashboardLead()
+  const card = <FlowMoveLevelsCard levels={data.allMoveLevels} variant="compact" />
+
+  return data.isCalibrated ? (
+    card
+  ) : (
+    <LockOverlay label="Calibrate to personalize FLOW">
+      {card}
+    </LockOverlay>
+  )
+}
+
+async function AnalyticsLabSection() {
+  const data = await getAnalyticsFrontDoor()
+  if (!data?.enabled) return null
+  return <AnalyticsLabCard data={data} />
+}
+
+async function DashboardBodySection() {
+  const data = await getDashboardCore()
+
+  return (
+    <div className="mt-5 flex flex-col gap-5">
+      <section className="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.58fr)]">
+        <div className="min-w-0 space-y-4">
+          <CadenceRibbon
+            streakDays={data.streakDays}
+            todaysPathSteps={data.todaysPathSteps}
+            todaysPathCompleted={data.todaysPathCompleted}
+            weekDates={data.weekDates}
+          />
+
+          <div className="xl:hidden">
+            <Suspense fallback={<AnalyticsLabSkeleton />}>
+              <AnalyticsLabSection />
+            </Suspense>
+          </div>
+
+          <SectionHeading
+            title="Start with a quick warm-up, then take on a full challenge."
+            href="/challenges"
+            action="All practice"
+          />
+
+          <div className="grid min-w-0 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+            <div id="quick-take" className="scroll-mt-24 h-full">
+              <QuickTakeCard
+                prompt={data.quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
+                challengeId={data.quickTakePrompt?.id ?? 'orientation'}
+                hatchContext={null}
+              />
             </div>
-
-            {/* FLOW Move Levels — calibration seeds these, so lock until done */}
-            {isCalibrated ? (
-              <FlowMoveLevelsCard levels={allMoveLevels} />
+            {data.nextChallenge?.domainName ? (
+              <NextChallengeCard
+                title={data.nextChallenge.title}
+                domain={data.nextChallenge.domainName}
+                difficulty={data.nextChallenge.difficulty ?? 'standard'}
+                challengeId={data.nextChallenge.slug ?? data.nextChallenge.id}
+                catalogNumber={formatChallengeNumber(data.nextChallenge.challenge_type, data.nextChallenge.display_number)}
+                hatchInsight={data.nextChallenge.hatch_insight ?? null}
+                activePlanSlug={data.activePlanSlug}
+              />
             ) : (
-              <LockOverlay>
-                <FlowMoveLevelsCard levels={allMoveLevels} />
-              </LockOverlay>
-            )}
-
-            {hasFollowUpCards && (
-              <div className={`grid grid-cols-1 gap-4 ${showSplitFollowUps ? 'xl:grid-cols-2' : 'xl:max-w-[640px]'}`}>
-                {latestInterview && <LatestInterviewCard data={latestInterview} />}
-                {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
-              </div>
-            )}
-
-            {/* Secondary row */}
-            <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
-              <HotChallengesCard challenges={hotChallenges} />
-              <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
-            </div>
-
-            <CommunityActivityCard events={communityActivity} />
-
-            {/* Interview Countdown — only for users who selected an interview goal */}
-            {interviewDate && (roleContext === 'engineer_pm_interview' || roleContext === 'both') && (
-              <InterviewCountdownCard interviews={interviews} />
+              <NextChallengeCard
+                title="Designing a Metric Dashboard for a B2B SaaS Tool"
+                domain="Product Sense"
+                difficulty="standard"
+                challengeId="orientation"
+                hatchInsight={null}
+                activePlanSlug={data.activePlanSlug}
+              />
             )}
           </div>
 
-          {/* Right rail */}
-          <aside className="hidden min-w-0 flex-col gap-5 lg:flex">
-            {todaysPathSteps.length > 0 && (
-              <TodaysPathCard steps={todaysPathSteps} completedCount={todaysPathCompleted} />
-            )}
-            {pausedLoopData && (
-              <PausedLoopCard
-                loop={pausedLoopData.loop as unknown as InterviewLoop}
-                rounds={pausedLoopData.rounds as unknown as LoopRound[]}
-              />
-            )}
-            {achievementData.length > 0 && (
-              <AchievementsCard
-                achievements={achievementData}
-                unlockedCount={achievementData.filter(a => a.unlocked).length}
-                totalCount={achievementData.length}
-              />
-            )}
-            {weekDates.length > 0 && (
-              <StreakCalendarCard streakDays={streakDays} weekDates={weekDates} />
-            )}
-          </aside>
+          {/* FLOW discipline map sits high in the column so it anchors the page
+              instead of trailing at the bottom. */}
+          <DisciplineExplorer />
+
+          {/* Featured autopsy + latest interview share a row when both exist; a
+              single present card spans the full width. Stacks on < xl. */}
+          {data.featuredAutopsy && data.latestInterview ? (
+            <div className="grid min-w-0 grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
+              <FeaturedAutopsyCard story={data.featuredAutopsy.story} company={data.featuredAutopsy.company} />
+              <LatestInterviewCard data={data.latestInterview} compact />
+            </div>
+          ) : data.featuredAutopsy ? (
+            <FeaturedAutopsyCard story={data.featuredAutopsy.story} company={data.featuredAutopsy.company} />
+          ) : data.latestInterview ? (
+            <LatestInterviewCard data={data.latestInterview} compact />
+          ) : null}
+
+          {data.enrolledPlans.length > 0 && (
+            <div className="xl:max-w-[640px]">
+              <EnrolledPlansCard plans={data.enrolledPlans} />
+            </div>
+          )}
         </div>
+
+        <aside className="min-w-0 space-y-4">
+          <div className="hidden xl:block">
+            <Suspense fallback={<AnalyticsLabSkeleton />}>
+              <AnalyticsLabSection />
+            </Suspense>
+          </div>
+
+          {data.pausedLoopData && (
+            <PausedLoopCard
+              loop={data.pausedLoopData.loop as unknown as InterviewLoop}
+              rounds={data.pausedLoopData.rounds as unknown as LoopRound[]}
+            />
+          )}
+
+          {/* Achievements card hidden for now (2026-06-30) to keep the dashboard
+              clean. Re-enable by restoring the AchievementsCard block below. */}
+          {/* {data.achievementData.length > 0 && (
+            <AchievementsCard
+              achievements={data.achievementData}
+              unlockedCount={data.achievementData.filter(a => a.unlocked).length}
+              totalCount={data.achievementData.length}
+            />
+          )} */}
+
+          {/* Trending challenges live in the sidebar so the left column's height
+              comes down and both columns end closer together. */}
+          {data.hotChallenges.length > 0 && (
+            <HotChallengesCard challenges={data.hotChallenges} compact limit={4} />
+          )}
+
+          <LeaderboardPeekCard entries={data.leaderboard} userRank={data.userRank} />
+
+          <CommunityActivityCard events={data.communityActivity} />
+
+          {data.interviewDate && (data.roleContext === 'engineer_pm_interview' || data.roleContext === 'both') && (
+            <InterviewCountdownCard interviews={data.interviews} />
+          )}
+        </aside>
+      </section>
+    </div>
+  )
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  href,
+  action,
+}: {
+  eyebrow?: string
+  title: string
+  href?: string
+  action?: string
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/60 pt-3">
+      <div>
+        {eyebrow && (
+          <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.14em] text-primary">{eyebrow}</p>
+        )}
+        <h2 className={`${eyebrow ? 'mt-1' : ''} font-headline text-xl font-bold leading-tight tracking-tight text-on-surface`}>
+          {title}
+        </h2>
+      </div>
+      {href && action && (
+        <Link
+          href={href}
+          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-label font-bold text-on-surface-variant no-underline transition-colors hover:bg-surface-container"
+        >
+          {action}
+          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+        </Link>
+      )}
+    </div>
+  )
+}
+
+function CoachBriefSkeleton() {
+  return (
+    <div className="min-h-[286px] animate-pulse rounded-[24px] bg-surface-container">
+      <div className="h-full min-h-[286px] rounded-[24px] bg-gradient-to-br from-surface-container-high to-surface-container" />
+    </div>
+  )
+}
+
+function SponsorSkeleton() {
+  return <div className="h-[196px] animate-pulse rounded-[22px] bg-surface-container" />
+}
+
+function FlowLeadSkeleton() {
+  return <div className="h-[170px] animate-pulse rounded-[22px] bg-surface-container" />
+}
+
+function AnalyticsLabSkeleton() {
+  return <div className="min-h-[240px] animate-pulse rounded-[22px] bg-surface-container-high" />
+}
+
+function DashboardBodySkeleton() {
+  return (
+    <div className="mt-5 grid gap-5">
+      <div className="h-[104px] animate-pulse rounded-[22px] bg-surface-container" />
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.48fr)]">
+        <div className="space-y-4">
+          <div className="h-[212px] animate-pulse rounded-2xl bg-surface-container" />
+          <div className="h-[122px] animate-pulse rounded-2xl bg-surface-container" />
+        </div>
+        <div className="space-y-4">
+          <div className="h-[188px] animate-pulse rounded-2xl bg-surface-container" />
+          <div className="h-[244px] animate-pulse rounded-2xl bg-surface-container" />
+        </div>
+      </div>
     </div>
   )
 }
