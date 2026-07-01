@@ -40,6 +40,7 @@ export const MARKETING_ROUTES = [
   '/alternatives',
   '/lp',
   '/landing',
+  '/quiz',
   '/robots.txt',
   '/sitemap.xml',
   '/manifest.json',

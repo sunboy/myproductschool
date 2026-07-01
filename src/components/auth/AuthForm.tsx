@@ -11,6 +11,8 @@ import { loginSchema, passwordResetRequestSchema, signupSchema, zodFieldErrors }
 interface AuthFormProps {
   mode: 'login' | 'signup'
   redirectTo?: string
+  /** Archetype slug carried from the public /quiz/archetype CTA, claimed onto the new profile. */
+  archetype?: string
 }
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'magic'
@@ -123,7 +125,7 @@ function DisciplineSignalBoard() {
   )
 }
 
-export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
+export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormProps) {
   const [activeMode, setActiveMode] = useState<AuthMode>(initialMode)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -319,6 +321,8 @@ export function AuthForm({ mode: initialMode, redirectTo }: AuthFormProps) {
           // the session AND forwards the user to their post-signup destination
           // (e.g. a /pricing plan deep-link that resumes checkout), not just /dashboard.
           redirectTo: `${siteOrigin()}/auth/callback?next=${encodeURIComponent(dest)}`,
+          // Best-effort claim of a /quiz/archetype result onto the new profile.
+          ...(archetype ? { archetype } : {}),
         })
         if (data.hasSession) {
           play('success')
