@@ -305,7 +305,14 @@ export async function buildSteppedExecutionFromMetadata(
     // The first case that reduces to a >=3-step spec supplies the diagram; later
     // cases still run purely to certify the reference on more inputs.
     if (!diagramSpec) {
-      const spec = reduceTrace(trace)
+      // reduceTrace is pure but defends against a pathological frame; wrap it so one
+      // odd challenge can never crash a whole batch (fail soft to the static diagram).
+      let spec: ReducedExecution | null = null
+      try {
+        spec = reduceTrace(trace)
+      } catch {
+        return null
+      }
       // The execution base's schema floor is 3 steps (a 2-transition walkthrough
       // does not read as a motion). Fewer than 3 meaningful steps is too short to
       // animate honestly, so keep looking for a case that reduces to enough steps.

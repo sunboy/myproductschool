@@ -153,6 +153,27 @@ test('a heap of coordinate tuples is NOT mistaken for a matrix (grid-like gate)'
   assert.ok(spec!.steps.every((s) => s.cursor === undefined))
 })
 
+test('a star container absent from some frames does not crash change scoring', () => {
+  // Regression: signature(undefined) is the value `undefined`, which used to throw
+  // on `.length` in changeMagnitude when the star was missing from an interior
+  // frame. The reduction must complete and never throw.
+  const sourceLines = ['def solution(nums):', '    seen = {}', '    for n in nums:', '        seen[n] = True', '    return list(seen)']
+  const A = [3, 1, 4, 1, 5, 9, 2, 6]
+  const frames = [
+    { line: 2, locals: { nums: A } },
+    { line: 4, locals: { nums: A, n: 3, seen: { '3': true } } },
+    { line: 3, locals: { nums: A } }, // seen absent here — star undefined this frame
+    { line: 4, locals: { nums: A, n: 1, seen: { '3': true, '1': true } } },
+    { line: 3, locals: { nums: A } },
+    { line: 4, locals: { nums: A, n: 4, seen: { '3': true, '1': true, '4': true } } },
+    { line: 5, locals: { nums: A, seen: { '3': true, '1': true, '4': true } } },
+  ]
+  const trace: GenericTrace = { answer: [3, 1, 4], frames, sourceLines }
+  const spec = reduceTrace(trace)
+  assert.ok(spec) // completed without throwing
+  assert.ok(spec!.steps.length >= 3 && spec!.steps.length <= 8)
+})
+
 test('an out-of-range pointer is dropped, never drawn past the container', () => {
   // Linear scan where the loop index runs one past the end at termination (i === len).
   const sourceLines = ['def solution(nums):', '    total = 0', '    for i in range(len(nums)):', '        total += nums[i]', '    return total']

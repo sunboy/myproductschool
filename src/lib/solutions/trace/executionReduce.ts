@@ -182,10 +182,13 @@ function isIntScalar(v: unknown): v is number {
   return typeof v === 'number' && Number.isInteger(v)
 }
 
-/** Stable structural signature of a value, for cheap change detection. */
+/** Stable structural signature of a value, for cheap change detection. Always a
+ * string: JSON.stringify(undefined) is the value `undefined` (not a throw) and a
+ * circular value throws, so both are coalesced to a stable string sentinel. */
 function signature(v: unknown): string {
   try {
-    return JSON.stringify(v)
+    const s = JSON.stringify(v)
+    return s === undefined ? ' undef' : s
   } catch {
     return String(v)
   }
