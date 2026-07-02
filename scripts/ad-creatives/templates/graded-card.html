@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="_tokens.css" />
+<style>
+  /* Graded card: an "interview answer" excerpt with a red circle around the
+   * fatal phrase and an amber score stamp, Hatch grading it. Series S1. */
+  .ad-root { background: var(--cream); }
+
+  .stage {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 44px;
+    padding: 150px 72px;
+  }
+
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--charcoal);
+    letter-spacing: -0.02em;
+    line-height: 1.06;
+    text-align: center;
+  }
+  .ratio-9x16 .headline { font-size: 78px; }
+  .ratio-4x5  .headline { font-size: 70px; }
+  .ratio-1x1  .headline { font-size: 62px; }
+
+  .card-wrap { position: relative; width: 100%; max-width: 880px; margin-top: 56px; margin-bottom: 110px; }
+
+  .answer-card {
+    position: relative;
+    background: var(--paper);
+    border: 3px solid var(--mist);
+    border-radius: 28px;
+    padding: 56px 52px 64px;
+    box-shadow: 0 24px 60px -30px rgba(30, 33, 28, 0.35);
+    transform: rotate(-1.2deg);
+  }
+
+  .answer-label {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 22px;
+  }
+
+  .answer-text {
+    font-size: 38px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+
+  .answer-text .circled {
+    position: relative;
+    white-space: nowrap;
+    color: var(--charcoal);
+  }
+  /* hand-drawn red circle */
+  .answer-text .circled::after {
+    content: '';
+    position: absolute;
+    inset: -14px -22px -10px -18px;
+    border: 6px solid #c0392b;
+    border-radius: 48% 52% 55% 45% / 60% 48% 58% 42%;
+    transform: rotate(-2deg);
+  }
+
+  .stamp {
+    position: absolute;
+    right: -26px;
+    top: -54px;
+    background: var(--amber);
+    color: var(--charcoal);
+    font-weight: 900;
+    font-size: 40px;
+    letter-spacing: 0.06em;
+    padding: 22px 40px;
+    border: 5px solid var(--amber-deep);
+    border-radius: 16px;
+    transform: rotate(7deg);
+    box-shadow: 0 10px 24px -10px rgba(155, 124, 60, 0.6);
+    text-transform: uppercase;
+  }
+
+  .pose {
+    position: absolute;
+    bottom: -150px;
+    left: -70px;
+    transform: rotate(4deg);
+  }
+  .pose img { width: 290px; height: auto; }
+  .ratio-1x1 .pose img { width: 240px; }
+
+  .footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 26px;
+    margin-top: 40px;
+  }
+  .sub { font-size: 34px; color: var(--ink-2); font-weight: 700; text-align: center; }
+  .cta-pill { font-size: 38px; padding: 30px 72px; }
+
+  .brand-chip { position: absolute; top: 150px; left: 84px; font-size: 34px; }
+  .ratio-1x1 .brand-chip, .ratio-4x5 .brand-chip { top: 56px; left: 64px; }
+</style>
+</head>
+<body>
+<div class="ad-root" id="root">
+  <div class="brand-chip">HackProduct</div>
+  <div class="stage">
+    <h1 class="headline" id="headline"></h1>
+    <div class="card-wrap">
+      <div class="answer-card">
+        <div class="answer-label">Interview answer, real</div>
+        <div class="answer-text" id="answer"></div>
+        <div class="stamp" id="stamp"></div>
+      </div>
+      <div class="pose"><img id="pose" alt="" /></div>
+    </div>
+    <div class="footer">
+      <p class="sub" id="sub"></p>
+      <div class="cta-pill" id="cta"></div>
+    </div>
+  </div>
+  <div class="safe-guides"></div>
+</div>
+<script>
+  const d = window.__AD_DATA__
+  document.getElementById('root').classList.add('ratio-' + d.ratio)
+  if (new URLSearchParams(location.search).get('guides')) document.body.classList.add('show-guides')
+  document.getElementById('headline').textContent = d.hook.headline
+  document.getElementById('sub').textContent = d.hook.sub || ''
+  document.getElementById('cta').textContent = d.hook.cta
+  document.getElementById('stamp').textContent = d.data.stamp
+  // answer text with the circled phrase marked via {curly braces} in data
+  const answer = document.getElementById('answer')
+  const parts = d.data.answer.split(/\{|\}/)
+  parts.forEach((part, i) => {
+    if (i % 2 === 1) {
+      const s = document.createElement('span')
+      s.className = 'circled'
+      s.textContent = part
+      answer.appendChild(s)
+    } else {
+      answer.appendChild(document.createTextNode(part))
+    }
+  })
+  const img = document.getElementById('pose')
+  if (d.poseUrl) img.src = d.poseUrl; else img.parentElement.remove()
+  if (!d.hook.sub) document.getElementById('sub').remove()
+</script>
+</body>
+</html>

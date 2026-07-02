@@ -1,0 +1,658 @@
+/* Instant-mode story player (/go/{slug}/i).
+ *
+ * Scoped under .lmi-root rather than .v3 because the instant player owns the
+ * full viewport and is NOT wrapped in a V3PageShell. Tokens are declared on
+ * .lmi-root itself so every child inherits them without the .v3 wrapper.
+ *
+ * Color tokens: pulled from v3-landing.css variable names but re-declared
+ * here so the player is self-contained. No raw hex outside rgba() shadow
+ * expressions (matching the lead-magnet.css convention).
+ */
+
+.lmi-root {
+  /* Terra surface tokens */
+  --bg:                 #faf6f0;
+  --paper:              #fffdf7;
+  --surface-3:          #ede6d6;
+  --line-1:             #e7dfc9;
+  --line-2:             #d5cab1;
+  --line-3:             #c1b594;
+  --ink-1:              #1e1b14;
+  --ink-2:              #4e4a3f;
+  --ink-3:              #78715f;
+  --ink-4:              #a59c83;
+  --forest:             #4a7c59;
+  --forest-2:           #3e6a4b;
+  --forest-soft:        #cfe3d3;
+  --forest-bright:      #7ee099;
+  --green-soft:         #8ecf9e;
+  --amber:              #d98211;
+  --amber-2:            #b96914;
+  --amber-soft:         #f3e2b9;
+  --dark:               #14201a;
+  --on-dark:            #f3ede0;
+  --r-xs:               8px;
+  --r-sm:               12px;
+  --r-md:               18px;
+  --r-lg:               24px;
+  --tr-fast:            140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Layout */
+  min-height: 100dvh;
+  min-height: 100vh;  /* fallback for browsers without dvh */
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink-1);
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Top bar: brand + progress ───────────────────────────────────────────── */
+
+.lmi-top {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--line-1);
+  background: var(--paper);
+}
+
+.lmi-brand {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--forest);
+  text-decoration: none;
+  font-family: var(--font-headline, Georgia, serif);
+}
+
+.lmi-progress-track {
+  flex: 1 1 0;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.lmi-progress-seg {
+  flex: 1 1 0;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  transition: background var(--tr-fast);
+}
+
+.lmi-progress-seg.is-filled {
+  background: var(--forest);
+}
+
+/* Answered-step segments take the color of the answer's tier. */
+.lmi-progress-seg.is-filled.is-tier-best { background: var(--forest); }
+.lmi-progress-seg.is-filled.is-tier-good { background: var(--green-soft); }
+.lmi-progress-seg.is-filled.is-tier-miss { background: var(--amber); }
+
+/* ── Scrollable content area ─────────────────────────────────────────────── */
+
+.lmi-body {
+  flex: 1 1 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lmi-screen {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Back control ────────────────────────────────────────────────────────── */
+
+.lmi-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.lmi-back:hover { color: var(--ink-1); }
+
+/* ── Hook screen ─────────────────────────────────────────────────────────── */
+
+.lmi-hook {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.lmi-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--forest);
+  margin: 0;
+}
+
+.lmi-headline {
+  font-family: var(--font-headline, Georgia, serif);
+  font-size: clamp(30px, 8vw, 44px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+.lmi-sub {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+/* ── Step screen ─────────────────────────────────────────────────────────── */
+
+.lmi-step-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.lmi-context {
+  max-height: clamp(88px, 24dvh, 200px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.55;
+  background: var(--paper);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  margin: 0;
+}
+
+.lmi-prompt {
+  font-weight: 700;
+  color: var(--ink-1);
+  font-size: 15px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ── Option cards ────────────────────────────────────────────────────────── */
+
+.lmi-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lmi-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  color: var(--ink-1);
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: border-color var(--tr-fast), background var(--tr-fast), transform var(--tr-fast);
+  font-family: inherit;
+}
+
+.lmi-option:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.lmi-option:hover:not(:disabled) {
+  border-color: var(--forest);
+  transform: translateY(-1px);
+}
+
+.lmi-option.is-selected {
+  border-color: var(--forest);
+  background: var(--forest-soft);
+}
+
+.lmi-option.is-correct {
+  border-color: var(--forest);
+  background: var(--forest-soft);
+}
+
+.lmi-option.is-wrong {
+  border-color: var(--amber-2);
+  background: var(--amber-soft);
+}
+
+.lmi-option:disabled {
+  cursor: default;
+}
+
+/* ── Reveal callout ──────────────────────────────────────────────────────── */
+
+.lmi-reveal {
+  background: var(--forest-soft);
+  border-left: 3px solid var(--forest);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  color: var(--ink-1);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* ── Picker options ──────────────────────────────────────────────────────── */
+
+.lmi-picker-label {
+  font-weight: 600;
+  display: block;
+}
+
+.lmi-picker-sub {
+  display: block;
+  color: var(--ink-3);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ── Inputs (select fields) ──────────────────────────────────────────────── */
+
+.lmi-field-label {
+  display: block;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.lmi-input {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink-1);
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--tr-fast);
+  box-sizing: border-box;
+}
+
+.lmi-input:focus { border-color: var(--forest); }
+.lmi-input::placeholder { color: var(--ink-4); }
+
+.lmi-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+/* ── CTA button ──────────────────────────────────────────────────────────── */
+
+.lmi-cta {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: var(--forest);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  transition: background var(--tr-fast), transform var(--tr-fast);
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.lmi-cta:hover { background: var(--forest-2); transform: translateY(-1px); }
+.lmi-cta:disabled { opacity: 0.45; cursor: default; transform: none; }
+
+.lmi-cta-secondary {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  background: transparent;
+  color: var(--forest);
+  border: 1px solid var(--forest);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  transition: background var(--tr-fast), transform var(--tr-fast);
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.lmi-cta-secondary:hover { background: var(--forest-soft); transform: translateY(-1px); }
+
+/* ── Result screen ───────────────────────────────────────────────────────── */
+
+.lmi-result {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.lmi-band {
+  font-family: var(--font-headline, Georgia, serif);
+  font-size: clamp(30px, 9vw, 44px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+.lmi-blurb {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+/* ── Dimension bars ──────────────────────────────────────────────────────── */
+
+.lmi-dims {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lmi-dim-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.lmi-dim-label {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.lmi-dim-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-1);
+}
+
+.lmi-dim-bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.lmi-dim-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--forest);
+  transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Capture screen (gate path) ──────────────────────────────────────────── */
+
+.lmi-capture {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  box-shadow: 0 18px 40px -28px rgba(30, 27, 20, 0.35);
+}
+
+.lmi-capture-title {
+  font-weight: 800;
+  color: var(--ink-1);
+  font-size: 17px;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.lmi-fine {
+  font-size: 12px;
+  color: var(--ink-4);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.lmi-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lmi-err {
+  color: var(--amber-2);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ── Unlocked screen ─────────────────────────────────────────────────────── */
+
+.lmi-unlocked {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--forest-soft);
+  border: 1px solid var(--forest);
+  border-radius: var(--r-lg);
+  padding: 24px;
+}
+
+.lmi-unlocked-note {
+  font-size: 13px;
+  color: var(--ink-2);
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Hatch top-bar glyph ─────────────────────────────────────────────────── */
+
+.lmi-hatch-slot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  margin-left: 6px;
+}
+
+/* One-shot scale pop when Hatch reacts to an answer (re-keyed per reaction). */
+.lmi-hatch-pop {
+  display: inline-flex;
+  animation: lmi-hatch-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes lmi-hatch-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+
+/* ── Hatch quip speech bubble ────────────────────────────────────────────── */
+
+.lmi-quip {
+  position: fixed;
+  top: 52px;                          /* just below the top bar (h ≈ 48px) */
+  right: 16px;
+  max-width: 260px;
+  background: var(--paper);
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink-1);
+  box-shadow: 0 6px 20px -8px rgba(30, 27, 20, 0.22);
+  z-index: 40;
+  pointer-events: none;
+  animation: lmi-quip-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Caret pointing up-right toward the Hatch glyph */
+.lmi-quip::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  right: 18px;
+  width: 12px;
+  height: 12px;
+  background: var(--paper);
+  border-left: 1.5px solid var(--line-2);
+  border-top: 1.5px solid var(--line-2);
+  transform: rotate(45deg);
+}
+
+@keyframes lmi-quip-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Egg stage ───────────────────────────────────────────────────────────── */
+
+.lmi-egg-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.lmi-egg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: var(--r-lg);
+  transition: transform var(--tr-fast);
+}
+
+.lmi-egg-btn:hover { transform: scale(1.04); }
+.lmi-egg-btn:active { transform: scale(0.97); }
+
+.lmi-egg-hint {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin: 0;
+  animation: lmi-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lmi-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* ── Hook screen egg tease ──────────────────────────────────────────────── */
+
+.lmi-hook-egg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 2px 0;
+}
+
+.lmi-hook-egg-cap {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* ── Result card (post-egg reveal) ──────────────────────────────────────── */
+
+.lmi-result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  box-shadow: 0 12px 32px -16px rgba(30, 27, 20, 0.2);
+  animation: lmi-card-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lmi-egg-result-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.lmi-egg-final {
+  flex: 0 0 auto;
+}
+
+@keyframes lmi-card-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Motion preferences ──────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .lmi-option,
+  .lmi-cta,
+  .lmi-cta-secondary,
+  .lmi-progress-seg,
+  .lmi-dim-fill,
+  .lmi-egg-btn,
+  .lmi-result-card {
+    transition: none;
+    animation: none;
+  }
+
+  .lmi-quip,
+  .lmi-hatch-pop {
+    animation: none;
+  }
+
+  .lmi-egg-hint {
+    animation: none;
+    opacity: 1;
+  }
+}

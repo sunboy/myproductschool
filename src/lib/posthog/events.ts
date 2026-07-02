@@ -268,3 +268,79 @@ export interface FirstRepRoutedProps {
   role: string
   challenge_href: string
 }
+
+// ─── Lead magnets ─────────────────────────────────────────────────────────────
+
+/**
+ * Fired (client) when a /go/* lead-magnet page mounts.
+ * All client lead-magnet events carry source_slug and any captured utm_* props.
+ */
+export const EVENT_MAGNET_VIEWED = 'lead_magnet_viewed'
+// source_slug + utm_* merged at call site via useMagnetTracking
+
+/** Fired (client) when the visitor clicks to start the quiz. */
+export const EVENT_MAGNET_QUIZ_STARTED = 'lead_magnet_quiz_started'
+// source_slug + utm_* merged at call site
+
+/** Fired (client) when the visitor advances to a quiz step. */
+export const EVENT_MAGNET_QUIZ_STEP = 'lead_magnet_quiz_step'
+export interface MagnetQuizStepProps {
+  source_slug: string
+  step_id: string
+  step_index: number
+  total_steps: number
+  [key: string]: unknown  // utm_* passthrough
+}
+
+/** Fired (client) when the visitor completes the quiz and a result is derived. */
+export const EVENT_MAGNET_QUIZ_COMPLETED = 'lead_magnet_quiz_completed'
+export interface MagnetQuizCompletedProps {
+  source_slug: string
+  band: string
+  score?: number
+  [key: string]: unknown  // utm_* passthrough
+}
+
+/** Fired (client) when the lead-gate form or signup prompt becomes visible. */
+export const EVENT_MAGNET_GATE_VIEWED = 'lead_magnet_gate_viewed'
+export interface MagnetGateViewedProps {
+  source_slug: string
+  mode: 'gate' | 'signup'
+  [key: string]: unknown  // utm_* passthrough
+}
+
+/** Fired (client) when the visitor submits the lead-gate form. */
+export const EVENT_MAGNET_GATE_SUBMITTED = 'lead_magnet_gate_submitted'
+// source_slug + utm_* merged at call site
+
+/** Fired (server) immediately after a lead row is created or recognised as already captured. */
+export const EVENT_MAGNET_LEAD_CAPTURED = 'lead_magnet_lead_captured'
+export interface MagnetLeadCapturedProps {
+  source_slug: string
+  already_captured: boolean
+  band?: string
+  utm_source?: string
+  utm_campaign?: string
+  utm_content?: string
+}
+
+/** Fired (server) when a visitor opens the personalised report page. */
+export const EVENT_MAGNET_REPORT_VIEWED = 'lead_magnet_report_viewed'
+// source_slug is the distinctId context passed server-side
+
+/** Fired (client) when the visitor clicks any post-result CTA. */
+export const EVENT_MAGNET_CTA_CLICKED = 'lead_magnet_cta_clicked'
+export interface MagnetCtaClickedProps {
+  source_slug: string
+  cta: 'signup' | 'report' | 'practice'
+  [key: string]: unknown  // utm_* passthrough
+}
+
+/**
+ * Fired (server) when a newly signed-up user can be attributed to a lead magnet.
+ * Complements EVENT_USER_SIGNED_UP — both fire on the same signup.
+ */
+export const EVENT_SIGNUP_FROM_MAGNET = 'signup_from_magnet'
+export interface SignupFromMagnetProps {
+  source_slug: string
+}

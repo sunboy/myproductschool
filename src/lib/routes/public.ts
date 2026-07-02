@@ -42,6 +42,7 @@ export const MARKETING_ROUTES = [
   '/affiliate-program',
   '/lp',
   '/landing',
+  '/go',
   '/quiz',
   '/robots.txt',
   '/sitemap.xml',

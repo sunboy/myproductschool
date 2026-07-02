@@ -10,6 +10,9 @@ import { ARCHETYPE_OBSERVATIONS } from '@/lib/calibration/archetypes'
  */
 
 export type CalibrationMove = 'frame' | 'list' | 'optimize' | 'win'
+// Alias kept for the lead-magnet quiz modules, which were extracted under this name
+// before this module absorbed src/lib/calibration/derive.ts. Same type, two names.
+export type CalibrationMoveKey = CalibrationMove
 
 export interface CalibrationScores {
   frame: number
@@ -17,11 +20,17 @@ export interface CalibrationScores {
   optimize: number
   win: number
 }
+// Alias kept for lead-magnet consumers (see CalibrationMoveKey above).
+export type MoveScores = CalibrationScores
 
 export interface ArchetypeResult {
+  /** Stable slug — the same key this entry lives under in ARCHETYPES. */
+  key: string
   name: string
   description: string
 }
+// Alias kept for lead-magnet consumers (see CalibrationMoveKey above).
+export type Archetype = ArchetypeResult
 
 export const TIER_CAPS: Record<OptionQuality, number> = {
   best: 3.0,
@@ -31,7 +40,7 @@ export const TIER_CAPS: Record<OptionQuality, number> = {
 }
 
 // 4 questions: index 0=Frame, 1=List, 2=Optimize, 3=Win
-const MOVE_QUESTION_INDEX: Record<CalibrationMove, number> = {
+export const MOVE_QUESTION_INDEX: Record<CalibrationMove, number> = {
   frame: 0,
   list: 1,
   optimize: 2,
@@ -50,14 +59,14 @@ export function scoreMove(move: CalibrationMove, selectedId: string): number {
 }
 
 export const ARCHETYPES: Record<string, ArchetypeResult> = {
-  strategist:       { name: 'The Strategist',         description: 'You frame problems sharply and land recommendations with conviction. Your instinct is to define the question before answering it.' },
-  systematic:       { name: 'The Systematic Builder', description: 'You construct solutions methodically with strong framing and a bias for structured execution. Narrative communication is your next edge.' },
-  analyst:          { name: 'The Analyst',            description: 'You thrive in data and options - breaking problems into clean, testable segments. Converting that rigour into crisp recommendations is your growth area.' },
-  communicator:     { name: 'The Communicator',       description: 'You land ideas clearly and handle rooms well. Building the structured diagnostic beneath your narrative will make your recommendations unassailable.' },
-  problem_framer:   { name: 'The Problem Framer',     description: 'You ask the right questions before jumping to answers. Developing your ability to deliver those insights with executive presence is your next move.' },
-  operator:         { name: 'The Operator',           description: 'You excel at scoping, prioritising, and shipping under constraints. Strengthening your problem framing will make your solutions harder to second-guess.' },
-  well_rounded:     { name: 'The Well-Rounded',       description: 'You show solid instincts across all four FLOW moves. The path forward is deepening each one from competent to exceptional.' },
-  emerging_thinker: { name: 'The Emerging Thinker',  description: 'You have the raw instincts - Hatch will help you build the frameworks to sharpen them into consistent, high-impact product thinking.' },
+  strategist:       { key: 'strategist',       name: 'The Strategist',         description: 'You frame problems sharply and land recommendations with conviction. Your instinct is to define the question before answering it.' },
+  systematic:       { key: 'systematic',       name: 'The Systematic Builder', description: 'You construct solutions methodically with strong framing and a bias for structured execution. Narrative communication is your next edge.' },
+  analyst:          { key: 'analyst',          name: 'The Analyst',            description: 'You thrive in data and options - breaking problems into clean, testable segments. Converting that rigour into crisp recommendations is your growth area.' },
+  communicator:     { key: 'communicator',     name: 'The Communicator',       description: 'You land ideas clearly and handle rooms well. Building the structured diagnostic beneath your narrative will make your recommendations unassailable.' },
+  problem_framer:   { key: 'problem_framer',   name: 'The Problem Framer',     description: 'You ask the right questions before jumping to answers. Developing your ability to deliver those insights with executive presence is your next move.' },
+  operator:         { key: 'operator',         name: 'The Operator',           description: 'You excel at scoping, prioritising, and shipping under constraints. Strengthening your problem framing will make your solutions harder to second-guess.' },
+  well_rounded:     { key: 'well_rounded',     name: 'The Well-Rounded',       description: 'You show solid instincts across all four FLOW moves. The path forward is deepening each one from competent to exceptional.' },
+  emerging_thinker: { key: 'emerging_thinker', name: 'The Emerging Thinker',   description: 'You have the raw instincts - Hatch will help you build the frameworks to sharpen them into consistent, high-impact product thinking.' },
 }
 
 /** Derives the archetype {name, description} for a set of 0-100 move scores. */
@@ -89,4 +98,16 @@ export function archetypeBySlug(slug: string): ArchetypeResult | null {
 /** Looks up the blind-spot observation line for an archetype's display name. */
 export function observationFor(archetypeName: string): string {
   return ARCHETYPE_OBSERVATIONS[archetypeName] ?? ''
+}
+
+/** Maps a 0-100 move score to the starting move_levels level (1-3) after calibration. */
+export function scoreToLevel(score: number): number {
+  if (score >= 75) return 3
+  if (score >= 50) return 2
+  return 1
+}
+
+/** Returns the weakest-scoring move key for a set of 0-100 move scores. */
+export function weakestMoveOf(scores: CalibrationScores): CalibrationMove {
+  return (Object.entries(scores).sort(([, a], [, b]) => a - b)[0][0]) as CalibrationMove
 }

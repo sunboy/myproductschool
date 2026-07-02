@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="_tokens.css" />
+<style>
+  /* Egg-hero motion ad stage (1080x1920). NOT screenshotted directly by
+   * render.mjs; driven frame-by-frame by render-egg-hero-video.mjs via
+   * window.__seek(t). All motion is computed from t so capture is
+   * deterministic. */
+
+  .ad-root { background: var(--deep-forest); align-items: center; justify-content: center; }
+
+  .beat {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 44px;
+    padding: 160px 90px;
+    text-align: center;
+    opacity: 0;
+  }
+
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 96px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--cream);
+  }
+  .headline .accent { color: var(--amber); }
+
+  .kicker { font-size: 38px; font-weight: 700; color: var(--mist); }
+
+  #lottie-stage { width: 760px; height: 760px; }
+
+  .tap-chips { display: flex; gap: 18px; }
+  .tap-chip {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    border: 4px solid var(--forest-soft);
+    color: var(--cream);
+    font-size: 40px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.25;
+    transform: scale(0.9);
+  }
+  .tap-chip.on { opacity: 1; transform: scale(1); background: var(--forest); border-color: var(--forest); }
+
+  /* Result card */
+  .result-card {
+    width: 760px;
+    background: var(--paper);
+    border-radius: 36px;
+    padding: 56px 60px;
+    text-align: left;
+    box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.55);
+  }
+  .result-eyebrow { font-size: 24px; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--forest); }
+  .result-band { font-family: var(--font-display); font-weight: 800; font-size: 78px; color: var(--charcoal); margin: 10px 0 26px; }
+  .bar-row { display: grid; grid-template-columns: 200px 1fr; gap: 18px; align-items: center; margin-top: 18px; }
+  .bar-label { font-size: 30px; font-weight: 700; color: var(--ink-2); }
+  .bar-track { height: 18px; border-radius: 999px; background: var(--mist); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: inherit; background: var(--forest); width: 0%; }
+
+  .cta-pill { font-size: 44px; padding: 34px 84px; }
+  .brand-line { font-family: var(--font-display); font-weight: 800; font-size: 40px; color: var(--forest-soft); }
+  .pose img { width: 420px; height: auto; }
+</style>
+</head>
+<body>
+<div class="ad-root">
+  <!-- Beat 1: hook line -->
+  <div class="beat" id="b1">
+    <h1 class="headline">Every prep has a <span class="accent">crack</span> in it.</h1>
+    <p class="kicker">Four questions find yours.</p>
+  </div>
+
+  <!-- Beat 2: the egg + tap counter -->
+  <div class="beat" id="b2">
+    <p class="kicker" id="b2-kicker">Tap. Answer. Four times.</p>
+    <div id="lottie-stage"></div>
+    <div class="tap-chips" id="chips">
+      <div class="tap-chip">1</div><div class="tap-chip">2</div><div class="tap-chip">3</div><div class="tap-chip">4</div>
+    </div>
+  </div>
+
+  <!-- Beat 3: result card -->
+  <div class="beat" id="b3">
+    <div class="result-card">
+      <div class="result-eyebrow">It hatched. Your read:</div>
+      <div class="result-band">The Strategist</div>
+      <div class="bar-row"><span class="bar-label">Frame</span><div class="bar-track"><div class="bar-fill" data-pct="92"></div></div></div>
+      <div class="bar-row"><span class="bar-label">List</span><div class="bar-track"><div class="bar-fill" data-pct="74"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Optimize</span><div class="bar-track"><div class="bar-fill" data-pct="58"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Win</span><div class="bar-track"><div class="bar-fill" data-pct="81"></div></div></div>
+    </div>
+  </div>
+
+  <!-- Beat 4: CTA end-card -->
+  <div class="beat" id="b4">
+    <div class="pose"><img id="cta-pose" alt="" /></div>
+    <h1 class="headline" style="font-size:84px;">Crack yours.</h1>
+    <p class="kicker">Free. 90 seconds. No signup to see the result.</p>
+    <div class="cta-pill">Take the test</div>
+    <div class="brand-line">hackproduct.com</div>
+  </div>
+</div>
+
+<script src="../../../node_modules/lottie-web/build/player/lottie.min.js"></script>
+<script>
+  // Timeline (seconds): b1 0-2.6 · b2 2.4-9.8 (egg cracks across taps) ·
+  // b3 9.4-12.4 (card + bars) · b4 12.2-15 (CTA).
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
+  const ease = (t) => 1 - Math.pow(1 - clamp(t, 0, 1), 3)
+
+  // Animation data is injected by render-egg-hero-video.mjs via
+  // window.__LOTTIE_DATA__ (fetch() is blocked on file:// pages, and the
+  // asset path inside the JSON is rewritten to a file:// URL there too).
+  let anim = null
+  window.__ready = false
+
+  if (window.__LOTTIE_DATA__) {
+    anim = lottie.loadAnimation({
+      container: document.getElementById('lottie-stage'),
+      renderer: 'svg', loop: false, autoplay: false,
+      animationData: window.__LOTTIE_DATA__,
+    })
+    anim.addEventListener('DOMLoaded', () => { window.__ready = true })
+  }
+
+  const params = new URLSearchParams(location.search)
+  document.getElementById('cta-pose').src = params.get('pose') || ''
+
+  function fade(el, tIn, tHold, tOut, t, slide = 30) {
+    // fade in over .45s at tIn, hold tHold, fade out over .4s at tOut
+    let o = 0, y = slide
+    if (t >= tIn) { const p = ease((t - tIn) / 0.45); o = p; y = slide * (1 - p) }
+    if (tOut && t >= tOut) { const p = ease((t - tOut) / 0.4); o = Math.min(o, 1 - p); y = -slide * p }
+    el.style.opacity = o
+    el.style.transform = `translateY(${y}px)`
+  }
+
+  window.__seek = (t) => {
+    fade(document.getElementById('b1'), 0.1, 0, 2.2, t)
+    fade(document.getElementById('b2'), 2.5, 0, 9.2, t)
+    fade(document.getElementById('b3'), 9.5, 0, 12.0, t)
+    fade(document.getElementById('b4'), 12.3, 0, null, t)
+
+    // Egg animation: idle wobble loop until 4th tap, then the hatch finale.
+    // Lottie frames: 0-35 wobble+crack, 36-167 pop. Map taps to frame ranges.
+    if (anim) {
+      const tapTimes = [3.6, 4.8, 6.0, 7.2]
+      let frame = 0
+      if (t < tapTimes[0]) frame = 0
+      else if (t < tapTimes[1]) frame = 12 * ease((t - tapTimes[0]) / 1.0)
+      else if (t < tapTimes[2]) frame = 12 + 12 * ease((t - tapTimes[1]) / 1.0)
+      else if (t < tapTimes[3]) frame = 24 + 11 * ease((t - tapTimes[2]) / 1.0)
+      else frame = 35 + 132 * ease((t - tapTimes[3]) / 2.2)
+      anim.goToAndStop(Math.min(Math.round(frame), 167), true)
+
+      // tap chips light up
+      document.querySelectorAll('.tap-chip').forEach((chip, i) => {
+        chip.classList.toggle('on', t >= tapTimes[i])
+      })
+    }
+
+    // Result bars fill staggered from 10.0s
+    document.querySelectorAll('.bar-fill').forEach((bar, i) => {
+      const pct = Number(bar.dataset.pct)
+      bar.style.width = pct * ease((t - (10.0 + i * 0.18)) / 0.7) + '%'
+    })
+  }
+</script>
+</body>
+</html>

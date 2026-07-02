@@ -9,7 +9,7 @@ import {
   type CalibrationMove,
   type CalibrationScores,
 } from '@/lib/onboarding/calibration-submit'
-import { scoreMove, deriveArchetype, observationFor } from '@/lib/calibration/deriveArchetype'
+import { scoreMove, deriveArchetype, observationFor, scoreToLevel } from '@/lib/calibration/deriveArchetype'
 import { embedAndStoreContext } from '@/lib/notes/embeddings'
 import { captureServerImmediate } from '@/lib/posthog/server'
 import { EVENT_CALIBRATION_COMPLETED } from '@/lib/posthog/events'
@@ -33,12 +33,6 @@ async function computeRealPercentile(adminClient: ReturnType<typeof createAdminC
   const belowOrEqual = avgs.filter(avg => avg <= userAvg).length
   const percentile = Math.round((belowOrEqual / avgs.length) * 100)
   return Math.max(1, Math.min(99, percentile))
-}
-
-function scoreToLevel(score: number): number {
-  if (score >= 75) return 3
-  if (score >= 50) return 2
-  return 1
 }
 
 function weakestMove(scores: CalibrationScores): CalibrationMove {

@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="_tokens.css" />
+<style>
+  /* Duel: "Can you beat Hatch?" VS split. Hatch panel (dark) vs You panel (cream). */
+  .ad-root { background: var(--cream); flex-direction: column; }
+
+  /* headline sits above the split on 9:16/4:5 */
+  .headline-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 72px;
+    text-align: center;
+  }
+  .ratio-9x16 .headline-bar { padding-top: 264px; padding-bottom: 48px; }
+  .ratio-4x5  .headline-bar { padding-top: 80px; padding-bottom: 36px; }
+  .ratio-1x1  .headline-bar { display: none; }
+
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--charcoal);
+    letter-spacing: -0.02em;
+    line-height: 1.06;
+  }
+  .ratio-9x16 .headline { font-size: 80px; }
+  .ratio-4x5  .headline { font-size: 70px; }
+
+  /* the split zone */
+  .split {
+    flex: 1 1 0;
+    display: flex;
+    position: relative;
+  }
+
+  /* 9:16 + 4:5: left/right panels */
+  .ratio-9x16 .split,
+  .ratio-4x5  .split { flex-direction: row; }
+
+  /* 1x1: top/bottom panels */
+  .ratio-1x1 .split { flex-direction: column; }
+
+  .panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 56px 52px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .panel-hatch { background: var(--deep-forest); }
+  .panel-you   { background: var(--cream); }
+
+  /* on 1x1 the headline overlays the hatch panel compactly */
+  .ratio-1x1 .panel-hatch {
+    padding-top: 100px;
+  }
+  .ratio-1x1 .panel-hatch .inline-headline {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 52px;
+    letter-spacing: -0.02em;
+    line-height: 1.06;
+    color: var(--cream);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .ratio-9x16 .panel-hatch .inline-headline,
+  .ratio-4x5  .panel-hatch .inline-headline { display: none; }
+
+  .label-chip {
+    font-family: var(--font-body);
+    font-weight: 900;
+    font-size: 26px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 10px 32px;
+  }
+  .panel-hatch .label-chip { background: rgba(255,255,255,0.12); color: var(--mist); }
+  .panel-you   .label-chip { background: var(--mist); color: var(--ink-2); }
+
+  .panel-hatch .pose-img { width: 320px; height: auto; }
+  .ratio-1x1 .panel-hatch .pose-img { width: 240px; }
+
+  .panel-line {
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .panel-hatch .panel-line { color: var(--forest-soft); }
+  .panel-you   .panel-line { color: var(--ink-2); }
+
+  /* dashed answer card in You panel */
+  .answer-card {
+    width: 100%;
+    max-width: 380px;
+    border: 3px dashed var(--mist);
+    border-radius: 20px;
+    padding: 32px 28px;
+    background: var(--paper);
+    min-height: 120px;
+  }
+
+  /* VS badge: amber circle overlapping the seam */
+  .vs-badge {
+    position: absolute;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--amber);
+    color: var(--charcoal);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 8px 28px -8px rgba(30,33,28,0.38);
+    letter-spacing: -0.01em;
+  }
+
+  /* badge position: center of the seam */
+  .ratio-9x16 .vs-badge,
+  .ratio-4x5  .vs-badge {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .ratio-1x1 .vs-badge {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* footer: CTA + brand chip sit outside the split */
+  .footer {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    padding: 36px 72px 52px;
+    background: var(--cream);
+  }
+  .ratio-1x1 .footer { padding: 24px 64px 36px; }
+
+  .cta-pill { font-size: 36px; padding: 28px 68px; }
+
+  .brand-chip { position: absolute; top: 150px; left: 84px; font-size: 34px; }
+  .ratio-1x1 .brand-chip, .ratio-4x5 .brand-chip { top: 56px; left: 64px; }
+</style>
+</head>
+<body>
+<div class="ad-root" id="root">
+  <div class="brand-chip">HackProduct</div>
+
+  <!-- headline above split (9:16 / 4:5) -->
+  <div class="headline-bar">
+    <h1 class="headline" id="headline-above"></h1>
+  </div>
+
+  <!-- the VS split -->
+  <div class="split">
+    <!-- Hatch panel (dark) -->
+    <div class="panel panel-hatch">
+      <!-- 1x1 inline headline -->
+      <span class="inline-headline" id="headline-inline"></span>
+      <div class="label-chip">HATCH</div>
+      <img class="pose-img" id="pose" alt="" />
+      <p class="panel-line" id="hatch-line"></p>
+    </div>
+
+    <!-- You panel (cream) -->
+    <div class="panel panel-you">
+      <div class="label-chip">YOU</div>
+      <div class="answer-card"></div>
+      <p class="panel-line" id="you-line"></p>
+    </div>
+
+    <!-- VS badge overlapping seam -->
+    <div class="vs-badge">VS</div>
+  </div>
+
+  <!-- CTA footer -->
+  <div class="footer">
+    <div class="cta-pill" id="cta"></div>
+  </div>
+
+  <div class="safe-guides"></div>
+</div>
+<script>
+  const d = window.__AD_DATA__
+  const root = document.getElementById('root')
+  root.classList.add('ratio-' + d.ratio, 'palette-' + (d.palette || 'cream'))
+  if (new URLSearchParams(location.search).get('guides')) document.body.classList.add('show-guides')
+
+  const hl = (d.hook && d.hook.headline) || ''
+  document.getElementById('headline-above').textContent = hl
+  document.getElementById('headline-inline').textContent = hl
+
+  document.getElementById('cta').textContent = (d.hook && d.hook.cta) || ''
+  document.getElementById('hatch-line').textContent = (d.data && d.data.hatchLine) || ''
+  document.getElementById('you-line').textContent = (d.data && d.data.youLine) || ''
+
+  const img = document.getElementById('pose')
+  if (d.poseUrl) {
+    img.src = d.poseUrl
+  } else {
+    img.remove()
+  }
+</script>
+</body>
+</html>

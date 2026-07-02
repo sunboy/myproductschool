@@ -13,12 +13,15 @@ import { isHoneypotFilled, turnstileErrorMessage, verifyTurnstileToken } from '@
 import { apiError } from '@/lib/api/error'
 import { sendWelcomeEmail } from '@/lib/email/transactional'
 import { captureServerImmediate, captureServerAnonymous } from '@/lib/posthog/server'
-import { EVENT_USER_SIGNED_UP, EVENT_AUTH_SIGNUP_FAILED } from '@/lib/posthog/events'
+import { EVENT_USER_SIGNED_UP, EVENT_AUTH_SIGNUP_FAILED, EVENT_SIGNUP_FROM_MAGNET } from '@/lib/posthog/events'
 import { archetypeBySlug } from '@/lib/calibration/deriveArchetype'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = protectedSignupSchema.extend({
   redirectTo: z.string().trim().max(2048).optional(),
+  // Carried from a /go/* lead-magnet's signup CTA so the new user can be
+  // attributed to the magnet that earned them. Optional and best-effort.
+  magnetSource: z.string().trim().max(128).optional(),
   // Carried from the public archetype quiz (`/quiz/archetype?a=<slug>` -> signup CTA)
   // so a quiz taker's result claims their profile the moment they create an account.
   // Optional and best-effort: an invalid/missing slug never blocks signup.
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
     return fail(400, 'invalid_json', 'Invalid JSON body')
   }
-  const { email, password, name, turnstileToken, website } = body
+  const { email, password, name, turnstileToken, website, magnetSource } = body
 
   if (isHoneypotFilled(website)) {
     return fail(400, 'bot_trap_triggered', 'Unable to submit this form.')
@@ -125,8 +128,18 @@ export async function POST(request: NextRequest) {
     void captureServerImmediate({
       distinctId: data.user.id,
       event: EVENT_USER_SIGNED_UP,
-      properties: { method: 'email_password' },
+      properties: {
+        method: 'email_password',
+        ...(magnetSource ? { from_magnet: true } : {}),
+      },
     })
+    if (magnetSource) {
+      void captureServerImmediate({
+        distinctId: data.user.id,
+        event: EVENT_SIGNUP_FROM_MAGNET,
+        properties: { source_slug: magnetSource },
+      })
+    }
     if (body.archetype) {
       void claimQuizArchetype(admin, data.user.id, body.archetype)
     }

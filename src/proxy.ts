@@ -183,6 +183,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Skip static assets. /lottie/* is public animation JSON (Hatch Lottie
+    // files in /public/lottie) which the image-extension exclusion misses.
+    '/((?!_next/static|_next/image|favicon.ico|lottie/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

@@ -7,6 +7,7 @@ import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 import { TurnstileWidget, isTurnstileClientEnabled } from '@/components/auth/TurnstileWidget'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { loginSchema, passwordResetRequestSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
+import { consumeMagnetSource } from '@/lib/lead-magnets/utm'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -309,9 +310,11 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
       if (!requireTurnstileToken()) return
 
       try {
+        const magnetSource = consumeMagnetSource()
         // Fresh signups with no explicit redirect go to /first-run (one role tap into
         // a pre-warmed interview) instead of the dashboard. An explicit redirectTo — a
-        // pricing/checkout deep-link — still wins, so intent-to-pay users aren't diverted.
+        // pricing/checkout deep-link, or a /go/* magnet's post-signup CTA — still wins,
+        // so intent-to-pay and magnet-attributed users aren't diverted.
         const dest = resolvedRedirectTo('/first-run')
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
           ...validation.data,
@@ -323,6 +326,8 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
           redirectTo: `${siteOrigin()}/auth/callback?next=${encodeURIComponent(dest)}`,
           // Best-effort claim of a /quiz/archetype result onto the new profile.
           ...(archetype ? { archetype } : {}),
+          // Attribute the signup to the /go/* lead magnet that earned it, if any.
+          ...(magnetSource ? { magnetSource } : {}),
         })
         if (data.hasSession) {
           play('success')

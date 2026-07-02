@@ -1,0 +1,373 @@
+/* Report page styles for /go/{slug}/r/{token}. Scoped under .v3.
+ * Tokens only — no raw hex values (except inside print overrides which
+ * must be absolute for reliable cross-browser print rendering).
+ *
+ * Classes:
+ *   .lm-report           — outer wrapper
+ *   .lm-report-header    — eyebrow + title band
+ *   .lm-report-eyebrow   — "Your report" label
+ *   .lm-report-title     — h1
+ *   .lm-result-band      — bold archetype/band display
+ *   .lm-result-band-meta — small label above the band
+ *   .lm-result-band-label — the band string itself
+ *   .lm-report-intro     — intro paragraph
+ *   .lm-report-section-card — each content section
+ *   .lm-report-section-title — section h2
+ *   .lm-report-section-body  — section body prose
+ *   .lm-report-moves     — four-move grid
+ *   .lm-report-move-card — individual move card
+ *   .lm-report-move-header — F / Frame header row
+ *   .lm-report-move-key  — single-letter key
+ *   .lm-report-move-name — move name
+ *   .lm-report-move-def  — one-line definition
+ *   .lm-report-move-template — fill-in template row
+ *   .lm-report-template-label — "Template" label
+ *   .lm-report-template-text — template string
+ *   .lm-report-templates — reasoning templates list
+ *   .lm-report-template-card — individual template card
+ *   .lm-report-template-header — tag + title row
+ *   .lm-report-template-tag — move tag chip
+ *   .lm-report-template-title — template title
+ *   .lm-report-template-quote — blockquote template
+ *   .lm-report-template-note — explanatory note
+ *   .lm-report-steps     — how-to-use ordered list
+ *   .lm-report-footer-row — print + CTA row
+ *   .lm-btn              — base button
+ *   .lm-btn-primary      — primary CTA
+ *   .lm-btn-secondary    — secondary CTA
+ *   .lm-no-print         — hidden in print
+ */
+
+/* ── Outer wrapper ─────────────────────────────────────────── */
+.v3 .lm-report {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.v3 .lm-report-header {
+  padding: 56px 0 40px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line-1);
+}
+
+.v3 .lm-report-eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--forest);
+  margin: 0 0 10px;
+}
+
+.v3 .lm-report-title {
+  font-family: var(--v3-font-display);
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+/* ── Band ───────────────────────────────────────────────────── */
+.v3 .lm-result-band {
+  padding: 40px 0;
+  background: var(--forest-deep, #1e3528);
+  color: var(--on-dark, #f3ede0);
+}
+
+.v3 .lm-result-band-meta {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--forest-bright);
+  margin: 0 0 8px;
+}
+
+.v3 .lm-result-band-label {
+  font-family: var(--v3-font-display);
+  font-size: clamp(40px, 7vw, 80px);
+  line-height: 0.95;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--on-dark, #f3ede0);
+}
+
+/* ── Intro ──────────────────────────────────────────────────── */
+.v3 .lm-report-intro {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 68ch;
+  margin: 0;
+}
+
+/* ── Section card ───────────────────────────────────────────── */
+.v3 .lm-report-section-card {
+  background: var(--paper);
+  border-top: 1px solid var(--line-1);
+}
+
+.v3 .lm-report-section-title {
+  font-family: var(--v3-font-display);
+  font-size: clamp(20px, 2.8vw, 28px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+  margin: 0 0 20px;
+}
+
+.v3 .lm-report-section-body {
+  color: var(--ink-2);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+/* ── Four-move grid ─────────────────────────────────────────── */
+.v3 .lm-report-moves {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .v3 .lm-report-moves { grid-template-columns: 1fr 1fr; }
+}
+
+.v3 .lm-report-move-card {
+  background: var(--surface-2);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  padding: 20px;
+}
+
+.v3 .lm-report-move-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.v3 .lm-report-move-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  background: var(--forest);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.v3 .lm-report-move-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink-1);
+}
+
+.v3 .lm-report-move-def {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0 0 12px;
+}
+
+.v3 .lm-report-move-template {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+}
+
+.v3 .lm-report-template-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--forest);
+}
+
+.v3 .lm-report-template-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+/* ── Reasoning templates ────────────────────────────────────── */
+.v3 .lm-report-templates {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.v3 .lm-report-template-card {
+  background: var(--surface-2);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  padding: 22px;
+}
+
+.v3 .lm-report-template-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.v3 .lm-report-template-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--r-full, 999px);
+  background: var(--forest-soft);
+  color: var(--forest-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.v3 .lm-report-template-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink-1);
+}
+
+.v3 .lm-report-template-quote {
+  margin: 0 0 12px;
+  padding: 14px 18px;
+  background: var(--paper);
+  border-left: 3px solid var(--forest);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-1);
+  font-style: italic;
+}
+
+.v3 .lm-report-template-note {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* ── How-to steps ───────────────────────────────────────────── */
+.v3 .lm-report-steps {
+  padding-left: 1.4em;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.v3 .lm-report-steps li {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+/* ── Footer row ─────────────────────────────────────────────── */
+.v3 .lm-report-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.v3 .lm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  border-radius: var(--r-full, 999px);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition: opacity 120ms;
+}
+
+.v3 .lm-btn:hover { opacity: 0.88; }
+
+.v3 .lm-btn-primary {
+  background: var(--forest);
+  color: #ffffff;
+}
+
+.v3 .lm-btn-secondary {
+  background: var(--surface-3);
+  color: var(--ink-1);
+  border: 1px solid var(--line-2);
+}
+
+/* ── Print ──────────────────────────────────────────────────── */
+@media print {
+  /* Hide navigation, footer, breadth strip, and interactive controls */
+  header,
+  footer,
+  nav,
+  .lm-breadth,
+  .lm-no-print,
+  .lm-no-print-cta .lm-report-header {
+    display: none !important;
+  }
+
+  /* Reset to white + ink for reliable cross-browser print output */
+  body,
+  .v3,
+  .v3 .lm-report {
+    background: #ffffff !important;
+    color: #1e1b14 !important;
+  }
+
+  /* US Letter-friendly margins */
+  @page {
+    size: letter;
+    margin: 0.75in 0.875in;
+  }
+
+  /* Keep section cards together where possible */
+  .v3 .lm-report-section-card,
+  .v3 .lm-report-move-card,
+  .v3 .lm-report-template-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Flatten band background to ink-on-white */
+  .v3 .lm-result-band {
+    background: #f0f0f0 !important;
+    color: #1e1b14 !important;
+    border: 1px solid #d0d0d0 !important;
+  }
+
+  .v3 .lm-result-band-meta,
+  .v3 .lm-result-band-label {
+    color: #1e1b14 !important;
+  }
+
+  /* Remove shadows and reduce padding for print */
+  .v3 .lm-report-header {
+    padding: 24px 0 16px !important;
+    border-bottom: 1px solid #d0d0d0 !important;
+  }
+
+  .v3 .lm-section {
+    padding: 24px 0 !important;
+  }
+
+  /* Keep forest bar color recognizable in greyscale print */
+  .v3 .lm-score-fill {
+    background: #555 !important;
+  }
+}

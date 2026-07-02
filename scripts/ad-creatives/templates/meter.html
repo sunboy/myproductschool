@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="_tokens.css" />
+<style>
+  /* Meter: "Where do you land?" 3-band skill meter with needle + optional salary bands. */
+  .ad-root { background: var(--cream); }
+
+  .stage {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 52px;
+    padding: 150px 84px 80px;
+    text-align: center;
+  }
+
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--charcoal);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .ratio-9x16 .headline { font-size: 86px; }
+  .ratio-4x5  .headline { font-size: 78px; }
+  .ratio-1x1  .headline { font-size: 68px; }
+
+  .eyebrow { font-size: 28px; color: var(--forest); }
+
+  /* ── Meter widget ── */
+  .meter-wrap {
+    width: 100%;
+    max-width: 860px;
+    position: relative;
+  }
+
+  .meter-track {
+    display: flex;
+    gap: 6px;
+    border-radius: 999px;
+    overflow: visible;
+    height: 56px;
+  }
+
+  .band {
+    flex: 1;
+    border-radius: 999px;
+    position: relative;
+  }
+  .band-0 { background: var(--mist); }
+  .band-1 { background: rgba(196, 166, 106, 0.48); }
+  .band-2 { background: var(--forest); }
+
+  /* first/last band get flat inner edge to butt against neighbors */
+  .band-0 { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+  .band-2 { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
+
+  .band-labels {
+    display: flex;
+    gap: 6px;
+    margin-top: 18px;
+  }
+  .band-label {
+    flex: 1;
+    font-weight: 800;
+    font-size: 28px;
+    color: var(--ink-2);
+    text-align: center;
+  }
+  .band-2 + .band-labels .band-label:last-child { color: var(--forest); }
+
+  /* needle: thin stem + triangle pointer sitting on top of the track */
+  .needle {
+    position: absolute;
+    top: -62px;
+    /* left set via JS as inline style */
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    pointer-events: none;
+  }
+  .needle-triangle {
+    width: 0;
+    height: 0;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-top: 26px solid var(--charcoal);
+  }
+  .needle-stem {
+    width: 4px;
+    height: 60px;
+    background: var(--charcoal);
+    border-radius: 2px;
+  }
+
+  /* citation chip below meter */
+  .citation-chip {
+    position: absolute;
+    bottom: -48px;
+    right: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink-3);
+    background: var(--paper);
+    border: 2px solid var(--mist);
+    border-radius: 999px;
+    padding: 6px 20px;
+    white-space: nowrap;
+  }
+
+  /* pose docked right of meter area */
+  .meter-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 32px;
+    width: 100%;
+    max-width: 920px;
+  }
+  .meter-col { flex: 1; position: relative; }
+  .pose-col { flex: 0 0 auto; display: flex; align-items: flex-end; }
+  .pose-col img { width: 340px; height: auto; }
+  .ratio-1x1 .pose-col img { width: 260px; }
+
+  /* on 1x1 stack pose below meter when too cramped */
+  .ratio-1x1 .meter-row { flex-direction: column; align-items: center; }
+  .ratio-1x1 .pose-col { justify-content: center; }
+
+  .sub {
+    font-size: 34px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    max-width: 820px;
+    font-weight: 600;
+  }
+  .cta-pill { font-size: 36px; padding: 28px 68px; }
+
+  .brand-chip { position: absolute; top: 150px; left: 84px; font-size: 34px; }
+  .ratio-1x1 .brand-chip, .ratio-4x5 .brand-chip { top: 56px; left: 64px; }
+</style>
+</head>
+<body>
+<div class="ad-root" id="root">
+  <div class="brand-chip">HackProduct</div>
+  <div class="stage">
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1 class="headline" id="headline"></h1>
+
+    <div class="meter-row" id="meter-row">
+      <div class="meter-col">
+        <div class="meter-track" id="meter-track">
+          <div class="band band-0"></div>
+          <div class="band band-1"></div>
+          <div class="band band-2"></div>
+          <!-- needle inserted by JS -->
+        </div>
+        <div class="band-labels" id="band-labels"></div>
+        <div class="citation-chip" id="citation-chip"></div>
+      </div>
+      <div class="pose-col" id="pose-col">
+        <img id="pose" alt="" />
+      </div>
+    </div>
+
+    <p class="sub" id="sub"></p>
+    <div class="cta-pill" id="cta"></div>
+  </div>
+  <div class="safe-guides"></div>
+</div>
+<script>
+  const d = window.__AD_DATA__
+  const root = document.getElementById('root')
+  root.classList.add('ratio-' + d.ratio, 'palette-' + (d.palette || 'cream'))
+  if (new URLSearchParams(location.search).get('guides')) document.body.classList.add('show-guides')
+
+  if (d.hook && d.hook.eyebrow) {
+    document.getElementById('eyebrow').textContent = d.hook.eyebrow
+  } else {
+    document.getElementById('eyebrow').remove()
+  }
+  document.getElementById('headline').textContent = (d.hook && d.hook.headline) || ''
+  document.getElementById('sub').textContent = (d.hook && d.hook.sub) || ''
+  document.getElementById('cta').textContent = (d.hook && d.hook.cta) || ''
+  if (!(d.hook && d.hook.sub)) document.getElementById('sub').remove()
+
+  // band labels
+  const bands = (d.data && d.data.bands) || ['Surface', 'Solid', 'Sharp']
+  const labelsEl = document.getElementById('band-labels')
+  bands.forEach(function(label) {
+    const el = document.createElement('div')
+    el.className = 'band-label'
+    el.textContent = label
+    labelsEl.appendChild(el)
+  })
+
+  // needle
+  const pct = typeof (d.data && d.data.needlePct) === 'number' ? d.data.needlePct : 50
+  const needle = document.createElement('div')
+  needle.className = 'needle'
+  needle.innerHTML = '<div class="needle-triangle"></div><div class="needle-stem"></div>'
+  needle.style.left = pct + '%'
+  document.getElementById('meter-track').appendChild(needle)
+
+  // citation chip
+  if (d.data && d.data.citation) {
+    document.getElementById('citation-chip').textContent = d.data.citation
+  } else {
+    document.getElementById('citation-chip').remove()
+  }
+
+  // pose
+  const img = document.getElementById('pose')
+  if (d.poseUrl) {
+    img.src = d.poseUrl
+  } else {
+    document.getElementById('pose-col').remove()
+    document.getElementById('meter-row').style.justifyContent = 'center'
+  }
+</script>
+</body>
+</html>
