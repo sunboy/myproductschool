@@ -9,7 +9,7 @@ Self-hosted Postiz replaces the $49/mo managed plan. Runs ~$30/mo on GCP and giv
 | URL | https://postiz.hackproduct.com |
 | VM | `postiz` (e2-medium, 4GB + 2GB swap, 25GB pd-balanced), zone `us-central1-a`, project `hackproduct` |
 | Static IP | `postiz-ip` → 34.41.51.14 (A record on Vercel DNS) |
-| Stack | `/opt/postiz/docker-compose.yml` — caddy (TLS), postiz app, postgres:17, redis:7.2, temporal + temporal-postgres |
+| Stack | `/opt/postiz/docker-compose.yml` — caddy (TLS), postiz app, postgres:17, redis:7.2, temporal + temporal-postgres + temporal-elasticsearch (256MB heap) |
 | Secrets | `/opt/postiz/.env` (JWT secret, DB password, Resend key) — chmod 600, never in git |
 | Firewall | `postiz-allow-http` (80/443, tag `postiz-server`) |
 
@@ -62,6 +62,6 @@ e2-medium ~$24.5/mo + 25GB pd-balanced ~$2.5/mo + static IP ~$3/mo ≈ **$30/mo*
 ## Gotchas
 
 - Postgres data, uploads, and Caddy certs live in named Docker volumes on the VM disk — deleting the VM deletes history. Snapshot the disk before risky changes: `gcloud compute disks snapshot postiz --zone=us-central1-a`.
-- Temporal is mandatory for scheduling (Postiz ≥ v2.12); it runs with SQL visibility (`ENABLE_ES=false`) to fit in 4GB.
+- Temporal is mandatory for scheduling (Postiz ≥ v2.12) and **Elasticsearch is mandatory for Temporal here**: Postiz registers more than 3 Text-type search attributes, which SQL visibility cannot hold (hard 3-column limit). Running `ENABLE_ES=false` makes the backend crash at boot with `cannot have more than 3 search attribute of type Text` and every `/api/*` call 502s.
 - Env vars only apply on container recreate (`up -d`), not `restart`.
 - Never schedule Reddit posts through Postiz — Reddit stays manual per the growth playbook.
