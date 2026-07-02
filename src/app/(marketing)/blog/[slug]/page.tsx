@@ -41,16 +41,21 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     ...base,
     alternates: { canonical },
     openGraph: {
-      ...base.openGraph,
-      type: 'article',
+      title,
+      description,
       url: canonical,
+      siteName: 'HackProduct',
+      type: 'article',
       publishedTime: post.published_at ?? undefined,
       modifiedTime: post.updated_at,
       images: [{ url: ogImage, width: 1200, height: 630, alt: post.title }],
     },
     twitter: {
-      ...base.twitter,
+      card: 'summary_large_image',
+      title,
+      description,
       images: [ogImage],
+      creator: '@hackproduct',
     },
   }
 }
