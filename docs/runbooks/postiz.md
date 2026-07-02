@@ -10,7 +10,7 @@ Self-hosted Postiz replaces the $49/mo managed plan. Runs ~$30/mo on GCP and giv
 | VM | `postiz` (e2-medium, 4GB + 2GB swap, 25GB pd-balanced), zone `us-central1-a`, project `hackproduct` |
 | Static IP | `postiz-ip` → 34.41.51.14 (A record on Vercel DNS) |
 | Stack | `/opt/postiz/docker-compose.yml` — caddy (TLS), postiz app, postgres:17, redis:7.2, temporal + temporal-postgres + temporal-elasticsearch (256MB heap) |
-| Secrets | `/opt/postiz/.env` (JWT secret, DB password, Resend key) — chmod 600, never in git |
+| Secrets | `/opt/postiz/.env` (JWT secret, DB password) — chmod 600, never in git |
 | Firewall | `postiz-allow-http` (80/443, tag `postiz-server`) |
 
 ## Operate
@@ -34,7 +34,7 @@ sudo docker compose down && sudo docker compose up -d
 
 ## First-time setup for founders
 
-1. Both founders register at https://postiz.hackproduct.com/auth (email + password; Resend delivers activation emails).
+1. Both founders register at https://postiz.hackproduct.com/auth (email + password; accounts activate instantly — no email provider is configured, by choice).
 2. First founder: Settings → Team → invite the cofounder's email so both share one workspace and its channels.
 3. **Then close registration**: edit `/opt/postiz/docker-compose.yml`, set `DISABLE_REGISTRATION: 'true'`, run `sudo docker compose up -d postiz`. Do not skip this — the register page is public until you do.
 
@@ -64,4 +64,6 @@ e2-medium ~$24.5/mo + 25GB pd-balanced ~$2.5/mo + static IP ~$3/mo ≈ **$30/mo*
 - Postgres data, uploads, and Caddy certs live in named Docker volumes on the VM disk — deleting the VM deletes history. Snapshot the disk before risky changes: `gcloud compute disks snapshot postiz --zone=us-central1-a`.
 - Temporal is mandatory for scheduling (Postiz ≥ v2.12) and **Elasticsearch is mandatory for Temporal here**: Postiz registers more than 3 Text-type search attributes, which SQL visibility cannot hold (hard 3-column limit). Running `ENABLE_ES=false` makes the backend crash at boot with `cannot have more than 3 search attribute of type Text` and every `/api/*` call 502s.
 - Env vars only apply on container recreate (`up -d`), not `restart`.
+- No email provider is configured (founder choice): registration auto-activates, team invites are shared as links, and **password reset emails cannot send** — reset a lost password by updating the DB, or re-add the email env vars (EMAIL_PROVIDER=resend + RESEND_API_KEY + EMAIL_FROM_ADDRESS) and recreate.
+- Manually activate a user if ever needed: `sudo docker exec postiz-postgres psql -U postiz-user -d postiz-db -c 'UPDATE "User" SET activated = true WHERE email = ...'`
 - Never schedule Reddit posts through Postiz — Reddit stays manual per the growth playbook.
