@@ -32,3 +32,12 @@ export const EMAIL_BRAND = {
   wordmark: emailAssetUrl('/images/wordmark.png'),
   clapGif: emailAssetUrl('/videos/hatch/clap-32-transparent.gif'),
 }
+
+/**
+ * Newsletter-specific art (The HackProduct Letter). Separate from EMAIL_ART
+ * since these are layout banners, not per-scenario character poses.
+ */
+export const NEWSLETTER_ART = {
+  /** Email header banner (~1200x300, legible at 600px display width) */
+  'newsletter-header': emailAssetUrl('/hatch/newsletter-header.png'),
+}
