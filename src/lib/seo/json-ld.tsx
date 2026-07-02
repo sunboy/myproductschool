@@ -33,3 +33,42 @@ export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
     })),
   }
 }
+
+/**
+ * BlogPosting structured data for a blog post detail page. Author is always
+ * the Organization, never a fake human byline — Hatch is presented in UI
+ * copy as the narrator, but JSON-LD author identity stays HackProduct for
+ * E-E-A-T (see docs on the blog plan's Hatch guardrails).
+ */
+export function articleJsonLd(post: {
+  headline: string
+  description?: string | null
+  url: string
+  image?: string | null
+  datePublished: string
+  dateModified?: string | null
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.headline,
+    description: post.description ?? undefined,
+    image: post.image ? [post.image] : undefined,
+    datePublished: post.datePublished,
+    dateModified: post.dateModified ?? post.datePublished,
+    author: {
+      '@type': 'Organization',
+      name: 'HackProduct',
+      url: 'https://www.hackproduct.com',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'HackProduct',
+      url: 'https://www.hackproduct.com',
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': post.url,
+    },
+  }
+}
