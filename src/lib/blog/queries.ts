@@ -1,5 +1,19 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createBareClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
+
+/**
+ * Cookie-free anon client for public blog reads. These queries run at build
+ * time (generateStaticParams, static page prerenders, sitemap), where the
+ * request-scoped cookies() client is unavailable. RLS on blog_posts still
+ * restricts reads to published rows.
+ */
+function publicClient() {
+  return createBareClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  )
+}
 
 export type BlogPostStatus = 'draft' | 'published' | 'archived'
 
@@ -59,7 +73,7 @@ export async function getPublishedPosts({
   pageSize = 12,
   tag,
 }: GetPublishedPostsParams = {}): Promise<GetPublishedPostsResult> {
-  const supabase = await createClient()
+  const supabase = publicClient()
   const safePage = Math.max(1, Math.floor(page))
   const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize)))
   const from = (safePage - 1) * safePageSize
@@ -94,7 +108,7 @@ export async function getPublishedPosts({
 
 /** All published slugs, for generateStaticParams and sitemap.ts. */
 export async function getPublishedSlugs(): Promise<string[]> {
-  const supabase = await createClient()
+  const supabase = publicClient()
   const { data, error } = await supabase
     .from('blog_posts')
     .select('slug')
@@ -107,7 +121,7 @@ export async function getPublishedSlugs(): Promise<string[]> {
 
 /** Single published post by slug. RLS enforces published-only. */
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  const supabase = await createClient()
+  const supabase = publicClient()
   const { data, error } = await supabase
     .from('blog_posts')
     .select(FULL_COLUMNS)
@@ -143,7 +157,7 @@ export async function getRelatedPosts(
 ): Promise<BlogPostCard[]> {
   if (!post.tags || post.tags.length === 0) return []
 
-  const supabase = await createClient()
+  const supabase = publicClient()
   const { data, error } = await supabase
     .from('blog_posts')
     .select(CARD_COLUMNS)
@@ -159,7 +173,7 @@ export async function getRelatedPosts(
 
 /** Latest N published posts, for llms.txt. */
 export async function getLatestPublishedPosts(limit = 25): Promise<BlogPostCard[]> {
-  const supabase = await createClient()
+  const supabase = publicClient()
   const { data, error } = await supabase
     .from('blog_posts')
     .select(CARD_COLUMNS)
