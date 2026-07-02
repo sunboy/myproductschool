@@ -47,13 +47,13 @@ export function articleJsonLd(post: {
   image?: string | null
   datePublished: string
   dateModified?: string | null
-}) {
+}): JsonLd {
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.headline,
-    description: post.description ?? undefined,
-    image: post.image ? [post.image] : undefined,
+    ...(post.description ? { description: post.description } : {}),
+    ...(post.image ? { image: [post.image] } : {}),
     datePublished: post.datePublished,
     dateModified: post.dateModified ?? post.datePublished,
     author: {
