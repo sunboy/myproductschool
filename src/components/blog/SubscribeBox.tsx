@@ -2,30 +2,27 @@
 
 import { useState } from 'react'
 
-// Minimal placeholder implementation. A parallel workstream owns the richer
-// version of this component at the same path — this one only needs to be
-// correct and self-contained so the blog pages build and function today.
-// Contract (keep stable so either version drops in cleanly):
+// Contract (kept stable so any workstream can drop this component in):
 //   props: { source: 'blog' | 'footer' }
 //   POST /api/newsletter/subscribe  body: { email: string, source: string }
-//   success shape: { ok: true } (or any 2xx) — treat as subscribed
+//   success shape: { ok: true } — treat any 2xx / ok:true as subscribed
 //   error shape: { ok: false, error: string } — show `error` if present
 
 export type SubscribeBoxSource = 'blog' | 'footer'
 
 interface SubscribeBoxProps {
-  source: SubscribeBoxSource
+  source?: SubscribeBoxSource
 }
 
 type SubscribeState = 'idle' | 'submitting' | 'success' | 'error'
 
-export function SubscribeBox({ source }: SubscribeBoxProps) {
+export function SubscribeBox({ source = 'blog' }: SubscribeBoxProps) {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<SubscribeState>('idle')
   const [message, setMessage] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
     if (state === 'submitting') return
 
     setState('submitting')
@@ -46,7 +43,6 @@ export function SubscribeBox({ source }: SubscribeBoxProps) {
       }
 
       setState('success')
-      setMessage('You are on the list. Hatch will send the next issue straight to your inbox.')
       setEmail('')
     } catch {
       setState('error')
@@ -57,7 +53,18 @@ export function SubscribeBox({ source }: SubscribeBoxProps) {
   if (state === 'success') {
     return (
       <div className="rounded-xl bg-primary-container p-6 text-center">
-        <p className="font-body text-sm font-semibold text-on-primary-container">{message}</p>
+        <span
+          className="material-symbols-outlined mb-2 inline-block text-[28px] text-on-primary-container"
+          style={{ fontVariationSettings: "'FILL' 1" }}
+        >
+          check_circle
+        </span>
+        <p className="font-headline text-base font-bold text-on-primary-container">
+          You&apos;re in.
+        </p>
+        <p className="mt-1 font-body text-sm text-on-primary-container">
+          Hatch writes The HackProduct Letter, product thinking for engineers, most weeks.
+        </p>
       </div>
     )
   }
