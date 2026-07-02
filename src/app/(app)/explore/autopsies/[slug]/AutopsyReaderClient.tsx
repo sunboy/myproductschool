@@ -6,6 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import type { AutopsyProductDetail, AarrrStageContent } from '@/lib/types'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { ReaderRail } from '@/components/showcase/reader/ReaderRail'
 import { ReaderDock } from '@/components/showcase/reader/ReaderDock'
 import { ResumeBanner } from '@/components/showcase/reader/ResumeBanner'
@@ -797,6 +798,19 @@ export function AutopsyReaderClient({
 
   return (
     <div style={{ minHeight: '100vh', background: '#faf6f0', fontFamily: 'var(--font-body)' }}>
+      {/* Breadcrumb - same trail as the other autopsy readers, so this legacy
+          AARRR path also has a way back to Explore / Autopsies / the company.
+          Desktop-only: below lg the sticky progress header owns this band. */}
+      <div className="fixed top-[52px] left-0 right-0 z-30 h-10 hidden lg:flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40">
+        <AppBreadcrumbs
+          items={[
+            { label: 'Explore', href: '/explore' },
+            { label: 'Autopsies', href: '/explore/autopsies' },
+            { label: product.name, href: `/explore/autopsies/${product.slug}` },
+            { label: story?.title ?? productName },
+          ]}
+        />
+      </div>
       {/* Mobile sticky progress header */}
       <div
         style={{
@@ -845,7 +859,7 @@ export function AutopsyReaderClient({
         {/* Main content */}
         <main style={{ flex: 1, minWidth: 0 }}>
           {showResumeBanner && resumeLabel && (
-            <div style={{ position: 'fixed', top: 60, left: 0, right: 0, zIndex: 40, padding: '0 16px' }}>
+            <div style={{ position: 'fixed', top: 100, left: 0, right: 0, zIndex: 40, padding: '0 16px' }}>
               <ResumeBanner
                 variant="aarrr"
                 label={resumeLabel}

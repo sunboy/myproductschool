@@ -110,7 +110,7 @@ export function CanvasCoachCard({
     return (
       <button
         onClick={expand}
-        className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-surface-container-low border border-outline-variant shadow-sm px-3 py-1.5 font-label text-xs font-semibold text-on-surface hover:bg-surface-container transition-colors"
+        className="absolute top-16 left-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-surface-container-low border border-outline-variant shadow-sm px-3 py-1.5 font-label text-xs font-semibold text-on-surface hover:bg-surface-container transition-colors"
         title="Show coaching"
         aria-label="Show canvas coaching"
       >
@@ -129,7 +129,7 @@ export function CanvasCoachCard({
   }
 
   return (
-    <div className="absolute top-3 left-3 z-20 max-w-sm bg-surface-container-low border border-outline-variant rounded-xl shadow-sm p-4 font-body text-sm text-on-surface">
+    <div className="absolute top-16 left-3 z-20 max-w-sm bg-surface-container-low border border-outline-variant rounded-xl shadow-sm p-4 font-body text-sm text-on-surface">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <span className="material-symbols-outlined text-base text-primary">{copy.icon}</span>
