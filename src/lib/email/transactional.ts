@@ -34,6 +34,7 @@ type TransactionalEmailKind =
   | 'activation_day1'
   | 'activation_day3'
   | 'activation_day7'
+  | 'growth_report'
 
 interface BaseTransactionalInput {
   dedupeKey: string
@@ -905,6 +906,30 @@ export function sendActivationDay3Email(admin: SupabaseClient, input: Activation
     body: 'Most people judge a tool like this by trying it once, not by reading about it. HackProduct has autopsies of real product decisions, plus short interview reps that Hatch grades against the same criteria a real panel would use. Pick one and see where you land.',
     ctaLabel: 'Start your first interview',
     ctaUrl: input.url ?? appUrl('/first-run'),
+  })
+}
+
+interface GrowthReportInput {
+  to: string
+  weekLabel: string
+  headline: string
+  metrics: string[]
+  detail?: string | null
+}
+
+export function sendGrowthReportEmail(admin: SupabaseClient, input: GrowthReportInput) {
+  return sendTransactionalEmail(admin, {
+    to: input.to,
+    dedupeKey: `growth-report:${input.weekLabel}`,
+    kind: 'growth_report',
+    subject: `Growth report — week of ${input.weekLabel}`,
+    eyebrow: 'Monday funnel report',
+    heading: input.headline,
+    body: 'Weekly funnel numbers, internal and test accounts excluded. Deltas compare the trailing 7 days against the 7 days before.',
+    detail: input.detail ?? null,
+    valueBullets: input.metrics,
+    ctaLabel: 'Open the Growth hub',
+    ctaUrl: 'https://linear.app/sunboy-labs',
   })
 }
 
