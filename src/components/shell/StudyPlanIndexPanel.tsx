@@ -1,7 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useStudyPlan } from '@/hooks/useStudyPlan'
+import { INDEX_PANEL_COLLAPSE_KEY } from '@/components/shell/DomainIndexPanel'
 
 interface Props {
   planSlug: string
@@ -10,6 +11,19 @@ interface Props {
 
 export function StudyPlanIndexPanel({ planSlug, activeChallengeId }: Props) {
   const { plan, chapters, userProgress, inProgressChallengeIds, isLoading, refetch } = useStudyPlan(planSlug)
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    if (window.localStorage.getItem(INDEX_PANEL_COLLAPSE_KEY) === '1') setCollapsed(true)
+  }, [])
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev
+      window.localStorage.setItem(INDEX_PANEL_COLLAPSE_KEY, next ? '1' : '0')
+      return next
+    })
+  }
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -20,23 +34,54 @@ export function StudyPlanIndexPanel({ planSlug, activeChallengeId }: Props) {
     return () => window.removeEventListener('challenge-completed', handler)
   }, [planSlug, refetch])
 
+  if (collapsed) {
+    return (
+      <aside className="hidden md:flex flex-col items-center h-full w-10 shrink-0 bg-surface-container-low border-r border-outline-variant/40">
+        <button
+          onClick={toggleCollapsed}
+          title="Expand challenge list"
+          aria-label="Expand challenge list"
+          className="mt-2 flex h-6 w-6 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors shrink-0"
+        >
+          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+        </button>
+        <span
+          className="mt-4 text-[10px] font-bold uppercase tracking-[0.08em] text-on-surface-variant font-label"
+          style={{ writingMode: 'vertical-rl' }}
+        >
+          {plan?.title ?? 'Study plan'}
+        </span>
+      </aside>
+    )
+  }
+
   return (
     <aside className="hidden md:flex flex-col h-full w-64 shrink-0 bg-surface-container-low border-r border-outline-variant/40 overflow-y-auto">
 
       {/* ── Header ── */}
       <div className="px-4 pt-4 pb-3 border-b border-outline-variant/30">
-        <Link
-          href={`/explore/plans/${planSlug}`}
-          className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors mb-2.5 font-label"
-        >
-          <span
-            className="material-symbols-outlined text-[13px]"
-            style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+        <div className="flex items-center justify-between mb-2.5">
+          <Link
+            href={`/explore/plans/${planSlug}`}
+            className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors font-label"
           >
-            arrow_back
-          </span>
-          Back to plan
-        </Link>
+            <span
+              className="material-symbols-outlined text-[13px]"
+              style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+            >
+              arrow_back
+            </span>
+            Back to plan
+          </Link>
+          <button
+            onClick={toggleCollapsed}
+            title="Collapse challenge list"
+            aria-label="Collapse challenge list"
+            className="flex h-6 w-6 items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors shrink-0"
+          >
+            <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+          </button>
+        </div>
 
         {plan ? (
           <>
