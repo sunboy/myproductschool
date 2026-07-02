@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
   if (shouldPublish) {
     revalidatePath('/blog')
     revalidatePath(`/blog/${slug}`)
+    revalidatePath('/sitemap.xml')
   }
 
   const previewUrl = canonicalUrl(`/blog/${slug}/preview`)

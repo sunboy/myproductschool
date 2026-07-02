@@ -3,6 +3,8 @@ import { PUBLIC_DIRECTORY_PATHS } from '@/lib/seo/directory-content'
 import { canonicalUrl } from '@/lib/seo/site'
 import { getPublishedPosts } from '@/lib/blog/queries'
 
+export const revalidate = 3600
+
 const BLOG_SITEMAP_PAGE_SIZE = 500
 
 async function blogEntries(): Promise<MetadataRoute.Sitemap> {

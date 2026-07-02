@@ -3,7 +3,7 @@ import rehypeSanitize from 'rehype-sanitize'
 import type { Options as RehypeSanitizeOptions } from 'rehype-sanitize'
 import remarkGfm from 'remark-gfm'
 import type { PluggableList } from 'unified'
-import { getMdComponents, mdSanitizeSchema, safeMarkdownUrl } from '@/components/ui/Md'
+import { getMdComponents, mdSanitizeSchema, safeMarkdownUrl } from '@/components/ui/md-shared'
 
 // Server-rendered markdown body for long-form blog posts. Md.tsx is
 // client-only ('use client', dynamic-imports react-markdown) and its
