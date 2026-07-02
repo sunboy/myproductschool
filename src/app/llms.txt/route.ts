@@ -7,8 +7,27 @@ import {
   STUDY_PLAN_DIRECTORIES,
 } from '@/lib/seo/directory-content'
 import { canonicalUrl, SITE_NAME, SITE_URL } from '@/lib/seo/site'
+import { getLatestPublishedPosts } from '@/lib/blog/queries'
 
-export function GET() {
+async function blogSection() {
+  try {
+    const posts = await getLatestPublishedPosts(25)
+    if (posts.length === 0) return []
+    return [
+      '',
+      '## Blog',
+      ...posts.map((post) => {
+        const dek = post.dek ? ` - ${post.dek}` : ''
+        return `- ${post.title}: ${canonicalUrl(`/blog/${post.slug}`)}${dek}`
+      }),
+    ]
+  } catch {
+    // llms.txt must always return 200 even if the DB read fails.
+    return []
+  }
+}
+
+export async function GET() {
   const lines = [
     `# ${SITE_NAME}`,
     '',
@@ -53,6 +72,7 @@ export function GET() {
     '',
     '## Glossary',
     ...GLOSSARY_DIRECTORIES.map((term) => `- ${term.term}: ${canonicalUrl(`/glossary/${term.slug}`)}`),
+    ...(await blogSection()),
     '',
     `Full agent map: ${canonicalUrl('/llms-full.txt')}`,
   ]
