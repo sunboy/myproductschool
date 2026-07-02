@@ -912,18 +912,20 @@ export default function ProgressPage() {
 
           </div>
 
-          {/* Right - FLOW move grid */}
+          {/* Right - FLOW move grid. Sits on the dark hero gradient, so the
+              cards use the same light-on-dark treatment as HeroStat - the old
+              rgba(0,0,0,…) text on a 10% tint was unreadable here. */}
           <div className="grid grid-cols-2 gap-2">
             {flowMoves.map(m => (
               <div key={m.k} style={{
-                background: m.bg, borderRadius: 12, padding: '10px 10px',
+                background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: '10px 10px',
                 position: 'relative', overflow: 'hidden',
-                border: '1px solid rgba(0,0,0,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
               }}>
                 <div aria-hidden style={{
                   position: 'absolute', right: -4, bottom: -8,
                   fontFamily: 'var(--font-headline)', fontSize: 52, fontWeight: 800,
-                  color: m.color, opacity: 0.10, lineHeight: 1, userSelect: 'none',
+                  color: '#fff', opacity: 0.07, lineHeight: 1, userSelect: 'none',
                   letterSpacing: '-0.04em', pointerEvents: 'none',
                 }}>{m.k[0]}</div>
                 <div style={{ position: 'relative' }}>
@@ -935,22 +937,23 @@ export default function ProgressPage() {
                       <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 14, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>{m.icon}</span>
                     </div>
                     <div style={{
-                      background: 'rgba(0,0,0,0.08)', color: m.color,
+                      background: 'rgba(255,255,255,0.10)',
+                      color: `color-mix(in srgb, ${m.color} 40%, #f3ede0)`,
                       padding: '2px 8px', borderRadius: 999,
                       fontSize: 10, fontWeight: 800, letterSpacing: '0.04em',
                     }}>
                       Lv {m.level}
                     </div>
                   </div>
-                  <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em' }}>{m.k}</div>
-                  <div style={{ fontSize: 10.25, color: 'rgba(0,0,0,0.65)', marginTop: 1, marginBottom: 7 }}>{m.sub}</div>
-                  <div style={{ height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${m.pct}%`, background: m.color, borderRadius: 999, transition: 'width 700ms cubic-bezier(0.2,0.8,0.2,1)' }} />
+                  <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', color: '#f3ede0' }}>{m.k}</div>
+                  <div style={{ fontSize: 10.25, color: 'rgba(243,237,224,0.6)', marginTop: 1, marginBottom: 7 }}>{m.sub}</div>
+                  <div style={{ height: 5, borderRadius: 999, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${m.pct}%`, background: `color-mix(in srgb, ${m.color} 55%, #d8f0de)`, borderRadius: 999, transition: 'width 700ms cubic-bezier(0.2,0.8,0.2,1)' }} />
                   </div>
                   {m.hasReps ? (
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(0,0,0,0.55)', marginTop: 5, fontVariantNumeric: 'tabular-nums' }}>{m.pct}%</div>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(243,237,224,0.75)', marginTop: 5, fontVariantNumeric: 'tabular-nums' }}>{m.pct}%</div>
                   ) : (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', marginTop: 5, padding: '1px 7px', borderRadius: 999, background: 'rgba(0,0,0,0.07)', fontSize: 10, fontWeight: 800, color: 'rgba(0,0,0,0.45)', letterSpacing: '0.02em' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', marginTop: 5, padding: '1px 7px', borderRadius: 999, background: 'rgba(255,255,255,0.10)', fontSize: 10, fontWeight: 800, color: 'rgba(243,237,224,0.6)', letterSpacing: '0.02em' }}>
                       Building reps
                     </div>
                   )}

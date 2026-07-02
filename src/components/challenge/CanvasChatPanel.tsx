@@ -479,8 +479,11 @@ export function CanvasChatPanel({
     void sendMessage(queuedPrompt.text)
   }, [queuedPrompt, isLoading, sendMessage, setMode])
 
-  // Proactive nudge: surface in chat thread, auto-dismiss-aware.
+  // Proactive nudge: surface in chat thread, auto-dismiss-aware. When the dock
+  // is collapsed to the Ask Hatch pill, mark it unread so the pill shows a dot
+  // instead of raising a floating bubble over the workspace.
   const lastNudgeIdRef = useRef<string | null>(null)
+  const [hasUnreadNudge, setHasUnreadNudge] = useState(false)
   useEffect(() => {
     if (!proactiveNudge) return
     if (proactiveNudge.id === lastNudgeIdRef.current) return
@@ -490,7 +493,14 @@ export function CanvasChatPanel({
       ...prev,
       { role: 'hatch', content: proactiveNudge.text, kind: 'nudge' },
     ])
+    if (mode === 'closed') setHasUnreadNudge(true)
+  // mode intentionally read at fire time only - a later open clears the dot below
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proactiveNudge, play])
+
+  useEffect(() => {
+    if (mode !== 'closed') setHasUnreadNudge(false)
+  }, [mode])
 
   // Canvas draw failure: surface a graceful retry message in the chat thread.
   const lastDrawFailureIdRef = useRef<string | null>(null)
@@ -522,6 +532,12 @@ export function CanvasChatPanel({
       >
         <HatchGlyph size={20} state="idle" className="text-on-primary" />
         <span className="font-label font-semibold text-sm">Ask Hatch</span>
+        {hasUnreadNudge && (
+          <span
+            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-tertiary-container border-2 border-background"
+            aria-label="Hatch has a new tip"
+          />
+        )}
       </button>
     )
   }
