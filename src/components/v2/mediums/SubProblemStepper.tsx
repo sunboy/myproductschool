@@ -21,6 +21,10 @@ const KIND_ICONS: Record<SubProblemKind, string> = {
   report:         'description',
   skill:          'construction',
   connect:        'database', // back-compat alias for mcp_setup
+  map_the_data:        'map',
+  scaffold_explainer:  'support',
+  stakeholder_tension: 'forum',
+  metric_definition:   'straighten',
 }
 
 const KIND_COLORS: Record<SubProblemKind, string> = {
@@ -33,6 +37,10 @@ const KIND_COLORS: Record<SubProblemKind, string> = {
   report:         '#705c30',
   skill:          '#705c30',
   connect:        '#4a7c59',
+  map_the_data:        '#00796b',
+  scaffold_explainer:  '#4a7c59',
+  stakeholder_tension: '#ad1457',
+  metric_definition:   '#6a1b9a',
 }
 
 export function SubProblemStepper({

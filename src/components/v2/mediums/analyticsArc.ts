@@ -7,6 +7,7 @@
 // advanced run the full arc.
 
 import type { AnalyticsSubProblem } from './types'
+import type { GuidanceLevel } from '@/lib/adaptive/guidance'
 
 export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
   {
@@ -160,6 +161,62 @@ export function arcForDifficulty(difficulty?: string | null): AnalyticsSubProble
   return steps.map((s, i) => ({ ...s, sequence: i + 1 }))
 }
 
+// The open-guidance compression of explore_schema + data_layout: an
+// experienced analyst maps a dataset in one pass instead of two guided steps.
+const MAP_THE_DATA_STEP: AnalyticsSubProblem = {
+  id: 'map_the_data',
+  sequence: 2,
+  title: 'Map the data',
+  objective: 'Establish the tables, the grain of the main table, its row count, and the partition column in one pass.',
+  successCriterion: 'State the main table, its grain, approximate row count, and the partition column.',
+  suggestedPrompts: [
+    'List the tables, then give me the schema, grain, row count, and partition column of the main events table',
+  ],
+  kind: 'map_the_data',
+  rubricDimension: 'problem_framing',
+}
+
+// The open-guidance stretch step, appended after `answer`.
+const STAKEHOLDER_TENSION_STEP: AnalyticsSubProblem = {
+  id: 'stakeholder_tension',
+  sequence: 99,
+  title: 'Defend the read',
+  objective: 'A stakeholder disputes your finding and attributes it to seasonality. Defend or revise with a query that separates the two explanations.',
+  successCriterion: 'Paste the comparison that rules seasonality in or out, and your one-line ruling.',
+  suggestedPrompts: [
+    'Compare the same funnel step across prior periods to test the seasonality objection',
+  ],
+  kind: 'stakeholder_tension',
+  rubricDimension: 'evidence',
+}
+
+/**
+ * Difficulty decides the step SET; guidance decides presentation and shape.
+ * scaffolded/guided keep the difficulty arc untouched (scaffolded effects are
+ * presentational, applied by the surfaces). `open` compresses the two data-
+ * orientation steps into one and appends the stretch step.
+ */
+export function arcForLearner(
+  difficulty: string | null | undefined,
+  guidance: GuidanceLevel,
+): AnalyticsSubProblem[] {
+  const base = arcForDifficulty(difficulty)
+  if (guidance !== 'open') return base
+  const hasBothOrientationSteps =
+    base.some((s) => s.id === 'explore_schema') && base.some((s) => s.id === 'data_layout')
+  let steps = base
+  if (hasBothOrientationSteps) {
+    steps = base
+      .filter((s) => s.id !== 'data_layout')
+      .map((s) => (s.id === 'explore_schema' ? MAP_THE_DATA_STEP : s))
+  }
+  const answerIdx = steps.findIndex((s) => s.id === 'answer')
+  if (answerIdx >= 0) {
+    steps = [...steps.slice(0, answerIdx + 1), STAKEHOLDER_TENSION_STEP, ...steps.slice(answerIdx + 1)]
+  }
+  return steps.map((s, i) => ({ ...s, sequence: i + 1 }))
+}
+
 /**
  * Merge per-challenge overrides (from metadata.sub_problems) onto the default
  * arc by id. Anything the challenge does not supply falls back to the default,
@@ -169,8 +226,17 @@ export function arcForDifficulty(difficulty?: string | null): AnalyticsSubProble
 export function mergeArc(
   difficulty: string | null | undefined,
   overrides: Partial<AnalyticsSubProblem>[] | undefined,
+  guidance: GuidanceLevel = 'guided',
 ): AnalyticsSubProblem[] {
-  const base = arcForDifficulty(difficulty)
+  // An override targeting either orientation step disables the open-mode
+  // compression for this challenge, so authored content is never dropped.
+  const touchesOrientation = overrides?.some(
+    (o) => o.id === 'explore_schema' || o.id === 'data_layout',
+  )
+  const base =
+    guidance === 'open' && !touchesOrientation
+      ? arcForLearner(difficulty, 'open')
+      : arcForDifficulty(difficulty)
   if (!overrides?.length) return base
   const byId = new Map(overrides.filter((o) => o.id).map((o) => [o.id as string, o]))
   const baseIds = new Set(base.map((s) => s.id))

@@ -78,12 +78,16 @@ export type SubProblemKind =
   | 'mcp_setup'
   | 'explore_schema'
   | 'data_layout'
+  | 'map_the_data' // open-guidance compression of explore_schema + data_layout
   | 'analyze'
   | 'segment'
   | 'answer'
   | 'report'
   | 'skill'
   | 'connect'
+  | 'scaffold_explainer' // injected when a learner is stuck (adaptive branching)
+  | 'stakeholder_tension' // open-guidance stretch step
+  | 'metric_definition' // open-guidance stretch step (metadata-requested)
 
 export interface AnalyticsSubProblem {
   id: string

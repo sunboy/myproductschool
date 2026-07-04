@@ -69,6 +69,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   const [subProblems, setSubProblems] = useState<AnalyticsSubProblem[]>(
     () => mergeArc(challenge.difficulty, undefined),
   )
+  // Guidance level for this session (adaptive workspaces). Server-derived in
+  // session/start; 'guided' is the compatibility default and today's behavior.
+  const [guidance, setGuidance] = useState<'scaffolded' | 'guided' | 'open'>('guided')
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
   // Free quota exhausted (HTTP 402). Opens the unified PaywallModal (analytics
@@ -164,16 +167,23 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           session_id?: string
           wss_url?: string | null
           sub_problems?: AnalyticsSubProblem[]
+          arc_complete?: boolean
+          guidance?: 'scaffolded' | 'guided' | 'open'
         }
         if (!cancelled && data.status === 'active' && data.wss_url && data.session_id) {
           setSessionId(data.session_id) // → usage poll + finalize (keyed on sessionId)
           setWssUrl(data.wss_url) // → terminal renders (first branch) + idle-reap watcher
           setStarted(true) // keep the invariant: started ⟺ committed to a session
-          // Re-apply the per-challenge arc overrides so a resumed session shows the
-          // same guided steps the original start did (not the default arc).
+          // arc_complete → the server sent the full per-session adaptive arc:
+          // use it verbatim. Legacy payloads are overrides to merge locally.
           if (data.sub_problems?.length) {
-            setSubProblems(mergeArc(challenge.difficulty, data.sub_problems))
+            setSubProblems(
+              data.arc_complete
+                ? data.sub_problems
+                : mergeArc(challenge.difficulty, data.sub_problems),
+            )
           }
+          if (data.guidance) setGuidance(data.guidance)
           sessionStartRef.current = Date.now()
           setResuming(false)
         } else if (!cancelled) {
@@ -240,14 +250,22 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           status: string
           wss_url: string | null
           sub_problems?: AnalyticsSubProblem[]
+          arc_complete?: boolean
+          guidance?: 'scaffolded' | 'guided' | 'open'
         }
         if (cancelled) return
         setSessionId(data.session_id)
-        // Per-challenge sub_problems are OVERRIDES merged onto the default arc
-        // by id, so the generic MCP/EDA/report teaching copy stays consistent.
+        // arc_complete → the server computed the full per-session adaptive arc
+        // (guidance-shaped, persisted for resume): use it verbatim. Legacy
+        // payloads are per-challenge OVERRIDES merged onto the default arc.
         if (data.sub_problems?.length) {
-          setSubProblems(mergeArc(challenge.difficulty, data.sub_problems))
+          setSubProblems(
+            data.arc_complete
+              ? data.sub_problems
+              : mergeArc(challenge.difficulty, data.sub_problems),
+          )
         }
+        if (data.guidance) setGuidance(data.guidance)
         sessionStartRef.current = Date.now()
 
         // Already live (reconnect to a running container) — done.

@@ -17,6 +17,9 @@ import { warmGateway, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { getSandbox } from '@/lib/sandbox'
 import { randomUUID } from 'crypto'
+import { loadGuidanceInputs, deriveGuidanceLevel, type GuidanceLevel } from '@/lib/adaptive/guidance'
+import { mergeArc } from '@/components/v2/mediums/analyticsArc'
+import type { AnalyticsSubProblem } from '@/components/v2/mediums/types'
 
 export const dynamic = 'force-dynamic'
 // This route is now thin (gates + create a provisioning row) and returns fast.
@@ -63,7 +66,7 @@ export async function POST(req: NextRequest) {
   // --- Load challenge (RLS: user can read any published challenge) ---
   const { data: challenge } = await supabase
     .from('challenges')
-    .select('id, challenge_type, metadata')
+    .select('id, challenge_type, metadata, difficulty')
     .eq('id', challenge_id)
     .single()
 
@@ -170,9 +173,16 @@ export async function POST(req: NextRequest) {
   // --- Idempotency: check for an active/provisioning session on this attempt ---
   const { data: existingSession } = await admin
     .from('claude_code_sessions')
-    .select('id, status, wss_url, expires_at, transcript_uri, host_instance_id')
+    .select('id, status, wss_url, expires_at, transcript_uri, host_instance_id, final_artifact')
     .eq('attempt_id', attemptId)
     .maybeSingle()
+
+  // The adaptive arc persisted on a live session (final_artifact.adaptive) is
+  // authoritative for reconnects — rebuilding from metadata would lose the
+  // guidance-shaped or branched steps (design §5/§7, Codex finding 1).
+  const persistedAdaptive = (existingSession?.final_artifact as
+    | { adaptive?: { guidance?: GuidanceLevel; arc?: AnalyticsSubProblem[] } }
+    | null)?.adaptive
 
   // Latest workspace autosave to restore on RESUME. When a prior session for this
   // attempt was reaped (status 'idle') or expired, its transcript_uri points at
@@ -208,7 +218,9 @@ export async function POST(req: NextRequest) {
           status: 'active',
           wss_url: existingSession.wss_url,
           expires_at: expiresAt,
-          sub_problems: subProblems,
+          sub_problems: persistedAdaptive?.arc?.length ? persistedAdaptive.arc : subProblems,
+          arc_complete: Boolean(persistedAdaptive?.arc?.length),
+          guidance: persistedAdaptive?.guidance ?? 'guided',
         })
       }
       // Stale active row (container reaped) — retire it and re-provision below.
@@ -225,7 +237,9 @@ export async function POST(req: NextRequest) {
         status: 'provisioning',
         wss_url: null,
         expires_at: expiresAt,
-        sub_problems: subProblems,
+        sub_problems: persistedAdaptive?.arc?.length ? persistedAdaptive.arc : subProblems,
+        arc_complete: Boolean(persistedAdaptive?.arc?.length),
+        guidance: persistedAdaptive?.guidance ?? 'guided',
       })
     } else {
       // Reaped/expired/terminated prior session: carry its workspace forward.
@@ -241,6 +255,22 @@ export async function POST(req: NextRequest) {
   // so the client shows real progress while it calls provision + polls state.
   const sessionId = randomUUID()
 
+  // --- Compute the per-learner arc (adaptive B1) ---
+  // Guidance comes from a deliberately lightweight loader (three narrow reads,
+  // never getHatchContext's 12-query fanout — this route stays thin). Any
+  // failure falls back to 'guided', which is exactly today's behavior.
+  let guidance: GuidanceLevel = 'guided'
+  try {
+    guidance = deriveGuidanceLevel(await loadGuidanceInputs(admin, user.id))
+  } catch (err) {
+    console.error('[cc/session/start] guidance derivation failed, using guided:', err)
+  }
+  const arc = mergeArc(
+    (challenge as { difficulty?: string | null }).difficulty,
+    subProblems as Partial<AnalyticsSubProblem>[],
+    guidance,
+  )
+
   const { error: upsertErr } = await admin.from('claude_code_sessions').upsert(
     {
       id: sessionId,
@@ -248,6 +278,14 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       challenge_id,
       status: 'provisioning',
+      // Persist the guidance-shaped arc so reconnect paths (this route's early
+      // returns, `current`, `state`) return the SAME arc after a refresh.
+      // Spread the prior artifact first: this upsert REPLACES a reaped row for
+      // the same attempt_id, and a previously graded artifact must survive.
+      final_artifact: {
+        ...((existingSession?.final_artifact as Record<string, unknown> | null) ?? {}),
+        adaptive: { guidance, arc, source: 'start', decided_at: new Date().toISOString() },
+      },
       // Carry the prior workspace forward so provision can presign + restore it.
       transcript_uri: resumeSnapshotUri,
       // CRITICAL: this upsert REPLACES a prior reaped/terminated row for the same
@@ -287,6 +325,8 @@ export async function POST(req: NextRequest) {
     status: 'provisioning',
     wss_url: null,
     expires_at: null,
-    sub_problems: subProblems,
+    sub_problems: arc,
+    arc_complete: true,
+    guidance,
   })
 }

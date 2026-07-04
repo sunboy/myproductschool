@@ -52,7 +52,7 @@ export async function POST(
   // --- Load session and verify ownership ---
   const { data: session } = await admin
     .from('claude_code_sessions')
-    .select('id, user_id, challenge_id, attempt_id, host_instance_id, status, transcript_uri')
+    .select('id, user_id, challenge_id, attempt_id, host_instance_id, status, transcript_uri, final_artifact')
     .eq('id', sessionId)
     .maybeSingle()
 
@@ -125,10 +125,15 @@ export async function POST(
   }
 
   // --- Write grade to session row ---
+  // Merge order matters: the grader's artifact is the base, the session's
+  // adaptive log survives it (design §5, Codex finding 3).
+  const priorAdaptive = (session.final_artifact as { adaptive?: unknown } | null)?.adaptive
   await admin.from('claude_code_sessions').update({
     status: 'terminated',
     ended_at: new Date().toISOString(),
-    final_artifact: gradeResult.final_artifact,
+    final_artifact: priorAdaptive
+      ? { ...(gradeResult.final_artifact as Record<string, unknown>), adaptive: priorAdaptive }
+      : gradeResult.final_artifact,
   }).eq('id', sessionId)
 
   // --- Complete challenge_attempts with grade so it shows in Submissions history ---

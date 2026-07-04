@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
   // --- Session row for that attempt ---
   const { data: session } = await admin
     .from('claude_code_sessions')
-    .select('id, status, wss_url, expires_at, host_instance_id')
+    .select('id, status, wss_url, expires_at, host_instance_id, final_artifact')
     .eq('attempt_id', attemptId)
     .maybeSingle()
   if (!session) return NextResponse.json({ status: 'none' })
@@ -129,18 +129,29 @@ export async function GET(req: NextRequest) {
   // renders the same arc the original start did, not the default. The client can't
   // re-derive these — challenge.metadata isn't on the medium's prop — so we return
   // them here, read the same way start/route.ts does. ---
+  // The per-session adaptive arc (final_artifact.adaptive) wins over metadata
+  // so a refresh reconstructs the guidance-shaped arc (design §5/§7).
+  const adaptive = (session.final_artifact as
+    | { adaptive?: { guidance?: string; arc?: unknown[] } }
+    | null)?.adaptive
   let subProblems: unknown[] = []
-  const { data: challenge } = await admin
-    .from('challenges')
-    .select('metadata')
-    .eq('id', challenge_id)
-    .maybeSingle()
-  if (challenge?.metadata) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const meta = (challenge.metadata ?? {}) as Record<string, any>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const claudeCodeMeta = (meta.claude_code ?? {}) as Record<string, any>
-    subProblems = (claudeCodeMeta.sub_problems ?? meta.sub_problems ?? []) as unknown[]
+  let arcComplete = false
+  if (adaptive?.arc?.length) {
+    subProblems = adaptive.arc
+    arcComplete = true
+  } else {
+    const { data: challenge } = await admin
+      .from('challenges')
+      .select('metadata')
+      .eq('id', challenge_id)
+      .maybeSingle()
+    if (challenge?.metadata) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const meta = (challenge.metadata ?? {}) as Record<string, any>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const claudeCodeMeta = (meta.claude_code ?? {}) as Record<string, any>
+      subProblems = (claudeCodeMeta.sub_problems ?? meta.sub_problems ?? []) as unknown[]
+    }
   }
 
   return NextResponse.json({
@@ -149,5 +160,7 @@ export async function GET(req: NextRequest) {
     wss_url: wssUrl,
     expires_at: expiresAt,
     sub_problems: subProblems,
+    arc_complete: arcComplete,
+    guidance: adaptive?.guidance ?? 'guided',
   })
 }
