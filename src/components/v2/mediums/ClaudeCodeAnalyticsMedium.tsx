@@ -15,6 +15,13 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { mergeArc } from './analyticsArc'
+import {
+  applyVerdict,
+  planBranch,
+  applyBranch,
+  INITIAL_MACHINE,
+  type GuidanceMachineState,
+} from '@/lib/adaptive/branching'
 import { toDimensionViews, type AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 import type {
   MediumProps,
@@ -72,6 +79,13 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // Guidance level for this session (adaptive workspaces). Server-derived in
   // session/start; 'guided' is the compatibility default and today's behavior.
   const [guidance, setGuidance] = useState<'scaffolded' | 'guided' | 'open'>('guided')
+  // In-session adaptation bookkeeping: the bounded guidance state machine plus
+  // the injection/adjustment log persisted via PATCH session/[id]/adaptive.
+  const machineRef = useRef<GuidanceMachineState>({ ...INITIAL_MACHINE })
+  const adaptiveLogRef = useRef<{
+    injected: Array<{ id: string; kind: string; afterStepId: string | null; reason: string }>
+    adjustments: Array<{ from: string; to: string; trigger: string; atStepId: string | null }>
+  }>({ injected: [], adjustments: [] })
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
   // Free quota exhausted (HTTP 402). Opens the unified PaywallModal (analytics
@@ -613,12 +627,68 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
       const verdict: MarkVerdict = data.verdict ?? 'retry'
 
       const newFinding: MarkedFinding = { id: activeSubProblem.id, text: finding, verdict }
-      setMarkedFindings(prev => [...prev, newFinding])
+      const allFindings = [...markedFindings, newFinding]
+      setMarkedFindings(allFindings)
+
+      // ── Adaptive: bounded guidance adjustment + arc branching (design §3.2, §5) ──
+      const adj = applyVerdict(machineRef.current, verdict, guidance)
+      machineRef.current = adj.state
+      let nextGuidance = guidance
+      if (adj.moved) {
+        nextGuidance = adj.guidance
+        setGuidance(nextGuidance)
+        adaptiveLogRef.current.adjustments.push({
+          from: guidance,
+          to: nextGuidance,
+          trigger: adj.moved === 'down' ? 'two retries in a row' : 'two clean passes in a row',
+          atStepId: activeSubProblem.id,
+        })
+      }
+
+      const log = adaptiveLogRef.current
+      const plan = planBranch({
+        arc: subProblems,
+        activeIdx: activeSubProblemIdx,
+        verdicts: allFindings.map((f) => ({ stepId: f.id, verdict: f.verdict })),
+        scaffoldsInjected: log.injected.filter((i) => i.kind === 'scaffold_explainer').length,
+        stretchesInjected: log.injected.filter((i) => i.kind !== 'scaffold_explainer').length,
+      })
+      let nextArc = subProblems
+      if (plan.action !== 'none') {
+        nextArc = applyBranch(subProblems, plan)
+        setSubProblems(nextArc)
+        log.injected.push({
+          id: plan.step.id,
+          kind: plan.step.kind,
+          afterStepId: plan.atIdx > 0 ? nextArc[plan.atIdx - 1]?.id ?? null : null,
+          reason: plan.reason,
+        })
+        // A scaffold lands AT the active index, becoming the new active step —
+        // the learner regroups before re-attempting the stuck step.
+        if (plan.action === 'inject_scaffold') {
+          setActiveSubProblemIdx(plan.atIdx)
+        }
+      }
+
+      // Persist adaptive state best-effort; a failed write never blocks the verdict.
+      if (sessionId && !USE_DEV_STUB) {
+        void fetch(`/api/claude-code/session/${sessionId}/adaptive`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            guidance: nextGuidance,
+            arc: nextArc,
+            injected: log.injected,
+            adjustments: log.adjustments,
+          }),
+        }).catch(() => {})
+      }
 
       if (verdict === 'pass' || verdict === 'partial') {
         setCompletedIds(prev => new Set([...prev, activeSubProblem.id]))
-        const nextIdx = activeSubProblemIdx + 1
-        if (nextIdx < subProblems.length) {
+        const activeIdxInNext = nextArc.findIndex((s) => s.id === activeSubProblem.id)
+        const nextIdx = (activeIdxInNext >= 0 ? activeIdxInNext : activeSubProblemIdx) + 1
+        if (nextIdx < nextArc.length) {
           setActiveSubProblemIdx(nextIdx)
         } else {
           // All steps done — finalize (grade + mark attempt complete) then mirror.
