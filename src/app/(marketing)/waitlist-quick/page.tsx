@@ -16,7 +16,7 @@ async function getWaitlistCount(): Promise<number> {
 
 export const metadata: Metadata = buildMetadata({
   title: 'Join the Waitlist | Product Sense Practice for Engineers, PMs & Students',
-  description: 'HackProduct is the product sense training platform for engineers, PMs, and students. Practice real product decisions from Google, Uber, Stripe. Get AI-coached feedback. Ace PM interviews and ship better products on the job. Join 1,000+ tech professionals on the waitlist.',
+  description: 'HackProduct is the product sense training platform for engineers, PMs, and students. Practice real product decisions from Google, Uber, Stripe. Get AI-coached feedback. Ace PM interviews and ship better products on the job. Join the waitlist.',
   path: '/waitlist',
   keywords: [
     'product sense practice', 'PM interview prep', 'product manager interview questions',
