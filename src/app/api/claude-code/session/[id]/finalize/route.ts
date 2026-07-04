@@ -13,6 +13,9 @@ import { getSandbox } from '@/lib/sandbox'
 import { recordSessionSpend } from '@/lib/sandbox/record-spend'
 import { gradeAnalystSession } from '@/lib/coding-grading/analytics-grader'
 import { getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { analystDimensionsToStepResults } from '@/lib/coding-grading/analyst-competency-map'
+import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
+import type { LearnerCompetency, RoleLens } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 // Grading invokes an AI model — budget headroom.
@@ -172,6 +175,54 @@ export async function POST(
   } else {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     shareUrl = `${baseUrl}/workspace/challenges/${session.challenge_id}/share/${shareId}`
+  }
+
+  // --- Feed the session into learner competencies (adaptive B0) ---
+  // analyst_v1 dimension scores (0/0.5/1) are evidence for the same competency
+  // stream FLOW challenges feed, so the learner's level reflects CC work too.
+  // Never fail finalize over this — the grade write above is the contract.
+  try {
+    const dims = (gradeResult.final_artifact as { dimensions?: Record<string, { score?: unknown }> } | null)?.dimensions
+    const stepResults = analystDimensionsToStepResults(dims)
+    if (stepResults.length) {
+      const { data: currentRows } = await admin
+        .from('learner_competencies')
+        .select('competency, score, total_attempts, last_updated')
+        .eq('user_id', user.id)
+      const neutralLens = { competency_multipliers: {} } as RoleLens
+      const { updated } = updateCompetencies(
+        (currentRows ?? []) as LearnerCompetency[],
+        stepResults,
+        neutralLens,
+        1,
+      )
+      // Only write rows the update actually moved — untouched competencies
+      // (delta 0) come back unchanged and seeded-at-50 rows with no evidence
+      // should not be materialized by a CC session that never exercised them.
+      const beforeByKey = new Map(
+        ((currentRows ?? []) as LearnerCompetency[]).map((r) => [r.competency, r]),
+      )
+      const touched = updated.filter((c) => {
+        const before = beforeByKey.get(c.competency)
+        return before
+          ? before.score !== c.score || before.total_attempts !== c.total_attempts
+          : c.total_attempts > 0
+      })
+      if (touched.length) {
+        await admin.from('learner_competencies').upsert(
+          touched.map((c) => ({
+            user_id: user.id,
+            competency: c.competency,
+            score: c.score,
+            total_attempts: c.total_attempts,
+            last_updated: c.last_updated,
+          })),
+          { onConflict: 'user_id,competency' },
+        )
+      }
+    }
+  } catch (err) {
+    console.error('[cc/finalize] competency update failed (best-effort):', err)
   }
 
   // --- Fire-and-forget: embed the session transcript ---
