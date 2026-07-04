@@ -405,6 +405,40 @@ async function findPracticeLink(userId: string, ctx: HatchUserContext, disciplin
   }
 }
 
+/**
+ * Recent stored coaching context (hatch_context rows: calibration takeaways,
+ * role observations, weakness alerts, CC session summaries). This store was
+ * written by several routes but read by nothing until the 2026-07-04 vector
+ * audit wired it in here, where every Hatch surface inherits it.
+ */
+async function fetchStoredContextLines(userId: string): Promise<string[]> {
+  try {
+    const admin = createAdminClient()
+    const { data } = await admin
+      .from('hatch_context')
+      .select('context_type, content, created_at, expires_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(12)
+    const now = Date.now()
+    const fresh = (data ?? []).filter(
+      (r) => !r.expires_at || new Date(r.expires_at as string).getTime() > now,
+    )
+    // One line per context_type (most recent wins) keeps the block compact.
+    const seen = new Set<string>()
+    const lines: string[] = []
+    for (const r of fresh) {
+      if (seen.has(r.context_type as string)) continue
+      seen.add(r.context_type as string)
+      lines.push(`- ${truncate(String(r.content), 220)}`)
+      if (lines.length >= 4) break
+    }
+    return lines
+  } catch {
+    return []
+  }
+}
+
 export async function buildSkillContextPack(input: BuildSkillContextPackInput): Promise<SkillContextPack> {
   const ctx = await getHatchContext(input.userId)
   const discipline = inferSkillDiscipline(input.challengeType, ctx.preferredRole ?? ctx.activeRole)
@@ -427,6 +461,7 @@ export async function buildSkillContextPack(input: BuildSkillContextPackInput): 
   } catch {
     retrievalHints = []
   }
+  const storedContextLines = input.surface === 'nudge' ? [] : await fetchStoredContextLines(input.userId)
 
   const taskLines: string[] = []
   if (input.challengeTitle) taskLines.push(`Current challenge: ${input.challengeTitle}`)
@@ -447,6 +482,7 @@ export async function buildSkillContextPack(input: BuildSkillContextPackInput): 
     '## Discipline Lens',
     DISCIPLINE_GUIDANCE[discipline],
     taskLines.length ? '\n## Current Task\n' + taskLines.join('\n') : '',
+    storedContextLines.length ? '\n## What Hatch Remembers\n' + storedContextLines.join('\n') : '',
     retrievalLines.length ? '\n## Relevant Practice Notes\n' + retrievalLines.join('\n') : '',
     '',
     HATCH_ACTION_RESPONSE_CONTRACT,
