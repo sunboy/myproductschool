@@ -10,6 +10,32 @@ interface AppBreadcrumbsProps {
   className?: string
 }
 
+/**
+ * Compact single back link for pages where a full trail would crop (long story
+ * titles in narrow fixed bars). Points at the previous page in the hierarchy.
+ */
+export function BackCrumb({ href, label, className = '' }: { href: string; label: string; className?: string }) {
+  return (
+    <Link
+      href={href}
+      className={[
+        'inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors font-label font-semibold',
+        className,
+      ].filter(Boolean).join(' ')}
+      aria-label={`Back to ${label}`}
+    >
+      <span
+        className="material-symbols-outlined text-[14px] leading-none"
+        style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+        aria-hidden="true"
+      >
+        arrow_back
+      </span>
+      {label}
+    </Link>
+  )
+}
+
 export function AppBreadcrumbs({ items, className = '' }: AppBreadcrumbsProps) {
   // A lone crumb only ever duplicates the page H1 (and the active nav pill), so
   // render nothing. Multi-item trails (length >= 2) provide real context.

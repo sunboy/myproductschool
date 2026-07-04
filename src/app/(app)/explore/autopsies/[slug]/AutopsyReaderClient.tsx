@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import type { AutopsyProductDetail, AarrrStageContent } from '@/lib/types'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackCrumb } from '@/components/navigation/AppBreadcrumbs'
 import { ReaderRail } from '@/components/showcase/reader/ReaderRail'
 import { ReaderDock } from '@/components/showcase/reader/ReaderDock'
 import { ResumeBanner } from '@/components/showcase/reader/ResumeBanner'
@@ -798,18 +798,11 @@ export function AutopsyReaderClient({
 
   return (
     <div style={{ minHeight: '100vh', background: '#faf6f0', fontFamily: 'var(--font-body)' }}>
-      {/* Breadcrumb - same trail as the other autopsy readers, so this legacy
-          AARRR path also has a way back to Explore / Autopsies / the company.
-          Desktop-only: below lg the sticky progress header owns this band. */}
+      {/* Back bar - single link to the company hub, matching the other autopsy
+          readers. Desktop-only: below lg the sticky progress header owns this
+          band (its product name links back instead). */}
       <div className="fixed top-[52px] left-0 right-0 z-30 h-10 hidden lg:flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40">
-        <AppBreadcrumbs
-          items={[
-            { label: 'Explore', href: '/explore' },
-            { label: 'Autopsies', href: '/explore/autopsies' },
-            { label: product.name, href: `/explore/autopsies/${product.slug}` },
-            { label: story?.title ?? productName },
-          ]}
-        />
+        <BackCrumb href={`/explore/autopsies/${product.slug}`} label={product.name} />
       </div>
       {/* Mobile sticky progress header */}
       <div
@@ -825,9 +818,14 @@ export function AutopsyReaderClient({
         }}
         className="flex lg:hidden"
       >
-        <span style={{ fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 800, color: accentColor }}>
+        <Link
+          href={`/explore/autopsies/${product.slug}`}
+          style={{ fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 800, color: accentColor, display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', flexShrink: 0 }}
+          aria-label={`Back to ${product.name}`}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 14 }} aria-hidden="true">arrow_back</span>
           {product.name}
-        </span>
+        </Link>
         <div style={{ flex: 1, height: 3, background: '#e7dfc9', borderRadius: 99, overflow: 'hidden' }}>
           <div style={{ height: '100%', background: accentColor, width: `${scrollProgress * 100}%`, borderRadius: 99, transition: 'width 100ms linear' }} />
         </div>
