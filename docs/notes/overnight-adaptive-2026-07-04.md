@@ -1,5 +1,29 @@
 # Overnight Adaptive Workspaces — Run Log (2026-07-04)
 
+## FINAL SUMMARY — mission complete (all phases A-E)
+
+**Branch `feat/adaptive-workspaces`** (worktree `.worktrees/adaptive-workspaces`), 9 commits ahead of main, nothing merged, nothing pushed, nothing deployed:
+`44ee74aa` design docs → `0f063882` B0 → `b32030ff` B1 → `b765ba21` B2 → `ad39b133` B3 → `fde4d313` B4 E2E → `5583a01a` E → `d0ae82f4` D → `98cdbd4d` C.
+
+**What shipped**
+- **Codex-reviewed design** (APPROVE-WITH-CHANGES, all 7 findings incorporated): `docs/superpowers/specs/2026-07-04-adaptive-workspaces-design.md`.
+- **Calibration measurement** (B0): calibration is now a prior; levels are evidence-confidence-weighted; CC sessions feed learner competencies.
+- **The adaptive AI Analyst lab** (B1-B3): per-learner arcs (scaffolded/guided/open) computed server-side and persisted per session; guidance-aware Hatch register, nudge eagerness, prompt density, teaching notes; in-session branching (scaffold when stuck, stretch on hot streaks) with a bounded no-oscillation state machine; everything survives refresh and lands in the grade artifact.
+- **Real-sandbox E2E** (B4): 3/3 green against actual Cloud Run sessions; teardown verified (zero non-terminated rows). Caught one real bug (stretch step lost when authored overrides disabled compression) + a broken E2E helper (`preferred_role` constraint).
+- **Social-proof sweep** (E): 1 fabricated claim found ("1,000+ on the waitlist" vs 24 real rows), removed. Nothing else fake.
+- **Vector/context audit** (D): the hatch_context layer was fully broken — writes failed on schema drift, `/api/hatch/embed` was a 404, and nothing read the store. All fixed; one additive migration (`20260704200000_hatch_context_widen_types`) applied to the live DB and verified.
+- **Pattern extraction** (C): `docs/superpowers/specs/2026-07-04-adaptation-contract.md` + Linear SUN-251 (FLOW), SUN-252 (coding/SQL), SUN-253 (canvas), SUN-254 (live interviews).
+
+**Verification state**: tsc clean, 402 node + 70 vitest unit tests green, 3/3 real-sandbox E2E green, live-DB fixes probe-verified. Sandbox spend: ~6 short debug sessions + 9 test sessions across E2E runs, all finalized/terminated; dev server stopped.
+
+**Migrations applied to the shared live DB**: `20260704200000_hatch_context_widen_types` (additive CHECK widening only).
+
+**Open questions / suggested next steps**
+1. Review + merge `feat/adaptive-workspaces` (suggest a PR to main; CI lint is pre-existing red — judge by added errors).
+2. The old-notes backfill (2 `user_notes` rows with NULL embeddings) was deliberately skipped.
+3. SUN-251..254 sequence the rollout to the other mediums.
+4. Consider surfacing the guidance level in the Session Mirror copy (the data is in `final_artifact.adaptive`; the mirror doesn't render it yet).
+
 Findings, blockers, and the iteration checkpoint for the overnight loop. Brief: `docs/superpowers/plans/2026-07-04-adaptive-workspaces-overnight.md`.
 
 ## Findings
