@@ -196,6 +196,14 @@ const STAKEHOLDER_TENSION_STEP: AnalyticsSubProblem = {
  * presentational, applied by the surfaces). `open` compresses the two data-
  * orientation steps into one and appends the stretch step.
  */
+/** Appends the open-guidance stretch step after `answer`, re-sequenced. */
+function appendStretch(steps: AnalyticsSubProblem[]): AnalyticsSubProblem[] {
+  const answerIdx = steps.findIndex((s) => s.id === 'answer')
+  if (answerIdx < 0) return steps
+  return [...steps.slice(0, answerIdx + 1), STAKEHOLDER_TENSION_STEP, ...steps.slice(answerIdx + 1)]
+    .map((s, i) => ({ ...s, sequence: i + 1 }))
+}
+
 export function arcForLearner(
   difficulty: string | null | undefined,
   guidance: GuidanceLevel,
@@ -210,11 +218,7 @@ export function arcForLearner(
       .filter((s) => s.id !== 'data_layout')
       .map((s) => (s.id === 'explore_schema' ? MAP_THE_DATA_STEP : s))
   }
-  const answerIdx = steps.findIndex((s) => s.id === 'answer')
-  if (answerIdx >= 0) {
-    steps = [...steps.slice(0, answerIdx + 1), STAKEHOLDER_TENSION_STEP, ...steps.slice(answerIdx + 1)]
-  }
-  return steps.map((s, i) => ({ ...s, sequence: i + 1 }))
+  return appendStretch(steps.map((s, i) => ({ ...s, sequence: i + 1 })))
 }
 
 /**
@@ -229,13 +233,16 @@ export function mergeArc(
   guidance: GuidanceLevel = 'guided',
 ): AnalyticsSubProblem[] {
   // An override targeting either orientation step disables the open-mode
-  // compression for this challenge, so authored content is never dropped.
+  // COMPRESSION for this challenge, so authored content is never dropped —
+  // but open learners still get the stretch step appended.
   const touchesOrientation = overrides?.some(
     (o) => o.id === 'explore_schema' || o.id === 'data_layout',
   )
   const base =
-    guidance === 'open' && !touchesOrientation
-      ? arcForLearner(difficulty, 'open')
+    guidance === 'open'
+      ? touchesOrientation
+        ? appendStretch(arcForDifficulty(difficulty))
+        : arcForLearner(difficulty, 'open')
       : arcForDifficulty(difficulty)
   if (!overrides?.length) return base
   const byId = new Map(overrides.filter((o) => o.id).map((o) => [o.id as string, o]))

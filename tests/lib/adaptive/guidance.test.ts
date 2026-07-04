@@ -62,12 +62,13 @@ describe('mergeArc with guidance', () => {
     )
   })
 
-  it('disables open compression when a challenge overrides an orientation step', () => {
+  it('disables open compression when a challenge overrides an orientation step, but keeps the stretch', () => {
     const overrides = [{ id: 'data_layout', title: 'Custom layout step' }]
     const ids = mergeArc('advanced', overrides, 'open').map((s) => s.id)
     assert.ok(ids.includes('explore_schema'))
     assert.ok(ids.includes('data_layout'))
     assert.ok(!ids.includes('map_the_data'))
+    assert.ok(ids.includes('stakeholder_tension'))
   })
 
   it('applies overrides onto the open arc when compression is active', () => {

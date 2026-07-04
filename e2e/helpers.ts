@@ -81,7 +81,10 @@ export async function createTestUser(opts: { executionsToday?: number } = {}): P
     id: userId,
     display_name: 'Test User',
     role: 'user',
-    preferred_role: 'SWE',
+    // Must satisfy profiles_preferred_role_check (lowercase slugs since
+    // migration 20260505231943) — 'SWE' violates it and silently skips the
+    // whole profile row, which then wedges login on the onboarding gate.
+    preferred_role: 'swe',
     active_role: 'swe',
     plan: 'free',
     streak_days: 0,
