@@ -12,6 +12,8 @@ interface AnalyticsObjectiveCardProps {
   replRunning?: boolean
   skillsWritten: string[]
   reportWritten?: boolean
+  /** Open-guidance learners see no teaching notes (design §3.3). */
+  hideTeachingNote?: boolean
   onMark: (finding: string) => Promise<MarkVerdict>
 }
 
@@ -23,6 +25,7 @@ export function AnalyticsObjectiveCard({
   replRunning = false,
   skillsWritten,
   reportWritten = false,
+  hideTeachingNote = false,
   onMark,
 }: AnalyticsObjectiveCardProps) {
   const [expanded, setExpanded] = useState(false)
@@ -140,7 +143,7 @@ export function AnalyticsObjectiveCard({
       </div>
 
       {/* Teaching note — why this move matters (dismissible course content) */}
-      {subProblem.teachingNote && !teachDismissed && (
+      {subProblem.teachingNote && !teachDismissed && !hideTeachingNote && (
         <div style={{
           display: 'flex', gap: 8, alignItems: 'flex-start',
           background: 'var(--color-primary-fixed)',

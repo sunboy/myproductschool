@@ -96,6 +96,9 @@ const RequestSchema = z.object({
   active_part_response_type: z.string().max(100).nullable().optional(),
   active_part_weight_pct: z.number().finite().min(0).max(100).optional(),
   // ── Analytics-mode fields (claude_code_analytics only) ──────────────────
+  // Adaptive coaching register — zod strips unknown keys, so this MUST be in
+  // the schema for Hatch to ever see it (design §3.3, Codex finding 7).
+  guidance_level: z.enum(['scaffolded', 'guided', 'open']).optional(),
   mcp_connected: z.boolean().optional(),
   terminal_tail: z.string().max(4000).nullable().optional(),
   active_sub_problem_id: z.string().max(200).nullable().optional(),
@@ -420,6 +423,21 @@ function buildCodingUserContent(body: InterpretBody): string {
   return parts.join('\n\n')
 }
 
+/**
+ * The learner's guidance level sets Hatch's register. Never name the level to
+ * the user — it shapes HOW Hatch coaches, not what it talks about.
+ */
+function coachingRegisterHint(level: 'scaffolded' | 'guided' | 'open'): string {
+  switch (level) {
+    case 'scaffolded':
+      return 'This learner is early. Explain the reasoning behind each move, name the exact next step, and define analyst terms (grain, partition, funnel step) the first time they come up. Warm, patient, concrete.'
+    case 'guided':
+      return 'This learner has some footing. Coach with guiding questions before answers, and give the next step only when they are stuck. Balanced register.'
+    case 'open':
+      return 'This learner is experienced. Be terse and direct, like a peer reviewer. Skip explanations of basics, push on business impact, metric definitions, and what would falsify the finding. Challenge weak reasoning plainly.'
+  }
+}
+
 function buildAnalyticsUserContent(body: InterpretBody): string {
   const historyText = (body.history ?? [])
     .slice(-6)
@@ -439,6 +457,10 @@ function buildAnalyticsUserContent(body: InterpretBody): string {
       `# Challenge\n## ${title}\n` +
       (statement ? `\n${statement}` : '(no problem statement provided)')
     )
+  }
+
+  if (body.guidance_level) {
+    parts.push(`# Coaching register\n${coachingRegisterHint(body.guidance_level)}`)
   }
 
   if (body.active_sub_problem_id && body.active_sub_problem_title) {

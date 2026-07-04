@@ -356,11 +356,16 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started])
 
-  // Idle detection — mirrors CanvasChatPanel:~189 setInterval pattern
+  // Idle detection — mirrors CanvasChatPanel:~189 setInterval pattern.
+  // Nudge eagerness follows the guidance level (design §3.3): scaffolded
+  // learners get eager nudges, guided the standard delay, open learners are
+  // never auto-nudged — they ask when they want input.
   useEffect(() => {
+    if (guidance === 'open') return
+    const thresholdMs = guidance === 'scaffolded' ? IDLE_THRESHOLD_MS : IDLE_THRESHOLD_MS * 2
     idleTimerRef.current = setInterval(() => {
       const elapsed = Date.now() - lastActivityRef.current
-      if (elapsed > IDLE_THRESHOLD_MS) {
+      if (elapsed > thresholdMs) {
         fetchNudge()
         lastActivityRef.current = Date.now() // reset after nudge so it doesn't spam
       }
@@ -370,7 +375,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
       if (idleTimerRef.current) clearInterval(idleTimerRef.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSubProblemIdx, terminalTail])
+  }, [activeSubProblemIdx, terminalTail, guidance])
 
   async function fetchNudge() {
     if (!activeSubProblem) return
@@ -391,6 +396,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           active_sub_problem_teaching_note: activeSubProblem.teachingNote ?? null,
           report_written: !!reportPath,
           time_elapsed_seconds: Math.round((Date.now() - sessionStartRef.current) / 1000),
+          guidance_level: guidance,
         }),
       })
       if (res.ok) {
@@ -477,6 +483,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           active_sub_problem_objective: step.objective,
           active_sub_problem_success_criterion: step.successCriterion,
           fallback_prompts: step.suggestedPrompts,
+          guidance_level: guidance,
         }),
       })
       if (!res.ok) { setAiPrompts([]); return }
@@ -485,7 +492,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     } catch {
       setAiPrompts([]) // fall back to static prompts
     }
-  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail])
+  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail, guidance])
 
   // Refetch immediately when the step or connection state changes (clear stale
   // chips first so we never show a previous step's suggestions).
@@ -862,6 +869,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 mcpConnected={mcpConnected}
                 replRunning={replRunning}
                 skillsWritten={skillsWritten}
+                hideTeachingNote={guidance === 'open'}
                 reportWritten={!!reportPath}
                 onMark={handleMark}
               />
@@ -971,7 +979,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 (driven by the live terminal); fall back to the step's static
                 arc prompts whenever those are empty (loading / failed / budget). */}
             {(() => {
-              const railPrompts = aiPrompts.length ? aiPrompts : (activeSubProblem?.suggestedPrompts ?? [])
+              // Prompt density follows guidance (design §3.3): scaffolded sees
+              // everything, guided two, open a single sharp direction.
+              const density = guidance === 'scaffolded' ? 3 : guidance === 'guided' ? 2 : 1
+              const allRailPrompts = aiPrompts.length ? aiPrompts : (activeSubProblem?.suggestedPrompts ?? [])
+              const railPrompts = allRailPrompts.slice(0, density)
               return railPrompts.length ? (
                 <SuggestedPromptRail
                   prompts={railPrompts}
@@ -1015,6 +1027,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             activeSubProblemSuccessCriterion={activeSubProblem?.successCriterion ?? null}
             markedFindings={markedFindings}
             challengeTitle={challenge.title}
+            guidanceLevel={guidance}
           />
         </div>
       </div>

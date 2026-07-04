@@ -75,6 +75,8 @@ interface CanvasChatPanelProps {
   activeSubProblemSuccessCriterion?: string | null
   markedFindings?: Array<{ id: string; text: string; verdict: 'pass' | 'partial' | 'retry' }>
   assertedFinding?: string | null
+  /** Adaptive coaching register for this session (analytics only). */
+  guidanceLevel?: 'scaffolded' | 'guided' | 'open'
   // Guidance phase (canvas types only) — keeps Hatch aware of where the user is
   // in the draw → notes → ask → submit loop, per CLAUDE.md Hatch-awareness.
   guidancePhase?: GuidancePhase
@@ -212,6 +214,7 @@ export function CanvasChatPanel({
   terminalTail,
   mcpConnected,
   skillsWritten,
+  guidanceLevel,
   activeSubProblemId,
   activeSubProblemSequence,
   activeSubProblemTitle,
@@ -364,6 +367,7 @@ export function CanvasChatPanel({
         active_part_weight_pct: activePartWeightPct,
       } : isAnalyticsMode ? {
         // Analytics context — dedicated fields, never overloads currentCode.
+        guidance_level: guidanceLevel,
         mcp_connected: mcpConnected,
         terminal_tail: terminalTail,
         active_sub_problem_id: activeSubProblemId,
@@ -456,7 +460,7 @@ export function CanvasChatPanel({
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
       activePartResponseType, activePartWeightPct,
       // Analytics context
-      isAnalyticsMode, terminalTail, mcpConnected, skillsWritten,
+      isAnalyticsMode, terminalTail, mcpConnected, skillsWritten, guidanceLevel,
       activeSubProblemId, activeSubProblemSequence, activeSubProblemTitle,
       activeSubProblemObjective, activeSubProblemSuccessCriterion,
       markedFindings, assertedFinding,

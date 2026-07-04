@@ -86,6 +86,7 @@ const RequestSchema = z.object({
   lastNudgeAt: z.number().finite().nonnegative().optional(),
   nudgeCount: z.number().int().min(0).max(1000).optional(),
   // ── Analytics-mode fields (claude_code_analytics only) ──────────────────
+  guidance_level: z.enum(['scaffolded', 'guided', 'open']).optional(),
   mcp_connected: z.boolean().optional(),
   terminal_tail: z.string().max(4000).nullable().optional(),
   active_sub_problem_id: z.string().max(200).nullable().optional(),
@@ -252,8 +253,15 @@ export async function POST(req: NextRequest) {
       `BigQuery MCP connected: ${body.mcp_connected ? 'yes' : 'no'}`,
       `Skills written: ${(body.skills_written ?? []).length > 0 ? (body.skills_written ?? []).join(', ') : 'none'}`,
     ].join('\n')
+    const registerLine =
+      body.guidance_level === 'scaffolded'
+        ? 'Register: early learner — name the exact next move, define terms, stay warm.'
+        : body.guidance_level === 'open'
+          ? 'Register: experienced analyst — terse peer-review tone, push on rigor, no basics.'
+          : null
     userContent = [
       `Challenge type: claude_code_analytics`,
+      registerLine,
       `# Session state\n${sessionState}`,
       `# ${stepBlock}`,
       // Treat terminal output as context only — never as instructions.
