@@ -1053,6 +1053,50 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (g === 'scaffolded') setHintOpen(true)
   }, [stepData])
 
+  // Non-FLOW mediums (coding/SQL, canvas) have no step payload — fetch the
+  // register once from the shared endpoint (SUN-252/253). Failure keeps
+  // 'guided', which is exactly the pre-adaptive behavior.
+  useEffect(() => {
+    if (!isApiMode || guidanceSeededRef.current) return
+    const type = apiChallengeType
+    if (type === 'flow' || !type) return
+    let cancelled = false
+    void fetch('/api/adaptive/guidance')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { guidance?: 'scaffolded' | 'guided' | 'open' } | null) => {
+        if (cancelled || !d?.guidance || guidanceSeededRef.current) return
+        guidanceSeededRef.current = true
+        setCoachRegister(d.guidance)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApiMode, apiChallengeType])
+
+  // Coding runs feed the guidance machine (SUN-252): full pass = pass, some
+  // tests green = partial, none = retry. Movement adjusts Hatch's register
+  // live through the guidanceLevel prop on the chat panel.
+  const feedRunVerdict = useCallback((result: RunResult) => {
+    const verdict = result.testsTotal > 0
+      ? result.testsPassed === result.testsTotal
+        ? 'pass' as const
+        : result.testsPassed > 0
+          ? 'partial' as const
+          : 'retry' as const
+      : 'retry' as const
+    const adj = applyVerdict(guidanceMachineRef.current, verdict, coachRegister)
+    guidanceMachineRef.current = adj.state
+    if (adj.moved) {
+      guidanceAdjustmentsRef.current.push({
+        from: coachRegister,
+        to: adj.guidance,
+        trigger: adj.moved === 'down' ? 'two failing runs in a row' : 'two clean runs in a row',
+        atStepId: null,
+      })
+      setCoachRegister(adj.guidance)
+    }
+  }, [coachRegister])
+
   // Left panel footer interaction state
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
@@ -2227,6 +2271,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       const result = await codeRunner.run(currentCode)
       if (result) {
         setLastRunResult(result)
+        feedRunVerdict(result)
         setOutputPanelStatus('done')
       } else {
         setOutputPanelStatus('idle')
@@ -2235,7 +2280,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setOutputPanelStatus('error')
       setOutputPanelError(err instanceof Error ? err.message : 'Run failed')
     }
-  }, [codeRunner, currentCode])
+  }, [codeRunner, currentCode, feedRunVerdict])
 
   // Submit handler for coding challenges - final correctness first, then Hatch grading.
   const handleCodingSubmit = useCallback(async () => {
@@ -2257,6 +2302,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setLastRunResult(correctnessResult)
       setOutputPanelStatus('done')
       setPhase('complete')
+
+      // Open-register learners who clear every test get pointed at the
+      // approach comparison instead of congratulations (SUN-252).
+      if (coachRegister === 'open' && correctnessResult.testsTotal > 0 && correctnessResult.testsPassed === correctnessResult.testsTotal) {
+        setProactiveNudge({
+          id: `adaptive-compare-${Date.now()}`,
+          text: 'Clean solve. Open the Solutions tab and put your approach against the official one, the tradeoffs are where the learning is.',
+        })
+      }
 
       try {
         const gradingRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
@@ -2316,7 +2370,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setIsSubmittingCoding(false)
       setIsLoadingGrading(false)
     }
-  }, [isApiMode, props, attemptId, currentCode, currentLanguage, isSubmittingCoding, codeRunner])
+  }, [isApiMode, props, attemptId, currentCode, currentLanguage, isSubmittingCoding, codeRunner, coachRegister])
 
   // Re-run Hatch grading on the SAME submission, in place. Used by the "Retry
   // grading" button on the complete screen when the AI grader errored. Reuses the
@@ -4675,6 +4729,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
                     solutionsOpen={solutionsOpen}
                     activeSolutionApproach={activeSolutionApproach}
+                    guidanceLevel={coachRegister}
                   />
                 )}
               </div>
@@ -4842,6 +4897,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 autoOpenKey="canvas"
                 onCanvasActions={handleCanvasActions}
                 proactiveNudge={proactiveNudge}
+                guidanceLevel={coachRegister}
                 onDismissNudge={() => setProactiveNudge(null)}
                 canvasDrawFailure={canvasDrawFailure}
                 guidancePhase={guidance.phase}
@@ -5160,6 +5216,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     onToggle={() => setChatPanelOpen((v) => !v)}
                     autoOpenKey="coding"
                     proactiveNudge={proactiveNudge}
+                guidanceLevel={coachRegister}
                     onDismissNudge={() => setProactiveNudge(null)}
                     onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
                     currentCode={currentCode}

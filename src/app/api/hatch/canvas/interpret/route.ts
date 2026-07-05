@@ -360,6 +360,10 @@ function buildCodingUserContent(body: InterpretBody): string {
 
   const parts: string[] = []
 
+  if (body.guidance_level) {
+    parts.push(`# Coaching register\n${coachingRegisterHint(body.guidance_level)}`)
+  }
+
   if (body.challenge_title || body.problem_statement) {
     const title = body.challenge_title ?? 'Untitled challenge'
     const statement = body.problem_statement?.trim()

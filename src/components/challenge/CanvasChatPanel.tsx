@@ -352,6 +352,7 @@ export function CanvasChatPanel({
       }
 
       const codingBody = challengeType === 'coding' ? {
+        guidance_level: guidanceLevel,
         current_code: currentCode,
         current_language: currentLanguage,
         last_run_result: lastRunResult,
