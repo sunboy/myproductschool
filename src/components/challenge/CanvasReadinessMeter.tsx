@@ -54,7 +54,9 @@ export function CanvasReadinessMeter({ guidance }: CanvasReadinessMeterProps) {
         className="font-label text-[11.5px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
         style={{ color: ready ? 'var(--color-primary)' : 'var(--color-on-surface-variant)' }}
       >
-        {VERDICT[guidance.phase]}
+        {guidance.strictHold
+          ? 'A tradeoff alone is not enough at this level. Write the reasoning behind a second field.'
+          : VERDICT[guidance.phase]}
       </span>
     </div>
   )

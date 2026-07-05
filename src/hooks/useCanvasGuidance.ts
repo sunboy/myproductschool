@@ -14,6 +14,8 @@ export interface UseCanvasGuidanceArgs {
   challengeType: CanvasChallengeType
   scene: CanvasScene
   fields: GuidanceField[]
+  /** Coaching register — open raises the readiness bar (SUN-253). */
+  register?: 'scaffolded' | 'guided' | 'open'
 }
 
 /**
@@ -25,10 +27,11 @@ export function useCanvasGuidance({
   challengeType,
   scene,
   fields,
+  register = 'guided',
 }: UseCanvasGuidanceArgs): GuidanceState {
   return useMemo(
-    () => deriveGuidance(challengeType, scene, fields),
-    [challengeType, scene, fields]
+    () => deriveGuidance(challengeType, scene, fields, register),
+    [challengeType, scene, fields, register]
   )
 }
 

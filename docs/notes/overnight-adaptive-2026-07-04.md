@@ -44,6 +44,7 @@ Not fixed (noted): the 2 legacy `user_notes` rows keep NULL embeddings (trivial 
 
 ## Checkpoint
 
+- **Iteration 15** (G2, committed 35053434, SUN-252 → Done): coding/SQL on the contract — shared /api/adaptive/guidance endpoint, run results drive the machine, register threads to the coding coach (panel body + interpret builder + skill), open learners get the Solutions comparison pointer on clean solves. Suites green (serial CC E2E timeouts are infra timing; each test green in isolation); zero lingering sessions. Next: G3 (SUN-253 canvas).
 - **Iteration 14** (G1, committed fdcc20e2, SUN-251 → Done): FLOW stepper on the adaptation contract — step API returns register, scaffolded auto-opens hints, per-question verdicts drive the machine (new verdictFromScore), register history persists into the completion insight. E2E green against real step API; suite green (403 node). Next: G2 (SUN-252 coding/SQL).
 - **Iteration 13** (F2+F3): mirror 'How this session adapted' card + workspace coaching-register chip (Hands-on/Balanced/Peer-level via src/lib/adaptive/registerLabel.ts). Visual pass green with chip assertion; suite green. Phase F COMPLETE. Next: G1 (SUN-251 FLOW stepper hint ladder + retry-with-less-help).
 - **Iteration 12** (F1, committed c85a954f): stepper Regroup/Stretch badges + dashed adaptive dots + insertion pop/glow animation + Hatch dock branch announcements. Visual pass verified at 3 viewports against a real session (screenshots in docs/notes/adaptive-ui/), suite green. Next: F2 (Session Mirror adaptation narration).

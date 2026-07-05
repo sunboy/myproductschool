@@ -1170,6 +1170,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     challengeType: apiChallengeType === 'data_modeling' ? 'data_modeling' : 'system_design',
     scene,
     fields: contextPack,
+    register: coachRegister,
   })
 
   // Excalidraw API + library refs (for canvas action execution)

@@ -78,3 +78,25 @@ describe('mergeArc with guidance', () => {
     assert.ok(arc.some((s) => s.id === 'map_the_data'))
   })
 })
+
+describe('deriveGuidance register strictness (SUN-253)', () => {
+  it('holds open-register readiness until two fields carry reasoning', async () => {
+    const { deriveGuidance } = await import('@/lib/hatch/canvasGuidance')
+    const scene = { elementCount: 4, entities: [{}, {}, {}] as never[], connections: [{}, {}] as never[], groups: [], freeText: [], foreignKeys: [] } as never
+    const oneNote = [
+      { id: 'tradeoffs', value: 'We trade consistency for availability here.' },
+      { id: 'assumptions', value: '' },
+    ]
+    const guided = deriveGuidance('system_design', scene, oneNote, 'guided')
+    const open = deriveGuidance('system_design', scene, oneNote, 'open')
+    assert.equal(guided.phase, 'ready')
+    assert.notEqual(open.phase, 'ready')
+    assert.equal(open.strictHold, true)
+
+    const twoNotes = [
+      { id: 'tradeoffs', value: 'We trade consistency for availability here.' },
+      { id: 'assumptions', value: 'Read-heavy workload, 10:1.' },
+    ]
+    assert.equal(deriveGuidance('system_design', scene, twoNotes, 'open').phase, 'ready')
+  })
+})

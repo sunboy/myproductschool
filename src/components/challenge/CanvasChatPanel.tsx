@@ -341,6 +341,7 @@ export function CanvasChatPanel({
         challengeType,
         attemptId,
         context_pack: contextPack,
+        guidance_level: guidanceLevel,
         guidance_phase: guidancePhase ?? null,
         solutions_tab_open: solutionsOpen,
         solution_approach_title: activeSolutionApproach?.title ?? null,

@@ -543,6 +543,7 @@ function buildUserContent(body: InterpretBody): string {
   return [
     `# Canvas state\n${sceneText}`,
     body.context_pack?.trim() ? `# Context Pack\n${body.context_pack.trim()}` : null,
+    body.guidance_level ? `# Coaching register\n${canvasRegisterHint(body.guidance_level)}` : null,
     body.guidance_phase ? `# Guidance phase\n${guidancePhaseHint(body.guidance_phase)}` : null,
     solutionsContextBlock(body),
     historyText ? `# Recent conversation\n${historyText}` : null,
@@ -550,6 +551,22 @@ function buildUserContent(body: InterpretBody): string {
   ]
     .filter(Boolean)
     .join('\n\n')
+}
+
+/**
+ * Canvas flavor of the coaching register (SUN-253). Never name the level to
+ * the user. The open register carries the requirement-ambiguity move: once
+ * the design settles, Hatch introduces a conflicting stakeholder constraint.
+ */
+function canvasRegisterHint(level: 'scaffolded' | 'guided' | 'open'): string {
+  switch (level) {
+    case 'scaffolded':
+      return 'This learner is early. Explain design concepts on first use (load balancer, normalization, fan-out), suggest the next concrete element to place, and keep each move small. Warm, patient, concrete.'
+    case 'guided':
+      return 'This learner has some footing. Coach with guiding questions before answers; give the next move only when they are stuck.'
+    case 'open':
+      return 'This learner is experienced. Terse peer-review tone; skip basics. When the design has settled (guidance phase notes_no_tradeoffs or ready), introduce one realistic conflicting stakeholder constraint (a cost ceiling, a latency SLO, a compliance boundary) and ask them to defend or adapt the design against it. One constraint per session.'
+  }
 }
 
 /**
