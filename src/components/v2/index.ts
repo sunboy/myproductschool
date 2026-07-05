@@ -1,4 +1,5 @@
 export { FlowWorkspace } from './FlowWorkspace'
+export { WorkspacePanel } from './WorkspacePanel'
 export { FlowWorkspaceShell } from './FlowWorkspaceShell'
 export { FlowStepper } from './FlowStepper'
 export { OptionCard } from './OptionCard'
