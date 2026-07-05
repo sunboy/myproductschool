@@ -22,6 +22,7 @@ import {
   INITIAL_MACHINE,
   type GuidanceMachineState,
 } from '@/lib/adaptive/branching'
+import { REGISTER_LABELS, REGISTER_TOOLTIPS } from '@/lib/adaptive/registerLabel'
 import { toDimensionViews, type AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 import type {
   MediumProps,
@@ -722,6 +723,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
         reportPath={reportPath}
         reportDownloadUrl={sessionId && reportPath ? `/api/claude-code/session/report?session=${encodeURIComponent(sessionId)}` : null}
         shareUrl={shareUrl}
+        adaptive={{
+          guidance,
+          injected: adaptiveLogRef.current.injected,
+          adjustments: adaptiveLogRef.current.adjustments,
+        }}
         onDashboard={() => { window.location.href = '/dashboard' }}
         onRunAnother={() => { window.location.reload() }}
       />
@@ -951,6 +957,31 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 onMark={handleMark}
               />
             )}
+
+            {/* Coaching register — how Hatch is coaching this session (F3).
+                Product language only; the internal level never surfaces. */}
+            <div
+              title={REGISTER_TOOLTIPS[guidance]}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                alignSelf: 'flex-start',
+                background: 'var(--color-surface-container)',
+                border: '1px solid var(--color-outline-variant)',
+                borderRadius: 999,
+                padding: '3px 10px',
+                cursor: 'default',
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 13, color: 'var(--color-primary)', fontVariationSettings: "'FILL' 1, 'wght' 500" }}
+              >
+                school
+              </span>
+              <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-on-surface-variant)', fontFamily: 'var(--font-label)' }}>
+                Coaching: {REGISTER_LABELS[guidance]}
+              </span>
+            </div>
 
             {/* Connection strip */}
             <AnalyticsConnectionStrip

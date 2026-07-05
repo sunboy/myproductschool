@@ -44,6 +44,7 @@ Not fixed (noted): the 2 legacy `user_notes` rows keep NULL embeddings (trivial 
 
 ## Checkpoint
 
+- **Iteration 12** (F1, committed c85a954f): stepper Regroup/Stretch badges + dashed adaptive dots + insertion pop/glow animation + Hatch dock branch announcements. Visual pass verified at 3 viewports against a real session (screenshots in docs/notes/adaptive-ui/), suite green. Next: F2 (Session Mirror adaptation narration).
 - **Loop restarted** (2026-07-04 midday, user directive after review): new Phase F (visible adaptivity UI: F1 stepper affordances + branch announcement, F2 mirror narration, F3 coaching register chip) then Phase G (SUN-251..254, one commit per issue). Note: the founder account's learner_competencies were temporarily seeded to 88/25 for review (original values ~52/0) — restore or leave per user's call before merge. Dev server for review running on :3002 (stub disabled). Next: F1.
 
 - **Iteration 1** (night start): Worktree created from main, deps installed, .env.local copied. Phase A design doc written to `docs/superpowers/specs/2026-07-04-adaptive-workspaces-design.md`. Codex review dispatched (background). Next: incorporate Codex feedback, record verdict, commit Phase A, then start B0 (calibration measurement). No blockers.

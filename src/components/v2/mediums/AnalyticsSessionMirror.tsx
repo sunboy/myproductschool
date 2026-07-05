@@ -7,6 +7,8 @@ import { ReportCharts } from '@/components/analytics/ReportCharts'
 import { AnalystDimensionChart } from '@/components/analytics/AnalystDimensionChart'
 import type { AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 import type { MarkedFinding } from './types'
+import { REGISTER_LABELS, type AdaptiveSummary } from '@/lib/adaptive/registerLabel'
+import type { GuidanceLevel } from '@/lib/adaptive/guidance'
 
 interface AnalyticsSessionMirrorProps {
   markedFindings: MarkedFinding[]
@@ -21,6 +23,8 @@ interface AnalyticsSessionMirrorProps {
   reportDownloadUrl?: string | null
   /** A shareable URL for the report/score card, if generated. */
   shareUrl?: string | null
+  /** How the session adapted (guidance register, injected steps, movements). */
+  adaptive?: AdaptiveSummary | null
   onDashboard: () => void
   onRunAnother?: () => void
 }
@@ -34,6 +38,7 @@ export function AnalyticsSessionMirror({
   reportPath = null,
   reportDownloadUrl = null,
   shareUrl = null,
+  adaptive = null,
   onDashboard,
   onRunAnother,
 }: AnalyticsSessionMirrorProps) {
@@ -151,6 +156,46 @@ export function AnalyticsSessionMirror({
         {dimensions && dimensions.length > 0 && (
           <div ref={el => { cardRefs.current[0] = el }}>
             <AnalystDimensionChart dimensions={dimensions} variant="mirror" />
+          </div>
+        )}
+
+        {/* How the session adapted — honest narration of the register and any
+            arc changes the engine made, from the same log the grader reads. */}
+        {adaptive && (adaptive.injected.length > 0 || adaptive.adjustments.length > 0 || adaptive.guidance !== 'guided') && (
+          <div
+            ref={el => { cardRefs.current[5] = el }}
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-outline-variant)',
+              borderRadius: 14,
+              padding: '14px',
+              display: 'flex', flexDirection: 'column', gap: 8,
+            }}
+          >
+            <div style={{
+              fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em',
+              color: 'var(--color-on-surface-variant)',
+            }}>
+              How this session adapted
+            </div>
+            <div style={{ fontSize: 12.5, lineHeight: 1.6, color: 'var(--color-on-surface)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span>
+                Coaching ran at the {REGISTER_LABELS[adaptive.guidance].toLowerCase()} register
+                {adaptive.adjustments.length === 0 ? ' the whole way.' : '.'}
+              </span>
+              {adaptive.adjustments.map((a, i) => (
+                <span key={`adj-${i}`}>
+                  Hatch moved from {REGISTER_LABELS[a.from as GuidanceLevel]?.toLowerCase() ?? a.from} to {REGISTER_LABELS[a.to as GuidanceLevel]?.toLowerCase() ?? a.to} after {a.trigger}.
+                </span>
+              ))}
+              {adaptive.injected.map((inj, i) => (
+                <span key={`inj-${i}`}>
+                  {inj.kind === 'scaffold_explainer'
+                    ? 'A regroup step was added when the session stalled, then you worked back to the blocked step.'
+                    : 'A stretch step was added because you were moving fast and clean.'}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 
