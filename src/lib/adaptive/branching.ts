@@ -67,6 +67,17 @@ export function applyVerdict(
   return { state: { ...state, retryStreak, passStreak: 0 }, guidance, moved: null }
 }
 
+/**
+ * Maps a 0..1 grading score onto the verdict vocabulary the guidance machine
+ * consumes. Thresholds match the platform rubric bands (strong ≥ 0.75,
+ * partial ≥ 0.45) so every medium moves guidance on the same scale.
+ */
+export function verdictFromScore(score: number): MarkVerdict {
+  if (score >= 0.75) return 'pass'
+  if (score >= 0.45) return 'partial'
+  return 'retry'
+}
+
 // ── Branch planning (§5) ────────────────────────────────────────────────────
 
 export interface BranchInput {

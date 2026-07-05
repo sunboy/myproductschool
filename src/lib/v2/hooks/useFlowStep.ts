@@ -24,6 +24,8 @@ interface StepData {
   step: FlowStep
   nudge: string | null
   questions: StepQuestionData[]
+  /** Adaptation contract: coaching register for this learner (SUN-251). */
+  guidance?: 'scaffolded' | 'guided' | 'open'
 }
 
 interface RevealedOption {

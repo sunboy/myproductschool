@@ -134,6 +134,18 @@ describe('planBranch', () => {
   })
 })
 
+describe('verdictFromScore', () => {
+  it('maps rubric bands onto verdicts', async () => {
+    const { verdictFromScore } = await import('@/lib/adaptive/branching')
+    assert.equal(verdictFromScore(1), 'pass')
+    assert.equal(verdictFromScore(0.75), 'pass')
+    assert.equal(verdictFromScore(0.5), 'partial')
+    assert.equal(verdictFromScore(0.45), 'partial')
+    assert.equal(verdictFromScore(0.44), 'retry')
+    assert.equal(verdictFromScore(0), 'retry')
+  })
+})
+
 describe('applyBranch', () => {
   it('inserts and re-sequences contiguously', () => {
     const arc = arcForDifficulty('advanced')

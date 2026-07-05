@@ -7,6 +7,7 @@ import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_CHALLENGE_STARTED, EVENT_CHALLENGE_STEP_ADVANCED } from '@/lib/posthog/events'
 import gsap from 'gsap'
 import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
+import { applyVerdict, verdictFromScore, INITIAL_MACHINE, type GuidanceMachineState } from '@/lib/adaptive/branching'
 import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
@@ -1033,6 +1034,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Hint card open/close state (right pane)
   const [hintOpen, setHintOpen] = useState(false)
 
+  // ── Adaptation contract (SUN-251) ─────────────────────────────────────────
+  // Guidance register from the step API (calibration-informed); the bounded
+  // machine moves it on question verdicts. 'guided' is today's behavior.
+  const [coachRegister, setCoachRegister] = useState<'scaffolded' | 'guided' | 'open'>('guided')
+  const guidanceSeededRef = useRef(false)
+  const guidanceMachineRef = useRef<GuidanceMachineState>({ ...INITIAL_MACHINE })
+  const guidanceAdjustmentsRef = useRef<Array<{ from: string; to: string; trigger: string; atStepId: string | null }>>([])
+
+  // Seed the register once from the first step payload. Scaffolded learners
+  // get the hint card open before their first answer; open learners keep it
+  // behind an explicit ask (the existing default).
+  useEffect(() => {
+    const g = stepData?.guidance
+    if (!g || guidanceSeededRef.current) return
+    guidanceSeededRef.current = true
+    setCoachRegister(g)
+    if (g === 'scaffolded') setHintOpen(true)
+  }, [stepData])
+
   // Left panel footer interaction state
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
@@ -1988,6 +2008,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         const result = await submitStep({ attemptId, answers })
         if (!result) return
 
+        // Feed each question's grade into the bounded guidance machine
+        // (SUN-251): a run of strong answers opens the register up, a run of
+        // weak ones brings the hints back. One net movement per direction.
+        for (const qr of result.questions) {
+          const adj = applyVerdict(guidanceMachineRef.current, verdictFromScore(qr.score ?? 0), coachRegister)
+          guidanceMachineRef.current = adj.state
+          if (adj.moved) {
+            guidanceAdjustmentsRef.current.push({
+              from: coachRegister,
+              to: adj.guidance,
+              trigger: adj.moved === 'down' ? 'two weak answers in a row' : 'two strong answers in a row',
+              atStepId: currentStep,
+            })
+            setCoachRegister(adj.guidance)
+            if (adj.guidance === 'scaffolded') setHintOpen(true)
+          }
+        }
+
         // Build per-question reveal history in sequence order.
         const history: QuestionRevealRecord[] = result.questions.map((qr) => {
           const q = orderedQuestions.find((x) => x.id === qr.question_id)
@@ -2519,6 +2557,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 hatch_signal: r.hatchSignal ?? null,
                 framework_hint: r.frameworkHint ?? null,
               })),
+              adaptive: {
+                guidance: coachRegister,
+                adjustments: guidanceAdjustmentsRef.current,
+              },
             }),
           })
           if (res.ok) {
