@@ -1,6 +1,22 @@
 # Overnight Adaptive Workspaces — Run Log (2026-07-04)
 
-## FINAL SUMMARY — mission complete (all phases A-E)
+## FINAL SUMMARY (extended run) — F1-F3 + G1-G4 complete (2026-07-05)
+
+Second run added on user direction: visible adaptivity UI + all four medium adoptions.
+
+**UI (Phase F)**: `c85a954f` stepper Regroup/Stretch badges, dashed adaptive dots, insertion animation, Hatch branch announcements; `924c8db6` Session Mirror "How this session adapted" card + workspace coaching-register chip (Hands-on/Balanced/Peer-level, `src/lib/adaptive/registerLabel.ts`). Visual passes at 375/768/1440 archived in docs/notes/adaptive-ui/.
+
+**Medium rollout (Phase G)** — all four Linear issues closed as Done with shipped-notes:
+- `fdcc20e2` SUN-251 FLOW: step API returns register, scaffolded auto-open hints, per-question verdicts drive the machine (verdictFromScore), register history in the completion insight. E2E: e2e/flow-adaptive.spec.ts.
+- `35053434` SUN-252 coding/SQL: shared GET /api/adaptive/guidance, run results drive the machine, register to the coding coach on every turn, Solutions comparison pointer for open clean solves.
+- `c42d478d` SUN-253 canvas: register in panel base body + canvas register hint (open = one conflicting stakeholder constraint once the design settles), stricter open readiness bar (strictHold) with honest meter copy.
+- `22c5a345` SUN-254 live interviews: [INTERVIEW REGISTER] prompt block (scaffolded = kinder pacing; open = on-site pressure + falsifiability follow-ups + one surprise constraint), register logged in calibration_snapshot.
+
+**State**: tsc clean; 405 node + 70 vitest green; flow E2E green; CC adaptive E2E green (each test verified, serial runs occasionally flake on real-infra timing); zero lingering sandbox sessions. Dev server left RUNNING on :3002 for review. Founder account competencies still seeded to 88/25 (original ~52/0) — restore before real use if desired.
+
+**Follow-ups noted in issues**: mid-interview register movement (needs voice-agent prompt hot-swap); canvas has no mid-session movement (single-submission medium).
+
+## FINAL SUMMARY — overnight run, phases A-E (2026-07-04)
 
 **Branch `feat/adaptive-workspaces`** (worktree `.worktrees/adaptive-workspaces`), 9 commits ahead of main, nothing merged, nothing pushed, nothing deployed:
 `44ee74aa` design docs → `0f063882` B0 → `b32030ff` B1 → `b765ba21` B2 → `ad39b133` B3 → `fde4d313` B4 E2E → `5583a01a` E → `d0ae82f4` D → `98cdbd4d` C.
