@@ -838,7 +838,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             to this workspace row (its closed/floating modes use `absolute
             bottom-4 right-4`), and it's a flex row so the docked panel sits as
             the right column — exactly how FlowWorkspace mounts the same panel. */}
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden', position: 'relative', gap: 8, padding: 8, background: 'var(--color-surface-container-low)' }}>
 
           {/* LEFT — scenario + dataset. `minHeight: 0` + `height: 100%` are what
               let `overflowY: auto` actually engage inside the flex row: without
@@ -849,10 +849,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             width: '28%', minWidth: 220, maxWidth: 320,
             flexShrink: 0,
             height: '100%', minHeight: 0,
-            borderRight: '1px solid var(--color-outline-variant)',
+            border: '1px solid var(--color-outline-variant)', borderRadius: 12,
             overflowY: 'auto', overflowX: 'hidden', padding: '14px 14px',
             display: 'flex', flexDirection: 'column', gap: 12,
-            background: 'var(--color-surface-container-low)',
+            background: 'var(--color-surface-container-lowest)',
           }}>
             <div style={{
               fontSize: 10, fontWeight: 800,
@@ -941,6 +941,8 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             display: 'flex', flexDirection: 'column', gap: 10,
             padding: '12px 14px',
             overflow: 'auto',
+            border: '1px solid var(--color-outline-variant)', borderRadius: 12,
+            background: 'var(--color-surface-container-lowest)',
           }}>
 
             {/* Objective card */}
