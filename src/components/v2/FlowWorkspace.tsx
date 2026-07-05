@@ -46,7 +46,7 @@ import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challe
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
-import { workspaceBreadcrumbs, workspaceExitHref } from '@/lib/workspace/breadcrumbs'
+import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
@@ -2267,18 +2267,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, playHatchSound, uploadCanvasPng])
 
-  // Run handler for coding challenges - fires visible test cases only
+  // Derived: active coding parts from detail (only meaningful for coding challenges)
+  const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])
+
+  // Run handler for coding challenges — fires visible test cases only. Part-
+  // aware: when a multi-part coding subtask is active, only that part's test
+  // cases run (running everything would be rejected as out of part scope).
+  // This is the ONLY run path; the toolbar previously carried a duplicate
+  // inline closure that bypassed the guidance machine.
   const handleCodingRun = useCallback(async () => {
     if (codeRunner.status === 'running') return
     setOutputPanelStatus('running')
     setOutputPanelError(undefined)
     setCodingGradingError(undefined)
     try {
-      const result = await codeRunner.run(currentCode)
+      const activePart = codingParts.find(p => p.id === activePartId)
+      const testCaseIds = activePart?.coding_test_case_ids?.length
+        ? activePart.coding_test_case_ids
+        : undefined
+      const result = await codeRunner.run(currentCode, testCaseIds)
       if (result) {
         setLastRunResult(result)
         feedRunVerdict(result)
         setOutputPanelStatus('done')
+        if (activePartId) {
+          setPartRunResults(prev => ({ ...prev, [activePartId]: result }))
+        }
       } else {
         setOutputPanelStatus('idle')
       }
@@ -2286,7 +2300,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setOutputPanelStatus('error')
       setOutputPanelError(err instanceof Error ? err.message : 'Run failed')
     }
-  }, [codeRunner, currentCode, feedRunVerdict])
+  }, [codeRunner, currentCode, feedRunVerdict, codingParts, activePartId])
 
   // Submit handler for coding challenges - final correctness first, then Hatch grading.
   const handleCodingSubmit = useCallback(async () => {
@@ -2377,6 +2391,77 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setIsLoadingGrading(false)
     }
   }, [isApiMode, props, attemptId, currentCode, currentLanguage, isSubmittingCoding, codeRunner, coachRegister])
+
+  // Submit handler for a multi-part coding subtask — runs only the active
+  // part's test cases, then posts the part-scoped grade. Extracted from the
+  // toolbar's inline closure so the workspace bar can own the button.
+  const handleSubmitPart = useCallback(async () => {
+    const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
+    const partId = activePartId
+    if (!partId || !challengeId || !attemptId || isSubmittingCoding) return
+    setIsSubmittingCoding(true)
+    setOutputPanelStatus('running')
+    setOutputPanelError(undefined)
+    try {
+      const activePart = codingParts.find(p => p.id === partId)
+      const testCaseIds = activePart?.coding_test_case_ids ?? []
+      // Run only this part's test cases (visible + hidden among them).
+      // Using submit() here would run every test case on the challenge,
+      // which the API rejects because results would be out of part scope.
+      const result = await codeRunner.run(currentCode, testCaseIds.length > 0 ? testCaseIds : undefined)
+      if (result) {
+        setLastRunResult(result)
+        setOutputPanelStatus('done')
+        setPartRunResults(prev => ({ ...prev, [partId]: result }))
+      }
+      const submitRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attemptId,
+          partId,
+          finalCode: currentCode,
+          language: currentLanguage,
+          correctnessPayload: result ?? null,
+          testCaseIds,
+        }),
+      })
+      if (submitRes.ok) {
+        setPartSubmissions(prev => ({ ...prev, [partId]: { submitted: true } }))
+        setCodingDrafts(prev => ({
+          ...prev,
+          [partId]: { ...(prev[partId] ?? {}), [currentLanguage]: currentCode },
+        }))
+      }
+    } catch (err) {
+      setOutputPanelStatus('error')
+      setOutputPanelError(err instanceof Error ? err.message : 'Submit failed')
+    } finally {
+      setIsSubmittingCoding(false)
+    }
+  }, [isApiMode, props, activePartId, attemptId, isSubmittingCoding, codingParts, codeRunner, currentCode, currentLanguage])
+
+  // Keyboard shortcuts for the workspace bar actions (coding only):
+  // Cmd/Ctrl+' runs, Cmd/Ctrl+Enter submits — but never while Monaco has
+  // focus, where Cmd+Enter is the editor's own binding.
+  useEffect(() => {
+    if (!isCodingChallenge) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return
+      const inEditor = (e.target as HTMLElement | null)?.closest?.('.monaco-editor')
+      if (inEditor) return
+      if (e.key === "'") {
+        e.preventDefault()
+        void handleCodingRun()
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        if (codingParts.length > 0) void handleSubmitPart()
+        else void handleCodingSubmit()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [isCodingChallenge, handleCodingRun, handleCodingSubmit, handleSubmitPart, codingParts.length])
 
   // Re-run Hatch grading on the SAME submission, in place. Used by the "Retry
   // grading" button on the complete screen when the AI grader errored. Reuses the
@@ -3054,8 +3139,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   const tabs = ['Description', 'Solutions', 'Discussions', 'Submissions'] as const
 
-  // Derived: active coding parts from detail (only meaningful for coding challenges)
-  const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])
 
   // Left pane description content
   const descriptionPane = (
@@ -4084,15 +4167,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // workspace type so the trail and exit are identical across FLOW / canvas /
   // coding (mirrors the analytics shell header). Deep-linking or arriving via
   // grading no longer drops the user out of the app.
-  const workspaceCrumbs = workspaceBreadcrumbs(challengeTitle || 'Challenge', { fromPlan, fromDomain })
-  const breadcrumbBar = (
-    <div
-      className="hidden md:flex items-center h-9 px-4 shrink-0 border-b"
-      style={{ borderColor: 'var(--color-outline-faint)', background: 'var(--color-surface)' }}
-    >
-      <AppBreadcrumbs items={workspaceCrumbs} className="min-w-0" />
-    </div>
-  )
 
   function workspaceTabBadge(count: number, active: boolean) {
     return (
@@ -4114,6 +4188,83 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       </span>
     )
   }
+
+  // Coding Run/Submit cluster — lives in the workspace bar (LeetCode-style),
+  // one slim chrome band instead of a separate 40px toolbar row.
+  const codingActions = isCodingChallenge ? (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+      {currentLanguage === 'sql' && codeRunner.status === 'hydrating' && (
+        <span className="text-xs text-on-surface-variant font-label flex items-center gap-1">
+          <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+          Setting up database…
+        </span>
+      )}
+      {currentLanguage === 'sql' && codeRunner.sqlError && (
+        <span className="text-xs text-error font-label">DB error: {codeRunner.sqlError}</span>
+      )}
+      <button
+        onClick={handleCodingRun}
+        disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
+        className={WORKSPACE_BTN_TONAL}
+        data-testid="run-button"
+      >
+        {codeRunner.status === 'running' ? (
+          <>
+            <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+            Running…
+          </>
+        ) : (
+          <>
+            <span className="material-symbols-outlined text-[14px]">play_arrow</span>
+            Run
+            <kbd className="hidden min-[1280px]:inline text-[9.5px] font-semibold px-1 rounded border border-outline-variant bg-surface-container text-on-surface-variant">⌘'</kbd>
+          </>
+        )}
+      </button>
+      {codingParts.length > 0 ? (
+        activePartId && codingParts.find(p => p.id === activePartId)?.response_type === 'coding_subtask' ? (
+          <button
+            onClick={handleSubmitPart}
+            disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
+            className={WORKSPACE_BTN_PRIMARY}
+            data-testid="submit-part-button"
+          >
+            {isSubmittingCoding ? (
+              <>
+                <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+                Submitting…
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[14px]">upload</span>
+                Submit Part
+              </>
+            )}
+          </button>
+        ) : null
+      ) : (
+        <button
+          onClick={handleCodingSubmit}
+          disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
+          className={WORKSPACE_BTN_PRIMARY}
+          data-testid="submit-button"
+        >
+          {isSubmittingCoding ? (
+            <>
+              <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+              Submitting…
+            </>
+          ) : (
+            <>
+              <span className="material-symbols-outlined text-[14px]">upload</span>
+              Submit
+              <kbd className="hidden min-[1280px]:inline text-[9.5px] font-semibold px-1 rounded border border-on-primary/40 bg-transparent text-on-primary/80">⌘⏎</kbd>
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  ) : null
 
   // Shared top chrome - spans full width so the borderBottom is continuous
   const topChrome = (
@@ -4143,6 +4294,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
         </button>
+        {leftCollapsed && challengeTitle && (
+          <span
+            className="font-headline"
+            style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
+            title={challengeTitle}
+          >
+            {challengeTitle}
+          </span>
+        )}
         {!leftCollapsed && (
           <div style={{
             display: 'flex',
@@ -4259,6 +4419,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         ) : isCodingChallenge ? (
           <>
             <div style={{ flex: 1 }} />
+            {codingActions}
             <button
               onClick={() => setCodingMaximised((v) => !v)}
               className="inline-flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
@@ -4583,7 +4744,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
         {/* Same full-width top chrome as question phase (desktop only - on mobile
             the feedback fills the width and carries its own navigation). */}
-        {!isMobile && breadcrumbBar}
         {!isMobile && topChrome}
 
         {/* Middle: resizable two-pane content on desktop, single column on mobile */}
@@ -4811,7 +4971,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </>
       ) : (
         <>
-          {breadcrumbBar}
           {topChrome}
         </>
       )}
@@ -5021,149 +5180,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     </span>
                   )}
                   <div style={{ flex: 1 }} />
-                  {/* SQL hydration status */}
-                  {currentLanguage === 'sql' && codeRunner.status === 'hydrating' && (
-                    <span className="text-xs text-on-surface-variant font-label flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-                      Setting up database…
-                    </span>
-                  )}
-                  {currentLanguage === 'sql' && codeRunner.sqlError && (
-                    <span className="text-xs text-error font-label">DB error: {codeRunner.sqlError}</span>
-                  )}
-                  {/* Run button */}
-                  <button
-                    onClick={async () => {
-                      if (codeRunner.status === 'running') return
-                      setOutputPanelStatus('running')
-                      setOutputPanelError(undefined)
-                      try {
-                        // When a part is active, pass only that part's test case IDs
-                        const activePart = codingParts.find(p => p.id === activePartId)
-                        const testCaseIds = activePart?.coding_test_case_ids?.length
-                          ? activePart.coding_test_case_ids
-                          : undefined
-                        const result = await codeRunner.run(currentCode, testCaseIds)
-                        if (result) {
-                          setLastRunResult(result)
-                          setOutputPanelStatus('done')
-                          // Save run result per part
-                          if (activePartId) {
-                            setPartRunResults(prev => ({ ...prev, [activePartId]: result }))
-                          }
-                        } else {
-                          setOutputPanelStatus('idle')
-                        }
-                      } catch (err) {
-                        setOutputPanelStatus('error')
-                        setOutputPanelError(err instanceof Error ? err.message : 'Run failed')
-                      }
-                    }}
-                    disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                    className={WORKSPACE_BTN_TONAL}
-                    data-testid="run-button"
-                  >
-                    {codeRunner.status === 'running' ? (
-                      <>
-                        <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-                        Running…
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-[14px]">play_arrow</span>
-                        Run
-                      </>
-                    )}
-                  </button>
-                  {/* Submit button - "Submit Part" in multi-part mode, "Submit" in single-prompt */}
-                  {codingParts.length > 0 ? (
-                    // Multi-part: Submit Part (only active when a coding subtask part is open)
-                    activePartId && codingParts.find(p => p.id === activePartId)?.response_type === 'coding_subtask' ? (
-                      <button
-                        onClick={async () => {
-                          const partId = activePartId
-                          if (!partId || !challengeId || !attemptId || isSubmittingCoding) return
-                          setIsSubmittingCoding(true)
-                          setOutputPanelStatus('running')
-                          setOutputPanelError(undefined)
-                          try {
-                            const activePart = codingParts.find(p => p.id === partId)
-                            const testCaseIds = activePart?.coding_test_case_ids ?? []
-                            // Run only this part's test cases (visible + hidden among them).
-                            // Using submit() here would run every test case on the challenge,
-                            // which the API rejects because results would be out of part scope.
-                            const result = await codeRunner.run(currentCode, testCaseIds.length > 0 ? testCaseIds : undefined)
-                            if (result) {
-                              setLastRunResult(result)
-                              setOutputPanelStatus('done')
-                              setPartRunResults(prev => ({ ...prev, [partId]: result }))
-                            }
-                            // Post to coding-submit with partId
-                            const submitRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                attemptId,
-                                partId,
-                                finalCode: currentCode,
-                                language: currentLanguage,
-                                correctnessPayload: result ?? null,
-                                testCaseIds,
-                              }),
-                            })
-                            if (submitRes.ok) {
-                              setPartSubmissions(prev => ({ ...prev, [partId]: { submitted: true } }))
-                              // Save current draft so it persists
-                              setCodingDrafts(prev => ({
-                                ...prev,
-                                [partId]: { ...(prev[partId] ?? {}), [currentLanguage]: currentCode },
-                              }))
-                            }
-                          } catch (err) {
-                            setOutputPanelStatus('error')
-                            setOutputPanelError(err instanceof Error ? err.message : 'Submit failed')
-                          } finally {
-                            setIsSubmittingCoding(false)
-                          }
-                        }}
-                        disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                        className={WORKSPACE_BTN_PRIMARY}
-                        data-testid="submit-part-button"
-                      >
-                        {isSubmittingCoding ? (
-                          <>
-                            <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
-                            Submitting…
-                          </>
-                        ) : (
-                          <>
-                            <span className="material-symbols-outlined text-[14px]">upload</span>
-                            Submit Part
-                          </>
-                        )}
-                      </button>
-                    ) : null
-                  ) : (
-                    // Single-prompt: existing submit button
-                    <button
-                      onClick={handleCodingSubmit}
-                      disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                      className={WORKSPACE_BTN_PRIMARY}
-                      data-testid="submit-button"
-                    >
-                      {isSubmittingCoding ? (
-                        <>
-                          <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
-                          Submitting…
-                        </>
-                      ) : (
-                        <>
-                          <span className="material-symbols-outlined text-[14px]">upload</span>
-                          Submit
-                        </>
-                      )}
-                    </button>
-                  )}
                 </div>
 
                 {/* Monaco editor + draggable divider + output panel (default 60/40, user-resizable) */}
