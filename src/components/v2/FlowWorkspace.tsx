@@ -47,6 +47,7 @@ import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
+import { WorkspacePanel } from '@/components/v2/WorkspacePanel'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
@@ -564,6 +565,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [canvasMaximised, setCanvasMaximised] = useState(false)
   const [canvasLoopExpanded, setCanvasLoopExpanded] = useState(false)
   const [codingMaximised, setCodingMaximised] = useState(false)
+  // Console collapse (visual-clarity inc. 4): header-only console, editor takes the space.
+  const [consoleCollapsed, setConsoleCollapsed] = useState(false)
   const [editorHeightPct, setEditorHeightPct] = useState(60)
   const [chatPanelOpen, setChatPanelOpen] = useState(false)
   const [queuedHatchPrompt, setQueuedHatchPrompt] = useState<QueuedHatchPrompt | null>(null)
@@ -5132,28 +5135,34 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   Exit full screen
                 </button>
               )}
-              {/* Editor column: toolbar + Monaco + resizable output panel */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
-                {/* Toolbar: language selector + run + submit */}
-                <div style={{
-                  height: 40,
-                  flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '0 12px',
-                  borderBottom: '1px solid var(--color-outline-faint)',
-                  background: 'var(--color-surface-container)',
-                }}>
-                  {/* Language selector */}
-                  {(() => {
+              {/* Editor column: framed panels — editor card + grip gutter + console card
+                  floating on the workspace canvas (visual-clarity inc. 4) */}
+              <div
+                ref={codingPaneRef}
+                style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0,
+                  gap: 8, padding: 8, background: 'var(--color-surface-container-low)',
+                }}
+              >
+                <WorkspacePanel
+                  icon="code"
+                  title={(() => {
+                    const names: Record<string, string> = {
+                      python: 'solution.py', javascript: 'solution.js', java: 'Solution.java',
+                      cpp: 'solution.cpp', go: 'solution.go', sql: 'query.sql',
+                    }
+                    return names[currentLanguage] ?? 'solution'
+                  })()}
+                  headerExtra={codingParts.length > 0 && activePartId ? (
+                    <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-on-surface-variant)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-surface-container)', border: '1px solid var(--color-outline-variant)', whiteSpace: 'nowrap' }}>
+                      {(() => { const cp = codingParts.find(x => x.id === activePartId); return cp ? `Part ${cp.sequence}` : '' })()}
+                    </span>
+                  ) : undefined}
+                  actions={(() => {
                     const metadata = (isApiMode ? detail?.challenge?.metadata : null) as { supported_languages?: string[] } | null | undefined
                     const metaLangs = (metadata?.supported_languages ?? []) as SupportedLanguage[]
                     // Guard the option list by challenge type so the wrong language
-                    // can't appear regardless of (often empty) metadata: SQL
-                    // challenges only offer SQL; algorithm challenges never offer
-                    // SQL. Falls back to a sensible per-type default when metadata
-                    // is missing, instead of showing all six languages.
+                    // can't appear regardless of (often empty) metadata.
                     const NON_SQL_DEFAULTS: SupportedLanguage[] = ['python', 'javascript', 'java', 'cpp', 'go']
                     let supportedLangs: SupportedLanguage[]
                     if (apiChallengeType === 'sql') {
@@ -5173,19 +5182,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       />
                     )
                   })()}
-                  {/* Active part label (multi-part only) */}
-                  {codingParts.length > 0 && activePartId && (
-                    <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-on-surface-variant)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}>
-                      {(() => { const p = codingParts.find(cp => cp.id === activePartId); return p ? `Part ${p.sequence}` : '' })()}
-                    </span>
-                  )}
-                  <div style={{ flex: 1 }} />
-                </div>
-
-                {/* Monaco editor + draggable divider + output panel (default 60/40, user-resizable) */}
-                <div ref={codingPaneRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                  {/* Editor */}
-                  <div style={{ flex: `${editorHeightPct} 1 0`, minHeight: 0 }} data-testid="monaco-editor-container">
+                  style={{ flex: consoleCollapsed ? '1 1 0' : `${editorHeightPct} 1 0` }}
+                >
+                  <div style={{ flex: 1, minHeight: 0 }} data-testid="monaco-editor-container">
                     <MonacoCodeEditor
                       value={currentCode}
                       onChange={setCurrentCode}
@@ -5195,32 +5194,35 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       readOnly={isSubmittingCoding}
                     />
                   </div>
-                  {/* Draggable divider */}
+                </WorkspacePanel>
+                {/* Grip gutter — resizes editor/console */}
+                {!consoleCollapsed && (
                   <div
                     onMouseDown={handleCodingDividerMouseDown}
                     role="separator"
                     aria-orientation="horizontal"
-                    aria-label="Resize editor and output panel"
+                    aria-label="Resize editor and console"
                     style={{
-                      height: 6,
-                      cursor: 'ns-resize',
-                      flexShrink: 0,
-                      background: 'var(--color-outline-faint)',
-                      transition: 'background-color 120ms',
-                      position: 'relative',
+                      height: 8, margin: '-8px 0', cursor: 'ns-resize', flexShrink: 0, zIndex: 5,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'var(--color-outline-variant)' }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'var(--color-outline-faint)' }}
-                  />
-                  {/* Output panel */}
-                  <div style={{ flex: `${100 - editorHeightPct} 1 0`, minHeight: 0 }}>
-                    <CodeOutputPanel
-                      results={lastRunResult}
-                      status={outputPanelStatus}
-                      isSqlMode={currentLanguage === 'sql'}
-                      errorMessage={outputPanelError}
-                    />
+                  >
+                    <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-outline-variant)', transition: 'background 120ms' }} />
                   </div>
+                )}
+                {/* Console card */}
+                <div
+                  className="rounded-xl border border-outline-variant overflow-hidden flex flex-col"
+                  style={consoleCollapsed ? { flex: '0 0 auto' } : { flex: `${100 - editorHeightPct} 1 0`, minHeight: 0 }}
+                >
+                  <CodeOutputPanel
+                    results={lastRunResult}
+                    status={outputPanelStatus}
+                    isSqlMode={currentLanguage === 'sql'}
+                    errorMessage={outputPanelError}
+                    collapsed={consoleCollapsed}
+                    onToggleCollapse={() => setConsoleCollapsed(v => !v)}
+                  />
                 </div>
               </div>
 

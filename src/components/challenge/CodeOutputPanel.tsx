@@ -8,6 +8,9 @@ interface CodeOutputPanelProps {
   status: 'idle' | 'running' | 'done' | 'error'
   isSqlMode?: boolean
   errorMessage?: string
+  /** Console collapse (visual-clarity overhaul): header stays, body hides. */
+  collapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
 // Render a table of SQL rows
@@ -387,6 +390,8 @@ export function CodeOutputPanel({
   status,
   isSqlMode = false,
   errorMessage,
+  collapsed = false,
+  onToggleCollapse,
 }: CodeOutputPanelProps) {
   const isRunning = status === 'running'
   const isIdle = status === 'idle'
@@ -394,31 +399,47 @@ export function CodeOutputPanel({
 
   return (
     <div
-      className="flex flex-col h-full bg-surface-container-low border-t border-outline-variant overflow-hidden"
+      className="flex flex-col h-full bg-surface-container-lowest overflow-hidden"
       data-testid="output-panel"
     >
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 bg-surface-container border-b border-outline-variant flex-shrink-0">
-        <span className="material-symbols-outlined text-[16px] text-on-surface-variant">
+      <div className={`flex items-center gap-2 px-3 h-9 bg-surface-container-low ${collapsed ? '' : 'border-b border-outline-variant'} flex-shrink-0`}>
+        <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
           terminal
         </span>
-        <span className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-wide">
-          Output
+        <span className="text-[11px] font-label font-bold text-on-surface-variant uppercase tracking-[0.07em]">
+          Console
         </span>
-        {results && !isRunning && (
-          <span
-            className={`ml-auto text-xs font-label font-semibold ${
-              results.testsPassed === results.testsTotal
-                ? 'text-primary'
-                : 'text-error'
-            }`}
-          >
-            {results.testsPassed} / {results.testsTotal} passed
-          </span>
-        )}
+        <span className="ml-auto flex items-center gap-2">
+          {results && !isRunning && (
+            <span
+              className={`text-xs font-label font-semibold ${
+                results.testsPassed === results.testsTotal
+                  ? 'text-primary'
+                  : 'text-error'
+              }`}
+            >
+              {results.testsPassed} / {results.testsTotal} passed
+            </span>
+          )}
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="inline-flex items-center justify-center w-6 h-6 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+              title={collapsed ? 'Expand console' : 'Collapse console'}
+              aria-label={collapsed ? 'Expand console' : 'Collapse console'}
+              data-testid="console-collapse-button"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {collapsed ? 'expand_less' : 'expand_more'}
+              </span>
+            </button>
+          )}
+        </span>
       </div>
 
       {/* Content */}
+      {!collapsed && (
       <div className="flex-1 overflow-y-auto">
         {/* Running state */}
         {isRunning && <RunningIndicator />}
@@ -473,6 +494,7 @@ export function CodeOutputPanel({
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }

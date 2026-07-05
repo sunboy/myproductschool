@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 /**
  * The shared workspace panel primitive (visual-clarity overhaul).
@@ -25,6 +25,8 @@ interface WorkspacePanelProps {
   headerExtra?: ReactNode
   /** Applied to the outer card. */
   className?: string
+  /** Inline sizing (flex weights in resizable splits). */
+  style?: CSSProperties
   /** Applied to the body wrapper (defaults to flex-1 min-h-0 overflow-hidden). */
   bodyClassName?: string
   children: ReactNode
@@ -36,6 +38,7 @@ export function WorkspacePanel({
   actions,
   headerExtra,
   className = '',
+  style,
   bodyClassName = '',
   children,
 }: WorkspacePanelProps) {
@@ -43,6 +46,7 @@ export function WorkspacePanel({
   return (
     <div
       className={`rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden flex flex-col min-h-0 ${className}`}
+      style={style}
     >
       {hasHeader && (
         <div className="h-9 shrink-0 px-3 flex items-center gap-2 border-b border-outline-variant bg-surface-container-low">
