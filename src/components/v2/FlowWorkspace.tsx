@@ -490,6 +490,11 @@ function CanvasTourMount({ active: canvasActive }: { active: boolean }) {
   return <TourRunner config={CANVAS_TOUR} active={run} onFinish={() => setRun(false)} />
 }
 
+// Shared workspace action button treatments — one visual system for every
+// Run/Submit pill in the workspace chrome (visual-clarity overhaul, inc. 1).
+const WORKSPACE_BTN_PRIMARY = 'inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-primary text-on-primary font-label text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity'
+const WORKSPACE_BTN_TONAL = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface font-label text-xs font-semibold hover:bg-surface-container-highest disabled:opacity-50 transition-colors'
+
 export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isApiMode = props.mode === 'api'
   const challengeId = isApiMode ? props.challengeId : ''
@@ -3090,7 +3095,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               return (
                 <Link href={practiceFilterHref('difficulty', filterVal ?? diff)} title={`Browse ${label} practice`} style={{
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: 'var(--color-surface-inverse)', color: 'var(--color-inverse-on-surface)',
+                  background: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)',
                   fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
                   padding: '3px 9px', borderRadius: 999,
                   fontFamily: 'var(--font-label)', textDecoration: 'none',
@@ -5055,7 +5060,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       }
                     }}
                     disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface font-label text-xs font-semibold hover:bg-surface-container-highest disabled:opacity-50 transition-colors"
+                    className={WORKSPACE_BTN_TONAL}
                     data-testid="run-button"
                   >
                     {codeRunner.status === 'running' ? (
@@ -5122,7 +5127,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                           }
                         }}
                         disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                        className="inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-primary text-on-primary font-label text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
+                        className={WORKSPACE_BTN_PRIMARY}
                         data-testid="submit-part-button"
                       >
                         {isSubmittingCoding ? (
@@ -5143,7 +5148,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     <button
                       onClick={handleCodingSubmit}
                       disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                      className="inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-primary text-on-primary font-label text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
+                      className={WORKSPACE_BTN_PRIMARY}
                       data-testid="submit-button"
                     >
                       {isSubmittingCoding ? (

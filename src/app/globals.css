@@ -107,6 +107,8 @@
 
   /* Redesign additions */
   --color-outline-faint:            #e7dfc9;
+  /* Glass morphism stroke (was referenced but never defined — matches .glass-card) */
+  --color-glass-stroke:             rgba(255, 255, 255, 0.6);
   --color-on-surface-muted:         #78715f;
   --color-amber:                    #c9933a;
   --color-amber-soft:               #f3e2b9;
