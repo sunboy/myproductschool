@@ -43,6 +43,15 @@ const KIND_COLORS: Record<SubProblemKind, string> = {
   metric_definition:   '#6a1b9a',
 }
 
+// Steps the adaptive engine can add mid-session get a visible label so the
+// arc reads as alive, not pre-baked. Regroup = inserted when stuck; Stretch =
+// earned by a hot streak (or the open-guidance arc).
+const ADAPTIVE_BADGES: Partial<Record<SubProblemKind, string>> = {
+  scaffold_explainer: 'Regroup',
+  stakeholder_tension: 'Stretch',
+  metric_definition: 'Stretch',
+}
+
 export function SubProblemStepper({
   subProblems,
   activeIdx,
@@ -52,6 +61,7 @@ export function SubProblemStepper({
   const dotRefs = useRef<(HTMLDivElement | null)[]>([])
   const connectorRefs = useRef<(HTMLDivElement | null)[]>([])
   const prevIdxRef = useRef<number>(activeIdx)
+  const prevIdsRef = useRef<string[]>(subProblems.map((s) => s.id))
 
   // Animate on step change — GSAP verbatim from FlowStepper
   useEffect(() => {
@@ -86,6 +96,28 @@ export function SubProblemStepper({
     }
   }, [activeIdx])
 
+  // Animate a step the adaptive engine just inserted: the arc visibly grows
+  // rather than silently changing under the learner.
+  useEffect(() => {
+    const prevIds = new Set(prevIdsRef.current)
+    const insertedIdx = subProblems.findIndex((s) => !prevIds.has(s.id))
+    prevIdsRef.current = subProblems.map((s) => s.id)
+    if (insertedIdx < 0 || prevIds.size === 0) return
+    const dot = dotRefs.current[insertedIdx]
+    if (dot) {
+      gsap.fromTo(
+        dot,
+        { scale: 0, opacity: 0, rotate: -90 },
+        { scale: 1, opacity: 1, rotate: 0, duration: 0.55, ease: 'back.out(2.2)' },
+      )
+      gsap.fromTo(
+        dot,
+        { boxShadow: '0 0 0 10px rgba(74,124,89,0.25)' },
+        { boxShadow: '0 0 0 0 rgba(74,124,89,0)', duration: 1.1, ease: 'power2.out', delay: 0.3 },
+      )
+    }
+  }, [subProblems])
+
   // Mount stagger
   useEffect(() => {
     const dots = dotRefs.current.filter(Boolean)
@@ -106,6 +138,7 @@ export function SubProblemStepper({
         const isPending = !isDone && !isCurrent
         const isClickable = isDone && !!onStepClick
         const color = KIND_COLORS[sp.kind]
+        const adaptiveBadge = ADAPTIVE_BADGES[sp.kind]
 
         function hexToRgb(hex: string) {
           const r = parseInt(hex.slice(1, 3), 16)
@@ -122,7 +155,11 @@ export function SubProblemStepper({
               background: isCurrent ? color : isDone ? 'var(--color-primary)' : 'var(--color-surface-container-high)',
               color: isCurrent || isDone ? '#fff' : 'var(--color-on-surface-variant)',
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              border: isCurrent ? `2px solid rgba(${hexToRgb(color)},0.25)` : '2px solid transparent',
+              border: isCurrent
+                ? `2px solid rgba(${hexToRgb(color)},0.25)`
+                : adaptiveBadge
+                ? `2px dashed rgba(${hexToRgb(color)},0.55)`
+                : '2px solid transparent',
               boxShadow: isCurrent ? `0 0 0 4px rgba(${hexToRgb(color)},0.14)` : 'none',
               transition: 'background 250ms, box-shadow 250ms, border-color 250ms',
             }}
@@ -173,8 +210,23 @@ export function SubProblemStepper({
                   lineHeight: 1.2,
                   fontFamily: 'var(--font-label)',
                   transition: 'opacity 250ms, color 250ms',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
                 }}>
                   {sp.title}
+                  {adaptiveBadge && (
+                    <span style={{
+                      fontSize: 8.5, fontWeight: 800,
+                      textTransform: 'uppercase', letterSpacing: '0.08em',
+                      color,
+                      background: `rgba(${hexToRgb(color)},0.1)`,
+                      border: `1px solid rgba(${hexToRgb(color)},0.3)`,
+                      borderRadius: 999,
+                      padding: '1px 6px',
+                      lineHeight: 1.4,
+                    }}>
+                      {adaptiveBadge}
+                    </span>
+                  )}
                 </span>
                 {isCurrent && (
                   <span style={{

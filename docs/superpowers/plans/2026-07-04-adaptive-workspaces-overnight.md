@@ -55,6 +55,24 @@ Verify the embedding/vector layer is used as designed; fix gaps:
 - Grep marketing + app surfaces for fabricated numbers ("X,xxx engineers", "Trusted by", invented counts/testimonials/logos).
 - Each instance: remove, or gate behind a real DB metric with a meaningful minimum threshold (render only when N ≥ floor). No hardcoded fake numbers survive the night. List every instance + action in the morning summary.
 
+### Phase F — Visible adaptivity: UI improvements (added by user 2026-07-04 midday; do BEFORE Phase G)
+
+The engine is invisible today. Make the adaptation something the user can see and feel, in the existing surfaces:
+
+- **F1 — Stepper affordances**: injected steps get distinct visual treatment in `SubProblemStepper` (a "regroup" look for scaffold_explainer, a "stretch" badge for stakeholder_tension/metric_definition/injected steps), plus a smooth insertion animation (gsap is already used there) and a Hatch dock line announcing the branch ("Added a regroup step, the last two attempts told me the question got too big"). The product must visibly REACT.
+- **F2 — Session Mirror narrates the adaptation**: `AnalyticsSessionMirror` reads `final_artifact.adaptive` and renders a compact "How this session adapted" strip: starting register, movements with triggers, injected steps. Honest narration, HackProduct voice, no internals jargon.
+- **F3 — Coaching register indicator**: a subtle chip in the workspace header area showing the register in product language ("Coaching: hands-on" / "balanced" / "peer-level") with a one-line tooltip. NEVER expose internal enum names, model names, or mechanics (Hatch opacity). Also render it in the mirror.
+- **Verification**: Playwright visual passes at 375/768/1440 authed (per standing preference), screenshots archived under docs/notes/adaptive-ui/; tsc + unit + the adaptive E2E must stay green. Writing-style rules apply to every user-facing string (no em dashes, no AI slop, no role framing).
+
+### Phase G — Per-medium adoption (SUN-251..254), one issue per increment
+
+Implement in this order, one commit per issue, updating each Linear issue to Done with a closing comment describing what shipped:
+- G1 = SUN-251 FLOW stepper (hint ladder, retry-with-less-help)
+- G2 = SUN-252 coding/SQL (hint eagerness, coach register, approach comparison for open)
+- G3 = SUN-253 canvas (requirement ambiguity for open, readiness strictness, canvas-coach register)
+- G4 = SUN-254 live interviews (follow-up difficulty + pacing by register)
+Each: thread guidance_level through the medium's request bodies, map effects, log to the attempt artifact, unit tests for pure logic, E2E or Playwright check per surface. Same constraints as Phase B; guided stays the no-change default everywhere.
+
 ## Constraints (hard)
 
 1. Work ONLY in `.worktrees/adaptive-workspaces` on branch `feat/adaptive-workspaces`. Never touch main; never push; never deploy.

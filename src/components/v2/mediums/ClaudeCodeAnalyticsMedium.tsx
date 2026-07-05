@@ -668,6 +668,13 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
         if (plan.action === 'inject_scaffold') {
           setActiveSubProblemIdx(plan.atIdx)
         }
+        // Announce the branch through the Hatch dock so the arc visibly
+        // reacts instead of silently changing shape (adaptive UI, F1).
+        setProactiveNudge(
+          plan.action === 'inject_scaffold'
+            ? 'I added a regroup step. The last two attempts told me the question got too big, so shrink it: read your last output, then take one small query.'
+            : 'Two clean passes in a row, so I added a stretch step after this one. Nail the metric definition and this session becomes portfolio material.',
+        )
       }
 
       // Persist adaptive state best-effort; a failed write never blocks the verdict.
