@@ -285,7 +285,104 @@ function SqlTabbedResults({ results }: { results: RunResult }) {
   )
 }
 
-function TestResultRow({ result, isSqlMode }: { result: TestResult; isSqlMode: boolean }) {
+// LeetCode-style case navigation for algorithm results (visual-clarity inc. 5):
+// Case chips with status dots + a Testcase | Result tab pair. Hidden test
+// cases stay summarized (their inputs are not exposed). SQL mode keeps its
+// own master-detail below.
+function AlgoTabbedResults({ results }: { results: RunResult }) {
+  const visible = results.results.filter((r) => !r.hidden)
+  const hiddenCount = results.results.length - visible.length
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [view, setView] = useState<'testcase' | 'result'>('result')
+  const active = visible[Math.min(activeIdx, Math.max(0, visible.length - 1))]
+
+  const fmt = (v: unknown) =>
+    v === undefined ? '—' : typeof v === 'string' ? v : JSON.stringify(v, null, 2)
+
+  if (visible.length === 0) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-4 text-on-surface-variant">
+        <span className="material-symbols-outlined text-[18px]">visibility_off</span>
+        <span className="text-sm font-label">
+          All {results.results.length} test cases are hidden. {results.testsPassed}/{results.testsTotal} passed.
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-full min-h-0">
+      {/* View tabs + case chips */}
+      <div className="flex items-center gap-2 px-3 pt-2.5 pb-2 flex-wrap border-b border-outline-variant/50">
+        <div className="flex items-center gap-1">
+          {(['testcase', 'result'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
+                view === v
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
+              }`}
+            >
+              {v === 'testcase' ? 'Testcase' : 'Result'}
+            </button>
+          ))}
+        </div>
+        <div className="w-px h-4 bg-outline-variant/60" />
+        <div className="flex items-center gap-1 flex-wrap">
+          {visible.map((r, i) => {
+            const isActive = i === activeIdx
+            const passed = r.status === 'passed'
+            return (
+              <button
+                key={r.id}
+                onClick={() => setActiveIdx(i)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-label font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-surface-container-highest text-on-surface'
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
+                }`}
+                data-testid={`case-chip-${i + 1}`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${passed ? 'bg-primary' : 'bg-error'}`}
+                />
+                Case {i + 1}
+              </button>
+            )
+          })}
+          {hiddenCount > 0 && (
+            <span className="text-[11px] font-label text-on-surface-variant px-1.5">
+              +{hiddenCount} hidden
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Selected case */}
+      <div className="flex-1 overflow-y-auto">
+        {active && view === 'testcase' && (
+          <div className="px-3 py-3 flex flex-col gap-3">
+            <div>
+              <p className="text-[11px] font-label font-bold uppercase tracking-wide text-on-surface-variant mb-1.5">Input</p>
+              <pre className="text-xs bg-surface-container-high rounded-lg px-3 py-2.5 overflow-x-auto whitespace-pre-wrap">{fmt(active.input)}</pre>
+            </div>
+            <div>
+              <p className="text-[11px] font-label font-bold uppercase tracking-wide text-on-surface-variant mb-1.5">Expected output</p>
+              <pre className="text-xs bg-surface-container-high rounded-lg px-3 py-2.5 overflow-x-auto whitespace-pre-wrap">{fmt(active.expected)}</pre>
+            </div>
+          </div>
+        )}
+        {active && view === 'result' && (
+          <TestResultRow key={active.id} result={active} isSqlMode={false} forceDetails />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function TestResultRow({ result, isSqlMode, forceDetails = false }: { result: TestResult; isSqlMode: boolean; forceDetails?: boolean }) {
   const isPassed = result.status === 'passed'
   const isFailed = result.status === 'failed'
   const isError = result.status === 'error'
@@ -333,8 +430,8 @@ function TestResultRow({ result, isSqlMode }: { result: TestResult; isSqlMode: b
         </div>
       )}
 
-      {/* For visible failed tests, show expected vs actual */}
-      {isFailed && !result.hidden && (
+      {/* For visible failed tests (or the dedicated Result view), show expected vs actual */}
+      {(isFailed || forceDetails) && !result.hidden && (
         <div className="mt-2 ml-7 space-y-2">
           {isSqlMode ? (
             // SQL: render as tables with diff highlighting
@@ -479,11 +576,7 @@ export function CodeOutputPanel({
         )}
 
         {status === 'done' && results && results.results.length > 0 && !isSqlMode && (
-          <div className="divide-outline-variant/0">
-            {results.results.map((result) => (
-              <TestResultRow key={result.id} result={result} isSqlMode={isSqlMode} />
-            ))}
-          </div>
+          <AlgoTabbedResults key={results.runId} results={results} />
         )}
 
         {/* No results */}
