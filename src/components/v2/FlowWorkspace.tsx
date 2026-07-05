@@ -4150,15 +4150,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </section>
   ) : (
     // ── Full panel ──
-    <section style={{
-      width: `${leftWidth}%`,
-      flexShrink: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'var(--color-surface)',
-      overflow: 'hidden',
-      minHeight: 0,
-    }}>
+    <section
+      className="rounded-xl border border-outline-variant"
+      style={{
+        width: `${leftWidth}%`,
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--color-surface-container-lowest)',
+        overflow: 'hidden',
+        minHeight: 0,
+      }}>
       {leftTab === 'Description' && descriptionPane}
       {leftTab === 'Discussions' && discussionsPane}
       {leftTab === 'Submissions' && submissionsPane}
@@ -4979,12 +4981,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
-      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden'}>
+      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-surface-container-low'}>
         {!mobileStacked && leftDescriptionPanel}
         {!mobileStacked && dragHandle}
 
         {/* Right pane: scrollable workspace content only */}
-        <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden', minHeight: 0 }}>
+        <section
+          className={!isCanvasChallenge && !isCodingChallenge ? 'rounded-xl border border-outline-variant' : undefined}
+          style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-surface-container-lowest)' : 'transparent',
+            overflow: 'hidden', minHeight: 0,
+          }}>
           {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 animate-step-enter">
@@ -5004,7 +5012,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               }>
               {/* Canvas column - top chrome owns the guide so canvas stays clear. */}
               <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <div data-tour-target="canvas-surface" style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative' }}>
+                <div
+                  data-tour-target="canvas-surface"
+                  className={canvasMaximised ? undefined : 'rounded-xl border border-outline-variant overflow-hidden ml-2'}
+                  style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative', background: 'var(--color-surface-container-lowest)' }}
+                >
                   <ExcalidrawCanvas
                     sessionId={attemptId ?? 'draft'}
                     onSnapshot={setCanvasScene}
@@ -5141,7 +5153,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 ref={codingPaneRef}
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0,
-                  gap: 8, padding: 8, background: 'var(--color-surface-container-low)',
+                  gap: 8, paddingLeft: 8,
                 }}
               >
                 <WorkspacePanel
