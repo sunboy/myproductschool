@@ -100,3 +100,26 @@ describe('deriveGuidance register strictness (SUN-253)', () => {
     assert.equal(deriveGuidance('system_design', scene, twoNotes, 'open').phase, 'ready')
   })
 })
+
+describe('live interview register block (SUN-254)', () => {
+  it('includes the register section only for scaffolded and open', async () => {
+    const { buildLiveInterviewSystemPrompt } = await import('@/lib/live-interview/system-prompt')
+    const base = {
+      archetype: 'The Analyst',
+      archetypeDescription: '',
+      moveLevels: { frame: 2, list: 2, optimize: 2, win: 2 },
+      failurePatterns: [],
+      competencies: [],
+      hatchContext: '',
+    }
+    const open = buildLiveInterviewSystemPrompt({ ...base, guidanceLevel: 'open' }, false)
+    assert.ok(open.includes('[INTERVIEW REGISTER]'))
+    assert.ok(open.includes('falsifiability'))
+    const scaffolded = buildLiveInterviewSystemPrompt({ ...base, guidanceLevel: 'scaffolded' }, false)
+    assert.ok(scaffolded.includes('[INTERVIEW REGISTER]'))
+    const guided = buildLiveInterviewSystemPrompt({ ...base, guidanceLevel: 'guided' }, false)
+    assert.ok(!guided.includes('[INTERVIEW REGISTER]'))
+    const none = buildLiveInterviewSystemPrompt(base, false)
+    assert.ok(!none.includes('[INTERVIEW REGISTER]'))
+  })
+})

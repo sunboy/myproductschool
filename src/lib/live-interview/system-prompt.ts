@@ -49,6 +49,9 @@ export interface SystemPromptParams {
   scenario?: ScenarioParams
   roleLens?: RoleLensParams
   discipline?: LiveInterviewDiscipline
+  /** Adaptation contract (SUN-254): sets follow-up difficulty and pacing.
+   *  Never named to the candidate. */
+  guidanceLevel?: 'scaffolded' | 'guided' | 'open'
 }
 
 // ---------------------------------------------------------------------------
@@ -312,6 +315,16 @@ TARGET COMPETENCIES: ${competencies}
 DIFFICULTY: ${scenario.difficulty} | ~${scenario.estimatedMinutes} minutes
 
 This scenario is context, not a script. When presenting it, break it into digestible pieces — set the scene first, then the trigger, then the question. Check the candidate follows before continuing. During the interview, if they drift too far, bring them back. If they address it head-on, push deeper.`)
+  }
+
+  // ── Interview register (adaptation contract, SUN-254). Difficulty and
+  // pacing follow the candidate's evidence level; never name this to them.
+  if (params.guidanceLevel === 'scaffolded') {
+    sections.push(`[INTERVIEW REGISTER]
+This candidate is early in their practice. Keep the bar honest but the pacing kind: give them room to think out loud, allow one clarifying question per phase without treating it as weakness, and when they stall, restate the question smaller rather than sitting in silence. Follow-ups probe one level deep, not two.`)
+  } else if (params.guidanceLevel === 'open') {
+    sections.push(`[INTERVIEW REGISTER]
+This candidate has real practice history. Interview them like a strong on-site: follow-ups push on tradeoffs and falsifiability ("what number would prove you wrong?"), grace periods are short, and a vague answer earns an immediate press rather than a rephrase. Do not explain basics. Raise one unexpected constraint mid-case and watch how they adapt.`)
   }
 
   // ── Candidate profile as narrative
