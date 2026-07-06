@@ -105,3 +105,11 @@ Phases 0-4 of the lab-platform plan complete on feat/adaptive-workspaces:
 
 Launch runbook when ready: merge → flip app_flags.lab_debugging=true → UPDATE challenges SET is_published=true WHERE id='ccd-001-cart-pricing'.
 Known polish: Hatch dock initial message still says analytics copy in the debugging lab (CanvasChatPanel per-lab copy).
+
+## Checkpoint — 2026-07-06 (evening): Feedback overhaul COMPLETE (phases A-E)
+
+- A: feedback design system (src/components/feedback/): ScoreHero (/10 canonical + grade lexicon + burst), DimensionCard (one accordion, replaced 3), FeedbackShell tiers + gsap entrance, CompetencyViz (radar+bars), XpCoin, MissionBookend; src/lib/feedback/score.ts
+- B1-B6: FLOW feedback page, live debrief (FLOW-as-spine hero, merged competency viz), CodingFeedback, InterviewFeedback (canvas, +Hatch), quick-take card (structured fields), share page tokens, mirror consumes extracted parts
+- C1-C5: Mental Models framework layer reaches the user (rollup-built breakdown + page precedence), coding evidence carries run facts, quick-take structure stored, debrief FP-ids enumerated + voice rules, FLOW rubric derived from JSON (flowRubricPromptBlock)
+- D: skills = runtime truth via src/lib/ai/skill-loader.ts; wired grader/coaching/nudger(3 routes)/canvas-coach/canvas-grader; created interviewer/interview-grader/quicktake-grader; interpret loaders unified; CLAUDE.md skills table truthful; v2 bundle archived to docs/archive/v2-planning-skills
+- E: feedback-ui-shots (FLOW page + debrief, seeded fixtures) green, canvas-coach 11/11, flow-adaptive green, cc-analytics-adaptive 3/3 real sandboxes, 421 unit tests, tsc clean. Shots in docs/notes/feedback-ui/.
