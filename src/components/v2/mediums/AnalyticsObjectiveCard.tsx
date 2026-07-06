@@ -148,7 +148,6 @@ export function AnalyticsObjectiveCard({
           display: 'flex', gap: 8, alignItems: 'flex-start',
           background: 'var(--color-primary-fixed)',
           borderRadius: 10, padding: '8px 10px',
-          borderLeft: '3px solid var(--color-primary)',
         }}>
           <HatchGlyph size={20} state="speaking" />
           <p style={{
@@ -177,7 +176,6 @@ export function AnalyticsObjectiveCard({
         color: 'var(--color-on-surface-variant)',
         background: 'var(--color-surface-container-low)',
         borderRadius: 8, padding: '6px 10px',
-        borderLeft: '3px solid var(--color-primary)',
       }}>
         <span style={{ fontWeight: 700, color: 'var(--color-primary)', marginRight: 4 }}>Done when:</span>
         {subProblem.successCriterion}

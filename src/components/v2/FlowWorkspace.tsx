@@ -275,11 +275,12 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
         </div>
       ))}
 
-      {/* One-line destabilizing constraint (canvas) renders as an emphasis bar */}
+      {/* One-line destabilizing constraint (canvas) renders as a tonal card */}
       {changeSections.map((section) => (
         <div key={section.id} style={{
-          borderLeft: '3px solid var(--color-tertiary)',
-          padding: '6px 0 6px 12px',
+          background: 'var(--color-tertiary-container)',
+          borderRadius: 10,
+          padding: '8px 12px',
           margin: '14px 0',
           fontFamily: 'var(--font-body)',
           fontSize: 14,

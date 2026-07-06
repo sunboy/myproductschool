@@ -4,8 +4,6 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ArtifactSpineStrip } from './ArtifactSpineStrip'
 import { deriveArtifactRows, artifactProgress, artifactSummaryText } from './analyticsArtifact'
 import { AnalyticsObjectiveCard } from './AnalyticsObjectiveCard'
-import { AnalyticsConnectionStrip } from './AnalyticsConnectionStrip'
-import { UsageMeter } from './UsageMeter'
 import { AnalyticsTerminalFrame } from './AnalyticsTerminalFrame'
 import { SuggestedPromptRail } from './SuggestedPromptRail'
 import { SkillsLibraryPanel } from './SkillsLibraryPanel'
@@ -98,6 +96,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   const [leftWidth, setLeftWidth] = useState(30) // percent, md and up only
   // Starts collapsed on small screens so the terminal is reachable without
   // a long scroll; auto-collapses on desktop once the session is live.
+  const [registerMenuOpen, setRegisterMenuOpen] = useState(false)
   const [questionCollapsed, setQuestionCollapsed] = useState<boolean>(
     () => typeof window !== 'undefined' && window.innerWidth < 768,
   )
@@ -140,6 +139,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
     dragCleanupRef.current = onMouseUp
   }, [])
   useEffect(() => () => { dragCleanupRef.current?.() }, [])
+
 
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
@@ -214,6 +214,32 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // coach name the exact missing deliverable. 550 chars keeps the request
   // body comfortably inside the routes' validation caps.
   const artifactSummary = useMemo(() => artifactSummaryText(artifactRows).slice(0, 550), [artifactRows])
+
+  // The learner can override the derived coaching register for this session.
+  // Everything downstream (teaching notes, prompt density, nudge eagerness,
+  // Hatch's register) reads the guidance state, so the change is immediate;
+  // the adjustment is logged and persisted so it survives refresh.
+  const handleRegisterChoice = useCallback((level: 'scaffolded' | 'guided' | 'open') => {
+    setRegisterMenuOpen(false)
+    if (level === guidance) return
+    adaptiveLogRef.current.adjustments.push({
+      from: guidance, to: level, trigger: 'user_choice',
+      atStepId: activeSubProblem?.id ?? null,
+    })
+    setGuidance(level)
+    if (sessionId && !USE_DEV_STUB) {
+      void fetch(`/api/claude-code/session/${sessionId}/adaptive`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guidance: level,
+          arc: subProblems,
+          injected: adaptiveLogRef.current.injected,
+          adjustments: adaptiveLogRef.current.adjustments,
+        }),
+      }).catch(() => {})
+    }
+  }, [guidance, sessionId, subProblems, activeSubProblem?.id])
 
   // Poll /state for live AI usage (spend vs the per-session budget cap). The hard
   // cap is enforced gateway-side; this just visualizes it. Skipped in dev stub.
@@ -1011,7 +1037,6 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                   <div style={{
                     padding: '10px 12px', borderRadius: 10,
                     background: 'var(--color-surface-container-high)',
-                    borderLeft: '3px solid var(--color-primary)',
                   }}>
                     <div style={{
                       fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
@@ -1049,29 +1074,93 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             </div>
 
 
-            {/* Coaching register — how Hatch is coaching this session (F3).
-                Product language only; the internal level never surfaces. */}
-            <div
-              title={REGISTER_TOOLTIPS[guidance]}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                alignSelf: 'flex-start',
-                background: 'var(--color-surface-container)',
-                border: '1px solid var(--color-outline-variant)',
-                borderRadius: 999,
-                padding: '3px 10px',
-                cursor: 'default',
-              }}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 13, color: 'var(--color-primary)', fontVariationSettings: "'FILL' 1, 'wght' 500" }}
+            {/* Coaching register — how Hatch coaches this session (F3). Derived
+                from the learner's track record, adjustable per session. Product
+                language only; the internal level never surfaces. */}
+            <div style={{ position: 'relative', alignSelf: 'flex-start' }}>
+              <button
+                onClick={() => setRegisterMenuOpen((v) => !v)}
+                aria-expanded={registerMenuOpen}
+                aria-haspopup="menu"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  background: 'var(--color-surface-container)',
+                  border: '1px solid var(--color-outline-variant)',
+                  borderRadius: 999,
+                  padding: '3px 6px 3px 10px',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
               >
-                school
-              </span>
-              <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-on-surface-variant)', fontFamily: 'var(--font-label)' }}>
-                Coaching: {REGISTER_LABELS[guidance]}
-              </span>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 13, color: 'var(--color-primary)', fontVariationSettings: "'FILL' 1, 'wght' 500" }}
+                >
+                  school
+                </span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-on-surface-variant)', fontFamily: 'var(--font-label)' }}>
+                  Coaching: {REGISTER_LABELS[guidance]}
+                </span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'var(--color-on-surface-variant)' }}>
+                  arrow_drop_down
+                </span>
+              </button>
+              {registerMenuOpen && (
+                <div
+                  role="menu"
+                  style={{
+                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 30,
+                    width: 280,
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-outline-variant)',
+                    borderRadius: 12,
+                    boxShadow: '0 12px 32px -8px rgba(30,27,20,0.18)',
+                    padding: 6,
+                    display: 'flex', flexDirection: 'column', gap: 2,
+                  }}
+                >
+                  <div style={{
+                    fontSize: 10.5, lineHeight: 1.5, color: 'var(--color-on-surface-variant)',
+                    padding: '6px 8px 8px', borderBottom: '1px solid var(--color-outline-variant)',
+                    marginBottom: 2,
+                  }}>
+                    How Hatch coaches this session. Set from your track record, yours to change.
+                  </div>
+                  {(['scaffolded', 'guided', 'open'] as const).map((level) => (
+                    <button
+                      key={level}
+                      role="menuitemradio"
+                      aria-checked={guidance === level}
+                      onClick={() => handleRegisterChoice(level)}
+                      style={{
+                        display: 'flex', alignItems: 'flex-start', gap: 8,
+                        textAlign: 'left', width: '100%',
+                        background: guidance === level ? 'var(--color-primary-fixed)' : 'transparent',
+                        border: 'none', borderRadius: 8,
+                        padding: '7px 8px', cursor: 'pointer', fontFamily: 'inherit',
+                      }}
+                    >
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: 15, marginTop: 1, flexShrink: 0,
+                          color: guidance === level ? 'var(--color-primary)' : 'var(--color-outline)',
+                          fontVariationSettings: `'FILL' ${guidance === level ? 1 : 0}, 'wght' 500`,
+                        }}
+                      >
+                        {guidance === level ? 'radio_button_checked' : 'radio_button_unchecked'}
+                      </span>
+                      <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface)' }}>
+                          {REGISTER_LABELS[level]}
+                        </span>
+                        <span style={{ fontSize: 10.5, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
+                          {REGISTER_TOOLTIPS[level]}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Objective card */}
@@ -1106,23 +1195,6 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                 />
               ) : null
             })()}
-
-            {/* Connection strip */}
-            <AnalyticsConnectionStrip
-              mcpConnected={mcpConnected}
-              skillsWritten={skillsWritten}
-            />
-
-            {/* Live AI usage meter — spend vs the per-session budget cap */}
-            {usage && (
-              <UsageMeter
-                spentUsd={usage.spent_usd}
-                budgetUsd={usage.budget_usd}
-                inputTokens={usage.input_tokens}
-                outputTokens={usage.output_tokens}
-                active={!showMirror}
-              />
-            )}
 
             {/* Skills library — browse + reload skills built across past sessions. */}
             <SkillsLibraryPanel
@@ -1242,6 +1314,66 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                 <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} />
               )}
             </div>
+
+            {/* Session status bar — telemetry lives with the work surface, not
+                the mission panel: connection dots, skills count, compact spend
+                with the budget color banding. Only once a session exists. */}
+            {(started || wssUrl) && (
+              <div style={{
+                flexShrink: 0, height: 26, marginTop: 8,
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '0 4px',
+                fontFamily: 'var(--font-label)',
+              }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{
+                    width: 7, height: 7, borderRadius: 99,
+                    background: mcpConnected ? 'var(--color-primary)' : 'var(--color-outline)',
+                    boxShadow: mcpConnected ? '0 0 0 2px rgba(74,124,89,0.2)' : 'none',
+                  }} />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: mcpConnected ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)' }}>
+                    BigQuery
+                  </span>
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{
+                    width: 7, height: 7, borderRadius: 99,
+                    background: replRunning ? 'var(--color-primary)' : 'var(--color-outline)',
+                    boxShadow: replRunning ? '0 0 0 2px rgba(74,124,89,0.2)' : 'none',
+                  }} />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: replRunning ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)' }}>
+                    Claude
+                  </span>
+                </span>
+                {skillsWritten.length > 0 && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    fontSize: 10.5, fontWeight: 700, color: 'var(--color-tertiary)',
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 13, fontVariationSettings: "'FILL' 1" }}>construction</span>
+                    {skillsWritten.length} skill{skillsWritten.length === 1 ? '' : 's'}
+                  </span>
+                )}
+                {usage && usage.budget_usd > 0 && (() => {
+                  const ratio = Math.min(usage.spent_usd / usage.budget_usd, 1)
+                  const fill = ratio >= 0.85 ? 'var(--color-error)' : ratio >= 0.6 ? 'var(--color-tertiary)' : 'var(--color-primary)'
+                  return (
+                    <span
+                      title={`AI usage: $${usage.spent_usd.toFixed(2)} of $${usage.budget_usd.toFixed(2)} · ${usage.input_tokens.toLocaleString()} in / ${usage.output_tokens.toLocaleString()} out tokens`}
+                      style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 14, color: fill, fontVariationSettings: "'FILL' 1" }}>bolt</span>
+                      <span style={{ width: 56, height: 4, borderRadius: 99, background: 'var(--color-surface-container-highest)', overflow: 'hidden' }}>
+                        <span style={{ display: 'block', width: `${Math.round(ratio * 100)}%`, height: '100%', background: fill, transition: 'width 600ms' }} />
+                      </span>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>
+                        ${usage.spent_usd.toFixed(2)}
+                      </span>
+                    </span>
+                  )
+                })()}
+              </div>
+            )}
 
             {/* Proactive idle nudges now surface through the floating Hatch
                 dock (mounted as the last child of this row), not as a separate

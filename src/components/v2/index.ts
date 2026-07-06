@@ -22,13 +22,11 @@ export { MediumRenderer } from './mediums/MediumRenderer'
 export { ClaudeCodeAnalyticsMedium } from './mediums/ClaudeCodeAnalyticsMedium'
 export { ClaudeCodeTerminal } from './mediums/ClaudeCodeTerminal'
 export { AnalyticsObjectiveCard } from './mediums/AnalyticsObjectiveCard'
-export { AnalyticsConnectionStrip } from './mediums/AnalyticsConnectionStrip'
 export { AnalyticsTerminalFrame } from './mediums/AnalyticsTerminalFrame'
 export { SuggestedPromptRail } from './mediums/SuggestedPromptRail'
 export { ArtifactSpineStrip } from './mediums/ArtifactSpineStrip'
 export { MissionBrief, shouldShowMissionBrief, markMissionBriefSeen } from './mediums/MissionBrief'
 export { AnalyticsSessionMirror } from './mediums/AnalyticsSessionMirror'
-export { UsageMeter } from './mediums/UsageMeter'
 export type {
   ClaudeCodeTerminalHandle,
   ClaudeCodeTerminalProps,
