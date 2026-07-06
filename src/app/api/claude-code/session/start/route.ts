@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isClaudeCodeLab, labIdForChallengeType } from '@/lib/labs/types'
 import { getLabClient } from '@/lib/labs/client'
+import { canAccessLab } from '@/lib/labs/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
   }
   if (!isClaudeCodeLab(challenge.challenge_type)) {
     return NextResponse.json(
-      { error: 'Challenge is not a Claude Code Analytics challenge' },
+      { error: 'Challenge is not a Claude Code lab challenge' },
       { status: 400 },
     )
   }
@@ -91,13 +92,20 @@ export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subProblems: unknown[] = (claudeCodeMeta.sub_problems ?? meta.sub_problems ?? []) as any[]
 
-  // --- Load user plan for the usage gate ---
+  // --- Load user plan for the usage gate (+ role for the lab flag gate) ---
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan')
+    .select('plan, role')
     .eq('id', user.id)
     .single()
   const userPlan = (profile?.plan as string) ?? 'free'
+
+  // Flag-gated labs ship dark: this route is the authoritative gate (API
+  // routes skip the proxy). Admins bypass so QA/E2E runs with the flag off.
+  const labId = labIdForChallengeType(challenge.challenge_type)
+  if (!(await canAccessLab(labId, (profile?.role as string | null) ?? null))) {
+    return NextResponse.json({ error: 'This lab is not available yet' }, { status: 403 })
+  }
 
   const admin = createAdminClient()
 

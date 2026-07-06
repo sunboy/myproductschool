@@ -1,4 +1,6 @@
 import { redirect } from 'next/navigation'
+import { canAccessLab } from '@/lib/labs/server'
+import { labIdForChallengeType } from '@/lib/labs/types'
 import { isClaudeCodeLab } from '@/lib/labs/types'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -166,6 +168,19 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
     // it's launched but the user lacks the tier, keep them in place and show the
     // upgrade modal over a blurred preview (`locked`) — never a full-page redirect
     // to the pricing page. Mock mode bypasses (no auth/admin client).
+    // Flag-gated labs (e.g. debugging) ship dark: hidden entirely unless the
+    // lab_* app flag is on or the user is an admin.
+    if (!IS_MOCK) {
+      let profileRole: string | null = null
+      if (user) {
+        const { data: prof } = await createAdminClient()
+          .from('profiles').select('role').eq('id', user.id).maybeSingle()
+        profileRole = (prof?.role as string | null) ?? null
+      }
+      if (!(await canAccessLab(labIdForChallengeType(challengeType), profileRole))) {
+        redirect('/challenges')
+      }
+    }
     let analyticsLocked = false
     if (!IS_MOCK && user) {
       const access = await getAnalyticsAccess(createAdminClient(), user.id)

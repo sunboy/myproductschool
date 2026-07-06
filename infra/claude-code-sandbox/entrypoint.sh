@@ -124,6 +124,27 @@ cat > ~/.claude/settings.json <<'EOF'
 }
 EOF
 
+# ─── Lab permission-allowlist additions ───────────────────────────────────────
+# CC_EXTRA_ALLOWED_TOOLS is a JSON array of permission entries the lab needs
+# beyond the baked defaults (e.g. the debugging lab allows Bash(npm:*)). Each
+# entry is appended to permissions.allow and removed from permissions.deny.
+if [[ -n "${CC_EXTRA_ALLOWED_TOOLS:-}" ]]; then
+  node -e '
+    const fs = require("fs");
+    const path = process.env.HOME + "/.claude/settings.json";
+    const settings = JSON.parse(fs.readFileSync(path, "utf8"));
+    let extra = [];
+    try { extra = JSON.parse(process.env.CC_EXTRA_ALLOWED_TOOLS); } catch {}
+    if (Array.isArray(extra) && extra.length) {
+      const allow = new Set([...settings.permissions.allow, ...extra.filter((e) => typeof e === "string")]);
+      settings.permissions.allow = [...allow];
+      settings.permissions.deny = settings.permissions.deny.filter((d) => !extra.includes(d));
+      fs.writeFileSync(path, JSON.stringify(settings, null, 2));
+      console.log("[entrypoint] merged lab allowlist:", extra.join(", "));
+    }
+  ' || echo "[entrypoint] WARN: lab allowlist merge failed; baked defaults stand"
+fi
+
 # Claude Code identifies a custom API key by the last 20 chars of
 # ANTHROPIC_API_KEY (function Lv = A => A.slice(-20) inside cli.js).
 # Pre-approve that identifier so the "Detected a custom API key in your
@@ -193,7 +214,8 @@ shopt -s expand_aliases
 
 # One-time welcome banner — coaches the user through their first commands
 if [[ ! -f ~/.claude_welcome_shown ]]; then
-  cat <<'MOTD'
+  if [[ -n "${BQ_PROJECT:-}" ]]; then
+    cat <<'MOTD'
 
   Welcome. You are inside a sandbox VM with BigQuery access.
 
@@ -206,6 +228,21 @@ if [[ ! -f ~/.claude_welcome_shown ]]; then
   Then ask Claude what tables are in the dataset.
 
 MOTD
+  else
+    cat <<'MOTD'
+
+  Welcome. You are inside a sandbox VM with a repository in /workspace.
+
+  Step 1: install dependencies:
+    npm install
+
+  Step 2: start Claude Code:
+    claude
+
+  Then ask Claude to run the test suite and show you what fails.
+
+MOTD
+  fi
   touch ~/.claude_welcome_shown
 fi
 EOF

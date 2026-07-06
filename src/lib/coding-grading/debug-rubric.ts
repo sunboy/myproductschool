@@ -80,3 +80,13 @@ export const DEBUG_DIMENSIONS: AnalystDimension[] = [
 export function debugRubricWeightsSumToOne(): boolean {
   return Math.abs(DEBUG_DIMENSIONS.reduce((acc, d) => acc + d.weight, 0) - 1) < 1e-9
 }
+
+import type { LabRubricSpec } from './analytics-grader'
+
+export const DEBUG_RUBRIC_SPEC: LabRubricSpec = {
+  id: 'debug_v1',
+  dimensions: DEBUG_DIMENSIONS,
+  graderSkill: 'hackproduct-debugging-grader',
+  fallbackPrompt:
+    'You grade a Claude Code debugging session against the debug_v1 rubric. Score each dimension 1 (strong), 0.5 (partial), or 0 (needs_work) using its anchors. Reward fix_quality only when the change is minimal and at the fault site, never when tests were weakened. Return ONLY JSON.',
+}

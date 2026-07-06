@@ -4,6 +4,7 @@
 
 import type { LabId } from './types'
 import { labIdForChallengeType } from './types'
+import { getAppFlag, type AppFlagKey } from '@/lib/config/app-flags'
 
 export interface LabServerDefinition {
   id: LabId
@@ -69,6 +70,22 @@ const LAB_SERVER_REGISTRY: Record<LabId, LabServerDefinition> = {
 
 export function getLabServer(labId: LabId | null | undefined): LabServerDefinition {
   return LAB_SERVER_REGISTRY[labId ?? 'analytics'] ?? LAB_SERVER_REGISTRY.analytics
+}
+
+/**
+ * Whether a lab is open to this user. Labs without an accessFlag are always
+ * available (analytics has its own entitlement module). Flag-gated labs ship
+ * dark: admins bypass (QA/E2E with the prod flag off); everyone else needs
+ * the app flag on. Fails safe to hidden.
+ */
+export async function canAccessLab(
+  labId: ReturnType<typeof labIdForChallengeType>,
+  profileRole?: string | null,
+): Promise<boolean> {
+  const def = getLabServer(labId)
+  if (!def.accessFlag) return true
+  if (profileRole === 'admin') return true
+  return getAppFlag(def.accessFlag as AppFlagKey, false)
 }
 
 export { labIdForChallengeType }

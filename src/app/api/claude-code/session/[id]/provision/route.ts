@@ -125,6 +125,16 @@ export async function POST(
     workspaceRestoreUrl = signed?.signedUrl
   }
 
+  // --- Lab starter tarball (e.g. the debugging repo), presigned like the rest ---
+  let challengeTarballUrl: string | undefined
+  const tarballPath = labEnv.CHALLENGE_TARBALL
+  if (tarballPath) {
+    const { data: signed } = await admin.storage
+      .from('cc-lab-content')
+      .createSignedUrl(tarballPath, ttlSeconds + 120)
+    challengeTarballUrl = signed?.signedUrl
+  }
+
   // --- Run the provisioning pipeline ---
   const result = await provisionSession({
     sessionId,
@@ -136,6 +146,8 @@ export async function POST(
     claudeMd,
     ttlSeconds,
     userClaudeStateUrl,
+    challengeTarballUrl,
+    extraAllowedTools: lab.allowedTools,
     workspaceRestoreUrl,
     originUrl,
   })

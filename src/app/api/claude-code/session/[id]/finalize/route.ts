@@ -14,6 +14,9 @@ import { recordSessionSpend } from '@/lib/sandbox/record-spend'
 import { gradeAnalystSession } from '@/lib/coding-grading/analytics-grader'
 import { getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { analystDimensionsToStepResults } from '@/lib/coding-grading/analyst-competency-map'
+import { debugDimensionsToStepResults } from '@/lib/coding-grading/debug-competency-map'
+import { DEBUG_RUBRIC_SPEC } from '@/lib/coding-grading/debug-rubric'
+import { labIdForChallengeType } from '@/lib/labs/types'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import type { LearnerCompetency, RoleLens } from '@/lib/types'
 
@@ -92,18 +95,21 @@ export async function POST(
     console.error('[cc/finalize] recordSessionSpend failed (best-effort):', err)
   })
 
-  // --- Run analyst grader (analyst_v1) ---
+  // --- Run the lab grader (analyst_v1 / debug_v1 by lab) ---
   const { data: challenge } = await admin
     .from('challenges')
-    .select('title, prompt_text')
+    .select('title, prompt_text, challenge_type')
     .eq('id', session.challenge_id as string)
     .maybeSingle()
+  const labId = labIdForChallengeType(challenge?.challenge_type as string | undefined)
+  const rubricSpec = labId === 'debugging' ? DEBUG_RUBRIC_SPEC : undefined
 
   const userPlan = await getUserPlanForBudget(user.id).catch(() => 'free')
 
   let gradeResult
   try {
     gradeResult = await gradeAnalystSession({
+      rubric: rubricSpec,
       sessionId,
       transcriptUri: session.transcript_uri as string | null,
       challengeTitle: challenge?.title ?? 'Analytics challenge',
@@ -188,7 +194,9 @@ export async function POST(
   // Never fail finalize over this — the grade write above is the contract.
   try {
     const dims = (gradeResult.final_artifact as { dimensions?: Record<string, { score?: unknown }> } | null)?.dimensions
-    const stepResults = analystDimensionsToStepResults(dims)
+    const stepResults = labId === 'debugging'
+      ? debugDimensionsToStepResults(dims)
+      : analystDimensionsToStepResults(dims)
     if (stepResults.length) {
       const { data: currentRows } = await admin
         .from('learner_competencies')
