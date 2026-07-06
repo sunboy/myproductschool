@@ -30,6 +30,7 @@ export function pickMedium(challengeType: ChallengeType): MediumKind {
     case 'algorithm':
       return 'monaco_coding'
     case 'claude_code_analytics':
+    case 'claude_code_debugging':
       return 'claude_code'
     default:
       return 'flow_stepper'

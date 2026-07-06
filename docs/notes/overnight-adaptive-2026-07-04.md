@@ -93,3 +93,15 @@ All 8 increments of the approved CC-elevation plan shipped on feat/adaptive-work
 8. Cleanup (SubProblemStepper + AnalyticsOnboardingOverlay deleted), mobile collapse default, E2E probe-settle fix
 
 Verification: cc-analytics-adaptive 3/3 (real sandboxes, finalized), adaptive-ui-shots green twice consecutively (brief path, real sandbox), 412 unit tests, tsc clean. Screenshots in docs/notes/adaptive-ui/ (mission-brief-1440, open-workspace-1440/768/375).
+
+## Checkpoint — 2026-07-06 (later): Lab platform shipped, debugging lab live behind flag
+
+Phases 0-4 of the lab-platform plan complete on feat/adaptive-workspaces:
+- Phase 0: adjustable coaching register (menu + persisted user_choice adjustments), green accent bars removed, telemetry → terminal status bar
+- Phase 1: LabDefinition registry (src/lib/labs/), analytics extracted as lab one; arc engines/spine/terminal detectors parameterized; pure refactor proven by real-sandbox E2E
+- Phase 2: debugging lab (8-step arc, debug_v1 rubric + competency map, spine, skills hackproduct-debugging-{coach,grader}); cart-pricing repo (2 faults, 4 red tests) in cc-lab-content storage; entrypoint merges CC_EXTRA_ALLOWED_TOOLS + repo MOTD; image rebuilt (sha 61d0827)
+- Phase 3: migration applied live (CHECK widening + lab_debugging=false); ccd-001-cart-pricing seeded UNPUBLISHED (shared DB: prod must not see it pre-merge); canAccessLab gates page + session/start with admin bypass
+- Phase 4: e2e/cc-debugging-lab.spec.ts green (non-admin 404, admin full journey: debugging arc + real sandbox + debug_v1 grade); analytics regression 3/3; 416 unit tests
+
+Launch runbook when ready: merge → flip app_flags.lab_debugging=true → UPDATE challenges SET is_published=true WHERE id='ccd-001-cart-pricing'.
+Known polish: Hatch dock initial message still says analytics copy in the debugging lab (CanvasChatPanel per-lab copy).

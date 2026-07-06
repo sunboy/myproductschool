@@ -78,7 +78,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // The arc is the default analyst course (tiered by difficulty), with any
   // per-challenge overrides merged on top once the start route returns them.
   const [subProblems, setSubProblems] = useState<AnalyticsSubProblem[]>(
-    () => mergeArc(challenge.difficulty, undefined),
+    () => mergeArc(challenge.difficulty, undefined, 'guided', lab.arc),
   )
   // Guidance level for this session (adaptive workspaces). Server-derived in
   // session/start; 'guided' is the compatibility default and today's behavior.
@@ -309,7 +309,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             setSubProblems(
               data.arc_complete
                 ? data.sub_problems
-                : mergeArc(challenge.difficulty, data.sub_problems),
+                : mergeArc(challenge.difficulty, data.sub_problems, 'guided', lab.arc),
             )
           }
           if (data.guidance) setGuidance(data.guidance)

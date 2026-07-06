@@ -67,11 +67,27 @@ export async function POST(req: NextRequest) {
   const challenge_id = identity?.id ?? body.challenge_id
 
   // --- Load challenge (RLS: user can read any published challenge) ---
-  const { data: challenge } = await supabase
+  let { data: challenge } = await supabase
     .from('challenges')
     .select('id, challenge_type, metadata, difficulty')
     .eq('id', challenge_id)
     .single()
+
+  if (!challenge) {
+    // Unpublished challenges are invisible through RLS — which is the dark-
+    // launch gate for everyone except admins, who may QA a lab pre-publish.
+    const adminProbe = createAdminClient()
+    const { data: prof } = await adminProbe
+      .from('profiles').select('role').eq('id', user.id).maybeSingle()
+    if (prof?.role === 'admin') {
+      const { data: unpublished } = await adminProbe
+        .from('challenges')
+        .select('id, challenge_type, metadata, difficulty')
+        .eq('id', challenge_id)
+        .single()
+      challenge = unpublished
+    }
+  }
 
   if (!challenge) {
     return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
