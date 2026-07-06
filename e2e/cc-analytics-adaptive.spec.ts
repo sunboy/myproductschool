@@ -150,7 +150,10 @@ test.describe('adaptive CC analytics arcs (real sandboxes)', () => {
     expect(ids).not.toContain('map_the_data')
 
     // The stepper renders the arc; the scaffolded teaching note is visible.
-    await expect(page.getByText('See what data exists')).toBeVisible({ timeout: 30_000 })
+    // The artifact spine renders the arc as milestones; the schema milestone
+    // carries the step title as its aria-label.
+    await expect(page.getByRole('progressbar')).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByLabel('See what data exists')).toBeVisible()
     await expect(page.getByText(/Click Start sandbox to spin up/i)).toBeVisible()
   })
 
@@ -173,7 +176,7 @@ test.describe('adaptive CC analytics arcs (real sandboxes)', () => {
     expect(ids).not.toContain('map_the_data')
     expect(ids).toContain('stakeholder_tension')
 
-    await expect(page.getByText('Defend the read')).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByLabel('Defend the read')).toBeVisible({ timeout: 30_000 })
   })
 
   test('adaptive state (scaffold injection) persists and survives reconnect', async ({ page }) => {

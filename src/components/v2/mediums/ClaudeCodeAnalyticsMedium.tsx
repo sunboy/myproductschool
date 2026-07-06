@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { SubProblemStepper } from './SubProblemStepper'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { ArtifactSpineStrip } from './ArtifactSpineStrip'
+import { deriveArtifactRows, artifactProgress } from './analyticsArtifact'
 import { AnalyticsObjectiveCard } from './AnalyticsObjectiveCard'
 import { AnalyticsConnectionStrip } from './AnalyticsConnectionStrip'
 import { UsageMeter } from './UsageMeter'
@@ -135,6 +136,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     dragCleanupRef.current = onMouseUp
   }, [])
   useEffect(() => () => { dragCleanupRef.current?.() }, [])
+
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
   // Free quota exhausted (HTTP 402). Opens the unified PaywallModal (analytics
@@ -187,6 +189,22 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   const [hatchOpen, setHatchOpen] = useState(false)
 
   const activeSubProblem = subProblems[activeSubProblemIdx] ?? null
+
+  // ── Artifact spine: the deliverable-as-progress, derived from live signals
+  // (no new state). Recomputes when the arc changes, so injected adaptive
+  // steps appear in the strip the moment planBranch inserts them.
+  const artifactRows = useMemo(() => deriveArtifactRows({
+    scenarioQuestion: scenario?.question ?? null,
+    mcpConnected,
+    replRunning,
+    markedFindings,
+    reportPath,
+    skillsWritten,
+    dimensions,
+    subProblems,
+    activeStepId: activeSubProblem?.id ?? null,
+  }), [scenario?.question, mcpConnected, replRunning, markedFindings, reportPath, skillsWritten, dimensions, subProblems, activeSubProblem?.id])
+  const { done: artifactDone, total: artifactTotal } = useMemo(() => artifactProgress(artifactRows), [artifactRows])
 
   // Poll /state for live AI usage (spend vs the per-session budget cap). The hard
   // cap is enforced gateway-side; this just visualizes it. Skipped in dev stub.
@@ -861,33 +879,16 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
         height: '100%', minHeight: 0, overflow: 'hidden',
         background: 'var(--color-background)',
       }}>
-        {/* Sub-problem stepper */}
+        {/* Artifact spine — the deliverable as progress. 48px, never wraps;
+            a long adaptive arc scrolls horizontally instead of stealing
+            terminal height. */}
         <div style={{
-          flexShrink: 0, padding: '10px 16px',
+          flexShrink: 0, height: 48, padding: '0 16px',
+          display: 'flex', alignItems: 'center',
           borderBottom: '1px solid var(--color-outline-variant)',
           background: 'var(--color-surface)',
-          overflowX: 'auto',
         }}>
-          {subProblems.length > 0 ? (
-            <SubProblemStepper
-              subProblems={subProblems}
-              activeIdx={activeSubProblemIdx}
-              completedIds={completedIds}
-              onStepClick={idx => {
-                if (completedIds.has(subProblems[idx]?.id ?? '')) {
-                  setActiveSubProblemIdx(idx)
-                }
-              }}
-            />
-          ) : (
-            <div style={{ height: 26, display: 'flex', alignItems: 'center' }}>
-              <div style={{
-                width: 120, height: 8,
-                background: 'var(--color-surface-container-high)',
-                borderRadius: 99, animation: 'pulse 1.5s ease infinite',
-              }} />
-            </div>
-          )}
+          <ArtifactSpineStrip rows={artifactRows} done={artifactDone} total={artifactTotal} />
         </div>
 
         {/* Body split. position: relative so the floating Hatch bubble anchors

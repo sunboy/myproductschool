@@ -87,7 +87,7 @@ test.describe('adaptive UI screenshots', () => {
     sessionId = data.session_id
 
     // The stretch step carries the F1 badge — proof the adaptive arc rendered.
-    await expect(page.getByText('Defend the read')).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByLabel('Defend the read')).toBeVisible({ timeout: 30_000 })
     await expect(page.getByText('Stretch', { exact: true }).first()).toBeVisible()
     // F3: the coaching register chip shows the open register in product language.
     await expect(page.getByText('Coaching: Peer-level')).toBeVisible()
