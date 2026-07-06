@@ -23,6 +23,8 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
     ],
     kind: 'mcp_setup',
     rubricDimension: 'connection_setup',
+    whyItMatters:
+      'An MCP is how you hand the agent a new capability. You are about to give it read-only access to a live BigQuery warehouse. Once it is connected, the agent can query millions of rows for you, and everything after this is plain language: you ask, it runs the query.',
     teachingNote:
       'Click Start sandbox to spin up your environment. Once the shell is live, two moves get you set up: first register the BigQuery tool with the add command, then start the analyst by typing claude. After that everything is plain language: you ask, Claude runs the queries.',
   },
@@ -139,6 +141,8 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
     ],
     kind: 'skill',
     rubricDimension: 'skill_construction',
+    whyItMatters:
+      'A skill is a saved play. Write one, and the next session starts already knowing this analysis, on any dataset. This is the move that compounds, and it is what separates a one-off answer from a repeatable capability you own.',
     teachingNote:
       'Teaching Claude a skill is the move that compounds. Encode what you just learned as a reusable check and every future session starts smarter, on any dataset.',
   },

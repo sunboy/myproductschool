@@ -106,6 +106,51 @@ export interface AnalyticsSubProblem {
   teachingNote?: string
   /** Optional orientation list: "what you should learn here" (not interactive). */
   learnChecklist?: string[]
+  /** First-class teaching for the differentiator steps (tools/MCP, skills):
+   *  persistent, not dismissible. Distinct from the tactical teachingNote —
+   *  this teaches WHY the move is the point, not HOW. */
+  whyItMatters?: string
+}
+
+// ---------------------------------------------------------------------------
+// Artifact spine — the session's deliverable, derived from live signals.
+// Each row is a milestone the session fills as it runs. The workspace header
+// renders these; a full spine = a complete, shareable analysis. Adaptive
+// arcs add per-step regroup/stretch rows, so rows carry a stepId.
+// ---------------------------------------------------------------------------
+
+export type ArtifactRowKey =
+  | 'question'
+  | 'connection'
+  | 'schema'
+  | 'drop'
+  | 'segment'
+  | 'verdict'
+  | 'report'
+  | 'skill'
+  | 'grade'
+  | 'regroup'
+  | 'stretch'
+
+export type ArtifactRowState = 'filled' | 'active' | 'pending'
+
+export interface ArtifactRow {
+  key: ArtifactRowKey
+  label: string
+  /** Material Symbols icon name. */
+  icon: string
+  state: ArtifactRowState
+  /** The captured value once filled (e.g. "Mobile 31% vs desktop 68%"), if any. */
+  value?: string
+  /** The two differentiator rows (connection = tools/MCP, skill) render with an
+   *  accent so they read as the milestones that set this feature apart. */
+  accent?: boolean
+  /** Backing arc step id — adaptive rows are per-step, key alone is not unique. */
+  stepId?: string
+  /** Adaptive badge for injected/stretch steps (mirrors the stepper's pills). */
+  badge?: 'Regroup' | 'Stretch'
+  /** Full title for aria-label/tooltip when the label is shortened. */
+  ariaTitle?: string
 }
 
 export type MarkVerdict = 'pass' | 'partial' | 'retry'
