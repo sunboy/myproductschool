@@ -84,17 +84,17 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
     const reportLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(reportShareUrl)}`
     const reportTwitter = `https://twitter.com/intent/tweet?url=${encodeURIComponent(reportShareUrl)}&text=${encodeURIComponent(reportShareText)}`
     return (
-      <main className="min-h-screen bg-[#1f2a23] px-5 py-8 text-white">
+      <main className="min-h-screen bg-hero-forest px-5 py-8 text-white">
         <div className="mx-auto w-full max-w-3xl space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <HatchGlyph size={32} state="celebrating" className="text-primary" />
               <span className="font-headline text-lg font-bold">HackProduct</span>
             </div>
-            <span className="rounded-full bg-[#dfe8d8] px-3 py-1 text-xs font-bold text-[#2d5a3d]">Analytics report</span>
+            <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold text-on-primary-fixed-variant">Analytics report</span>
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#c4a66a]">Shared analysis</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-tertiary-container">Shared analysis</p>
             <h1 className="mt-2 font-headline text-3xl font-black leading-tight md:text-4xl">{report.challengeTitle}</h1>
             <p className="mt-2 text-sm text-white/72">
               {report.gradeLabel ? `Graded ${report.gradeLabel}` : 'Driven on a live BigQuery dataset with Claude Code.'}
@@ -107,7 +107,7 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
           />
           <div className="flex flex-col gap-3 sm:flex-row">
             <a href={reportLinkedIn} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-[#0a66c2] px-5 py-3 text-sm font-bold text-white">Share to LinkedIn</a>
-            <a href={reportTwitter} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-[#1f2a23]">Share to X</a>
+            <a href={reportTwitter} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-hero-forest">Share to X</a>
             <Link href="/signup" className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-sm font-bold text-white">Try HackProduct</Link>
           </div>
         </div>
@@ -128,15 +128,15 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
   ))
 
   return (
-    <main className="min-h-screen bg-[#1f2a23] px-5 py-8 text-white">
+    <main className="min-h-screen bg-hero-forest px-5 py-8 text-white">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 md:grid md:grid-cols-[420px_1fr] md:items-center">
-        <section className="rounded-xl border border-white/12 bg-[#f8f3ea] p-6 text-[#233028] shadow-2xl">
+        <section className="rounded-xl border border-white/12 bg-surface-container-low p-6 text-on-background shadow-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <HatchGlyph size={34} state="celebrating" className="text-primary" />
               <span className="font-headline text-lg font-bold text-primary">HackProduct</span>
             </div>
-            <span className="rounded-full bg-[#dfe8d8] px-3 py-1 text-xs font-bold text-[#2d5a3d]">
+            <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold text-on-primary-fixed-variant">
               Scorecard
             </span>
           </div>
@@ -146,31 +146,31 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
               {scorecard.scoreLabel}
             </div>
             <p className="mt-3 text-base font-bold">{scorecard.challengeTitle}</p>
-            <p className="mt-1 text-sm text-[#647064]">{scorecard.gradeLabel ?? formatDuration(scorecard.timeSpentSeconds)}</p>
+            <p className="mt-1 text-sm text-outline">{scorecard.gradeLabel ?? formatDuration(scorecard.timeSpentSeconds)}</p>
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-3">
             {levels.map(level => (
-              <div key={level.move} className="rounded-lg border border-[#d7d2c8] bg-white/70 p-3">
+              <div key={level.move} className="rounded-lg border border-outline-variant bg-white/70 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-[0.12em] text-[#647064]">{titleCase(level.move)}</span>
-                  <span className="font-headline text-xl font-bold text-[#2d5a3d]">L{level.level}</span>
+                  <span className="text-xs font-black uppercase tracking-[0.12em] text-outline">{titleCase(level.move)}</span>
+                  <span className="font-headline text-xl font-bold text-on-primary-fixed-variant">L{level.level}</span>
                 </div>
-                <div className="mt-3 h-2 rounded-full bg-[#e7e0d5]">
+                <div className="mt-3 h-2 rounded-full bg-surface-container-highest">
                   <div className="h-full rounded-full bg-primary" style={{ width: `${level.progressPct}%` }} />
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 border-t border-[#d7d2c8] pt-4 text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8a8274]">hackproduct.dev</p>
+          <div className="mt-8 border-t border-outline-variant pt-4 text-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-muted">hackproduct.dev</p>
           </div>
         </section>
 
         <section className="space-y-6">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#c4a66a]">Shared practice result</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-tertiary-container">Shared practice result</p>
             <h1 className="mt-3 font-headline text-4xl font-black leading-tight md:text-5xl">
               Product thinking scorecard.
             </h1>
@@ -183,7 +183,7 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
             <a href={linkedInUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-[#0a66c2] px-5 py-3 text-sm font-bold text-white">
               Share to LinkedIn
             </a>
-            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-[#1f2a23]">
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-hero-forest">
               Share to X
             </a>
             <Link href="/signup" className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-sm font-bold text-white">

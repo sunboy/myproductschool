@@ -16,6 +16,7 @@ interface Result {
   score: number
   xp_earned: number
   feedback_summary: string
+  structured?: { what_worked: string | null; what_to_improve: string | null; example_move: string | null } | null
 }
 
 interface QuickTakeChallenge {
@@ -110,7 +111,30 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
             </span>
             <span className="text-on-primary/60 text-xs">{Math.round(result.score * 100)}%</span>
           </div>
-          <FeedbackText className="line-clamp-4 text-on-primary/90">{result.feedback_summary}</FeedbackText>
+          {result.structured && (result.structured.what_worked || result.structured.what_to_improve || result.structured.example_move) ? (
+            <div className="flex flex-col gap-2">
+              {result.structured.what_worked && (
+                <div className="flex gap-2 items-start">
+                  <span className="material-symbols-outlined text-on-primary/80 text-[15px] mt-0.5 shrink-0">check_circle</span>
+                  <FeedbackText className="text-on-primary/90 text-[12.5px] leading-relaxed">{result.structured.what_worked}</FeedbackText>
+                </div>
+              )}
+              {result.structured.what_to_improve && (
+                <div className="flex gap-2 items-start">
+                  <span className="material-symbols-outlined text-on-primary/80 text-[15px] mt-0.5 shrink-0">arrow_forward</span>
+                  <FeedbackText className="text-on-primary/90 text-[12.5px] leading-relaxed">{result.structured.what_to_improve}</FeedbackText>
+                </div>
+              )}
+              {result.structured.example_move && (
+                <div className="rounded-lg bg-white/10 px-2.5 py-2 flex gap-2 items-start">
+                  <span className="material-symbols-outlined text-on-primary text-[15px] mt-0.5 shrink-0">bolt</span>
+                  <FeedbackText className="text-on-primary text-[12.5px] leading-relaxed font-semibold">{result.structured.example_move}</FeedbackText>
+                </div>
+              )}
+            </div>
+          ) : (
+            <FeedbackText className="line-clamp-4 text-on-primary/90">{result.feedback_summary}</FeedbackText>
+          )}
         </div>
         <button
           onClick={handleTryAnother}

@@ -66,7 +66,7 @@ async function gradeWithHaiku(
   promptText: string,
   contextBlock: string,
   budget: { userId: string; userPlan: string; route: string }
-): Promise<{ score: number; feedback: string }> {
+): Promise<{ score: number; feedback: string; structured?: { what_worked: string | null; what_to_improve: string | null; example_move: string | null } | null }> {
   const systemPrompt = `You are Hatch, a product thinking coach. Grade a quick-take response and give direct, specific coaching.
 
 Never use em dashes. Short sentences. No filler like "Great job" or "Certainly". Be honest, don't soften weak answers.
@@ -105,15 +105,22 @@ Return valid JSON only:
     const parsed = JSON.parse(text)
     const score = Math.max(0, Math.min(1, Number(parsed.score) || 0))
 
-    // Build feedback string from structured fields
+    // Keep the structured fields (the UI renders them distinctly); the flat
+    // string stays for back-compat readers of feedback_json.feedback.
+    const structured = {
+      what_worked: parsed.what_worked && parsed.what_worked !== 'null' ? String(parsed.what_worked) : null,
+      what_to_improve: parsed.what_to_improve ? String(parsed.what_to_improve) : null,
+      example_move: parsed.example_move ? String(parsed.example_move) : null,
+    }
     const parts: string[] = []
-    if (parsed.what_worked && parsed.what_worked !== 'null') parts.push(parsed.what_worked)
-    if (parsed.what_to_improve) parts.push(parsed.what_to_improve)
-    if (parsed.example_move) parts.push(`Try: ${parsed.example_move}`)
+    if (structured.what_worked) parts.push(structured.what_worked)
+    if (structured.what_to_improve) parts.push(structured.what_to_improve)
+    if (structured.example_move) parts.push(`Try: ${structured.example_move}`)
 
     return {
       score,
       feedback: parts.join('\n\n') || 'Keep practising.',
+      structured,
     }
   } catch (err) {
     if (err instanceof AiBudgetExceededError) throw err
@@ -196,6 +203,7 @@ export async function POST(req: NextRequest) {
   // Grade with Haiku - quality score 0.0–1.0
   let score: number
   let feedback: string
+  let structured: { what_worked: string | null; what_to_improve: string | null; example_move: string | null } | null = null
   try {
     await assertPlanLimit(user.id, userPlan, 'quick_takes')
 
@@ -215,6 +223,7 @@ export async function POST(req: NextRequest) {
     )
     score = result.score
     feedback = result.feedback
+    structured = result.structured ?? null
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {
       return apiError(402, 'limit_reached', 'limit_reached', {
@@ -253,7 +262,7 @@ export async function POST(req: NextRequest) {
     total_score: score,
     max_score: 1,
     grade_label: score >= 0.8 ? 'Sharp' : score >= 0.5 ? 'Solid' : score >= 0.2 ? 'Surface' : 'Weak',
-    feedback_json: { feedback, xp_earned, move: primaryMove },
+    feedback_json: { feedback, ...(structured ? { structured } : {}), xp_earned, move: primaryMove },
   })
   if (attemptInsertError) {
     console.error('[quick-take] challenge_attempts insert failed:', attemptInsertError.message)
@@ -300,5 +309,5 @@ export async function POST(req: NextRequest) {
     properties: { challenge_id, move: primaryMove, score, xp_earned },
   })
 
-  return NextResponse.json({ score, xp_earned, feedback_summary: feedback })
+  return NextResponse.json({ score, xp_earned, feedback_summary: feedback, structured: structured ?? null })
 }
