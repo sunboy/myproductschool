@@ -198,9 +198,9 @@ function ParadigmCard({
         <div>
           {!wide && (
             <div style={{
-              fontSize: 12.5, fontStyle: 'italic', lineHeight: 1.5, opacity: 0.65,
+              fontSize: 12.5, fontStyle: 'italic', lineHeight: 1.5, opacity: 0.75,
               maxWidth: 260, marginBottom: 14,
-              borderLeft: `2px solid ${p.artColor}`, paddingLeft: 10,
+              background: `${p.artColor}14`, borderRadius: 8, padding: '8px 10px',
             }}>
               {p.quote}
             </div>
