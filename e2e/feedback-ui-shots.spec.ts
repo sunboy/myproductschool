@@ -105,4 +105,66 @@ test.describe('feedback UI shots', () => {
     await page.screenshot({ path: 'docs/notes/feedback-ui/flow-feedback-full.png', fullPage: true })
     if (consoleErrors.length) console.log('CONSOLE ERRORS:', JSON.stringify(consoleErrors.slice(0, 5), null, 1))
   })
+
+  test('live-interview debrief renders the tiered shell', async ({ page }) => {
+    user = await createTestUser()
+    const c = admin()
+    await c.from('profiles').update({ has_seen_hatch_intro: true }).eq('id', user.id)
+    const debrief = {
+      overallScore: 3.6,
+      grade: 'Solid',
+      flowScores: { frame: 4.1, list: 3.8, optimize: 3.4, win: 2.9 },
+      strengths: [
+        'You asked whose goal the feature serves before proposing anything.',
+        'The tradeoff in Optimize named a real sacrifice, not a preference.',
+      ],
+      improvements: [
+        'The Win metric had no threshold. Pick the number that would prove you wrong.',
+        'You accepted the first framing. Push back once before designing.',
+      ],
+      competencySignals: [
+        { competency: 'motivation_theory', stepDetected: 'frame', signal: 'Separated friction from motivation in the opening read.' },
+        { competency: 'strategic_thinking', stepDetected: 'optimize', signal: 'Named the criterion before comparing options.' },
+        { competency: 'strategic_thinking', stepDetected: 'win', signal: 'Framed the recommendation as a hypothesis.' },
+        { competency: 'cognitive_empathy', stepDetected: 'list', signal: 'Simulated the support team as a stakeholder unprompted.' },
+      ],
+      failurePatternsDetected: [],
+      nextActions: [
+        { title: 'Run a Win-move rep', description: 'One challenge focused on falsifiable metrics.', href: '/challenges', type: 'challenge' },
+      ],
+      nextChallengeRecommendation: 'Practice the metric-threshold structure on a fresh scenario before your next live round.',
+    }
+    const { data: session, error } = await c.from('live_interview_sessions').insert({
+      user_id: user.id,
+      role_id: 'swe',
+      status: 'completed',
+      started_at: new Date(Date.now() - 32 * 60_000).toISOString(),
+      ended_at: new Date().toISOString(),
+      duration_seconds: 32 * 60,
+      calibration_snapshot: {},
+      flow_coverage: {},
+      flow_coverage_credits: {},
+      total_turns: 18,
+      debrief_json: debrief,
+    }).select('id').single()
+    expect(error).toBeNull()
+    await apiLogin(page, user)
+
+    const url = `/live-interviews/${session!.id}/debrief`
+    await page.request.get(url).catch(() => {})
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90_000 })
+
+    await expect(page.getByText('/10').first()).toBeVisible({ timeout: 60_000 })
+    await expect(page.getByText('The four moves')).toBeVisible()
+    await expect(page.getByText('Strongest move')).toBeVisible()
+    await expect(page.getByText('Competency Signals')).toBeVisible()
+
+    for (const [w, h, name] of [[1440, 900, '1440'], [768, 1024, '768'], [375, 812, '375']] as const) {
+      await page.setViewportSize({ width: w, height: h })
+      await page.waitForTimeout(900)
+      await page.screenshot({ path: `docs/notes/feedback-ui/debrief-${name}.png`, fullPage: false })
+    }
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.screenshot({ path: 'docs/notes/feedback-ui/debrief-full.png', fullPage: true })
+  })
 })

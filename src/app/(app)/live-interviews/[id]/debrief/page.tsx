@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { FeedbackText } from '@/components/ui/FeedbackText'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
-import CompetencyRadar from '@/components/live-interview/CompetencyRadar'
+import { ScoreHero, FeedbackShell, TakeawayCard, CompetencyViz } from '@/components/feedback'
 import { DebriefUpgradeCard } from '@/components/live-interview/DebriefUpgradeCard'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -183,67 +182,57 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
         {durationMins > 0 && `· ${durationMins} min`}
       </p>
 
-      <div className="space-y-5">
-        {/* Score card */}
-        {(() => {
-          const overallPercent = scoreToPercent(debrief.overallScore)
-          return (
-        <div className="bg-surface-container rounded-xl p-6 editorial-shadow">
-          <div className="flex items-center gap-4 mb-4">
-            <HatchGlyph size={64} state="celebrating" className="text-primary shrink-0" />
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <span className="text-5xl font-headline font-extrabold text-primary">
-                  {overallPercent}
-                </span>
-                <span className="-ml-2 mt-5 font-label text-sm font-bold text-on-surface-variant">/100</span>
-                <span className="bg-primary-container text-on-primary-container rounded-full px-4 py-1 font-label font-semibold text-sm">
-                  {debrief.grade}
-                </span>
-              </div>
-              <p className="text-sm text-on-surface-variant mt-1">
-                {getGradeDescriptor(debrief.overallScore)}
-              </p>
+      <FeedbackShell
+        hero={
+          <div className="flex flex-col gap-5">
+            <ScoreHero
+              raw={debrief.overallScore}
+              scale={5}
+              headline={getGradeDescriptor(debrief.overallScore)}
+            />
+            {/* FLOW is the spine: the four moves live in the hero band. */}
+            <div className="space-y-2.5 pt-1 border-t border-outline-variant/40">
+              <p className="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant pt-3">The four moves</p>
+              {FLOW_STEPS.map(step => {
+                const score = debrief.flowScores[step] ?? 0
+                const percent = scoreToPercent(score)
+                const descriptor = getScoreDescriptor(score)
+                return (
+                  <div key={step} className="flex items-center gap-4">
+                    <span className="w-20 text-sm font-label font-semibold text-on-surface">
+                      {FLOW_LABELS[step]}
+                    </span>
+                    <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-700"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                    <span className="w-10 text-right text-sm font-label font-bold text-primary">
+                      {percent}%
+                    </span>
+                    <span className="w-24 text-right text-xs font-label text-on-surface-variant hidden sm:block">
+                      {descriptor}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           </div>
-        </div>
-          )
-        })()}
-
-        {/* FLOW Scores */}
-        <div className="bg-surface-container rounded-xl p-6">
-          <h2 className="font-headline text-lg font-bold text-on-surface mb-4">FLOW Scores</h2>
-          <div className="space-y-3">
-            {FLOW_STEPS.map(step => {
-              const score = debrief.flowScores[step] ?? 0
-              const percent = scoreToPercent(score)
-              const descriptor = getScoreDescriptor(score)
-              return (
-                <div key={step} className="flex items-center gap-4">
-                  <span className="w-20 text-sm font-label font-semibold text-on-surface">
-                    {FLOW_LABELS[step]}
-                  </span>
-                  <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary rounded-full transition-all duration-700"
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
-                  <span className="w-10 text-right text-sm font-label font-bold text-primary">
-                    {percent}%
-                  </span>
-                  <span className="w-24 text-right text-xs font-label text-on-surface-variant">
-                    {descriptor}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        }
+        takeaway={
+          (debrief.strengths[0] || debrief.improvements[0]) ? (
+            <>
+              {debrief.strengths[0] && <TakeawayCard kind="strength" text={debrief.strengths[0]} />}
+              {debrief.improvements[0] && <TakeawayCard kind="fix" text={debrief.improvements[0]} />}
+            </>
+          ) : undefined
+        }
+      >
 
         {/* Artifact Score Card (only shown when a canvas or editor was used) */}
         {artifactGrading && (
-          <div className="bg-surface-container rounded-xl p-6">
+          <div className="bg-surface-container rounded-xl p-6" data-fb-section>
             <div className="flex items-center gap-3 mb-4">
               <span
                 className="material-symbols-outlined text-tertiary text-2xl"
@@ -288,8 +277,9 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
           </div>
         )}
 
-        {/* Strengths & Improvements */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Strengths & Improvements (the takeaway row carries the top item) */}
+        {(debrief.strengths.length > 1 || debrief.improvements.length > 1) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" data-fb-section>
           {/* Strengths */}
           <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
             <div className="flex items-center gap-2">
@@ -302,7 +292,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
               <h3 className="font-headline font-bold text-on-surface text-lg">Strengths</h3>
             </div>
             <ul className="space-y-2">
-              {debrief.strengths.map((item, i) => (
+              {debrief.strengths.slice(1).map((item, i) => (
                 <li key={i} className="flex gap-3 text-sm text-on-surface-variant">
                   <span className="material-symbols-outlined text-primary text-lg shrink-0">
                     check_circle
@@ -325,7 +315,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
               <h3 className="font-headline font-bold text-on-surface text-lg">Areas for Growth</h3>
             </div>
             <ul className="space-y-2">
-              {debrief.improvements.map((item, i) => (
+              {debrief.improvements.slice(1).map((item, i) => (
                 <li key={i} className="flex gap-3 text-sm text-on-surface-variant">
                   <span className="material-symbols-outlined text-secondary text-lg shrink-0">
                     arrow_forward
@@ -336,13 +326,29 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
             </ul>
           </div>
         </div>
+        )}
 
-        {/* Competency Signals */}
+        {/* Competencies: one section — the radar shape plus the signals. */}
         {debrief.competencySignals.length > 0 && (
-          <div className="bg-surface-container rounded-xl p-6">
+          <div className="bg-surface-container rounded-xl p-6" data-fb-section>
             <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
               Competency Signals
             </h2>
+            <div className="flex justify-center mb-4">
+              <CompetencyViz
+                variant="radar"
+                items={(() => {
+                  const counts: Record<string, number> = {}
+                  for (const sig of debrief.competencySignals) counts[sig.competency] = (counts[sig.competency] ?? 0) + 1
+                  const max = Math.max(1, ...Object.values(counts))
+                  return Object.keys(COMPETENCY_LABELS).map((key) => ({
+                    key,
+                    label: COMPETENCY_LABELS[key] ?? key,
+                    value: Math.min(1, (counts[key] ?? 0) / max),
+                  }))
+                })()}
+              />
+            </div>
             <div className="space-y-3">
               {debrief.competencySignals.map((signal, i) => (
                 <div
@@ -366,7 +372,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
 
         {/* Failure Patterns */}
         {debrief.failurePatternsDetected.length > 0 && (
-          <div className="bg-surface-container rounded-xl p-6">
+          <div className="bg-surface-container rounded-xl p-6" data-fb-section>
             <h2 className="font-headline text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-error">warning</span>
               Failure Patterns Detected
@@ -389,7 +395,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
 
         {/* Next Actions */}
         {debrief.nextActions && debrief.nextActions.length > 0 && (
-          <div className="bg-surface-container rounded-xl p-6" data-testid="live-interview-debrief-next-actions">
+          <div className="bg-surface-container rounded-xl p-6" data-fb-section data-testid="live-interview-debrief-next-actions">
             <h2 className="font-headline text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">checklist</span>
               Next Actions
@@ -534,17 +540,6 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
           </div>
         )}
 
-        {/* Competency Radar */}
-        {debrief.competencySignals.length > 0 && (
-          <div className="bg-surface-container rounded-xl p-6">
-            <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
-              Competency Radar
-            </h2>
-            <div className="flex justify-center">
-              <CompetencyRadar signals={debrief.competencySignals} />
-            </div>
-          </div>
-        )}
 
         {/* Upgrade moment (free users only) */}
         {userPlan !== 'pro' && (
@@ -572,7 +567,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
             Practice Challenges
           </Link>
         </div>
-      </div>
+      </FeedbackShell>
     </div>
   )
 }
