@@ -66,6 +66,8 @@ interface CanvasChatPanelProps {
   // Analytics-mode context fields (only used when challengeType === 'claude_code_analytics')
   // Do NOT use currentCode for analytics — use these dedicated fields.
   terminalTail?: string | null
+  /** Milestone-state summary of the analytics deliverable (artifact spine). */
+  artifactState?: string | null
   mcpConnected?: boolean
   skillsWritten?: string[]
   activeSubProblemId?: string | null
@@ -212,6 +214,7 @@ export function CanvasChatPanel({
   activePartResponseType,
   activePartWeightPct,
   terminalTail,
+  artifactState,
   mcpConnected,
   skillsWritten,
   guidanceLevel,
@@ -372,6 +375,7 @@ export function CanvasChatPanel({
         guidance_level: guidanceLevel,
         mcp_connected: mcpConnected,
         terminal_tail: terminalTail,
+        artifact_state: artifactState,
         active_sub_problem_id: activeSubProblemId,
         active_sub_problem_sequence: activeSubProblemSequence,
         active_sub_problem_title: activeSubProblemTitle,
@@ -462,7 +466,7 @@ export function CanvasChatPanel({
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
       activePartResponseType, activePartWeightPct,
       // Analytics context
-      isAnalyticsMode, terminalTail, mcpConnected, skillsWritten, guidanceLevel,
+      isAnalyticsMode, terminalTail, artifactState, mcpConnected, skillsWritten, guidanceLevel,
       activeSubProblemId, activeSubProblemSequence, activeSubProblemTitle,
       activeSubProblemObjective, activeSubProblemSuccessCriterion,
       markedFindings, assertedFinding,

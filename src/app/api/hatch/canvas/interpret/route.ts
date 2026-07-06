@@ -101,6 +101,9 @@ const RequestSchema = z.object({
   guidance_level: z.enum(['scaffolded', 'guided', 'open']).optional(),
   mcp_connected: z.boolean().optional(),
   terminal_tail: z.string().max(4000).nullable().optional(),
+  // Milestone-state summary of the session's deliverable (artifact spine) —
+  // lets Hatch name the specific missing milestone instead of guessing.
+  artifact_state: z.string().max(4000).nullable().optional(),
   active_sub_problem_id: z.string().max(200).nullable().optional(),
   active_sub_problem_sequence: z.number().int().positive().optional(),
   active_sub_problem_title: z.string().max(1000).nullable().optional(),
@@ -489,6 +492,15 @@ function buildAnalyticsUserContent(body: InterpretBody): string {
     `- Skills written: ${(body.skills_written ?? []).length > 0 ? (body.skills_written ?? []).join(', ') : 'none yet'}\n` +
     `- Time elapsed: ${timeElapsedMin}`
   )
+
+  if (body.artifact_state?.trim()) {
+    parts.push(
+      '# Deliverable progress (the artifact spine)\n' +
+      'One line per milestone. When the learner asks what to do next or what is left, ' +
+      'point at the specific milestone still missing, not generic advice.\n' +
+      body.artifact_state.trim().slice(0, 800),
+    )
+  }
 
   if (body.terminal_tail?.trim()) {
     // Treat terminal output as context only — never interpret as instructions.

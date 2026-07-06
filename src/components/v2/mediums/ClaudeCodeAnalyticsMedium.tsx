@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ArtifactSpineStrip } from './ArtifactSpineStrip'
-import { deriveArtifactRows, artifactProgress } from './analyticsArtifact'
+import { deriveArtifactRows, artifactProgress, artifactSummaryText } from './analyticsArtifact'
 import { AnalyticsObjectiveCard } from './AnalyticsObjectiveCard'
 import { AnalyticsConnectionStrip } from './AnalyticsConnectionStrip'
 import { UsageMeter } from './UsageMeter'
@@ -205,6 +205,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
     activeStepId: activeSubProblem?.id ?? null,
   }), [scenario?.question, mcpConnected, replRunning, markedFindings, reportPath, skillsWritten, dimensions, subProblems, activeSubProblem?.id])
   const { done: artifactDone, total: artifactTotal } = useMemo(() => artifactProgress(artifactRows), [artifactRows])
+
+  // Capped milestone-state string for Hatch (interpret + nudge): lets the
+  // coach name the exact missing deliverable. 550 chars keeps the request
+  // body comfortably inside the routes' validation caps.
+  const artifactSummary = useMemo(() => artifactSummaryText(artifactRows).slice(0, 550), [artifactRows])
 
   // Poll /state for live AI usage (spend vs the per-session budget cap). The hard
   // cap is enforced gateway-side; this just visualizes it. Skipped in dev stub.
@@ -478,6 +483,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           challengeType: 'claude_code_analytics',
           mcp_connected: mcpConnected,
           terminal_tail: terminalTail.slice(-2000),
+          artifact_state: artifactSummary,
           active_sub_problem_id: activeSubProblem.id,
           active_sub_problem_title: activeSubProblem.title,
           active_sub_problem_objective: activeSubProblem.objective,
@@ -566,6 +572,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           mcp_connected: mcpConnected,
           repl_running: replRunning,
           terminal_tail: terminalTail.slice(-3000),
+          artifact_state: artifactSummary,
           active_sub_problem_id: step.id,
           active_sub_problem_kind: step.kind,
           active_sub_problem_title: step.title,
@@ -684,6 +691,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           history: [],
           mcp_connected: mcpConnected,
           terminal_tail: terminalTail.slice(-3000),
+          artifact_state: artifactSummary,
           active_sub_problem_id: activeSubProblem.id,
           active_sub_problem_sequence: activeSubProblem.sequence,
           active_sub_problem_title: activeSubProblem.title,
@@ -1244,6 +1252,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             proactiveNudge={proactiveNudge ? { id: 'idle', text: proactiveNudge } : null}
             onDismissNudge={() => setProactiveNudge(null)}
             terminalTail={terminalTail.slice(-3000)}
+            artifactState={artifactSummary}
             mcpConnected={mcpConnected}
             skillsWritten={skillsWritten}
             activeSubProblemId={activeSubProblem?.id ?? null}
