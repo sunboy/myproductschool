@@ -35,10 +35,22 @@ function buildCoachLine(opts: {
   competencyScore: number | null
   trend: string | null
   recentCompletions: number
+  isCalibrated: boolean
 }): { headline: string; sub: string | null } {
-  const { weakestCompetency, competencyScore, trend, recentCompletions } = opts
+  const { weakestCompetency, competencyScore, trend, recentCompletions, isCalibrated } = opts
 
   if (!weakestCompetency) {
+    // Missing competency data means one of two very different things: the
+    // user never calibrated, or the coach context simply didn't load in time
+    // (the dashboard wraps it in a soft timeout). Only the first earns the
+    // calibrate ask — telling a calibrated user to calibrate again reads as
+    // the platform forgetting them.
+    if (isCalibrated) {
+      return {
+        headline: 'Ready when you are.',
+        sub: 'Pick up a challenge and Hatch will meet you there with what it knows about your game.',
+      }
+    }
     return {
       headline: "Let's find your starting point.",
       sub: 'Do one calibration challenge and Hatch will set up the rest of your dashboard around what you need.',
@@ -126,6 +138,7 @@ export function CoachSpineCard({
         competencyScore,
         trend: competencyTrend,
         recentCompletions,
+        isCalibrated,
       })
 
   const competencyLabel = weakestCompetency ? (COMPETENCY_LABELS[weakestCompetency] ?? weakestCompetency) : null
