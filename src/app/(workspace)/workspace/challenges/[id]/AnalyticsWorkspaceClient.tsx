@@ -34,7 +34,12 @@ export function AnalyticsWorkspaceClient({ challenge, scenario, returnTo, origin
   const exitHref = workspaceExitHref(origin, returnTo)
   const crumbs = workspaceBreadcrumbs(challenge.title, origin)
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    // h-full (not h-screen): the (workspace) layout already roots at h-screen
+    // minus TopNav; a nested h-screen pushed this shell's bottom edge past the
+    // viewport where overflow-hidden clipped it silently. The mobile bottom
+    // padding keeps the fixed BottomTabs (56px, md:hidden) from covering the
+    // workspace's last rows.
+    <div className="flex flex-col h-full bg-background overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
       <header className="h-12 w-full bg-background border-b border-outline-variant flex items-center gap-3 px-4 sm:px-6 z-30 flex-shrink-0">
         <Link
           href={exitHref}

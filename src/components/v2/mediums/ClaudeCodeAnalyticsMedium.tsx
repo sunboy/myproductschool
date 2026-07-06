@@ -935,12 +935,15 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             />
           </div>
 
-          {/* RIGHT — live session */}
+          {/* RIGHT — live session. overflow:hidden, NOT auto: the terminal is
+              the only element allowed to scroll (xterm scrolls internally).
+              An auto column here created a second scrollbar around the
+              terminal and let sibling cards jitter its height. */}
           <div style={{
-            flex: 1, minWidth: 0,
+            flex: 1, minWidth: 0, minHeight: 0,
             display: 'flex', flexDirection: 'column', gap: 10,
             padding: '12px 14px',
-            overflow: 'auto',
+            overflow: 'hidden',
             border: '1px solid var(--color-outline-variant)', borderRadius: 12,
             background: 'var(--color-surface-container-lowest)',
           }}>
@@ -1003,7 +1006,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             )}
 
             {/* Terminal frame */}
-            <div style={{ flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative' }}>
               {wssUrl ? (
                 <>
                   <AnalyticsTerminalFrame
