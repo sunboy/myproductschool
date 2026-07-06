@@ -40,16 +40,22 @@ export function AnalyticsWorkspaceClient({ challenge, scenario, returnTo, origin
     // padding keeps the fixed BottomTabs (56px, md:hidden) from covering the
     // workspace's last rows.
     <div className="flex flex-col h-full bg-background overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
-      <header className="h-12 w-full bg-background border-b border-outline-variant flex items-center gap-3 px-4 sm:px-6 z-30 flex-shrink-0">
-        <Link
-          href={exitHref}
-          className="p-1 hover:bg-surface-container-high rounded-full transition-colors shrink-0"
-          aria-label="Back"
-        >
-          <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-        </Link>
-        <AppBreadcrumbs items={crumbs} className="min-w-0" />
-      </header>
+      {/* Merged chrome: the medium's 48px spine bar carries the back
+          affordance, so no separate breadcrumb band (screen-estate parity
+          with the other challenge workspaces). Locked users still get a
+          header since the medium never mounts. */}
+      {locked && (
+        <header className="h-12 w-full bg-background border-b border-outline-variant flex items-center gap-3 px-4 sm:px-6 z-30 flex-shrink-0">
+          <Link
+            href={exitHref}
+            className="p-1 hover:bg-surface-container-high rounded-full transition-colors shrink-0"
+            aria-label="Back"
+          >
+            <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+          </Link>
+          <AppBreadcrumbs items={crumbs} className="min-w-0" />
+        </header>
+      )}
       <div className="flex-1 min-h-0">
         {locked ? (
           // Blurred, non-interactive preview behind the upgrade modal. No
@@ -62,7 +68,7 @@ export function AnalyticsWorkspaceClient({ challenge, scenario, returnTo, origin
             <div className="mt-4 rounded-xl bg-surface-container h-64 border border-outline-variant" />
           </div>
         ) : (
-          <MediumRenderer challenge={challenge} attemptId="" scenario={scenario} />
+          <MediumRenderer challenge={challenge} attemptId="" scenario={scenario} exitHref={exitHref} />
         )}
       </div>
       <PaywallModal

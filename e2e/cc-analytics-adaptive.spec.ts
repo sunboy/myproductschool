@@ -84,7 +84,11 @@ async function startSession(page: Page, challengeId: string) {
   // it server-side so the real navigation is fast.
   await page.request.get(`/workspace/challenges/${challengeId}`).catch(() => {})
   // Skip the first-visit onboarding overlay — it hides the start CTA.
-  await page.addInitScript(() => localStorage.setItem('cc-analytics-onboarded', '1'))
+  await page.addInitScript(() => {
+    localStorage.setItem('cc-analytics-onboarded', '1')
+    localStorage.setItem('cc-analytics-brief:cc-003-so-activation', '1')
+    localStorage.setItem('cc-analytics-brief:cc-006-thelook-funnel', '1')
+  })
   await page.goto(`/workspace/challenges/${challengeId}`, {
     waitUntil: 'domcontentloaded',
     timeout: 120_000,

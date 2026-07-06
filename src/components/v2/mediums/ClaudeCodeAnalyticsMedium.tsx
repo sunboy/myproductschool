@@ -10,7 +10,7 @@ import { AnalyticsTerminalFrame } from './AnalyticsTerminalFrame'
 import { SuggestedPromptRail } from './SuggestedPromptRail'
 import { SkillsLibraryPanel } from './SkillsLibraryPanel'
 import { IdleReapModal } from './IdleReapModal'
-import { AnalyticsOnboardingOverlay, shouldShowOnboarding } from './AnalyticsOnboardingOverlay'
+import { MissionBrief, shouldShowMissionBrief, markMissionBriefSeen } from './MissionBrief'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
@@ -50,7 +50,7 @@ const IDLE_THRESHOLD_MS = 18000 // 18s
 const REAP_WARN_MS = 13 * 60 * 1000
 const REAP_COUNTDOWN_SECONDS = 90
 
-export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: MediumProps) {
+export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exitHref }: MediumProps) {
   const terminalRef = useRef<ClaudeCodeTerminalHandle | null>(null)
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastActivityRef = useRef<number>(Date.now())
@@ -174,7 +174,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // Empty → the rail shows the step's static arc prompts (the fallback).
   const [aiPrompts, setAiPrompts] = useState<string[]>([])
   const [proactiveNudge, setProactiveNudge] = useState<string | null>(null)
-  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showBrief, setShowBrief] = useState(false)
   const [showMirror, setShowMirror] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
   const finalizedRef = useRef(false)
@@ -226,7 +226,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
 
   // Check onboarding gate after mount (client-only)
   useEffect(() => {
-    setShowOnboarding(shouldShowOnboarding())
+    setShowBrief(shouldShowMissionBrief(challenge.id))
   }, [])
   // First-session coaching: the dock is opened once via CanvasChatPanel's
   // autoOpenKey below (the panel owns its open state, so setHatchOpen can't
@@ -867,10 +867,24 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
 
   return (
     <>
-      {showOnboarding && (
-        <AnalyticsOnboardingOverlay
-          onDone={() => setShowOnboarding(false)}
-          stepCount={subProblems.length}
+      {showBrief && (
+        <MissionBrief
+          question={scenario?.question || challenge.title || 'Answer the business question with real data.'}
+          briefBody={[scenario?.context, scenario?.trigger].filter(Boolean).join(' ') || undefined}
+          ready={mcpConnected && replRunning}
+          firstPrompt={activeSubProblem?.suggestedPrompts?.[0] ?? 'What tables are in the dataset?'}
+          onStart={() => {
+            setStarted(true)
+            markMissionBriefSeen(challenge.id)
+            setShowBrief(false)
+          }}
+          onRunFirstPrompt={() => {
+            terminalRef.current?.insertText(activeSubProblem?.suggestedPrompts?.[0] ?? 'What tables are in the dataset?')
+          }}
+          onDismiss={() => {
+            markMissionBriefSeen(challenge.id)
+            setShowBrief(false)
+          }}
         />
       )}
 
@@ -883,11 +897,25 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             a long adaptive arc scrolls horizontally instead of stealing
             terminal height. */}
         <div style={{
-          flexShrink: 0, height: 48, padding: '0 16px',
-          display: 'flex', alignItems: 'center',
+          flexShrink: 0, height: 48, padding: '0 16px 0 10px',
+          display: 'flex', alignItems: 'center', gap: 8,
           borderBottom: '1px solid var(--color-outline-variant)',
           background: 'var(--color-surface)',
         }}>
+          {exitHref && (
+            <a
+              href={exitHref}
+              aria-label="Back"
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 20, color: 'var(--color-on-surface-variant)',
+                borderRadius: 999, padding: 4, flexShrink: 0,
+                textDecoration: 'none',
+              }}
+            >
+              arrow_back
+            </a>
+          )}
           <ArtifactSpineStrip rows={artifactRows} done={artifactDone} total={artifactTotal} />
         </div>
 

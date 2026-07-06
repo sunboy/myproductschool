@@ -75,13 +75,15 @@ test.describe('adaptive UI screenshots', () => {
     await page.addInitScript(() => localStorage.setItem('cc-analytics-onboarded', '1'))
     await page.goto(`/workspace/challenges/${CHALLENGE}`, { waitUntil: 'domcontentloaded', timeout: 120_000 })
 
+    // Mission brief: the per-session start screen (not seeded seen here so we
+    // capture it and start the sandbox from its CTA).
+    await expect(page.getByText('Your mission')).toBeVisible({ timeout: 90_000 })
+    await page.screenshot({ path: 'docs/notes/adaptive-ui/mission-brief-1440.png', fullPage: false })
     const startResponse = page.waitForResponse(
       (r) => r.url().includes('/api/claude-code/session/start') && r.request().method() === 'POST',
       { timeout: 90_000 },
     )
-    const startButton = page.getByRole('button', { name: /start sandbox|resume sandbox/i })
-    await expect(startButton).toBeVisible({ timeout: 90_000 })
-    await startButton.click()
+    await page.getByRole('button', { name: /start the sandbox/i }).click()
     const res = await startResponse
     const data = (await res.json()) as { session_id: string }
     sessionId = data.session_id

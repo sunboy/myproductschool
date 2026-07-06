@@ -180,4 +180,6 @@ export interface MediumProps {
   challenge: ChallengePrompt
   attemptId: string
   scenario?: AnalyticsScenario
+  /** Where the workspace's back affordance leads (merged-chrome mediums render it inline). */
+  exitHref?: string
 }
