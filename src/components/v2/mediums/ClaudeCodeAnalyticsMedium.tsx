@@ -96,7 +96,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<null | (() => void)>(null)
   const [leftWidth, setLeftWidth] = useState(30) // percent, md and up only
-  const [questionCollapsed, setQuestionCollapsed] = useState(false)
+  // Starts collapsed on small screens so the terminal is reachable without
+  // a long scroll; auto-collapses on desktop once the session is live.
+  const [questionCollapsed, setQuestionCollapsed] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.innerWidth < 768,
+  )
   const questionTouchedRef = useRef(false)
 
   useEffect(() => {

@@ -79,3 +79,17 @@ Not fixed (noted): the 2 legacy `user_notes` rows keep NULL embeddings (trivial 
 - **Iteration 5** (~04:00): B0 agent wedged like all others (subagent infra dead this session) — killed it, implemented B0 DIRECTLY in the main loop: src/lib/adaptive/confidence.ts (evidence confidence, effective score, archetype priors from the real 8 archetypes, level derivation), hatch-context total_attempts + archetype-aware deriveOverallLevel (legacy fallback for old row shapes), analyst-competency-map.ts + finalize wiring (dims 0/0.5/1 → updateCompetencies, maxScore=1, best-effort upsert). 12 new unit tests; tsc clean; full test:unit green. Committed 0f063882. Strategy locked: ALL further increments implemented directly in the main loop, no subagents. Next: B1 (arcForLearner + loadGuidanceInputs + session/start wiring + live arc persistence).
 - **Iteration 4** (~03:30): wave-2 agents wedged identically (~5s CPU / 20 min) — background agent delivery is broken in this session, full stop. Killed them. Ran the Codex review SYNCHRONOUSLY via `codex exec --sandbox read-only` — worked perfectly: **APPROVE-WITH-CHANGES**, 7 findings, all incorporated into the design doc. Phase A committed (44ee74aa). Dispatched B0 (calibration measurement) to a Sonnet agent; watch its CPU next wake — if wedged, implement B0 directly in the main loop. Remaining: B0-B4, C, D (redo synchronously), E (redo synchronously).
 - **Iteration 3** (~03:10): diagnosed + fixed the agent wedge (see Findings). Respawned codex-review-2 (with self-review fallback if Codex CLI won't start), vector-db-audit-2, social-proof-sweep-2 — all bypassPermissions. User removed the 07:00 hard stop: loop runs until Phases A-E are complete. Next: on codex-review-2 result → record verdict, incorporate, commit Phase A, start B0.
+
+## Checkpoint — 2026-07-06: CC Analytics elevation (scroll fixes + hero port) COMPLETE
+
+All 8 increments of the approved CC-elevation plan shipped on feat/adaptive-workspaces:
+1. Scroll architecture repaired (h-screen→h-full, BottomTabs padding, right column overflow:hidden)
+2. analyticsArtifact.ts — adaptive-aware arc-walk derivation (7 unit tests)
+3. Terminal-as-hero: resizable Mission column (20-50%, localStorage), terminal-only right pane
+4. ArtifactSpineStrip replaces SubProblemStepper (48px, never wraps, Regroup/Stretch badge chips)
+5. MissionBrief replaces onboarding overlay (compact, pinned CTAs) + merged single-bar chrome (exitHref through MediumProps)
+6. artifact_state → Hatch (interpret + nudge zod fields, CanvasChatPanel artifactState prop, skill updated)
+7. Mirror "You asked / You proved" bookend
+8. Cleanup (SubProblemStepper + AnalyticsOnboardingOverlay deleted), mobile collapse default, E2E probe-settle fix
+
+Verification: cc-analytics-adaptive 3/3 (real sandboxes, finalized), adaptive-ui-shots green twice consecutively (brief path, real sandbox), 412 unit tests, tsc clean. Screenshots in docs/notes/adaptive-ui/ (mission-brief-1440, open-workspace-1440/768/375).

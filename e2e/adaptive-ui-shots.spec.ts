@@ -78,6 +78,10 @@ test.describe('adaptive UI screenshots', () => {
     // Mission brief: the per-session start screen (not seeded seen here so we
     // capture it and start the sandbox from its CTA).
     await expect(page.getByText('Your mission')).toBeVisible({ timeout: 90_000 })
+    // Wait for the mount-resume probe to settle (the standalone Start CTA
+    // renders behind the modal only once resuming resolves) — clicking the
+    // brief mid-probe can land on a node React is about to swap.
+    await expect(page.getByRole('button', { name: /start sandbox|resume sandbox/i })).toBeVisible({ timeout: 90_000 })
     await page.screenshot({ path: 'docs/notes/adaptive-ui/mission-brief-1440.png', fullPage: false })
     const startResponse = page.waitForResponse(
       (r) => r.url().includes('/api/claude-code/session/start') && r.request().method() === 'POST',
