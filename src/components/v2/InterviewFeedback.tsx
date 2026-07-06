@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { ScoreHero, DimensionCard, TakeawayCard } from '@/components/feedback'
 import Link from 'next/link'
-import { FeedbackText } from '@/components/ui/FeedbackText'
 import type { InterviewGrade, ChallengeType } from '@/lib/types'
 
 interface InterviewFeedbackProps {
@@ -17,181 +17,11 @@ interface InterviewFeedbackProps {
   backToListHref?: string | null
 }
 
-function scoreColorClasses(score: number) {
-  if (score >= 4) return { ring: 'text-primary', bg: 'bg-primary-container', text: 'text-on-primary-container', badge: 'bg-primary text-on-primary' }
-  if (score >= 3) return { ring: 'text-tertiary', bg: 'bg-tertiary-container', text: 'text-on-secondary-container', badge: 'bg-tertiary text-on-primary' }
-  return { ring: 'text-error', bg: 'bg-secondary-container', text: 'text-on-secondary-container', badge: 'bg-error text-on-primary' }
-}
 
-function scoreLabel(score: number) {
-  if (score >= 4.5) return 'Excellent'
-  if (score >= 3.5) return 'Strong'
-  if (score >= 2.5) return 'Solid'
-  if (score >= 1.5) return 'Developing'
-  return 'Needs Work'
-}
 
 // Animated SVG score ring with count-up
-function ScoreRing({ score }: { score: number }) {
-  const [displayed, setDisplayed] = useState(0)
-  // r=44 inside a 120×120 viewBox gives 16px margin each side - strokeWidth=10 fits cleanly
-  const radius = 44
-  const circumference = 2 * Math.PI * radius
-  // Start fully offset (arc hidden), animate to final fill
-  const [dashOffset, setDashOffset] = useState(circumference)
-  const colors = scoreColorClasses(score)
-  const startRef = useRef<number | null>(null)
-  const duration = 600
-
-  useEffect(() => {
-    startRef.current = null
-    setDisplayed(0)
-    setDashOffset(circumference)
-    const animate = (timestamp: number) => {
-      if (startRef.current === null) startRef.current = timestamp
-      const elapsed = timestamp - startRef.current
-      const progress = Math.min(elapsed / duration, 1)
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplayed(parseFloat((eased * score).toFixed(1)))
-      setDashOffset(circumference * (1 - eased * (score / 5)))
-      if (progress < 1) requestAnimationFrame(animate)
-    }
-    const id = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(id)
-  }, [score, circumference])
-
-  return (
-    <div className="flex flex-col items-center gap-2 mx-auto">
-      <div className="relative flex items-center justify-center w-36 h-36">
-        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
-          {/* Track */}
-          <circle
-            cx="60" cy="60" r={radius}
-            fill="none"
-            className="stroke-outline-variant"
-            strokeWidth="10"
-          />
-          {/* Progress arc */}
-          <circle
-            cx="60" cy="60" r={radius}
-            fill="none"
-            className={`stroke-current ${colors.ring}`}
-            strokeWidth="10"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
-            style={{ transition: 'none' }}
-          />
-        </svg>
-        {/* Score number centered inside ring */}
-        <div className="flex flex-col items-center justify-center z-10">
-          <span className="font-headline text-3xl font-bold text-on-surface leading-none">
-            {displayed.toFixed(1)}
-          </span>
-          <span className="font-label text-xs text-on-surface-variant">/5</span>
-        </div>
-      </div>
-      {/* Score label badge - outside/below the ring */}
-      <span className={`font-label text-xs font-semibold px-3 py-1 rounded-full ${colors.badge}`}>
-        {scoreLabel(score)}
-      </span>
-    </div>
-  )
-}
 
 // Collapsible dimension tile
-function DimensionTile({
-  dimKey,
-  dim,
-  expanded,
-  onToggle,
-  isLowest,
-  index,
-}: {
-  dimKey: string
-  dim: { score: number; verdict: string; evidence: string; hole_to_poke: string; how_to_improve: string }
-  expanded: boolean
-  onToggle: () => void
-  isLowest: boolean
-  index: number
-}) {
-  const colors = scoreColorClasses(dim.score)
-  const label = dimKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-
-  return (
-    <button
-      aria-expanded={expanded}
-      onClick={onToggle}
-      className={`w-full text-left rounded-xl p-4 transition-all duration-200 animate-step-enter
-        ${expanded
-          ? 'bg-surface-container-high border border-primary/30 shadow-sm'
-          : 'bg-surface-container-low hover:shadow-sm hover:bg-surface-container'
-        }`}
-      style={{ animationDelay: `${index * 80}ms` }}
-    >
-      {/* Compact header - always visible */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <p className="font-headline font-semibold text-base text-on-surface truncate tracking-tight">{label}</p>
-          {isLowest && !expanded && (
-            <span className="font-label text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-tertiary-container text-on-secondary-container shrink-0 whitespace-nowrap">
-              Focus area
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums ${colors.badge}`}>
-            {dim.score}<span className="opacity-60 text-[10px] ml-0.5">/5</span>
-          </span>
-          <span
-            className="material-symbols-outlined text-on-surface-variant text-[16px] transition-transform duration-200"
-            style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-          >
-            expand_more
-          </span>
-        </div>
-      </div>
-      <FeedbackText className={`mt-1.5 ${expanded ? 'font-medium text-on-surface' : 'line-clamp-1 text-on-surface-variant'}`}>
-        {dim.verdict}
-      </FeedbackText>
-
-      {/* Expanded content */}
-      <div
-        className="overflow-hidden transition-all duration-300"
-        style={{ maxHeight: expanded ? '600px' : '0px' }}
-      >
-        <div className="pt-4 space-y-3 border-t border-outline-variant/40 mt-3">
-          {dim.evidence && (
-            <blockquote className="bg-surface-container-low rounded-lg px-3 py-2">
-              <FeedbackText className="text-xs italic text-on-surface-variant">
-                {dim.evidence}
-              </FeedbackText>
-            </blockquote>
-          )}
-          {dim.hole_to_poke && (
-            <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="material-symbols-outlined text-tertiary text-[14px]">warning</span>
-                <p className="font-label text-[10px] font-bold uppercase tracking-wider text-tertiary">Watch out</p>
-              </div>
-              <FeedbackText className="pl-[22px] text-on-surface">{dim.hole_to_poke}</FeedbackText>
-            </div>
-          )}
-          {dim.how_to_improve && (
-            <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="material-symbols-outlined text-primary text-[14px]">lightbulb</span>
-                <p className="font-label text-[10px] font-bold uppercase tracking-wider text-primary">How to improve</p>
-              </div>
-              <FeedbackText className="pl-[22px] text-on-surface">{dim.how_to_improve}</FeedbackText>
-            </div>
-          )}
-        </div>
-      </div>
-    </button>
-  )
-}
 
 export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, onRetry, onBackToCanvas, nextChallengeHref, backToListHref }: InterviewFeedbackProps) {
   const [calloutVisible, setCalloutVisible] = useState(false)
@@ -199,8 +29,6 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
   // Lift expanded state up so parent can collapse grid to 1-col when any tile is open
   const dimEntries = Object.entries(grade.dimensions)
   const lowestKey = [...dimEntries].sort(([, a], [, b]) => a.score - b.score)[0]?.[0] ?? ''
-  const [expandedKey, setExpandedKey] = useState<string | null>(lowestKey)
-  const anyExpanded = expandedKey !== null
 
   useEffect(() => {
     const t = setTimeout(() => setCalloutVisible(true), 600)
@@ -211,14 +39,9 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
     <div className="flex flex-col h-full overflow-y-auto font-body">
       <div className="flex flex-col gap-6 p-5 pb-24">
 
-        {/* ── 1. VERDICT ─────────────────────────────────────── */}
-        <div className="flex items-center gap-5 pt-2">
-          <div className="shrink-0">
-            <ScoreRing score={grade.overall_score} />
-          </div>
-          <h2 className="font-headline text-xl text-on-surface leading-snug">
-            {grade.headline}
-          </h2>
+        {/* ── 1. VERDICT — the shared hero (adds Hatch presence) ── */}
+        <div className="pt-2">
+          <ScoreHero raw={grade.overall_score} scale={5} headline={grade.headline} />
         </div>
 
         {/* ── 2. CANVAS SNAPSHOT ─────────────────────────────── */}
@@ -241,24 +64,8 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
             className="space-y-3 transition-all duration-500"
             style={{ opacity: calloutVisible ? 1 : 0, transform: calloutVisible ? 'translateY(0)' : 'translateY(12px)' }}
           >
-            {grade.top_strength && (
-              <div className="rounded-xl bg-primary-container text-on-primary-container p-4 flex gap-3 items-start">
-                <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5">check_circle</span>
-                <div>
-                  <p className="font-label text-xs font-semibold uppercase tracking-wide mb-1">What you got right</p>
-                  <FeedbackText>{grade.top_strength}</FeedbackText>
-                </div>
-              </div>
-            )}
-            {grade.top_improvement && (
-              <div className="rounded-xl bg-tertiary-container text-on-secondary-container p-4 flex gap-3 items-start">
-                <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5">arrow_forward</span>
-                <div>
-                  <p className="font-label text-xs font-semibold uppercase tracking-wide mb-1">Focus next time</p>
-                  <FeedbackText>{grade.top_improvement}</FeedbackText>
-                </div>
-              </div>
-            )}
+            {grade.top_strength && <TakeawayCard kind="strength" text={grade.top_strength} />}
+            {grade.top_improvement && <TakeawayCard kind="fix" text={grade.top_improvement} />}
           </div>
         )}
 
@@ -268,16 +75,18 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
           <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-3">
             Dimensions
           </p>
-          <div className={`grid gap-3 ${anyExpanded ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
-            {dimEntries.map(([key, dim], i) => (
-              <DimensionTile
+          <div className="grid gap-3 grid-cols-1">
+            {dimEntries.map(([key, dim]) => (
+              <DimensionCard
                 key={key}
-                dimKey={key}
-                dim={dim}
-                expanded={expandedKey === key}
-                onToggle={() => setExpandedKey(prev => prev === key ? null : key)}
-                isLowest={key === lowestKey}
-                index={i}
+                label={key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                raw={dim.score}
+                scale={5}
+                verdict={dim.verdict}
+                evidence={dim.evidence}
+                holeToPoke={dim.hole_to_poke}
+                howToImprove={dim.how_to_improve}
+                focus={key === lowestKey}
               />
             ))}
           </div>
