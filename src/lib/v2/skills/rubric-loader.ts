@@ -68,3 +68,26 @@ export function getAntiPatterns(step: FlowStep): string[] {
 }
 
 export type { RubricJSON, RubricCriterion }
+
+/**
+ * The FLOW rubric as a prompt block, built from the rubric JSON files so
+ * graders that restate the rubric in prose (live debrief, canvas) share the
+ * SAME source of truth as MCQ/freeform grading instead of hand-copied
+ * weights that drift. Falls back to null if a rubric file is unreadable —
+ * callers keep their inline text as the fallback.
+ */
+export function flowRubricPromptBlock(): string | null {
+  try {
+    const steps: FlowStep[] = ['frame', 'list', 'optimize', 'win']
+    const lines = steps.map((step) => {
+      const rubric = loadRubric(step)
+      const criteria = rubric.criteria
+        .map((c) => `${c.id} (${c.name}, ${rubric.scoring.weights[c.id] ?? '?'})`)
+        .join(', ')
+      return `${step.charAt(0).toUpperCase()}${step.slice(1)}: ${criteria}`
+    })
+    return lines.join('\n')
+  } catch {
+    return null
+  }
+}

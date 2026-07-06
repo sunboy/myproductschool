@@ -1,4 +1,5 @@
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { flowRubricPromptBlock } from '@/lib/v2/skills/rubric-loader'
 import { clampToFlowScale, scoreToGrade } from '@/lib/scoring/flow-scale'
 import { IS_MOCK } from '@/lib/mock'
 import type { CompetencySignal } from '@/lib/scoring/competency-signal'
@@ -45,10 +46,10 @@ For product-sense rounds, FLOW is the main evaluation spine.
 For technical rounds, the discipline-specific artifact and reasoning dimensions are primary; FLOW is secondary evidence about how clearly the candidate framed, explored, traded off, and closed.
 
 FLOW Rubric:
-Frame: F1 (symptom→root cause, 0.35), F2 (why-before-how, 0.30), F3 (problem statement, 0.20), F4 (scope boundary, 0.15)
+${flowRubricPromptBlock() ?? `Frame: F1 (symptom→root cause, 0.35), F2 (why-before-how, 0.30), F3 (problem statement, 0.20), F4 (scope boundary, 0.15)
 List: L1 (stakeholder completeness, 0.30), L2 (solution space width, 0.30), L3 (second-order effects, 0.25), L4 (workarounds, 0.15)
 Optimize: O1 (named criterion, 0.30), O2 (the sacrifice, 0.30), O3 (metric+guardrail, 0.20), O4 (options vs criterion, 0.20)
-Win: W1 (specificity, 0.30), W2 (defensibility, 0.25), W3 (falsifiability, 0.30), W4 (ownership, 0.15)
+Win: W1 (specificity, 0.30), W2 (defensibility, 0.25), W3 (falsifiability, 0.30), W4 (ownership, 0.15)`}
 
 Scoring per criterion: strong=1.0 (≥0.75), partial=0.5 (≥0.45), needs_work=0.0 (<0.45)
 
