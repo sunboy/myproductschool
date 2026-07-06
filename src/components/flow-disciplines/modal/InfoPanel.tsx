@@ -85,7 +85,7 @@ function PanelHeader({
     <div className="py-1">
       <p
         className="font-label text-[13px] uppercase tracking-widest mb-1"
-        style={{ color: 'rgba(212,164,116,0.68)' }}
+        style={{ color: accent, opacity: 0.75 }}
       >
         {eyebrow}
       </p>
