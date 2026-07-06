@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { isClaudeCodeLab, labIdForChallengeType } from '@/lib/labs/types'
 import { getLabServer } from '@/lib/labs/server'
 import { readFileSync } from 'fs'
@@ -137,13 +138,11 @@ function validationIssues(error: ZodError) {
 }
 
 function loadCodingCoachSkill(): string {
-  try {
-    const skillPath = join(
-      process.env.HOME ?? '/root',
-      '.claude/skills/hackproduct-coding-coach/SKILL.md'
-    )
-    return readFileSync(skillPath, 'utf-8')
-  } catch {
+  {
+    const viaLoader = loadSkillPrompt('hackproduct-coding-coach', '')
+    if (viaLoader) return viaLoader
+  }
+  {
     // Fallback inline prompt if skill file is unavailable
     return `You are Hatch, a coding interview coach for HackProduct. The user is solving a timed coding interview challenge.
 
@@ -162,13 +161,11 @@ Rules:
 
 function loadAnalyticsCoachSkill(challengeType?: string): string {
   const coachSkill = getLabServer(labIdForChallengeType(challengeType)).coachSkill
-  try {
-    const skillPath = join(
-      process.env.HOME ?? '/root',
-      `.claude/skills/${coachSkill}/SKILL.md`
-    )
-    return readFileSync(skillPath, 'utf-8')
-  } catch {
+  {
+    const viaLoader = loadSkillPrompt(coachSkill, '')
+    if (viaLoader) return viaLoader
+  }
+  {
     return `You are Hatch, an analytics coaching partner for HackProduct. The user is driving a live Claude Code session against a BigQuery dataset to find an analytics answer.
 
 Your role: guide the analysis, coach the thinking, never run the query yourself.
@@ -314,7 +311,13 @@ function buildSystemPrompt(challengeType: string): string {
   }
   const domain =
     challengeType === 'data_modeling' ? DATA_MODELING_RULES : SYSTEM_DESIGN_RULES
-  return [COACH_PERSONA, ROUTING_RULES, CONTEXT_CANVAS_RULES, domain, ACTION_SCHEMA].join('\n\n')
+  // Skill-governed: hackproduct-canvas-coach is the runtime source of truth;
+  // the inline constants remain the fallback. The discipline line is appended
+  // either way so one skill file serves both canvas disciplines.
+  const inline = [COACH_PERSONA, ROUTING_RULES, CONTEXT_CANVAS_RULES, domain, ACTION_SCHEMA].join('\n\n')
+  const skill = loadSkillPrompt('hackproduct-canvas-coach', '')
+  if (!skill) return inline
+  return `${skill}\n\n# Active discipline\n${challengeType === 'data_modeling' ? 'data_modeling' : 'system_design'}`
 }
 
 type InterpretBody = z.infer<typeof RequestSchema>

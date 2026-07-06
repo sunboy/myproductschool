@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { createClient } from '@/lib/supabase/server'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
 import {
@@ -223,7 +224,8 @@ ${rubric.engineerStandout ?? ''}
 
   const model = liveInterviewModel('grade_turn')
   const maxTokens = 400
-  const systemPrompt = `You are an interview analysis engine. Analyze the most recent exchange in a live ${discipline?.replace(/_/g, ' ') ?? 'interview'} round and return a JSON object. No other text.
+  const skillLead = loadSkillPrompt('hackproduct-interview-grader', '')
+  const systemPrompt = `${skillLead ? `${skillLead}\n\n# Active mode\nPer-turn signals\n\n` : ''}You are an interview analysis engine. Analyze the most recent exchange in a live ${discipline?.replace(/_/g, ' ') ?? 'interview'} round and return a JSON object. No other text.
 ${scenarioContext}
 ${buildDisciplinePromptBlock(discipline)}
 

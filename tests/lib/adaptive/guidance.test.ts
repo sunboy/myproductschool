@@ -112,14 +112,18 @@ describe('live interview register block (SUN-254)', () => {
       competencies: [],
       hatchContext: '',
     }
-    const open = buildLiveInterviewSystemPrompt({ ...base, guidanceLevel: 'open' }, false)
-    assert.ok(open.includes('[INTERVIEW REGISTER]'))
-    assert.ok(open.includes('falsifiability'))
+    // Assert on the register-specific sentences, not the section tag: the
+    // hackproduct-interviewer skill (now prepended when present) mentions the
+    // tag in its template-slot documentation for every session.
+    const openPrompt = buildLiveInterviewSystemPrompt({ ...base, guidanceLevel: 'open' }, false)
+    assert.ok(openPrompt.includes('what number would prove you wrong'))
     const scaffolded = buildLiveInterviewSystemPrompt({ ...base, guidanceLevel: 'scaffolded' }, false)
-    assert.ok(scaffolded.includes('[INTERVIEW REGISTER]'))
+    assert.ok(scaffolded.includes('restate the question smaller'))
     const guided = buildLiveInterviewSystemPrompt({ ...base, guidanceLevel: 'guided' }, false)
-    assert.ok(!guided.includes('[INTERVIEW REGISTER]'))
+    assert.ok(!guided.includes('restate the question smaller'))
+    assert.ok(!guided.includes('what number would prove you wrong'))
     const none = buildLiveInterviewSystemPrompt(base, false)
-    assert.ok(!none.includes('[INTERVIEW REGISTER]'))
+    assert.ok(!none.includes('restate the question smaller'))
+    assert.ok(!none.includes('what number would prove you wrong'))
   })
 })

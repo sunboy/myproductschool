@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -67,7 +68,7 @@ async function gradeWithHaiku(
   contextBlock: string,
   budget: { userId: string; userPlan: string; route: string }
 ): Promise<{ score: number; feedback: string; structured?: { what_worked: string | null; what_to_improve: string | null; example_move: string | null } | null }> {
-  const systemPrompt = `You are Hatch, a product thinking coach. Grade a quick-take response and give direct, specific coaching.
+  const inlinePrompt = `You are Hatch, a product thinking coach. Grade a quick-take response and give direct, specific coaching.
 
 Never use em dashes. Short sentences. No filler like "Great job" or "Certainly". Be honest, don't soften weak answers.
 
@@ -86,6 +87,7 @@ Return valid JSON only:
   "what_to_improve": "<one concrete, specific thing they should add or change>",
   "example_move": "<a short example of the sharper thinking move they should make>"
 }`
+  const systemPrompt = loadSkillPrompt('hackproduct-quicktake-grader', inlinePrompt)
 
   const userContent = [
     contextBlock,

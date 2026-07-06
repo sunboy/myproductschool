@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { isClaudeCodeLab } from '@/lib/labs/types'
 import { z, ZodError } from 'zod'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
@@ -292,7 +293,7 @@ export async function POST(req: NextRequest) {
   try {
     await assertPlanLimit(user.id, userPlan, 'hatch_nudges')
 
-    const response = await guardedCachedMessage(NUDGE_SYSTEM_PROMPT, userContent, {
+    const response = await guardedCachedMessage(loadSkillPrompt('hackproduct-nudger', NUDGE_SYSTEM_PROMPT), userContent, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
       budget: { userId: user.id, userPlan, route: ROUTE_KEY },

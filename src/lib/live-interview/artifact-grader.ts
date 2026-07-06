@@ -1,4 +1,5 @@
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { buildLiveWorkspaceSignal } from '@/lib/live-interview/workspace-adapters'
 import { liveInterviewModel } from '@/lib/live-interview/model-policy'
 
@@ -134,7 +135,7 @@ export async function gradeArtifact(
   const maxTokens = 512
   const userContent = buildUserContent(input)
 
-  const response = await guardedCachedMessage(SYSTEM_PROMPT, userContent, {
+  const response = await guardedCachedMessage(loadSkillPrompt('hackproduct-interview-grader', SYSTEM_PROMPT) + '\n\n# Active mode\nArtifact grading', userContent, {
     model,
     max_tokens: maxTokens,
     budget,

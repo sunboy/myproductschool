@@ -1,4 +1,5 @@
 import { getHatchPersonality } from '@/lib/hatch/personality'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
 import {
   buildDisciplinePromptBlock,
@@ -206,8 +207,17 @@ export function buildLiveInterviewSystemPrompt(
 
   const sections: string[] = []
 
+  // ── Skill-governed persona: hackproduct-interviewer is the runtime source
+  // of truth for the interviewer identity, phases, and per-turn signal
+  // contract. When present it REPLACES the inline personality + phases
+  // sections below (the dynamic, session-interpolated sections still follow).
+  const interviewerSkill = loadSkillPrompt('hackproduct-interviewer', '')
+  if (interviewerSkill) {
+    sections.push(interviewerSkill)
+  }
+
   // ── Personality (identity + voice examples + emotional range + tics + anti-patterns)
-  sections.push(getHatchPersonality({
+  if (!interviewerSkill) sections.push(getHatchPersonality({
     identityAndScope: buildLiveInterviewScopeBlock(params.discipline),
   }))
 
@@ -215,7 +225,7 @@ export function buildLiveInterviewSystemPrompt(
   const name = learnerName ?? 'there'
   const weakestMove = (['frame', 'list', 'optimize', 'win'] as const).reduce((a, b) => (params.moveLevels[a] <= params.moveLevels[b] ? a : b))
 
-  sections.push(`[CONVERSATION PHASES — HOW THE INTERVIEW UNFOLDS]
+  if (!interviewerSkill) sections.push(`[CONVERSATION PHASES — HOW THE INTERVIEW UNFOLDS]
 
 This interview has natural phases. You don't announce them or force transitions — you read the candidate's energy and move when the moment is right. Think of it like a real interview: two people figuring each other out before getting into the hard stuff.
 

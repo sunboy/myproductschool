@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { z, ZodError } from 'zod'
 import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT, buildNudgeUserPrompt } from '@/lib/hatch/system-prompt'
 import { IS_MOCK } from '@/lib/mock'
@@ -151,7 +152,7 @@ export async function POST(req: NextRequest) {
       userPrompt += `\n\nThe user is currently on the ${flowStep} step, practicing: ${reasoningMove}. Reference this reasoning move in your nudge.`
     }
 
-    const systemPrompt = HATCH_NUDGE_SYSTEM_PROMPT + '\n\n' + MENTAL_MODELS_CONTEXT
+    const systemPrompt = loadSkillPrompt('hackproduct-nudger', HATCH_NUDGE_SYSTEM_PROMPT) + '\n\n' + MENTAL_MODELS_CONTEXT
 
     const message = await guardedCachedMessage(systemPrompt, userPrompt, {
       model: 'claude-haiku-4-5-20251001',

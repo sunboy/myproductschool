@@ -1,4 +1,5 @@
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { flowRubricPromptBlock } from '@/lib/v2/skills/rubric-loader'
 import { clampToFlowScale, scoreToGrade } from '@/lib/scoring/flow-scale'
 import { IS_MOCK } from '@/lib/mock'
@@ -186,7 +187,9 @@ Suggested real next practice: ${practiceLink?.href ? `${practiceLink.title} (${p
 Interview transcript:
 ${transcript}`
 
-  const response = await guardedCachedMessage(systemPrompt, userMessage, {
+  const response = await guardedCachedMessage(
+    loadSkillPrompt('hackproduct-interview-grader', systemPrompt) + '\n\n# Active mode\nDebrief grading',
+    userMessage, {
     model: liveInterviewModel('debrief'),
     max_tokens: 1500,
     budget,
