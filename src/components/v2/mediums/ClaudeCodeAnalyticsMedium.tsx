@@ -797,6 +797,18 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   if (showMirror) {
     return (
       <AnalyticsSessionMirror
+        missionQuestion={scenario?.question || challenge.title || null}
+        provenAnswer={(() => {
+          // The answer-kind pass/partial finding is the proven answer; else
+          // fall back to the last passing finding of any step.
+          const kindById = new Map(subProblems.map((sp) => [sp.id, sp.kind as string]))
+          const answer = markedFindings.find(
+            (f) => kindById.get(f.id) === 'answer' && (f.verdict === 'pass' || f.verdict === 'partial'),
+          )
+          if (answer) return answer.text
+          const lastPass = [...markedFindings].reverse().find((f) => f.verdict === 'pass')
+          return lastPass?.text ?? null
+        })()}
         markedFindings={markedFindings}
         sessionDurationSeconds={Math.round((Date.now() - sessionStartRef.current) / 1000)}
         skillsWritten={skillsWritten}

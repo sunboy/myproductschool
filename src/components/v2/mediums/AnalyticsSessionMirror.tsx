@@ -25,6 +25,10 @@ interface AnalyticsSessionMirrorProps {
   shareUrl?: string | null
   /** How the session adapted (guidance register, injected steps, movements). */
   adaptive?: AdaptiveSummary | null
+  /** The mission's opening question — pays off the Mission Brief's promise. */
+  missionQuestion?: string | null
+  /** The learner's proven finding (answer-kind pass/partial, else last pass). */
+  provenAnswer?: string | null
   onDashboard: () => void
   onRunAnother?: () => void
 }
@@ -39,6 +43,8 @@ export function AnalyticsSessionMirror({
   reportDownloadUrl = null,
   shareUrl = null,
   adaptive = null,
+  missionQuestion = null,
+  provenAnswer = null,
   onDashboard,
   onRunAnother,
 }: AnalyticsSessionMirrorProps) {
@@ -149,6 +155,35 @@ export function AnalyticsSessionMirror({
             </div>
           </div>
         </div>
+
+        {/* Bookend — the mission's question, and the answer the learner
+            proved. This pays off the promise the Mission Brief opened with. */}
+        {missionQuestion && (
+          <div style={{
+            background: 'var(--color-primary-fixed)',
+            borderRadius: 14, padding: '14px 16px',
+            display: 'flex', flexDirection: 'column', gap: 10,
+          }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
+                You asked
+              </div>
+              <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, lineHeight: 1.3, marginTop: 3, color: 'var(--color-on-surface)' }}>
+                {missionQuestion}
+              </div>
+            </div>
+            {provenAnswer && (
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
+                  You proved
+                </div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, marginTop: 3, color: 'var(--color-on-surface)' }}>
+                  {provenAnswer}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Analyst scorecard — the real graded analyst_v1 dimensions (7). This
             replaced a stale hardcoded 4-card grid that matched findings by
