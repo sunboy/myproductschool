@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import { MissionBookend, XpCoin } from '@/components/feedback'
 import gsap from 'gsap'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { ReportCharts } from '@/components/analytics/ReportCharts'
@@ -156,33 +157,9 @@ export function AnalyticsSessionMirror({
           </div>
         </div>
 
-        {/* Bookend — the mission's question, and the answer the learner
-            proved. This pays off the promise the Mission Brief opened with. */}
+        {/* Bookend — pays off the Mission Brief (shared component). */}
         {missionQuestion && (
-          <div style={{
-            background: 'var(--color-primary-fixed)',
-            borderRadius: 14, padding: '14px 16px',
-            display: 'flex', flexDirection: 'column', gap: 10,
-          }}>
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
-                You asked
-              </div>
-              <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, lineHeight: 1.3, marginTop: 3, color: 'var(--color-on-surface)' }}>
-                {missionQuestion}
-              </div>
-            </div>
-            {provenAnswer && (
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
-                  You proved
-                </div>
-                <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, marginTop: 3, color: 'var(--color-on-surface)' }}>
-                  {provenAnswer}
-                </div>
-              </div>
-            )}
-          </div>
+          <MissionBookend asked={missionQuestion} proved={provenAnswer} />
         )}
 
         {/* Analyst scorecard — the real graded analyst_v1 dimensions (7). This
@@ -397,24 +374,7 @@ export function AnalyticsSessionMirror({
         }}
       >
         {/* XP */}
-        {xpAwarded > 0 && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 40, height: 40,
-              background: 'radial-gradient(circle at 30% 30%, #f4d98a, #c9933a 60%, #8a6620)',
-              borderRadius: '50%',
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontFamily: 'var(--font-headline)',
-              fontWeight: 700, fontSize: 12,
-              boxShadow: '0 4px 16px -4px rgba(201,147,58,0.5)',
-            }}>
-              +{xpAwarded}
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-on-surface)' }}>
-              XP earned
-            </span>
-          </div>
-        )}
+        <XpCoin amount={xpAwarded} />
 
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <button

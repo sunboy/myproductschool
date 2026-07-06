@@ -204,11 +204,14 @@ export function shouldUseDeterministicCodingGrade(input: GradingInput): boolean 
   return !hasSubmittedCode(input) || input.correctness.testsTotal === 0
 }
 
-function dimension(score: number, verdict: string, howToImprove: string) {
+function dimension(score: number, verdict: string, howToImprove: string, evidence?: string) {
   return {
     score,
     verdict,
-    evidence: verdict,
+    // Evidence must be a fact from the run, not the verdict echoed back.
+    // Deterministic paths pass the concrete signal; absent one, say so
+    // honestly instead of duplicating the verdict.
+    evidence: evidence ?? 'No detailed evidence was captured for this attempt.',
     hole_to_poke: howToImprove,
     how_to_improve: howToImprove,
   }
@@ -346,10 +349,10 @@ function gradeFromCorrectnessFallback(input: GradingInput): GradingFeedback {
     overall_score: score,
     headline: `Scored from your test results. ${note}`,
     dimensions: {
-      problem_approach: dimension(dimScore, passText, improvement),
+      problem_approach: dimension(dimScore, passText, improvement, passText),
       ai_collaboration: dimension(dimScore, 'Detailed review was unavailable for this attempt.', 'Ask Hatch a focused question about the failing case.'),
-      code_quality: dimension(dimScore, `Correctness signal: ${passText}`, improvement),
-      verification_discipline: dimension(dimScore, passRate >= 1 ? 'All visible tests passed.' : 'Some visible tests are still failing.', improvement),
+      code_quality: dimension(dimScore, `Correctness signal: ${passText}`, improvement, passText),
+      verification_discipline: dimension(dimScore, passRate >= 1 ? 'All visible tests passed.' : 'Some visible tests are still failing.', improvement, passText),
       interview_communication: dimension(dimScore, 'Detailed review was unavailable for this attempt.', `State your approach and one edge case for this ${noun}.`),
     },
     top_strength: passRate >= 1 ? 'All visible tests pass.' : passText,
