@@ -1,4 +1,5 @@
 import {
+  createCachedMessageStream,
   createCachedMessage,
   createCachedMessageMultiSystem,
   type CachedMessageOptions,
@@ -69,4 +70,59 @@ export async function guardedCachedMessageMultiSystem(
     options
   )
   return sanitizeMessage(message, options)
+}
+
+/**
+ * Streaming variant for latency-critical voice callers: yields SANITIZED
+ * text at sentence boundaries as tokens arrive, so TTS can start speaking
+ * after the first sentence instead of waiting for the full completion.
+ * Sanitization runs per flushed segment (voice replies are short; the word-
+ * level bans this guards are intra-sentence). Usage is recorded when the
+ * stream finishes, even if it dies early.
+ */
+export async function guardedCachedSentenceStream(
+  systemPrompt: string,
+  userContent: string,
+  options: CachedMessageOptions
+): Promise<AsyncGenerator<string, void, unknown>> {
+  const { stream, finalize } = await createCachedMessageStream(
+    systemPrompt,
+    wrapUserInput(userContent),
+    options
+  )
+
+  const sanitize = (segment: string): string =>
+    sanitizeAiOutput({
+      text: segment,
+      route: options.budget?.route ?? 'unknown',
+      model: options.model,
+      userId: options.budget?.userId,
+    }).text
+
+  async function* sentences(): AsyncGenerator<string, void, unknown> {
+    let buffer = ''
+    // Flush on sentence enders followed by whitespace, or hard newlines.
+    const boundary = /([.!?]["')\]]?)(\s+)/
+    try {
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+          buffer += event.delta.text
+          let match = boundary.exec(buffer)
+          while (match) {
+            const end = match.index + match[1].length
+            const sentence = sanitize(buffer.slice(0, end))
+            buffer = buffer.slice(end).replace(/^\s+/, '')
+            if (sentence.trim()) yield sentence + ' '
+            match = boundary.exec(buffer)
+          }
+        }
+      }
+      const tail = sanitize(buffer)
+      if (tail.trim()) yield tail
+    } finally {
+      await finalize()
+    }
+  }
+
+  return sentences()
 }

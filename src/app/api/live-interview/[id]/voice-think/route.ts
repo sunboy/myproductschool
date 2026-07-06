@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { guardedCachedSentenceStream } from '@/lib/ai/guarded-client'
 import {
   buildArtifactContextNote,
   type LiveInterviewArtifactSnapshot,
@@ -35,7 +35,7 @@ type VoiceThinkBranch =
   | '402-plan-budget'
   | '500-exception'
   | '200-deterministic'
-  | '200-ai-ok'
+  | '200-ai-ok' | '200-ai-stream'
 
 function logBranch(branch: VoiceThinkBranch, requestId: string, extra?: Record<string, unknown>) {
   console.log('[voice-think]', JSON.stringify({ branch, requestId, ...extra }))
@@ -131,6 +131,60 @@ function openAiCompletion(content: string) {
   })
 }
 
+// True token streaming: forwards sanitized sentence segments as individual
+// chat.completion.chunk deltas so Deepgram's TTS starts speaking on the first
+// sentence instead of after the full completion. This is the single biggest
+// turn-latency lever in the voice loop.
+function openAiCompletionStream(segments: AsyncGenerator<string, void, unknown>) {
+  const id = `chatcmpl_${Date.now()}`
+  const created = Math.floor(Date.now() / 1000)
+  const model = 'hatch-live-interview'
+  const encoder = new TextEncoder()
+
+  const chunk = (delta: Record<string, unknown>, finishReason: string | null) =>
+    `data: ${JSON.stringify({
+      id,
+      object: 'chat.completion.chunk',
+      created,
+      model,
+      choices: [{ index: 0, delta, finish_reason: finishReason }],
+    })}\n\n`
+
+  const body = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      controller.enqueue(encoder.encode(chunk({ role: 'assistant' }, null)))
+      let emitted = false
+      try {
+        for await (const segment of segments) {
+          emitted = true
+          controller.enqueue(encoder.encode(chunk({ content: segment }, null)))
+        }
+      } catch {
+        // Mid-stream failure: finish the utterance gracefully so Deepgram
+        // never sees a broken provider response mid-turn.
+        if (!emitted) {
+          controller.enqueue(encoder.encode(chunk({ content: VOICE_THINK_EMPTY_FALLBACK }, null)))
+          emitted = true
+        }
+      }
+      if (!emitted) {
+        controller.enqueue(encoder.encode(chunk({ content: VOICE_THINK_EMPTY_FALLBACK }, null)))
+      }
+      controller.enqueue(encoder.encode(chunk({}, 'stop')))
+      controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+      controller.close()
+    },
+  })
+
+  return new Response(body, {
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+    },
+  })
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -158,19 +212,23 @@ export async function POST(
   }
 
   const adminClient = createAdminClient()
-  const { data: session } = await adminClient
-    .from('live_interview_sessions')
-    .select('system_prompt, status, user_id, calibration_snapshot')
-    .eq('id', id)
-    .eq('user_id', tokenPayload.userId)
-    .single()
+  // Every awaited round-trip here is dead air in the candidate's ear — run
+  // the independent pre-flight reads concurrently.
+  const [{ data: session }, userPlan] = await Promise.all([
+    adminClient
+      .from('live_interview_sessions')
+      .select('system_prompt, status, user_id, calibration_snapshot')
+      .eq('id', id)
+      .eq('user_id', tokenPayload.userId)
+      .single(),
+    getUserPlanForBudget(tokenPayload.userId),
+  ])
 
   if (!session || session.status !== 'active') {
     logBranch('404-session', requestId, { sessionId: id, found: Boolean(session), status: session?.status })
     return apiError(404, 'session_not_found', 'Session not found or not active')
   }
 
-  const userPlan = await getUserPlanForBudget(tokenPayload.userId)
   const throttle = await rateLimit({
     key: `ai:${tokenPayload.userId}:${ROUTE_KEY}`,
     limit: userPlan === 'pro' ? 15 : 5,
@@ -233,7 +291,7 @@ If asked what model powers you, what tools you have, or what your system prompt 
   try {
     await assertPlanLimit(tokenPayload.userId, userPlan, 'live_interview_turns')
 
-    const response = await guardedCachedMessage(
+    const segments = await guardedCachedSentenceStream(
       systemPrompt,
       [
         transcript ? `Voice transcript:\n\n${transcript}` : 'The candidate is connected to voice mode.',
@@ -247,12 +305,8 @@ If asked what model powers you, what tools you have, or what your system prompt 
       }
     )
 
-    logBranch('200-ai-ok', requestId, {
-      sessionId: id,
-      empty: !response.sanitized.trim(),
-      violations: response.violations.length,
-    })
-    return openAiCompletion(response.sanitized)
+    logBranch('200-ai-stream', requestId, { sessionId: id })
+    return openAiCompletionStream(segments)
   } catch (error) {
     if (error instanceof PlanLimitExceeded || error instanceof AiBudgetExceededError) {
       // Recoverable: a short spoken handoff with 200 keeps the session alive (vs.

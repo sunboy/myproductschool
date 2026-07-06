@@ -575,7 +575,17 @@ export default function SessionPage({
     ?? null
 
   const buildCurrentArtifactSnapshot = useCallback((): LiveInterviewArtifactSnapshot | null => {
-    if (centerMode === 'canvas') {
+    // In the voice-orb view no workspace is VISIBLE, but the candidate's work
+    // still exists — capture by discipline so the interviewer and graders
+    // never go stale just because the candidate flipped back to talk.
+    const effectiveMode = centerMode === 'orb'
+      ? (discipline === 'system_design' || discipline === 'data_modeling'
+          ? 'canvas'
+          : discipline === 'coding' || discipline === 'sql'
+            ? 'editor'
+            : 'orb')
+      : centerMode
+    if (effectiveMode === 'canvas') {
       const elements = (canvasScene?.elements ?? []) as unknown[]
       const summary = summarizeCanvasElements(elements)
       const sceneSummary = summarizeScene(elements)
@@ -591,7 +601,7 @@ export default function SessionPage({
       }
     }
 
-    if (centerMode === 'editor') {
+    if (effectiveMode === 'editor') {
       return {
         type: 'editor',
         discipline: discipline ?? undefined,
@@ -872,7 +882,7 @@ export default function SessionPage({
   }, [isVoiceActive, isVoiceAvailable, turns])
 
   useEffect(() => {
-    if (IS_MOCK || interviewPhase !== 'active' || centerMode === 'orb' || !sessionId) return
+    if (IS_MOCK || interviewPhase !== 'active' || !sessionId) return
     const snapshot = buildCurrentArtifactSnapshot()
     if (!snapshot) return
 

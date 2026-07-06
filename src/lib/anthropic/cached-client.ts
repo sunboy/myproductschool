@@ -141,3 +141,67 @@ export const anthropicClient = new Proxy({} as Anthropic, {
     return getAnthropicClient()[property as keyof Anthropic]
   },
 })
+
+/**
+ * Streaming variant of createCachedMessage for latency-critical callers
+ * (voice). Same prompt caching + preflight budget check; returns the SDK
+ * MessageStream. The caller MUST await `finalize()` after the stream ends so
+ * actual usage is recorded against the budget.
+ */
+export async function createCachedMessageStream(
+  systemPrompt: string,
+  userContent: string,
+  options: CachedMessageOptions
+) {
+  const preflightCostCents = estimateAnthropicPreflightCents(
+    options.model,
+    options.max_tokens,
+    systemPrompt.length + userContent.length
+  )
+  if (options.budget) {
+    await assertAiBudget(options.budget.userId, options.budget.userPlan, preflightCostCents)
+  }
+
+  const stream = getAnthropicClient().messages.stream(
+    {
+      model: options.model,
+      max_tokens: options.max_tokens,
+      ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
+      system: [
+        {
+          type: 'text' as const,
+          text: systemPrompt,
+          cache_control: { type: 'ephemeral' as const },
+        },
+      ],
+      messages: [{ role: 'user' as const, content: userContent }],
+    },
+    { timeout: ANTHROPIC_TIMEOUT_MS }
+  )
+
+  const finalize = async () => {
+    if (!options.budget) return
+    try {
+      const message = await stream.finalMessage()
+      await recordAnthropicUsage({
+        userId: options.budget.userId,
+        model: options.model,
+        usage: message.usage,
+        fallbackCostCents: preflightCostCents,
+        route: options.budget.route,
+      })
+    } catch {
+      // Stream died before completion — record the preflight estimate so
+      // spend is never silently under-counted.
+      await recordAnthropicUsage({
+        userId: options.budget.userId,
+        model: options.model,
+        usage: undefined,
+        fallbackCostCents: preflightCostCents,
+        route: options.budget.route,
+      }).catch(() => {})
+    }
+  }
+
+  return { stream, finalize }
+}

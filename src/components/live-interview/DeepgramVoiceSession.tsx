@@ -23,7 +23,13 @@ interface DeepgramVoiceSessionProps {
 }
 
 const TTS_SAMPLE_RATE = 16000
-const TTS_PREBUFFER_SECONDS = 0.04
+// Jitter buffer: how far ahead of the clock the first chunk of an utterance
+// is scheduled. 40ms proved too thin in the field: any network jitter made
+// chunks arrive after their slot, forcing a re-anchor (an audible gap plus
+// fade-in) mid-utterance, which users heard as crackle. 150ms costs a hair
+// of initial latency and absorbs normal jitter so utterances play through
+// gaplessly.
+const TTS_PREBUFFER_SECONDS = 0.15
 const TTS_FADE_SECONDS = 0.004
 // Deepgram closes an idle agent socket if it sees no audio/keepalive for ~10s.
 // Send a KeepAlive well inside that window so a thinking pause never drops voice.
