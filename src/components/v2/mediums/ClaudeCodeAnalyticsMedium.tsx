@@ -87,6 +87,54 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     injected: Array<{ id: string; kind: string; afterStepId: string | null; reason: string }>
     adjustments: Array<{ from: string; to: string; trigger: string; atStepId: string | null }>
   }>({ injected: [], adjustments: [] })
+
+  // ── Terminal-as-hero frame: resizable split (ported from cc-analytics-hero).
+  // The left "Mission" column owns all guidance and the single scroll; the
+  // right pane is the terminal only. Same clamps + storage pattern as
+  // FlowWorkspace so the lab reads like the coding workspace.
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dragCleanupRef = useRef<null | (() => void)>(null)
+  const [leftWidth, setLeftWidth] = useState(30) // percent, md and up only
+  const [questionCollapsed, setQuestionCollapsed] = useState(false)
+  const questionTouchedRef = useRef(false)
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(`cc-analytics-layout:${challenge.id}`)
+      if (stored) {
+        const parsed = JSON.parse(stored) as { leftWidth?: number }
+        if (typeof parsed.leftWidth === 'number') setLeftWidth(Math.max(20, Math.min(50, parsed.leftWidth)))
+      }
+    } catch { /* no storage */ }
+  }, [challenge.id])
+  useEffect(() => {
+    try {
+      localStorage.setItem(`cc-analytics-layout:${challenge.id}`, JSON.stringify({ leftWidth }))
+    } catch { /* no storage */ }
+  }, [challenge.id, leftWidth])
+
+
+  const handleLeftDividerMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const container = containerRef.current
+    if (!container) return
+    const onMouseMove = (ev: MouseEvent) => {
+      const rect = container.getBoundingClientRect()
+      const pct = ((ev.clientX - rect.left) / rect.width) * 100
+      setLeftWidth(Math.max(20, Math.min(50, pct)))
+    }
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      document.body.style.cursor = ''
+      dragCleanupRef.current = null
+    }
+    document.body.style.cursor = 'col-resize'
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    dragCleanupRef.current = onMouseUp
+  }, [])
+  useEffect(() => () => { dragCleanupRef.current?.() }, [])
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
   // Free quota exhausted (HTTP 402). Opens the unified PaywallModal (analytics
@@ -107,6 +155,14 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // True once the `claude` REPL has launched (its banner/prompt appeared). Step 1
   // gates on this so we never advance the user into bash with REPL-only prompts.
   const [replRunning, setReplRunning] = useState(false)
+
+  // Auto-collapse the scenario prose once the session is live, unless the
+  // user has toggled it themselves.
+  useEffect(() => {
+    if (mcpConnected && replRunning && !questionTouchedRef.current) {
+      setQuestionCollapsed(true)
+    }
+  }, [mcpConnected, replRunning])
   const [skillsWritten, setSkillsWritten] = useState<string[]>([])
   const [reportPath, setReportPath] = useState<string | null>(null)
   // analyst_v1 per-dimension scores from the finalize grade, for the mirror chart.
@@ -838,30 +894,43 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             to this workspace row (its closed/floating modes use `absolute
             bottom-4 right-4`), and it's a flex row so the docked panel sits as
             the right column — exactly how FlowWorkspace mounts the same panel. */}
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden', position: 'relative', gap: 8, padding: 8, background: 'var(--color-surface-container-low)' }}>
+        <div
+          ref={containerRef}
+          className="flex flex-col overflow-y-auto md:flex-row md:overflow-hidden"
+          style={{ flex: 1, minHeight: 0, position: 'relative', gap: 8, padding: 8, background: 'var(--color-surface-container-low)', ['--cc-left-w' as string]: `${leftWidth}%` }}
+        >
 
           {/* LEFT — scenario + dataset. `minHeight: 0` + `height: 100%` are what
               let `overflowY: auto` actually engage inside the flex row: without
               them the column stretches to its content's intrinsic height, grows
               the row past the viewport, and the bottom (skills library) gets
               clipped with no scrollbar. */}
-          <div style={{
-            width: '28%', minWidth: 220, maxWidth: 320,
-            flexShrink: 0,
-            height: '100%', minHeight: 0,
-            border: '1px solid var(--color-outline-variant)', borderRadius: 12,
-            overflowY: 'auto', overflowX: 'hidden', padding: '14px 14px',
-            display: 'flex', flexDirection: 'column', gap: 12,
-            background: 'var(--color-surface-container-lowest)',
-          }}>
-            <div style={{
-              fontSize: 10, fontWeight: 800,
-              letterSpacing: '0.07em', textTransform: 'uppercase',
-              color: 'var(--color-on-surface-variant)',
+          <div
+            className="w-full md:w-[var(--cc-left-w)] md:h-full md:min-h-0 md:overflow-y-auto"
+            style={{
               flexShrink: 0,
+              border: '1px solid var(--color-outline-variant)', borderRadius: 12,
+              overflowX: 'hidden', padding: '14px 14px',
+              display: 'flex', flexDirection: 'column', gap: 12,
+              background: 'var(--color-surface-container-lowest)',
             }}>
+            <button
+              onClick={() => { questionTouchedRef.current = true; setQuestionCollapsed(v => !v) }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                fontSize: 10, fontWeight: 800,
+                letterSpacing: '0.07em', textTransform: 'uppercase',
+                color: 'var(--color-on-surface-variant)',
+                flexShrink: 0, background: 'transparent', border: 'none',
+                cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+              }}
+              aria-expanded={!questionCollapsed}
+            >
               Challenge scenario
-            </div>
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                {questionCollapsed ? 'expand_more' : 'expand_less'}
+              </span>
+            </button>
             {/* Title */}
             <div style={{
               fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700,
@@ -875,12 +944,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 the scenario_* columns passed down as `scenario`. */}
             {scenario && (scenario.context || scenario.trigger || scenario.question) ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {scenario.context && (
+                {!questionCollapsed && scenario.context && (
                   <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--color-on-surface)', margin: 0 }}>
                     {scenario.context}
                   </p>
                 )}
-                {scenario.trigger && (
+                {!questionCollapsed && scenario.trigger && (
                   <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--color-on-surface)', margin: 0 }}>
                     {scenario.trigger}
                   </p>
@@ -926,42 +995,6 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
               </span>
             </div>
 
-            {/* Skills library — browse + reload skills built across past sessions. */}
-            <SkillsLibraryPanel
-              terminalRef={terminalRef}
-              sessionSkills={skillsWritten}
-              replRunning={replRunning}
-              onLoaded={handleSkillWritten}
-            />
-          </div>
-
-          {/* RIGHT — live session. overflow:hidden, NOT auto: the terminal is
-              the only element allowed to scroll (xterm scrolls internally).
-              An auto column here created a second scrollbar around the
-              terminal and let sibling cards jitter its height. */}
-          <div style={{
-            flex: 1, minWidth: 0, minHeight: 0,
-            display: 'flex', flexDirection: 'column', gap: 10,
-            padding: '12px 14px',
-            overflow: 'hidden',
-            border: '1px solid var(--color-outline-variant)', borderRadius: 12,
-            background: 'var(--color-surface-container-lowest)',
-          }}>
-
-            {/* Objective card */}
-            {activeSubProblem && (
-              <AnalyticsObjectiveCard
-                subProblem={activeSubProblem}
-                stepIdx={activeSubProblemIdx}
-                totalSteps={subProblems.length}
-                mcpConnected={mcpConnected}
-                replRunning={replRunning}
-                skillsWritten={skillsWritten}
-                hideTeachingNote={guidance === 'open'}
-                reportWritten={!!reportPath}
-                onMark={handleMark}
-              />
-            )}
 
             {/* Coaching register — how Hatch is coaching this session (F3).
                 Product language only; the internal level never surfaces. */}
@@ -988,6 +1021,39 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
               </span>
             </div>
 
+            {/* Objective card */}
+            {activeSubProblem && (
+              <AnalyticsObjectiveCard
+                subProblem={activeSubProblem}
+                stepIdx={activeSubProblemIdx}
+                totalSteps={subProblems.length}
+                mcpConnected={mcpConnected}
+                replRunning={replRunning}
+                skillsWritten={skillsWritten}
+                hideTeachingNote={guidance === 'open'}
+                reportWritten={!!reportPath}
+                onMark={handleMark}
+              />
+            )}
+
+            {/* Suggested prompt rail. Prefer the AI-generated contextual chips
+                (driven by the live terminal); fall back to the step's static
+                arc prompts whenever those are empty (loading / failed / budget). */}
+            {(() => {
+              // Prompt density follows guidance (design §3.3): scaffolded sees
+              // everything, guided two, open a single sharp direction.
+              const density = guidance === 'scaffolded' ? 3 : guidance === 'guided' ? 2 : 1
+              const allRailPrompts = aiPrompts.length ? aiPrompts : (activeSubProblem?.suggestedPrompts ?? [])
+              const railPrompts = allRailPrompts.slice(0, density)
+              return railPrompts.length ? (
+                <SuggestedPromptRail
+                  prompts={railPrompts}
+                  terminalRef={terminalRef}
+                  contextual={aiPrompts.length > 0}
+                />
+              ) : null
+            })()}
+
             {/* Connection strip */}
             <AnalyticsConnectionStrip
               mcpConnected={mcpConnected}
@@ -1004,6 +1070,42 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 active={!showMirror}
               />
             )}
+
+            {/* Skills library — browse + reload skills built across past sessions. */}
+            <SkillsLibraryPanel
+              terminalRef={terminalRef}
+              sessionSkills={skillsWritten}
+              replRunning={replRunning}
+              onLoaded={handleSkillWritten}
+            />
+          </div>
+
+          {/* Drag divider — desktop only (mobile stacks) */}
+          <div
+            onMouseDown={handleLeftDividerMouseDown}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize mission panel and terminal"
+            className="hidden md:flex"
+            style={{ width: 8, margin: '0 -8px', cursor: 'col-resize', flexShrink: 0, zIndex: 5, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <div style={{ width: 4, height: 36, borderRadius: 999, background: 'var(--color-outline-variant)' }} />
+          </div>
+
+          {/* RIGHT — live session. overflow:hidden, NOT auto: the terminal is
+              the only element allowed to scroll (xterm scrolls internally).
+              An auto column here created a second scrollbar around the
+              terminal and let sibling cards jitter its height. */}
+          <div
+            className="min-h-[360px] md:min-h-0"
+            style={{
+              flex: 1, minWidth: 0,
+              display: 'flex', flexDirection: 'column',
+              padding: '10px 12px',
+              overflow: 'hidden',
+              border: '1px solid var(--color-outline-variant)', borderRadius: 12,
+              background: 'var(--color-surface-container-lowest)',
+            }}>
 
             {/* Terminal frame */}
             <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -1087,24 +1189,6 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} />
               )}
             </div>
-
-            {/* Suggested prompt rail. Prefer the AI-generated contextual chips
-                (driven by the live terminal); fall back to the step's static
-                arc prompts whenever those are empty (loading / failed / budget). */}
-            {(() => {
-              // Prompt density follows guidance (design §3.3): scaffolded sees
-              // everything, guided two, open a single sharp direction.
-              const density = guidance === 'scaffolded' ? 3 : guidance === 'guided' ? 2 : 1
-              const allRailPrompts = aiPrompts.length ? aiPrompts : (activeSubProblem?.suggestedPrompts ?? [])
-              const railPrompts = allRailPrompts.slice(0, density)
-              return railPrompts.length ? (
-                <SuggestedPromptRail
-                  prompts={railPrompts}
-                  terminalRef={terminalRef}
-                  contextual={aiPrompts.length > 0}
-                />
-              ) : null
-            })()}
 
             {/* Proactive idle nudges now surface through the floating Hatch
                 dock (mounted as the last child of this row), not as a separate
