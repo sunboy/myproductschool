@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { computeChallengeCompetencyRollup } from '@/lib/scoring/competency-rollup'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -7,8 +8,6 @@ import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
 import { routeResponse } from '@/lib/v2/skills/grading-router'
 import { gradeOneAnswer, AnswerNotReadyError } from '@/lib/v2/skills/grade-step-answer'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
-import { STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
-import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded } from '@/lib/usage/assert-plan-limit'
 import { buildEmptyStateResponse } from '@/lib/hatch/skill-context'
@@ -409,29 +408,18 @@ export async function POST(
     const next = nextStep(step)
 
     if (next === 'done') {
-      // Build mental_models_breakdown from all step_attempts
+      // Build mental_models_breakdown via the SAME rollup used by /complete,
+      // so the column carries the full framework layer (framework_hint, a
+      // real `missed`, and a per-step score) instead of a thin hand-built
+      // shape that dropped those fields before the user ever saw them.
       const { data: allAttempts } = await adminClient
         .from('step_attempts')
-        .select('step, competency_signal')
+        .select('step, score, competency_signal, grading_explanation, competencies_demonstrated, quality_label')
         .eq('attempt_id', attempt_id)
 
-      const breakdown = FLOW_STEP_ORDER.map(s => {
-        const stepAttempts = (allAttempts ?? []).filter((a: { step: string }) => a.step === s)
-        // Transitional fallback: post-migration rows store `competency`; pre-migration rows store `primary`.
-        const signals = stepAttempts
-          .map((a: { competency_signal?: { competency?: string; primary?: string; signal: string } | null }) => a.competency_signal)
-          .filter(Boolean) as { competency?: string; primary?: string; signal: string }[]
-        const primary = signals[0]?.competency ?? signals[0]?.primary ?? STEP_PRIMARY_COMPETENCIES[s]?.[0] ?? 'strategic_thinking'
-        let reasoningMove = ''
-        try { reasoningMove = getReasoningMove(s as FlowStep) } catch { /* rubric unavailable */ }
-        return {
-          step: s,
-          competency: primary,
-          reasoning_move: reasoningMove,
-          demonstrated: signals.map(sig => sig.signal).join('; ') || 'No signal recorded',
-          missed: '',
-        }
-      })
+      const breakdown = computeChallengeCompetencyRollup(
+        (allAttempts ?? []) as Parameters<typeof computeChallengeCompetencyRollup>[0],
+      ).mentalModelsBreakdown
 
       // Advance to 'done' but leave status in_progress — /complete is the sole
       // finalizer (it computes total_score + XP and early-returns if already

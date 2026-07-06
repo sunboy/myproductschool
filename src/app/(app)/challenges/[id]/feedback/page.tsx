@@ -150,7 +150,13 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           if (attemptData.response_text) {
             responseText = attemptData.response_text as string
           }
-          if (attemptData.mental_models_breakdown) {
+          // Prefer the rollup breakdown inside feedback_json (it carries the
+          // framework layer: framework_hint, missed, per-step score); the
+          // column written mid-flight at step 'done' is the fallback.
+          const fbJson = attemptData.feedback_json as { mental_models_breakdown?: MentalModelStep[] } | null
+          if (Array.isArray(fbJson?.mental_models_breakdown) && fbJson.mental_models_breakdown.length) {
+            mentalModelsBreakdown = fbJson.mental_models_breakdown
+          } else if (attemptData.mental_models_breakdown) {
             mentalModelsBreakdown = attemptData.mental_models_breakdown as MentalModelStep[]
           }
           if (typeof attemptData.weakest_competency === 'string') {
