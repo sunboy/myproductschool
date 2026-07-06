@@ -18,7 +18,7 @@ export type MediumKind =
   | 'flow_stepper'
   | 'excalidraw'
   | 'monaco_coding'
-  | 'claude_code_analytics'
+  | 'claude_code'
 
 /** Maps a challenge_type to the medium that renders it. */
 export function pickMedium(challengeType: ChallengeType): MediumKind {
@@ -30,7 +30,7 @@ export function pickMedium(challengeType: ChallengeType): MediumKind {
     case 'algorithm':
       return 'monaco_coding'
     case 'claude_code_analytics':
-      return 'claude_code_analytics'
+      return 'claude_code'
     default:
       return 'flow_stepper'
   }
@@ -52,6 +52,11 @@ export interface ClaudeCodeTerminalHandle {
 export interface ClaudeCodeTerminalProps {
   /** wss endpoint for the live session (from claude_code_sessions.wss_url). */
   wssUrl: string
+  /** Lab detector overrides (additive; defaults = the analytics lab).
+   *  MCP server name fragment for the connected signal. */
+  mcpNamePattern?: string
+  /** RegExp source for the written-report path signal. */
+  reportPathPattern?: string
   /** Rolling tail of terminal output (~last 4 KB), for Hatch context + status scans. */
   onOutput?: (tail: string) => void
   /** Any keystroke or output — resets the idle timer. */

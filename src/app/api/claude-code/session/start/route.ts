@@ -7,6 +7,8 @@
 // (claude_code_sessions has service-role-only write policy).
 
 import { NextRequest, NextResponse } from 'next/server'
+import { isClaudeCodeLab, labIdForChallengeType } from '@/lib/labs/types'
+import { getLabClient } from '@/lib/labs/client'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -73,7 +75,7 @@ export async function POST(req: NextRequest) {
   if (!challenge) {
     return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
   }
-  if (challenge.challenge_type !== 'claude_code_analytics') {
+  if (!isClaudeCodeLab(challenge.challenge_type)) {
     return NextResponse.json(
       { error: 'Challenge is not a Claude Code Analytics challenge' },
       { status: 400 },
@@ -265,10 +267,12 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('[cc/session/start] guidance derivation failed, using guided:', err)
   }
+  const labClient = getLabClient(labIdForChallengeType(challenge.challenge_type))
   const arc = mergeArc(
     (challenge as { difficulty?: string | null }).difficulty,
     subProblems as Partial<AnalyticsSubProblem>[],
     guidance,
+    labClient.arc,
   )
 
   const { error: upsertErr } = await admin.from('claude_code_sessions').upsert(

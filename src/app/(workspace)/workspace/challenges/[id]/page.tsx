@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { isClaudeCodeLab } from '@/lib/labs/types'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
@@ -159,7 +160,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
 
   // Claude Code Analytics challenges use a dedicated live-terminal medium, not
   // the FLOW MCQ workspace. Route them to the analytics shell with the full row.
-  if (challengeType === 'claude_code_analytics') {
+  if (isClaudeCodeLab(challengeType)) {
     // Entitlement + feature-flag gate. The feature ships dark. When it's still off
     // and the user isn't allowlisted, fully hide it (redirect to Practice). When
     // it's launched but the user lacks the tier, keep them in place and show the

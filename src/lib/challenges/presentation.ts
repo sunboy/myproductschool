@@ -1,4 +1,5 @@
 import { cardSummary, cleanDisplayCopy } from '@/lib/copy/display'
+import { isClaudeCodeLab } from '@/lib/labs/types'
 
 export type ChallengeBriefTone = 'context' | 'change' | 'task' | 'support'
 
@@ -167,7 +168,7 @@ export function buildChallengeBrief(input: ChallengePresentationInput): Challeng
     return sections
   }
 
-  if (type === 'claude_code_analytics') {
+  if (isClaudeCodeLab(type)) {
     addSection(sections, { id: 'question', title: 'Question to answer', body: context || input.prompt_text || '', tone: 'context' }, { allowGeneric: true })
     addSection(sections, { id: 'data', title: 'Data available', body: trigger, tone: 'change' })
     addSection(sections, { id: 'deliver', title: 'What to deliver', body: question, tone: 'task' })

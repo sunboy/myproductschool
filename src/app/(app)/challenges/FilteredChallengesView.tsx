@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import { isClaudeCodeLab } from '@/lib/labs/types'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { type Discipline } from '@/components/challenges/DisciplineTabStrip'
 import { FilterDropdownBar, type FilterState } from '@/components/challenges/FilterDropdownBar'
@@ -167,7 +168,7 @@ function getDiscipline(searchParams: SearchParamGetter): Discipline {
  */
 function challengeMatchesDiscipline(type: string | null | undefined, discipline: Discipline) {
   if (discipline === 'all') return true
-  if (discipline === 'analytics') return type === 'claude_code_analytics'
+  if (discipline === 'analytics') return isClaudeCodeLab(type)
   if (discipline === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(type ?? '')
   return type === discipline
 }
@@ -222,7 +223,7 @@ export function FilteredChallengesView({
   const initialChallenges = useMemo(
     () => analyticsEnabled
       ? seedChallenges
-      : seedChallenges.filter((c) => c.challenge_type !== 'claude_code_analytics'),
+      : seedChallenges.filter((c) => !isClaudeCodeLab(c.challenge_type)),
     [seedChallenges, analyticsEnabled],
   )
 

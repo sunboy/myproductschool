@@ -14,7 +14,16 @@ import 'xterm/css/xterm.css'
 // `claude mcp add bigquery -- bq-mcp` command prints "Added stdio MCP server
 // bigquery ..."; `claude mcp list` shows "bigquery: ... ✓ Connected". Match any
 // of these so the connection strip flips to Connected and step 1 auto-advances.
-const MCP_CONNECTED_RE = /added\s+(?:stdio\s+)?mcp\s+server\s+bigquery|bigquery.*(?:✓|connected|ready)|mcp.*bigquery.*✓|MCP.*connected/i
+// Default = the analytics lab's BigQuery MCP. Labs override via the
+// mcpNamePattern prop (a name fragment substituted into this template).
+function mcpConnectedRe(mcpName: string): RegExp {
+  const n = mcpName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(
+    `added\\s+(?:stdio\\s+)?mcp\\s+server\\s+${n}|${n}.*(?:✓|connected|ready)|mcp.*${n}.*✓|MCP.*connected`,
+    'i',
+  )
+}
+const MCP_CONNECTED_RE = mcpConnectedRe('bigquery')
 // Detect that the `claude` REPL has launched. On start the CLI prints a version
 // banner ("Claude Code v2.1.x") and an `❯` input prompt with "accept edits on".
 // Matching the version banner is the most stable signal across CLI versions.
@@ -49,6 +58,10 @@ const SKILL_PATH_RE =
   /(?:wrote|created|updated|modified|written|Write\(|Update\(|tee|cat\s*>|>>?)(?:(?![.!?]\s)[^\n]){0,80}\.claude\/skills\/([A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*\.md)/gi
 // A report artifact landing in the workspace (e.g. "Wrote /workspace/report.md").
 const REPORT_WRITTEN_RE = /Wrote?\s+(\/workspace\/[^\s]*report[^\s]*\.md)/i
+function reportWrittenRe(pattern?: string): RegExp {
+  if (!pattern) return REPORT_WRITTEN_RE
+  try { return new RegExp(`Wrote?\\s+(${pattern})`, 'i') } catch { return REPORT_WRITTEN_RE }
+}
 
 const TAIL_MAX_BYTES = 4000
 
@@ -61,7 +74,7 @@ const RESIZE_PREFIX = '\x1b[?resize='
 
 export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCodeTerminalProps>(
   function ClaudeCodeTerminal(
-    { wssUrl, onOutput, onActivity, onMcpStatusChange, onReplStatusChange, onSkillWritten, onReportWritten },
+    { wssUrl, onOutput, onActivity, onMcpStatusChange, onReplStatusChange, onSkillWritten, onReportWritten, mcpNamePattern, reportPathPattern },
     ref
   ) {
     // Latch so we only emit the REPL-running signal once per launch.
@@ -399,7 +412,7 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           // Detect MCP connection. Latch once — the "Added stdio MCP server bigquery"
           // / "bigquery ✓ Connected" line stays in the tail and we only need to flip
           // the strip to Connected one time.
-          if (!mcpSignalledRef.current && MCP_CONNECTED_RE.test(scan)) {
+          if (!mcpSignalledRef.current && mcpConnectedRe(mcpNamePattern ?? 'bigquery').test(scan)) {
             mcpSignalledRef.current = true
             onMcpStatusChange?.(true)
           }
@@ -428,7 +441,7 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           // a one-shot latch) so the same path lingering in the tail doesn't re-fire
           // every frame, while a genuinely new report path later in the session
           // (e.g. the user re-runs the report step) still fires.
-          const reportMatch = REPORT_WRITTEN_RE.exec(scan)
+          const reportMatch = reportWrittenRe(reportPathPattern).exec(scan)
           if (reportMatch?.[1] && !seenReportsRef.current.has(reportMatch[1])) {
             seenReportsRef.current.add(reportMatch[1])
             onReportWritten?.(reportMatch[1])

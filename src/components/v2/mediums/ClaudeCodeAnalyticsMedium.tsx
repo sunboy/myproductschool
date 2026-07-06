@@ -22,6 +22,7 @@ import {
   type GuidanceMachineState,
 } from '@/lib/adaptive/branching'
 import { REGISTER_LABELS, REGISTER_TOOLTIPS } from '@/lib/adaptive/registerLabel'
+import { getLabClient, labIdForChallengeType } from '@/lib/labs/client'
 import { toDimensionViews, type AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 import type {
   MediumProps,
@@ -49,6 +50,9 @@ const REAP_WARN_MS = 13 * 60 * 1000
 const REAP_COUNTDOWN_SECONDS = 90
 
 export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exitHref }: MediumProps) {
+  // The lab definition: domain copy, detectors, spine, arc shape. Analytics is
+  // the fallback so legacy sessions and unknown types keep original behavior.
+  const lab = getLabClient(labIdForChallengeType(challenge.challenge_type))
   const terminalRef = useRef<ClaudeCodeTerminalHandle | null>(null)
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastActivityRef = useRef<number>(Date.now())
@@ -198,6 +202,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // (no new state). Recomputes when the arc changes, so injected adaptive
   // steps appear in the strip the moment planBranch inserts them.
   const artifactRows = useMemo(() => deriveArtifactRows({
+    spine: lab.spine,
     scenarioQuestion: scenario?.question ?? null,
     mcpConnected,
     replRunning,
@@ -207,7 +212,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
     dimensions,
     subProblems,
     activeStepId: activeSubProblem?.id ?? null,
-  }), [scenario?.question, mcpConnected, replRunning, markedFindings, reportPath, skillsWritten, dimensions, subProblems, activeSubProblem?.id])
+  }), [lab.spine, scenario?.question, mcpConnected, replRunning, markedFindings, reportPath, skillsWritten, dimensions, subProblems, activeSubProblem?.id])
   const { done: artifactDone, total: artifactTotal } = useMemo(() => artifactProgress(artifactRows), [artifactRows])
 
   // Capped milestone-state string for Hatch (interpret + nudge): lets the
@@ -922,14 +927,14 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           question={scenario?.question || challenge.title || 'Answer the business question with real data.'}
           briefBody={[scenario?.context, scenario?.trigger].filter(Boolean).join(' ') || undefined}
           ready={mcpConnected && replRunning}
-          firstPrompt={activeSubProblem?.suggestedPrompts?.[0] ?? 'What tables are in the dataset?'}
+          firstPrompt={activeSubProblem?.suggestedPrompts?.[0] ?? lab.missionBrief.fallbackFirstPrompt}
           onStart={() => {
             setStarted(true)
             markMissionBriefSeen(challenge.id)
             setShowBrief(false)
           }}
           onRunFirstPrompt={() => {
-            terminalRef.current?.insertText(activeSubProblem?.suggestedPrompts?.[0] ?? 'What tables are in the dataset?')
+            terminalRef.current?.insertText(activeSubProblem?.suggestedPrompts?.[0] ?? lab.missionBrief.fallbackFirstPrompt)
           }}
           onDismiss={() => {
             markMissionBriefSeen(challenge.id)
@@ -1066,10 +1071,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
               alignSelf: 'flex-start',
             }}>
               <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--color-primary)', fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
-                database
+                {lab.resourceBadge.icon}
               </span>
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-on-surface)' }}>
-                BigQuery · read-only
+                {lab.resourceBadge.label}
               </span>
             </div>
 
@@ -1238,6 +1243,8 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                 <>
                   <AnalyticsTerminalFrame
                     wssUrl={wssUrl}
+                    mcpNamePattern={lab.detectors.mcpName ?? undefined}
+                    reportPathPattern={lab.detectors.reportPathPattern}
                     terminalRef={terminalRef}
                     onOutput={handleOutput}
                     onActivity={handleActivity}
@@ -1311,7 +1318,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                   </button>
                 </div>
               ) : (
-                <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} />
+                <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} stepLabels={lab.startup.steps} />
               )}
             </div>
 
@@ -1424,20 +1431,18 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
 // pipeline (wake the warehouse DB → mint a budgeted key → boot the container →
 // connect), and on a cold start it can take ~30-60s. Showing the active step
 // (and that cold starts are slow) beats an opaque spinner.
-const STARTUP_STEPS: { key: 'requesting' | 'waking' | 'booting' | 'connecting'; label: string }[] = [
-  { key: 'requesting', label: 'Requesting your sandbox' },
-  { key: 'waking', label: 'Waking the data warehouse' },
-  { key: 'booting', label: 'Booting the Claude Code container' },
-  { key: 'connecting', label: 'Connecting BigQuery and finishing up' },
-]
+const STARTUP_KEYS = ['requesting', 'waking', 'booting', 'connecting'] as const
 
 function SandboxStartupProgress({
   phase,
   resuming,
+  stepLabels,
 }: {
   phase: 'requesting' | 'waking' | 'booting' | 'connecting' | null
   resuming?: boolean
+  stepLabels: readonly [string, string, string, string]
 }) {
+  const STARTUP_STEPS = STARTUP_KEYS.map((key, i) => ({ key, label: stepLabels[i] }))
   const activeIdx = phase ? STARTUP_STEPS.findIndex((s) => s.key === phase) : 0
   return (
     <div style={{

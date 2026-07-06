@@ -19,8 +19,11 @@ import type {
   MarkedFinding,
 } from './types'
 import type { AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
+import type { LabSpineConfig } from '@/lib/labs/types'
 
 interface DeriveArgs {
+  /** Lab spine config (kind→row + row labels). Defaults to the analytics lab. */
+  spine?: LabSpineConfig
   scenarioQuestion?: string | null
   mcpConnected: boolean
   replRunning: boolean
@@ -34,7 +37,7 @@ interface DeriveArgs {
   activeStepId?: string | null
 }
 
-const ROW_META: Partial<Record<ArtifactRowKey, { label: string; icon: string; accent?: boolean }>> = {
+const DEFAULT_ROW_META: Partial<Record<ArtifactRowKey, { label: string; icon: string; accent?: boolean }>> = {
   question:   { label: 'Question',   icon: 'help' },
   connection: { label: 'Connected',  icon: 'database', accent: true }, // tools / MCP
   schema:     { label: 'Schema',     icon: 'table' },
@@ -49,7 +52,7 @@ const ROW_META: Partial<Record<ArtifactRowKey, { label: string; icon: string; ac
 // kind → evidence row key for the standard analyst phases. The three data-
 // orientation kinds all dedupe into one `schema` row (open-mode compression
 // replaces two steps with map_the_data; the spine shows one milestone either way).
-const KIND_TO_ROW: Record<string, ArtifactRowKey> = {
+const DEFAULT_KIND_TO_ROW: Record<string, ArtifactRowKey> = {
   mcp_setup: 'connection',
   connect: 'connection',
   explore_schema: 'schema',
@@ -79,6 +82,8 @@ export function deriveArtifactRows(args: DeriveArgs): ArtifactRow[] {
     scenarioQuestion, mcpConnected, replRunning, markedFindings,
     reportPath, skillsWritten, dimensions, subProblems, activeStepId,
   } = args
+  const KIND_TO_ROW = (args.spine?.kindToRow ?? DEFAULT_KIND_TO_ROW) as Record<string, ArtifactRowKey>
+  const ROW_META = args.spine?.rowMeta ?? DEFAULT_ROW_META
 
   const rows: ArtifactRow[] = []
 

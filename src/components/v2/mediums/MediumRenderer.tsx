@@ -8,7 +8,7 @@ export function MediumRenderer({ challenge, attemptId, scenario, exitHref }: Med
   const kind = pickMedium(challenge.challenge_type ?? 'flow')
 
   switch (kind) {
-    case 'claude_code_analytics':
+    case 'claude_code':
       return <ClaudeCodeAnalyticsMedium challenge={challenge} attemptId={attemptId} scenario={scenario} exitHref={exitHref} />
 
     case 'flow_stepper':
