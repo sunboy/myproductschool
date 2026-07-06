@@ -43,8 +43,28 @@ const ANALYTICS_LAB_SERVER: LabServerDefinition = {
   graderSkill: 'hackproduct-analytics-grader',
 }
 
+const DEBUGGING_LAB_SERVER: LabServerDefinition = {
+  id: 'debugging',
+  resolveSandboxEnv(metadata) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const meta = (metadata ?? {}) as Record<string, any>
+    const labMeta = (meta.lab ?? meta.claude_code ?? {}) as Record<string, unknown>
+    return {
+      // No BigQuery vars: the entrypoint's BQ setup is guarded on BQ_PROJECT
+      // and simply skips. The repo ships via the challenge tarball.
+      CHALLENGE_TARBALL: (labMeta.repo_tarball as string | undefined) ?? '',
+      CLAUDE_MD: (labMeta.claude_md as string | undefined) ?? '',
+    }
+  },
+  allowedTools: ['Bash(npm:*)', 'Bash(node:*)', 'Bash(npx:*)'],
+  coachSkill: 'hackproduct-debugging-coach',
+  graderSkill: 'hackproduct-debugging-grader',
+  accessFlag: 'lab_debugging',
+}
+
 const LAB_SERVER_REGISTRY: Record<LabId, LabServerDefinition> = {
   analytics: ANALYTICS_LAB_SERVER,
+  debugging: DEBUGGING_LAB_SERVER,
 }
 
 export function getLabServer(labId: LabId | null | undefined): LabServerDefinition {

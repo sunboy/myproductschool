@@ -93,6 +93,13 @@ export type SubProblemKind =
   | 'scaffold_explainer' // injected when a learner is stuck (adaptive branching)
   | 'stakeholder_tension' // open-guidance stretch step
   | 'metric_definition' // open-guidance stretch step (metadata-requested)
+  // Debugging lab kinds (repo with failing tests)
+  | 'env_setup'
+  | 'reproduce'
+  | 'localize'
+  | 'root_cause'
+  | 'fix'
+  | 'verify'
 
 export interface AnalyticsSubProblem {
   id: string
@@ -136,6 +143,11 @@ export type ArtifactRowKey =
   | 'grade'
   | 'regroup'
   | 'stretch'
+  // Debugging lab milestones
+  | 'repro'
+  | 'fault'
+  | 'fix'
+  | 'verified'
 
 export type ArtifactRowState = 'filled' | 'active' | 'pending'
 

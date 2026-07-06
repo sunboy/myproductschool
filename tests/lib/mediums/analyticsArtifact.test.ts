@@ -92,3 +92,44 @@ describe('deriveArtifactRows', () => {
     assert.ok(text.split('\n').length === rows.length)
   })
 })
+
+describe('debugging lab derivation', () => {
+  it('walks the debugging arc into its own milestones', async () => {
+    const { DEBUGGING_LAB_CLIENT } = await import('@/lib/labs/debugging/client')
+    const rows = deriveArtifactRows({
+      ...BASE,
+      spine: DEBUGGING_LAB_CLIENT.spine,
+      subProblems: DEBUGGING_LAB_CLIENT.arc.defaultArc,
+    })
+    assert.deepEqual(
+      rows.map((r) => r.key),
+      ['question', 'connection', 'repro', 'fault', 'fix', 'verified', 'report', 'skill', 'grade'],
+    )
+    assert.equal(rows.find((r) => r.key === 'fault')?.label, 'Root cause')
+  })
+
+  it('open guidance appends the blast-radius stretch after verify', async () => {
+    const { arcForLearner } = await import('@/components/v2/mediums/analyticsArc')
+    const { DEBUGGING_LAB_CLIENT } = await import('@/lib/labs/debugging/client')
+    const arc = arcForLearner('advanced', 'open', DEBUGGING_LAB_CLIENT.arc)
+    const ids = arc.map((s) => s.id)
+    const verifyIdx = ids.indexOf('verify')
+    assert.equal(ids[verifyIdx + 1], 'blast_radius')
+    // No compression authored: the full arc stays intact.
+    assert.ok(ids.includes('reproduce'))
+    assert.ok(ids.includes('localize'))
+  })
+
+  it('beginner difficulty keeps the core loop and drops report/skill', async () => {
+    const { arcForDifficulty } = await import('@/components/v2/mediums/analyticsArc')
+    const { DEBUGGING_LAB_CLIENT } = await import('@/lib/labs/debugging/client')
+    const arc = arcForDifficulty('beginner', DEBUGGING_LAB_CLIENT.arc)
+    const ids = arc.map((s) => s.id)
+    assert.deepEqual(ids, ['env_setup', 'reproduce', 'localize', 'fix', 'verify'])
+  })
+
+  it('debug rubric weights sum to one', async () => {
+    const { debugRubricWeightsSumToOne } = await import('@/lib/coding-grading/debug-rubric')
+    assert.ok(debugRubricWeightsSumToOne())
+  })
+})

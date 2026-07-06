@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isClaudeCodeLab } from '@/lib/labs/types'
 import { z, ZodError } from 'zod'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { createClient } from '@/lib/supabase/server'
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ nudge: null, reason: 'cap_reached' })
   }
 
-  const isAnalytics = body.challengeType === 'claude_code_analytics'
+  const isAnalytics = isClaudeCodeLab(body.challengeType)
   const isFlow = body.challengeType === 'flow'
   const isCoding = body.challengeType === 'sql' || body.challengeType === 'algorithm'
   // Idle-driven types fire on an inactivity timer, not a canvas edit, so they

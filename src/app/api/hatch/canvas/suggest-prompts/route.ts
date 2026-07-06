@@ -38,7 +38,7 @@ Output ONLY this JSON, no markdown:
 
 const RequestSchema = z.object({
   challengeId: z.string().max(200).optional(),
-  challengeType: z.literal('claude_code_analytics'),
+  challengeType: z.enum(['claude_code_analytics', 'claude_code_debugging']),
   mcp_connected: z.boolean().optional(),
   repl_running: z.boolean().optional(),
   terminal_tail: z.string().max(4000).nullable().optional(),

@@ -13,13 +13,15 @@
 
 import type { AnalyticsSubProblem, ArtifactRowKey, SubProblemKind } from '@/components/v2/mediums/types'
 
-export type LabId = 'analytics'
+export type LabId = 'analytics' | 'debugging'
 
 /** Which lab a challenge type belongs to; null = not a Claude Code lab. */
 export function labIdForChallengeType(challengeType: string | null | undefined): LabId | null {
   switch (challengeType) {
     case 'claude_code_analytics':
       return 'analytics'
+    case 'claude_code_debugging':
+      return 'debugging'
     default:
       return null
   }

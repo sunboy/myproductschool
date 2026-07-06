@@ -29,7 +29,7 @@ interface LimitErrorPayload {
 interface CanvasChatPanelProps {
   attemptId: string
   challengeId: string
-  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics'
+  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics' | 'claude_code_debugging'
   scene: CanvasScene
   contextPack?: string
   queuedPrompt?: { id: string; text: string; autoSend?: boolean } | null
@@ -113,7 +113,7 @@ function sanitizeHatchText(raw: string): string {
 }
 
 function getInitialMessage(
-  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics',
+  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics' | 'claude_code_debugging',
   phase?: GuidancePhase,
   labels?: GuidanceLabels,
 ): string {
@@ -142,13 +142,13 @@ function getInitialMessage(
   if (challengeType === 'data_modeling') {
     return "Let's model this data together. Draw your entities and relationships, or describe them and I'll add them to the canvas."
   }
-  if (challengeType === 'claude_code_analytics') {
+  if (challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging') {
     return "I can see your session, the dataset connection, and the skills you have written. Ask me how to push the analysis further."
   }
   return "I'm here to help you design this system. You can draw by hand, type here, or speak - I'll help build and critique your diagram."
 }
 
-function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics', language?: string): string[] {
+function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics' | 'claude_code_debugging', language?: string): string[] {
   if (challengeType === 'coding') {
     if (language === 'sql') {
       return [
@@ -170,7 +170,7 @@ function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' |
       "What's the trade-off in this relationship?",
     ]
   }
-  if (challengeType === 'claude_code_analytics') {
+  if (challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging') {
     return [
       "Why is my query returning nothing?",
       'How do I segment this by device?',
@@ -250,7 +250,7 @@ export function CanvasChatPanel({
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
   const lastQueuedPromptIdRef = useRef<string | null>(null)
   const hasContextPack = Boolean(contextPack?.trim())
-  const isAnalyticsMode = challengeType === 'claude_code_analytics'
+  const isAnalyticsMode = challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging'
   const canvasStatusLabel = (challengeType === 'coding' || isAnalyticsMode)
     ? null
     : `${scene.entities.length} ${challengeType === 'data_modeling' ? 'tables' : 'nodes'} · ${scene.connections.length} ${challengeType === 'data_modeling' ? 'links' : 'flows'}`

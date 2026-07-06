@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isClaudeCodeLab, labIdForChallengeType } from '@/lib/labs/types'
+import { getLabServer } from '@/lib/labs/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { z, ZodError } from 'zod'
@@ -74,7 +76,7 @@ const RequestSchema = z.object({
   canvasSummary: z.string().max(20000).optional(),
   history: z.array(ChatHistoryMessageSchema).max(50).optional(),
   challengeId: z.string().max(200).optional(),
-  challengeType: z.enum(['system_design', 'data_modeling', 'coding', 'claude_code_analytics']).optional(),
+  challengeType: z.enum(['system_design', 'data_modeling', 'coding', 'claude_code_analytics', 'claude_code_debugging']).optional(),
   attemptId: z.string().max(200).optional(),
   context_pack: z.string().max(50000).nullable().optional(),
   guidance_phase: z
@@ -158,11 +160,12 @@ Rules:
   }
 }
 
-function loadAnalyticsCoachSkill(): string {
+function loadAnalyticsCoachSkill(challengeType?: string): string {
+  const coachSkill = getLabServer(labIdForChallengeType(challengeType)).coachSkill
   try {
     const skillPath = join(
       process.env.HOME ?? '/root',
-      '.claude/skills/hackproduct-analytics-coach/SKILL.md'
+      `.claude/skills/${coachSkill}/SKILL.md`
     )
     return readFileSync(skillPath, 'utf-8')
   } catch {
@@ -306,8 +309,8 @@ function buildSystemPrompt(challengeType: string): string {
   if (challengeType === 'coding') {
     return loadCodingCoachSkill()
   }
-  if (challengeType === 'claude_code_analytics') {
-    return loadAnalyticsCoachSkill()
+  if (isClaudeCodeLab(challengeType)) {
+    return loadAnalyticsCoachSkill(challengeType)
   }
   const domain =
     challengeType === 'data_modeling' ? DATA_MODELING_RULES : SYSTEM_DESIGN_RULES
@@ -542,7 +545,7 @@ function buildUserContent(body: InterpretBody): string {
   if (body.challengeType === 'coding') {
     return buildCodingUserContent(body)
   }
-  if (body.challengeType === 'claude_code_analytics') {
+  if (isClaudeCodeLab(body.challengeType)) {
     return buildAnalyticsUserContent(body)
   }
   const sceneText = body.scene
@@ -727,7 +730,7 @@ export const POST = withRoute(async (req: NextRequest) => {
 
   const challengeType = body.challengeType ?? 'system_design'
   const isCodingMode = challengeType === 'coding'
-  const isAnalyticsMode = challengeType === 'claude_code_analytics'
+  const isAnalyticsMode = isClaudeCodeLab(challengeType)
   const systemPrompt = buildSystemPrompt(challengeType)
   const userContent = buildUserContent(body)
 

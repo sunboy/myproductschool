@@ -3,9 +3,11 @@
 
 import type { LabClientDefinition, LabId } from './types'
 import { ANALYTICS_LAB_CLIENT } from './analytics/client'
+import { DEBUGGING_LAB_CLIENT } from './debugging/client'
 
 const LAB_CLIENT_REGISTRY: Record<LabId, LabClientDefinition> = {
   analytics: ANALYTICS_LAB_CLIENT,
+  debugging: DEBUGGING_LAB_CLIENT,
 }
 
 export function getLabClient(labId: LabId | null | undefined): LabClientDefinition {

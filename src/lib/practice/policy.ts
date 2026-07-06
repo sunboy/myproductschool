@@ -19,6 +19,7 @@ export const CHALLENGE_TYPE_POLICY: Record<ChallengeType, TagPolicy> = {
   freeform:               { topic: 'required', technique: 'optional', move: 'optional', conditional: { oneOf: ['technique', 'move'] } },
   quick_take:             { topic: 'none', technique: 'none', move: 'none' },
   claude_code_analytics:  { topic: 'none', technique: 'none', move: 'none' },
+  claude_code_debugging:  { topic: 'none', technique: 'none', move: 'none' },
 }
 
 type TagsInput = {
