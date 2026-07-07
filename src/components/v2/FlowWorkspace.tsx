@@ -184,7 +184,9 @@ const DIFFICULTY_FILTER_VALUE: Record<string, string> = {
 
 function practiceFilterHref(key: 'company' | 'difficulty' | 'discipline' | 'tag', value: string) {
   const params = new URLSearchParams()
-  params.set(key, value)
+  // Company filters match on normalized slugs (see challenges.ts) - normalize
+  // here too so a tag stored as "New Relic" still produces a working filter.
+  params.set(key, key === 'company' ? value.trim().toLowerCase().replace(/\s+/g, '-') : value)
   return `/challenges?${params.toString()}`
 }
 
@@ -1213,6 +1215,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         text: "I couldn't finish that diagram cleanly. Want me to try again, or break it into smaller pieces?",
       })
     }
+    // Push a snapshot immediately so the empty-state overlay, coach card, and
+    // footer chips reflect the inserted elements without waiting for
+    // ExcalidrawCanvas's 2s onChange debounce.
+    try {
+      setCanvasScene({
+        elements: excalidrawApiRef.current.getSceneElements() as unknown[],
+        appState: excalidrawApiRef.current.getAppState() as unknown,
+      })
+    } catch { /* non-fatal - the debounced snapshot will catch up */ }
   }, [apiChallengeType])
 
   const queueHatchPrompt = useCallback((text: string, autoSend = true) => {
@@ -1224,11 +1235,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     })
   }, [])
 
+  // The branded empty-state hides the moment the user commits to a first move
+  // (template or Ask Hatch) - gating on scene entities alone left it lingering
+  // behind the snapshot debounce.
+  const [emptyStateDismissed, setEmptyStateDismissed] = useState(false)
+
   // Drop the starter skeleton onto the canvas from the branded empty-state.
   // Reuses the same executeActions path Hatch uses, so the layout engine places
   // and connects the boxes; the empty-state un-mounts as soon as elements land.
   const handleUseTemplate = useCallback(() => {
     if (apiChallengeType !== 'system_design' && apiChallengeType !== 'data_modeling') return
+    setEmptyStateDismissed(true)
     handleCanvasActions({
       message: 'starter template',
       actions: canvasStarterTemplate(apiChallengeType),
@@ -1335,19 +1352,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     chatPanelOpenRef.current = chatPanelOpen
   }, [chatPanelOpen])
 
-  // True when the docked Hatch panel (CanvasChatPanel) is actually visible. The
-  // panel owns its open state in useHatchDockState('canvas'), persisted to this
-  // localStorage key for both canvas and coding - the parent `chatPanelOpen`
-  // boolean does NOT track the dock opening itself (auto-open, restore, FAB), so
-  // reading the dock's own state is the only reliable signal at nudge fire-time.
-  // FLOW (MCQ) challenges have no docked panel, so this is always false for them
-  // and their nudges correctly fall through to the floating cue.
-  const dockIsOpenNow = useCallback(() => {
-    if (!isInterviewChallenge) return false
-    if (typeof window === 'undefined') return false
-    return localStorage.getItem('hatch-mode:canvas') !== 'closed'
-  }, [isInterviewChallenge])
-
   const requestNudge = useCallback(async (added: number) => {
     if (!isCanvasChallenge || !attemptId) return
     pendingDeltaRef.current += added
@@ -1375,30 +1379,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         if (data.nudge) {
           lastNudgeAtRef.current = Date.now()
           nudgeCountRef.current += 1
-          // One surface at a time: in-panel card when the dock is open, floating
-          // cue only as the fallback when it is closed (its CTA opens the dock).
-          if (dockIsOpenNow()) {
-            setProactiveNudge({ id: `n-${Date.now()}`, text: data.nudge })
-          } else {
-            emitHatchCue?.({
-              id: `canvas-nudge-${Date.now()}`,
-              surface: 'workspace',
-              message: data.nudge,
-              state: 'intrigued',
-              animation: 'nudging',
-              target: 'workspace-hatch-chat',
-              source: 'nudge',
-              priority: 6,
-              cooldownKey: `canvas-nudge:${attemptId}`,
-              cta: { label: 'Open Hatch', action: 'open-workspace-chat' },
-            }, { force: true })
-          }
+          // One surface only: the docked panel thread. When the dock is collapsed
+          // to the Ask Hatch pill, the pill shows an unread dot instead - the
+          // floating bubble used to render on top of that pill and, emitted with
+          // force, ignored its own dismiss snooze.
+          setProactiveNudge({ id: `n-${Date.now()}`, text: data.nudge })
         }
       } catch { /* swallow */ }
     }, 4000)
   // chatPanelOpen intentionally excluded - we only want the snapshot at fire time, not retriggers
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props, emitHatchCue])
+  }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props])
 
   useEffect(() => {
     lastWorkspaceProgressRef.current = Date.now()
@@ -1470,27 +1461,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
         lastNudgeAtRef.current = Date.now()
         nudgeCountRef.current += 1
-        // One surface at a time. If the docked Hatch panel is already open, the
-        // nudge lands as its in-panel "Hatch noticed" card - do NOT also raise the
-        // floating cue + FAB (that's the redundant double-bubble). The floating cue
-        // is only the fallback for when the panel is closed, and its "Open Hatch"
-        // CTA exists precisely to open the panel.
-        if (dockIsOpenNow()) {
+        // One surface at a time. Interview challenges (canvas/coding) have a
+        // docked Hatch panel: the nudge always lands in its thread, and the
+        // collapsed Ask Hatch pill shows an unread dot - never a floating bubble
+        // hovering over the pill. FLOW (MCQ) challenges have no docked panel, so
+        // they keep the dismissible floating cue.
+        if (isInterviewChallenge) {
           setProactiveNudge({ id: `idle-${Date.now()}`, text: data.nudge })
         } else {
-          const target = isInterviewChallenge ? 'workspace-hatch-chat' : 'workspace-answer-area'
           emitHatchCue?.({
             surface: 'workspace',
             message: data.nudge,
             state: 'intrigued',
             animation: 'nudging',
-            target,
+            target: 'workspace-answer-area',
             source: 'nudge',
             priority: 5,
             cooldownKey: `workspace-stuck:${attemptId ?? challengeId}`,
-            cta: isInterviewChallenge
-              ? { label: 'Open Hatch', action: 'open-workspace-chat' as const }
-              : { label: 'Show a hint', action: 'open-workspace-chat' as const },
+            cta: { label: 'Show a hint', action: 'open-workspace-chat' as const },
           })
         }
       } catch { /* a missed nudge is non-critical */ }
@@ -1511,7 +1499,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     apiChallengeType,
     attemptId,
     challengeId,
-    dockIsOpenNow,
     emitHatchCue,
     isCanvasChallenge,
     isCodingChallenge,
@@ -3155,7 +3142,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           ? ((ch as { challenge_type?: string } | null | undefined)?.challenge_type ?? apiChallengeType)
           : 'flow'
         const disciplineCopy = challengeType ? CHALLENGE_TYPE_FILTER_COPY[challengeType] : null
-        const companyTags: string[] = (ch as { company_tags?: string[] })?.company_tags ?? []
+        const companyTags: string[] = ((ch as { company_tags?: string[] })?.company_tags ?? [])
+          .filter((tag) => typeof tag === 'string' && tag.trim().length > 0)
         const topicTags: string[] = (ch as { tags?: string[] })?.tags ?? []
         return (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
@@ -5029,12 +5017,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   {/* Branded empty-state: replaces the blank-Excalidraw paralysis
                       with a centered Hatch + three first moves. Shown only while
                       the canvas has no entity; un-mounts the moment one lands. */}
-                  {scene.entities.length === 0 && (
+                  {!emptyStateDismissed && scene.entities.length === 0 && (
                     <CanvasEmptyState
                       challengeType={apiChallengeType as CanvasChallengeType}
                       guidance={guidance}
                       onUseTemplate={handleUseTemplate}
-                      onAskHatch={queueHatchPrompt}
+                      onAskHatch={(text, autoSend) => {
+                        setEmptyStateDismissed(true)
+                        queueHatchPrompt(text, autoSend)
+                      }}
                       onOpenNotes={openContextPack}
                     />
                   )}

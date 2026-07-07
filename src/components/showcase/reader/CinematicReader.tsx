@@ -16,6 +16,7 @@ import { QuoteDark } from './sections/QuoteDark';
 import { PrincipleDark } from './sections/PrincipleDark';
 import { SourcePackDark } from './sections/SourcePackDark';
 import { FlowSectionDark } from './sections/FlowSectionDark';
+import { BackCrumb } from '@/components/navigation/AppBreadcrumbs';
 import type { AutopsyImageRole, FeatureAutopsy } from '@/lib/autopsies/types';
 import type { PrevNextResult } from '@/lib/showcase/prev-next';
 
@@ -120,6 +121,11 @@ export function CinematicReader({
 
   return (
     <div className="relative min-h-screen pb-32 lg:flex lg:items-start">
+      {/* Back bar - a full trail crops behind long story titles at narrow
+          widths, so this is a single link back to the company hub. */}
+      <div className="fixed top-[52px] left-0 right-0 z-30 h-10 flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40">
+        <BackCrumb href={backHref} label={companyName} />
+      </div>
       <ReaderRail
         variant="cinematic"
         items={tocItems}

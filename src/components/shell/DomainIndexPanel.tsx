@@ -1,8 +1,11 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDomainChallenges, type DomainPanelChallenge } from '@/hooks/useDomainChallenges'
 import { getTopicLabelAny } from '@/lib/data/taxonomy'
+
+// Shared with StudyPlanIndexPanel so the preference carries across both shells.
+export const INDEX_PANEL_COLLAPSE_KEY = 'workspace-index-panel:collapsed'
 
 interface Props {
   domainSlug: string
@@ -17,6 +20,19 @@ interface Props {
  */
 export function DomainIndexPanel({ domainSlug, activeChallengeId }: Props) {
   const { domain, challenges, isLoading, refetch } = useDomainChallenges(domainSlug)
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    if (window.localStorage.getItem(INDEX_PANEL_COLLAPSE_KEY) === '1') setCollapsed(true)
+  }, [])
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev
+      window.localStorage.setItem(INDEX_PANEL_COLLAPSE_KEY, next ? '1' : '0')
+      return next
+    })
+  }
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -51,23 +67,54 @@ export function DomainIndexPanel({ domainSlug, activeChallengeId }: Props) {
     return entries
   }, [challenges])
 
+  if (collapsed) {
+    return (
+      <aside className="hidden md:flex flex-col items-center h-full w-10 shrink-0 bg-surface-container-low border-r border-outline-variant/40">
+        <button
+          onClick={toggleCollapsed}
+          title="Expand challenge list"
+          aria-label="Expand challenge list"
+          className="mt-2 flex h-6 w-6 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors shrink-0"
+        >
+          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+        </button>
+        <span
+          className="mt-4 text-[10px] font-bold uppercase tracking-[0.08em] text-on-surface-variant font-label"
+          style={{ writingMode: 'vertical-rl' }}
+        >
+          {domain?.title ?? 'Challenges'}
+        </span>
+      </aside>
+    )
+  }
+
   return (
     <aside className="hidden md:flex flex-col h-full w-64 shrink-0 bg-surface-container-low border-r border-outline-variant/40 overflow-y-auto">
 
       {/* ── Header ── */}
       <div className="px-4 pt-4 pb-3 border-b border-outline-variant/30">
-        <Link
-          href={`/explore/domains/${domainSlug}`}
-          className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors mb-2.5 font-label"
-        >
-          <span
-            className="material-symbols-outlined text-[13px]"
-            style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+        <div className="flex items-center justify-between mb-2.5">
+          <Link
+            href={`/explore/domains/${domainSlug}`}
+            className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors font-label"
           >
-            arrow_back
-          </span>
-          Back to domain
-        </Link>
+            <span
+              className="material-symbols-outlined text-[13px]"
+              style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+            >
+              arrow_back
+            </span>
+            Back to domain
+          </Link>
+          <button
+            onClick={toggleCollapsed}
+            title="Collapse challenge list"
+            aria-label="Collapse challenge list"
+            className="flex h-6 w-6 items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors shrink-0"
+          >
+            <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+          </button>
+        </div>
 
         {domain ? (
           <>

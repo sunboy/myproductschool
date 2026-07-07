@@ -35,6 +35,7 @@ type TransactionalEmailKind =
   | 'activation_day1'
   | 'activation_day3'
   | 'activation_day7'
+  | 'growth_report'
 
 interface BaseTransactionalInput {
   dedupeKey: string
@@ -957,6 +958,112 @@ export function sendActivationDay3Email(admin: SupabaseClient, input: Activation
     ctaLabel: 'Start your first interview',
     ctaUrl: input.url ?? appUrl('/first-run'),
   })
+}
+
+interface GrowthReportInput {
+  to: string
+  weekLabel: string
+  headline: string
+  metrics: string[]
+  detail?: string | null
+}
+
+export function sendGrowthReportEmail(admin: SupabaseClient, input: GrowthReportInput) {
+  return sendTransactionalEmail(admin, {
+    to: input.to,
+    dedupeKey: `growth-report:${input.weekLabel}`,
+    kind: 'growth_report',
+    subject: `Growth report — week of ${input.weekLabel}`,
+    eyebrow: 'Monday funnel report',
+    heading: input.headline,
+    body: 'Weekly funnel numbers, internal and test accounts excluded. Deltas compare the trailing 7 days against the 7 days before.',
+    detail: input.detail ?? null,
+    valueBullets: input.metrics,
+    ctaLabel: 'Open the Growth hub',
+    ctaUrl: 'https://linear.app/sunboy-labs',
+  })
+}
+
+// ─── Custom pre-rendered HTML sender (newsletter, one-off editorial sends) ────
+
+interface SendCustomHtmlEmailInput {
+  dedupeKey: string
+  to: string
+  subject: string
+  html: string
+  text: string
+  from?: string
+  headers?: Record<string, string>
+}
+
+/**
+ * Send a fully pre-rendered HTML/text email. Reuses the same email_dedupes +
+ * Resend idempotency flow as sendTransactionalEmail, but skips template
+ * rendering entirely — the caller (e.g. the newsletter sender) owns the HTML.
+ */
+export async function sendCustomHtmlEmail(admin: SupabaseClient, input: SendCustomHtmlEmailInput) {
+  const resend = getResendClient()
+  if (!input.to || !resend) {
+    console.warn('[email] short-circuit', {
+      kind: 'custom_html',
+      dedupeKey: input.dedupeKey,
+      missing: !input.to && !resend ? 'recipient+resend' : !input.to ? 'recipient' : 'resend',
+    })
+    return
+  }
+  if (await hasSentTransactionalEmail(admin, input.dedupeKey)) return
+
+  try {
+    const { data, error } = await resend.emails.send(
+      {
+        from: input.from ?? configuredFromEmail(),
+        to: input.to,
+        replyTo: configuredReplyTo(),
+        subject: input.subject,
+        html: input.html,
+        text: input.text,
+        headers: input.headers,
+      },
+      { idempotencyKey: input.dedupeKey.slice(0, 256) }
+    )
+
+    const { error: upsertError } = await admin.from('email_dedupes').upsert({
+      dedupe_key: input.dedupeKey,
+      user_id: null,
+      recipient: input.to,
+      template: 'custom_html',
+      status: error ? 'failed' : 'sent',
+      resend_email_id: data?.id ?? null,
+      error: error ? JSON.stringify(error) : null,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'dedupe_key' })
+    if (upsertError) {
+      console.error('[email] email_dedupes upsert failed (post-send)', {
+        kind: 'custom_html',
+        dedupeKey: input.dedupeKey,
+        error: upsertError.message,
+        code: (upsertError as { code?: string }).code,
+      })
+    }
+  } catch (error) {
+    const { error: upsertError } = await admin.from('email_dedupes').upsert({
+      dedupe_key: input.dedupeKey,
+      user_id: null,
+      recipient: input.to,
+      template: 'custom_html',
+      status: 'failed',
+      error: error instanceof Error ? error.message : 'Unknown Resend error',
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'dedupe_key' })
+    if (upsertError) {
+      console.error('[email] email_dedupes upsert failed (catch path)', {
+        kind: 'custom_html',
+        dedupeKey: input.dedupeKey,
+        error: upsertError.message,
+        code: (upsertError as { code?: string }).code,
+      })
+    }
+  }
 }
 
 export function sendActivationDay7Email(admin: SupabaseClient, input: ActivationDripInput) {

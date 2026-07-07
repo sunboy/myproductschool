@@ -37,6 +37,7 @@ export const MARKETING_ROUTES = [
   '/autopsy',
   '/glossary',
   '/claude-code-analytics',
+  '/blog',
   '/interviews',
   '/alternatives',
   '/affiliate-program',
