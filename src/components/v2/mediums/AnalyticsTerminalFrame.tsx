@@ -6,6 +6,9 @@ import type { ClaudeCodeTerminalHandle } from './types'
 import type { RefObject } from 'react'
 
 interface AnalyticsTerminalFrameProps {
+  /** Lab detector overrides, forwarded to the terminal (additive, optional). */
+  mcpNamePattern?: string
+  reportPathPattern?: string
   wssUrl: string
   terminalRef: RefObject<ClaudeCodeTerminalHandle | null>
   onOutput?: (tail: string) => void
@@ -17,6 +20,8 @@ interface AnalyticsTerminalFrameProps {
 }
 
 export function AnalyticsTerminalFrame({
+  mcpNamePattern,
+  reportPathPattern,
   wssUrl,
   terminalRef,
   onOutput,
@@ -78,6 +83,8 @@ export function AnalyticsTerminalFrame({
         position: 'relative',
       }}>
         <ClaudeCodeTerminal
+          mcpNamePattern={mcpNamePattern}
+          reportPathPattern={reportPathPattern}
           ref={terminalRef}
           wssUrl={wssUrl}
           onOutput={onOutput}

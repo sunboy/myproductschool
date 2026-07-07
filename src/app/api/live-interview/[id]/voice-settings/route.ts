@@ -147,14 +147,32 @@ export async function GET(
         output: { encoding: 'linear16', sample_rate: SAMPLE_RATE },
       },
       agent: {
-        listen: {
-          provider: {
-            type: 'deepgram',
-            model: 'nova-3',
-            language: 'en-US',
-            smart_format: true,
-          },
-        },
+        // Flux is Deepgram's turn-aware STT: it detects end-of-turn from the
+        // speech itself instead of a fixed silence timeout, which removes most
+        // of the dead air between the candidate finishing and Hatch replying.
+        // eager_eot starts the think call before the turn fully closes (more
+        // LLM calls, lower perceived latency). LIVE_VOICE_FLUX=0 reverts to
+        // nova-3 if Flux misbehaves for an account or region.
+        listen: process.env.LIVE_VOICE_FLUX === '0'
+          ? {
+              provider: {
+                type: 'deepgram',
+                model: 'nova-3',
+                language: 'en-US',
+                smart_format: true,
+              },
+            }
+          : {
+              provider: {
+                type: 'deepgram',
+                model: 'flux-general-en',
+                version: 'v2',
+                language: 'en',
+                eot_threshold: 0.7,
+                eager_eot_threshold: 0.5,
+                eot_timeout_ms: 4000,
+              },
+            },
         think: {
           provider: {
             type: 'open_ai',

@@ -12,6 +12,8 @@ interface AnalyticsObjectiveCardProps {
   replRunning?: boolean
   skillsWritten: string[]
   reportWritten?: boolean
+  /** Open-guidance learners see no teaching notes (design §3.3). */
+  hideTeachingNote?: boolean
   onMark: (finding: string) => Promise<MarkVerdict>
 }
 
@@ -23,6 +25,7 @@ export function AnalyticsObjectiveCard({
   replRunning = false,
   skillsWritten,
   reportWritten = false,
+  hideTeachingNote = false,
   onMark,
 }: AnalyticsObjectiveCardProps) {
   const [expanded, setExpanded] = useState(false)
@@ -140,12 +143,11 @@ export function AnalyticsObjectiveCard({
       </div>
 
       {/* Teaching note — why this move matters (dismissible course content) */}
-      {subProblem.teachingNote && !teachDismissed && (
+      {subProblem.teachingNote && !teachDismissed && !hideTeachingNote && (
         <div style={{
           display: 'flex', gap: 8, alignItems: 'flex-start',
           background: 'var(--color-primary-fixed)',
           borderRadius: 10, padding: '8px 10px',
-          borderLeft: '3px solid var(--color-primary)',
         }}>
           <HatchGlyph size={20} state="speaking" />
           <p style={{
@@ -174,7 +176,6 @@ export function AnalyticsObjectiveCard({
         color: 'var(--color-on-surface-variant)',
         background: 'var(--color-surface-container-low)',
         borderRadius: 8, padding: '6px 10px',
-        borderLeft: '3px solid var(--color-primary)',
       }}>
         <span style={{ fontWeight: 700, color: 'var(--color-primary)', marginRight: 4 }}>Done when:</span>
         {subProblem.successCriterion}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { ScoreHero, DimensionCard } from '@/components/feedback'
 import { FeedbackText } from '@/components/ui/FeedbackText'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { RunResult, GradingFeedback, GradingDimensionKey, SupportedLanguage } from '@/lib/coding/types'
@@ -40,11 +40,6 @@ const DIMENSION_ORDER: GradingDimensionKey[] = [
 ]
 
 // Score colour helpers
-function scoreColor(score: number) {
-  if (score >= 4.5) return 'text-primary'
-  if (score >= 3) return 'text-tertiary'
-  return 'text-error'
-}
 
 function scoreBg(score: number) {
   if (score >= 4.5) return 'bg-primary-container text-on-primary-container'
@@ -385,99 +380,7 @@ function CorrectnessColumn({
 
 // ── Grading column ───────────────────────────────────────────────────────────
 
-function DimensionAccordion({
-  dimensionKey,
-  score,
-  verdict,
-  evidence,
-  hole_to_poke,
-  how_to_improve,
-  index,
-}: {
-  dimensionKey: GradingDimensionKey
-  score: number
-  verdict: string
-  evidence: string
-  hole_to_poke: string
-  how_to_improve: string
-  index: number
-}) {
-  const [isOpen, setIsOpen] = useState(false)
-  const { label, icon } = DIMENSION_LABELS[dimensionKey] ?? { label: dimensionKey, icon: 'bar_chart' }
-  const colorClass = scoreColor(score)
-  const bgClass = scoreBg(score)
 
-  return (
-    <div className="rounded-lg border border-outline-variant overflow-hidden">
-      {/* Header */}
-      <button
-        data-testid={`dimension-${dimensionKey}-toggle`}
-        onClick={() => setIsOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-3 py-2.5 bg-surface-container hover:bg-surface-container-high transition-colors text-left"
-        aria-expanded={isOpen}
-      >
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className={`material-symbols-outlined text-[16px] ${colorClass}`} aria-hidden="true">
-            {icon}
-          </span>
-          <span className="text-sm font-label font-medium text-on-surface truncate">{label}</span>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className={`text-xs font-label font-bold px-1.5 py-0.5 rounded ${bgClass}`}>
-            {score}/5
-          </span>
-          <span
-            className={`material-symbols-outlined text-[16px] text-on-surface-variant transition-transform duration-200 ${
-              isOpen ? 'rotate-180' : ''
-            }`}
-          >
-            expand_more
-          </span>
-        </div>
-      </button>
-
-      {/* Collapsible content */}
-      <div
-        className={`grid transition-all duration-300 ease-in-out ${
-          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="px-4 pb-4 pt-2 space-y-3 bg-surface-container-low">
-            {/* Verdict */}
-            <FeedbackText className="text-on-surface">{verdict}</FeedbackText>
-
-            {/* Evidence */}
-            <div data-testid={`dimension-${dimensionKey}-evidence`}>
-              <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-1">
-                Evidence
-              </p>
-              <FeedbackText className="text-xs italic text-on-surface-variant">{evidence}</FeedbackText>
-            </div>
-
-            {/* Hole to poke */}
-            {hole_to_poke && (
-              <div className="bg-tertiary-container/40 rounded-lg px-3 py-2 flex gap-2">
-                <span className="material-symbols-outlined text-tertiary text-[15px] mt-0.5 flex-shrink-0">
-                  search
-                </span>
-                <FeedbackText className="text-xs text-on-surface-variant">{hole_to_poke}</FeedbackText>
-              </div>
-            )}
-
-            {/* How to improve */}
-            <div data-testid={`dimension-${dimensionKey}-improvement`}>
-              <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-1">
-                How to improve
-              </p>
-              <FeedbackText className="text-xs text-on-surface">{how_to_improve}</FeedbackText>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function GradingColumn({
   grading,
@@ -562,20 +465,9 @@ function GradingColumn({
 
   return (
     <div className="space-y-4">
-      {/* Overall score header */}
-      <div className="flex items-start gap-3 p-3 bg-primary-container rounded-xl">
-        <HatchGlyph size={28} state="celebrating" className="text-primary flex-shrink-0 mt-0.5" />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <p className="text-xs font-label font-semibold text-on-primary-container uppercase tracking-wide">
-              Overall Score
-            </p>
-            <span className={`text-sm font-label font-bold px-2 py-0.5 rounded-full ${scoreBg(grading.overall_score)}`}>
-              {grading.overall_score.toFixed(1)} / 5
-            </span>
-          </div>
-          <FeedbackText className="text-on-primary-container">{grading.headline}</FeedbackText>
-        </div>
+      {/* Overall score — the shared hero (compact) */}
+      <div className="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-4">
+        <ScoreHero raw={grading.overall_score} scale={5} headline={grading.headline} size="md" />
       </div>
 
       {grading.score_breakdown && (
@@ -615,24 +507,28 @@ function GradingColumn({
         </div>
       )}
 
-      {/* Dimension accordions */}
+      {/* Dimension coaching — the shared DimensionCard */}
       <div className="space-y-2">
-        {DIMENSION_ORDER.map((key, index) => {
-          const dim = grading.dimensions[key]
-          if (!dim) return null
-          return (
-            <DimensionAccordion
-              key={key}
-              dimensionKey={key}
-              score={dim.score}
-              verdict={dim.verdict}
-              evidence={dim.evidence}
-              hole_to_poke={dim.hole_to_poke}
-              how_to_improve={dim.how_to_improve}
-              index={index + 1}
-            />
-          )
-        })}
+        {(() => {
+          const present = DIMENSION_ORDER.filter((key) => grading.dimensions[key])
+          const lowest = Math.min(...present.map((key) => grading.dimensions[key]!.score))
+          return present.map((key) => {
+            const dim = grading.dimensions[key]!
+            return (
+              <DimensionCard
+                key={key}
+                label={DIMENSION_LABELS[key]?.label ?? key}
+                raw={dim.score}
+                scale={5}
+                verdict={dim.verdict}
+                evidence={dim.evidence}
+                holeToPoke={dim.hole_to_poke}
+                howToImprove={dim.how_to_improve}
+                focus={dim.score === lowest && dim.score < 4}
+              />
+            )
+          })
+        })()}
       </div>
 
       {/* Top strength */}

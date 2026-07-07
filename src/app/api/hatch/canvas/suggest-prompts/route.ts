@@ -38,7 +38,7 @@ Output ONLY this JSON, no markdown:
 
 const RequestSchema = z.object({
   challengeId: z.string().max(200).optional(),
-  challengeType: z.literal('claude_code_analytics'),
+  challengeType: z.enum(['claude_code_analytics', 'claude_code_debugging']),
   mcp_connected: z.boolean().optional(),
   repl_running: z.boolean().optional(),
   terminal_tail: z.string().max(4000).nullable().optional(),
@@ -49,6 +49,7 @@ const RequestSchema = z.object({
   active_sub_problem_success_criterion: z.string().max(2000).nullable().optional(),
   // The step's static prompts — given to the model as the baseline to improve on.
   fallback_prompts: z.array(z.string().max(400)).max(6).optional(),
+  guidance_level: z.enum(['scaffolded', 'guided', 'open']).optional(),
 })
 
 function retryAfterSeconds(resetAt: Date) {
@@ -77,7 +78,13 @@ function buildUserContent(body: z.infer<typeof RequestSchema>): string {
   lines.push(body.terminal_tail?.slice(-3000) || '(no output yet)')
   lines.push('```')
   lines.push('')
-  lines.push('Write the 2-3 contextual chips now.')
+  if (body.guidance_level === 'scaffolded') {
+    lines.push('Write 3 contextual chips now. This learner is early: chips should be complete, copy-ready prompts that name the exact table or step element.')
+  } else if (body.guidance_level === 'open') {
+    lines.push('Write 1 contextual chip now. This learner is experienced: one sharp, open-ended direction, never a hand-holding recipe.')
+  } else {
+    lines.push('Write the 2-3 contextual chips now.')
+  }
   return lines.join('\n')
 }
 

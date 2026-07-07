@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded } from '@/lib/usage/assert-plan-limit'
@@ -54,6 +55,14 @@ export async function gradeInterviewSession(
     challengeType === 'system_design'
       ? SYSTEM_DESIGN_GRADING_PROMPT
       : DATA_MODELING_GRADING_PROMPT
+  // Skill-governed: hackproduct-canvas-grader is the runtime source of truth
+  // (shared rules + per-discipline rubric sections); the prompt files remain
+  // the fallback. The active-discipline line tells the model which section
+  // applies to this session.
+  const skillPrompt = loadSkillPrompt('hackproduct-canvas-grader', '')
+  const effectiveSystemPrompt = skillPrompt
+    ? `${skillPrompt}\n\n# Active discipline\n${challengeType === 'system_design' ? 'system_design' : 'data_modeling'}`
+    : systemPrompt
 
   const userContent = `
 CHALLENGE: ${challenge?.title ?? 'Unknown'}
@@ -71,7 +80,7 @@ Grade this session according to the rubric.`
 
   const callGrader = async (extraNudge = '') => {
     const response = await guardedCachedMessage(
-      systemPrompt,
+      effectiveSystemPrompt,
       userContent + extraNudge,
       {
         model: 'claude-sonnet-4-6',

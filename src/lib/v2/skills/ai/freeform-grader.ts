@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import type { FlowOption, FlowStep } from '@/lib/types'
 import { getHatchContext } from '@/lib/v2/hatch-context'
 import { buildEmptyStateResponse, detectSubmissionQuality } from '@/lib/hatch/skill-context'
@@ -181,9 +182,13 @@ REASONING MOVE for this step: ${rubric.reasoning_move}`
     // Rubric load failed — proceed without criteria
   }
 
-  // Static system prompt (cacheable)
-  const systemPrompt = `You are a product sense grading agent. Grade responses against rubric exemplars and criteria.
-${MENTAL_MODELS_CONTEXT}`
+  // Skill-governed system prompt (cacheable): the hackproduct-grader SKILL.md
+  // is the runtime source of truth; this inline prompt is the fallback.
+  const systemPrompt = loadSkillPrompt(
+    'hackproduct-grader',
+    `You are a product sense grading agent. Grade responses against rubric exemplars and criteria.
+${MENTAL_MODELS_CONTEXT}`,
+  )
 
   const prompt = `${hatchContext ? `LEARNER CONTEXT:\n${hatchContext}\n\n` : ''}SCENARIO: ${scenario.scenario_context} ${scenario.scenario_trigger}
 FLOW STEP: ${step} — ${STEP_PURPOSE[step]}

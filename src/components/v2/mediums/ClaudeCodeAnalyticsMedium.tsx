@@ -1,20 +1,28 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { SubProblemStepper } from './SubProblemStepper'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { ArtifactSpineStrip } from './ArtifactSpineStrip'
+import { deriveArtifactRows, artifactProgress, artifactSummaryText } from './analyticsArtifact'
 import { AnalyticsObjectiveCard } from './AnalyticsObjectiveCard'
-import { AnalyticsConnectionStrip } from './AnalyticsConnectionStrip'
-import { UsageMeter } from './UsageMeter'
 import { AnalyticsTerminalFrame } from './AnalyticsTerminalFrame'
 import { SuggestedPromptRail } from './SuggestedPromptRail'
 import { SkillsLibraryPanel } from './SkillsLibraryPanel'
 import { IdleReapModal } from './IdleReapModal'
-import { AnalyticsOnboardingOverlay, shouldShowOnboarding } from './AnalyticsOnboardingOverlay'
+import { MissionBrief, shouldShowMissionBrief, markMissionBriefSeen } from './MissionBrief'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { mergeArc } from './analyticsArc'
+import {
+  applyVerdict,
+  planBranch,
+  applyBranch,
+  INITIAL_MACHINE,
+  type GuidanceMachineState,
+} from '@/lib/adaptive/branching'
+import { REGISTER_LABELS, REGISTER_TOOLTIPS } from '@/lib/adaptive/registerLabel'
+import { getLabClient, labIdForChallengeType } from '@/lib/labs/client'
 import { toDimensionViews, type AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
 import type {
   MediumProps,
@@ -41,7 +49,10 @@ const IDLE_THRESHOLD_MS = 18000 // 18s
 const REAP_WARN_MS = 13 * 60 * 1000
 const REAP_COUNTDOWN_SECONDS = 90
 
-export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: MediumProps) {
+export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exitHref }: MediumProps) {
+  // The lab definition: domain copy, detectors, spine, arc shape. Analytics is
+  // the fallback so legacy sessions and unknown types keep original behavior.
+  const lab = getLabClient(labIdForChallengeType(challenge.challenge_type))
   const terminalRef = useRef<ClaudeCodeTerminalHandle | null>(null)
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastActivityRef = useRef<number>(Date.now())
@@ -67,8 +78,73 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // The arc is the default analyst course (tiered by difficulty), with any
   // per-challenge overrides merged on top once the start route returns them.
   const [subProblems, setSubProblems] = useState<AnalyticsSubProblem[]>(
-    () => mergeArc(challenge.difficulty, undefined),
+    () => mergeArc(challenge.difficulty, undefined, 'guided', lab.arc),
   )
+  // Guidance level for this session (adaptive workspaces). Server-derived in
+  // session/start; 'guided' is the compatibility default and today's behavior.
+  const [guidance, setGuidance] = useState<'scaffolded' | 'guided' | 'open'>('guided')
+  // In-session adaptation bookkeeping: the bounded guidance state machine plus
+  // the injection/adjustment log persisted via PATCH session/[id]/adaptive.
+  const machineRef = useRef<GuidanceMachineState>({ ...INITIAL_MACHINE })
+  const adaptiveLogRef = useRef<{
+    injected: Array<{ id: string; kind: string; afterStepId: string | null; reason: string }>
+    adjustments: Array<{ from: string; to: string; trigger: string; atStepId: string | null }>
+  }>({ injected: [], adjustments: [] })
+
+  // ── Terminal-as-hero frame: resizable split (ported from cc-analytics-hero).
+  // The left "Mission" column owns all guidance and the single scroll; the
+  // right pane is the terminal only. Same clamps + storage pattern as
+  // FlowWorkspace so the lab reads like the coding workspace.
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dragCleanupRef = useRef<null | (() => void)>(null)
+  const [leftWidth, setLeftWidth] = useState(30) // percent, md and up only
+  // Starts collapsed on small screens so the terminal is reachable without
+  // a long scroll; auto-collapses on desktop once the session is live.
+  const [registerMenuOpen, setRegisterMenuOpen] = useState(false)
+  const [questionCollapsed, setQuestionCollapsed] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.innerWidth < 768,
+  )
+  const questionTouchedRef = useRef(false)
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(`cc-analytics-layout:${challenge.id}`)
+      if (stored) {
+        const parsed = JSON.parse(stored) as { leftWidth?: number }
+        if (typeof parsed.leftWidth === 'number') setLeftWidth(Math.max(20, Math.min(50, parsed.leftWidth)))
+      }
+    } catch { /* no storage */ }
+  }, [challenge.id])
+  useEffect(() => {
+    try {
+      localStorage.setItem(`cc-analytics-layout:${challenge.id}`, JSON.stringify({ leftWidth }))
+    } catch { /* no storage */ }
+  }, [challenge.id, leftWidth])
+
+
+  const handleLeftDividerMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const container = containerRef.current
+    if (!container) return
+    const onMouseMove = (ev: MouseEvent) => {
+      const rect = container.getBoundingClientRect()
+      const pct = ((ev.clientX - rect.left) / rect.width) * 100
+      setLeftWidth(Math.max(20, Math.min(50, pct)))
+    }
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      document.body.style.cursor = ''
+      dragCleanupRef.current = null
+    }
+    document.body.style.cursor = 'col-resize'
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    dragCleanupRef.current = onMouseUp
+  }, [])
+  useEffect(() => () => { dragCleanupRef.current?.() }, [])
+
+
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
   // Free quota exhausted (HTTP 402). Opens the unified PaywallModal (analytics
@@ -89,6 +165,14 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // True once the `claude` REPL has launched (its banner/prompt appeared). Step 1
   // gates on this so we never advance the user into bash with REPL-only prompts.
   const [replRunning, setReplRunning] = useState(false)
+
+  // Auto-collapse the scenario prose once the session is live, unless the
+  // user has toggled it themselves.
+  useEffect(() => {
+    if (mcpConnected && replRunning && !questionTouchedRef.current) {
+      setQuestionCollapsed(true)
+    }
+  }, [mcpConnected, replRunning])
   const [skillsWritten, setSkillsWritten] = useState<string[]>([])
   const [reportPath, setReportPath] = useState<string | null>(null)
   // analyst_v1 per-dimension scores from the finalize grade, for the mirror chart.
@@ -98,7 +182,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // Empty → the rail shows the step's static arc prompts (the fallback).
   const [aiPrompts, setAiPrompts] = useState<string[]>([])
   const [proactiveNudge, setProactiveNudge] = useState<string | null>(null)
-  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showBrief, setShowBrief] = useState(false)
   const [showMirror, setShowMirror] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
   const finalizedRef = useRef(false)
@@ -113,6 +197,54 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   const [hatchOpen, setHatchOpen] = useState(false)
 
   const activeSubProblem = subProblems[activeSubProblemIdx] ?? null
+
+  // ── Artifact spine: the deliverable-as-progress, derived from live signals
+  // (no new state). Recomputes when the arc changes, so injected adaptive
+  // steps appear in the strip the moment planBranch inserts them.
+  const artifactRows = useMemo(() => deriveArtifactRows({
+    spine: lab.spine,
+    scenarioQuestion: scenario?.question ?? null,
+    mcpConnected,
+    replRunning,
+    markedFindings,
+    reportPath,
+    skillsWritten,
+    dimensions,
+    subProblems,
+    activeStepId: activeSubProblem?.id ?? null,
+  }), [lab.spine, scenario?.question, mcpConnected, replRunning, markedFindings, reportPath, skillsWritten, dimensions, subProblems, activeSubProblem?.id])
+  const { done: artifactDone, total: artifactTotal } = useMemo(() => artifactProgress(artifactRows), [artifactRows])
+
+  // Capped milestone-state string for Hatch (interpret + nudge): lets the
+  // coach name the exact missing deliverable. 550 chars keeps the request
+  // body comfortably inside the routes' validation caps.
+  const artifactSummary = useMemo(() => artifactSummaryText(artifactRows).slice(0, 550), [artifactRows])
+
+  // The learner can override the derived coaching register for this session.
+  // Everything downstream (teaching notes, prompt density, nudge eagerness,
+  // Hatch's register) reads the guidance state, so the change is immediate;
+  // the adjustment is logged and persisted so it survives refresh.
+  const handleRegisterChoice = useCallback((level: 'scaffolded' | 'guided' | 'open') => {
+    setRegisterMenuOpen(false)
+    if (level === guidance) return
+    adaptiveLogRef.current.adjustments.push({
+      from: guidance, to: level, trigger: 'user_choice',
+      atStepId: activeSubProblem?.id ?? null,
+    })
+    setGuidance(level)
+    if (sessionId && !USE_DEV_STUB) {
+      void fetch(`/api/claude-code/session/${sessionId}/adaptive`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guidance: level,
+          arc: subProblems,
+          injected: adaptiveLogRef.current.injected,
+          adjustments: adaptiveLogRef.current.adjustments,
+        }),
+      }).catch(() => {})
+    }
+  }, [guidance, sessionId, subProblems, activeSubProblem?.id])
 
   // Poll /state for live AI usage (spend vs the per-session budget cap). The hard
   // cap is enforced gateway-side; this just visualizes it. Skipped in dev stub.
@@ -134,7 +266,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
 
   // Check onboarding gate after mount (client-only)
   useEffect(() => {
-    setShowOnboarding(shouldShowOnboarding())
+    setShowBrief(shouldShowMissionBrief(challenge.id))
   }, [])
   // First-session coaching: the dock is opened once via CanvasChatPanel's
   // autoOpenKey below (the panel owns its open state, so setHatchOpen can't
@@ -164,16 +296,23 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           session_id?: string
           wss_url?: string | null
           sub_problems?: AnalyticsSubProblem[]
+          arc_complete?: boolean
+          guidance?: 'scaffolded' | 'guided' | 'open'
         }
         if (!cancelled && data.status === 'active' && data.wss_url && data.session_id) {
           setSessionId(data.session_id) // → usage poll + finalize (keyed on sessionId)
           setWssUrl(data.wss_url) // → terminal renders (first branch) + idle-reap watcher
           setStarted(true) // keep the invariant: started ⟺ committed to a session
-          // Re-apply the per-challenge arc overrides so a resumed session shows the
-          // same guided steps the original start did (not the default arc).
+          // arc_complete → the server sent the full per-session adaptive arc:
+          // use it verbatim. Legacy payloads are overrides to merge locally.
           if (data.sub_problems?.length) {
-            setSubProblems(mergeArc(challenge.difficulty, data.sub_problems))
+            setSubProblems(
+              data.arc_complete
+                ? data.sub_problems
+                : mergeArc(challenge.difficulty, data.sub_problems, 'guided', lab.arc),
+            )
           }
+          if (data.guidance) setGuidance(data.guidance)
           sessionStartRef.current = Date.now()
           setResuming(false)
         } else if (!cancelled) {
@@ -240,14 +379,22 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           status: string
           wss_url: string | null
           sub_problems?: AnalyticsSubProblem[]
+          arc_complete?: boolean
+          guidance?: 'scaffolded' | 'guided' | 'open'
         }
         if (cancelled) return
         setSessionId(data.session_id)
-        // Per-challenge sub_problems are OVERRIDES merged onto the default arc
-        // by id, so the generic MCP/EDA/report teaching copy stays consistent.
+        // arc_complete → the server computed the full per-session adaptive arc
+        // (guidance-shaped, persisted for resume): use it verbatim. Legacy
+        // payloads are per-challenge OVERRIDES merged onto the default arc.
         if (data.sub_problems?.length) {
-          setSubProblems(mergeArc(challenge.difficulty, data.sub_problems))
+          setSubProblems(
+            data.arc_complete
+              ? data.sub_problems
+              : mergeArc(challenge.difficulty, data.sub_problems),
+          )
         }
+        if (data.guidance) setGuidance(data.guidance)
         sessionStartRef.current = Date.now()
 
         // Already live (reconnect to a running container) — done.
@@ -338,11 +485,16 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started])
 
-  // Idle detection — mirrors CanvasChatPanel:~189 setInterval pattern
+  // Idle detection — mirrors CanvasChatPanel:~189 setInterval pattern.
+  // Nudge eagerness follows the guidance level (design §3.3): scaffolded
+  // learners get eager nudges, guided the standard delay, open learners are
+  // never auto-nudged — they ask when they want input.
   useEffect(() => {
+    if (guidance === 'open') return
+    const thresholdMs = guidance === 'scaffolded' ? IDLE_THRESHOLD_MS : IDLE_THRESHOLD_MS * 2
     idleTimerRef.current = setInterval(() => {
       const elapsed = Date.now() - lastActivityRef.current
-      if (elapsed > IDLE_THRESHOLD_MS) {
+      if (elapsed > thresholdMs) {
         fetchNudge()
         lastActivityRef.current = Date.now() // reset after nudge so it doesn't spam
       }
@@ -352,7 +504,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
       if (idleTimerRef.current) clearInterval(idleTimerRef.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSubProblemIdx, terminalTail])
+  }, [activeSubProblemIdx, terminalTail, guidance])
 
   async function fetchNudge() {
     if (!activeSubProblem) return
@@ -366,6 +518,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           challengeType: 'claude_code_analytics',
           mcp_connected: mcpConnected,
           terminal_tail: terminalTail.slice(-2000),
+          artifact_state: artifactSummary,
           active_sub_problem_id: activeSubProblem.id,
           active_sub_problem_title: activeSubProblem.title,
           active_sub_problem_objective: activeSubProblem.objective,
@@ -373,6 +526,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           active_sub_problem_teaching_note: activeSubProblem.teachingNote ?? null,
           report_written: !!reportPath,
           time_elapsed_seconds: Math.round((Date.now() - sessionStartRef.current) / 1000),
+          guidance_level: guidance,
         }),
       })
       if (res.ok) {
@@ -453,12 +607,14 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           mcp_connected: mcpConnected,
           repl_running: replRunning,
           terminal_tail: terminalTail.slice(-3000),
+          artifact_state: artifactSummary,
           active_sub_problem_id: step.id,
           active_sub_problem_kind: step.kind,
           active_sub_problem_title: step.title,
           active_sub_problem_objective: step.objective,
           active_sub_problem_success_criterion: step.successCriterion,
           fallback_prompts: step.suggestedPrompts,
+          guidance_level: guidance,
         }),
       })
       if (!res.ok) { setAiPrompts([]); return }
@@ -467,7 +623,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
     } catch {
       setAiPrompts([]) // fall back to static prompts
     }
-  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail])
+  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail, guidance])
 
   // Refetch immediately when the step or connection state changes (clear stale
   // chips first so we never show a previous step's suggestions).
@@ -570,6 +726,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
           history: [],
           mcp_connected: mcpConnected,
           terminal_tail: terminalTail.slice(-3000),
+          artifact_state: artifactSummary,
           active_sub_problem_id: activeSubProblem.id,
           active_sub_problem_sequence: activeSubProblem.sequence,
           active_sub_problem_title: activeSubProblem.title,
@@ -588,12 +745,75 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
       const verdict: MarkVerdict = data.verdict ?? 'retry'
 
       const newFinding: MarkedFinding = { id: activeSubProblem.id, text: finding, verdict }
-      setMarkedFindings(prev => [...prev, newFinding])
+      const allFindings = [...markedFindings, newFinding]
+      setMarkedFindings(allFindings)
+
+      // ── Adaptive: bounded guidance adjustment + arc branching (design §3.2, §5) ──
+      const adj = applyVerdict(machineRef.current, verdict, guidance)
+      machineRef.current = adj.state
+      let nextGuidance = guidance
+      if (adj.moved) {
+        nextGuidance = adj.guidance
+        setGuidance(nextGuidance)
+        adaptiveLogRef.current.adjustments.push({
+          from: guidance,
+          to: nextGuidance,
+          trigger: adj.moved === 'down' ? 'two retries in a row' : 'two clean passes in a row',
+          atStepId: activeSubProblem.id,
+        })
+      }
+
+      const log = adaptiveLogRef.current
+      const plan = planBranch({
+        arc: subProblems,
+        activeIdx: activeSubProblemIdx,
+        verdicts: allFindings.map((f) => ({ stepId: f.id, verdict: f.verdict })),
+        scaffoldsInjected: log.injected.filter((i) => i.kind === 'scaffold_explainer').length,
+        stretchesInjected: log.injected.filter((i) => i.kind !== 'scaffold_explainer').length,
+      })
+      let nextArc = subProblems
+      if (plan.action !== 'none') {
+        nextArc = applyBranch(subProblems, plan)
+        setSubProblems(nextArc)
+        log.injected.push({
+          id: plan.step.id,
+          kind: plan.step.kind,
+          afterStepId: plan.atIdx > 0 ? nextArc[plan.atIdx - 1]?.id ?? null : null,
+          reason: plan.reason,
+        })
+        // A scaffold lands AT the active index, becoming the new active step —
+        // the learner regroups before re-attempting the stuck step.
+        if (plan.action === 'inject_scaffold') {
+          setActiveSubProblemIdx(plan.atIdx)
+        }
+        // Announce the branch through the Hatch dock so the arc visibly
+        // reacts instead of silently changing shape (adaptive UI, F1).
+        setProactiveNudge(
+          plan.action === 'inject_scaffold'
+            ? 'I added a regroup step. The last two attempts told me the question got too big, so shrink it: read your last output, then take one small query.'
+            : 'Two clean passes in a row, so I added a stretch step after this one. Nail the metric definition and this session becomes portfolio material.',
+        )
+      }
+
+      // Persist adaptive state best-effort; a failed write never blocks the verdict.
+      if (sessionId && !USE_DEV_STUB) {
+        void fetch(`/api/claude-code/session/${sessionId}/adaptive`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            guidance: nextGuidance,
+            arc: nextArc,
+            injected: log.injected,
+            adjustments: log.adjustments,
+          }),
+        }).catch(() => {})
+      }
 
       if (verdict === 'pass' || verdict === 'partial') {
         setCompletedIds(prev => new Set([...prev, activeSubProblem.id]))
-        const nextIdx = activeSubProblemIdx + 1
-        if (nextIdx < subProblems.length) {
+        const activeIdxInNext = nextArc.findIndex((s) => s.id === activeSubProblem.id)
+        const nextIdx = (activeIdxInNext >= 0 ? activeIdxInNext : activeSubProblemIdx) + 1
+        if (nextIdx < nextArc.length) {
           setActiveSubProblemIdx(nextIdx)
         } else {
           // All steps done — finalize (grade + mark attempt complete) then mirror.
@@ -612,6 +832,18 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
   if (showMirror) {
     return (
       <AnalyticsSessionMirror
+        missionQuestion={scenario?.question || challenge.title || null}
+        provenAnswer={(() => {
+          // The answer-kind pass/partial finding is the proven answer; else
+          // fall back to the last passing finding of any step.
+          const kindById = new Map(subProblems.map((sp) => [sp.id, sp.kind as string]))
+          const answer = markedFindings.find(
+            (f) => kindById.get(f.id) === 'answer' && (f.verdict === 'pass' || f.verdict === 'partial'),
+          )
+          if (answer) return answer.text
+          const lastPass = [...markedFindings].reverse().find((f) => f.verdict === 'pass')
+          return lastPass?.text ?? null
+        })()}
         markedFindings={markedFindings}
         sessionDurationSeconds={Math.round((Date.now() - sessionStartRef.current) / 1000)}
         skillsWritten={skillsWritten}
@@ -620,6 +852,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
         reportPath={reportPath}
         reportDownloadUrl={sessionId && reportPath ? `/api/claude-code/session/report?session=${encodeURIComponent(sessionId)}` : null}
         shareUrl={shareUrl}
+        adaptive={{
+          guidance,
+          injected: adaptiveLogRef.current.injected,
+          adjustments: adaptiveLogRef.current.adjustments,
+        }}
         onDashboard={() => { window.location.href = '/dashboard' }}
         onRunAnother={() => { window.location.reload() }}
       />
@@ -685,10 +922,24 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
 
   return (
     <>
-      {showOnboarding && (
-        <AnalyticsOnboardingOverlay
-          onDone={() => setShowOnboarding(false)}
-          stepCount={subProblems.length}
+      {showBrief && (
+        <MissionBrief
+          question={scenario?.question || challenge.title || 'Answer the business question with real data.'}
+          briefBody={[scenario?.context, scenario?.trigger].filter(Boolean).join(' ') || undefined}
+          ready={mcpConnected && replRunning}
+          firstPrompt={activeSubProblem?.suggestedPrompts?.[0] ?? lab.missionBrief.fallbackFirstPrompt}
+          onStart={() => {
+            setStarted(true)
+            markMissionBriefSeen(challenge.id)
+            setShowBrief(false)
+          }}
+          onRunFirstPrompt={() => {
+            terminalRef.current?.insertText(activeSubProblem?.suggestedPrompts?.[0] ?? lab.missionBrief.fallbackFirstPrompt)
+          }}
+          onDismiss={() => {
+            markMissionBriefSeen(challenge.id)
+            setShowBrief(false)
+          }}
         />
       )}
 
@@ -697,63 +948,73 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
         height: '100%', minHeight: 0, overflow: 'hidden',
         background: 'var(--color-background)',
       }}>
-        {/* Sub-problem stepper */}
+        {/* Artifact spine — the deliverable as progress. 48px, never wraps;
+            a long adaptive arc scrolls horizontally instead of stealing
+            terminal height. */}
         <div style={{
-          flexShrink: 0, padding: '10px 16px',
+          flexShrink: 0, height: 48, padding: '0 16px 0 10px',
+          display: 'flex', alignItems: 'center', gap: 8,
           borderBottom: '1px solid var(--color-outline-variant)',
           background: 'var(--color-surface)',
-          overflowX: 'auto',
         }}>
-          {subProblems.length > 0 ? (
-            <SubProblemStepper
-              subProblems={subProblems}
-              activeIdx={activeSubProblemIdx}
-              completedIds={completedIds}
-              onStepClick={idx => {
-                if (completedIds.has(subProblems[idx]?.id ?? '')) {
-                  setActiveSubProblemIdx(idx)
-                }
+          {exitHref && (
+            <a
+              href={exitHref}
+              aria-label="Back"
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 20, color: 'var(--color-on-surface-variant)',
+                borderRadius: 999, padding: 4, flexShrink: 0,
+                textDecoration: 'none',
               }}
-            />
-          ) : (
-            <div style={{ height: 26, display: 'flex', alignItems: 'center' }}>
-              <div style={{
-                width: 120, height: 8,
-                background: 'var(--color-surface-container-high)',
-                borderRadius: 99, animation: 'pulse 1.5s ease infinite',
-              }} />
-            </div>
+            >
+              arrow_back
+            </a>
           )}
+          <ArtifactSpineStrip rows={artifactRows} done={artifactDone} total={artifactTotal} />
         </div>
 
         {/* Body split. position: relative so the floating Hatch bubble anchors
             to this workspace row (its closed/floating modes use `absolute
             bottom-4 right-4`), and it's a flex row so the docked panel sits as
             the right column — exactly how FlowWorkspace mounts the same panel. */}
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+        <div
+          ref={containerRef}
+          className="flex flex-col overflow-y-auto md:flex-row md:overflow-hidden"
+          style={{ flex: 1, minHeight: 0, position: 'relative', gap: 8, padding: 8, background: 'var(--color-surface-container-low)', ['--cc-left-w' as string]: `${leftWidth}%` }}
+        >
 
           {/* LEFT — scenario + dataset. `minHeight: 0` + `height: 100%` are what
               let `overflowY: auto` actually engage inside the flex row: without
               them the column stretches to its content's intrinsic height, grows
               the row past the viewport, and the bottom (skills library) gets
               clipped with no scrollbar. */}
-          <div style={{
-            width: '28%', minWidth: 220, maxWidth: 320,
-            flexShrink: 0,
-            height: '100%', minHeight: 0,
-            borderRight: '1px solid var(--color-outline-variant)',
-            overflowY: 'auto', overflowX: 'hidden', padding: '14px 14px',
-            display: 'flex', flexDirection: 'column', gap: 12,
-            background: 'var(--color-surface-container-low)',
-          }}>
-            <div style={{
-              fontSize: 10, fontWeight: 800,
-              letterSpacing: '0.07em', textTransform: 'uppercase',
-              color: 'var(--color-on-surface-variant)',
+          <div
+            className="w-full md:w-[var(--cc-left-w)] md:h-full md:min-h-0 md:overflow-y-auto"
+            style={{
               flexShrink: 0,
+              border: '1px solid var(--color-outline-variant)', borderRadius: 12,
+              overflowX: 'hidden', padding: '14px 14px',
+              display: 'flex', flexDirection: 'column', gap: 12,
+              background: 'var(--color-surface-container-lowest)',
             }}>
+            <button
+              onClick={() => { questionTouchedRef.current = true; setQuestionCollapsed(v => !v) }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                fontSize: 10, fontWeight: 800,
+                letterSpacing: '0.07em', textTransform: 'uppercase',
+                color: 'var(--color-on-surface-variant)',
+                flexShrink: 0, background: 'transparent', border: 'none',
+                cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+              }}
+              aria-expanded={!questionCollapsed}
+            >
               Challenge scenario
-            </div>
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                {questionCollapsed ? 'expand_more' : 'expand_less'}
+              </span>
+            </button>
             {/* Title */}
             <div style={{
               fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700,
@@ -767,12 +1028,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 the scenario_* columns passed down as `scenario`. */}
             {scenario && (scenario.context || scenario.trigger || scenario.question) ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {scenario.context && (
+                {!questionCollapsed && scenario.context && (
                   <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--color-on-surface)', margin: 0 }}>
                     {scenario.context}
                   </p>
                 )}
-                {scenario.trigger && (
+                {!questionCollapsed && scenario.trigger && (
                   <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--color-on-surface)', margin: 0 }}>
                     {scenario.trigger}
                   </p>
@@ -781,7 +1042,6 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                   <div style={{
                     padding: '10px 12px', borderRadius: 10,
                     background: 'var(--color-surface-container-high)',
-                    borderLeft: '3px solid var(--color-primary)',
                   }}>
                     <div style={{
                       fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
@@ -811,29 +1071,102 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
               alignSelf: 'flex-start',
             }}>
               <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--color-primary)', fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
-                database
+                {lab.resourceBadge.icon}
               </span>
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-on-surface)' }}>
-                BigQuery · read-only
+                {lab.resourceBadge.label}
               </span>
             </div>
 
-            {/* Skills library — browse + reload skills built across past sessions. */}
-            <SkillsLibraryPanel
-              terminalRef={terminalRef}
-              sessionSkills={skillsWritten}
-              replRunning={replRunning}
-              onLoaded={handleSkillWritten}
-            />
-          </div>
 
-          {/* RIGHT — live session */}
-          <div style={{
-            flex: 1, minWidth: 0,
-            display: 'flex', flexDirection: 'column', gap: 10,
-            padding: '12px 14px',
-            overflow: 'auto',
-          }}>
+            {/* Coaching register — how Hatch coaches this session (F3). Derived
+                from the learner's track record, adjustable per session. Product
+                language only; the internal level never surfaces. */}
+            <div style={{ position: 'relative', alignSelf: 'flex-start' }}>
+              <button
+                onClick={() => setRegisterMenuOpen((v) => !v)}
+                aria-expanded={registerMenuOpen}
+                aria-haspopup="menu"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  background: 'var(--color-surface-container)',
+                  border: '1px solid var(--color-outline-variant)',
+                  borderRadius: 999,
+                  padding: '3px 6px 3px 10px',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 13, color: 'var(--color-primary)', fontVariationSettings: "'FILL' 1, 'wght' 500" }}
+                >
+                  school
+                </span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-on-surface-variant)', fontFamily: 'var(--font-label)' }}>
+                  Coaching: {REGISTER_LABELS[guidance]}
+                </span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'var(--color-on-surface-variant)' }}>
+                  arrow_drop_down
+                </span>
+              </button>
+              {registerMenuOpen && (
+                <div
+                  role="menu"
+                  style={{
+                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 30,
+                    width: 280,
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-outline-variant)',
+                    borderRadius: 12,
+                    boxShadow: '0 12px 32px -8px rgba(30,27,20,0.18)',
+                    padding: 6,
+                    display: 'flex', flexDirection: 'column', gap: 2,
+                  }}
+                >
+                  <div style={{
+                    fontSize: 10.5, lineHeight: 1.5, color: 'var(--color-on-surface-variant)',
+                    padding: '6px 8px 8px', borderBottom: '1px solid var(--color-outline-variant)',
+                    marginBottom: 2,
+                  }}>
+                    How Hatch coaches this session. Set from your track record, yours to change.
+                  </div>
+                  {(['scaffolded', 'guided', 'open'] as const).map((level) => (
+                    <button
+                      key={level}
+                      role="menuitemradio"
+                      aria-checked={guidance === level}
+                      onClick={() => handleRegisterChoice(level)}
+                      style={{
+                        display: 'flex', alignItems: 'flex-start', gap: 8,
+                        textAlign: 'left', width: '100%',
+                        background: guidance === level ? 'var(--color-primary-fixed)' : 'transparent',
+                        border: 'none', borderRadius: 8,
+                        padding: '7px 8px', cursor: 'pointer', fontFamily: 'inherit',
+                      }}
+                    >
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: 15, marginTop: 1, flexShrink: 0,
+                          color: guidance === level ? 'var(--color-primary)' : 'var(--color-outline)',
+                          fontVariationSettings: `'FILL' ${guidance === level ? 1 : 0}, 'wght' 500`,
+                        }}
+                      >
+                        {guidance === level ? 'radio_button_checked' : 'radio_button_unchecked'}
+                      </span>
+                      <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface)' }}>
+                          {REGISTER_LABELS[level]}
+                        </span>
+                        <span style={{ fontSize: 10.5, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
+                          {REGISTER_TOOLTIPS[level]}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Objective card */}
             {activeSubProblem && (
@@ -844,34 +1177,74 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                 mcpConnected={mcpConnected}
                 replRunning={replRunning}
                 skillsWritten={skillsWritten}
+                hideTeachingNote={guidance === 'open'}
                 reportWritten={!!reportPath}
                 onMark={handleMark}
               />
             )}
 
-            {/* Connection strip */}
-            <AnalyticsConnectionStrip
-              mcpConnected={mcpConnected}
-              skillsWritten={skillsWritten}
-            />
+            {/* Suggested prompt rail. Prefer the AI-generated contextual chips
+                (driven by the live terminal); fall back to the step's static
+                arc prompts whenever those are empty (loading / failed / budget). */}
+            {(() => {
+              // Prompt density follows guidance (design §3.3): scaffolded sees
+              // everything, guided two, open a single sharp direction.
+              const density = guidance === 'scaffolded' ? 3 : guidance === 'guided' ? 2 : 1
+              const allRailPrompts = aiPrompts.length ? aiPrompts : (activeSubProblem?.suggestedPrompts ?? [])
+              const railPrompts = allRailPrompts.slice(0, density)
+              return railPrompts.length ? (
+                <SuggestedPromptRail
+                  prompts={railPrompts}
+                  terminalRef={terminalRef}
+                  contextual={aiPrompts.length > 0}
+                />
+              ) : null
+            })()}
 
-            {/* Live AI usage meter — spend vs the per-session budget cap */}
-            {usage && (
-              <UsageMeter
-                spentUsd={usage.spent_usd}
-                budgetUsd={usage.budget_usd}
-                inputTokens={usage.input_tokens}
-                outputTokens={usage.output_tokens}
-                active={!showMirror}
-              />
-            )}
+            {/* Skills library — browse + reload skills built across past sessions. */}
+            <SkillsLibraryPanel
+              terminalRef={terminalRef}
+              sessionSkills={skillsWritten}
+              replRunning={replRunning}
+              onLoaded={handleSkillWritten}
+            />
+          </div>
+
+          {/* Drag divider — desktop only (mobile stacks) */}
+          <div
+            onMouseDown={handleLeftDividerMouseDown}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize mission panel and terminal"
+            className="hidden md:flex"
+            style={{ width: 8, margin: '0 -8px', cursor: 'col-resize', flexShrink: 0, zIndex: 5, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <div style={{ width: 4, height: 36, borderRadius: 999, background: 'var(--color-outline-variant)' }} />
+          </div>
+
+          {/* RIGHT — live session. overflow:hidden, NOT auto: the terminal is
+              the only element allowed to scroll (xterm scrolls internally).
+              An auto column here created a second scrollbar around the
+              terminal and let sibling cards jitter its height. */}
+          <div
+            className="min-h-[360px] md:min-h-0"
+            style={{
+              flex: 1, minWidth: 0,
+              display: 'flex', flexDirection: 'column',
+              padding: '10px 12px',
+              overflow: 'hidden',
+              border: '1px solid var(--color-outline-variant)', borderRadius: 12,
+              background: 'var(--color-surface-container-lowest)',
+            }}>
 
             {/* Terminal frame */}
-            <div style={{ flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative' }}>
               {wssUrl ? (
                 <>
                   <AnalyticsTerminalFrame
                     wssUrl={wssUrl}
+                    mcpNamePattern={lab.detectors.mcpName ?? undefined}
+                    reportPathPattern={lab.detectors.reportPathPattern}
                     terminalRef={terminalRef}
                     onOutput={handleOutput}
                     onActivity={handleActivity}
@@ -945,23 +1318,69 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
                   </button>
                 </div>
               ) : (
-                <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} />
+                <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} stepLabels={lab.startup.steps} />
               )}
             </div>
 
-            {/* Suggested prompt rail. Prefer the AI-generated contextual chips
-                (driven by the live terminal); fall back to the step's static
-                arc prompts whenever those are empty (loading / failed / budget). */}
-            {(() => {
-              const railPrompts = aiPrompts.length ? aiPrompts : (activeSubProblem?.suggestedPrompts ?? [])
-              return railPrompts.length ? (
-                <SuggestedPromptRail
-                  prompts={railPrompts}
-                  terminalRef={terminalRef}
-                  contextual={aiPrompts.length > 0}
-                />
-              ) : null
-            })()}
+            {/* Session status bar — telemetry lives with the work surface, not
+                the mission panel: connection dots, skills count, compact spend
+                with the budget color banding. Only once a session exists. */}
+            {(started || wssUrl) && (
+              <div style={{
+                flexShrink: 0, height: 26, marginTop: 8,
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '0 4px',
+                fontFamily: 'var(--font-label)',
+              }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{
+                    width: 7, height: 7, borderRadius: 99,
+                    background: mcpConnected ? 'var(--color-primary)' : 'var(--color-outline)',
+                    boxShadow: mcpConnected ? '0 0 0 2px rgba(74,124,89,0.2)' : 'none',
+                  }} />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: mcpConnected ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)' }}>
+                    BigQuery
+                  </span>
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{
+                    width: 7, height: 7, borderRadius: 99,
+                    background: replRunning ? 'var(--color-primary)' : 'var(--color-outline)',
+                    boxShadow: replRunning ? '0 0 0 2px rgba(74,124,89,0.2)' : 'none',
+                  }} />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: replRunning ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)' }}>
+                    Claude
+                  </span>
+                </span>
+                {skillsWritten.length > 0 && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    fontSize: 10.5, fontWeight: 700, color: 'var(--color-tertiary)',
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 13, fontVariationSettings: "'FILL' 1" }}>construction</span>
+                    {skillsWritten.length} skill{skillsWritten.length === 1 ? '' : 's'}
+                  </span>
+                )}
+                {usage && usage.budget_usd > 0 && (() => {
+                  const ratio = Math.min(usage.spent_usd / usage.budget_usd, 1)
+                  const fill = ratio >= 0.85 ? 'var(--color-error)' : ratio >= 0.6 ? 'var(--color-tertiary)' : 'var(--color-primary)'
+                  return (
+                    <span
+                      title={`AI usage: $${usage.spent_usd.toFixed(2)} of $${usage.budget_usd.toFixed(2)} · ${usage.input_tokens.toLocaleString()} in / ${usage.output_tokens.toLocaleString()} out tokens`}
+                      style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 14, color: fill, fontVariationSettings: "'FILL' 1" }}>bolt</span>
+                      <span style={{ width: 56, height: 4, borderRadius: 99, background: 'var(--color-surface-container-highest)', overflow: 'hidden' }}>
+                        <span style={{ display: 'block', width: `${Math.round(ratio * 100)}%`, height: '100%', background: fill, transition: 'width 600ms' }} />
+                      </span>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>
+                        ${usage.spent_usd.toFixed(2)}
+                      </span>
+                    </span>
+                  )
+                })()}
+              </div>
+            )}
 
             {/* Proactive idle nudges now surface through the floating Hatch
                 dock (mounted as the last child of this row), not as a separate
@@ -988,6 +1407,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             proactiveNudge={proactiveNudge ? { id: 'idle', text: proactiveNudge } : null}
             onDismissNudge={() => setProactiveNudge(null)}
             terminalTail={terminalTail.slice(-3000)}
+            artifactState={artifactSummary}
             mcpConnected={mcpConnected}
             skillsWritten={skillsWritten}
             activeSubProblemId={activeSubProblem?.id ?? null}
@@ -997,6 +1417,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
             activeSubProblemSuccessCriterion={activeSubProblem?.successCriterion ?? null}
             markedFindings={markedFindings}
             challengeTitle={challenge.title}
+            guidanceLevel={guidance}
           />
         </div>
       </div>
@@ -1010,20 +1431,18 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario }: Me
 // pipeline (wake the warehouse DB → mint a budgeted key → boot the container →
 // connect), and on a cold start it can take ~30-60s. Showing the active step
 // (and that cold starts are slow) beats an opaque spinner.
-const STARTUP_STEPS: { key: 'requesting' | 'waking' | 'booting' | 'connecting'; label: string }[] = [
-  { key: 'requesting', label: 'Requesting your sandbox' },
-  { key: 'waking', label: 'Waking the data warehouse' },
-  { key: 'booting', label: 'Booting the Claude Code container' },
-  { key: 'connecting', label: 'Connecting BigQuery and finishing up' },
-]
+const STARTUP_KEYS = ['requesting', 'waking', 'booting', 'connecting'] as const
 
 function SandboxStartupProgress({
   phase,
   resuming,
+  stepLabels,
 }: {
   phase: 'requesting' | 'waking' | 'booting' | 'connecting' | null
   resuming?: boolean
+  stepLabels: readonly [string, string, string, string]
 }) {
+  const STARTUP_STEPS = STARTUP_KEYS.map((key, i) => ({ key, label: stepLabels[i] }))
   const activeIdx = phase ? STARTUP_STEPS.findIndex((s) => s.key === phase) : 0
   return (
     <div style={{

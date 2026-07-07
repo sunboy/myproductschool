@@ -63,6 +63,10 @@ export interface ProvisionInput {
   ttlSeconds: number
   /** Presigned URL to the user's prior ~/.claude state (MCP regs + skills). */
   userClaudeStateUrl?: string
+  /** Presigned URL to the lab's starter tarball (e.g. the debugging repo). */
+  challengeTarballUrl?: string
+  /** Lab-supplied permission-allowlist additions. */
+  extraAllowedTools?: string[]
   /** Presigned URL to a prior /workspace snapshot, for resume. */
   workspaceRestoreUrl?: string
 }
@@ -175,6 +179,10 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     SNAPSHOT_AUTH_TOKEN: snapshotToken,
     USER_STATE_SNAPSHOT_URL: userStateSnapshotUrl,
     ...(input.userClaudeStateUrl ? { USER_CLAUDE_STATE_URL: input.userClaudeStateUrl } : {}),
+    ...(input.challengeTarballUrl ? { CHALLENGE_TARBALL_URL: input.challengeTarballUrl } : {}),
+    ...(input.extraAllowedTools?.length
+      ? { CC_EXTRA_ALLOWED_TOOLS: JSON.stringify(input.extraAllowedTools) }
+      : {}),
     ...(input.workspaceRestoreUrl ? { WORKSPACE_RESTORE_URL: input.workspaceRestoreUrl } : {}),
   }
 

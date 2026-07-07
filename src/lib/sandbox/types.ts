@@ -56,6 +56,10 @@ export interface SessionEnv {
   /** Presigned URL the container pulls the challenge starter tarball from.
    *  Authored flat (relative to /workspace); extracted with `-C /workspace`. */
   CHALLENGE_TARBALL_URL?: string
+  /** JSON array of extra Claude permission-allowlist entries the entrypoint
+   *  merges into settings.json (and removes from the deny list). Lab-supplied,
+   *  e.g. the debugging lab allows Bash(npm:*). */
+  CC_EXTRA_ALLOWED_TOOLS?: string
   /** Presigned URL of a prior session's workspace AUTOSAVE snapshot, used to
    *  rehydrate /workspace on resume so a returning user doesn't start over. The
    *  autosave tarball is rooted at `workspace/`, so the entrypoint extracts it

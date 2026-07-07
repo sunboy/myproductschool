@@ -1,9 +1,9 @@
 import { getChallengeById } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
+import { ScoreHero, DimensionCard, FeedbackShell, FeedbackSection, TakeawayCard } from '@/components/feedback'
 import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
-import { AnimatedProgress, MotionSection } from '@/components/motion'
+
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { workspaceBreadcrumbs } from '@/lib/workspace/breadcrumbs'
@@ -150,7 +150,13 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           if (attemptData.response_text) {
             responseText = attemptData.response_text as string
           }
-          if (attemptData.mental_models_breakdown) {
+          // Prefer the rollup breakdown inside feedback_json (it carries the
+          // framework layer: framework_hint, missed, per-step score); the
+          // column written mid-flight at step 'done' is the fallback.
+          const fbJson = attemptData.feedback_json as { mental_models_breakdown?: MentalModelStep[] } | null
+          if (Array.isArray(fbJson?.mental_models_breakdown) && fbJson.mental_models_breakdown.length) {
+            mentalModelsBreakdown = fbJson.mental_models_breakdown
+          } else if (attemptData.mental_models_breakdown) {
             mentalModelsBreakdown = attemptData.mental_models_breakdown as MentalModelStep[]
           }
           if (typeof attemptData.weakest_competency === 'string') {
@@ -492,126 +498,115 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         <section className="col-span-12 lg:col-span-7 space-y-4">
           <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
 
-          {/* Score Summary Card */}
-          <MotionSection className="bg-surface-container p-5 rounded-xl editorial-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <HatchGlyph size={40} state={overallScoreNum >= 75 ? 'celebrating' : 'reviewing'} className="text-primary flex-shrink-0" />
-                <div>
-                  <h3 className="font-headline text-lg font-bold text-on-surface">
-                    Hatch&apos;s Analysis
-                  </h3>
-                  <p className="text-sm text-on-surface-variant">Here&apos;s what I saw in your reasoning.</p>
-                </div>
+          <FeedbackShell
+            hero={
+              <div className="flex flex-col gap-4">
+                <ScoreHero raw={overallScoreNum} scale={100} headline={scoreDescriptor} />
+                {full.overall && (
+                  <FeedbackText className="text-on-surface text-sm leading-relaxed">{full.overall}</FeedbackText>
+                )}
               </div>
-              <div className="text-right">
-                <span className="text-5xl font-headline font-extrabold text-primary">{(overallScoreNum / 10).toFixed(1)}</span>
-                <span className="text-xl opacity-60">/10</span>
-              </div>
-            </div>
-
-            {/* Score descriptor */}
-            <p className="text-sm text-on-surface-variant mb-4">{scoreDescriptor}</p>
-
-            {/* Overall assessment */}
-            {full.overall && (
-              <FeedbackText className="mb-6 text-on-surface">{full.overall}</FeedbackText>
+            }
+            takeaway={
+              (full.what_worked.length > 0 || full.what_to_fix.length > 0) ? (
+                <>
+                  {full.what_worked[0] && <TakeawayCard kind="strength" text={full.what_worked[0]} />}
+                  {full.what_to_fix[0] && <TakeawayCard kind="fix" text={full.what_to_fix[0]} />}
+                </>
+              ) : undefined
+            }
+          >
+            {/* FLOW is the spine: the per-move Mental Models breakdown leads. */}
+            {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
+              <MentalModelsBreakdown
+                breakdown={mentalModelsBreakdown}
+                weakestCompetency={weakestCompetency ?? undefined}
+                nextChallengeHref={nextChallengeHref}
+                nextChallengeTitle={nextChallenge?.title}
+              />
             )}
 
-            {/* Progress Bars for each dimension (summary) */}
-            <div className="space-y-2">
-              {items.map(item => {
-                const percentage = (item.score / 10) * 100
-                const barColor = item.score >= 7 ? 'bg-primary' : 'bg-secondary'
-                return (
-                  <div key={item.dimension} className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 flex items-center justify-between shadow-sm">
-                    <div className="flex flex-col gap-2 w-full mr-4">
-                      <span className="text-sm font-bold text-on-surface">{prettifyDimension(item.dimension)}</span>
-                      <AnimatedProgress
-                        value={percentage}
-                        state={item.score >= 7 ? 'complete' : 'active'}
-                        trackClassName="h-1.5 bg-background"
-                        barClassName={barColor}
-                      />
-                    </div>
-                    <span className="font-headline font-extrabold text-primary">{item.score.toFixed(1)}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </MotionSection>
+            {/* Canvas snapshot (system_design / data_modeling only) */}
+            {isCanvasChallenge && canvasSnapshot && (
+              <FeedbackSection title="Your diagram" icon="schema">
+                <CanvasSnapshotViewer snapshot={canvasSnapshot} annotations={canvasAnnotations} />
+              </FeedbackSection>
+            )}
 
-          {/* Canvas Snapshot Viewer (system_design / data_modeling only) */}
-          {isCanvasChallenge && canvasSnapshot && (
-            <div className="bg-surface-container rounded-xl p-5 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-xl">schema</span>
-                <h3 className="font-headline text-base font-semibold text-on-surface">Your diagram</h3>
+            {/* Per-dimension coaching: the one shared DimensionCard. */}
+            <FeedbackSection title="Where the score came from" icon="analytics">
+              <div className="flex flex-col gap-2.5">
+                {(() => {
+                  const lowest = dimensionPanels.reduce(
+                    (min, d) => (d.score < min ? d.score : min),
+                    Infinity,
+                  )
+                  return dimensionPanels.map((d) => (
+                    <DimensionCard
+                      key={d.dimension}
+                      label={d.label}
+                      raw={d.score}
+                      scale={10}
+                      verdict={d.commentary}
+                      howToImprove={d.suggestions?.length ? d.suggestions.join(' ') : null}
+                      focus={d.score === lowest && d.needsWork}
+                    />
+                  ))
+                })()}
               </div>
-              <CanvasSnapshotViewer snapshot={canvasSnapshot} annotations={canvasAnnotations} />
-            </div>
-          )}
-
-          {/* What Worked / What to Fix — only render a side when it has content
-              (a real attempt with no strengths/improvements must not show an
-              empty box, and must never backfill mock items). */}
-          {(full.what_worked.length > 0 || full.what_to_fix.length > 0) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {full.what_worked.length > 0 && (
-                <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
-                    <h4 className="font-headline font-extrabold text-on-surface text-lg">What Worked</h4>
-                  </div>
-                  <ul className="space-y-2">
-                    {full.what_worked.map((item, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                        <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
-                        <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
-                      </li>
-                    ))}
-                  </ul>
+              {detectedPatterns.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {detectedPatterns.map((dp) => (
+                    <span key={dp.pattern_name} className="font-label text-[11px] font-bold px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant">
+                      {dp.pattern_name}
+                    </span>
+                  ))}
                 </div>
               )}
-              {full.what_to_fix.length > 0 && (
-                <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-secondary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-                    <h4 className="font-headline font-extrabold text-on-surface text-lg">Areas for Growth</h4>
+            </FeedbackSection>
+
+            {/* Full strength / growth lists (the takeaway row carries the top
+                item of each; these are the receipts). */}
+            {(full.what_worked.length > 1 || full.what_to_fix.length > 1) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" data-fb-section>
+                {full.what_worked.length > 1 && (
+                  <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
+                      <h4 className="font-headline font-extrabold text-on-surface text-lg">What Worked</h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {full.what_worked.slice(1).map((item, i) => (
+                        <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
+                          <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
+                          <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="space-y-2">
-                    {full.what_to_fix.map((item, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                        <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
-                        <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Mental Models Breakdown (v2 challenges) — the artifact replay leads,
-              so it sits above the per-dimension accordion. */}
-          {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
-            <MentalModelsBreakdown
-              breakdown={mentalModelsBreakdown}
-              weakestCompetency={weakestCompetency ?? undefined}
-              nextChallengeHref={nextChallengeHref}
-              nextChallengeTitle={nextChallenge?.title}
-            />
-          )}
-
-          {/* Dimension Expansion Panels (Accordions) */}
-          <FeedbackAccordion
-            dimensions={dimensionPanels}
-            detectedPatterns={detectedPatterns.length > 0 ? detectedPatterns : undefined}
-          />
+                )}
+                {full.what_to_fix.length > 1 && (
+                  <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-secondary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                      <h4 className="font-headline font-extrabold text-on-surface text-lg">Areas for Growth</h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {full.what_to_fix.slice(1).map((item, i) => (
+                        <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
+                          <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
+                          <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
 
           {/* Key Insight — hidden when a real attempt has none (no mock fallback) */}
           {full.key_insight && (
-            <div className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">
+            <div data-fb-section className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">
               <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
               <div>
                 <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
@@ -622,7 +617,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
           {/* Up next banner */}
           {nextChallenge && nextChallengeHref && (
-            <div className="bg-primary/10 border border-primary/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div data-fb-section className="bg-primary/10 border border-primary/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex items-start gap-3 flex-1 min-w-0">
                 <span className="material-symbols-outlined text-primary flex-shrink-0 mt-0.5">rocket_launch</span>
                 <div className="min-w-0">
@@ -687,6 +682,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               All challenges
             </Link>
           </div>
+          </FeedbackShell>
         </section>
       </div>
     </div>

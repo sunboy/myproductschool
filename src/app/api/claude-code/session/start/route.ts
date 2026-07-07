@@ -7,6 +7,9 @@
 // (claude_code_sessions has service-role-only write policy).
 
 import { NextRequest, NextResponse } from 'next/server'
+import { isClaudeCodeLab, labIdForChallengeType } from '@/lib/labs/types'
+import { getLabClient } from '@/lib/labs/client'
+import { canAccessLab } from '@/lib/labs/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -17,6 +20,9 @@ import { warmGateway, isGatewayConfigured } from '@/lib/sandbox/llm-gateway'
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { getSandbox } from '@/lib/sandbox'
 import { randomUUID } from 'crypto'
+import { loadGuidanceInputs, deriveGuidanceLevel, type GuidanceLevel } from '@/lib/adaptive/guidance'
+import { mergeArc } from '@/components/v2/mediums/analyticsArc'
+import type { AnalyticsSubProblem } from '@/components/v2/mediums/types'
 
 export const dynamic = 'force-dynamic'
 // This route is now thin (gates + create a provisioning row) and returns fast.
@@ -61,18 +67,34 @@ export async function POST(req: NextRequest) {
   const challenge_id = identity?.id ?? body.challenge_id
 
   // --- Load challenge (RLS: user can read any published challenge) ---
-  const { data: challenge } = await supabase
+  let { data: challenge } = await supabase
     .from('challenges')
-    .select('id, challenge_type, metadata')
+    .select('id, challenge_type, metadata, difficulty')
     .eq('id', challenge_id)
     .single()
 
   if (!challenge) {
+    // Unpublished challenges are invisible through RLS — which is the dark-
+    // launch gate for everyone except admins, who may QA a lab pre-publish.
+    const adminProbe = createAdminClient()
+    const { data: prof } = await adminProbe
+      .from('profiles').select('role').eq('id', user.id).maybeSingle()
+    if (prof?.role === 'admin') {
+      const { data: unpublished } = await adminProbe
+        .from('challenges')
+        .select('id, challenge_type, metadata, difficulty')
+        .eq('id', challenge_id)
+        .single()
+      challenge = unpublished
+    }
+  }
+
+  if (!challenge) {
     return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
   }
-  if (challenge.challenge_type !== 'claude_code_analytics') {
+  if (!isClaudeCodeLab(challenge.challenge_type)) {
     return NextResponse.json(
-      { error: 'Challenge is not a Claude Code Analytics challenge' },
+      { error: 'Challenge is not a Claude Code lab challenge' },
       { status: 400 },
     )
   }
@@ -86,13 +108,20 @@ export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subProblems: unknown[] = (claudeCodeMeta.sub_problems ?? meta.sub_problems ?? []) as any[]
 
-  // --- Load user plan for the usage gate ---
+  // --- Load user plan for the usage gate (+ role for the lab flag gate) ---
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan')
+    .select('plan, role')
     .eq('id', user.id)
     .single()
   const userPlan = (profile?.plan as string) ?? 'free'
+
+  // Flag-gated labs ship dark: this route is the authoritative gate (API
+  // routes skip the proxy). Admins bypass so QA/E2E runs with the flag off.
+  const labId = labIdForChallengeType(challenge.challenge_type)
+  if (!(await canAccessLab(labId, (profile?.role as string | null) ?? null))) {
+    return NextResponse.json({ error: 'This lab is not available yet' }, { status: 403 })
+  }
 
   const admin = createAdminClient()
 
@@ -170,9 +199,16 @@ export async function POST(req: NextRequest) {
   // --- Idempotency: check for an active/provisioning session on this attempt ---
   const { data: existingSession } = await admin
     .from('claude_code_sessions')
-    .select('id, status, wss_url, expires_at, transcript_uri, host_instance_id')
+    .select('id, status, wss_url, expires_at, transcript_uri, host_instance_id, final_artifact')
     .eq('attempt_id', attemptId)
     .maybeSingle()
+
+  // The adaptive arc persisted on a live session (final_artifact.adaptive) is
+  // authoritative for reconnects — rebuilding from metadata would lose the
+  // guidance-shaped or branched steps (design §5/§7, Codex finding 1).
+  const persistedAdaptive = (existingSession?.final_artifact as
+    | { adaptive?: { guidance?: GuidanceLevel; arc?: AnalyticsSubProblem[] } }
+    | null)?.adaptive
 
   // Latest workspace autosave to restore on RESUME. When a prior session for this
   // attempt was reaped (status 'idle') or expired, its transcript_uri points at
@@ -208,7 +244,9 @@ export async function POST(req: NextRequest) {
           status: 'active',
           wss_url: existingSession.wss_url,
           expires_at: expiresAt,
-          sub_problems: subProblems,
+          sub_problems: persistedAdaptive?.arc?.length ? persistedAdaptive.arc : subProblems,
+          arc_complete: Boolean(persistedAdaptive?.arc?.length),
+          guidance: persistedAdaptive?.guidance ?? 'guided',
         })
       }
       // Stale active row (container reaped) — retire it and re-provision below.
@@ -225,7 +263,9 @@ export async function POST(req: NextRequest) {
         status: 'provisioning',
         wss_url: null,
         expires_at: expiresAt,
-        sub_problems: subProblems,
+        sub_problems: persistedAdaptive?.arc?.length ? persistedAdaptive.arc : subProblems,
+        arc_complete: Boolean(persistedAdaptive?.arc?.length),
+        guidance: persistedAdaptive?.guidance ?? 'guided',
       })
     } else {
       // Reaped/expired/terminated prior session: carry its workspace forward.
@@ -241,6 +281,24 @@ export async function POST(req: NextRequest) {
   // so the client shows real progress while it calls provision + polls state.
   const sessionId = randomUUID()
 
+  // --- Compute the per-learner arc (adaptive B1) ---
+  // Guidance comes from a deliberately lightweight loader (three narrow reads,
+  // never getHatchContext's 12-query fanout — this route stays thin). Any
+  // failure falls back to 'guided', which is exactly today's behavior.
+  let guidance: GuidanceLevel = 'guided'
+  try {
+    guidance = deriveGuidanceLevel(await loadGuidanceInputs(admin, user.id))
+  } catch (err) {
+    console.error('[cc/session/start] guidance derivation failed, using guided:', err)
+  }
+  const labClient = getLabClient(labIdForChallengeType(challenge.challenge_type))
+  const arc = mergeArc(
+    (challenge as { difficulty?: string | null }).difficulty,
+    subProblems as Partial<AnalyticsSubProblem>[],
+    guidance,
+    labClient.arc,
+  )
+
   const { error: upsertErr } = await admin.from('claude_code_sessions').upsert(
     {
       id: sessionId,
@@ -248,6 +306,14 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       challenge_id,
       status: 'provisioning',
+      // Persist the guidance-shaped arc so reconnect paths (this route's early
+      // returns, `current`, `state`) return the SAME arc after a refresh.
+      // Spread the prior artifact first: this upsert REPLACES a reaped row for
+      // the same attempt_id, and a previously graded artifact must survive.
+      final_artifact: {
+        ...((existingSession?.final_artifact as Record<string, unknown> | null) ?? {}),
+        adaptive: { guidance, arc, source: 'start', decided_at: new Date().toISOString() },
+      },
       // Carry the prior workspace forward so provision can presign + restore it.
       transcript_uri: resumeSnapshotUri,
       // CRITICAL: this upsert REPLACES a prior reaped/terminated row for the same
@@ -287,6 +353,8 @@ export async function POST(req: NextRequest) {
     status: 'provisioning',
     wss_url: null,
     expires_at: null,
-    sub_problems: subProblems,
+    sub_problems: arc,
+    arc_complete: true,
+    guidance,
   })
 }

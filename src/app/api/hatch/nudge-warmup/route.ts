@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { z, ZodError } from 'zod'
 import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT } from '@/lib/hatch/system-prompt'
 import { IS_MOCK } from '@/lib/mock'
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
       userPrompt += ` Step: ${flowStep}. Reasoning move: ${reasoningMove}.`
     }
 
-    const systemPrompt = HATCH_NUDGE_SYSTEM_PROMPT + '\n\n' + MENTAL_MODELS_CONTEXT
+    const systemPrompt = loadSkillPrompt('hackproduct-nudger', HATCH_NUDGE_SYSTEM_PROMPT) + '\n\n' + MENTAL_MODELS_CONTEXT
 
     // max_tokens: 1 seeds Anthropic's 5-minute prompt cache at near-zero cost
     await guardedCachedMessage(systemPrompt, userPrompt, {

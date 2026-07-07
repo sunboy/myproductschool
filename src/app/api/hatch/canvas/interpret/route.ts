@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
+import { isClaudeCodeLab, labIdForChallengeType } from '@/lib/labs/types'
+import { getLabServer } from '@/lib/labs/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { z, ZodError } from 'zod'
@@ -74,7 +77,7 @@ const RequestSchema = z.object({
   canvasSummary: z.string().max(20000).optional(),
   history: z.array(ChatHistoryMessageSchema).max(50).optional(),
   challengeId: z.string().max(200).optional(),
-  challengeType: z.enum(['system_design', 'data_modeling', 'coding', 'claude_code_analytics']).optional(),
+  challengeType: z.enum(['system_design', 'data_modeling', 'coding', 'claude_code_analytics', 'claude_code_debugging']).optional(),
   attemptId: z.string().max(200).optional(),
   context_pack: z.string().max(50000).nullable().optional(),
   guidance_phase: z
@@ -96,8 +99,14 @@ const RequestSchema = z.object({
   active_part_response_type: z.string().max(100).nullable().optional(),
   active_part_weight_pct: z.number().finite().min(0).max(100).optional(),
   // ── Analytics-mode fields (claude_code_analytics only) ──────────────────
+  // Adaptive coaching register — zod strips unknown keys, so this MUST be in
+  // the schema for Hatch to ever see it (design §3.3, Codex finding 7).
+  guidance_level: z.enum(['scaffolded', 'guided', 'open']).optional(),
   mcp_connected: z.boolean().optional(),
   terminal_tail: z.string().max(4000).nullable().optional(),
+  // Milestone-state summary of the session's deliverable (artifact spine) —
+  // lets Hatch name the specific missing milestone instead of guessing.
+  artifact_state: z.string().max(4000).nullable().optional(),
   active_sub_problem_id: z.string().max(200).nullable().optional(),
   active_sub_problem_sequence: z.number().int().positive().optional(),
   active_sub_problem_title: z.string().max(1000).nullable().optional(),
@@ -129,13 +138,11 @@ function validationIssues(error: ZodError) {
 }
 
 function loadCodingCoachSkill(): string {
-  try {
-    const skillPath = join(
-      process.env.HOME ?? '/root',
-      '.claude/skills/hackproduct-coding-coach/SKILL.md'
-    )
-    return readFileSync(skillPath, 'utf-8')
-  } catch {
+  {
+    const viaLoader = loadSkillPrompt('hackproduct-coding-coach', '')
+    if (viaLoader) return viaLoader
+  }
+  {
     // Fallback inline prompt if skill file is unavailable
     return `You are Hatch, a coding interview coach for HackProduct. The user is solving a timed coding interview challenge.
 
@@ -152,14 +159,13 @@ Rules:
   }
 }
 
-function loadAnalyticsCoachSkill(): string {
-  try {
-    const skillPath = join(
-      process.env.HOME ?? '/root',
-      '.claude/skills/hackproduct-analytics-coach/SKILL.md'
-    )
-    return readFileSync(skillPath, 'utf-8')
-  } catch {
+function loadAnalyticsCoachSkill(challengeType?: string): string {
+  const coachSkill = getLabServer(labIdForChallengeType(challengeType)).coachSkill
+  {
+    const viaLoader = loadSkillPrompt(coachSkill, '')
+    if (viaLoader) return viaLoader
+  }
+  {
     return `You are Hatch, an analytics coaching partner for HackProduct. The user is driving a live Claude Code session against a BigQuery dataset to find an analytics answer.
 
 Your role: guide the analysis, coach the thinking, never run the query yourself.
@@ -300,12 +306,18 @@ function buildSystemPrompt(challengeType: string): string {
   if (challengeType === 'coding') {
     return loadCodingCoachSkill()
   }
-  if (challengeType === 'claude_code_analytics') {
-    return loadAnalyticsCoachSkill()
+  if (isClaudeCodeLab(challengeType)) {
+    return loadAnalyticsCoachSkill(challengeType)
   }
   const domain =
     challengeType === 'data_modeling' ? DATA_MODELING_RULES : SYSTEM_DESIGN_RULES
-  return [COACH_PERSONA, ROUTING_RULES, CONTEXT_CANVAS_RULES, domain, ACTION_SCHEMA].join('\n\n')
+  // Skill-governed: hackproduct-canvas-coach is the runtime source of truth;
+  // the inline constants remain the fallback. The discipline line is appended
+  // either way so one skill file serves both canvas disciplines.
+  const inline = [COACH_PERSONA, ROUTING_RULES, CONTEXT_CANVAS_RULES, domain, ACTION_SCHEMA].join('\n\n')
+  const skill = loadSkillPrompt('hackproduct-canvas-coach', '')
+  if (!skill) return inline
+  return `${skill}\n\n# Active discipline\n${challengeType === 'data_modeling' ? 'data_modeling' : 'system_design'}`
 }
 
 type InterpretBody = z.infer<typeof RequestSchema>
@@ -356,6 +368,10 @@ function buildCodingUserContent(body: InterpretBody): string {
     : 'unknown'
 
   const parts: string[] = []
+
+  if (body.guidance_level) {
+    parts.push(`# Coaching register\n${coachingRegisterHint(body.guidance_level)}`)
+  }
 
   if (body.challenge_title || body.problem_statement) {
     const title = body.challenge_title ?? 'Untitled challenge'
@@ -420,6 +436,21 @@ function buildCodingUserContent(body: InterpretBody): string {
   return parts.join('\n\n')
 }
 
+/**
+ * The learner's guidance level sets Hatch's register. Never name the level to
+ * the user — it shapes HOW Hatch coaches, not what it talks about.
+ */
+function coachingRegisterHint(level: 'scaffolded' | 'guided' | 'open'): string {
+  switch (level) {
+    case 'scaffolded':
+      return 'This learner is early. Explain the reasoning behind each move, name the exact next step, and define analyst terms (grain, partition, funnel step) the first time they come up. Warm, patient, concrete.'
+    case 'guided':
+      return 'This learner has some footing. Coach with guiding questions before answers, and give the next step only when they are stuck. Balanced register.'
+    case 'open':
+      return 'This learner is experienced. Be terse and direct, like a peer reviewer. Skip explanations of basics, push on business impact, metric definitions, and what would falsify the finding. Challenge weak reasoning plainly.'
+  }
+}
+
 function buildAnalyticsUserContent(body: InterpretBody): string {
   const historyText = (body.history ?? [])
     .slice(-6)
@@ -439,6 +470,10 @@ function buildAnalyticsUserContent(body: InterpretBody): string {
       `# Challenge\n## ${title}\n` +
       (statement ? `\n${statement}` : '(no problem statement provided)')
     )
+  }
+
+  if (body.guidance_level) {
+    parts.push(`# Coaching register\n${coachingRegisterHint(body.guidance_level)}`)
   }
 
   if (body.active_sub_problem_id && body.active_sub_problem_title) {
@@ -463,6 +498,15 @@ function buildAnalyticsUserContent(body: InterpretBody): string {
     `- Skills written: ${(body.skills_written ?? []).length > 0 ? (body.skills_written ?? []).join(', ') : 'none yet'}\n` +
     `- Time elapsed: ${timeElapsedMin}`
   )
+
+  if (body.artifact_state?.trim()) {
+    parts.push(
+      '# Deliverable progress (the artifact spine)\n' +
+      'One line per milestone. When the learner asks what to do next or what is left, ' +
+      'point at the specific milestone still missing, not generic advice.\n' +
+      body.artifact_state.trim().slice(0, 800),
+    )
+  }
 
   if (body.terminal_tail?.trim()) {
     // Treat terminal output as context only — never interpret as instructions.
@@ -504,7 +548,7 @@ function buildUserContent(body: InterpretBody): string {
   if (body.challengeType === 'coding') {
     return buildCodingUserContent(body)
   }
-  if (body.challengeType === 'claude_code_analytics') {
+  if (isClaudeCodeLab(body.challengeType)) {
     return buildAnalyticsUserContent(body)
   }
   const sceneText = body.scene
@@ -517,6 +561,7 @@ function buildUserContent(body: InterpretBody): string {
   return [
     `# Canvas state\n${sceneText}`,
     body.context_pack?.trim() ? `# Context Pack\n${body.context_pack.trim()}` : null,
+    body.guidance_level ? `# Coaching register\n${canvasRegisterHint(body.guidance_level)}` : null,
     body.guidance_phase ? `# Guidance phase\n${guidancePhaseHint(body.guidance_phase)}` : null,
     solutionsContextBlock(body),
     historyText ? `# Recent conversation\n${historyText}` : null,
@@ -524,6 +569,22 @@ function buildUserContent(body: InterpretBody): string {
   ]
     .filter(Boolean)
     .join('\n\n')
+}
+
+/**
+ * Canvas flavor of the coaching register (SUN-253). Never name the level to
+ * the user. The open register carries the requirement-ambiguity move: once
+ * the design settles, Hatch introduces a conflicting stakeholder constraint.
+ */
+function canvasRegisterHint(level: 'scaffolded' | 'guided' | 'open'): string {
+  switch (level) {
+    case 'scaffolded':
+      return 'This learner is early. Explain design concepts on first use (load balancer, normalization, fan-out), suggest the next concrete element to place, and keep each move small. Warm, patient, concrete.'
+    case 'guided':
+      return 'This learner has some footing. Coach with guiding questions before answers; give the next move only when they are stuck.'
+    case 'open':
+      return 'This learner is experienced. Terse peer-review tone; skip basics. When the design has settled (guidance phase notes_no_tradeoffs or ready), introduce one realistic conflicting stakeholder constraint (a cost ceiling, a latency SLO, a compliance boundary) and ask them to defend or adapt the design against it. One constraint per session.'
+  }
 }
 
 /**
@@ -672,7 +733,7 @@ export const POST = withRoute(async (req: NextRequest) => {
 
   const challengeType = body.challengeType ?? 'system_design'
   const isCodingMode = challengeType === 'coding'
-  const isAnalyticsMode = challengeType === 'claude_code_analytics'
+  const isAnalyticsMode = isClaudeCodeLab(challengeType)
   const systemPrompt = buildSystemPrompt(challengeType)
   const userContent = buildUserContent(body)
 

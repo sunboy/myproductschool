@@ -26,6 +26,22 @@ import { EVENT_CHALLENGE_COMPLETED, EVENT_ACTIVATED } from '@/lib/posthog/events
 const RequestSchema = z.object({
   attempt_id: z.string().uuid(),
   from_plan: z.string().trim().min(1).max(200).nullable().optional(),
+  // Adaptation contract (SUN-251): how the session's coaching register ran.
+  adaptive: z
+    .object({
+      guidance: z.enum(['scaffolded', 'guided', 'open']),
+      adjustments: z
+        .array(
+          z.object({
+            from: z.string().max(20),
+            to: z.string().max(20),
+            trigger: z.string().max(200),
+            atStepId: z.string().max(100).nullable(),
+          }),
+        )
+        .max(4),
+    })
+    .optional(),
 })
 
 function validationIssues(error: ZodError) {
@@ -471,9 +487,19 @@ export const POST = withRoute(async (
       ? [...deltaEntries].sort((a, b) => (b.after - b.before) - (a.after - a.before))[0]
       : null
 
-    const contentStr = topDelta && topDelta.after > topDelta.before
+    let contentStr = topDelta && topDelta.after > topDelta.before
       ? `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}). Top competency shown: ${competencyRollup.primaryCompetency}. Watch: ${competencyRollup.weakestCompetency}.`
       : `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}).`
+
+    // Adaptation contract (SUN-251): keep the register history in Hatch's
+    // memory so later coaching can reference how this session actually ran.
+    const adaptive = body.adaptive
+    if (adaptive && (adaptive.guidance !== 'guided' || adaptive.adjustments.length > 0)) {
+      const moves = adaptive.adjustments
+        .map((a) => `${a.from} to ${a.to} after ${a.trigger}`)
+        .join('; ')
+      contentStr += ` Coaching ran at the ${adaptive.guidance} register${moves ? ` (moved ${moves})` : ''}.`
+    }
 
     await admin.from('hatch_context').insert({
       user_id: userId,

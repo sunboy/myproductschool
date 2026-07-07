@@ -1,0 +1,9 @@
+{
+  "name": "cart-pricing",
+  "version": "1.4.2",
+  "private": true,
+  "description": "Cart pricing engine: tiered volume discounts, coupon stacking, and totals.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

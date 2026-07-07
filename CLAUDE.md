@@ -495,16 +495,31 @@ All Hatch AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropi
 
 ## Claude Code Skills for AI Interactions
 
-4 skills define deterministic behavior for all Hatch AI interactions:
+Skills in `~/.claude/skills/hackproduct-*` are the RUNTIME system prompts for
+AI behavior, loaded by the routes through `src/lib/ai/skill-loader.ts`
+(cached per process, inline fallback if a file is missing). Editing a skill
+file changes behavior on the next server process without a code change.
 
-| Skill | Path | Trigger |
+| Skill | Loaded by | Governs |
 |---|---|---|
-| `hackproduct-grader` | `~/.claude/skills/hackproduct-grader/SKILL.md` | Grading freeform/elaboration responses |
-| `hackproduct-enricher` | `~/.claude/skills/hackproduct-enricher/SKILL.md` | Generating MCQ options + framework hints |
-| `hackproduct-coaching` | `~/.claude/skills/hackproduct-coaching/SKILL.md` | Role-specific coaching output |
-| `hackproduct-nudger` | `~/.claude/skills/hackproduct-nudger/SKILL.md` | Step-aware in-context nudges |
-| `hackproduct-analytics-coach` | `~/.claude/skills/hackproduct-analytics-coach/SKILL.md` | Coaching a live Claude Code Analytics session (terminal + BigQuery); verdict on marked findings |
-| `hackproduct-analytics-grader` | `~/.claude/skills/hackproduct-analytics-grader/SKILL.md` | Grading a finished Claude Code Analytics session against the analyst_v1 rubric |
+| `hackproduct-grader` | `src/lib/v2/skills/ai/freeform-grader.ts` | FLOW freeform/elaboration grading |
+| `hackproduct-coaching` | `challenges/[id]/coaching/route.ts` | Role coaching / career signal |
+| `hackproduct-nudger` | `hatch/nudge`, `hatch/nudge-warmup`, `hatch/canvas/nudge` | All in-challenge idle nudges |
+| `hackproduct-canvas-coach` | `hatch/canvas/interpret` (canvas branch) | System-design/data-modeling coaching |
+| `hackproduct-canvas-grader` | `v2/skills/interview-grading/index.ts` | Canvas interview grading |
+| `hackproduct-coding-coach` | `hatch/canvas/interpret` (coding branch) | Coding challenge coaching |
+| `hackproduct-coding-grader` | `coding-grading/grader.ts` | Coding/SQL submission grading |
+| `hackproduct-analytics-coach` / `-grader` | lab registry (`src/lib/labs/server.ts`) | CC analytics lab coaching/grading |
+| `hackproduct-debugging-coach` / `-grader` | lab registry | CC debugging lab coaching/grading |
+| `hackproduct-interviewer` | `live-interview/system-prompt.ts` | Live-interview persona + phases + signal contract |
+| `hackproduct-interview-grader` | `debrief-generator.ts`, `grade-turn`, `artifact-grader.ts` | Live-interview debrief / per-turn / artifact grading |
+| `hackproduct-quicktake-grader` | `challenges/quick-take/submit` | Quick-take grading |
+
+Authoring-time (human-invoked, not runtime): `hackproduct-enricher` (MCQ
+option authoring), the content skills (`hackproduct-*-content`, `-writer`,
+`-scout`, `-publisher`, `-ceo`, `-autopsy-*`). The old
+`backend_planning/hackproduct-v2-bundle/skills` specs are archived at
+`docs/archive/v2-planning-skills/` and were never runtime skills.
 
 ---
 

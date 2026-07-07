@@ -211,7 +211,7 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
               <div style={{ ...sectionLabelStyle, color: '#b83230', borderBottomColor: '#ffd5d6' }}>What Didn&apos;t Work</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
                 {(gd.failures ?? []).map((f, i) => (
-                  <div key={i} style={{ background: '#fff5f5', borderRadius: 12, padding: '16px 18px', borderLeft: '4px solid #b83230' }}>
+                  <div key={i} style={{ background: '#fff5f5', borderRadius: 12, padding: '16px 18px' }}>
                     <div style={{ fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 700, color: '#b83230', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{f.name}</div>
                     <div style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#2e3230', marginBottom: 8, lineHeight: 1.55 }}>{f.what}</div>
                     <div style={{ fontFamily: 'var(--font-body)', fontSize: 11.5, color: '#6b6358', lineHeight: 1.5, borderTop: '1px solid #ffd5d6', paddingTop: 8 }}>
@@ -445,8 +445,7 @@ function StageSection({ stage, accentColor, isEven, sectionRef, sectionId }: Sta
           <div
             style={{
               background: '#fff9e6',
-              borderLeft: `4px solid ${accentColor}`,
-              borderRadius: '0 10px 10px 0',
+              borderRadius: 12,
               padding: '18px 22px',
               marginBottom: 36,
               maxWidth: 700,

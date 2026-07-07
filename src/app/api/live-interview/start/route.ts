@@ -85,6 +85,9 @@ export async function POST(request: Request) {
         companyName: built.companyName,
         scenarioTitle: built.scenarioTitle,
         effectiveDiscipline: built.effectiveDiscipline,
+        // Adaptation contract (SUN-254): the register this interview ran at,
+        // for the debrief and any later analysis.
+        guidanceLevel: built.guidanceLevel,
       },
     })
     .select('id')

@@ -677,7 +677,7 @@ export interface CodingPart {
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
-export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm' | 'claude_code_analytics'
+export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm' | 'claude_code_analytics' | 'claude_code_debugging'
 
 export interface Challenge {
   id: string; slug: string | null; title: string

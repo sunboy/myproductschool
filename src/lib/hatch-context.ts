@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { archetypePriorLevel, deriveLevelFromCompetencies } from '@/lib/adaptive/confidence'
 
 // ── Public interface ─────────────────────────────────────────
 
@@ -12,7 +13,7 @@ export interface HatchUserContext {
   prepTimeline: string | null
   targetCompany: string | null
   overallLevel: 'Beginner' | 'Developing' | 'Advanced' | 'Expert'
-  competencies: Array<{ competency: string; score: number; trend: string }>
+  competencies: Array<{ competency: string; score: number; trend: string; total_attempts?: number }>
   weakestCompetency: string | null
   moveLevels: Array<{ move: string; level: number; progress_pct: number }>
   recurringPatterns: Array<{ pattern_id: string; pattern_name: string; count: number }>
@@ -49,13 +50,25 @@ export interface HatchUserContext {
 
 // ── Helpers ──────────────────────────────────────────────────
 
-function deriveOverallLevel(competencies: HatchUserContext['competencies']): HatchUserContext['overallLevel'] {
-  if (!competencies.length) return 'Beginner'
-  const avg = competencies.reduce((sum, c) => sum + c.score, 0) / competencies.length
-  if (avg >= 80) return 'Expert'
-  if (avg >= 60) return 'Advanced'
-  if (avg >= 40) return 'Developing'
-  return 'Beginner'
+function deriveOverallLevel(
+  competencies: HatchUserContext['competencies'],
+  archetype?: string | null,
+): HatchUserContext['overallLevel'] {
+  const prior = archetypePriorLevel(archetype)
+  if (!competencies.length) return prior
+  // Rows fetched without total_attempts (older call shapes) keep the legacy
+  // raw-average behavior; evidence-aware rows get confidence shrinkage.
+  if (competencies.some((c) => typeof c.total_attempts !== 'number')) {
+    const avg = competencies.reduce((sum, c) => sum + c.score, 0) / competencies.length
+    if (avg >= 80) return 'Expert'
+    if (avg >= 60) return 'Advanced'
+    if (avg >= 40) return 'Developing'
+    return 'Beginner'
+  }
+  return deriveLevelFromCompetencies(
+    competencies.map((c) => ({ score: c.score, total_attempts: c.total_attempts as number })),
+    prior,
+  )
 }
 
 function deriveWeakestCompetency(competencies: HatchUserContext['competencies']): string | null {
@@ -120,7 +133,7 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
         try {
           const { data } = await admin
             .from('profiles')
-            .select('preferred_role, display_name, active_role, role_context, interview_date, primary_goal, prep_timeline, interview_meta')
+            .select('preferred_role, display_name, active_role, role_context, interview_date, primary_goal, prep_timeline, interview_meta, archetype')
             .eq('id', userId)
             .single()
           return data
@@ -134,7 +147,7 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
         try {
           const { data } = await admin
             .from('learner_competencies')
-            .select('competency, score, trend')
+            .select('competency, score, trend, total_attempts')
             .eq('user_id', userId)
           return data ?? []
         } catch {
@@ -310,7 +323,7 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
       })(),
     ])
 
-    const competencies = (competenciesResult as Array<{ competency: string; score: number; trend: string }>) ?? []
+    const competencies = (competenciesResult as HatchUserContext['competencies']) ?? []
     const recentCompletions = (completionsResult as HatchUserContext['recentCompletions']) ?? []
     const recentLiveInterviews = (liveInterviewHistoryResult as HatchUserContext['recentLiveInterviews']) ?? []
     const challengeScores = recentCompletions.map((c) => c.totalScore).filter((score) => Number.isFinite(score))
@@ -327,6 +340,7 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
       primary_goal: string | null
       prep_timeline: string | null
       interview_meta: Record<string, unknown> | null
+      archetype?: string | null
     }
     const profile = (profileResult as ProfileRow | null)
     const interviewMeta = profile?.interview_meta ?? null
@@ -341,7 +355,7 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
       goal: profile?.primary_goal ?? null,
       prepTimeline: profile?.prep_timeline ?? null,
       targetCompany,
-      overallLevel: deriveOverallLevel(competencies),
+      overallLevel: deriveOverallLevel(competencies, profile?.archetype),
       competencies,
       weakestCompetency: deriveWeakestCompetency(competencies),
       moveLevels: (moveLevelsResult as Array<{ move: string; level: number; progress_pct: number }>) ?? [],
@@ -387,7 +401,7 @@ export async function getDashboardCoachSummary(userId: string): Promise<Dashboar
     const [competenciesResult, completionsResult] = await Promise.all([
       admin
         .from('learner_competencies')
-        .select('competency, score, trend')
+        .select('competency, score, trend, total_attempts')
         .eq('user_id', userId)
         .then(({ data }) => data ?? [], () => []),
       admin

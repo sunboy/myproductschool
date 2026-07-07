@@ -1,4 +1,5 @@
 export { FlowWorkspace } from './FlowWorkspace'
+export { WorkspacePanel } from './WorkspacePanel'
 export { FlowWorkspaceShell } from './FlowWorkspaceShell'
 export { FlowStepper } from './FlowStepper'
 export { OptionCard } from './OptionCard'
@@ -20,14 +21,12 @@ export type { StepDetailModalProps } from './StepDetailModal'
 export { MediumRenderer } from './mediums/MediumRenderer'
 export { ClaudeCodeAnalyticsMedium } from './mediums/ClaudeCodeAnalyticsMedium'
 export { ClaudeCodeTerminal } from './mediums/ClaudeCodeTerminal'
-export { SubProblemStepper } from './mediums/SubProblemStepper'
 export { AnalyticsObjectiveCard } from './mediums/AnalyticsObjectiveCard'
-export { AnalyticsConnectionStrip } from './mediums/AnalyticsConnectionStrip'
 export { AnalyticsTerminalFrame } from './mediums/AnalyticsTerminalFrame'
 export { SuggestedPromptRail } from './mediums/SuggestedPromptRail'
-export { AnalyticsOnboardingOverlay, shouldShowOnboarding } from './mediums/AnalyticsOnboardingOverlay'
+export { ArtifactSpineStrip } from './mediums/ArtifactSpineStrip'
+export { MissionBrief, shouldShowMissionBrief, markMissionBriefSeen } from './mediums/MissionBrief'
 export { AnalyticsSessionMirror } from './mediums/AnalyticsSessionMirror'
-export { UsageMeter } from './mediums/UsageMeter'
 export type {
   ClaudeCodeTerminalHandle,
   ClaudeCodeTerminalProps,

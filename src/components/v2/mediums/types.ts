@@ -18,7 +18,7 @@ export type MediumKind =
   | 'flow_stepper'
   | 'excalidraw'
   | 'monaco_coding'
-  | 'claude_code_analytics'
+  | 'claude_code'
 
 /** Maps a challenge_type to the medium that renders it. */
 export function pickMedium(challengeType: ChallengeType): MediumKind {
@@ -30,7 +30,8 @@ export function pickMedium(challengeType: ChallengeType): MediumKind {
     case 'algorithm':
       return 'monaco_coding'
     case 'claude_code_analytics':
-      return 'claude_code_analytics'
+    case 'claude_code_debugging':
+      return 'claude_code'
     default:
       return 'flow_stepper'
   }
@@ -52,6 +53,11 @@ export interface ClaudeCodeTerminalHandle {
 export interface ClaudeCodeTerminalProps {
   /** wss endpoint for the live session (from claude_code_sessions.wss_url). */
   wssUrl: string
+  /** Lab detector overrides (additive; defaults = the analytics lab).
+   *  MCP server name fragment for the connected signal. */
+  mcpNamePattern?: string
+  /** RegExp source for the written-report path signal. */
+  reportPathPattern?: string
   /** Rolling tail of terminal output (~last 4 KB), for Hatch context + status scans. */
   onOutput?: (tail: string) => void
   /** Any keystroke or output — resets the idle timer. */
@@ -78,12 +84,23 @@ export type SubProblemKind =
   | 'mcp_setup'
   | 'explore_schema'
   | 'data_layout'
+  | 'map_the_data' // open-guidance compression of explore_schema + data_layout
   | 'analyze'
   | 'segment'
   | 'answer'
   | 'report'
   | 'skill'
   | 'connect'
+  | 'scaffold_explainer' // injected when a learner is stuck (adaptive branching)
+  | 'stakeholder_tension' // open-guidance stretch step
+  | 'metric_definition' // open-guidance stretch step (metadata-requested)
+  // Debugging lab kinds (repo with failing tests)
+  | 'env_setup'
+  | 'reproduce'
+  | 'localize'
+  | 'root_cause'
+  | 'fix'
+  | 'verify'
 
 export interface AnalyticsSubProblem {
   id: string
@@ -102,6 +119,56 @@ export interface AnalyticsSubProblem {
   teachingNote?: string
   /** Optional orientation list: "what you should learn here" (not interactive). */
   learnChecklist?: string[]
+  /** First-class teaching for the differentiator steps (tools/MCP, skills):
+   *  persistent, not dismissible. Distinct from the tactical teachingNote —
+   *  this teaches WHY the move is the point, not HOW. */
+  whyItMatters?: string
+}
+
+// ---------------------------------------------------------------------------
+// Artifact spine — the session's deliverable, derived from live signals.
+// Each row is a milestone the session fills as it runs. The workspace header
+// renders these; a full spine = a complete, shareable analysis. Adaptive
+// arcs add per-step regroup/stretch rows, so rows carry a stepId.
+// ---------------------------------------------------------------------------
+
+export type ArtifactRowKey =
+  | 'question'
+  | 'connection'
+  | 'schema'
+  | 'drop'
+  | 'segment'
+  | 'verdict'
+  | 'report'
+  | 'skill'
+  | 'grade'
+  | 'regroup'
+  | 'stretch'
+  // Debugging lab milestones
+  | 'repro'
+  | 'fault'
+  | 'fix'
+  | 'verified'
+
+export type ArtifactRowState = 'filled' | 'active' | 'pending'
+
+export interface ArtifactRow {
+  key: ArtifactRowKey
+  label: string
+  /** Material Symbols icon name. */
+  icon: string
+  state: ArtifactRowState
+  /** The captured value once filled (e.g. "Mobile 31% vs desktop 68%"), if any. */
+  value?: string
+  /** The two differentiator rows (connection = tools/MCP, skill) render with an
+   *  accent so they read as the milestones that set this feature apart. */
+  accent?: boolean
+  /** Backing arc step id — adaptive rows are per-step, key alone is not unique. */
+  stepId?: string
+  /** Adaptive badge for injected/stretch steps (mirrors the stepper's pills). */
+  badge?: 'Regroup' | 'Stretch'
+  /** Full title for aria-label/tooltip when the label is shortened. */
+  ariaTitle?: string
 }
 
 export type MarkVerdict = 'pass' | 'partial' | 'retry'
@@ -131,4 +198,6 @@ export interface MediumProps {
   challenge: ChallengePrompt
   attemptId: string
   scenario?: AnalyticsScenario
+  /** Where the workspace's back affordance leads (merged-chrome mediums render it inline). */
+  exitHref?: string
 }

@@ -216,3 +216,30 @@ describe('live interview prompts', () => {
     assert.match(basePrompt('sql'), /nulls\/duplicates/i)
   })
 })
+
+describe('artifact grader consumes the structured canvas scene', () => {
+  it('buildUserContent grades against sceneSummary entities, not just counts', async () => {
+    const { buildUserContent } = await import('@/lib/live-interview/artifact-grader')
+    const { summarizeScene } = await import('@/lib/hatch/canvas-scene')
+    const scene = summarizeScene([
+      { type: 'rectangle', id: 'r1', x: 0, y: 0, width: 200, height: 120, boundElements: [{ id: 't1', type: 'text' }] },
+      { type: 'text', id: 't1', containerId: 'r1', text: 'orders\nid [PK]\nuser_id [FK users.id]', x: 10, y: 10, width: 180, height: 100 },
+    ] as never[])
+    const content = buildUserContent({
+      type: 'canvas',
+      discipline: 'data_modeling',
+      elementCount: scene.elementCount,
+      sceneSummary: scene,
+    })
+    assert.ok(content.includes('orders'), 'entity label must reach the grader prompt')
+    assert.ok(/primary evidence|Structured canvas scene/.test(content))
+    // The count-inference fallback must NOT be active when the scene is present.
+    assert.ok(!content.includes('infer from the count'))
+  })
+
+  it('falls back to count inference when no scene is captured (legacy snapshots)', async () => {
+    const { buildUserContent } = await import('@/lib/live-interview/artifact-grader')
+    const content = buildUserContent({ type: 'canvas', elementCount: 4 })
+    assert.ok(content.includes('infer from the count'))
+  })
+})

@@ -786,7 +786,7 @@ export default function LearnFlowPage() {
 
                 {/* Scenario */}
                 <div className="flow-reveal d4" style={{
-                  borderLeft: `4px solid ${move.accent}`, padding: '8px 0 8px 20px', marginBottom: 24,
+                  background: `${move.accent}10`, borderRadius: 12, padding: '14px 18px', marginBottom: 24,
                 }}>
                   <div style={{ fontFamily: 'monospace', fontSize: 10.5, letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, color: '#78715f', marginBottom: 6 }}>{move.scenario.label}</div>
                   <div style={{ fontSize: 15.5, lineHeight: 1.6, color: '#3d392e' }}>{move.scenario.text}</div>

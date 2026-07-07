@@ -54,19 +54,27 @@ export async function embedAndStoreContext(
   sourceId: string = 'default',
   metadata: Record<string, unknown> = {}
 ): Promise<void> {
-  const { error } = await supabaseAdmin
+  // The live hatch_context table has no source_id/updated_at columns and no
+  // unique constraint to upsert against (2026-07-04 vector audit: the old
+  // upsert shape failed on EVERY call, silently no-oping calibration context).
+  // Match the real schema: carry source_id inside metadata and replace any
+  // prior row for the same (user, type, source) with delete-then-insert.
+  const { error: deleteError } = await supabaseAdmin
     .from('hatch_context')
-    .upsert(
-      {
-        user_id: userId,
-        context_type: contextType,
-        source_id: sourceId,
-        content,
-        metadata,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,context_type,source_id' }
-    )
+    .delete()
+    .eq('user_id', userId)
+    .eq('context_type', contextType)
+    .eq('metadata->>source_id', sourceId)
+  if (deleteError) {
+    console.error('embedAndStoreContext delete error:', deleteError)
+  }
+
+  const { error } = await supabaseAdmin.from('hatch_context').insert({
+    user_id: userId,
+    context_type: contextType,
+    content,
+    metadata: { ...metadata, source_id: sourceId },
+  })
 
   if (error) {
     console.error('embedAndStoreContext error:', error)

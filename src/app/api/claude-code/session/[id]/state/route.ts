@@ -43,7 +43,7 @@ export async function GET(
   const { data: session } = await admin
     .from('claude_code_sessions')
     .select(
-      'id, user_id, challenge_id, status, host_instance_id, wss_url, expires_at, last_snapshot_at, prompt_count, warehouse_query_count, total_input_tokens, total_output_tokens',
+      'id, user_id, challenge_id, status, host_instance_id, wss_url, expires_at, last_snapshot_at, prompt_count, warehouse_query_count, total_input_tokens, total_output_tokens, final_artifact',
     )
     .eq('id', sessionId)
     .maybeSingle()
@@ -107,9 +107,17 @@ export async function GET(
       .eq('id', sessionId)
   }
 
-  // --- Read sub_problems from challenge metadata ---
+  // --- Sub-problems: the per-session adaptive arc wins over challenge metadata
+  // (design §5/§7 — a refresh must reconstruct the guidance-shaped arc). ---
+  const adaptive = (session.final_artifact as
+    | { adaptive?: { guidance?: string; arc?: unknown[] } }
+    | null)?.adaptive
   let subProblems: unknown[] = []
-  if (session.challenge_id) {
+  let arcComplete = false
+  if (adaptive?.arc?.length) {
+    subProblems = adaptive.arc
+    arcComplete = true
+  } else if (session.challenge_id) {
     const { data: challenge } = await supabase
       .from('challenges')
       .select('metadata')
@@ -146,5 +154,7 @@ export async function GET(
       output_tokens: outTok,
     },
     sub_problems: subProblems,
+    arc_complete: arcComplete,
+    guidance: adaptive?.guidance ?? 'guided',
   })
 }

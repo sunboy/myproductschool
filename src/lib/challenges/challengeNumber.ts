@@ -19,6 +19,7 @@ const CHALLENGE_NUMBER_PREFIX: Record<ChallengeType, string> = {
   system_design: 'SD',
   data_modeling: 'DM',
   claude_code_analytics: 'CCA',
+  claude_code_debugging: 'CCD',
 }
 
 /** ("flow", 3001) -> "PS-3001". Null when inputs are missing so callers can conditionally render. */

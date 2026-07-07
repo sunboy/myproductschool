@@ -39,6 +39,9 @@ export interface GuidanceState {
   totalFields: number
   hasTradeoffs: boolean
   labels: GuidanceLabels
+  /** True when the open-register strict bar (not the tradeoff rule) is what
+   *  holds readiness back — lets the meter say so honestly (SUN-253). */
+  strictHold?: boolean
 }
 
 /**
@@ -96,7 +99,8 @@ function detectTradeoffs(fields: GuidanceField[]): boolean {
 export function deriveGuidance(
   challengeType: CanvasChallengeType,
   scene: CanvasScene,
-  fields: GuidanceField[]
+  fields: GuidanceField[],
+  register: 'scaffolded' | 'guided' | 'open' = 'guided'
 ): GuidanceState {
   const entityCount = scene.entities.length
   const connectionCount = scene.connections.length
@@ -106,6 +110,10 @@ export function deriveGuidance(
 
   const hasCanvas = entityCount > 0 || connectionCount > 0
   const meaningfulCanvas = entityCount >= 2 || connectionCount >= 1
+  // Adaptation contract (SUN-253): open-register learners face a stricter
+  // readiness bar — a defensible design at that level needs written reasoning
+  // in at least two fields, not one note and a tradeoff keyword.
+  const strictHold = register === 'open' && notesCount < Math.min(2, totalFields)
 
   let phase: GuidancePhase
   if (!hasCanvas && notesCount === 0) {
@@ -115,6 +123,8 @@ export function deriveGuidance(
   } else if (notesCount === 0) {
     phase = 'has_canvas_no_notes'
   } else if (!hasTradeoffs) {
+    phase = 'notes_no_tradeoffs'
+  } else if (strictHold) {
     phase = 'notes_no_tradeoffs'
   } else {
     phase = 'ready'
@@ -128,5 +138,6 @@ export function deriveGuidance(
     totalFields,
     hasTradeoffs,
     labels: labelsFor(challengeType),
+    strictHold: strictHold && hasTradeoffs && meaningfulCanvas && notesCount > 0,
   }
 }

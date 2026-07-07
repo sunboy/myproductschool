@@ -11,6 +11,7 @@
 // a fresh provisioning row, carrying the prior workspace forward).
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getLabServer, labIdForChallengeType } from '@/lib/labs/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { provisionSession } from '@/lib/sandbox/provision-session'
@@ -81,27 +82,21 @@ export async function POST(
     )
   }
 
-  // --- Gather challenge metadata for the env build ---
+  // --- Gather challenge metadata for the env build (lab-resolved) ---
   const { data: challenge } = await supabase
     .from('challenges')
-    .select('metadata')
+    .select('metadata, challenge_type')
     .eq('id', session.challenge_id as string)
     .maybeSingle()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const meta = (challenge?.metadata ?? {}) as Record<string, any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ccMeta = (meta.claude_code ?? {}) as Record<string, any>
-  const bqProject =
-    ccMeta.dataset_project ?? ccMeta.BQ_PROJECT ??
-    meta.dataset_project ?? meta.BQ_PROJECT ??
-    process.env.GCP_PROJECT ?? ''
-  const bqDataset =
-    ccMeta.dataset_id ?? ccMeta.BQ_DATASET ?? meta.dataset_id ?? meta.BQ_DATASET ?? ''
-  const bqBillingProject =
-    ccMeta.dataset_billing_project ?? meta.dataset_billing_project ??
-    process.env.GCP_PROJECT ?? 'hackproduct'
-  const claudeMd = ccMeta.claude_md ?? meta.claude_md ?? ''
+  const lab = getLabServer(labIdForChallengeType(challenge?.challenge_type as string | undefined))
+  const labEnv = lab.resolveSandboxEnv(meta)
+  const bqProject = labEnv.BQ_PROJECT ?? ''
+  const bqDataset = labEnv.BQ_DATASET ?? ''
+  const bqBillingProject = labEnv.BQ_BILLING_PROJECT ?? 'hackproduct'
+  const claudeMd = labEnv.CLAUDE_MD ?? ''
   const ttlSeconds = parseInt(process.env.CC_SESSION_TTL_SECONDS ?? '1800', 10)
 
   // --- Presign prior ~/.claude state (MCP regs + skills) for one-time setup ---
@@ -130,6 +125,16 @@ export async function POST(
     workspaceRestoreUrl = signed?.signedUrl
   }
 
+  // --- Lab starter tarball (e.g. the debugging repo), presigned like the rest ---
+  let challengeTarballUrl: string | undefined
+  const tarballPath = labEnv.CHALLENGE_TARBALL
+  if (tarballPath) {
+    const { data: signed } = await admin.storage
+      .from('cc-lab-content')
+      .createSignedUrl(tarballPath, ttlSeconds + 120)
+    challengeTarballUrl = signed?.signedUrl
+  }
+
   // --- Run the provisioning pipeline ---
   const result = await provisionSession({
     sessionId,
@@ -141,6 +146,8 @@ export async function POST(
     claudeMd,
     ttlSeconds,
     userClaudeStateUrl,
+    challengeTarballUrl,
+    extraAllowedTools: lab.allowedTools,
     workspaceRestoreUrl,
     originUrl,
   })

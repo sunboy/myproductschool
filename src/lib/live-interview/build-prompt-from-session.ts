@@ -8,6 +8,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { buildLiveInterviewSystemPrompt } from '@/lib/live-interview/system-prompt'
+import { loadGuidanceInputs, deriveGuidanceLevel, type GuidanceLevel } from '@/lib/adaptive/guidance'
 import type { ScenarioParams, RoleLensParams } from '@/lib/live-interview/system-prompt'
 import { challengeTypeToDiscipline, normalizeDiscipline } from '@/lib/live-interview/disciplines'
 import type { LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
@@ -33,6 +34,8 @@ export interface BuildPromptOutput {
   effectiveDiscipline: LiveInterviewDiscipline | null
   companyName: string | null
   scenarioTitle: string | null
+  /** Adaptation contract (SUN-254): the register the interviewer runs at. */
+  guidanceLevel: 'scaffolded' | 'guided' | 'open'
 }
 
 export async function buildPromptFromSession(input: BuildPromptInput): Promise<BuildPromptOutput> {
@@ -173,6 +176,21 @@ export async function buildPromptFromSession(input: BuildPromptInput): Promise<B
     ?? normalizeDiscipline(discipline ?? null)
     ?? null
 
+  // Interview register (adaptation contract): medium history is completed
+  // live interviews. Failure degrades to 'guided' = pre-adaptive behavior.
+  let guidanceLevel: GuidanceLevel = 'guided'
+  try {
+    const inputs = await loadGuidanceInputs(adminClient, userId)
+    const { count: completedInterviews } = await adminClient
+      .from('live_interview_sessions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .in('status', ['completed', 'ended'])
+    guidanceLevel = deriveGuidanceLevel({ ...inputs, priorCcSessions: completedInterviews ?? 0 })
+  } catch {
+    guidanceLevel = 'guided'
+  }
+
   const systemPrompt = buildLiveInterviewSystemPrompt({
     archetype: profile?.archetype ?? 'Analyst',
     archetypeDescription: profile?.archetype_description ?? '',
@@ -188,6 +206,7 @@ export async function buildPromptFromSession(input: BuildPromptInput): Promise<B
     scenario,
     roleLens,
     discipline: effectiveDiscipline ?? undefined,
+    guidanceLevel,
   }, false)
 
   return {
@@ -201,5 +220,6 @@ export async function buildPromptFromSession(input: BuildPromptInput): Promise<B
     effectiveDiscipline,
     companyName: companyRow?.name ?? null,
     scenarioTitle: challenge?.title ?? null,
+    guidanceLevel,
   }
 }

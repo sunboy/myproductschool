@@ -107,6 +107,8 @@
 
   /* Redesign additions */
   --color-outline-faint:            #e7dfc9;
+  /* Glass morphism stroke (was referenced but never defined — matches .glass-card) */
+  --color-glass-stroke:             rgba(255, 255, 255, 0.6);
   --color-on-surface-muted:         #78715f;
   --color-amber:                    #c9933a;
   --color-amber-soft:               #f3e2b9;
@@ -682,4 +684,28 @@ body::before {
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+/* Artifact spine — active milestone pulse (reduced-motion aware) */
+@keyframes cc-artifact-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.cc-artifact-pulse { animation: cc-artifact-pulse 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .cc-artifact-pulse { animation: none; }
+}
+
+/* Feedback celebration burst (ScoreHero, sharp band) */
+@keyframes fb-burst {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; }
+}
+.fb-burst-dot {
+  position: absolute;
+  width: 7px; height: 7px; border-radius: 99px;
+  animation: fb-burst 900ms ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fb-burst-dot { animation: none; opacity: 0; }
 }

@@ -104,9 +104,9 @@ export interface AnalystDimensionResult {
 export type AnalystDimensionResults = Record<string, AnalystDimensionResult>
 
 /** Weighted 0-100 total from per-dimension 0/0.5/1 scores. */
-export function computeAnalystScore(results: AnalystDimensionResults): number {
+export function computeAnalystScore(results: AnalystDimensionResults, dims: AnalystDimension[] = ANALYST_DIMENSIONS): number {
   let acc = 0
-  for (const d of ANALYST_DIMENSIONS) {
+  for (const d of dims) {
     const s = results[d.key]?.score ?? 0
     acc += d.weight * s
   }

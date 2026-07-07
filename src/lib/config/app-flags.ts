@@ -7,7 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 // (imports the admin client) — client components hit GET /api/config/flags
 // (src/app/api/config/flags/route.ts) instead of importing this directly.
 
-export type AppFlagKey = 'onboarding_value_first'
+export type AppFlagKey = 'onboarding_value_first' | 'lab_debugging'
 
 const CACHE_TTL_MS = 60_000
 const cache = new Map<AppFlagKey, { value: boolean; fetchedAt: number }>()

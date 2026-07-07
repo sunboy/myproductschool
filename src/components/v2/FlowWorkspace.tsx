@@ -7,6 +7,7 @@ import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_CHALLENGE_STARTED, EVENT_CHALLENGE_STEP_ADVANCED } from '@/lib/posthog/events'
 import gsap from 'gsap'
 import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
+import { applyVerdict, verdictFromScore, INITIAL_MACHINE, type GuidanceMachineState } from '@/lib/adaptive/branching'
 import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
@@ -45,7 +46,8 @@ import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challe
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
-import { workspaceBreadcrumbs, workspaceExitHref } from '@/lib/workspace/breadcrumbs'
+import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
+import { WorkspacePanel } from '@/components/v2/WorkspacePanel'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
@@ -275,11 +277,12 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
         </div>
       ))}
 
-      {/* One-line destabilizing constraint (canvas) renders as an emphasis bar */}
+      {/* One-line destabilizing constraint (canvas) renders as a tonal card */}
       {changeSections.map((section) => (
         <div key={section.id} style={{
-          borderLeft: '3px solid var(--color-tertiary)',
-          padding: '6px 0 6px 12px',
+          background: 'var(--color-tertiary-container)',
+          borderRadius: 10,
+          padding: '8px 12px',
           margin: '14px 0',
           fontFamily: 'var(--font-body)',
           fontSize: 14,
@@ -491,6 +494,11 @@ function CanvasTourMount({ active: canvasActive }: { active: boolean }) {
   return <TourRunner config={CANVAS_TOUR} active={run} onFinish={() => setRun(false)} />
 }
 
+// Shared workspace action button treatments — one visual system for every
+// Run/Submit pill in the workspace chrome (visual-clarity overhaul, inc. 1).
+const WORKSPACE_BTN_PRIMARY = 'inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-primary text-on-primary font-label text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity'
+const WORKSPACE_BTN_TONAL = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface font-label text-xs font-semibold hover:bg-surface-container-highest disabled:opacity-50 transition-colors'
+
 export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isApiMode = props.mode === 'api'
   const challengeId = isApiMode ? props.challengeId : ''
@@ -560,6 +568,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [canvasMaximised, setCanvasMaximised] = useState(false)
   const [canvasLoopExpanded, setCanvasLoopExpanded] = useState(false)
   const [codingMaximised, setCodingMaximised] = useState(false)
+  // Console collapse (visual-clarity inc. 4): header-only console, editor takes the space.
+  const [consoleCollapsed, setConsoleCollapsed] = useState(false)
   const [editorHeightPct, setEditorHeightPct] = useState(60)
   const [chatPanelOpen, setChatPanelOpen] = useState(false)
   const [queuedHatchPrompt, setQueuedHatchPrompt] = useState<QueuedHatchPrompt | null>(null)
@@ -1035,6 +1045,69 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Hint card open/close state (right pane)
   const [hintOpen, setHintOpen] = useState(false)
 
+  // ── Adaptation contract (SUN-251) ─────────────────────────────────────────
+  // Guidance register from the step API (calibration-informed); the bounded
+  // machine moves it on question verdicts. 'guided' is today's behavior.
+  const [coachRegister, setCoachRegister] = useState<'scaffolded' | 'guided' | 'open'>('guided')
+  const guidanceSeededRef = useRef(false)
+  const guidanceMachineRef = useRef<GuidanceMachineState>({ ...INITIAL_MACHINE })
+  const guidanceAdjustmentsRef = useRef<Array<{ from: string; to: string; trigger: string; atStepId: string | null }>>([])
+
+  // Seed the register once from the first step payload. Scaffolded learners
+  // get the hint card open before their first answer; open learners keep it
+  // behind an explicit ask (the existing default).
+  useEffect(() => {
+    const g = stepData?.guidance
+    if (!g || guidanceSeededRef.current) return
+    guidanceSeededRef.current = true
+    setCoachRegister(g)
+    if (g === 'scaffolded') setHintOpen(true)
+  }, [stepData])
+
+  // Non-FLOW mediums (coding/SQL, canvas) have no step payload — fetch the
+  // register once from the shared endpoint (SUN-252/253). Failure keeps
+  // 'guided', which is exactly the pre-adaptive behavior.
+  useEffect(() => {
+    if (!isApiMode || guidanceSeededRef.current) return
+    const type = apiChallengeType
+    if (type === 'flow' || !type) return
+    let cancelled = false
+    void fetch('/api/adaptive/guidance')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { guidance?: 'scaffolded' | 'guided' | 'open' } | null) => {
+        if (cancelled || !d?.guidance || guidanceSeededRef.current) return
+        guidanceSeededRef.current = true
+        setCoachRegister(d.guidance)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApiMode, apiChallengeType])
+
+  // Coding runs feed the guidance machine (SUN-252): full pass = pass, some
+  // tests green = partial, none = retry. Movement adjusts Hatch's register
+  // live through the guidanceLevel prop on the chat panel.
+  const feedRunVerdict = useCallback((result: RunResult) => {
+    const verdict = result.testsTotal > 0
+      ? result.testsPassed === result.testsTotal
+        ? 'pass' as const
+        : result.testsPassed > 0
+          ? 'partial' as const
+          : 'retry' as const
+      : 'retry' as const
+    const adj = applyVerdict(guidanceMachineRef.current, verdict, coachRegister)
+    guidanceMachineRef.current = adj.state
+    if (adj.moved) {
+      guidanceAdjustmentsRef.current.push({
+        from: coachRegister,
+        to: adj.guidance,
+        trigger: adj.moved === 'down' ? 'two failing runs in a row' : 'two clean runs in a row',
+        atStepId: null,
+      })
+      setCoachRegister(adj.guidance)
+    }
+  }, [coachRegister])
+
   // Left panel footer interaction state
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
@@ -1108,6 +1181,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     challengeType: apiChallengeType === 'data_modeling' ? 'data_modeling' : 'system_design',
     scene,
     fields: contextPack,
+    register: coachRegister,
   })
 
   // Excalidraw API + library refs (for canvas action execution)
@@ -1975,6 +2049,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         const result = await submitStep({ attemptId, answers })
         if (!result) return
 
+        // Feed each question's grade into the bounded guidance machine
+        // (SUN-251): a run of strong answers opens the register up, a run of
+        // weak ones brings the hints back. One net movement per direction.
+        for (const qr of result.questions) {
+          const adj = applyVerdict(guidanceMachineRef.current, verdictFromScore(qr.score ?? 0), coachRegister)
+          guidanceMachineRef.current = adj.state
+          if (adj.moved) {
+            guidanceAdjustmentsRef.current.push({
+              from: coachRegister,
+              to: adj.guidance,
+              trigger: adj.moved === 'down' ? 'two weak answers in a row' : 'two strong answers in a row',
+              atStepId: currentStep,
+            })
+            setCoachRegister(adj.guidance)
+            if (adj.guidance === 'scaffolded') setHintOpen(true)
+          }
+        }
+
         // Build per-question reveal history in sequence order.
         const history: QuestionRevealRecord[] = result.questions.map((qr) => {
           const q = orderedQuestions.find((x) => x.id === qr.question_id)
@@ -2166,17 +2258,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, playHatchSound, uploadCanvasPng])
 
-  // Run handler for coding challenges - fires visible test cases only
+  // Derived: active coding parts from detail (only meaningful for coding challenges)
+  const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])
+
+  // Run handler for coding challenges — fires visible test cases only. Part-
+  // aware: when a multi-part coding subtask is active, only that part's test
+  // cases run (running everything would be rejected as out of part scope).
+  // This is the ONLY run path; the toolbar previously carried a duplicate
+  // inline closure that bypassed the guidance machine.
   const handleCodingRun = useCallback(async () => {
     if (codeRunner.status === 'running') return
     setOutputPanelStatus('running')
     setOutputPanelError(undefined)
     setCodingGradingError(undefined)
     try {
-      const result = await codeRunner.run(currentCode)
+      const activePart = codingParts.find(p => p.id === activePartId)
+      const testCaseIds = activePart?.coding_test_case_ids?.length
+        ? activePart.coding_test_case_ids
+        : undefined
+      const result = await codeRunner.run(currentCode, testCaseIds)
       if (result) {
         setLastRunResult(result)
+        feedRunVerdict(result)
         setOutputPanelStatus('done')
+        if (activePartId) {
+          setPartRunResults(prev => ({ ...prev, [activePartId]: result }))
+        }
       } else {
         setOutputPanelStatus('idle')
       }
@@ -2184,7 +2291,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setOutputPanelStatus('error')
       setOutputPanelError(err instanceof Error ? err.message : 'Run failed')
     }
-  }, [codeRunner, currentCode])
+  }, [codeRunner, currentCode, feedRunVerdict, codingParts, activePartId])
 
   // Submit handler for coding challenges - final correctness first, then Hatch grading.
   const handleCodingSubmit = useCallback(async () => {
@@ -2206,6 +2313,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setLastRunResult(correctnessResult)
       setOutputPanelStatus('done')
       setPhase('complete')
+
+      // Open-register learners who clear every test get pointed at the
+      // approach comparison instead of congratulations (SUN-252).
+      if (coachRegister === 'open' && correctnessResult.testsTotal > 0 && correctnessResult.testsPassed === correctnessResult.testsTotal) {
+        setProactiveNudge({
+          id: `adaptive-compare-${Date.now()}`,
+          text: 'Clean solve. Open the Solutions tab and put your approach against the official one, the tradeoffs are where the learning is.',
+        })
+      }
 
       try {
         const gradingRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
@@ -2265,7 +2381,78 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setIsSubmittingCoding(false)
       setIsLoadingGrading(false)
     }
-  }, [isApiMode, props, attemptId, currentCode, currentLanguage, isSubmittingCoding, codeRunner])
+  }, [isApiMode, props, attemptId, currentCode, currentLanguage, isSubmittingCoding, codeRunner, coachRegister])
+
+  // Submit handler for a multi-part coding subtask — runs only the active
+  // part's test cases, then posts the part-scoped grade. Extracted from the
+  // toolbar's inline closure so the workspace bar can own the button.
+  const handleSubmitPart = useCallback(async () => {
+    const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
+    const partId = activePartId
+    if (!partId || !challengeId || !attemptId || isSubmittingCoding) return
+    setIsSubmittingCoding(true)
+    setOutputPanelStatus('running')
+    setOutputPanelError(undefined)
+    try {
+      const activePart = codingParts.find(p => p.id === partId)
+      const testCaseIds = activePart?.coding_test_case_ids ?? []
+      // Run only this part's test cases (visible + hidden among them).
+      // Using submit() here would run every test case on the challenge,
+      // which the API rejects because results would be out of part scope.
+      const result = await codeRunner.run(currentCode, testCaseIds.length > 0 ? testCaseIds : undefined)
+      if (result) {
+        setLastRunResult(result)
+        setOutputPanelStatus('done')
+        setPartRunResults(prev => ({ ...prev, [partId]: result }))
+      }
+      const submitRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attemptId,
+          partId,
+          finalCode: currentCode,
+          language: currentLanguage,
+          correctnessPayload: result ?? null,
+          testCaseIds,
+        }),
+      })
+      if (submitRes.ok) {
+        setPartSubmissions(prev => ({ ...prev, [partId]: { submitted: true } }))
+        setCodingDrafts(prev => ({
+          ...prev,
+          [partId]: { ...(prev[partId] ?? {}), [currentLanguage]: currentCode },
+        }))
+      }
+    } catch (err) {
+      setOutputPanelStatus('error')
+      setOutputPanelError(err instanceof Error ? err.message : 'Submit failed')
+    } finally {
+      setIsSubmittingCoding(false)
+    }
+  }, [isApiMode, props, activePartId, attemptId, isSubmittingCoding, codingParts, codeRunner, currentCode, currentLanguage])
+
+  // Keyboard shortcuts for the workspace bar actions (coding only):
+  // Cmd/Ctrl+' runs, Cmd/Ctrl+Enter submits — but never while Monaco has
+  // focus, where Cmd+Enter is the editor's own binding.
+  useEffect(() => {
+    if (!isCodingChallenge) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return
+      const inEditor = (e.target as HTMLElement | null)?.closest?.('.monaco-editor')
+      if (inEditor) return
+      if (e.key === "'") {
+        e.preventDefault()
+        void handleCodingRun()
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        if (codingParts.length > 0) void handleSubmitPart()
+        else void handleCodingSubmit()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [isCodingChallenge, handleCodingRun, handleCodingSubmit, handleSubmitPart, codingParts.length])
 
   // Re-run Hatch grading on the SAME submission, in place. Used by the "Retry
   // grading" button on the complete screen when the AI grader errored. Reuses the
@@ -2506,6 +2693,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 hatch_signal: r.hatchSignal ?? null,
                 framework_hint: r.frameworkHint ?? null,
               })),
+              adaptive: {
+                guidance: coachRegister,
+                adjustments: guidanceAdjustmentsRef.current,
+              },
             }),
           })
           if (res.ok) {
@@ -2939,8 +3130,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   const tabs = ['Description', 'Solutions', 'Discussions', 'Submissions'] as const
 
-  // Derived: active coding parts from detail (only meaningful for coding challenges)
-  const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])
 
   // Left pane description content
   const descriptionPane = (
@@ -2981,7 +3170,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               return (
                 <Link href={practiceFilterHref('difficulty', filterVal ?? diff)} title={`Browse ${label} practice`} style={{
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: 'var(--color-surface-inverse)', color: 'var(--color-inverse-on-surface)',
+                  background: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)',
                   fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
                   padding: '3px 9px', borderRadius: 999,
                   fontFamily: 'var(--font-label)', textDecoration: 'none',
@@ -3950,15 +4139,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </section>
   ) : (
     // ── Full panel ──
-    <section style={{
-      width: `${leftWidth}%`,
-      flexShrink: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'var(--color-surface)',
-      overflow: 'hidden',
-      minHeight: 0,
-    }}>
+    <section
+      className="rounded-xl border border-outline-variant"
+      style={{
+        width: `${leftWidth}%`,
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--color-surface-container-lowest)',
+        overflow: 'hidden',
+        minHeight: 0,
+      }}>
       {leftTab === 'Description' && descriptionPane}
       {leftTab === 'Discussions' && discussionsPane}
       {leftTab === 'Submissions' && submissionsPane}
@@ -3970,15 +4161,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // workspace type so the trail and exit are identical across FLOW / canvas /
   // coding (mirrors the analytics shell header). Deep-linking or arriving via
   // grading no longer drops the user out of the app.
-  const workspaceCrumbs = workspaceBreadcrumbs(challengeTitle || 'Challenge', { fromPlan, fromDomain })
-  const breadcrumbBar = (
-    <div
-      className="hidden md:flex items-center h-9 px-4 shrink-0 border-b"
-      style={{ borderColor: 'var(--color-outline-faint)', background: 'var(--color-surface)' }}
-    >
-      <AppBreadcrumbs items={workspaceCrumbs} className="min-w-0" />
-    </div>
-  )
 
   function workspaceTabBadge(count: number, active: boolean) {
     return (
@@ -4000,6 +4182,83 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       </span>
     )
   }
+
+  // Coding Run/Submit cluster — lives in the workspace bar (LeetCode-style),
+  // one slim chrome band instead of a separate 40px toolbar row.
+  const codingActions = isCodingChallenge ? (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+      {currentLanguage === 'sql' && codeRunner.status === 'hydrating' && (
+        <span className="text-xs text-on-surface-variant font-label flex items-center gap-1">
+          <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+          Setting up database…
+        </span>
+      )}
+      {currentLanguage === 'sql' && codeRunner.sqlError && (
+        <span className="text-xs text-error font-label">DB error: {codeRunner.sqlError}</span>
+      )}
+      <button
+        onClick={handleCodingRun}
+        disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
+        className={WORKSPACE_BTN_TONAL}
+        data-testid="run-button"
+      >
+        {codeRunner.status === 'running' ? (
+          <>
+            <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+            Running…
+          </>
+        ) : (
+          <>
+            <span className="material-symbols-outlined text-[14px]">play_arrow</span>
+            Run
+            <kbd className="hidden min-[1280px]:inline text-[9.5px] font-semibold px-1 rounded border border-outline-variant bg-surface-container text-on-surface-variant">⌘'</kbd>
+          </>
+        )}
+      </button>
+      {codingParts.length > 0 ? (
+        activePartId && codingParts.find(p => p.id === activePartId)?.response_type === 'coding_subtask' ? (
+          <button
+            onClick={handleSubmitPart}
+            disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
+            className={WORKSPACE_BTN_PRIMARY}
+            data-testid="submit-part-button"
+          >
+            {isSubmittingCoding ? (
+              <>
+                <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+                Submitting…
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[14px]">upload</span>
+                Submit Part
+              </>
+            )}
+          </button>
+        ) : null
+      ) : (
+        <button
+          onClick={handleCodingSubmit}
+          disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
+          className={WORKSPACE_BTN_PRIMARY}
+          data-testid="submit-button"
+        >
+          {isSubmittingCoding ? (
+            <>
+              <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+              Submitting…
+            </>
+          ) : (
+            <>
+              <span className="material-symbols-outlined text-[14px]">upload</span>
+              Submit
+              <kbd className="hidden min-[1280px]:inline text-[9.5px] font-semibold px-1 rounded border border-on-primary/40 bg-transparent text-on-primary/80">⌘⏎</kbd>
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  ) : null
 
   // Shared top chrome - spans full width so the borderBottom is continuous
   const topChrome = (
@@ -4029,6 +4288,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
         </button>
+        {leftCollapsed && challengeTitle && (
+          <span
+            className="font-headline"
+            style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
+            title={challengeTitle}
+          >
+            {challengeTitle}
+          </span>
+        )}
         {!leftCollapsed && (
           <div style={{
             display: 'flex',
@@ -4145,6 +4413,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         ) : isCodingChallenge ? (
           <>
             <div style={{ flex: 1 }} />
+            {codingActions}
             <button
               onClick={() => setCodingMaximised((v) => !v)}
               className="inline-flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
@@ -4469,7 +4738,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
         {/* Same full-width top chrome as question phase (desktop only - on mobile
             the feedback fills the width and carries its own navigation). */}
-        {!isMobile && breadcrumbBar}
         {!isMobile && topChrome}
 
         {/* Middle: resizable two-pane content on desktop, single column on mobile */}
@@ -4621,6 +4889,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
                     solutionsOpen={solutionsOpen}
                     activeSolutionApproach={activeSolutionApproach}
+                    guidanceLevel={coachRegister}
                   />
                 )}
               </div>
@@ -4696,18 +4965,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </>
       ) : (
         <>
-          {breadcrumbBar}
           {topChrome}
         </>
       )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
-      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden'}>
+      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-surface-container-low'}>
         {!mobileStacked && leftDescriptionPanel}
         {!mobileStacked && dragHandle}
 
         {/* Right pane: scrollable workspace content only */}
-        <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden', minHeight: 0 }}>
+        <section
+          className={!isCanvasChallenge && !isCodingChallenge ? 'rounded-xl border border-outline-variant' : undefined}
+          style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-surface-container-lowest)' : 'transparent',
+            overflow: 'hidden', minHeight: 0,
+          }}>
           {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 animate-step-enter">
@@ -4727,7 +5001,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               }>
               {/* Canvas column - top chrome owns the guide so canvas stays clear. */}
               <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <div data-tour-target="canvas-surface" style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative' }}>
+                <div
+                  data-tour-target="canvas-surface"
+                  className={canvasMaximised ? undefined : 'rounded-xl border border-outline-variant overflow-hidden ml-2'}
+                  style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative', background: 'var(--color-surface-container-lowest)' }}
+                >
                   <ExcalidrawCanvas
                     sessionId={attemptId ?? 'draft'}
                     onSnapshot={setCanvasScene}
@@ -4791,6 +5069,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 autoOpenKey="canvas"
                 onCanvasActions={handleCanvasActions}
                 proactiveNudge={proactiveNudge}
+                guidanceLevel={coachRegister}
                 onDismissNudge={() => setProactiveNudge(null)}
                 canvasDrawFailure={canvasDrawFailure}
                 guidancePhase={guidance.phase}
@@ -4860,28 +5139,34 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   Exit full screen
                 </button>
               )}
-              {/* Editor column: toolbar + Monaco + resizable output panel */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
-                {/* Toolbar: language selector + run + submit */}
-                <div style={{
-                  height: 40,
-                  flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '0 12px',
-                  borderBottom: '1px solid var(--color-outline-faint)',
-                  background: 'var(--color-surface-container)',
-                }}>
-                  {/* Language selector */}
-                  {(() => {
+              {/* Editor column: framed panels — editor card + grip gutter + console card
+                  floating on the workspace canvas (visual-clarity inc. 4) */}
+              <div
+                ref={codingPaneRef}
+                style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0,
+                  gap: 8, paddingLeft: 8,
+                }}
+              >
+                <WorkspacePanel
+                  icon="code"
+                  title={(() => {
+                    const names: Record<string, string> = {
+                      python: 'solution.py', javascript: 'solution.js', java: 'Solution.java',
+                      cpp: 'solution.cpp', go: 'solution.go', sql: 'query.sql',
+                    }
+                    return names[currentLanguage] ?? 'solution'
+                  })()}
+                  headerExtra={codingParts.length > 0 && activePartId ? (
+                    <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-on-surface-variant)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-surface-container)', border: '1px solid var(--color-outline-variant)', whiteSpace: 'nowrap' }}>
+                      {(() => { const cp = codingParts.find(x => x.id === activePartId); return cp ? `Part ${cp.sequence}` : '' })()}
+                    </span>
+                  ) : undefined}
+                  actions={(() => {
                     const metadata = (isApiMode ? detail?.challenge?.metadata : null) as { supported_languages?: string[] } | null | undefined
                     const metaLangs = (metadata?.supported_languages ?? []) as SupportedLanguage[]
                     // Guard the option list by challenge type so the wrong language
-                    // can't appear regardless of (often empty) metadata: SQL
-                    // challenges only offer SQL; algorithm challenges never offer
-                    // SQL. Falls back to a sensible per-type default when metadata
-                    // is missing, instead of showing all six languages.
+                    // can't appear regardless of (often empty) metadata.
                     const NON_SQL_DEFAULTS: SupportedLanguage[] = ['python', 'javascript', 'java', 'cpp', 'go']
                     let supportedLangs: SupportedLanguage[]
                     if (apiChallengeType === 'sql') {
@@ -4901,162 +5186,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       />
                     )
                   })()}
-                  {/* Active part label (multi-part only) */}
-                  {codingParts.length > 0 && activePartId && (
-                    <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-on-surface-variant)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}>
-                      {(() => { const p = codingParts.find(cp => cp.id === activePartId); return p ? `Part ${p.sequence}` : '' })()}
-                    </span>
-                  )}
-                  <div style={{ flex: 1 }} />
-                  {/* SQL hydration status */}
-                  {currentLanguage === 'sql' && codeRunner.status === 'hydrating' && (
-                    <span className="text-xs text-on-surface-variant font-label flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-                      Setting up database…
-                    </span>
-                  )}
-                  {currentLanguage === 'sql' && codeRunner.sqlError && (
-                    <span className="text-xs text-error font-label">DB error: {codeRunner.sqlError}</span>
-                  )}
-                  {/* Run button */}
-                  <button
-                    onClick={async () => {
-                      if (codeRunner.status === 'running') return
-                      setOutputPanelStatus('running')
-                      setOutputPanelError(undefined)
-                      try {
-                        // When a part is active, pass only that part's test case IDs
-                        const activePart = codingParts.find(p => p.id === activePartId)
-                        const testCaseIds = activePart?.coding_test_case_ids?.length
-                          ? activePart.coding_test_case_ids
-                          : undefined
-                        const result = await codeRunner.run(currentCode, testCaseIds)
-                        if (result) {
-                          setLastRunResult(result)
-                          setOutputPanelStatus('done')
-                          // Save run result per part
-                          if (activePartId) {
-                            setPartRunResults(prev => ({ ...prev, [activePartId]: result }))
-                          }
-                        } else {
-                          setOutputPanelStatus('idle')
-                        }
-                      } catch (err) {
-                        setOutputPanelStatus('error')
-                        setOutputPanelError(err instanceof Error ? err.message : 'Run failed')
-                      }
-                    }}
-                    disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface font-label text-xs font-semibold hover:bg-surface-container-highest disabled:opacity-50 transition-colors"
-                    data-testid="run-button"
-                  >
-                    {codeRunner.status === 'running' ? (
-                      <>
-                        <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-                        Running…
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-[14px]">play_arrow</span>
-                        Run
-                      </>
-                    )}
-                  </button>
-                  {/* Submit button - "Submit Part" in multi-part mode, "Submit" in single-prompt */}
-                  {codingParts.length > 0 ? (
-                    // Multi-part: Submit Part (only active when a coding subtask part is open)
-                    activePartId && codingParts.find(p => p.id === activePartId)?.response_type === 'coding_subtask' ? (
-                      <button
-                        onClick={async () => {
-                          const partId = activePartId
-                          if (!partId || !challengeId || !attemptId || isSubmittingCoding) return
-                          setIsSubmittingCoding(true)
-                          setOutputPanelStatus('running')
-                          setOutputPanelError(undefined)
-                          try {
-                            const activePart = codingParts.find(p => p.id === partId)
-                            const testCaseIds = activePart?.coding_test_case_ids ?? []
-                            // Run only this part's test cases (visible + hidden among them).
-                            // Using submit() here would run every test case on the challenge,
-                            // which the API rejects because results would be out of part scope.
-                            const result = await codeRunner.run(currentCode, testCaseIds.length > 0 ? testCaseIds : undefined)
-                            if (result) {
-                              setLastRunResult(result)
-                              setOutputPanelStatus('done')
-                              setPartRunResults(prev => ({ ...prev, [partId]: result }))
-                            }
-                            // Post to coding-submit with partId
-                            const submitRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                attemptId,
-                                partId,
-                                finalCode: currentCode,
-                                language: currentLanguage,
-                                correctnessPayload: result ?? null,
-                                testCaseIds,
-                              }),
-                            })
-                            if (submitRes.ok) {
-                              setPartSubmissions(prev => ({ ...prev, [partId]: { submitted: true } }))
-                              // Save current draft so it persists
-                              setCodingDrafts(prev => ({
-                                ...prev,
-                                [partId]: { ...(prev[partId] ?? {}), [currentLanguage]: currentCode },
-                              }))
-                            }
-                          } catch (err) {
-                            setOutputPanelStatus('error')
-                            setOutputPanelError(err instanceof Error ? err.message : 'Submit failed')
-                          } finally {
-                            setIsSubmittingCoding(false)
-                          }
-                        }}
-                        disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                        className="inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-primary text-on-primary font-label text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
-                        data-testid="submit-part-button"
-                      >
-                        {isSubmittingCoding ? (
-                          <>
-                            <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
-                            Submitting…
-                          </>
-                        ) : (
-                          <>
-                            <span className="material-symbols-outlined text-[14px]">upload</span>
-                            Submit Part
-                          </>
-                        )}
-                      </button>
-                    ) : null
-                  ) : (
-                    // Single-prompt: existing submit button
-                    <button
-                      onClick={handleCodingSubmit}
-                      disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-                      className="inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-primary text-on-primary font-label text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
-                      data-testid="submit-button"
-                    >
-                      {isSubmittingCoding ? (
-                        <>
-                          <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
-                          Submitting…
-                        </>
-                      ) : (
-                        <>
-                          <span className="material-symbols-outlined text-[14px]">upload</span>
-                          Submit
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-
-                {/* Monaco editor + draggable divider + output panel (default 60/40, user-resizable) */}
-                <div ref={codingPaneRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                  {/* Editor */}
-                  <div style={{ flex: `${editorHeightPct} 1 0`, minHeight: 0 }} data-testid="monaco-editor-container">
+                  style={{ flex: consoleCollapsed ? '1 1 0' : `${editorHeightPct} 1 0` }}
+                >
+                  <div style={{ flex: 1, minHeight: 0 }} data-testid="monaco-editor-container">
                     <MonacoCodeEditor
                       value={currentCode}
                       onChange={setCurrentCode}
@@ -5066,32 +5198,35 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       readOnly={isSubmittingCoding}
                     />
                   </div>
-                  {/* Draggable divider */}
+                </WorkspacePanel>
+                {/* Grip gutter — resizes editor/console */}
+                {!consoleCollapsed && (
                   <div
                     onMouseDown={handleCodingDividerMouseDown}
                     role="separator"
                     aria-orientation="horizontal"
-                    aria-label="Resize editor and output panel"
+                    aria-label="Resize editor and console"
                     style={{
-                      height: 6,
-                      cursor: 'ns-resize',
-                      flexShrink: 0,
-                      background: 'var(--color-outline-faint)',
-                      transition: 'background-color 120ms',
-                      position: 'relative',
+                      height: 8, margin: '-8px 0', cursor: 'ns-resize', flexShrink: 0, zIndex: 5,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'var(--color-outline-variant)' }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'var(--color-outline-faint)' }}
-                  />
-                  {/* Output panel */}
-                  <div style={{ flex: `${100 - editorHeightPct} 1 0`, minHeight: 0 }}>
-                    <CodeOutputPanel
-                      results={lastRunResult}
-                      status={outputPanelStatus}
-                      isSqlMode={currentLanguage === 'sql'}
-                      errorMessage={outputPanelError}
-                    />
+                  >
+                    <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-outline-variant)', transition: 'background 120ms' }} />
                   </div>
+                )}
+                {/* Console card */}
+                <div
+                  className="rounded-xl border border-outline-variant overflow-hidden flex flex-col"
+                  style={consoleCollapsed ? { flex: '0 0 auto' } : { flex: `${100 - editorHeightPct} 1 0`, minHeight: 0 }}
+                >
+                  <CodeOutputPanel
+                    results={lastRunResult}
+                    status={outputPanelStatus}
+                    isSqlMode={currentLanguage === 'sql'}
+                    errorMessage={outputPanelError}
+                    collapsed={consoleCollapsed}
+                    onToggleCollapse={() => setConsoleCollapsed(v => !v)}
+                  />
                 </div>
               </div>
 
@@ -5109,6 +5244,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     onToggle={() => setChatPanelOpen((v) => !v)}
                     autoOpenKey="coding"
                     proactiveNudge={proactiveNudge}
+                guidanceLevel={coachRegister}
                     onDismissNudge={() => setProactiveNudge(null)}
                     onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
                     currentCode={currentCode}

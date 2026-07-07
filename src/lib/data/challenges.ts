@@ -299,7 +299,7 @@ export function applyDisciplineFilter<
 >(query: Q, discipline: CountDiscipline): Q {
   if (discipline === 'all') return query
   if (discipline === 'product_sense') return query.in('challenge_type', PRODUCT_SENSE_TYPES)
-  if (discipline === 'analytics') return query.eq('challenge_type', 'claude_code_analytics')
+  if (discipline === 'analytics') return query.in('challenge_type', ['claude_code_analytics', 'claude_code_debugging'])
   return query.eq('challenge_type', discipline)
 }
 
@@ -307,7 +307,7 @@ export function applyDisciplineFilter<
 function disciplineToTypes(discipline: CountDiscipline): string[] {
   if (discipline === 'all') return []
   if (discipline === 'product_sense') return [...PRODUCT_SENSE_TYPES]
-  if (discipline === 'analytics') return ['claude_code_analytics']
+  if (discipline === 'analytics') return ['claude_code_analytics', 'claude_code_debugging']
   return [discipline]
 }
 

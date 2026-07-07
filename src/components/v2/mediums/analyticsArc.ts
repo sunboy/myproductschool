@@ -7,6 +7,7 @@
 // advanced run the full arc.
 
 import type { AnalyticsSubProblem } from './types'
+import type { GuidanceLevel } from '@/lib/adaptive/guidance'
 
 export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
   {
@@ -22,6 +23,8 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
     ],
     kind: 'mcp_setup',
     rubricDimension: 'connection_setup',
+    whyItMatters:
+      'An MCP is how you hand the agent a new capability. You are about to give it read-only access to a live BigQuery warehouse. Once it is connected, the agent can query millions of rows for you, and everything after this is plain language: you ask, it runs the query.',
     teachingNote:
       'Click Start sandbox to spin up your environment. Once the shell is live, two moves get you set up: first register the BigQuery tool with the add command, then start the analyst by typing claude. After that everything is plain language: you ask, Claude runs the queries.',
   },
@@ -138,6 +141,8 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
     ],
     kind: 'skill',
     rubricDimension: 'skill_construction',
+    whyItMatters:
+      'A skill is a saved play. Write one, and the next session starts already knowing this analysis, on any dataset. This is the move that compounds, and it is what separates a one-off answer from a repeatable capability you own.',
     teachingNote:
       'Teaching Claude a skill is the move that compounds. Encode what you just learned as a reusable check and every future session starts smarter, on any dataset.',
   },
@@ -148,16 +153,103 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
 // /skill steps. Advanced challenges run the full DEFAULT_ANALYTICS_ARC.
 const BEGINNER_KINDS = new Set(['mcp_setup', 'explore_schema', 'analyze', 'answer'])
 
-export function arcForDifficulty(difficulty?: string | null): AnalyticsSubProblem[] {
+/** Lab-supplied arc shape; analytics values are the defaults so existing
+ *  call sites (and every persisted analytics session) behave identically. */
+export interface ArcShapeConfig {
+  defaultArc: AnalyticsSubProblem[]
+  beginnerKinds: Set<string>
+  openCompression: { from: string[]; withStep: AnalyticsSubProblem } | null
+  stretch: { afterKind: string; step: AnalyticsSubProblem } | null
+}
+
+function analyticsShape(): ArcShapeConfig {
+  return {
+    defaultArc: DEFAULT_ANALYTICS_ARC,
+    beginnerKinds: BEGINNER_KINDS,
+    openCompression: { from: ['explore_schema', 'data_layout'], withStep: MAP_THE_DATA_STEP },
+    stretch: { afterKind: 'answer', step: STAKEHOLDER_TENSION_STEP },
+  }
+}
+
+export function arcForDifficulty(difficulty?: string | null, shape?: ArcShapeConfig): AnalyticsSubProblem[] {
+  const cfg = shape ?? analyticsShape()
   // The DB uses both vocabularies (beginner/intermediate/advanced AND
   // easy/medium/hard); treat the lowest tier of either as the beginner subset.
   const d = (difficulty ?? '').toLowerCase()
   const isBeginner = d === 'beginner' || d === 'easy'
   const steps = isBeginner
-    ? DEFAULT_ANALYTICS_ARC.filter((s) => BEGINNER_KINDS.has(s.kind))
-    : DEFAULT_ANALYTICS_ARC
+    ? cfg.defaultArc.filter((s) => cfg.beginnerKinds.has(s.kind))
+    : cfg.defaultArc
   // Re-sequence so the stepper numbering is contiguous after filtering.
   return steps.map((s, i) => ({ ...s, sequence: i + 1 }))
+}
+
+// The open-guidance compression of explore_schema + data_layout: an
+// experienced analyst maps a dataset in one pass instead of two guided steps.
+export const MAP_THE_DATA_STEP: AnalyticsSubProblem = {
+  id: 'map_the_data',
+  sequence: 2,
+  title: 'Map the data',
+  objective: 'Establish the tables, the grain of the main table, its row count, and the partition column in one pass.',
+  successCriterion: 'State the main table, its grain, approximate row count, and the partition column.',
+  suggestedPrompts: [
+    'List the tables, then give me the schema, grain, row count, and partition column of the main events table',
+  ],
+  kind: 'map_the_data',
+  rubricDimension: 'problem_framing',
+}
+
+// The open-guidance stretch step, appended after `answer`.
+export const STAKEHOLDER_TENSION_STEP: AnalyticsSubProblem = {
+  id: 'stakeholder_tension',
+  sequence: 99,
+  title: 'Defend the read',
+  objective: 'A stakeholder disputes your finding and attributes it to seasonality. Defend or revise with a query that separates the two explanations.',
+  successCriterion: 'Paste the comparison that rules seasonality in or out, and your one-line ruling.',
+  suggestedPrompts: [
+    'Compare the same funnel step across prior periods to test the seasonality objection',
+  ],
+  kind: 'stakeholder_tension',
+  rubricDimension: 'evidence',
+}
+
+/**
+ * Difficulty decides the step SET; guidance decides presentation and shape.
+ * scaffolded/guided keep the difficulty arc untouched (scaffolded effects are
+ * presentational, applied by the surfaces). `open` compresses the two data-
+ * orientation steps into one and appends the stretch step.
+ */
+/** Appends the lab's stretch step after its anchor kind, re-sequenced. */
+function appendStretch(steps: AnalyticsSubProblem[], stretch: ArcShapeConfig['stretch']): AnalyticsSubProblem[] {
+  if (!stretch) return steps
+  const anchorIdx = steps.findIndex((s) => s.kind === stretch.afterKind)
+  if (anchorIdx < 0) return steps
+  return [...steps.slice(0, anchorIdx + 1), stretch.step, ...steps.slice(anchorIdx + 1)]
+    .map((s, i) => ({ ...s, sequence: i + 1 }))
+}
+
+export function arcForLearner(
+  difficulty: string | null | undefined,
+  guidance: GuidanceLevel,
+  shape?: ArcShapeConfig,
+): AnalyticsSubProblem[] {
+  const cfg = shape ?? analyticsShape()
+  const base = arcForDifficulty(difficulty, cfg)
+  if (guidance !== 'open') return base
+  let steps = base
+  const compression = cfg.openCompression
+  if (compression) {
+    // Compression only applies when EVERY step it replaces is present
+    // (authored overrides on either disable it — the author's version wins).
+    const hasAll = compression.from.every((kind) => base.some((s) => s.kind === kind))
+    if (hasAll) {
+      const [first, ...rest] = compression.from
+      steps = base
+        .filter((s) => !rest.includes(s.kind))
+        .map((s) => (s.kind === first ? compression.withStep : s))
+    }
+  }
+  return appendStretch(steps.map((s, i) => ({ ...s, sequence: i + 1 })), cfg.stretch)
 }
 
 /**
@@ -169,8 +261,27 @@ export function arcForDifficulty(difficulty?: string | null): AnalyticsSubProble
 export function mergeArc(
   difficulty: string | null | undefined,
   overrides: Partial<AnalyticsSubProblem>[] | undefined,
+  guidance: GuidanceLevel = 'guided',
+  shape?: ArcShapeConfig,
 ): AnalyticsSubProblem[] {
-  const base = arcForDifficulty(difficulty)
+  // An override targeting either orientation step disables the open-mode
+  // COMPRESSION for this challenge, so authored content is never dropped —
+  // but open learners still get the stretch step appended.
+  const cfg = shape ?? {
+    defaultArc: DEFAULT_ANALYTICS_ARC,
+    beginnerKinds: new Set(['mcp_setup', 'explore_schema', 'analyze', 'answer']),
+    openCompression: { from: ['explore_schema', 'data_layout'], withStep: MAP_THE_DATA_STEP },
+    stretch: { afterKind: 'answer', step: STAKEHOLDER_TENSION_STEP },
+  }
+  const touchesOrientation = overrides?.some(
+    (o) => cfg.openCompression?.from.includes(o.id as string) ?? false,
+  )
+  const base =
+    guidance === 'open'
+      ? touchesOrientation
+        ? appendStretch(arcForDifficulty(difficulty, cfg), cfg.stretch)
+        : arcForLearner(difficulty, 'open', cfg)
+      : arcForDifficulty(difficulty, cfg)
   if (!overrides?.length) return base
   const byId = new Map(overrides.filter((o) => o.id).map((o) => [o.id as string, o]))
   const baseIds = new Set(base.map((s) => s.id))

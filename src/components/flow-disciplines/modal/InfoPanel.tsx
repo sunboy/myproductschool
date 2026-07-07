@@ -82,10 +82,10 @@ function PanelHeader({
   accent?: string
 }) {
   return (
-    <div className="pl-4 py-1" style={{ borderLeft: `3px solid ${accent}` }}>
+    <div className="py-1">
       <p
         className="font-label text-[13px] uppercase tracking-widest mb-1"
-        style={{ color: 'rgba(212,164,116,0.68)' }}
+        style={{ color: accent, opacity: 0.75 }}
       >
         {eyebrow}
       </p>

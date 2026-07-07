@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { loadSkillPrompt } from '@/lib/ai/skill-loader'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext } from '@/lib/v2/hatch-context'
@@ -141,7 +142,11 @@ export async function POST(
     const scenarioTrigger = challenge?.scenario_trigger ?? ''
     const hatchContext = await getHatchContext(user.id, challengeId, step)
 
-    const systemPrompt = `You are Hatch, a coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking. Honest, not soft: lead with what their answer gets right, frame a gap as the next move to build rather than a failure, and never use pressure or guilt. Calm about the person, exact about the gap.`
+    // Skill-governed: hackproduct-coaching is the runtime source of truth.
+    const systemPrompt = loadSkillPrompt(
+      'hackproduct-coaching',
+      `You are Hatch, a coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking. Honest, not soft: lead with what their answer gets right, frame a gap as the next move to build rather than a failure, and never use pressure or guilt. Calm about the person, exact about the gap.`,
+    )
     let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
 Question: ${questionText}

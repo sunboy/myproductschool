@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
 import type { FlowStep } from '@/lib/types'
 import { resolveNudge } from '@/lib/v2/skills/nudge-resolver'
+import { loadGuidanceInputs, deriveGuidanceLevel, type GuidanceLevel } from '@/lib/adaptive/guidance'
 
 // mulberry32 PRNG - deterministic seed-based random number generator
 function mulberry32(seed: number) {
@@ -276,9 +277,26 @@ export async function GET(
     ? resolveNudge(flowStep.step_nudge as string | null, step, roleLens)
     : (flowStep.step_nudge ?? '')
 
+  // Guidance level (adaptation contract, SUN-251). The medium-history signal
+  // for FLOW is completed challenge attempts, not CC sessions. Failure falls
+  // back to 'guided' — exactly today's behavior.
+  let guidance: GuidanceLevel = 'guided'
+  try {
+    const inputs = await loadGuidanceInputs(adminClient, userId)
+    const { count: completedAttempts } = await adminClient
+      .from('challenge_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+    guidance = deriveGuidanceLevel({ ...inputs, priorCcSessions: completedAttempts ?? 0 })
+  } catch {
+    guidance = 'guided'
+  }
+
   return NextResponse.json({
     step,
     nudge: resolvedNudge,
     questions: questionsResponse,
+    guidance,
   })
 }
