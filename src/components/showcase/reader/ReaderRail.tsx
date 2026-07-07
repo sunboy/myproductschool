@@ -101,8 +101,30 @@ export function ReaderRail({
       }}
       aria-label="Reading sections"
     >
-      {/* Header: kicker + title + progress */}
-      <div style={{ padding: '20px 20px 14px', borderBottom: `1px solid ${c.border}` }}>
+      {/* Header: back link + kicker + title + progress. The back link lives
+          here (top-left, where readers look for it) since the reader has no
+          separate back bar. */}
+      <div style={{ padding: '16px 20px 14px', borderBottom: `1px solid ${c.border}` }}>
+        <Link
+          href={backHref}
+          aria-label={`Back to ${backLabel}`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            fontFamily: 'var(--font-label)',
+            fontSize: 11.5,
+            fontWeight: 700,
+            color: c.labelVisited,
+            textDecoration: 'none',
+            marginBottom: 12,
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 14 }} aria-hidden="true">
+            arrow_back
+          </span>
+          {backLabel}
+        </Link>
         {kicker && (
           <div
             style={{

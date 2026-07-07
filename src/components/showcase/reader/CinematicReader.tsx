@@ -138,7 +138,7 @@ export function CinematicReader({
         kicker="Product Autopsy"
         accent={companyAccent ?? '#4a7c59'}
         backHref={backHref}
-        backLabel="All autopsies"
+        backLabel={companyName}
         onNavigate={scrollToSection}
       />
 
