@@ -77,7 +77,6 @@ export default async function StoryPage({ params }: Props) {
           productName={legacy.product.name}
           productSlug={slug}
           backHref={`/explore/autopsies/${slug}`}
-          sidebarOffset={false}
           forceVisible
         />
       );
@@ -92,7 +91,6 @@ export default async function StoryPage({ params }: Props) {
         productName={result.company.name}
         productSlug={slug}
         backHref={`/explore/autopsies/${slug}`}
-        sidebarOffset={false}
         forceVisible
       />
     );
@@ -110,7 +108,6 @@ export default async function StoryPage({ params }: Props) {
         productName={legacy.product.name}
         productSlug={slug}
         backHref={`/explore/autopsies/${slug}`}
-        sidebarOffset={false}
         forceVisible
       />
     );

@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { HatchDirector } from '@/components/shell/HatchDirector'
 import { IntroTourController } from '@/components/shell/IntroTourController'
-import { PaywallModal } from '@/components/paywalls/PaywallModal'
+import { UpgradeModalHost } from '@/components/paywalls/UpgradeModalHost'
 import { IdleTimer } from '@/components/auth/IdleTimer'
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { HatchProvider } from '@/context/HatchContext'
@@ -15,16 +14,6 @@ import { OnboardingModalProvider } from '@/context/OnboardingModalContext'
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
 
 function AppShell({ children }: { children: React.ReactNode }) {
-  const [upgradeOpen, setUpgradeOpen] = useState(false)
-
-  useEffect(() => {
-    const upgradeHandler = () => setUpgradeOpen(true)
-    window.addEventListener('open-upgrade-modal', upgradeHandler)
-    return () => {
-      window.removeEventListener('open-upgrade-modal', upgradeHandler)
-    }
-  }, [])
-
   return (
     <OnboardingModalProvider>
       <div className="min-h-screen min-w-0 bg-background">
@@ -38,10 +27,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         <FloatingHatch />
         <FeedbackWidget />
         <IdleTimer />
-        <PaywallModal
-          open={upgradeOpen}
-          onClose={() => setUpgradeOpen(false)}
-        />
+        <UpgradeModalHost />
         <OnboardingModal />
       </div>
     </OnboardingModalProvider>

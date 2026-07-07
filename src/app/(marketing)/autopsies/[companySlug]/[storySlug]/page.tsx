@@ -71,7 +71,6 @@ export default async function FeatureAutopsyPage({
               productName={legacy.product.name}
               productSlug={companySlug}
               backHref={`/autopsies/${companySlug}`}
-              sidebarOffset={false}
               forceVisible
             />
           </main>

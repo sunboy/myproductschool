@@ -5,8 +5,7 @@ import { ScoreHero, DimensionCard, FeedbackShell, FeedbackSection, TakeawayCard 
 import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
 
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
-import { workspaceBreadcrumbs } from '@/lib/workspace/breadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 import { Md } from '@/components/ui/Md'
 import { FeedbackText } from '@/components/ui/FeedbackText'
 import { formatCompany } from '@/lib/format/company'
@@ -48,7 +47,7 @@ interface FeedbackPageProps {
 
 export default async function FeedbackPage({ params, searchParams }: FeedbackPageProps) {
   const { id } = await params
-  const { attempt: attemptParam, returnTo: rawReturnTo, from_plan: fromPlan, from_domain: fromDomain } = await searchParams
+  const { attempt: attemptParam, returnTo: rawReturnTo } = await searchParams
   const returnTo = sanitizeReturnTo(rawReturnTo)
 
   const challenge = await getChallengeById(id)
@@ -282,14 +281,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     const retryHref = appendReturnTo(`/workspace/challenges/${id}`, returnTo)
     return (
       <div className="max-w-2xl mx-auto px-4 md:px-6 py-12">
-        <AppBreadcrumbs
-          className="mb-8"
-          items={[
-            { label: 'Practice', href: browseHref },
-            { label: challenge.title, href: retryHref },
-            { label: 'Feedback' },
-          ]}
-        />
+        <BackButton href={browseHref} label="Back to practice" className="mb-8" />
         <div className="bg-surface-container rounded-2xl p-8 md:p-10 text-center editorial-shadow">
           <HatchGlyph size={56} state="idle" className="text-primary mx-auto mb-5" />
           <h1 className="font-headline text-2xl font-bold text-on-surface mb-2">
@@ -397,26 +389,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}`
     : undefined
   const shareHref = `/workspace/challenges/${id}/share${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`
+  const browseHref = returnTo ?? '/challenges'
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
-      <AppBreadcrumbs
-        className="mb-4"
-        items={[
-          // Origin-aware hub (Practice / Study Plans / Explore), matching the
-          // workspace trail, then the challenge (back to its workspace), then this.
-          ...workspaceBreadcrumbs(challenge.title, { fromPlan, fromDomain }).slice(0, -1),
-          { label: challenge.title, href: challengeHref },
-          { label: 'Feedback' },
-        ]}
-      />
-
-      <div className="flex items-center gap-3 mb-4">
-        <Link href={challengeHref} className="p-2 rounded-lg hover:bg-surface-container transition-colors">
-          <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-        </Link>
-        <span className="text-sm text-on-surface-variant font-label">Back to challenge</span>
-      </div>
+      <BackButton href={browseHref} label="Back to practice" className="mb-4" />
 
       {/* Two-pane grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

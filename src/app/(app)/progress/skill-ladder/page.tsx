@@ -13,7 +13,7 @@ import {
   Tooltip,
 } from 'recharts'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import type { CareerBenchmark, Competency, FlowMove } from '@/lib/types'
 
@@ -229,14 +229,7 @@ function SkillLadderContent() {
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 animate-fade-in-up">
 
-      <AppBreadcrumbs
-        className="mb-6"
-        items={[
-          { label: 'Progress', href: '/progress' },
-          { label: 'Skill Ladder', href: '/progress/skill-ladder' },
-          { label: `${meta.label} Move` },
-        ]}
-      />
+      <BackButton href="/progress" label="Back to Progress" className="mb-6" />
 
       {/* Move selector tabs */}
       <div className="flex gap-2 mb-6 flex-wrap">

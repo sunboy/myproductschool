@@ -8,7 +8,7 @@ import { StoryVisual } from '@/components/showcase/StoryVisual';
 import { CompanyArt } from '@/components/showcase/CompanyArt';
 import type { ReadingPath } from '@/lib/showcase/reading-paths';
 import type { AutopsyCompanyWithStories, FeatureAutopsy } from '@/lib/autopsies/types';
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs';
+import { BackButton } from '@/components/navigation/BackButton';
 
 interface ShowcaseIndexExperienceProps {
   companies: AutopsyCompanyWithStories[];
@@ -83,13 +83,7 @@ export function ShowcaseIndexExperience({
 
   return (
     <div className="sc-page">
-      <AppBreadcrumbs
-        className="mb-5"
-        items={[
-          { label: 'Explore', href: '/explore' },
-          { label: 'Autopsies' },
-        ]}
-      />
+      <BackButton href="/explore" label="Back to Explore" className="mb-3" />
       <HeroHybrid
         featured={featured}
         company={featured ? companyMap.get(featured.companySlug) : undefined}

@@ -9,7 +9,7 @@ import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import { CommunityStatsPanel } from '@/components/challenge/CommunityStatsPanel'
 import { TopContributorsPanel } from '@/components/challenge/TopContributorsPanel'
 import { RelatedChallengesPanel } from '@/components/challenge/RelatedChallengesPanel'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 import { appendReturnTo, sanitizeReturnTo } from '@/lib/navigation/return-to'
 import type { ChallengeDiscussion } from '@/lib/types'
 
@@ -185,14 +185,7 @@ function ChallengeDiscussionContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 pb-24">
-      <AppBreadcrumbs
-        className="mb-6"
-        items={[
-          { label: 'Practice', href: returnTo ?? '/challenges' },
-          { label: challengeTitle ?? 'Challenge', href: challengeHref },
-          { label: 'Discussion' },
-        ]}
-      />
+      <BackButton href={challengeHref} label="Back to challenge" className="mb-6" />
 
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

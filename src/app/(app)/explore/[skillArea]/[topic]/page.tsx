@@ -6,7 +6,7 @@ import { getChallenges } from '@/lib/data/challenges'
 import { getDomainBySlug } from '@/lib/data/domains'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { challengePath } from '@/lib/challenges/challengeNumber'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 
 interface TopicPageProps {
   params: Promise<{ skillArea: string; topic: string }>
@@ -41,15 +41,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6">
-      {/* Breadcrumb */}
-      <AppBreadcrumbs
-        className="mb-5"
-        items={[
-          { label: 'Explore', href: '/explore' },
-          { label: domain.title, href: `/explore/${skillArea}` },
-          { label: topicData.title },
-        ]}
-      />
+      <BackButton href={`/explore/${skillArea}`} label={`Back to ${domain.title}`} className="mb-5" />
 
       {/* Header */}
       <div className="flex items-start gap-4 mb-6">

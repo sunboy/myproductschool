@@ -1,21 +1,19 @@
 'use client'
 import React from 'react'
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import type { AutopsyStory } from '@/lib/types'
 import { StorySection } from './StorySection'
-import { BackCrumb } from '@/components/navigation/AppBreadcrumbs'
+import { BackCrumb } from '@/components/navigation/BackButton'
 
 interface Props {
   story: AutopsyStory
   productName: string
   productSlug: string
   backHref?: string
-  sidebarOffset?: boolean
   forceVisible?: boolean
 }
 
-export function StoryReader({ story, productName, productSlug, backHref, sidebarOffset = true, forceVisible = false }: Props) {
+export function StoryReader({ story, productName, productSlug, backHref, forceVisible = false }: Props) {
   const [activeIndex, setActiveIndex] = React.useState(0)
   const [visibleSet, setVisibleSet] = React.useState<Set<number>>(new Set())
   const [visitedSet, setVisitedSet] = React.useState<Set<number>>(new Set())
@@ -92,9 +90,10 @@ export function StoryReader({ story, productName, productSlug, backHref, sidebar
         }}
       />
 
-      {/* Back bar - single link to the company hub; a full trail crops behind
-          long story titles at narrow widths */}
-      <div className={cn('fixed top-[52px] left-0 right-0 z-30 h-10 flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40', sidebarOffset && 'md:left-56')}>
+      {/* Back bar - single link to the company hub, in normal flow. The old
+          fixed top-[52px] band assumed a 52px header and cropped the top of
+          the story under the taller app TopNav (and any marketing header). */}
+      <div className="flex items-center px-4 py-2 gap-2 bg-surface-container-low border-b border-outline-variant/40">
         <BackCrumb href={backHref ?? `/explore/autopsies/${productSlug}`} label={productName} />
         {story.read_time && (
           <span className="font-label text-[11px] text-on-surface-variant/60 shrink-0 ml-auto">{story.read_time}</span>
@@ -118,8 +117,7 @@ export function StoryReader({ story, productName, productSlug, backHref, sidebar
         ))}
       </div>
 
-      {/* Story sections - offset for fixed breadcrumb */}
-      <div className="pt-10">
+      <div>
         {story.sections.map((section, i) => (
           <div
             key={section.id}

@@ -104,7 +104,7 @@
 .sc-page {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 28px 32px 120px;
+  padding: 16px 32px 120px;
   position: relative;
   z-index: 2;
 }

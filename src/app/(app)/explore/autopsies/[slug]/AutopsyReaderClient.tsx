@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import type { AutopsyProductDetail, AarrrStageContent } from '@/lib/types'
-import { BackCrumb } from '@/components/navigation/AppBreadcrumbs'
+import { BackCrumb } from '@/components/navigation/BackButton'
 import { ReaderRail } from '@/components/showcase/reader/ReaderRail'
 import { ReaderDock } from '@/components/showcase/reader/ReaderDock'
 import { ResumeBanner } from '@/components/showcase/reader/ResumeBanner'
@@ -799,8 +799,9 @@ export function AutopsyReaderClient({
     <div style={{ minHeight: '100vh', background: '#faf6f0', fontFamily: 'var(--font-body)' }}>
       {/* Back bar - single link to the company hub, matching the other autopsy
           readers. Desktop-only: below lg the sticky progress header owns this
-          band (its product name links back instead). */}
-      <div className="fixed top-[52px] left-0 right-0 z-30 h-10 hidden lg:flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40">
+          band (its product name links back instead). In normal flow — the old
+          fixed top-[52px] band sat under the ~67px TopNav and cropped content. */}
+      <div className="hidden lg:flex items-center px-4 py-2 gap-2 bg-surface-container-low border-b border-outline-variant/40">
         <BackCrumb href={`/explore/autopsies/${product.slug}`} label={product.name} />
       </div>
       {/* Mobile sticky progress header */}
