@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FeedbackText } from '@/components/ui/FeedbackText'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 import { ScoreHero, FeedbackShell, TakeawayCard, CompetencyViz } from '@/components/feedback'
 import { DebriefUpgradeCard } from '@/components/live-interview/DebriefUpgradeCard'
 import { createClient } from '@/lib/supabase/server'
@@ -164,14 +164,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-6">
       {/* Back navigation */}
-      <AppBreadcrumbs
-        className="mb-6"
-        items={[
-          { label: 'Live Interviews', href: '/live-interviews' },
-          ...(companyName ? [{ label: companyName }] : []),
-          { label: 'Debrief' },
-        ]}
-      />
+      <BackButton href="/live-interviews" label="Back to Interviews" className="mb-6" />
 
       {/* Page title */}
       <h1 className="font-headline text-2xl font-bold text-on-surface mb-1">

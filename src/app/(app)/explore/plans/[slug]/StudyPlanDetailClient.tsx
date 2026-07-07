@@ -12,7 +12,7 @@ import {
   EVENT_STUDY_PLAN_CHAPTER_OPENED,
   EVENT_STUDY_PLAN_COMPLETED,
 } from '@/lib/posthog/events'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -318,15 +318,8 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 64px' }}>
 
-      {/* ── Breadcrumb ── */}
-      <AppBreadcrumbs
-        className="mb-4"
-        items={[
-          { label: 'Explore', href: '/explore' },
-          { label: 'Study Plans', href: '/explore/plans' },
-          { label: plan.title },
-        ]}
-      />
+      {/* ── Back navigation ── */}
+      <BackButton href="/explore/plans" label="Back to Study Plans" className="mb-4" />
 
       {/* ── Hero card ── */}
       <div style={{

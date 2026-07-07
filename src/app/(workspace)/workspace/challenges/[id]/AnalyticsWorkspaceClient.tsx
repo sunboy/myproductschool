@@ -4,8 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { MediumRenderer } from '@/components/v2/mediums/MediumRenderer'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
-import { workspaceBreadcrumbs, workspaceExitHref, type WorkspaceOrigin } from '@/lib/workspace/breadcrumbs'
+import { workspaceExitHref, type WorkspaceOrigin } from '@/lib/workspace/breadcrumbs'
 import type { ChallengePrompt } from '@/lib/types'
 
 export interface AnalyticsScenario {
@@ -32,7 +31,6 @@ interface Props {
 export function AnalyticsWorkspaceClient({ challenge, scenario, returnTo, origin, locked }: Props) {
   const router = useRouter()
   const exitHref = workspaceExitHref(origin, returnTo)
-  const crumbs = workspaceBreadcrumbs(challenge.title, origin)
   return (
     // h-full (not h-screen): the (workspace) layout already roots at h-screen
     // minus TopNav; a nested h-screen pushed this shell's bottom edge past the
@@ -53,7 +51,6 @@ export function AnalyticsWorkspaceClient({ challenge, scenario, returnTo, origin
           >
             <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
           </Link>
-          <AppBreadcrumbs items={crumbs} className="min-w-0" />
         </header>
       )}
       <div className="flex-1 min-h-0">

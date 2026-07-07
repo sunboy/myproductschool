@@ -9,6 +9,8 @@ import { DomainIndexPanel } from '@/components/shell/DomainIndexPanel'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { HatchDirector } from '@/components/shell/HatchDirector'
 import { HatchProvider } from '@/context/HatchContext'
+import { SessionProvider } from '@/context/SessionContext'
+import { UpgradeModalHost } from '@/components/paywalls/UpgradeModalHost'
 
 function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -22,6 +24,7 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <HatchProvider>
+      <SessionProvider>
       <div className="flex h-screen min-w-0 flex-col bg-background">
         <TopNav />
         <div className="flex min-w-0 flex-1 overflow-hidden">
@@ -38,7 +41,9 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
         <BottomTabs />
         <HatchDirector />
         <FloatingHatch />
+        <UpgradeModalHost />
       </div>
+      </SessionProvider>
     </HatchProvider>
   )
 }

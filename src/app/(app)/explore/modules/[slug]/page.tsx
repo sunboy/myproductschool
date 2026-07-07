@@ -10,7 +10,7 @@ import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_CHAPTER_OPENED, EVENT_CHAPTER_COMPLETED } from '@/lib/posthog/events'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import { ChapterBody } from '@/components/learning/ChapterBody'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 import { motion, useScrollCollapse } from '@/components/motion'
 import type { LearnModule, LearnChapterWithProgress } from '@/lib/types'
 import { DIFFICULTY_LABELS as PRACTICE_DIFFICULTY_LABELS, coerceDifficulty } from '@/lib/practice/difficulty'
@@ -371,15 +371,9 @@ function ModulePageInner({ slug }: { slug: string }) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-52px)] overflow-hidden">
-      {/* Top breadcrumb bar */}
+      {/* Top back-navigation bar */}
       <div className="h-11 flex items-center px-4 border-b border-outline-variant flex-shrink-0 bg-background">
-        <AppBreadcrumbs
-          items={[
-            { label: 'Explore', href: '/explore' },
-            { label: 'Guides', href: '/explore/modules' },
-            { label: module.name },
-          ]}
-        />
+        <BackButton href="/explore/modules" label="Back to Guides" />
       </div>
 
       {/* Three-column body */}

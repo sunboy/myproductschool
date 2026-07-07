@@ -559,7 +559,7 @@ export function CanvasChatPanel({
           data-testid="hatch-chat-panel"
           data-hatch-target="workspace-hatch-chat"
           style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
-          className="relative flex flex-col border-l border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
+          className="relative ml-2 flex flex-col rounded-xl border border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
         >
         {/* Drag handle */}
         <div

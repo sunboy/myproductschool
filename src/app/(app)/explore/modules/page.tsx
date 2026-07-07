@@ -6,7 +6,7 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useLearnModules } from '@/hooks/useLearnModules'
 import type { LearnDifficulty, LearnModuleWithProgress } from '@/lib/types'
 import { DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 
 const DIFFICULTIES: Array<{ id: LearnDifficulty | 'all'; label: string }> = [
   { id: 'all', label: 'All' },
@@ -275,14 +275,8 @@ export default function ModulesPage() {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 24px 48px' }}>
 
-      {/* ── Breadcrumb ── */}
-      <AppBreadcrumbs
-        className="mb-4"
-        items={[
-          { label: 'Explore', href: '/explore' },
-          { label: 'Guides' },
-        ]}
-      />
+      {/* ── Back navigation ── */}
+      <BackButton href="/explore" label="Back to Explore" className="mb-4" />
 
       {/* ── Hero ── */}
       <div style={{

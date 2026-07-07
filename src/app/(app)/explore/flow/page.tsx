@@ -450,7 +450,7 @@ export default function LearnFlowPage() {
         </div>
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          {/* Breadcrumb */}
+          {/* Back link */}
           <div className="flow-reveal mb-6">
             <Link href="/explore" style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,

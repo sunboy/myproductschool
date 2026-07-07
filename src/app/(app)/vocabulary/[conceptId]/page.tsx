@@ -2,7 +2,7 @@ import { getConceptById } from '@/lib/data/concepts'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MOCK_DOMAINS } from '@/lib/mock-data'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 
 export default async function ConceptDetailPage({ params }: { params: Promise<{ conceptId: string }> }) {
   const { conceptId } = await params
@@ -13,13 +13,10 @@ export default async function ConceptDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      {/* Breadcrumb */}
-      <AppBreadcrumbs
-        items={[
-          { label: 'Explore', href: '/explore' },
-          ...(domain ? [{ label: domain.title, href: `/explore/domains/${domain.slug}` }] : []),
-          { label: concept.title },
-        ]}
+      {/* Back navigation */}
+      <BackButton
+        href={domain ? `/explore/domains/${domain.slug}` : '/explore'}
+        label="Back"
       />
 
       {/* Title */}

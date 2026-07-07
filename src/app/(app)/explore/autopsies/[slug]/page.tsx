@@ -4,7 +4,6 @@ import { AppLegacyCompanyHub } from '@/components/autopsy/AppAutopsyShowcase';
 import { getReadableAppCompanies, getReadableAppStories } from '@/lib/autopsies/app-library';
 import { getAutopsyCompanies, getAutopsyCompany } from '@/lib/autopsies/queries';
 import { getShowcaseProduct } from '@/lib/data/showcase';
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs';
 import { CompanyHubHeader } from '@/components/showcase/company/CompanyHubHeader';
 import { CompanyStoryRail } from '@/components/showcase/company/CompanyStoryRail';
 import { RelatedCompanies } from '@/components/showcase/company/RelatedCompanies';
@@ -48,15 +47,6 @@ export default async function ShowcaseProductPage({ params }: Props) {
     if (readableStories.length > 0) {
       return (
         <div className="min-h-screen">
-          <div className="sc-page-narrow pt-4">
-            <AppBreadcrumbs
-              items={[
-                { label: 'Explore', href: '/explore' },
-                { label: 'Autopsies', href: '/explore/autopsies' },
-                { label: company.name },
-              ]}
-            />
-          </div>
           <CompanyHubHeader company={company} storyCount={readableStories.length} />
           <div className="sc-page-narrow">
             <CompanyStoryRail

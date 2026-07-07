@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StudyPlanCard } from '@/components/explore/StudyPlanCard'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 import type { StudyPlanWithItems } from '@/lib/types'
 import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_STUDY_PLAN_VIEWED } from '@/lib/posthog/events'
@@ -67,13 +67,7 @@ export function StudyPlansClient({ studyPlans }: Props) {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
 
-      <AppBreadcrumbs
-        className="mb-5"
-        items={[
-          { label: 'Explore', href: '/explore' },
-          { label: 'Study Plans' },
-        ]}
-      />
+      <BackButton href="/explore" label="Back to Explore" className="mb-5" />
 
       {/* ── Hero ── */}
       <div data-tour-target="study-plans-hero" style={{

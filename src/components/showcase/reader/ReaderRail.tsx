@@ -87,9 +87,11 @@ export function ReaderRail({
       style={{
         width: 248,
         flexShrink: 0,
+        // Matches the real TopNav height (~67px). The old 56px offset let the
+        // rail slide under the nav and clipped its header.
         position: 'sticky',
-        top: 56,
-        height: 'calc(100vh - 56px)',
+        top: 67,
+        height: 'calc(100vh - 67px)',
         overflowY: 'auto',
         background: c.bg,
         backdropFilter: dark ? 'blur(20px) saturate(140%)' : undefined,

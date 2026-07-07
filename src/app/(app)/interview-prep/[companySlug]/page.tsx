@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { StartSimulationButton } from '@/components/interview/StartSimulationButton'
 import { StudyTimeline } from '@/components/interview/StudyTimeline'
 import { PrepStatusWidget } from '@/components/interview/PrepStatusWidget'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BackButton } from '@/components/navigation/BackButton'
 
 export default async function CompanyProfilePage({
   params,
@@ -22,13 +22,7 @@ export default async function CompanyProfilePage({
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
-      <AppBreadcrumbs
-        className="mb-6"
-        items={[
-          { label: 'Interviews', href: '/live-interviews' },
-          { label: company.name },
-        ]}
-      />
+      <BackButton href="/live-interviews" label="Back to Interviews" className="mb-6" />
 
       <h1 className="font-headline text-3xl text-on-surface mb-2">{company.name}</h1>
       <p className="text-on-surface-variant mb-8">

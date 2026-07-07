@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getDomainBySlug } from '@/lib/data/domains'
 import { getTopics } from '@/lib/data/topics'
+import { BackButton } from '@/components/navigation/BackButton'
 
 interface SkillAreaPageProps {
   params: Promise<{ skillArea: string }>
@@ -20,14 +21,7 @@ export default async function SkillAreaPage({ params }: SkillAreaPageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-on-surface-variant mb-5">
-        <Link href="/explore" className="hover:text-primary transition-colors">
-          Explore
-        </Link>
-        <span className="material-symbols-outlined text-base">chevron_right</span>
-        <span className="text-on-surface font-semibold">{domain.title}</span>
-      </nav>
+      <BackButton href="/explore" label="Back to Explore" className="mb-5" />
 
       {/* Header */}
       <div className="flex items-start gap-4 mb-6">

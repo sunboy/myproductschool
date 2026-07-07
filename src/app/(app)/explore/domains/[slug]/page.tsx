@@ -8,6 +8,7 @@ import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeLi
 import { getTechniqueLabelAny, getTopicLabelAny } from '@/lib/data/taxonomy'
 import { challengePath } from '@/lib/challenges/challengeNumber'
 import { DomainAnalyticsMount } from '@/components/analytics/DomainAnalyticsMount'
+import { BackButton } from '@/components/navigation/BackButton'
 
 export default async function DomainDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -108,17 +109,9 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'center', position: 'relative', zIndex: 1 }}>
           {/* Left */}
           <div>
-            {/* Breadcrumb */}
-            <div style={{
-              fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 700,
-              color: 'rgba(243,237,224,0.45)',
-              display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20,
-            }}>
-              <Link href="/explore" style={{ color: 'inherit', textDecoration: 'none' }}>Explore</Link>
-              <span className="material-symbols-outlined" style={{ fontSize: 13 }}>chevron_right</span>
-              <Link href="/explore/domains" style={{ color: 'inherit', textDecoration: 'none' }}>Domains</Link>
-              <span className="material-symbols-outlined" style={{ fontSize: 13 }}>chevron_right</span>
-              <span style={{ color: 'rgba(243,237,224,0.70)' }}>{domain.title}</span>
+            {/* Back navigation */}
+            <div style={{ marginBottom: 20 }}>
+              <BackButton href="/explore/domains" label="Back to Domains" />
             </div>
 
             {/* Icon + title */}

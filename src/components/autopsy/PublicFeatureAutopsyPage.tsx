@@ -24,7 +24,6 @@ export function PublicFeatureAutopsyPage({ company, story, access }: Props) {
             productName={company.name}
             productSlug={company.slug}
             backHref={`/autopsies/${company.slug}`}
-            sidebarOffset={false}
             forceVisible
           />
         ) : (

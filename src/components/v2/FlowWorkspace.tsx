@@ -45,7 +45,6 @@ import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
 import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
-import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
 import { WorkspacePanel } from '@/components/v2/WorkspacePanel'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
@@ -4157,11 +4156,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </section>
   )
 
-  // Origin-aware breadcrumb strip, rendered above the tab chrome on every
-  // workspace type so the trail and exit are identical across FLOW / canvas /
-  // coding (mirrors the analytics shell header). Deep-linking or arriving via
-  // grading no longer drops the user out of the app.
-
   function workspaceTabBadge(count: number, active: boolean) {
     return (
       <span style={{
@@ -4211,7 +4205,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           <>
             <span className="material-symbols-outlined text-[14px]">play_arrow</span>
             Run
-            <kbd className="hidden min-[1280px]:inline text-[9.5px] font-semibold px-1 rounded border border-outline-variant bg-surface-container text-on-surface-variant">⌘'</kbd>
+            <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-outline-variant bg-surface-container text-on-surface-variant">⌘'</kbd>
           </>
         )}
       </button>
@@ -4252,7 +4246,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             <>
               <span className="material-symbols-outlined text-[14px]">upload</span>
               Submit
-              <kbd className="hidden min-[1280px]:inline text-[9.5px] font-semibold px-1 rounded border border-on-primary/40 bg-transparent text-on-primary/80">⌘⏎</kbd>
+              <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-on-primary/40 bg-transparent text-on-primary">⌘⏎</kbd>
             </>
           )}
         </button>
