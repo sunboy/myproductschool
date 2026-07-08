@@ -10,6 +10,8 @@ import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limi
 import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { buildEmptyStateResponse, buildSkillContextPrompt } from '@/lib/hatch/skill-context'
+import { extractJson, truncateForLog } from '@/lib/anthropic/extract-json'
+import { logger } from '@/lib/log'
 
 const NUDGE_GATE_MS = 30_000
 const MAX_ELEMENT_COUNT_FOR_NUDGE = 40 // skip if canvas is large; user is mid-deep-work
@@ -301,11 +303,18 @@ export async function POST(req: NextRequest) {
     if (!response.sanitized) {
       return NextResponse.json({ nudge: null })
     }
-    const cleaned = response.sanitized
-      .trim()
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```$/i, '')
-    const parsed = JSON.parse(cleaned) as { nudge?: string | null }
+    // Tolerant parse: Haiku sometimes wraps the object in prose or fences.
+    // extractJson recovers the first balanced {...}; a hard JSON.parse here was
+    // the source of the "Unexpected non-whitespace character after JSON" crashes.
+    const parsed = extractJson<{ nudge?: string | null }>(response.sanitized)
+    if (!parsed) {
+      // Not an error — the model declined to return JSON. Log at warn for
+      // observability (with a truncated sample) and stay silent.
+      logger.warn('[nudge] could not extract JSON from model output', {
+        raw: truncateForLog(response.sanitized),
+      })
+      return NextResponse.json({ nudge: null })
+    }
     const nudge =
       typeof parsed.nudge === 'string' && parsed.nudge.trim().length > 0
         ? parsed.nudge.trim()

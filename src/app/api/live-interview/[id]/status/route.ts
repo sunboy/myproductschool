@@ -1,5 +1,17 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
+// The old loop ran 120 × 3s ≈ 360s, past Vercel's function ceiling, so any
+// interview still active at ~5min got killed with a 300s Runtime Timeout. Bound
+// each connection to a window comfortably under the ceiling and close cleanly;
+// the client's native EventSource auto-reconnects for a fresh window. The
+// interview only *ends* when a payload carries sessionPhase 'done' (client-side),
+// so an early close is a reconnect, never a premature finish.
+export const maxDuration = 60
+
+// 18 × 3s = 54s of streaming per connection, then a clean close + client reconnect.
+const MAX_ITERATIONS = 18
+const POLL_INTERVAL_MS = 3000
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -10,7 +22,7 @@ export async function GET(
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
-      for (let i = 0; i < 120; i++) {
+      for (let i = 0; i < MAX_ITERATIONS; i++) {
         try {
           const { data: session } = await adminClient
             .from('live_interview_sessions')
@@ -75,8 +87,10 @@ export async function GET(
           // silently continue on DB error
         }
 
-        await new Promise((r) => setTimeout(r, 3000))
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
       }
+      // Window elapsed with the interview still active: close cleanly. The
+      // browser's EventSource reopens automatically for the next window.
       controller.close()
     },
   })

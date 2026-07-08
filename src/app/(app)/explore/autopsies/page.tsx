@@ -4,6 +4,13 @@ import { getReadableAppCompanies, getReadableAppStories } from '@/lib/autopsies/
 import { getAutopsyCompanies, getQueuedAutopsyStories } from '@/lib/autopsies/queries';
 import { getAllReadingPaths } from '@/lib/showcase/reading-paths';
 
+// This route lives under the authed (app) shell, which reads auth cookies during
+// render, so Next cannot statically prerender it — attempting to caused
+// "Page changed from static to dynamic at runtime ... reason: cookies" errors in
+// prod. Declare the dynamic intent explicitly. (The (app) layout is a client
+// component, where route-segment config is inert, so this must live on the page.)
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Product Autopsies',
   description: 'Dissect the decisions behind the products everyone uses. Feature autopsies across the companies that shaped modern software.',

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { loadSkillPrompt } from '@/lib/ai/skill-loader'
+import { extractJson } from '@/lib/anthropic/extract-json'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -102,9 +103,15 @@ Return valid JSON only:
       budget,
     })
     const raw = msg.sanitized
-    // Strip markdown code fences if model wraps output
-    const text = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
-    const parsed = JSON.parse(text)
+    // Tolerant parse: recover the object even if the model wrapped it in fences
+    // or prose. On total failure, fall through to the word-count heuristic below.
+    const parsed = extractJson<{
+      score?: unknown
+      what_worked?: unknown
+      what_to_improve?: unknown
+      example_move?: unknown
+    }>(raw)
+    if (!parsed) throw new Error('quick-take: no JSON in model output')
     const score = Math.max(0, Math.min(1, Number(parsed.score) || 0))
 
     // Keep the structured fields (the UI renders them distinctly); the flat

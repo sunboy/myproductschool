@@ -20,6 +20,13 @@ const GENERIC_USER_ERROR = 'Something went wrong. Please try again.'
 // so internal codes, routes, and model names never reach the client.
 const MASK_ERRORS = process.env.MASK_API_ERRORS === 'true'
 
+// Expected business outcomes that surface as 4xx but are NOT defects: a user
+// hitting a plan/usage cap is the paywall working, not an error. These are logged
+// at `warn` (never `error`) so they don't pollute the error dashboard — e.g. the
+// hatch_nudges 402 that generated 300+ "error" log lines/week in prod. Add codes
+// here as new expected-limit responses appear.
+const EXPECTED_BUSINESS_CODES = new Set(['limit_reached'])
+
 function shouldExposeDetails(status: number) {
   if (MASK_ERRORS) return false
   return process.env.NODE_ENV !== 'production' || status < 500
@@ -60,15 +67,20 @@ export function apiError(
       extra: { details },
     })
   } else {
+    // With MASK_ERRORS on the client only sees a generic string, so we log the
+    // real 4xx server-side for observability. Expected business outcomes (plan
+    // limits) log at `warn`, not `error`, so they don't read as failures.
     if (MASK_ERRORS) {
-      logger.error(`[apiError] ${status} ${code}: ${message}`, {
-        status,
-        code,
-        ...(details !== undefined ? { details } : {}),
-      })
+      const logLine = `[apiError] ${status} ${code}: ${message}`
+      const logData = { status, code, ...(details !== undefined ? { details } : {}) }
+      if (EXPECTED_BUSINESS_CODES.has(code)) {
+        logger.warn(logLine, logData)
+      } else {
+        logger.error(logLine, logData)
+      }
     }
     Sentry.captureMessage(`API ${status} ${code}: ${message}`, {
-      level: 'warning',
+      level: EXPECTED_BUSINESS_CODES.has(code) ? 'info' : 'warning',
       tags: { api_error_code: code, status: String(status) },
       extra: { details },
     })
