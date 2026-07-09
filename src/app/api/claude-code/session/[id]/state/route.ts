@@ -43,7 +43,7 @@ export async function GET(
   const { data: session } = await admin
     .from('claude_code_sessions')
     .select(
-      'id, user_id, challenge_id, status, host_instance_id, wss_url, expires_at, last_snapshot_at, prompt_count, warehouse_query_count, total_input_tokens, total_output_tokens, final_artifact',
+      'id, user_id, challenge_id, status, host_instance_id, wss_url, expires_at, last_snapshot_at, prompt_count, warehouse_query_count, total_input_tokens, total_output_tokens, final_artifact, provision_phase, failure_code',
     )
     .eq('id', sessionId)
     .maybeSingle()
@@ -142,6 +142,10 @@ export async function GET(
 
   return NextResponse.json({
     status,
+    // Provisioning sub-phase + failure code for the client's staged progress and
+    // silent cold-start retry. Null until provisionSession writes them.
+    provision_phase: (session.provision_phase as string | null) ?? null,
+    failure_code: (session.failure_code as string | null) ?? null,
     wss_url: session.wss_url ?? null,
     expires_at: expiresAt,
     last_snapshot_at: session.last_snapshot_at ?? null,
