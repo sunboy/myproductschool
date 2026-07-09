@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { buildSkillContextPrompt } from '@/lib/hatch/skill-context'
+import { extractJson } from '@/lib/anthropic/extract-json'
 import { HATCH_VOICE } from '@/lib/hatch/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -111,8 +112,8 @@ export async function POST() {
       )
 
       const rawText = message.sanitized
-      const parsed = JSON.parse(rawText)
-      if (typeof parsed.reflection !== 'string' || !parsed.reflection.trim()) {
+      const parsed = extractJson<{ reflection?: unknown }>(rawText)
+      if (!parsed || typeof parsed.reflection !== 'string' || !parsed.reflection.trim()) {
         throw new Error('Missing reflection in Hatch response')
       }
       reflection = parsed.reflection

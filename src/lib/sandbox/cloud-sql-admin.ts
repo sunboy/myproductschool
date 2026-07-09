@@ -48,25 +48,48 @@ async function getToken(saJson: string): Promise<string> {
   return token
 }
 
+export interface SqlInstanceInfo {
+  /**
+   * Reported `state`: 'RUNNABLE', 'SUSPENDED', 'PENDING_CREATE', 'MAINTENANCE',
+   * etc. GOTCHA: a Cloud SQL instance that has been STOPPED via
+   * activationPolicy=NEVER still reports state 'RUNNABLE' (RUNNABLE means "the
+   * instance CAN run", not "is currently running"). Whether it is actually
+   * running lives in `activationPolicy`, not `state`. Do not infer stopped-ness
+   * from `state`.
+   */
+  state: string | null
+  /** 'ALWAYS' (running), 'NEVER' (stopped), 'ON_DEMAND', or null if unknown. */
+  activationPolicy: string | null
+}
+
 /**
- * Cloud SQL instance state: 'RUNNABLE' (up), 'SUSPENDED'/'STOPPED' (down via
- * activationPolicy NEVER), 'PENDING_CREATE', 'MAINTENANCE', etc. Returns null on
- * error / unconfigured.
+ * Read the Cloud SQL instance's `state` and `settings.activationPolicy`. Returns
+ * {state:null, activationPolicy:null} on error / unconfigured. See SqlInstanceInfo
+ * for why `activationPolicy` (not `state`) is the source of truth for running-ness.
  */
-export async function getSqlInstanceState(): Promise<string | null> {
+export async function getSqlInstanceInfo(): Promise<SqlInstanceInfo> {
   const cfg = loadConfig()
-  if (!cfg) return null
+  if (!cfg) return { state: null, activationPolicy: null }
   try {
     const token = await getToken(cfg.saJson)
     const res = await fetch(`${SQL_API}/projects/${cfg.project}/instances/${cfg.instance}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-    if (!res.ok) return null
-    const data = (await res.json()) as { state?: string }
-    return data.state ?? null
+    if (!res.ok) return { state: null, activationPolicy: null }
+    const data = (await res.json()) as { state?: string; settings?: { activationPolicy?: string } }
+    return { state: data.state ?? null, activationPolicy: data.settings?.activationPolicy ?? null }
   } catch {
-    return null
+    return { state: null, activationPolicy: null }
   }
+}
+
+/**
+ * Cloud SQL instance `state` only. Returns null on error / unconfigured. NOTE:
+ * `state` does NOT reflect stopped-ness (a NEVER-stopped instance still reads
+ * RUNNABLE) — use getSqlInstanceInfo().activationPolicy for that.
+ */
+export async function getSqlInstanceState(): Promise<string | null> {
+  return (await getSqlInstanceInfo()).state
 }
 
 async function patchActivationPolicy(
@@ -86,6 +109,21 @@ async function patchActivationPolicy(
   )
   if (!res.ok) {
     const detail = await res.text().catch(() => '')
+    // Benign case: GCP rejects a NEVER patch when the instance is ALREADY stopped
+    // ("Instance properties other than activation policy are not allowed to be
+    // updated when the instance is stopped..."). The desired end state (stopped)
+    // already holds, so treat it as success and log at info — NOT error — so a
+    // genuine stop failure still surfaces at error level instead of being drowned
+    // in this once-every-10-min noise. (This should now be rare since
+    // stopSqlInstance gates on activationPolicy, but keep it as belt-and-braces.)
+    if (
+      policy === 'NEVER' &&
+      res.status === 400 &&
+      /not allowed to be updated when the instance is stopped/i.test(detail)
+    ) {
+      console.info('[cloud-sql] NEVER patch skipped — instance already stopped')
+      return true
+    }
     console.error(`[cloud-sql] activationPolicy=${policy} PATCH failed (${res.status}): ${detail.slice(0, 300)}`)
     return false
   }
@@ -144,23 +182,27 @@ export async function ensureSqlRunnable(deadlineMs = 40_000): Promise<EnsureRunn
   return { ready: false, started: true, state }
 }
 
-// States that mean the instance is already down (or being deleted) — a NEVER
-// patch is pointless / invalid. Any OTHER state (RUNNABLE, or a transitional
-// STARTING/PENDING/MAINTENANCE) must still get NEVER asserted, or an instance
-// stuck mid-start with zero sessions would bill forever.
-const ALREADY_DOWN = new Set(['STOPPED', 'SUSPENDED', 'PENDING_DELETE'])
-
 /**
  * Stop cc-llm-db (activationPolicy=NEVER) to halt billing when idle. Best-effort +
- * idempotent. Returns true if a stop PATCH was issued. Asserts NEVER for ANY state
- * that isn't already down (including transitional STARTING/PENDING) so a half-woken
- * instance can't be left running. If the state read fails (null), we still assert
- * NEVER — failing toward "stopped" is the cost-safe default for an idle reaper.
+ * idempotent. Returns true if the instance is (or was already) stopped.
+ *
+ * Gates on `activationPolicy`, NOT `state`: a NEVER-stopped instance still reports
+ * state 'RUNNABLE', so the old state-based guard ({STOPPED,SUSPENDED,...}) never
+ * matched and this re-issued a NEVER patch on every idle run — which GCP rejects
+ * with a 400 ("...not allowed to be updated when the instance is stopped...").
+ * That produced ~one 400 every 10 minutes (386 in a week) with no functional
+ * effect (the DB was already stopped). Reading activationPolicy first lets us skip
+ * the pointless patch entirely.
+ *
+ * If the read fails (activationPolicy null), we still assert NEVER — failing toward
+ * "stopped" is the cost-safe default for an idle reaper, and patchActivationPolicy
+ * now treats the "already stopped" 400 as benign so the fallback can't spam errors.
  */
 export async function stopSqlInstance(): Promise<boolean> {
   const cfg = loadConfig()
   if (!cfg) return false
-  const state = await getSqlInstanceState()
-  if (state && ALREADY_DOWN.has(state)) return false
+  const { activationPolicy } = await getSqlInstanceInfo()
+  // Already stopped → nothing to do (and a patch would 400).
+  if (activationPolicy === 'NEVER') return true
   return patchActivationPolicy(cfg, 'NEVER')
 }

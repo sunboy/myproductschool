@@ -11,7 +11,7 @@ import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { IS_MOCK } from '@/lib/mock'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { HatchFeedbackSchema, clampFeedbackScores, V2FeedbackSchema, clampV2FeedbackScores } from '@/lib/hatch/feedback-schema'
+import { HatchFeedbackSchema, clampFeedbackScores, V2FeedbackSchema, clampV2FeedbackScores, type ValidatedHatchFeedback, type ValidatedV2Feedback } from '@/lib/hatch/feedback-schema'
 import { logEvent } from '@/lib/data/events'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
@@ -26,6 +26,8 @@ import {
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { apiError } from '@/lib/api/error'
 import { buildEmptyStateResponse, buildSkillContextPrompt, detectSubmissionQuality } from '@/lib/hatch/skill-context'
+import { extractJson, truncateForLog } from '@/lib/anthropic/extract-json'
+import { logger } from '@/lib/log'
 
 const ROUTE_KEY = 'hatch_feedback'
 const V2_ROUTE_KEY = 'hatch_feedback_v2'
@@ -225,30 +227,45 @@ export async function POST(req: NextRequest) {
       budget,
     })
 
-    // Attempt 1: parse and validate
+    // Attempt 1: parse and validate. extractJson tolerates fences/prose the
+    // model may wrap around the object.
     let parsedFeedback
     const rawText = message.sanitized || '{}'
 
-    try {
-      const parsed = JSON.parse(rawText)
-      const validated = HatchFeedbackSchema.safeParse(parsed)
-
-      if (validated.success) {
-        parsedFeedback = clampFeedbackScores(validated.data)
-      } else {
-        // Retry once with stricter prompt
-        const retryResponse = await guardedCachedMessage(
-          HATCH_FEEDBACK_SYSTEM_PROMPT + '\n\nCRITICAL: Return ONLY a valid JSON object. No markdown, no explanation, no code blocks. Raw JSON only.',
-          'The JSON was invalid. Return only the raw JSON object with no surrounding text.\n\nOriginal response:\n' + rawText,
-          { model: 'claude-sonnet-4-6', max_tokens: 1500, budget }
-        )
-        const retryText = retryResponse.sanitized || '{}'
-        const retryParsed = JSON.parse(retryText)
-        const retryValidated = HatchFeedbackSchema.safeParse(retryParsed)
-        parsedFeedback = retryValidated.success ? clampFeedbackScores(retryValidated.data) : retryParsed
-      }
-    } catch {
+    // Typed loosely (like the prior JSON.parse) — the real shape is enforced by
+    // HatchFeedbackSchema.safeParse below; the unvalidated fallback mirrors the
+    // pre-existing behavior of assigning the raw parsed object.
+    const parsed = extractJson<Record<string, unknown>>(rawText)
+    if (parsed === null) {
+      logger.warn('[hatch-feedback] could not extract JSON from model output', {
+        raw: truncateForLog(rawText),
+      })
       return apiError(500, 'hatch_feedback_parse_failed', 'Failed to parse Hatch feedback')
+    }
+    const validated = HatchFeedbackSchema.safeParse(parsed)
+
+    if (validated.success) {
+      parsedFeedback = clampFeedbackScores(validated.data)
+    } else {
+      // Retry once with stricter prompt
+      const retryResponse = await guardedCachedMessage(
+        HATCH_FEEDBACK_SYSTEM_PROMPT + '\n\nCRITICAL: Return ONLY a valid JSON object. No markdown, no explanation, no code blocks. Raw JSON only.',
+        'The JSON was invalid. Return only the raw JSON object with no surrounding text.\n\nOriginal response:\n' + rawText,
+        { model: 'claude-sonnet-4-6', max_tokens: 1500, budget }
+      )
+      const retryText = retryResponse.sanitized || '{}'
+      const retryParsed = extractJson<Record<string, unknown>>(retryText)
+      if (retryParsed === null) {
+        logger.warn('[hatch-feedback] could not extract JSON from retry output', {
+          raw: truncateForLog(retryText),
+        })
+        return apiError(500, 'hatch_feedback_parse_failed', 'Failed to parse Hatch feedback')
+      }
+      const retryValidated = HatchFeedbackSchema.safeParse(retryParsed)
+      // Fallback passes the unvalidated object through unchanged (prior behavior).
+      parsedFeedback = retryValidated.success
+        ? clampFeedbackScores(retryValidated.data)
+        : (retryParsed as ValidatedHatchFeedback)
     }
 
     // Persist detected patterns to DB
@@ -423,10 +440,19 @@ Return valid JSON only.`
     const rawText = message.sanitized || '{}'
 
     try {
-      const parsed = JSON.parse(rawText)
+      const parsed = extractJson<Record<string, unknown>>(rawText)
+      if (parsed === null) {
+        logger.warn('[hatch-feedback-v2] could not extract JSON from model output', {
+          raw: truncateForLog(rawText),
+        })
+        return apiError(500, 'hatch_feedback_v2_parse_failed', 'Failed to parse v2 feedback')
+      }
       const validated = V2FeedbackSchema.safeParse(parsed)
 
-      const feedback = validated.success ? clampV2FeedbackScores(validated.data) : parsed
+      // Fallback passes the unvalidated object through unchanged (prior behavior).
+      const feedback = validated.success
+        ? clampV2FeedbackScores(validated.data)
+        : (parsed as ValidatedV2Feedback)
       const feedbackSteps = Array.isArray(feedback.steps) ? feedback.steps : []
       const signalByStep = new Map<string, CompetencySignalInput['competency_signal']>()
 

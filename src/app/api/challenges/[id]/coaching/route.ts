@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { loadSkillPrompt } from '@/lib/ai/skill-loader'
+import { extractJson } from '@/lib/anthropic/extract-json'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext } from '@/lib/v2/hatch-context'
@@ -186,11 +187,11 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
     let role_context = ''
     let career_signal = ''
-    try {
-      const parsed = JSON.parse(rawText)
+    const parsed = extractJson<{ role_context?: string; career_signal?: string }>(rawText)
+    if (parsed) {
       role_context = parsed.role_context ?? ''
       career_signal = parsed.career_signal ?? ''
-    } catch {
+    } else {
       const rcMatch = rawText.match(/"role_context"\s*:\s*"([^"]+)"/)
       const csMatch = rawText.match(/"career_signal"\s*:\s*"([^"]+)"/)
       role_context = rcMatch?.[1] ?? ''
@@ -342,12 +343,12 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   let role_context = ''
   let career_signal = ''
 
-  try {
-    const parsed = JSON.parse(rawText)
+  const parsed = extractJson<{ role_context?: string; career_signal?: string }>(rawText)
+  if (parsed) {
     role_context = parsed.role_context ?? ''
     career_signal = parsed.career_signal ?? ''
-  } catch {
-    // If JSON parse fails, try to extract from text
+  } else {
+    // If JSON extraction fails, try to pull the fields out of loose text
     const rcMatch = rawText.match(/"role_context"\s*:\s*"([^"]+)"/)
     const csMatch = rawText.match(/"career_signal"\s*:\s*"([^"]+)"/)
     role_context = rcMatch?.[1] ?? ''
