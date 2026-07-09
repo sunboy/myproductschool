@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HackProduct — Redesign Direction Compare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=Nunito+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--primary:#4a7c59;--bg:#faf6f0;--ink:#2e3230;--ink-2:#4a4e4a;--line:#c4c8bc;--card:#ffffff;--card-2:#f5f1ea;--amber:#c9933a;--forest:#1e3528}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Nunito Sans',sans-serif;padding:48px clamp(16px,4vw,64px) 96px}
+  header .meta{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:12px}
+  header h1{font-family:'Literata',serif;font-size:clamp(28px,3.5vw,44px);font-weight:700}
+  header p{color:var(--ink-2);margin-top:8px;max-width:760px;font-size:15px;line-height:1.6}
+  .rich{margin-top:40px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+  .rich .r-head{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--forest);color:#e9f0ea;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .rich .r-head h2{font-family:'Literata',serif;font-size:20px;font-weight:600}
+  .rich .r-head span{font-size:13px;color:#a9c4b0}
+  .rich .r-head a{margin-left:auto;font-size:13px;font-weight:700;color:#8ecf9e;text-decoration:none}
+  .rich img{width:100%;display:block}
+  .direction{margin-top:52px;border-top:1px solid var(--line);padding-top:28px}
+  .direction-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .direction-head .letter{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:#fff;background:var(--forest);border-radius:6px;padding:4px 10px}
+  .direction-head h2{font-family:'Literata',serif;font-size:24px;font-weight:600}
+  .direction-head .thesis{flex-basis:100%;max-width:800px;color:var(--ink-2);font-size:14px;line-height:1.55;margin-top:4px}
+  .concept{margin-top:16px}
+  .concept img{width:100%;max-width:720px;border:1px solid var(--line);border-radius:10px;display:block}
+  .concept .cap{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);margin-top:6px}
+  .frames{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+  @media(max-width:900px){.frames{grid-template-columns:1fr}}
+  .frame{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+  .frame .label{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;border-bottom:1px solid var(--line);background:var(--card-2)}
+  .frame .label span{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+  .frame .label a{font-size:11px;font-weight:700;color:var(--primary);text-decoration:none}
+  .frame .label a:hover{text-decoration:underline}
+  .frame .thumb{display:block;max-height:260px;overflow:hidden}
+  .frame .thumb img{width:100%;display:block}
+</style>
+</head>
+<body>
+<header>
+  <div class="meta">HackProduct · feature/redesign-options · 2026-07-09</div>
+  <h1>Four visual directions, one Terra palette</h1>
+  <p>Same forest/cream/amber palette and Literata + Nunito Sans pairing, same restructured IA (see <a href="../content-organization-audit.md">the audit</a>), four distinct systems. Each direction has a dashboard, a Library, and a marketing page — click any frame to open it live. The dashboard is the rich "Daily Flight Plan + Cockpit + Feed" concept (below), rendered in each direction's chrome.</p>
+</header>
+
+<section class="rich">
+  <div class="r-head"><h2>The rich dashboard concept</h2><span>Readiness bar + coach-programmed session + curated feed + "Why this" on every item</span><a href="dashboard-rich.html">Open live ↗</a></div>
+  <img src="../images/dashboard-rich-1440-full.png" alt="Rich dashboard concept">
+</section>
+
+<section class="direction" id="a">
+  <div class="direction-head"><span class="letter">A</span><h2>Precision Instrument</h2>
+    <p class="thesis">A calm technical cockpit. Left sidebar, 6px panels, monospace numerals, green reserved for status/progress, heatmaps and rings. Signature: instrumentation rails — slim left-edge status bars.</p></div>
+  <div class="concept"><img src="../images/direction-a-precision-instrument.png" alt="Direction A concept"><div class="cap">gpt-image concept frame</div></div>
+  <div class="frames">
+    <div class="frame"><div class="label"><span>Dashboard</span><a href="a/dashboard.html">Open ↗</a></div><a class="thumb" href="a/dashboard.html"><img src="../screenshots/shot-a-dashboard.png"></a></div>
+    <div class="frame"><div class="label"><span>Library</span><a href="a/library.html">Open ↗</a></div><a class="thumb" href="a/library.html"><img src="../screenshots/shot-a-library.png"></a></div>
+    <div class="frame"><div class="label"><span>Marketing</span><a href="a/marketing.html">Open ↗</a></div><a class="thumb" href="a/marketing.html"><img src="../screenshots/shot-a-marketing.png"></a></div>
+  </div>
+</section>
+
+<section class="direction" id="b">
+  <div class="direction-head"><span class="letter">B</span><h2>Editorial Academy</h2>
+    <p class="thesis">Product judgment taught through case studies. Literata display type, dark forest heroes over cream reading surfaces, bylines, editorial infographics. Signature: case-file covers — autopsies as premium magazine covers.</p></div>
+  <div class="concept"><img src="../images/direction-b-editorial-academy.png" alt="Direction B concept"><div class="cap">gpt-image concept frame</div></div>
+  <div class="frames">
+    <div class="frame"><div class="label"><span>Dashboard</span><a href="b/dashboard.html">Open ↗</a></div><a class="thumb" href="b/dashboard.html"><img src="../screenshots/shot-b-dashboard.png"></a></div>
+    <div class="frame"><div class="label"><span>Library</span><a href="b/library.html">Open ↗</a></div><a class="thumb" href="b/library.html"><img src="../screenshots/shot-b-library.png"></a></div>
+    <div class="frame"><div class="label"><span>Marketing</span><a href="b/marketing.html">Open ↗</a></div><a class="thumb" href="b/marketing.html"><img src="../screenshots/shot-b-marketing.png"></a></div>
+  </div>
+</section>
+
+<section class="direction" id="c">
+  <div class="direction-head"><span class="letter">C</span><h2>Crafted Field Guide</h2>
+    <p class="thesis">A warm, guided practice environment — Brilliant for adults. Paper-grain cream, curriculum-map sidebar, trail markers and completion stamps, one disciplined Hatch presence. Signature: margin notes — slim annotated callouts (the "§" pins).</p></div>
+  <div class="concept"><img src="../images/direction-c-crafted-field-guide.png" alt="Direction C concept"><div class="cap">gpt-image concept frame</div></div>
+  <div class="frames">
+    <div class="frame"><div class="label"><span>Dashboard</span><a href="c/dashboard.html">Open ↗</a></div><a class="thumb" href="c/dashboard.html"><img src="../screenshots/shot-c-dashboard.png"></a></div>
+    <div class="frame"><div class="label"><span>Library</span><a href="c/library.html">Open ↗</a></div><a class="thumb" href="c/library.html"><img src="../screenshots/shot-c-library.png"></a></div>
+    <div class="frame"><div class="label"><span>Marketing</span><a href="c/marketing.html">Open ↗</a></div><a class="thumb" href="c/marketing.html"><img src="../screenshots/shot-c-marketing.png"></a></div>
+  </div>
+</section>
+
+<section class="direction" id="d">
+  <div class="direction-head"><span class="letter">D</span><h2>Systems Lab</h2>
+    <p class="thesis">An engineering-grade practice lab where interviews, analytics, code, and product judgment converge. Split-pane workspace, heavy monospace, code-style panel headers, event streams — leans into the Claude Code Analytics differentiator. Signature: the inspector panel.</p></div>
+  <div class="concept"><img src="../images/direction-d-systems-lab.png" alt="Direction D concept"><div class="cap">gpt-image concept frame</div></div>
+  <div class="frames">
+    <div class="frame"><div class="label"><span>Dashboard</span><a href="d/dashboard.html">Open ↗</a></div><a class="thumb" href="d/dashboard.html"><img src="../screenshots/shot-d-dashboard.png"></a></div>
+    <div class="frame"><div class="label"><span>Library</span><a href="d/library.html">Open ↗</a></div><a class="thumb" href="d/library.html"><img src="../screenshots/shot-d-library.png"></a></div>
+    <div class="frame"><div class="label"><span>Marketing</span><a href="d/marketing.html">Open ↗</a></div><a class="thumb" href="d/marketing.html"><img src="../screenshots/shot-d-marketing.png"></a></div>
+  </div>
+</section>
+</body>
+</html>

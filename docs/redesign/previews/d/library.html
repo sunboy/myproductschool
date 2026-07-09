@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Library — Systems Lab · HackProduct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-primary:#4a7c59; --color-on-primary:#ffffff; --color-primary-container:#78a886; --color-on-primary-container:#d8f0de; --color-primary-fixed:#c8e8d0; --color-primary-fixed-dim:#8ecf9e;
+  --color-secondary:#6b6358; --color-secondary-container:#f0e8db; --color-on-secondary-container:#5e5548;
+  --color-tertiary:#705c30; --color-tertiary-container:#c4a66a;
+  --color-background:#faf6f0; --color-on-background:#2e3230;
+  --color-surface:#faf6f0; --color-surface-taupe:#e8e2d8; --color-surface-dim:#dbd7cf;
+  --color-surface-container-lowest:#ffffff; --color-surface-container-low:#f5f1ea; --color-surface-container:#f0ece4; --color-surface-container-high:#eae6de; --color-surface-container-highest:#e4e0d8;
+  --color-on-surface:#2e3230; --color-on-surface-variant:#4a4e4a;
+  --color-outline:#74796e; --color-outline-variant:#c4c8bc;
+  --color-error:#b83230; --color-amber:#c9933a; --color-amber-soft:#f3e2b9; --color-success:#2f7a4a;
+  --color-hero-forest:#1e3528; --color-hero-forest-deep:#14241c; --color-hero-forest-deepest:#0e1a14;
+  --font-ui:'Nunito Sans',system-ui,-apple-system,sans-serif;
+  --font-display:'Literata',Georgia,serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+  --radius:4px;
+  --line:1px solid var(--color-outline-variant);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--color-surface-container-low);color:var(--color-on-surface);font:400 12.5px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;background:none;border:none;color:inherit}
+svg{display:block;flex:none}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:2px}
+
+.mono{font-family:var(--font-mono)}
+.num{font-family:var(--font-mono);font-weight:600;letter-spacing:-.01em}
+.microlabel{font:700 9.5px/1.2 var(--font-mono);letter-spacing:.13em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.panel{position:relative;background:var(--color-surface-container-lowest);border:var(--line);border-radius:var(--radius)}
+.flow-chip{display:inline-flex;align-items:center;font:800 9px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--color-on-surface-variant);border:1px solid var(--color-outline-variant);border-radius:2px;padding:3px 6px;background:transparent}
+.flow-chip.is-active{background:var(--color-primary);border-color:var(--color-primary);color:var(--color-on-primary)}
+.flow-chip:hover{border-color:var(--color-outline)}
+.meta-tag{font:600 10px/1 var(--font-mono);letter-spacing:.03em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--color-primary);color:var(--color-on-primary);border:1px solid var(--color-primary);border-radius:var(--radius);padding:9px 15px;font:700 12.5px/1 var(--font-ui);transition:background .12s ease}
+.btn-primary:hover{background:var(--color-hero-forest);border-color:var(--color-hero-forest)}
+.btn-ghost{display:inline-flex;align-items:center;gap:6px;background:var(--color-surface-container-lowest);color:var(--color-on-surface);border:var(--line);border-radius:var(--radius);padding:7px 11px;font:700 11.5px/1 var(--font-ui);transition:border-color .12s ease,background .12s ease}
+.btn-ghost:hover{border-color:var(--color-outline);background:var(--color-surface-container-low)}
+.quiet-link{font:700 11.5px/1 var(--font-mono);color:var(--color-primary);display:inline-flex;align-items:center;gap:5px}
+.quiet-link:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ===== TOPBAR ===== */
+.topbar{position:sticky;top:0;z-index:70;background:var(--color-hero-forest);color:#e9f0ea;display:flex;align-items:center;height:44px;padding:0 16px;gap:18px;border-bottom:1px solid var(--color-hero-forest-deepest)}
+.brand{display:flex;align-items:center;gap:8px;flex:none}
+.brand-mark{width:18px;height:18px;flex:none}
+.brand-name{font:800 12.5px/1 var(--font-mono);letter-spacing:-.01em;color:#f5f0e8}
+.brand-name em{font-style:normal;color:var(--color-primary-fixed-dim)}
+.topbar-sep{width:1px;height:18px;background:rgba(255,255,255,.14);flex:none}
+.wstabs{display:flex;align-items:stretch;height:44px;gap:0}
+.wstab{display:flex;align-items:center;gap:6px;padding:0 13px;font:700 11.5px/1 var(--font-ui);color:rgba(233,240,234,.55);border-bottom:2px solid transparent;transition:color .12s ease,border-color .12s ease}
+.wstab svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+.wstab:hover{color:rgba(233,240,234,.85)}
+.wstab.is-active{color:#fff;border-bottom-color:var(--color-primary-fixed-dim)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.cmdk{display:flex;align-items:center;gap:7px;height:28px;padding:0 9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:3px;color:rgba(233,240,234,.6)}
+.cmdk svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.8}
+.cmdk span{font:600 11px var(--font-ui)}
+.cmdk kbd{font:600 9.5px var(--font-mono);border:1px solid rgba(255,255,255,.18);border-radius:2px;padding:1px 4px;color:rgba(233,240,234,.7);margin-left:2px}
+.streak-chip{display:flex;align-items:center;gap:5px;height:26px;padding:0 8px;border:1px solid rgba(255,255,255,.14);border-radius:3px;background:rgba(255,255,255,.04)}
+.streak-chip svg{width:11px;height:11px;fill:var(--color-amber);stroke:none}
+.streak-chip .num{font-size:11.5px;color:#fff}
+.streak-chip span:last-child{font:700 9px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:rgba(233,240,234,.6)}
+.avatar{width:26px;height:26px;border-radius:3px;background:var(--color-primary-fixed);color:var(--color-hero-forest);display:flex;align-items:center;justify-content:center;font:800 11px var(--font-mono);border:1px solid var(--color-primary-fixed-dim)}
+
+.mobilenav{display:none;background:var(--color-hero-forest);overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--color-hero-forest-deepest)}
+.mobilenav::-webkit-scrollbar{display:none}
+.mobilenav-inner{display:flex;gap:0;padding:0 8px}
+.mobilenav .wstab{white-space:nowrap;padding:9px 11px;height:auto}
+
+/* ===== LIBRARY HERO ===== */
+.lib-hero{background:var(--color-hero-forest-deep);border-bottom:1px solid var(--color-hero-forest-deepest);color:#e9f0ea;padding:20px 18px 0}
+.lib-hero-inner{max-width:1400px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:16px}
+.lib-hero h1{font:600 24px/1.1 var(--font-display);color:#fff}
+.lib-hero .lib-sub{font:500 11.5px/1.5 var(--font-ui);color:#a9c4b0;margin-top:6px;max-width:520px}
+.lib-continue{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:9px 12px}
+.lib-continue .ic{width:28px;height:28px;border-radius:3px;background:var(--color-primary-fixed);display:flex;align-items:center;justify-content:center;flex:none}
+.lib-continue .ic svg{width:15px;height:15px;stroke:var(--color-hero-forest);fill:none;stroke-width:2}
+.lib-continue .tx b{display:block;font:700 12px/1.3 var(--font-ui);color:#fff}
+.lib-continue .tx span{font:600 10px/1 var(--font-mono);color:#8ecf9e;text-transform:uppercase;letter-spacing:.04em}
+
+/* ===== ANCHOR TABS ===== */
+.anchortabs{position:sticky;top:44px;z-index:60;background:var(--color-hero-forest-deep);border-bottom:1px solid var(--color-hero-forest-deepest)}
+.anchortabs-inner{max-width:1400px;margin:0 auto;display:flex;gap:2px;padding:0 18px;overflow-x:auto;scrollbar-width:none}
+.anchortabs-inner::-webkit-scrollbar{display:none}
+.atab{white-space:nowrap;padding:11px 14px;font:700 11px/1 var(--font-mono);letter-spacing:.04em;text-transform:uppercase;color:rgba(233,240,234,.55);border-bottom:2px solid transparent;transition:color .12s ease,border-color .12s ease}
+.atab:hover{color:rgba(233,240,234,.85)}
+.atab.on{color:#fff;border-bottom-color:var(--color-primary-fixed-dim)}
+
+/* ===== main ===== */
+.main{padding:22px 18px 60px;max-width:1400px;width:100%;margin:0 auto}
+.sec{margin-bottom:36px;scroll-margin-top:100px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.sec-head h2{font:600 17px/1 var(--font-display)}
+.sec-head .microlabel{display:block;margin-bottom:5px}
+
+/* ===== Study plans marquee ===== */
+.plan-marquee{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:12px}
+.plan-pinned{background:var(--color-hero-forest);color:#e9f0ea;border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;justify-content:space-between;min-height:190px;position:relative;overflow:hidden}
+.plan-pinned::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.02) 0,rgba(255,255,255,.02) 1px,transparent 1px,transparent 12px)}
+.plan-pinned .pp-badge{font:800 9px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--color-hero-forest);background:var(--color-primary-fixed-dim);border-radius:2px;padding:4px 8px;align-self:flex-start;position:relative;z-index:1}
+.plan-pinned h3{font:600 21px/1.2 var(--font-display);margin-top:14px;color:#fff;position:relative;z-index:1}
+.plan-pinned p{font:500 11px/1.5 var(--font-ui);color:#a9c4b0;margin-top:6px;position:relative;z-index:1}
+.plan-pinned .pp-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px;position:relative;z-index:1}
+.pp-progress{flex:1;margin-right:12px}
+.pp-progress-bar{height:4px;background:rgba(255,255,255,.14);border-radius:0;overflow:hidden}
+.pp-progress-bar i{display:block;height:100%;background:var(--color-primary-fixed-dim)}
+.pp-progress-lab{font:600 9.5px/1 var(--font-mono);color:#8ecf9e;margin-top:6px;display:block}
+
+.plan-card{background:var(--color-surface-container-lowest);border:var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;justify-content:space-between;min-height:190px;transition:border-color .12s ease}
+.plan-card:hover{border-color:var(--color-outline)}
+.plan-card .pc-move{align-self:flex-start}
+.plan-card h4{font:700 14.5px/1.3 var(--font-ui);margin-top:12px;color:var(--color-on-surface)}
+.plan-card p{font:400 11px/1.5 var(--font-ui);color:var(--color-on-surface-variant);margin-top:6px}
+.plan-card .pc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.plan-card .pc-meta{font:600 9.5px/1 var(--font-mono);color:var(--color-on-surface-variant);text-transform:uppercase}
+
+/* ===== Guides row ===== */
+.guide-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.guide-card{background:var(--color-surface-container-lowest);border:var(--line);border-radius:var(--radius);padding:15px;position:relative;transition:border-color .12s ease}
+.guide-card:hover{border-color:var(--color-outline)}
+.guide-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--color-secondary)}
+.guide-card .gc-num{font:700 10px/1 var(--font-mono);color:var(--color-on-surface-variant)}
+.guide-card h4{font:700 13.5px/1.35 var(--font-ui);margin-top:8px}
+.guide-card .gc-meta{display:flex;align-items:center;gap:8px;margin-top:11px}
+
+/* ===== Autopsy case files — signature motif ===== */
+.autopsy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.case-file{background:var(--color-hero-forest);border-radius:var(--radius);overflow:hidden;position:relative;min-height:210px;display:flex;flex-direction:column;border:1px solid var(--color-hero-forest-deepest);transition:transform .15s ease}
+.case-file:hover{transform:translateY(-2px)}
+.case-file::after{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 10px)}
+.cf-strip{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;position:relative;z-index:1;border-bottom:1px dashed rgba(255,255,255,.15)}
+.cf-strip .cf-id{font:700 9px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:#8ecf9e}
+.cf-strip .cf-stamp{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(142,207,158,.5);display:flex;align-items:center;justify-content:center}
+.cf-strip .cf-stamp svg{width:11px;height:11px;stroke:#8ecf9e;fill:none;stroke-width:2}
+.cf-body{flex:1;padding:14px 12px;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:flex-end}
+.cf-body .cf-domain{font:700 9px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--color-primary-fixed-dim);margin-bottom:8px}
+.cf-body h4{font:600 17px/1.2 var(--font-display);color:#f5f0e8}
+.cf-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(0,0,0,.18);position:relative;z-index:1;border-top:1px dashed rgba(255,255,255,.1)}
+.cf-foot span{font:600 9.5px/1 var(--font-mono);color:#a9c4b0;text-transform:uppercase;letter-spacing:.03em}
+
+/* ===== Domains ===== */
+.domain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.domain-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;background:var(--color-surface-container-lowest);border:var(--line);border-radius:var(--radius);transition:border-color .12s ease}
+.domain-row:hover{border-color:var(--color-outline)}
+.domain-row .dr-name{font:700 13px/1.3 var(--font-ui)}
+.domain-row .dr-count{font:600 10.5px/1 var(--font-mono);color:var(--color-on-surface-variant);margin-top:3px;display:block}
+.domain-row svg{width:14px;height:14px;stroke:var(--color-on-surface-variant);fill:none;stroke-width:1.8}
+
+/* ===== Companies chip row ===== */
+.company-row{display:flex;flex-wrap:wrap;gap:8px}
+.company-chip{display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--color-surface-container-lowest);border:var(--line);border-radius:var(--radius);font:700 12px/1 var(--font-ui);transition:border-color .12s ease,background .12s ease}
+.company-chip:hover{border-color:var(--color-outline);background:var(--color-surface-container-low)}
+.company-chip .cc-mark{width:18px;height:18px;border-radius:2px;background:var(--color-surface-container-high);display:flex;align-items:center;justify-content:center;font:800 9px/1 var(--font-mono);color:var(--color-on-surface-variant)}
+
+/* ===== bottom tag row ===== */
+.tagrow-wrap{border-top:var(--line);padding-top:22px;margin-top:8px}
+.tagrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tag-chip{font:600 10.5px/1 var(--font-mono);text-transform:uppercase;letter-spacing:.03em;color:var(--color-on-surface-variant);border:1px solid var(--color-outline-variant);border-radius:2px;padding:5px 9px}
+.tag-chip:hover{border-color:var(--color-outline);color:var(--color-on-surface)}
+.tagrow-foot{margin-top:14px;font:600 11.5px/1 var(--font-mono);color:var(--color-primary)}
+.tagrow-foot:hover{text-decoration:underline;text-underline-offset:3px}
+
+.dbadge{position:fixed;right:14px;bottom:14px;z-index:80;display:flex;align-items:center;gap:8px;background:var(--color-hero-forest);color:#e9f0ea;border-radius:3px;padding:8px 13px;font:700 10.5px/1 var(--font-mono);box-shadow:0 6px 20px -8px rgba(14,26,20,.5);border:1px solid var(--color-hero-forest-deepest)}
+.dbadge .num{color:var(--color-amber);font-size:10.5px}
+
+@media(max-width:1080px){
+  .topbar .wstabs{display:none}
+  .mobilenav{display:block}
+  .anchortabs{top:0}
+  .plan-marquee{grid-template-columns:1fr 1fr}
+  .guide-grid{grid-template-columns:1fr 1fr}
+  .autopsy-grid{grid-template-columns:1fr 1fr}
+  .domain-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .main{padding:16px 12px 40px}
+  .cmdk{display:none}
+  .lib-hero-inner{flex-direction:column;align-items:flex-start}
+  .plan-marquee{grid-template-columns:1fr}
+  .guide-grid{grid-template-columns:1fr}
+  .autopsy-grid{grid-template-columns:1fr}
+  .domain-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 26 26" fill="none"><rect x="1" y="1" width="24" height="24" rx="4" fill="#4a7c59"/><path d="M8 17V9l5 4 5-4v8" stroke="#d8f0de" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="brand-name">HACK<em>PRODUCT</em></span>
+  </div>
+  <div class="topbar-sep"></div>
+  <nav class="wstabs">
+    <a class="wstab" href="dashboard.html"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Home</a>
+    <a class="wstab" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>Practice</a>
+    <a class="wstab" href="#"><svg viewBox="0 0 24 24"><path d="M4 18V8m4 10V5m4 13v-7m4 7V9m4 9V6"/></svg>Interviews</a>
+    <a class="wstab is-active" href="library.html"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 5v14M4 12h16M20 5v14"/><rect x="4" y="5" width="16" height="14" rx="1"/></svg>Library</a>
+    <a class="wstab" href="#"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16V9m4 7V6m4 10v-4"/></svg>Progress</a>
+  </nav>
+  <div class="topbar-right">
+    <div class="cmdk"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Search</span><kbd>⌘K</kbd></div>
+    <div class="streak-chip"><svg viewBox="0 0 24 24"><path d="M12 2c2 4 5 5 5 9a5 5 0 01-10 0c0-1 .5-2 1-3 .5 2 2 2 2 2-1-3 1-5 2-8z"/></svg><span class="num">12</span><span>day streak</span></div>
+    <div class="avatar">S</div>
+  </div>
+</header>
+
+<!-- MOBILE NAV -->
+<nav class="mobilenav"><div class="mobilenav-inner">
+  <a class="wstab" href="dashboard.html">Home</a><a class="wstab" href="#">Practice</a><a class="wstab" href="#">Interviews</a><a class="wstab is-active" href="library.html">Library</a><a class="wstab" href="#">Progress</a>
+</div></nav>
+
+<!-- LIBRARY HERO -->
+<div class="lib-hero">
+  <div class="lib-hero-inner">
+    <div>
+      <h1>Library</h1>
+      <p class="lib-sub">Study plans, guides, case files, domains, and companies. Everything indexed so you can drill exactly what you're weak on.</p>
+    </div>
+    <div class="lib-continue">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z" fill="currentColor" stroke="none"/></svg></div>
+      <div class="tx"><b>Continue: Product Sense Sprint</b><span>Week 2 · Step 3 of 5</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY ANCHOR TABS -->
+<div class="anchortabs">
+  <div class="anchortabs-inner">
+    <a class="atab on" href="#plans">Plans</a>
+    <a class="atab" href="#guides">Guides</a>
+    <a class="atab" href="#autopsies">Autopsies</a>
+    <a class="atab" href="#domains">Domains</a>
+    <a class="atab" href="#companies">Companies</a>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- STUDY PLANS MARQUEE -->
+  <section class="sec" id="plans">
+    <div class="sec-head">
+      <div><span class="microlabel">structured reps</span><h2>Study plans</h2></div>
+      <a class="quiet-link" href="#">see all →</a>
+    </div>
+    <div class="plan-marquee">
+      <div class="plan-pinned">
+        <span class="pp-badge">Program · 75 reps</span>
+        <div>
+          <h3>Product-75</h3>
+          <p>The full arc. 75 reps across Frame, List, Optimize, and Win, sequenced by difficulty and built to take you interview-ready.</p>
+        </div>
+        <div class="pp-foot">
+          <div class="pp-progress">
+            <div class="pp-progress-bar"><i style="width:34%"></i></div>
+            <span class="pp-progress-lab">26 of 75 complete</span>
+          </div>
+          <button class="btn-primary" style="flex:none">Resume</button>
+        </div>
+      </div>
+
+      <div class="plan-card">
+        <span class="flow-chip is-active pc-move">Frame</span>
+        <h4>Frame Like a PM</h4>
+        <p>Root-cause the problem before you touch a solution. 12 reps.</p>
+        <div class="pc-foot"><span class="pc-meta">2 of 12 done</span><a class="quiet-link" href="#">Start →</a></div>
+      </div>
+
+      <div class="plan-card">
+        <span class="flow-chip pc-move">Optimize</span>
+        <h4>Optimize Under Pressure</h4>
+        <p>Name the tradeoff, name the sacrifice. 10 reps.</p>
+        <div class="pc-foot"><span class="pc-meta">0 of 10 done</span><a class="quiet-link" href="#">Start →</a></div>
+      </div>
+
+      <div class="plan-card">
+        <span class="flow-chip pc-move">List</span>
+        <h4>The List Move</h4>
+        <p>Widen the solution space without losing rigor. 9 reps.</p>
+        <div class="pc-foot"><span class="pc-meta">4 of 9 done</span><a class="quiet-link" href="#">Resume →</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUIDES -->
+  <section class="sec" id="guides">
+    <div class="sec-head">
+      <div><span class="microlabel">reference reading</span><h2>Guides</h2></div>
+      <a class="quiet-link" href="#">see all →</a>
+    </div>
+    <div class="guide-grid">
+      <div class="guide-card">
+        <span class="gc-num">GD-01</span>
+        <h4>The FLOW Framework</h4>
+        <div class="gc-meta"><span class="meta-tag">9 min read</span></div>
+      </div>
+      <div class="guide-card">
+        <span class="gc-num">GD-02</span>
+        <h4>Product Sense Fundamentals</h4>
+        <div class="gc-meta"><span class="meta-tag">12 min read</span></div>
+      </div>
+      <div class="guide-card">
+        <span class="gc-num">GD-03</span>
+        <h4>Metrics &amp; Trade-offs</h4>
+        <div class="gc-meta"><span class="meta-tag">8 min read</span></div>
+      </div>
+      <div class="guide-card">
+        <span class="gc-num">GD-04</span>
+        <h4>The Agentic PM</h4>
+        <div class="gc-meta"><span class="meta-tag">11 min read</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUTOPSIES — case file covers (signature motif for D) -->
+  <section class="sec" id="autopsies">
+    <div class="sec-head">
+      <div><span class="microlabel">102 case files · real companies</span><h2>Autopsies</h2></div>
+      <a class="quiet-link" href="#">see all 102 →</a>
+    </div>
+    <div class="autopsy-grid">
+      <div class="case-file">
+        <div class="cf-strip"><span class="cf-id">CF-014</span><div class="cf-stamp"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div></div>
+        <div class="cf-body"><span class="cf-domain">Design tools</span><h4>Figma Multiplayer</h4></div>
+        <div class="cf-foot"><span>closed</span><span>7 min</span></div>
+      </div>
+      <div class="case-file">
+        <div class="cf-strip"><span class="cf-id">CF-027</span><div class="cf-stamp"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div></div>
+        <div class="cf-body"><span class="cf-domain">Consumer / edtech</span><h4>Duolingo Streak</h4></div>
+        <div class="cf-foot"><span>closed</span><span>6 min</span></div>
+      </div>
+      <div class="case-file">
+        <div class="cf-strip"><span class="cf-id">CF-041</span><div class="cf-stamp"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div></div>
+        <div class="cf-body"><span class="cf-domain">Growth</span><h4>Dropbox Referral</h4></div>
+        <div class="cf-foot"><span>closed</span><span>8 min</span></div>
+      </div>
+      <div class="case-file">
+        <div class="cf-strip"><span class="cf-id">CF-058</span><div class="cf-stamp"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div></div>
+        <div class="cf-body"><span class="cf-domain">Consumer social</span><h4>Arc Browser Invite</h4></div>
+        <div class="cf-foot"><span>closed</span><span>5 min</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOMAINS -->
+  <section class="sec" id="domains">
+    <div class="sec-head">
+      <div><span class="microlabel">practice by theme</span><h2>Domains</h2></div>
+    </div>
+    <div class="domain-grid">
+      <a class="domain-row" href="#"><div><span class="dr-name">Marketplaces</span><span class="dr-count">34 challenges</span></div><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></a>
+      <a class="domain-row" href="#"><div><span class="dr-name">Developer Tools</span><span class="dr-count">21 challenges</span></div><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></a>
+      <a class="domain-row" href="#"><div><span class="dr-name">Consumer Social</span><span class="dr-count">29 challenges</span></div><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></a>
+      <a class="domain-row" href="#"><div><span class="dr-name">Fintech</span><span class="dr-count">18 challenges</span></div><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></a>
+      <a class="domain-row" href="#"><div><span class="dr-name">AI Products</span><span class="dr-count">16 challenges</span></div><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></a>
+      <a class="domain-row" href="#"><div><span class="dr-name">Health</span><span class="dr-count">12 challenges</span></div><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></a>
+    </div>
+  </section>
+
+  <!-- COMPANIES -->
+  <section class="sec" id="companies">
+    <div class="sec-head">
+      <div><span class="microlabel">filter practice by company</span><h2>Companies</h2></div>
+    </div>
+    <div class="company-row">
+      <a class="company-chip" href="#"><span class="cc-mark">AM</span>Amazon</a>
+      <a class="company-chip" href="#"><span class="cc-mark">FB</span>Facebook</a>
+      <a class="company-chip" href="#"><span class="cc-mark">GG</span>Google</a>
+      <a class="company-chip" href="#"><span class="cc-mark">ST</span>Stripe</a>
+      <a class="company-chip" href="#"><span class="cc-mark">NF</span>Netflix</a>
+    </div>
+  </section>
+
+  <!-- QUIET BOTTOM TAG ROW -->
+  <div class="tagrow-wrap">
+    <div class="tagrow">
+      <span class="flow-chip">Frame</span>
+      <span class="flow-chip">List</span>
+      <span class="flow-chip">Optimize</span>
+      <span class="flow-chip">Win</span>
+      <span class="tag-chip">growth</span>
+      <span class="tag-chip">pricing</span>
+      <span class="tag-chip">retention</span>
+      <span class="tag-chip">metrics</span>
+      <span class="tag-chip">trust &amp; safety</span>
+      <span class="tag-chip">0→1</span>
+      <span class="tag-chip">platform</span>
+    </div>
+    <a class="tagrow-foot" href="#">New to these tags? How FLOW works →</a>
+  </div>
+
+</main>
+
+<div class="dbadge">Direction <span class="num">D</span> — Systems Lab</div>
+
+</body>
+</html>

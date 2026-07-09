@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackProduct — Product judgment, trained like a system</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-primary:#4a7c59; --color-on-primary:#ffffff; --color-primary-container:#78a886; --color-on-primary-container:#d8f0de; --color-primary-fixed:#c8e8d0; --color-primary-fixed-dim:#8ecf9e;
+  --color-secondary:#6b6358; --color-secondary-container:#f0e8db; --color-on-secondary-container:#5e5548;
+  --color-tertiary:#705c30; --color-tertiary-container:#c4a66a;
+  --color-background:#faf6f0; --color-on-background:#2e3230;
+  --color-surface:#faf6f0; --color-surface-taupe:#e8e2d8; --color-surface-dim:#dbd7cf;
+  --color-surface-container-lowest:#ffffff; --color-surface-container-low:#f5f1ea; --color-surface-container:#f0ece4; --color-surface-container-high:#eae6de; --color-surface-container-highest:#e4e0d8;
+  --color-on-surface:#2e3230; --color-on-surface-variant:#4a4e4a;
+  --color-outline:#74796e; --color-outline-variant:#c4c8bc;
+  --color-error:#b83230; --color-amber:#c9933a; --color-amber-soft:#f3e2b9; --color-success:#2f7a4a;
+  --color-hero-forest:#1e3528; --color-hero-forest-deep:#14241c; --color-hero-forest-deepest:#0e1a14;
+  --font-ui:'Nunito Sans',system-ui,-apple-system,sans-serif;
+  --font-display:'Literata',Georgia,serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+  --radius:4px;
+  --line:1px solid var(--color-outline-variant);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--color-background);color:var(--color-on-surface);font:400 13.5px/1.6 var(--font-ui);-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;background:none;border:none;color:inherit}
+svg{display:block;flex:none}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:2px}
+
+.mono{font-family:var(--font-mono)}
+.num{font-family:var(--font-mono);font-weight:600;letter-spacing:-.01em}
+.microlabel{font:700 10px/1.2 var(--font-mono);letter-spacing:.13em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.flow-chip{display:inline-flex;align-items:center;font:800 9px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--color-on-surface-variant);border:1px solid var(--color-outline-variant);border-radius:2px;padding:3px 6px;background:transparent}
+.flow-chip.on-dark{color:#a9c4b0;border-color:rgba(255,255,255,.2)}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--color-primary);color:var(--color-on-primary);border:1px solid var(--color-primary);border-radius:var(--radius);padding:12px 20px;font:700 13.5px/1 var(--font-ui);transition:background .12s ease}
+.btn-primary:hover{background:#3f6a4b}
+.btn-ghost{display:inline-flex;align-items:center;gap:6px;background:transparent;color:#e9f0ea;border:1px solid rgba(255,255,255,.22);border-radius:var(--radius);padding:9px 15px;font:700 12.5px/1 var(--font-ui);transition:border-color .12s ease,background .12s ease}
+.btn-ghost:hover{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.05)}
+.quiet-link{font:700 12px/1 var(--font-mono);color:var(--color-primary);display:inline-flex;align-items:center;gap:5px}
+.quiet-link:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ===== NAV ===== */
+.pubnav{position:sticky;top:0;z-index:70;background:var(--color-hero-forest);color:#e9f0ea;border-bottom:1px solid var(--color-hero-forest-deepest)}
+.pubnav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;height:56px;padding:0 20px;gap:24px}
+.brand{display:flex;align-items:center;gap:9px;flex:none}
+.brand-mark{width:22px;height:22px;flex:none}
+.brand-name{font:800 14px/1 var(--font-mono);letter-spacing:-.01em;color:#f5f0e8}
+.brand-name em{font-style:normal;color:var(--color-primary-fixed-dim)}
+.pubnav-links{display:flex;align-items:center;gap:22px}
+.pubnav-links a{font:700 12.5px/1 var(--font-ui);color:rgba(233,240,234,.65);transition:color .12s ease}
+.pubnav-links a:hover{color:#fff}
+.pubnav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.pubnav-right .login{font:700 12.5px/1 var(--font-ui);color:rgba(233,240,234,.8)}
+.pubnav-right .login:hover{color:#fff}
+
+/* ===== HERO ===== */
+.hero{background:var(--color-hero-forest);color:#e9f0ea;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background-image:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 48px),
+  repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 48px);
+  pointer-events:none}
+.hero-inner{max-width:1280px;margin:0 auto;padding:88px 20px 76px;position:relative;z-index:1}
+.hero-kicker{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.hero-kicker .hk-dot{width:6px;height:6px;border-radius:50%;background:var(--color-primary-fixed-dim);box-shadow:0 0 0 3px rgba(142,207,158,.18)}
+.hero-kicker span{font:700 10.5px/1 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:#8ecf9e}
+.hero h1{font:600 clamp(34px,5vw,58px)/1.1 var(--font-display);color:#fff;max-width:840px;letter-spacing:-.01em}
+.hero h1 em{font-style:normal;color:var(--color-primary-fixed-dim)}
+.hero-sub{font:500 15px/1.65 var(--font-ui);color:#a9c4b0;max-width:600px;margin-top:22px}
+.hero-sub b{color:#d8f0de;font-weight:700}
+.hero-cta{display:flex;align-items:center;gap:14px;margin-top:32px;flex-wrap:wrap}
+.hero-flow{display:flex;align-items:center;gap:8px;margin-top:36px}
+.hero-flow .hf-lab{font:700 9.5px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:#6d8a76;margin-right:2px}
+
+/* ===== console strip — signature motif ===== */
+.console{max-width:1280px;margin:0 auto;position:relative;z-index:1;padding:0 20px 88px}
+.console-panel{background:var(--color-hero-forest-deep);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);overflow:hidden}
+.console-bar{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.15)}
+.console-bar .cdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.16)}
+.console-bar .cdot:nth-child(2){background:var(--color-amber)}
+.console-bar .cdot:nth-child(3){background:var(--color-primary-fixed-dim)}
+.console-bar .ctitle{font:600 10.5px/1 var(--font-mono);color:#8ecf9e;margin-left:6px}
+.console-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.console-cell{padding:20px 22px;border-right:1px solid rgba(255,255,255,.07)}
+.console-cell:last-child{border-right:none}
+.console-cell .cc-val{font:600 32px/1 var(--font-mono);color:#fff}
+.console-cell .cc-lab{font:700 10px/1.3 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:#8ecf9e;margin-top:8px}
+.console-cell .cc-sub{font:500 11px/1.4 var(--font-ui);color:#7c9484;margin-top:5px}
+
+/* ===== CREDIBILITY BAND ===== */
+.band{background:var(--color-surface-container-low);border-top:var(--line);border-bottom:var(--line)}
+.band-inner{max-width:1280px;margin:0 auto;padding:56px 20px}
+.band-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.band-head h2{font:600 22px/1.2 var(--font-display)}
+.band-head p{font:500 12.5px/1.5 var(--font-ui);color:var(--color-on-surface-variant);max-width:440px;margin-top:6px}
+
+.showcase-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.case-file{background:var(--color-hero-forest);border-radius:var(--radius);overflow:hidden;position:relative;min-height:200px;display:flex;flex-direction:column;border:1px solid var(--color-hero-forest-deepest);transition:transform .15s ease}
+.case-file:hover{transform:translateY(-2px)}
+.case-file::after{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 10px)}
+.cf-strip{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;position:relative;z-index:1;border-bottom:1px dashed rgba(255,255,255,.15)}
+.cf-strip .cf-id{font:700 9px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:#8ecf9e}
+.cf-body{flex:1;padding:14px 12px;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:flex-end}
+.cf-body .cf-domain{font:700 9px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--color-primary-fixed-dim);margin-bottom:8px}
+.cf-body h4{font:600 16px/1.2 var(--font-display);color:#f5f0e8}
+.cf-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(0,0,0,.18);position:relative;z-index:1;border-top:1px dashed rgba(255,255,255,.1)}
+.cf-foot span{font:600 9.5px/1 var(--font-mono);color:#a9c4b0;text-transform:uppercase;letter-spacing:.03em}
+
+/* ===== inspector strip — how it works, small ===== */
+.howband{max-width:1280px;margin:0 auto;padding:60px 20px}
+.how-head{margin-bottom:24px}
+.how-head h2{font:600 22px/1.2 var(--font-display)}
+.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:var(--line);border-radius:var(--radius);overflow:hidden}
+.how-cell{padding:20px 20px;border-right:var(--line);position:relative;background:var(--color-surface-container-lowest)}
+.how-cell:last-child{border-right:none}
+.how-cell .hc-idx{font:700 10px/1 var(--font-mono);color:var(--color-outline)}
+.how-cell h4{font:700 14px/1.3 var(--font-ui);margin-top:10px}
+.how-cell p{font:400 11.5px/1.5 var(--font-ui);color:var(--color-on-surface-variant);margin-top:6px}
+
+/* ===== FOOTER ===== */
+.footer{background:var(--color-hero-forest);color:#a9c4b0}
+.footer-inner{max-width:1280px;margin:0 auto;padding:28px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.footer-inner .fbrand{display:flex;align-items:center;gap:8px}
+.footer-inner .fbrand svg{width:16px;height:16px}
+.footer-inner .fbrand span{font:800 11.5px/1 var(--font-mono);color:#e9f0ea}
+.footer-links{display:flex;gap:18px}
+.footer-links a{font:600 11.5px/1 var(--font-ui);color:#7c9484}
+.footer-links a:hover{color:#e9f0ea}
+.footer-meta{font:600 10.5px/1 var(--font-mono);color:#5a7062}
+
+.dbadge{position:fixed;right:14px;bottom:14px;z-index:80;display:flex;align-items:center;gap:8px;background:var(--color-hero-forest);color:#e9f0ea;border-radius:3px;padding:8px 13px;font:700 10.5px/1 var(--font-mono);box-shadow:0 6px 20px -8px rgba(14,26,20,.5);border:1px solid var(--color-hero-forest-deepest)}
+.dbadge .num{color:var(--color-amber);font-size:10.5px}
+
+@media(max-width:1080px){
+  .pubnav-links{display:none}
+  .console-grid{grid-template-columns:1fr 1fr}
+  .console-cell{border-bottom:1px solid rgba(255,255,255,.07)}
+  .showcase-grid{grid-template-columns:1fr 1fr}
+  .how-grid{grid-template-columns:1fr 1fr}
+  .how-cell{border-bottom:var(--line)}
+}
+@media(max-width:560px){
+  .hero-inner{padding:52px 16px 48px}
+  .console{padding:0 16px 56px}
+  .console-grid{grid-template-columns:1fr}
+  .console-cell{border-right:none;border-bottom:1px solid rgba(255,255,255,.07)}
+  .band-inner{padding:40px 16px}
+  .showcase-grid{grid-template-columns:1fr}
+  .howband{padding:40px 16px}
+  .how-grid{grid-template-columns:1fr}
+  .footer-inner{flex-direction:column;align-items:flex-start;gap:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="pubnav">
+  <div class="pubnav-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 26 26" fill="none"><rect x="1" y="1" width="24" height="24" rx="4" fill="#4a7c59"/><path d="M8 17V9l5 4 5-4v8" stroke="#d8f0de" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="brand-name">HACK<em>PRODUCT</em></span>
+    </div>
+    <nav class="pubnav-links">
+      <a href="#">Practice</a>
+      <a href="#">Autopsies</a>
+      <a href="#">Pricing</a>
+    </nav>
+    <div class="pubnav-right">
+      <a class="login" href="#">Log in</a>
+      <button class="btn-primary">Get started</button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-kicker"><span class="hk-dot"></span><span>hackproduct · practice environment</span></div>
+    <h1>Product judgment,<br>trained like a <em>system</em>.</h1>
+    <p class="hero-sub">Not a course. A lab. <b>500+ challenges</b>, <b>102 company autopsies</b>, and live AI interview loops that grade your reasoning the way a real panel would, then tell you exactly which move to drill next.</p>
+    <div class="hero-cta">
+      <button class="btn-primary">Start practicing<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="btn-ghost">See a sample rep →</button>
+    </div>
+    <div class="hero-flow">
+      <span class="hf-lab">Every rep runs through</span>
+      <span class="flow-chip on-dark">Frame</span>
+      <span class="flow-chip on-dark">List</span>
+      <span class="flow-chip on-dark">Optimize</span>
+      <span class="flow-chip on-dark">Win</span>
+    </div>
+  </div>
+
+  <!-- console strip: signature motif, stat trio as instrument readout -->
+  <div class="console">
+    <div class="console-panel">
+      <div class="console-bar"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span><span class="ctitle">system.status — live</span></div>
+      <div class="console-grid">
+        <div class="console-cell">
+          <div class="cc-val">500<span style="font-size:18px">+</span></div>
+          <div class="cc-lab">Challenges</div>
+          <div class="cc-sub">Coding, SQL, system design, product sense</div>
+        </div>
+        <div class="console-cell">
+          <div class="cc-val">102</div>
+          <div class="cc-lab">Company autopsies</div>
+          <div class="cc-sub">Real decisions, real tradeoffs, graded</div>
+        </div>
+        <div class="console-cell">
+          <div class="cc-val">4</div>
+          <div class="cc-lab">Reasoning moves</div>
+          <div class="cc-sub">Frame, List, Optimize, Win — every rep</div>
+        </div>
+        <div class="console-cell">
+          <div class="cc-val">1:1</div>
+          <div class="cc-lab">Live AI interview loops</div>
+          <div class="cc-sub">Graded turn by turn, not just at the end</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CREDIBILITY BAND: content showcase (autopsy case files) -->
+<section class="band">
+  <div class="band-inner">
+    <div class="band-head">
+      <div>
+        <span class="microlabel">case files</span>
+        <h2 style="margin-top:6px">Learn from decisions that actually shipped</h2>
+      </div>
+      <p>Every autopsy breaks down a real product decision into the same four moves you're graded on. No hypotheticals.</p>
+    </div>
+    <div class="showcase-grid">
+      <div class="case-file">
+        <div class="cf-strip"><span class="cf-id">CF-014</span></div>
+        <div class="cf-body"><span class="cf-domain">Design tools</span><h4>Figma Multiplayer</h4></div>
+        <div class="cf-foot"><span>closed</span><span>7 min</span></div>
+      </div>
+      <div class="case-file">
+        <div class="cf-strip"><span class="cf-id">CF-027</span></div>
+        <div class="cf-body"><span class="cf-domain">Consumer / edtech</span><h4>Duolingo Streak</h4></div>
+        <div class="cf-foot"><span>closed</span><span>6 min</span></div>
+      </div>
+      <div class="case-file">
+        <div class="cf-strip"><span class="cf-id">CF-041</span></div>
+        <div class="cf-body"><span class="cf-domain">Growth</span><h4>Dropbox Referral</h4></div>
+        <div class="cf-foot"><span>closed</span><span>8 min</span></div>
+      </div>
+      <div class="case-file">
+        <div class="cf-strip"><span class="cf-id">CF-058</span></div>
+        <div class="cf-body"><span class="cf-domain">Consumer social</span><h4>Arc Browser Invite</h4></div>
+        <div class="cf-foot"><span>closed</span><span>5 min</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS, inspector-style strip -->
+<section class="howband">
+  <div class="how-head">
+    <span class="microlabel">how the lab works</span>
+    <h2 style="margin-top:6px">Every rep gets graded like an inspection, not a quiz</h2>
+  </div>
+  <div class="how-grid">
+    <div class="how-cell">
+      <span class="hc-idx">01</span>
+      <h4>Run the rep</h4>
+      <p>Coding, SQL, system design, or a product sense scenario grounded in a real company.</p>
+    </div>
+    <div class="how-cell">
+      <span class="hc-idx">02</span>
+      <h4>Hatch inspects it</h4>
+      <p>Graded against a rubric, not a vibe. Evidence rows show exactly what you hit and what you missed.</p>
+    </div>
+    <div class="how-cell">
+      <span class="hc-idx">03</span>
+      <h4>The gap gets named</h4>
+      <p>Your weakest move surfaces, tied to a competency, not a generic score.</p>
+    </div>
+    <div class="how-cell">
+      <span class="hc-idx">04</span>
+      <h4>Next rep is chosen for you</h4>
+      <p>The system builds your next session around the exact gap it just found.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="fbrand">
+      <svg viewBox="0 0 26 26" fill="none"><rect x="1" y="1" width="24" height="24" rx="4" fill="#4a7c59"/><path d="M8 17V9l5 4 5-4v8" stroke="#d8f0de" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>HACKPRODUCT</span>
+    </div>
+    <div class="footer-links">
+      <a href="#">Practice</a>
+      <a href="#">Autopsies</a>
+      <a href="#">Pricing</a>
+      <a href="#">Log in</a>
+    </div>
+    <span class="footer-meta">© 2026 HackProduct</span>
+  </div>
+</footer>
+
+<div class="dbadge">Direction <span class="num">D</span> — Systems Lab</div>
+
+</body>
+</html>
