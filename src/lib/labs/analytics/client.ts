@@ -10,6 +10,7 @@ export const ANALYTICS_LAB_CLIENT: LabClientDefinition = {
   resourceBadge: { label: 'BigQuery · read-only', icon: 'database' },
   detectors: {
     mcpName: 'bigquery',
+    mcpChipLabel: 'BigQuery',
     reportPathPattern: '\\/workspace\\/[\\w./-]*report[\\w.-]*\\.md',
   },
   spine: {

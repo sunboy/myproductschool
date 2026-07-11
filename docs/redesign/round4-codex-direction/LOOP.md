@@ -36,7 +36,7 @@ Durable state for the autonomous redesign loop. Every iteration READS this first
 - [x] **B10. Onboarding + settings/billing + in-app pricing** (real plan_limits/Stripe values). Evidence: 96fbda23 + gate wf_c21a97d5-215 (paywall/sidebar numbers verified vs /api/billing/limits on free account; pro zero-upsell on app surfaces; toggle persistence; first-run restyled).
 - [x] **B11. Marketing home** (live V3TryRep demo slot). Evidence: 96fbda23 + gate (typed into hero demo, counter live, grade button enabled; no HatchGlyph SVG on marketing home).
 - [x] **B12. Hatch contextuality sweep** — per-surface state→endpoint audit + probes. Evidence: audit in wf_54ecf4a8-104 journal — all 7 surfaces INTACT vs main (server-side builders zero-diff), live-interview signal handling IMPROVED; one MEDIUM fix (FLOW rail static read) dispatched in wf_338bfead-9a8.
-- [ ] **B13. Challenge-type parity matrix** — 7+ types × (pro, free) E2E green.
+- [x] **B13. Challenge-type parity matrix** — 7+ types × (pro, free) E2E green. Evidence: wf_338bfead-9a8 matrix + wf_3cd341d1-676 fix gate 9/9 (a828e665). flow/algorithm/sql/system_design/data_modeling PASS both accounts; quick_take UI restored + live graded submit; cc_analytics: free GATED-OK paywall, pro entry renders — real provisioning untestable in dev (USE_DEV_STUB default; infra path unchanged by redesign); claude_code_debugging: admin render + non-admin locked redirect both correct.
 - [ ] **B14. Full parity audit** — PARITY.md 100% evidenced; no-stub/no-mock sweeps; final build+lint+tsc; visual QA 375/768/1440; PostHog events firing.
 
 ## Key paths
@@ -134,3 +134,13 @@ Worktree: `/Users/sandeep/Projects/myproductschool/.worktrees/redesign-options` 
 - COMMITTED B12 fixes (FLOW rail live read wiring, maximized-chat activePart, CoachSpineCard deleted, copy/avatar cleanups).
 - DISPATCHED wf_3cd341d1-676: [quicktake-ui] dashboard Quick Take card wired to the real submit API, [analytics-nav] param + empty-first-page fix, [workspace-trio] overlay pointer-events + hydration gate + debugging lab copy; gate verifies each fix live incl. a real quick-take submit.
 - Next on wake: review fix gate; commit; check off B13 (with cc_analytics dev-stub caveat recorded); then B14 FINAL wave: PARITY.md evidence pass, no-stub/no-mock sweeps, visual QA 375/768/1440, PostHog events check, final build+lint+tsc, founder report.
+
+### 2026-07-11 ~17:15 · Iteration 13 (B13 DONE; B14 final audit dispatched)
+- wf_3cd341d1-676 gate 9/9 PASS: Quick Take card live on dashboard (real POST /api/challenges/quick-take/submit → 88% Sharp +18 XP rendered), analytics nav filter applies (10 CCA cards), canvas center-drag draws through empty-state overlay, zero hydration errors on both lab pages, debugging lab mission copy corrected. COMMITTED a828e665. B13 ✓.
+- Follow-up spotted by gate (dispatched in B14 wave): debugging lab terminal footer still shows BigQuery MCP chip + Hatch intro says dataset connection.
+- DISPATCHED wf_c5f036fe-764 (B14): [routes] authed sweep of every PARITY.md page route, evidence filled in-place; [api] route inventory + behavior diff vs origin/main; [stubs] full no-stub/no-mock/raw-hex sweep of the branch diff; [visual] 10 surfaces × 375/768/1440 overflow/nav/img checks; [posthog] pageview + product events fired verification; [micro-fix] lab chips; then final tsc+lint+build + branch summary.
+- Next on wake: review B14 results; fix any must-fix flags; commit; check off B14; write the FOUNDER REPORT (deliverable: what shipped per phase, evidence, known caveats/warns, recommended next steps) and mark the loop COMPLETE in this log (cron self-deletes).
+
+### 2026-07-11 ~17:16 · Limit event (B14 wave killed at launch)
+- wf_c5f036fe-764: all 7 agents failed immediately — session limit, resets 5:20pm CT. No work lost (workflow resumable from cache: resumeFromRunId wf_c5f036fe-764, though 0 agents completed so it is a clean relaunch). Retry scheduled minutes after reset.
+- 17:28: B14 relaunched post-reset (task wjq6512kn, same run wf_c5f036fe-764); auditors confirmed alive and working.

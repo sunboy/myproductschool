@@ -20,7 +20,10 @@ interface IdleReapModalProps {
 export function IdleReapModal({ countdownSeconds, onKeepWorking }: IdleReapModalProps) {
   const [remaining, setRemaining] = useState(countdownSeconds)
   const onKeepRef = useRef(onKeepWorking)
-  onKeepRef.current = onKeepWorking
+
+  useEffect(() => {
+    onKeepRef.current = onKeepWorking
+  }, [onKeepWorking])
 
   useEffect(() => {
     setRemaining(countdownSeconds)
