@@ -157,6 +157,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   const [provisionPhase, setProvisionPhase] = useState<
     'requesting' | 'waking' | 'booting' | 'connecting' | null
   >(null)
+  // True while a silent cold-start retry is in flight. Keeps the staged progress
+  // card up (never resets to step 1) and swaps in a reassurance line so the user
+  // never perceives a restart.
+  const [retrying, setRetrying] = useState(false)
 
   const [activeSubProblemIdx, setActiveSubProblemIdx] = useState(0)
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
@@ -347,133 +351,186 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
     let cancelled = false
     let pollTimer: ReturnType<typeof setInterval> | null = null
 
-    async function run() {
-      try {
-        setProvisionPhase('requesting')
-        const res = await fetch('/api/claude-code/session/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          // Only send attempt_id when we actually have one. An empty string
-          // fails the route's z.string().uuid() check (400); omitting it lets
-          // the route find-or-create the attempt itself.
-          body: JSON.stringify({
-            challenge_id: challenge.id,
-            ...(attemptId ? { attempt_id: attemptId } : {}),
-          }),
-        })
+    // Outcome of a single provision attempt. 'retryable' = a cold-transient
+    // failure the outer loop may silently re-attempt; 'fatal' = surface an error.
+    type AttemptOutcome =
+      | { kind: 'connected' }
+      | { kind: 'paywall' }
+      | { kind: 'retryable' }
+      | { kind: 'fatal'; message: string }
 
-        if (res.status === 402) {
-          // Quota exhausted / not entitled → unified paywall, not a raw error.
-          const err = await res.json().catch(() => ({})) as { used?: number; limit?: number }
-          if (!cancelled) setPaywall({ used: err.used, limit: err.limit })
-          return
-        }
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({})) as { error?: string }
-          if (!cancelled) setSessionError(err.error ?? `Session start failed (${res.status})`)
-          return
-        }
+    // Run one start → provision → poll cycle to a terminal outcome. `isRetry`
+    // keeps the staged card up (no reset to step 1) instead of showing
+    // 'requesting'. `overallStart` anchors the TOTAL wait budget so this attempt's
+    // poll deadline never lets total elapsed exceed TOTAL_DEADLINE_MS. Resolves
+    // once the attempt reaches a terminal state.
+    async function attempt(isRetry: boolean, overallStart: number): Promise<AttemptOutcome> {
+      if (!isRetry) setProvisionPhase('requesting')
+      const res = await fetch('/api/claude-code/session/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Only send attempt_id when we actually have one. An empty string fails
+        // the route's z.string().uuid() check (400); omitting it lets the route
+        // find-or-create the attempt itself. On a retry we DO have it, so the
+        // same attempt + session row is reused (the prior `failed` row is
+        // replaced by start's upsert; a failed row records no usage_event, so it
+        // does not consume quota — verified in check-limit.ts).
+        body: JSON.stringify({
+          challenge_id: challenge.id,
+          ...(attemptId ? { attempt_id: attemptId } : {}),
+        }),
+      })
 
-        const data = await res.json() as {
-          session_id: string
-          status: string
-          wss_url: string | null
-          sub_problems?: AnalyticsSubProblem[]
-          arc_complete?: boolean
-          guidance?: 'scaffolded' | 'guided' | 'open'
-        }
-        if (cancelled) return
-        setSessionId(data.session_id)
-        // arc_complete → the server computed the full per-session adaptive arc
-        // (guidance-shaped, persisted for resume): use it verbatim. Legacy
-        // payloads are per-challenge OVERRIDES merged onto the default arc.
-        if (data.sub_problems?.length) {
-          setSubProblems(
-            data.arc_complete
-              ? data.sub_problems
-              : mergeArc(challenge.difficulty, data.sub_problems),
-          )
-        }
-        if (data.guidance) setGuidance(data.guidance)
-        sessionStartRef.current = Date.now()
+      if (res.status === 402) {
+        const err = await res.json().catch(() => ({})) as { used?: number; limit?: number }
+        if (!cancelled) setPaywall({ used: err.used, limit: err.limit })
+        return { kind: 'paywall' }
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({})) as { error?: string }
+        return { kind: 'fatal', message: err.error ?? `Session start failed (${res.status})` }
+      }
 
-        // Already live (reconnect to a running container) — done.
-        if (data.status === 'active' && data.wss_url) {
-          setWssUrl(data.wss_url)
-          setProvisionPhase(null)
-          return
-        }
+      const data = await res.json() as {
+        session_id: string
+        status: string
+        wss_url: string | null
+        sub_problems?: AnalyticsSubProblem[]
+        arc_complete?: boolean
+        guidance?: 'scaffolded' | 'guided' | 'open'
+      }
+      if (cancelled) return { kind: 'fatal', message: '' }
+      setSessionId(data.session_id)
+      if (data.sub_problems?.length) {
+        setSubProblems(
+          data.arc_complete
+            ? data.sub_problems
+            : mergeArc(challenge.difficulty, data.sub_problems),
+        )
+      }
+      if (data.guidance) setGuidance(data.guidance)
+      sessionStartRef.current = Date.now()
 
-        // Poll /state for readiness while provision runs. The phase advances on
-        // elapsed time so the copy reflects the slow steps even though /state
-        // only reports coarse status (provisioning → active).
-        const provisionStart = Date.now()
-        // Hard ceiling on the whole boot. A cold start is ~30-60s; well past that
-        // something is wrong, so stop polling and show the retry path rather than
-        // spin forever (e.g. if provisioning died before persisting a host).
-        const POLL_DEADLINE_MS = 150_000
-        setProvisionPhase('waking')
-        const poll = async () => {
+      // Already live (reconnect to a running container) — done.
+      if (data.status === 'active' && data.wss_url) {
+        setWssUrl(data.wss_url)
+        setProvisionPhase(null)
+        return { kind: 'connected' }
+      }
+
+      // Kick off the heavy provision request (its own 60s budget). Not awaited for
+      // the UI — the poll below is the source of truth for readiness — but a 402
+      // still routes to the paywall.
+      fetch(`/api/claude-code/session/${data.session_id}/provision`, { method: 'POST' })
+        .then(async (pres) => {
           if (cancelled) return
+          if (pres.status === 402) {
+            const err = await pres.json().catch(() => ({})) as { used?: number; limit?: number }
+            setPaywall({ used: err.used, limit: err.limit })
+          }
+          // Success/active is picked up by the poll; non-OK (503/timeout) flips
+          // the row to `failed`, which the poll reads and turns into an outcome.
+        })
+        .catch(() => { /* the poll loop is the source of truth */ })
+
+      // Poll /state until the row goes active (connected), failed (classify by
+      // failure_code), or the deadline is hit. Server provision_phase is truth;
+      // the elapsed-time guess is only a fallback before the first phase lands.
+      const provisionStart = Date.now()
+      // This attempt polls until whichever comes first: its own per-attempt
+      // ceiling, or the point where TOTAL elapsed would exceed the overall budget.
+      const attemptDeadlineMs = Math.min(
+        POLL_DEADLINE_MS,
+        TOTAL_DEADLINE_MS - (provisionStart - overallStart),
+      )
+      if (!isRetry) setProvisionPhase('waking')
+      return await new Promise<AttemptOutcome>((resolve) => {
+        const poll = async () => {
+          if (cancelled) { resolve({ kind: 'fatal', message: '' }); return }
           const elapsed = Date.now() - provisionStart
-          if (elapsed > POLL_DEADLINE_MS) {
-            if (pollTimer) clearInterval(pollTimer)
-            if (!cancelled) setSessionError('Sandbox took too long to start. Please try again.')
+          if (elapsed > attemptDeadlineMs) {
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+            // Slow path. run() decides whether the TOTAL budget still allows a
+            // retry; if not, it turns this into a fatal.
+            resolve({ kind: 'retryable' })
             return
           }
-          // Time-based phase hints (the DB wake is the long pole, then boot).
-          setProvisionPhase((cur) =>
-            cur === null ? cur : elapsed > 22000 ? 'connecting' : elapsed > 8000 ? 'booting' : 'waking',
-          )
           try {
             const sres = await fetch(`/api/claude-code/session/${data.session_id}/state`)
             if (sres.ok) {
-              const sdata = await sres.json() as { status?: string; wss_url?: string | null }
+              const sdata = await sres.json() as {
+                status?: string
+                wss_url?: string | null
+                provision_phase?: string | null
+                failure_code?: string | null
+              }
+              // Phase: prefer server truth (monotonic via SandboxStartupProgress),
+              // fall back to the elapsed-time guess before the first phase lands.
+              const serverUi = sdata.provision_phase ? SERVER_PHASE_TO_UI[sdata.provision_phase] : undefined
+              setProvisionPhase((cur) => {
+                if (cur === null) return cur
+                if (serverUi) return serverUi
+                return elapsed > 22000 ? 'connecting' : elapsed > 8000 ? 'booting' : 'waking'
+              })
               if (sdata.status === 'active' && sdata.wss_url) {
                 if (!cancelled) { setWssUrl(sdata.wss_url); setProvisionPhase(null) }
-                if (pollTimer) clearInterval(pollTimer)
+                if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+                resolve({ kind: 'connected' })
                 return
               }
               if (sdata.status === 'failed' || sdata.status === 'terminated') {
-                if (!cancelled) setSessionError('Sandbox failed to start. Please try again.')
-                if (pollTimer) clearInterval(pollTimer)
+                if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+                const code = sdata.failure_code ?? ''
+                resolve(
+                  COLD_RETRYABLE_CODES.has(code)
+                    ? { kind: 'retryable' }
+                    : { kind: 'fatal', message: FAILURE_COPY },
+                )
                 return
               }
             }
           } catch { /* transient — keep polling */ }
         }
-
-        // Kick off the heavy provision request (its own 60s budget). We do NOT
-        // await it for the UI — the poll picks up the result either way, so a
-        // client-side timeout/disconnect on this fetch never blocks readiness.
-        fetch(`/api/claude-code/session/${data.session_id}/provision`, { method: 'POST' })
-          .then(async (pres) => {
-            if (cancelled) return
-            if (pres.status === 402) {
-              const err = await pres.json().catch(() => ({})) as { used?: number; limit?: number }
-              setPaywall({ used: err.used, limit: err.limit })
-              if (pollTimer) clearInterval(pollTimer)
-              return
-            }
-            if (pres.ok) {
-              const pdata = await pres.json().catch(() => ({})) as { status?: string; wss_url?: string | null }
-              // Only connect when the revision is actually Ready (`active`). A
-              // `provisioning` response means the container is still booting —
-              // the /state poll will flip it and set wss_url then.
-              if (pdata.status === 'active' && pdata.wss_url && !cancelled) {
-                setWssUrl(pdata.wss_url)
-                setProvisionPhase(null)
-                if (pollTimer) clearInterval(pollTimer)
-              }
-            }
-            // Non-OK (503/timeout) is handled by the poll loop + its failed flip.
-          })
-          .catch(() => { /* the poll loop is the source of truth */ })
-
-        await poll()
+        // First tick immediately, then every 3s.
+        void poll()
         pollTimer = setInterval(poll, 3000)
+      })
+    }
+
+    async function run() {
+      // Anchor the TOTAL wait budget once, so it spans every silent retry.
+      const overallStart = Date.now()
+      try {
+        for (let tries = 0; tries <= MAX_COLD_RETRIES; tries++) {
+          const isRetry = tries > 0
+          if (isRetry && !cancelled) setRetrying(true)
+          const outcome = await attempt(isRetry, overallStart)
+          if (cancelled) return
+          if (outcome.kind === 'connected' || outcome.kind === 'paywall') {
+            setRetrying(false)
+            return
+          }
+          if (outcome.kind === 'fatal') {
+            setRetrying(false)
+            if (outcome.message) setSessionError(outcome.message)
+            return
+          }
+          // retryable: loop again only if BOTH budgets allow it — attempts left,
+          // AND enough of the total wait window remains for another to be
+          // meaningful. Otherwise this is a genuine exhaustion → fatal.
+          const totalElapsed = Date.now() - overallStart
+          const budgetLeft = TOTAL_DEADLINE_MS - totalElapsed
+          // Require a real slice of time left (a token window would just re-fail
+          // the deadline instantly). One poll interval is the floor.
+          if (tries === MAX_COLD_RETRIES || budgetLeft < 3000) {
+            setRetrying(false)
+            setSessionError(FAILURE_COPY)
+            return
+          }
+          // else: fall through to the next silent attempt (retrying stays true).
+        }
       } catch (err) {
-        if (!cancelled) setSessionError(String(err))
+        if (!cancelled) { setRetrying(false); setSessionError(String(err)) }
       }
     }
 
@@ -1318,7 +1375,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                   </button>
                 </div>
               ) : (
-                <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} stepLabels={lab.startup.steps} />
+                <SandboxStartupProgress phase={provisionPhase} resuming={wasReaped} retrying={retrying} stepLabels={lab.startup.steps} />
               )}
             </div>
 
@@ -1433,17 +1490,62 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
 // (and that cold starts are slow) beats an opaque spinner.
 const STARTUP_KEYS = ['requesting', 'waking', 'booting', 'connecting'] as const
 
+// Server provision_phase → the client's 4-step UI key. The server phase is truth;
+// the elapsed-time guess (below) is only a fallback before the first /state poll.
+const SERVER_PHASE_TO_UI: Record<string, 'waking' | 'booting' | 'connecting'> = {
+  waking_database: 'waking',
+  starting_gateway: 'booting',
+  booting_sandbox: 'booting',
+  ready: 'connecting',
+}
+
+// Failure codes that are cold-transient: the SQL wake or the gateway key mint
+// timed out because the infra was cold. The PATCH-to-ALWAYS from the failed
+// attempt means the DB is already warming, so a silent retry usually lands.
+// readiness_timeout and create_session are NOT retried here (the /state poll
+// already carries readiness across polls; a true readiness failure is a
+// different problem worth surfacing).
+const COLD_RETRYABLE_CODES = new Set(['sql_wake_timeout', 'gateway_key_mint'])
+
+// Max silent cold-start retries before surfacing a real failure.
+const MAX_COLD_RETRIES = 2
+
+// Per-attempt poll ceiling. Must exceed the real cold path (SQL wake up to ~40s +
+// gateway cold mint + revision boot up to ~40s). Widened from 150s so a genuinely
+// slow first attempt isn't cut short before the container is Ready.
+const POLL_DEADLINE_MS = 210_000
+
+// TOTAL wait budget across ALL attempts (including silent retries). Caps the
+// worst case: without this, N retries each hitting the per-attempt deadline could
+// spin ~3 × 210s ≈ 10.5 min. Realistic cold failures return fast (a 503 flips the
+// row to `failed` in seconds), so retries stay cheap and this ceiling only bites
+// the pathological hang path — where we'd rather surface a failure than spin.
+const TOTAL_DEADLINE_MS = 240_000
+
+// Shown only when the cold-start retries are genuinely exhausted. Honest and
+// actionable; progress is autosaved so a later retry resumes where they left off.
+const FAILURE_COPY = 'We could not start your session. Your progress is saved. Try again in a minute.'
+
 function SandboxStartupProgress({
   phase,
   resuming,
+  retrying,
   stepLabels,
 }: {
   phase: 'requesting' | 'waking' | 'booting' | 'connecting' | null
   resuming?: boolean
+  retrying?: boolean
   stepLabels: readonly [string, string, string, string]
 }) {
   const STARTUP_STEPS = STARTUP_KEYS.map((key, i) => ({ key, label: stepLabels[i] }))
-  const activeIdx = phase ? STARTUP_STEPS.findIndex((s) => s.key === phase) : 0
+  const rawIdx = phase ? STARTUP_STEPS.findIndex((s) => s.key === phase) : 0
+  // Never step backward: a silent retry restarts the server phases, but the user
+  // should not see the row collapse to step 1. Track the furthest step reached in
+  // state and advance it monotonically from an effect (never mutate during render).
+  const [activeIdx, setActiveIdx] = useState(0)
+  useEffect(() => {
+    setActiveIdx((cur) => (rawIdx > cur ? rawIdx : cur))
+  }, [rawIdx])
   return (
     <div style={{
       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1455,7 +1557,9 @@ function SandboxStartupProgress({
           {resuming ? 'Resuming your sandbox' : 'Starting your sandbox'}
         </span>
         <span style={{ fontSize: 11.5, color: 'rgba(232,228,220,0.55)' }}>
-          First start of an idle period can take 30–60s. Hang tight.
+          {retrying
+            ? 'Still waking things up. Almost there.'
+            : 'First session in a while can take about a minute. Hang tight.'}
         </span>
       </div>
 

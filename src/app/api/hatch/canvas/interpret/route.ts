@@ -14,6 +14,7 @@ import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { withRoute } from '@/lib/api/withRoute'
 import { logger } from '@/lib/log'
+import { extractJson, truncateForLog } from '@/lib/anthropic/extract-json'
 import * as Sentry from '@sentry/nextjs'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
 
@@ -642,56 +643,41 @@ async function callClaude(
 
   // For coding mode: the skill may return plain text or JSON - handle both.
   if (isCodingMode) {
-    // Try to parse as JSON first (skill instructs JSON output)
-    try {
-      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
-      const parsed = JSON.parse(cleaned)
-      // Enforce coding constraints: always coach, never build
-      return {
-        intent: 'coach',
-        message: typeof parsed.message === 'string' ? parsed.message : raw,
-        actions: [],
-        annotations: [],
-      }
-    } catch {
-      // Model returned plain text - wrap it
-      return {
-        intent: 'coach',
-        message: raw,
-        actions: [],
-        annotations: [],
-      }
+    // Try to parse as JSON first (skill instructs JSON output); tolerate
+    // fences/prose. If nothing parses, the model returned plain text - wrap it.
+    const parsed = extractJson<{ message?: unknown }>(raw)
+    return {
+      intent: 'coach',
+      message: parsed && typeof parsed.message === 'string' ? parsed.message : raw,
+      actions: [],
+      annotations: [],
     }
   }
 
   // For analytics mode: always coach, never build; extract optional verdict for asserted_finding.
   if (isAnalyticsMode) {
-    try {
-      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
-      const parsed = JSON.parse(cleaned) as Record<string, unknown>
-      const verdict = parsed.verdict === 'pass' || parsed.verdict === 'partial' || parsed.verdict === 'retry'
-        ? parsed.verdict as 'pass' | 'partial' | 'retry'
-        : undefined
-      return {
-        intent: 'coach',
-        message: typeof parsed.message === 'string' ? parsed.message : raw,
-        actions: [],
-        annotations: [],
-        ...(verdict ? { verdict } : {}),
-      }
-    } catch {
-      return {
-        intent: 'coach',
-        message: raw,
-        actions: [],
-        annotations: [],
-      }
+    const parsed = extractJson<Record<string, unknown>>(raw)
+    const verdict = parsed && (parsed.verdict === 'pass' || parsed.verdict === 'partial' || parsed.verdict === 'retry')
+      ? parsed.verdict as 'pass' | 'partial' | 'retry'
+      : undefined
+    return {
+      intent: 'coach',
+      message: parsed && typeof parsed.message === 'string' ? parsed.message : raw,
+      actions: [],
+      annotations: [],
+      ...(verdict ? { verdict } : {}),
     }
   }
 
-  // Strip ```json fences if the model used them despite instructions
-  const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
-  const parsed = JSON.parse(cleaned)
+  // Tolerant parse: recover the first balanced object even if the model wrapped
+  // it in fences or prose. A bare JSON.parse threw on trailing commentary.
+  const parsed = extractJson(raw)
+  if (parsed === null) {
+    logger.warn('[canvas-interpret] could not extract JSON from model output', {
+      raw: truncateForLog(raw),
+    })
+    throw new Error('Could not parse canvas interpret response')
+  }
   return normalizeResponse(parsed)
 }
 

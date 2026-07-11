@@ -211,8 +211,15 @@ export async function getAllSessionKeySpendCents(): Promise<Map<string, number> 
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
   try {
+    // Bound the call: when the system is idle the reaper has already stopped
+    // cc-llm-db, so the gateway hangs ~51s trying to open a DB connection before
+    // 500ing. Without a timeout that stall propagates into cc-reap's 60s budget
+    // → 504 → pg_net timeout → false health alert. 8s is well past a warm
+    // response and well under the reaper's remaining budget; a timeout aborts to
+    // the catch below, which the caller already treats as "no update".
     const res = await fetch(`${baseUrl}/key/list?return_full_object=true`, {
       headers: { Authorization: `Bearer ${master}` },
+      signal: AbortSignal.timeout(8000),
     })
     if (!res.ok) return null
     const data = (await res.json()) as { keys?: Array<{ key_alias?: string; spend?: number }> }
@@ -236,10 +243,14 @@ export async function revokeSessionKey(virtualKey: string): Promise<void> {
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
   try {
+    // Bounded for the same reason as /key/list: an idle-stopped gateway DB can
+    // make this hang. Best-effort — the key's duration TTL expires it regardless,
+    // so an abort is harmless.
     await fetch(`${baseUrl}/key/delete`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ keys: [virtualKey] }),
+      signal: AbortSignal.timeout(8000),
     })
   } catch {
     // TTL will expire it regardless.

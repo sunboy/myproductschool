@@ -26,9 +26,53 @@ import { captureServerImmediate } from '@/lib/posthog/server'
 /**
  * Step where provisioning died — surfaced to Sentry/PostHog so the next incident
  * is diagnosable in minutes (this feature had ZERO failure instrumentation, so the
- * gateway-400 root cause took a deep log dive to find).
+ * gateway-400 root cause took a deep log dive to find). Also persisted on the row
+ * (failure_code) so the client can decide whether to silently retry.
  */
 type ProvisionFailureCode = 'sql_wake_timeout' | 'gateway_key_mint' | 'create_session' | 'readiness_timeout'
+
+/**
+ * Coarse provisioning phase the client renders as staged progress. Ordered; the
+ * client renders it monotonically and provisionSession only ever advances it (SQL
+ * wake and gateway warm run concurrently, so we stamp the furthest phase reached,
+ * never a backward step).
+ */
+export type ProvisionPhase = 'waking_database' | 'starting_gateway' | 'booting_sandbox' | 'ready'
+
+const PHASE_ORDER: Record<ProvisionPhase, number> = {
+  waking_database: 0,
+  starting_gateway: 1,
+  booting_sandbox: 2,
+  ready: 3,
+}
+
+/**
+ * Advance the persisted provision_phase, monotonically. Reads the current phase
+ * and only writes when `phase` is strictly further along, so a later concurrent
+ * step can't regress the value the client is showing. Best-effort — a failed
+ * phase write never blocks provisioning.
+ */
+async function advancePhase(
+  admin: ReturnType<typeof createAdminClient>,
+  sessionId: string,
+  phase: ProvisionPhase,
+): Promise<void> {
+  try {
+    const { data } = await admin
+      .from('claude_code_sessions')
+      .select('provision_phase')
+      .eq('id', sessionId)
+      .maybeSingle()
+    const current = (data?.provision_phase as ProvisionPhase | null) ?? null
+    if (current && PHASE_ORDER[current] >= PHASE_ORDER[phase]) return
+    await admin
+      .from('claude_code_sessions')
+      .update({ provision_phase: phase })
+      .eq('id', sessionId)
+  } catch (err) {
+    console.error('[cc/provision] phase write failed (best-effort):', err)
+  }
+}
 
 // Readiness is the REVISION Ready condition (control-plane truth the container
 // is up). On Vercel Hobby a function is KILLED at 60s, so we do NOT block the
@@ -100,6 +144,10 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   // Serially these are the two long poles on a cold start (~40s + ~40s > Hobby's
   // 60s). Overlapping them — plus the fire-and-forget warm-up `start` already
   // kicked off — keeps the cold path under one function's budget. ---
+  // Phase: the DB wake is the first (and longest) cold pole. Stamp it up front so
+  // the client's first /state poll already shows a real phase.
+  await advancePhase(admin, sessionId, 'waking_database')
+
   if (isGatewayConfigured()) {
     const warm = warmGateway() // triggers gateway container boot in parallel
     if (isSqlAutostartConfigured()) {
@@ -121,6 +169,9 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     }
     await warm // gateway warm-up returns fast (or times out at 8s) either way
   }
+
+  // Phase: DB is up; the gateway key mint is next (its warm-up ran concurrently).
+  await advancePhase(admin, sessionId, 'starting_gateway')
 
   // --- Mint a per-session virtual key with a hard spend cap ---
   let anthropicKey = process.env.ANTHROPIC_API_KEY ?? ''
@@ -185,6 +236,9 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
       : {}),
     ...(input.workspaceRestoreUrl ? { WORKSPACE_RESTORE_URL: input.workspaceRestoreUrl } : {}),
   }
+
+  // Phase: key minted; now boot the sandbox revision (the last long pole).
+  await advancePhase(admin, sessionId, 'booting_sandbox')
 
   // --- Provision sandbox (create tagged revision) ---
   const sandbox = getSandbox()
@@ -271,7 +325,7 @@ async function markActiveAndMeter(
   // race between the provision wait and a /state probe can't double-count.
   const { data: flipped } = await admin
     .from('claude_code_sessions')
-    .update({ status: 'active', started_at: new Date().toISOString() })
+    .update({ status: 'active', started_at: new Date().toISOString(), provision_phase: 'ready' })
     .eq('id', sessionId)
     .eq('status', 'provisioning')
     .select('id')
@@ -302,7 +356,13 @@ async function markFailed(
   // bogus failure event. (Codex review: two provisions racing before host persist.)
   const { data: flipped } = await admin
     .from('claude_code_sessions')
-    .update({ status: 'failed', ended_at: new Date().toISOString() })
+    .update({
+      status: 'failed',
+      ended_at: new Date().toISOString(),
+      // Persist the failure code so the client can decide whether to silently
+      // retry (sql_wake_timeout / gateway_key_mint are cold-transient).
+      ...(failure ? { failure_code: failure.code } : {}),
+    })
     .eq('id', sessionId)
     .eq('status', 'provisioning')
     .select('id')

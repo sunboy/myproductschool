@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { extractJson } from '@/lib/anthropic/extract-json'
 import { createClient } from '@/lib/supabase/server'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { rateLimit } from '@/lib/security/rate-limit'
@@ -128,18 +129,10 @@ export async function POST(req: NextRequest) {
     })
     if (!response.sanitized) return NextResponse.json({ prompts: [] })
 
-    // Tolerant parse: the model may wrap the JSON in prose or fences. Strip
-    // fences, then if a direct parse fails, extract the first {...} object.
-    const raw = response.sanitized.trim()
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```$/i, '')
-    let parsed: { prompts?: unknown } | null = null
-    try {
-      parsed = JSON.parse(raw)
-    } catch {
-      const match = raw.match(/\{[\s\S]*\}/)
-      if (match) { try { parsed = JSON.parse(match[0]) } catch { /* give up */ } }
-    }
+    // Tolerant parse: the model may wrap the JSON in prose or fences. extractJson
+    // recovers the first balanced {...} (the old greedy regex swallowed trailing
+    // prose that contained a `}` and then failed to parse).
+    const parsed = extractJson<{ prompts?: unknown }>(response.sanitized)
     const prompts = parsed && Array.isArray(parsed.prompts)
       ? parsed.prompts
           .filter((p): p is string => typeof p === 'string' && p.trim().length > 0)

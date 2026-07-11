@@ -182,45 +182,73 @@ export async function GET(request: NextRequest) {
   }
   if (orphanFailures.length) console.error('[cc-reap] orphan sweep failures:', orphanFailures)
 
+  // --- Liveness counts (drive both the spend-snapshot skip and the SQL stop) ---
+  // "Live" = active, OR provisioning that's still plausibly mid-start. A row
+  // stranded in `provisioning` (e.g. the start route was killed by a platform
+  // timeout before it could 503 + mark `failed`) must NOT count as live, so only
+  // provisioning rows newer than this cutoff qualify; anything older is a dead
+  // start. Computed once here (null on query error) and reused below.
+  let activeCount: number | null = null
+  let freshProvisioning: number | null = null
+  try {
+    const provisioningCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const activeRes = await admin
+      .from('claude_code_sessions')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'active')
+    activeCount = activeRes.count ?? 0
+    const provisioningRes = await admin
+      .from('claude_code_sessions')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'provisioning')
+      .gte('created_at', provisioningCutoff)
+    freshProvisioning = provisioningRes.count ?? 0
+  } catch (err) {
+    console.error('[cc-reap] liveness count failed (best-effort):', err)
+  }
+
+  // Fully idle = no session was reaped this run, none active, none mid-start.
+  // (null counts = a failed read → treat as "not known idle" and run normally.)
+  const fullyIdle =
+    sessions.length === 0 && activeCount === 0 && freshProvisioning === 0
+
   // --- Spend snapshot (piggybacked on this cron) ---
   // Folded into cc-reap rather than its own cron to stay under the Vercel
   // cron-count limit. Both are 10-min CC sweeps. Tight budget so it can't blow
   // this route's 60s maxDuration on top of the reap + orphan work above.
-  let spend: Awaited<ReturnType<typeof runSpendSnapshot>> | null = null
-  try {
-    spend = await runSpendSnapshot(admin, 12_000)
-  } catch (err) {
-    console.error('[cc-reap] spend snapshot failed (best-effort):', err)
+  //
+  // Skip entirely when fully idle: there is no spend to record, and the reaper
+  // has stopped cc-llm-db so the gateway's /key/list hangs ~51s on a dead DB
+  // connection — which is what blew the 60s budget → 504 → false health alert.
+  // Whenever any session was live we still run it.
+  let spend: Awaited<ReturnType<typeof runSpendSnapshot>> | { skipped: 'idle' } | null = null
+  if (fullyIdle) {
+    spend = { skipped: 'idle' }
+  } else {
+    try {
+      spend = await runSpendSnapshot(admin, 12_000)
+    } catch (err) {
+      console.error('[cc-reap] spend snapshot failed (best-effort):', err)
+    }
   }
 
   // --- Stop the gateway's Cloud SQL when idle ---
   // cc-llm-db is started on demand at session-start (cloud-sql-admin) and has no
-  // native scale-to-zero, so it would bill 24/7 if left running. After the sweeps
-  // above, if NO session is active/provisioning, stop it (activationPolicy=NEVER).
-  // Best-effort + idempotent (stopSqlInstance no-ops if already stopped). A
-  // session starting concurrently re-wakes it via session-start; a brief race
-  // (stop just as one starts) is self-correcting on the next start.
+  // native scale-to-zero, so it would bill 24/7 if left running. If NO session is
+  // active/provisioning, stop it (activationPolicy=NEVER). Best-effort +
+  // idempotent (stopSqlInstance no-ops if already stopped). A session starting
+  // concurrently re-wakes it via session-start; a brief race (stop just as one
+  // starts) is self-correcting on the next start.
+  // Stop when NObody is provably live. A null count means the read failed; treat
+  // that as "not known live" and still stop — failing toward stopped is the
+  // cost-safe default for an idle reaper (matches the prior behavior, which read
+  // a failed count as 0). stopSqlInstance is idempotent and no-ops if already
+  // stopped, so a spurious stop during a race self-corrects on the next start.
+  const noneLive = (activeCount ?? 0) === 0 && (freshProvisioning ?? 0) === 0
   let sqlStopped = false
-  if (isSqlAutostartConfigured()) {
+  if (isSqlAutostartConfigured() && noneLive) {
     try {
-      // "Live" = active, OR provisioning that's still plausibly mid-start. A row
-      // stranded in `provisioning` (e.g. the start route was killed by a platform
-      // timeout before it could 503 + mark `failed`) must NOT pin the DB forever,
-      // so only count provisioning rows newer than this cutoff. Anything older is
-      // a dead start; the DB can be stopped despite it.
-      const provisioningCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-      const { count: activeCount } = await admin
-        .from('claude_code_sessions')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'active')
-      const { count: freshProvisioning } = await admin
-        .from('claude_code_sessions')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'provisioning')
-        .gte('created_at', provisioningCutoff)
-      if ((activeCount ?? 0) === 0 && (freshProvisioning ?? 0) === 0) {
-        sqlStopped = await stopSqlInstance()
-      }
+      sqlStopped = await stopSqlInstance()
     } catch (err) {
       console.error('[cc-reap] sql stop check failed (best-effort):', err)
     }
