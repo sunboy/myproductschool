@@ -8,7 +8,7 @@
 // goal and your first move" moment the session was missing.
 
 import { useState } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface MissionBriefProps {
   question: string
@@ -59,7 +59,7 @@ export function MissionBrief({
       <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 }}>
         {/* Header: Hatch + mission label */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <HatchGlyph size={36} state="idle" className="text-primary" />
+          <HatchImage size={36} state="idle" />
           <div>
             <div style={{
               fontSize: 11, fontWeight: 800, letterSpacing: '0.09em',

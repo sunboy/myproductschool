@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { MissionBookend, XpCoin } from '@/components/feedback'
 import gsap from 'gsap'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { ReportCharts } from '@/components/analytics/ReportCharts'
 import { AnalystDimensionChart } from '@/components/analytics/AnalystDimensionChart'
 import type { AnalystDimensionView } from '@/lib/coding-grading/analyst-rubric'
@@ -122,10 +122,9 @@ export function AnalyticsSessionMirror({
           ref={headerRef}
           style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}
         >
-          <HatchGlyph
+          <HatchImage
             size={48}
             state={stepCount > 0 && passCount === stepCount ? 'celebrating' : passCount >= 2 ? 'speaking' : 'idle'}
-            className="text-primary"
           />
           <div style={{ flex: 1 }}>
             <div style={{

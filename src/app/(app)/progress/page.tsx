@@ -2,14 +2,19 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { useState, useEffect, type ReactNode } from 'react'
+import { ArrowRight, Check, ChevronRight, Minus, Share2, TrendingDown, TrendingUp } from 'lucide-react'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { NoteCard } from '@/components/redesign/NoteCard'
+import { ProgressRing } from '@/components/redesign/ProgressRing'
+import { StatStrip } from '@/components/redesign/StatStrip'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { Md } from '@/components/ui/Md'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
-import { FLOW_MOVES as FLOW_MOVE_DEFS } from '@/lib/flow/moves'
+import { levelFromXp, XP_PER_USER_LEVEL } from '@/lib/utils'
+import { useLearnerDNAData } from './LearnerDNASection'
 
 /* ── Humanize snake_case archetype labels ─────────────────────────── */
 
@@ -30,21 +35,21 @@ function formatInterviewScore(score: number | null | undefined): string | null {
 
 /* ── Event label map for activity feed ────────────────────────────── */
 
-const EVENT_LABELS: Record<string, { icon: string; label: (p: Record<string, unknown>) => string }> = {
-  chapter_complete: { icon: 'menu_book', label: (p) => `Completed chapter in ${p.module_slug ?? ''}` },
-  quick_take_submit: { icon: 'bolt', label: (p) => `Quick take · ${p.move ?? ''}` },
-  note_saved: { icon: 'edit_note', label: () => 'Saved a note' },
-  challenge_complete: { icon: 'check_circle', label: () => 'Completed a challenge' },
-  live_interview_end: { icon: 'mic', label: () => 'Finished a live interview' },
+const EVENT_LABELS: Record<string, { label: (p: Record<string, unknown>) => string }> = {
+  chapter_complete: { label: (p) => `Completed chapter in ${p.module_slug ?? ''}` },
+  quick_take_submit: { label: (p) => `Quick take · ${p.move ?? ''}` },
+  note_saved: { label: () => 'Saved a note' },
+  challenge_complete: { label: () => 'Completed a challenge' },
+  live_interview_end: { label: () => 'Finished a live interview' },
 }
 
-/* ── FLOW paradigm palette - canonical FLOW move colors/icons ─────── */
+/* ── FLOW rows — dot colors per previews/round4/progress.html ─────── */
 
-const FLOW_MOVES = [
-  { k: 'Frame',    move: 'frame',    sub: 'Define the right problem',  color: FLOW_MOVE_DEFS.frame.color,    bg: FLOW_MOVE_DEFS.frame.soft,    icon: FLOW_MOVE_DEFS.frame.icon },
-  { k: 'List',     move: 'list',     sub: 'Generate quality options',  color: FLOW_MOVE_DEFS.list.color,     bg: FLOW_MOVE_DEFS.list.soft,     icon: FLOW_MOVE_DEFS.list.icon },
-  { k: 'Optimize', move: 'optimize', sub: 'Pick and sharpen the best', color: FLOW_MOVE_DEFS.optimize.color, bg: FLOW_MOVE_DEFS.optimize.soft, icon: FLOW_MOVE_DEFS.optimize.icon },
-  { k: 'Win',      move: 'win',      sub: 'Drive durable outcomes',    color: FLOW_MOVE_DEFS.win.color,      bg: FLOW_MOVE_DEFS.win.soft,      icon: FLOW_MOVE_DEFS.win.icon },
+const FLOW_ROWS = [
+  { k: 'Frame', move: 'frame', desc: 'Name the real problem before the fix', dotClass: 'bg-sd-fg', barClass: 'bg-sd-fg' },
+  { k: 'List', move: 'list', desc: 'Map every stakeholder and option', dotClass: 'bg-ps-fg', barClass: 'bg-ps-fg' },
+  { k: 'Optimize', move: 'optimize', desc: 'Pick a criterion and name the tradeoff', dotClass: 'bg-dm-fg', barClass: 'bg-dm-fg' },
+  { k: 'Win', move: 'win', desc: 'Name the metric that proves it worked', dotClass: 'bg-sql-fg', barClass: 'bg-sql-fg' },
 ] as const
 
 interface RecentAttempt {
@@ -130,64 +135,6 @@ const READINESS_CHALLENGE_QUOTA = 10
 const READINESS_MOVE_LEVEL = 3
 const READINESS_MOVES: string[] = ['frame', 'list', 'optimize', 'win']
 
-const DISCIPLINE_LENSES = [
-  {
-    title: 'Product sense',
-    href: '/challenges?discipline=product_sense',
-    icon: 'psychology',
-    accent: FLOW_MOVE_DEFS.frame.color,
-    bg: FLOW_MOVE_DEFS.frame.soft,
-    frame: 'User job + business outcome',
-    list: 'Segments, options, counter-moves',
-    optimize: 'Metric tradeoffs',
-    win: 'Decision narrative',
-  },
-  {
-    title: 'System design',
-    href: '/challenges?discipline=system_design',
-    icon: 'hub',
-    accent: FLOW_MOVE_DEFS.optimize.color,
-    bg: FLOW_MOVE_DEFS.optimize.soft,
-    frame: 'Scale, latency, consistency',
-    list: 'Components + data flows',
-    optimize: 'Reliability vs. cost',
-    win: 'Defensible architecture',
-  },
-  {
-    title: 'Data modeling',
-    href: '/challenges?discipline=data_modeling',
-    icon: 'account_tree',
-    accent: FLOW_MOVE_DEFS.list.color,
-    bg: FLOW_MOVE_DEFS.list.soft,
-    frame: 'Entities and grain',
-    list: 'Facts, dimensions, events',
-    optimize: 'Read/write tradeoffs',
-    win: 'Model contract clarity',
-  },
-  {
-    title: 'SQL',
-    href: '/challenges?discipline=sql',
-    icon: 'database',
-    accent: FLOW_MOVE_DEFS.win.color,
-    bg: FLOW_MOVE_DEFS.win.soft,
-    frame: 'Question and dataset shape',
-    list: 'Joins, filters, edge cases',
-    optimize: 'Correctness then speed',
-    win: 'Explainable query path',
-  },
-  {
-    title: 'Coding',
-    href: '/challenges?discipline=algorithm',
-    icon: 'data_object',
-    accent: FLOW_MOVE_DEFS.frame.color,
-    bg: FLOW_MOVE_DEFS.frame.soft,
-    frame: 'Constraints + examples',
-    list: 'Approaches and invariants',
-    optimize: 'Time/space tradeoff',
-    win: 'Clean implementation',
-  },
-] as const
-
 const TRAJECTORY_MOVE_LABELS: Record<TrajectoryMove, string> = {
   frame: 'Frame',
   list: 'List',
@@ -195,226 +142,224 @@ const TRAJECTORY_MOVE_LABELS: Record<TrajectoryMove, string> = {
   win: 'Win',
 }
 
-const TREND_META: Record<TrajectoryTrend, { label: string; icon: string; color: string }> = {
-  improving: { label: 'Improving', icon: 'trending_up', color: '#4a7c59' },   // primary green
-  declining: { label: 'Needs attention', icon: 'trending_down', color: '#b83230' }, // error red
-  steady: { label: 'Steady', icon: 'trending_flat', color: '#4a4e4a' },        // on-surface-variant grey
-  insufficient_data: { label: 'Low signal', icon: 'fiber_manual_record', color: '#4a4e4a' }, // on-surface-variant grey
+/* ── Shared chrome ───────────────────────────────────────────────── */
+
+const CARD_CLASS =
+  'rounded-2xl border border-hairline bg-card-bright p-4 shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)]'
+
+function CardTitle({ children }: { children: ReactNode }) {
+  return <div className="mb-3 font-body text-[15px] font-bold text-ink-strong">{children}</div>
 }
 
-function StreakHeatmap({ activeDates }: { activeDates: string[] }) {
+function ViewLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-bold text-forest-700 no-underline">
+      {children}
+      <ChevronRight size={13} strokeWidth={2.2} />
+    </Link>
+  )
+}
+
+/* ── Four-week activity heatmap (user_streaks) ───────────────────── */
+
+function FourWeekHeatmap({ activeDates }: { activeDates: string[] }) {
   const activeSet = new Set(activeDates)
   const today = new Date()
-  const cells: { date: string; active: boolean }[] = []
-  for (let i = 83; i >= 0; i--) {
-    const d = new Date(today)
-    d.setDate(d.getDate() - i)
-    const iso = d.toISOString().split('T')[0]
-    cells.push({ date: iso, active: activeSet.has(iso) })
+  const dayIdx = (today.getDay() + 6) % 7 // Monday = 0
+  const monday = new Date(today)
+  monday.setDate(monday.getDate() - dayIdx)
+
+  const rows: { label: string; cells: { iso: string; active: boolean; future: boolean }[] }[] = []
+  for (let w = 3; w >= 0; w--) {
+    const cells: { iso: string; active: boolean; future: boolean }[] = []
+    for (let d = 0; d < 7; d++) {
+      const day = new Date(monday)
+      day.setDate(day.getDate() - w * 7 + d)
+      const iso = day.toISOString().split('T')[0]
+      cells.push({ iso, active: activeSet.has(iso), future: day > today })
+    }
+    rows.push({ label: w === 0 ? 'This week' : `Week ${4 - w}`, cells })
   }
 
   return (
-    <div className="flex gap-1">
-      {Array.from({ length: 12 }, (_, week) => (
-        <div key={week} className="flex flex-col gap-1">
-          {cells.slice(week * 7, week * 7 + 7).map(cell => (
-            <div
-              key={cell.date}
-              title={cell.date}
-              className={`w-3 h-3 rounded-sm ${cell.active ? 'bg-primary' : 'bg-surface-container-high'}`}
-            />
-          ))}
+    <div>
+      <div className="mb-1.5 grid grid-cols-[52px_repeat(7,1fr)] gap-1">
+        <span />
+        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+          <span key={i} className="text-center text-[10px] font-bold text-ink-muted">{d}</span>
+        ))}
+      </div>
+      {rows.map(row => (
+        <div key={row.label} className="mb-1 grid grid-cols-[52px_repeat(7,1fr)] items-center gap-1">
+          <span className="text-[10.5px] font-bold text-ink-secondary">{row.label}</span>
+          {row.cells.map(cell =>
+            cell.future ? (
+              <span key={cell.iso} className="aspect-square rounded-[5px] border border-hairline/70" />
+            ) : (
+              <span
+                key={cell.iso}
+                title={cell.iso}
+                className={
+                  cell.active
+                    ? 'aspect-square scale-[1.08] rounded-[7px] bg-forest-600'
+                    : 'aspect-square rounded-[5px] bg-hairline/70'
+                }
+              />
+            )
+          )}
         </div>
       ))}
     </div>
   )
 }
 
-function ReadinessMap({
-  attemptedPct,
-  masteredPct,
-  overallPct,
-  latestInterviewScore,
-  hasActivity,
-}: {
-  attemptedPct: number
-  masteredPct: number
-  overallPct: number
-  latestInterviewScore: number | null
-  hasActivity: boolean
-}) {
-  const lanes = [
-    {
-      label: 'Practice coverage',
-      value: `${attemptedPct}%`,
-      sub: hasActivity ? 'Library touched' : 'Start with one challenge',
-      href: '/challenges',
-      icon: 'track_changes',
-      color: FLOW_MOVE_DEFS.frame.color,      // primary forest green
-      pct: attemptedPct,
-      help: 'How much of the full challenge library you have attempted.',
-    },
-    {
-      label: 'Mastery signal',
-      value: `${masteredPct}%`,
-      sub: 'Challenges at 80+',
-      href: '/progress/skill-ladder',
-      icon: 'verified',
-      color: FLOW_MOVE_DEFS.list.color,       // teal-green, same family
-      pct: masteredPct,
-      help: 'The share of completed reps where Hatch scored you 80 or higher.',
-    },
-    {
-      label: 'Interview pressure',
-      value: latestInterviewScore != null ? `${latestInterviewScore}` : 'New',
-      sub: latestInterviewScore != null ? 'Latest Hatch debrief' : 'Run a mock loop',
-      href: '/live-interviews',
-      icon: 'graphic_eq',
-      color: FLOW_MOVE_DEFS.optimize.color,   // Terra amber, same family
-      pct: latestInterviewScore ?? 18,
-      help: 'Your most recent mock interview score, or a prompt to start one.',
-    },
-    {
-      label: 'Readiness score',
-      value: `${overallPct}%`,
-      sub: 'Blended signal',
-      href: '/progress',
-      icon: 'workspace_premium',
-      color: FLOW_MOVE_DEFS.win.color,        // deep warm brown, same family
-      pct: overallPct,
-      help: 'A blended signal from completed reps and FLOW move levels.',
-    },
-  ]
+/* ── Competency radar (learner_competencies via useLearnerDNA) ───── */
+
+function CompetencyRadarSvg({ competencies }: { competencies: { label: string; score: number }[] }) {
+  const n = competencies.length
+  const cx = 180
+  const cy = 140
+  const r = 88
+
+  const point = (i: number, radius: number): [number, number] => {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n
+    return [cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]
+  }
+  const ringPoints = (radius: number) =>
+    Array.from({ length: n }, (_, i) => point(i, radius).map(v => v.toFixed(1)).join(',')).join(' ')
+  const dataPoints = competencies
+    .map((c, i) => point(i, (Math.max(0, Math.min(100, c.score)) / 100) * r).map(v => v.toFixed(1)).join(','))
+    .join(' ')
 
   return (
-    <section className="mb-3 rounded-xl border border-outline-variant/65 bg-surface-container-low p-2.5">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted)' }}>
-            Readiness map
-          </div>
-          <h2 className="m-0 font-headline text-[16px] font-bold leading-tight text-on-surface">
-            Where Hatch should push next.
-          </h2>
-        </div>
-        <Link
-          href="/explore"
-          className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-2.5 py-1 text-[11px] font-label font-bold text-primary no-underline hover:bg-primary-fixed"
-        >
-          Pick a path
-          <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-        </Link>
-      </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
-        {lanes.map(lane => (
-          <AppTooltip key={lane.label} label={lane.help} side="bottom" className="flex">
-            <Link
-              href={lane.href}
-              className="w-full rounded-lg border border-outline-variant/45 bg-background p-2 no-underline transition-transform hover:-translate-y-0.5"
-            >
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md" style={{ background: `${lane.color}18` }}>
-                  <span className="material-symbols-outlined text-[17px]" style={{ color: lane.color, fontVariationSettings: "'FILL' 1" }}>
-                    {lane.icon}
-                  </span>
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate text-[11.5px] font-label font-extrabold leading-tight text-on-surface">{lane.label}</span>
-                    <span className="shrink-0 font-headline text-[17px] font-bold leading-none" style={{ color: lane.color }}>
-                      {lane.value}
-                    </span>
-                  </div>
-                  <div className="mt-0.5 truncate text-[10.5px] font-semibold leading-tight text-on-surface-variant">{lane.sub}</div>
-                </div>
-              </div>
-              <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-container-high">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${Math.min(100, Math.max(0, lane.pct))}%`, background: lane.color }}
-                />
-              </div>
-            </Link>
-          </AppTooltip>
-        ))}
-      </div>
-    </section>
+    <svg viewBox="0 0 360 300" className="w-full max-w-[320px]">
+      {[1, 0.75, 0.5, 0.25].map(f => (
+        <polygon key={f} points={ringPoints(r * f)} fill="none" stroke="var(--color-hairline)" strokeWidth="1" />
+      ))}
+      {competencies.map((_, i) => {
+        const [x, y] = point(i, r)
+        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="var(--color-hairline)" strokeWidth="1" />
+      })}
+      <polygon points={dataPoints} fill="var(--color-forest-600)" fillOpacity="0.32" stroke="var(--color-forest-600)" strokeWidth="2" />
+      {competencies.map((c, i) => {
+        const [x, y] = point(i, (Math.max(0, Math.min(100, c.score)) / 100) * r)
+        return <circle key={c.label} cx={x} cy={y} r="3.2" fill="var(--color-forest-600)" />
+      })}
+      {competencies.map((c, i) => {
+        const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        const lx = cx + (r + 22) * cos
+        const ly = cy + (r + 22) * sin
+        const anchor = cos > 0.3 ? 'start' : cos < -0.3 ? 'end' : 'middle'
+        return (
+          <g key={c.label}>
+            <text x={lx} y={ly + (sin > 0.5 ? 8 : sin < -0.5 ? 0 : 4)} textAnchor={anchor} fontSize="11" fontWeight="700" fill="var(--color-ink-strong)" fontFamily="var(--font-body), sans-serif">
+              {c.label}
+            </text>
+            <text x={lx} y={ly + (sin > 0.5 ? 21 : sin < -0.5 ? 13 : 17)} textAnchor={anchor} fontSize="10.5" fontWeight="700" fill="var(--color-ink-secondary)" fontFamily="var(--font-body), sans-serif">
+              {Math.round(c.score)}
+            </text>
+          </g>
+        )
+      })}
+    </svg>
   )
 }
 
-function DisciplineLensStrip() {
+/* ── Trajectory pieces (restyled, logic unchanged) ───────────────── */
+
+const TREND_META: Record<TrajectoryTrend, { label: string; color: string }> = {
+  improving: { label: 'Improving', color: '#266235' },
+  declining: { label: 'Needs attention', color: '#b83230' },
+  steady: { label: 'Steady', color: '#5b685e' },
+  insufficient_data: { label: 'Low signal', color: '#5b685e' },
+}
+
+function TrendIcon({ trend, delta, size = 12 }: { trend: TrajectoryTrend; delta: number; size?: number }) {
+  if (trend === 'insufficient_data') return <Minus size={size} strokeWidth={2} />
+  // Bind icon to delta sign with ±2 deadband, override API trend label
+  if (delta >= 2) return <TrendingUp size={size} strokeWidth={2} />
+  if (delta <= -2) return <TrendingDown size={size} strokeWidth={2} />
+  return <Minus size={size} strokeWidth={2} />
+}
+
+function TrendDot({ trend, delta }: { trend: TrajectoryTrend; delta: number }) {
+  const meta = TREND_META[trend]
   return (
-    <section className="mb-3 rounded-xl border border-outline-variant/65 bg-background p-2.5">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted)', marginBottom: 4 }}>
-            Disciplines
-          </div>
-          <h2 className="m-0 font-headline text-[16px] font-bold leading-tight text-on-surface">
-            FLOW applies across the stack.
-          </h2>
+    <span className="inline-flex items-center gap-1 tabular-nums" style={{ color: meta.color }}>
+      <TrendIcon trend={trend} delta={delta} />
+      {trend === 'insufficient_data' ? meta.label : `${delta > 0 ? '+' : ''}${delta}`}
+    </span>
+  )
+}
+
+function MiniSparkline({ values, color }: { values: number[]; color: string }) {
+  if (values.length < 2) {
+    return <div className="mt-2 h-[22px] rounded-md bg-hairline/50" />
+  }
+  const width = 88
+  const height = 22
+  const points = values.map((value, index) => {
+    const x = values.length === 1 ? 0 : (index / (values.length - 1)) * width
+    const y = height - (Math.max(0, Math.min(100, value)) / 100) * height
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(' ')
+
+  return (
+    <svg className="mt-2 h-[22px] w-full overflow-visible" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden>
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function TrajectoryCellCard({
+  cell,
+  color,
+  move,
+  discipline,
+}: {
+  cell: TrajectoryCell
+  color: string
+  move: TrajectoryMove
+  discipline: string
+}) {
+  const trend = TREND_META[cell.trend]
+  const tooltip = cell.sampleSize === 0
+    ? `${discipline} ${TRAJECTORY_MOVE_LABELS[move]} has no completed signal yet.`
+    : `${discipline} ${TRAJECTORY_MOVE_LABELS[move]}: ${cell.sampleSize} signal${cell.sampleSize === 1 ? '' : 's'}, ${cell.confidence}% confidence.`
+
+  return (
+    <AppTooltip label={tooltip} side="bottom" className="flex">
+      <div className="w-full rounded-xl border border-hairline bg-card-bright p-2">
+        <div className="flex items-center justify-between gap-2">
+          <span
+            className="font-headline text-[17px] font-bold leading-none tabular-nums"
+            style={{ color: cell.score === null ? 'var(--color-ink-muted)' : color }}
+          >
+            {cell.score === null ? '-' : cell.score}
+          </span>
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums" style={{ color: trend.color }}>
+            <TrendIcon trend={cell.trend} delta={cell.delta} />
+            {cell.trend === 'insufficient_data' ? 'Low' : `${cell.delta > 0 ? '+' : ''}${cell.delta}`}
+          </span>
         </div>
-        <Link
-          href="/challenges"
-          className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-2.5 py-1 text-[11px] font-label font-bold text-primary no-underline hover:bg-primary-fixed"
-        >
-          Practice
-          <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-        </Link>
+        <MiniSparkline values={cell.history} color={color} />
+        <div className="mt-1 flex items-center justify-between gap-2 text-[10px] font-semibold tabular-nums text-ink-secondary">
+          <span>{cell.sampleSize} reps</span>
+          <span>{cell.confidence}% conf</span>
+        </div>
       </div>
+    </AppTooltip>
+  )
+}
 
-      <div className="grid grid-cols-2 gap-1.5 md:grid-cols-5">
-        {DISCIPLINE_LENSES.map(discipline => {
-          const moves = [
-            ['F', discipline.frame],
-            ['L', discipline.list],
-            ['O', discipline.optimize],
-            ['W', discipline.win],
-          ] as const
-
-          return (
-            <AppTooltip
-              key={discipline.title}
-              label={`${discipline.title}: ${discipline.frame}; ${discipline.optimize}.`}
-              side="bottom"
-              className="flex"
-            >
-              <Link
-                href={discipline.href}
-                className="group flex w-full min-w-0 items-center gap-2 rounded-lg border border-outline-variant/45 px-2 py-1.5 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_-20px_rgba(46,50,48,0.55)]"
-                style={{ background: `linear-gradient(135deg, ${discipline.bg} 0%, var(--color-background) 150%)` }}
-              >
-                <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-white" style={{ background: discipline.accent }}>
-                  <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                    {discipline.icon}
-                  </span>
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[11.5px] font-label font-extrabold leading-tight text-on-surface">
-                    {discipline.title}
-                  </span>
-                  <span className="mt-1 flex gap-1">
-                    {moves.map(([move, text]) => (
-                      <span
-                        key={move}
-                        aria-label={text}
-                        className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-[4px] text-[8px] font-black leading-none"
-                        style={{ color: discipline.accent, background: `${discipline.accent}18` }}
-                      >
-                        {move}
-                      </span>
-                    ))}
-                  </span>
-                </span>
-                <span className="material-symbols-outlined hidden text-[13px] text-on-surface-variant transition-transform group-hover:translate-x-0.5 sm:inline">
-                  arrow_forward
-                </span>
-              </Link>
-            </AppTooltip>
-          )
-        })}
-      </div>
-    </section>
+function TrajectoryStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-hairline bg-card-bright p-2">
+      <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-ink-muted">{label}</div>
+      <div className="mt-1 font-headline text-[18px] font-bold leading-none tabular-nums text-ink-strong">{value}</div>
+    </div>
   )
 }
 
@@ -450,281 +395,209 @@ function ReasoningTrajectorySection({
     }).slice(0, 4)
   })()
 
+  if (loading) {
+    return (
+      <section className={`${CARD_CLASS} mb-4`}>
+        <CardTitle>Reasoning trajectory</CardTitle>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-24 animate-pulse rounded-xl bg-hairline/60" />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  if (!trajectory) return null
+
   return (
-    <>
-      <SectionHeading
-        eyebrow="Reasoning trajectory"
-        title="How your judgment is changing."
-        href={trajectory?.nextFocus.href ?? '/challenges'}
-        linkLabel="Next best rep"
-      />
-      <section
-        className="mb-5 overflow-hidden rounded-2xl border border-outline-variant/70 p-3.5"
-        style={{ background: 'var(--color-surface-container)' }}
-      >
-        {loading ? (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-surface-container-high" />
-            ))}
-          </div>
-        ) : !trajectory ? (
-          <div className="flex items-center gap-3 rounded-xl bg-background p-3">
-            <HatchGlyph size={34} state="idle" className="shrink-0 text-primary" />
-            <div>
-              <h3 className="m-0 font-headline text-[16px] font-bold text-on-surface">No reasoning signal yet.</h3>
-              <p className="m-0 mt-1 text-[12px] font-semibold text-on-surface-variant">
-                Finish one challenge or interview and Hatch will start drawing the map.
-              </p>
+    <section className={`${CARD_CLASS} mb-4`}>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="font-body text-[15px] font-bold text-ink-strong">Reasoning trajectory</div>
+        <Link
+          href={trajectory.nextFocus.href}
+          className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-forest-700 no-underline"
+        >
+          Next best rep
+          <ChevronRight size={13} strokeWidth={2.2} />
+        </Link>
+      </div>
+
+      {hasEnoughSignal ? (
+        <>
+          <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_280px]">
+            <p className="m-0 self-center text-[12px] font-semibold leading-snug text-ink-secondary">
+              Each cell blends recent challenge, workspace, and interview evidence. Low signal is shown instead of faked confidence.
+            </p>
+            <div className="grid grid-cols-3 gap-1.5">
+              <TrajectoryStat label="Signals" value={String(totalSignals)} />
+              <TrajectoryStat label="Practice" value={String(trajectory.summary.challengeReps)} />
+              <TrajectoryStat label="Gaps" value={String(lowSignal)} />
             </div>
           </div>
-        ) : (
-          <>
-            {hasEnoughSignal ? (
-              <>
-                <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_280px]">
-                  <div className="rounded-xl bg-background p-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-fixed text-primary">
-                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>monitoring</span>
-                      </span>
-                      <div>
-                        <h3 className="m-0 font-headline text-[17px] font-bold leading-tight text-on-surface">
-                          Cross-discipline FLOW signal
-                        </h3>
-                        <p className="m-0 mt-0.5 text-[11.5px] font-semibold text-on-surface-variant">
-                          Each cell blends recent challenge, workspace, and interview evidence. Low signal is shown instead of faked confidence.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <TrajectoryStat label="Signals" value={String(totalSignals)} />
-                    <TrajectoryStat label="Practice" value={String(trajectory.summary.challengeReps)} />
-                    <TrajectoryStat label="Gaps" value={String(lowSignal)} />
-                  </div>
-                </div>
 
-                <div className="overflow-x-auto">
-                  <div className="min-w-[780px]">
-                    <p className="mb-2 px-1 text-xs text-on-surface-variant font-label">
-                      Score · Δ vs last week · reps · confidence
-                    </p>
-                    <div
-                      className="mb-1 grid items-center gap-1.5 px-1 text-[10px] font-label font-black uppercase tracking-[0.10em] text-on-surface-muted"
-                      style={{ gridTemplateColumns: '170px repeat(4, minmax(132px, 1fr))' }}
+          <div className="overflow-x-auto">
+            <div className="min-w-[780px]">
+              <p className="mb-2 px-1 text-xs font-semibold text-ink-secondary">
+                Score · Δ vs last week · reps · confidence
+              </p>
+              <div
+                className="mb-1 grid items-center gap-1.5 px-1 text-[10px] font-black uppercase tracking-[0.10em] text-ink-muted"
+                style={{ gridTemplateColumns: '170px repeat(4, minmax(132px, 1fr))' }}
+              >
+                <div>Discipline</div>
+                {trajectory.moves.map(move => (
+                  <div key={move}>{TRAJECTORY_MOVE_LABELS[move]}</div>
+                ))}
+              </div>
+              <div className="space-y-1.5">
+                {trajectory.disciplines.map(discipline => (
+                  <div
+                    key={discipline.key}
+                    className="grid items-stretch gap-1.5"
+                    style={{ gridTemplateColumns: '170px repeat(4, minmax(132px, 1fr))' }}
+                  >
+                    <Link
+                      href={discipline.href}
+                      className="flex min-w-0 items-center gap-2.5 rounded-xl border border-hairline bg-card-bright p-2 no-underline transition-transform hover:-translate-y-0.5"
                     >
-                      <div>Discipline</div>
-                      {trajectory.moves.map(move => (
-                        <div key={move}>{TRAJECTORY_MOVE_LABELS[move]}</div>
-                      ))}
-                    </div>
-                    <div className="space-y-1.5">
-                      {trajectory.disciplines.map(discipline => (
-                        <div
-                          key={discipline.key}
-                          className="grid items-stretch gap-1.5"
-                          style={{ gridTemplateColumns: '170px repeat(4, minmax(132px, 1fr))' }}
-                        >
-                          <Link
-                            href={discipline.href}
-                            className="flex min-w-0 items-center gap-2 rounded-xl border border-outline-variant/55 bg-background p-2 no-underline transition-transform hover:-translate-y-0.5"
-                          >
-                            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white" style={{ background: discipline.color }}>
-                              <span className="material-symbols-outlined text-[17px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                {discipline.icon}
-                              </span>
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[12.5px] font-label font-extrabold text-on-surface">
-                                {discipline.label}
-                              </span>
-                              <span className="mt-0.5 flex items-center gap-1.5 text-[10.5px] font-bold text-on-surface-variant">
-                                {discipline.score === null ? 'No score' : `${discipline.score}%`}
-                                <TrendDot trend={discipline.trend} delta={discipline.delta} />
-                              </span>
-                            </span>
-                          </Link>
-                          {trajectory.moves.map(move => (
-                            <TrajectoryCellCard
-                              key={`${discipline.key}-${move}`}
-                              cell={discipline.cells[move]}
-                              color={discipline.color}
-                              move={move}
-                              discipline={discipline.label}
-                            />
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="mb-3 flex items-center gap-3 rounded-xl bg-background px-4 py-3">
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-fixed text-primary">
-                  <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>monitoring</span>
-                </span>
-                <p className="m-0 text-[12.5px] font-semibold text-on-surface-variant">
-                  This fills in as you complete reps across disciplines.
-                </p>
-              </div>
-            )}
-
-            <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-              <div className="rounded-xl border border-primary/15 bg-primary-fixed p-3">
-                <div className="mb-1 flex items-center gap-2">
-                  <HatchGlyph size={26} state="reviewing" className="shrink-0 text-primary" />
-                  <div className="text-[10.5px] font-label font-black uppercase tracking-[0.10em] text-primary">
-                    Hatch read
-                  </div>
-                </div>
-                <h3 className="m-0 font-headline text-[18px] font-bold leading-tight text-on-surface">
-                  {trajectory.nextFocus.disciplineLabel} · {trajectory.nextFocus.moveLabel}
-                </h3>
-                <p className="m-0 mt-1 text-[12.5px] font-semibold leading-snug text-on-surface-variant">
-                  {trajectory.nextFocus.reason}
-                </p>
-                <Link
-                  href={trajectory.nextFocus.href}
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[11.5px] font-label font-extrabold text-on-primary no-underline"
-                >
-                  Start focused rep
-                  <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-                </Link>
-              </div>
-              <div className="rounded-xl bg-background p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <div className="text-[10.5px] font-label font-black uppercase tracking-[0.10em] text-on-surface-muted">
-                    Evidence ledger
-                  </div>
-                  <span className="text-[10.5px] font-bold text-on-surface-variant">
-                    Latest {dedupedEvidence.length}
-                  </span>
-                </div>
-                {dedupedEvidence.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-1.5 md:grid-cols-2">
-                    {dedupedEvidence.map(item => (
-                      <Link
-                        key={item.id}
-                        href={item.href}
-                        className="rounded-lg border border-outline-variant/50 bg-surface-container-low p-2 no-underline transition-colors hover:bg-surface-container"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-[12px] font-label font-extrabold text-on-surface">{item.title}</span>
-                          <span className="shrink-0 text-[11px] font-black text-primary">{item.score}%</span>
-                        </div>
-                        <div className="mt-0.5 truncate text-[10.5px] font-semibold text-on-surface-variant">
-                          {item.sourceLabel} · {TRAJECTORY_MOVE_LABELS[item.move]}
-                        </div>
-                        {item.evidence && (
-                          <p className="m-0 mt-1 line-clamp-2 text-[10.5px] leading-snug text-on-surface-variant">
-                            {item.evidence}
-                          </p>
-                        )}
-                      </Link>
+                      <span className="size-2 shrink-0 rounded-full" style={{ background: discipline.color }} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[12.5px] font-extrabold text-ink-strong">
+                          {discipline.label}
+                        </span>
+                        <span className="mt-0.5 flex items-center gap-1.5 text-[10.5px] font-bold tabular-nums text-ink-secondary">
+                          {discipline.score === null ? 'No score' : `${discipline.score}%`}
+                          <TrendDot trend={discipline.trend} delta={discipline.delta} />
+                        </span>
+                      </span>
+                    </Link>
+                    {trajectory.moves.map(move => (
+                      <TrajectoryCellCard
+                        key={`${discipline.key}-${move}`}
+                        cell={discipline.cells[move]}
+                        color={discipline.color}
+                        move={move}
+                        discipline={discipline.label}
+                      />
                     ))}
                   </div>
-                ) : (
-                  <p className="m-0 text-[12px] font-semibold text-on-surface-variant">
-                    No evidence yet. Hatch will fill this after your first completed rep.
-                  </p>
-                )}
+                ))}
               </div>
             </div>
-          </>
-        )}
-      </section>
-    </>
+          </div>
+        </>
+      ) : (
+        <p className="m-0 mb-3 text-[12.5px] font-semibold text-ink-secondary">
+          This fills in as you complete reps across disciplines.
+        </p>
+      )}
+
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <NoteCard tint="mint" className="rounded-xl p-3">
+          <div className="mb-1 flex items-center gap-2">
+            <HatchImage state="avatar" size={20} className="rounded-full" />
+            <div className="text-[10.5px] font-black uppercase tracking-[0.10em] text-forest-800">
+              Hatch read
+            </div>
+          </div>
+          <h3 className="m-0 font-body text-[15px] font-bold leading-tight text-ink-strong">
+            {trajectory.nextFocus.disciplineLabel} · {trajectory.nextFocus.moveLabel}
+          </h3>
+          <p className="m-0 mt-1 text-[12.5px] font-semibold leading-snug text-ink-secondary">
+            {trajectory.nextFocus.reason}
+          </p>
+          <Link
+            href={trajectory.nextFocus.href}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-[10px] bg-forest-800 px-3 py-1.5 text-[11.5px] font-extrabold text-white no-underline"
+          >
+            Start focused rep
+            <ArrowRight size={12} strokeWidth={2.2} />
+          </Link>
+        </NoteCard>
+        <div className="min-w-0">
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <div className="text-[10.5px] font-black uppercase tracking-[0.10em] text-ink-muted">
+              Evidence ledger
+            </div>
+            <span className="text-[10.5px] font-bold tabular-nums text-ink-secondary">
+              Latest {dedupedEvidence.length}
+            </span>
+          </div>
+          {dedupedEvidence.length > 0 ? (
+            <div>
+              {dedupedEvidence.map((item, i) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`block py-2 no-underline ${i < dedupedEvidence.length - 1 ? 'border-b border-hairline' : ''}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate text-[12.5px] font-bold text-ink-strong">{item.title}</span>
+                    <span className="shrink-0 text-[11px] font-black tabular-nums text-forest-700">{item.score}%</span>
+                  </div>
+                  <div className="mt-0.5 truncate text-[10.5px] font-semibold text-ink-secondary">
+                    {item.sourceLabel} · {TRAJECTORY_MOVE_LABELS[item.move]}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="m-0 text-[12px] font-semibold text-ink-secondary">
+              No evidence yet. Hatch will fill this after your first completed rep.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
   )
 }
 
-function TrajectoryStat({ label, value }: { label: string; value: string }) {
+/* ── Timeline (attempts + interviews + activity events) ──────────── */
+
+interface TimelineItem {
+  key: string
+  ts: number
+  title: ReactNode
+  meta: string
+  done: boolean
+  href?: string
+  cta?: string
+}
+
+function TimelineRow({ item, isLast }: { item: TimelineItem; isLast: boolean }) {
   return (
-    <div className="rounded-xl border border-outline-variant/50 bg-background p-2">
-      <div className="text-[9.5px] font-label font-black uppercase tracking-[0.08em] text-on-surface-muted">{label}</div>
-      <div className="mt-1 font-headline text-[18px] font-bold leading-none text-on-surface">{value}</div>
+    <div className={`flex min-h-[44px] items-center gap-3 py-2.5 ${isLast ? '' : 'border-b border-hairline'}`}>
+      {item.done ? (
+        <span className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-forest-600 text-white">
+          <Check size={12} strokeWidth={2.6} />
+        </span>
+      ) : (
+        <span className="ml-[7px] mr-[7px] size-2 shrink-0 rounded-full bg-forest-600/50" />
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13px] font-bold text-ink-strong">{item.title}</div>
+        <div className="mt-px text-[11.5px] font-semibold tabular-nums text-ink-secondary">{item.meta}</div>
+      </div>
+      {item.href && item.cta && (
+        <Link
+          href={item.href}
+          className="shrink-0 rounded-[10px] border border-hairline bg-card-bright px-3.5 py-1.5 text-[12px] font-bold text-ink-strong no-underline hover:bg-note-mint/40"
+        >
+          {item.cta}
+        </Link>
+      )}
     </div>
   )
 }
 
-function TrajectoryCellCard({
-  cell,
-  color,
-  move,
-  discipline,
-}: {
-  cell: TrajectoryCell
-  color: string
-  move: TrajectoryMove
-  discipline: string
-}) {
-  const trend = TREND_META[cell.trend]
-  const tooltip = cell.sampleSize === 0
-    ? `${discipline} ${TRAJECTORY_MOVE_LABELS[move]} has no completed signal yet.`
-    : `${discipline} ${TRAJECTORY_MOVE_LABELS[move]}: ${cell.sampleSize} signal${cell.sampleSize === 1 ? '' : 's'}, ${cell.confidence}% confidence.`
-
-  return (
-    <AppTooltip label={tooltip} side="bottom" className="flex">
-      <div className="w-full rounded-xl border border-outline-variant/45 bg-background p-2">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-headline text-[17px] font-bold leading-none" style={{ color: cell.score === null ? 'var(--color-on-surface-muted)' : color }}>
-            {cell.score === null ? '-' : cell.score}
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9.5px] font-label font-black" style={{ background: `${trend.color}16`, color: trend.color }}>
-            <span className="material-symbols-outlined text-[12px]">{trend.icon}</span>
-            {cell.trend === 'insufficient_data' ? 'Low' : `${cell.delta > 0 ? '+' : ''}${cell.delta}`}
-          </span>
-        </div>
-        <MiniSparkline values={cell.history} color={color} />
-        <div className="mt-1 flex items-center justify-between gap-2 text-[10px] font-bold text-on-surface-variant">
-          <span>{cell.sampleSize} reps</span>
-          <span>{cell.confidence}% conf</span>
-        </div>
-      </div>
-    </AppTooltip>
-  )
-}
-
-function MiniSparkline({ values, color }: { values: number[]; color: string }) {
-  if (values.length < 2) {
-    return (
-      <div className="mt-2 h-[22px] rounded-md bg-surface-container-low" />
-    )
-  }
-  const width = 88
-  const height = 22
-  const points = values.map((value, index) => {
-    const x = values.length === 1 ? 0 : (index / (values.length - 1)) * width
-    const y = height - (Math.max(0, Math.min(100, value)) / 100) * height
-    return `${x.toFixed(1)},${y.toFixed(1)}`
-  }).join(' ')
-
-  return (
-    <svg className="mt-2 h-[22px] w-full overflow-visible" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden>
-      <polyline points={points} fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function TrendDot({ trend, delta }: { trend: TrajectoryTrend; delta: number }) {
-  const meta = TREND_META[trend]
-  // Bind icon to delta sign with ±2 deadband, override API trend label
-  const icon = trend === 'insufficient_data'
-    ? meta.icon
-    : delta >= 2 ? 'trending_up' : delta <= -2 ? 'trending_down' : 'trending_flat'
-  return (
-    <span className="inline-flex items-center gap-0.5" style={{ color: meta.color }}>
-      <span className="material-symbols-outlined text-[12px]">{icon}</span>
-      {trend === 'insufficient_data' ? meta.label : `${delta > 0 ? '+' : ''}${delta}`}
-    </span>
-  )
-}
+/* ── Page ────────────────────────────────────────────────────────── */
 
 export default function ProgressPage() {
   const router = useRouter()
   const { moves } = useMoveLevels()
-  const { profile } = useProfile()
+  const { profile, isLoading: profileLoading } = useProfile()
+  const { data: dna } = useLearnerDNAData()
   const [recentAttempts, setRecentAttempts] = useState<RecentAttempt[]>([])
   const [recentInterviews, setRecentInterviews] = useState<RecentInterview[]>([])
   const [masteryEntries, setMasteryEntries] = useState<Array<{ challenge_id: string; score: number | null; is_completed: boolean }>>([])
@@ -741,12 +614,15 @@ export default function ProgressPage() {
     id: string; event_type: string; payload: Record<string, unknown>; created_at: string;
   }>>([])
   const [shieldCount, setShieldCount] = useState(0)
+  const [attemptsLoaded, setAttemptsLoaded] = useState(false)
+  const [feedLoaded, setFeedLoaded] = useState(false)
 
   useEffect(() => {
     fetch('/api/attempts?limit=5&include_patterns=true')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (Array.isArray(data)) setRecentAttempts(data) })
       .catch(() => {})
+      .finally(() => setAttemptsLoaded(true))
     fetch('/api/challenges/mastery')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (Array.isArray(data)) setMasteryEntries(data) })
@@ -778,10 +654,10 @@ export default function ProgressPage() {
         payload: (ev.payload ?? {}) as Record<string, unknown>,
       })))
       setShieldCount(profileData?.streak_shield_count ?? 0)
-    }).catch(() => {})
+    }).catch(() => {}).finally(() => setFeedLoaded(true))
   }, [])
 
-  const flowMoves = FLOW_MOVES.map(m => {
+  const flowMoves = FLOW_ROWS.map(m => {
     const row = moves.find(mv => (mv.move as string) === m.move)
     return {
       ...m,
@@ -796,7 +672,6 @@ export default function ProgressPage() {
   const attempted = masteryEntries.filter(e => e.is_completed).length
   const mastered = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 80).length
   const attemptedPct = total > 0 ? Math.round((attempted / total) * 100) : 0
-  const masteredPct  = total > 0 ? Math.round((mastered / total) * 100) : 0
 
   // Readiness score
   const qualifiedChallenges = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 60).length
@@ -807,511 +682,383 @@ export default function ProgressPage() {
   const overallPct = Math.round((challengePct + movePct) / 2)
 
   const streakDays = profile?.streak_days ?? 0
+  const xpTotal = profile?.xp_total ?? 0
+  const level = levelFromXp(xpTotal)
+  const xpToNext = level * XP_PER_USER_LEVEL - xpTotal
   const hasActivity = recentAttempts.length > 0 || recentInterviews.length > 0
 
-  return (
-    <div className="animate-fade-in-up mx-auto max-w-[1440px] px-4 py-4 pb-16 sm:px-6 lg:px-8">
-      {/* ── HERO + FLOW (merged) ─────────────────────────────── */}
-      <div
-        className="relative mb-4 overflow-hidden rounded-2xl p-3.5 sm:p-4"
-        style={{ background: 'var(--gradient-hero-forest)' }}
-      >
-        {/* Dot grid bg */}
-        <div aria-hidden className="hidden sm:block" style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
-          backgroundSize: '22px 22px',
-          maskImage: 'radial-gradient(ellipse 70% 100% at 70% 50%, black 40%, transparent 80%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 100% at 70% 50%, black 40%, transparent 80%)',
-        }} />
-        {/* Green glow anchored behind the FLOW grid (right side) */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(600px 500px at 80% 50%, rgba(78,180,120,0.18), transparent 60%)',
-        }} />
-        {/* Giant FLOW watermark, subtle */}
-        <div aria-hidden style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          fontFamily: 'var(--font-headline)', fontSize: 132, fontWeight: 800,
-          letterSpacing: '-0.04em', lineHeight: 1,
-          color: '#fff', opacity: 0.025,
-          whiteSpace: 'nowrap', userSelect: 'none', pointerEvents: 'none',
-        }}>FLOW</div>
+  const coreLoaded = attemptsLoaded && feedLoaded && !profileLoading
+  const isDayZero =
+    coreLoaded && !hasActivity && activityEvents.length === 0 && attempted === 0 && streakDays === 0 && xpTotal === 0
 
-        <div className="relative grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_400px]">
-          {/* Left - welcome + reflection + CTAs */}
-          <div style={{ minWidth: 0 }}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10,
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
-              padding: '4px 10px', borderRadius: 999,
-              fontSize: 10.5, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: '#9ee0b8',
-            }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#7ee099', flexShrink: 0 }} />
-              Your progress
-              {streakDays > 0 && <span style={{ color: 'rgba(243,237,224,0.45)' }}>·</span>}
-              {streakDays > 0 && <span>{streakDays} day streak</span>}
-            </div>
-            <h1 style={{
-              margin: '0 0 12px',
-              fontFamily: 'var(--font-headline)', fontWeight: 700,
-              fontSize: 34, lineHeight: 1.02, letterSpacing: '-0.02em',
-              color: '#f3ede0',
-            }}>
-              How you&rsquo;re{' '}
-              <span style={{
-                background: 'linear-gradient(90deg, #7ee099, #c9e86e)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>moving.</span>
-            </h1>
+  // Hero headline from real state: slowest FLOW move among moves with reps.
+  const movesWithReps = flowMoves.filter(m => m.hasReps)
+  const weakest = movesWithReps.length > 0
+    ? movesWithReps.reduce((min, m) => (m.pct < min.pct ? m : min), movesWithReps[0])
+    : null
 
-            {/* Hatch reflection */}
-            <div style={{
-              display: 'flex', gap: 10, alignItems: 'flex-start',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
-              borderRadius: 14, padding: '11px 13px',
-              marginBottom: 10,
-            }}>
-              <HatchGlyph size={32} state="speaking" className="shrink-0" />
-              <div style={{ minWidth: 0 }}>
-                <div style={{
-                  fontSize: 10, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase',
-                  color: 'rgba(158,224,184,0.85)', marginBottom: 4,
-                }}>
-                  Hatch&rsquo;s reflection
-                </div>
-                {reflectionLoading ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <div style={{ height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 4, width: '90%' }} />
-                    <div style={{ height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 4, width: '66%' }} />
-                  </div>
-                ) : reflection ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.82)' }}>
-                    <Md variant="chat" tone="inherit">{reflection}</Md>
-                  </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.45, color: 'rgba(243,237,224,0.62)' }}>
-                    Complete a challenge to see your first reflection.
-                  </p>
-                )}
-              </div>
-            </div>
+  // Merged activity timeline: attempts + interviews + feed events, newest first.
+  const timeline: TimelineItem[] = (() => {
+    const items: TimelineItem[] = []
+    // Count occurrences per challenge_id to label repeated attempts
+    const idCount = new Map<string, number>()
+    const idSeen = new Map<string, number>()
+    for (const a of recentAttempts) {
+      idCount.set(a.challenge_id, (idCount.get(a.challenge_id) ?? 0) + 1)
+    }
+    for (const a of recentAttempts) {
+      const repeatTotal = idCount.get(a.challenge_id) ?? 1
+      const attemptN = (idSeen.get(a.challenge_id) ?? 0) + 1
+      idSeen.set(a.challenge_id, attemptN)
+      const attemptSuffix = repeatTotal > 1 ? ` · Attempt ${attemptN}` : ''
+      const numberLabel = formatChallengeNumber(a.challenge_type, a.display_number)
+      items.push({
+        key: `attempt-${a.id ?? a.challenge_id}-${attemptN}`,
+        ts: new Date(a.submitted_at).getTime(),
+        title: <>{a.challenge_title}{attemptSuffix}</>,
+        meta: [numberLabel, a.pattern_name, new Date(a.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })]
+          .filter(Boolean).join(' · '),
+        done: true,
+        href: `/challenges/${a.challenge_id}/feedback${a.id ? `?attempt=${a.id}` : ''}`,
+        cta: 'Review',
+      })
+    }
+    for (const s of recentInterviews) {
+      const mins = s.durationSeconds ? Math.floor(s.durationSeconds / 60) : 0
+      const secs = s.durationSeconds ? s.durationSeconds % 60 : 0
+      const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : null
+      const date = s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null
+      const displayName = s.companyName && s.companyName !== 'Unknown' ? s.companyName : 'Practice interview'
+      const formattedScore = formatInterviewScore(s.overallScore)
+      items.push({
+        key: `interview-${s.id}`,
+        ts: s.endedAt ? new Date(s.endedAt).getTime() : 0,
+        title: <>Mock interview: {displayName}</>,
+        meta: [
+          s.roleId,
+          duration,
+          date,
+          s.status === 'completed' && formattedScore != null ? formattedScore : s.status === 'abandoned' ? 'Incomplete' : null,
+        ].filter(Boolean).join(' · '),
+        done: s.status === 'completed',
+        href: s.status === 'completed' ? `/live-interviews/${s.id}/debrief` : '/live-interviews',
+        cta: s.status === 'completed' ? 'View feedback' : 'Resume',
+      })
+    }
+    for (const ev of activityEvents) {
+      const labelDef = EVENT_LABELS[ev.event_type]
+      items.push({
+        key: `event-${ev.id}`,
+        ts: new Date(ev.created_at).getTime(),
+        title: labelDef ? labelDef.label(ev.payload) : ev.event_type,
+        meta: new Date(ev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        done: false,
+      })
+    }
+    return items.sort((a, b) => b.ts - a.ts).slice(0, 8)
+  })()
 
-            {/* Inline stat strip */}
-            <div className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <HeroStat k="Readiness score" v={overallPct > 0 ? `${overallPct}%` : 'Start a rep'} />
-              <HeroStat k="Challenges mastered" v={total > 0 ? `${mastered} of ${total}` : 'None yet'} />
-              <HeroStat
-                k="Archetype"
-                v={humanizeArchetype(profile?.archetype)}
-                small={!profile?.archetype}
-              />
-            </div>
+  const activeDays28 = (() => {
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() - 27)
+    const cutoffIso = cutoff.toISOString().split('T')[0]
+    return streakDates.filter(d => d >= cutoffIso).length
+  })()
 
-          </div>
-
-          {/* Right - FLOW move grid. Sits on the dark hero gradient, so the
-              cards use the same light-on-dark treatment as HeroStat - the old
-              rgba(0,0,0,…) text on a 10% tint was unreadable here. */}
-          <div className="grid grid-cols-2 gap-2">
-            {flowMoves.map(m => (
-              <div key={m.k} style={{
-                background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: '10px 10px',
-                position: 'relative', overflow: 'hidden',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}>
-                <div aria-hidden style={{
-                  position: 'absolute', right: -4, bottom: -8,
-                  fontFamily: 'var(--font-headline)', fontSize: 52, fontWeight: 800,
-                  color: '#fff', opacity: 0.07, lineHeight: 1, userSelect: 'none',
-                  letterSpacing: '-0.04em', pointerEvents: 'none',
-                }}>{m.k[0]}</div>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <div style={{
-                      width: 26, height: 26, borderRadius: 8, background: m.color,
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 14, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>{m.icon}</span>
-                    </div>
-                    <div style={{
-                      background: 'rgba(255,255,255,0.10)',
-                      color: `color-mix(in srgb, ${m.color} 40%, #f3ede0)`,
-                      padding: '2px 8px', borderRadius: 999,
-                      fontSize: 10, fontWeight: 800, letterSpacing: '0.04em',
-                    }}>
-                      Lv {m.level}
-                    </div>
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', color: '#f3ede0' }}>{m.k}</div>
-                  <div style={{ fontSize: 10.25, color: 'rgba(243,237,224,0.6)', marginTop: 1, marginBottom: 7 }}>{m.sub}</div>
-                  <div style={{ height: 5, borderRadius: 999, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${m.pct}%`, background: `color-mix(in srgb, ${m.color} 55%, #d8f0de)`, borderRadius: 999, transition: 'width 700ms cubic-bezier(0.2,0.8,0.2,1)' }} />
-                  </div>
-                  {m.hasReps ? (
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(243,237,224,0.75)', marginTop: 5, fontVariantNumeric: 'tabular-nums' }}>{m.pct}%</div>
-                  ) : (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', marginTop: 5, padding: '1px 7px', borderRadius: 999, background: 'rgba(255,255,255,0.10)', fontSize: 10, fontWeight: 800, color: 'rgba(243,237,224,0.6)', letterSpacing: '0.02em' }}>
-                      Building reps
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+  if (!coreLoaded) {
+    return (
+      <div className="mx-auto max-w-[1400px] px-6 py-5 pb-12">
+        <div className="mb-4 h-[160px] animate-pulse rounded-2xl bg-hairline/60" />
+        <div className="mb-4 h-[90px] animate-pulse rounded-2xl bg-hairline/50" />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-[260px] animate-pulse rounded-2xl bg-hairline/50" />)}
         </div>
       </div>
+    )
+  }
 
-      <ReadinessMap
-        attemptedPct={attemptedPct}
-        masteredPct={masteredPct}
-        overallPct={overallPct}
-        latestInterviewScore={recentInterviews[0]?.overallScore ?? null}
-        hasActivity={hasActivity}
-      />
-
-      <DisciplineLensStrip />
-
-      {/* ── Shield count ─────────────────────────────────────────── */}
-      {shieldCount > 0 && (
-        <section className="mb-6 rounded-xl border border-outline-variant/65 bg-surface-container-low p-4">
-          <div className="flex items-center gap-3">
-            <span
-              className="material-symbols-outlined text-tertiary text-2xl"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              shield
-            </span>
-            <div>
-              <p className="font-label font-bold text-on-surface">
-                {shieldCount} streak shield{shieldCount !== 1 ? 's' : ''}
-              </p>
-              <p className="text-xs text-on-surface-variant">
-                Shields protect a broken streak. Earn one by reaching a 7-day streak.
-              </p>
-            </div>
-          </div>
+  /* ── Day 0: single centered invitation + FLOW explainer, no empty charts (spec §3) ── */
+  if (isDayZero) {
+    return (
+      <div className="mx-auto max-w-[720px] px-6 py-10 pb-12">
+        <section className={`${CARD_CLASS} flex flex-col items-center p-8 text-center`}>
+          <HatchImage state="wave" size={120} priority />
+          <h1 className="mb-2 mt-4 font-headline text-[28px] font-semibold leading-[1.2] text-ink-strong">
+            One <span className="hl-word">rep</span> starts the map.
+          </h1>
+          <p className="mb-5 max-w-[44ch] text-[13.5px] leading-[1.55] text-ink-secondary">
+            This page fills in after your first completed challenge. About 5 minutes, no setup.
+          </p>
+          <Link
+            href="/challenges"
+            className="inline-flex items-center gap-2 rounded-[10px] bg-forest-950 px-[18px] py-[11px] text-[13.5px] font-extrabold text-white no-underline shadow-[inset_0_1px_0_rgba(255,255,255,.12)]"
+          >
+            Start your first rep
+            <ArrowRight size={14} strokeWidth={2.2} />
+          </Link>
         </section>
-      )}
 
-      {/* ── Learn modules ────────────────────────────────────────── */}
-      <section className="mb-6">
-        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Learn progress</h2>
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {learnModules.map(mod => (
-            <div key={mod.module_id} className="min-w-[180px] bg-surface-container rounded-xl p-3 flex-shrink-0">
-              <p className="font-label text-sm font-semibold text-on-surface mb-1 line-clamp-2">{mod.module_title}</p>
-              <p className="text-xs text-on-surface-variant mb-2">
-                {mod.completed_chapters}/{mod.total_chapters} chapters
-              </p>
-              <div className="h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full"
-                  style={{ width: mod.total_chapters > 0 ? `${Math.round((mod.completed_chapters / mod.total_chapters) * 100)}%` : '0%' }}
-                />
+        <section className={`${CARD_CLASS} mt-4`}>
+          <CardTitle>The FLOW method</CardTitle>
+          {FLOW_ROWS.map((m, i) => (
+            <div key={m.k} className={`flex items-start gap-3 py-2.5 ${i < FLOW_ROWS.length - 1 ? 'border-b border-hairline' : 'pb-1'}`}>
+              <span className={`mt-1.5 size-2 shrink-0 rounded-full ${m.dotClass}`} />
+              <div className="min-w-0 flex-1">
+                <div className="text-[13.5px] font-extrabold text-ink-strong">{m.k}</div>
+                <div className="text-[11.5px] leading-[1.4] text-ink-secondary">{m.desc}</div>
               </div>
             </div>
           ))}
-          {learnModules.length === 0 && (
-            <p className="text-sm text-on-surface-variant">No modules yet.</p>
+        </section>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto max-w-[1400px] px-6 py-5 pb-12">
+      {/* ── Dark hero: headline + readiness ring + streak + XP ─────── */}
+      <section
+        className="relative mb-4 grid grid-cols-1 items-center gap-5 overflow-hidden rounded-2xl px-6 py-5 lg:grid-cols-[1.3fr_auto_auto_auto_auto]"
+        style={{
+          background:
+            'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-850) 55%, var(--color-forest-700) 130%)',
+        }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(600px 300px at 85% -10%, rgba(163,235,177,.16), transparent 60%)' }}
+        />
+        <div className="relative min-w-0">
+          <div className="mb-1 text-[13px] font-bold text-[#dff0e2]">Your progress</div>
+          <h1 className="m-0 mb-1.5 font-headline text-[25px] font-semibold leading-[1.15] text-white">
+            {weakest ? (
+              <><span className="hl-word">{weakest.k}</span> is your slowest move.</>
+            ) : (
+              <>Every completed <span className="hl-word">rep</span> lands here.</>
+            )}
+          </h1>
+          <p className="m-0 max-w-[42ch] text-[13px] leading-[1.4] text-[#c6d9c9]">
+            {attempted > 0
+              ? `${attempted} completed rep${attempted === 1 ? '' : 's'}. ${mastered} scored 80 or higher.`
+              : 'Complete a challenge to put numbers on this page.'}
+          </p>
+          {profile?.archetype && (
+            <div className="mt-2.5 inline-flex rounded-full border border-white/15 bg-white/8 px-2.5 py-1 text-[10.5px] font-bold text-white/80">
+              Archetype: {humanizeArchetype(profile.archetype)}
+            </div>
           )}
         </div>
-      </section>
 
-      {/* ── Streak heatmap ───────────────────────────────────────── */}
-      <section data-testid="streak-heatmap" className="mb-6">
-        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Activity, last 12 weeks</h2>
-        <StreakHeatmap activeDates={streakDates} />
-      </section>
+        <div className="relative flex flex-col items-center gap-1.5">
+          <ProgressRing percent={overallPct} size={64} strokeWidth={9} color={['#fdb41f', '#a3ebb1']}>
+            <span className="font-body text-[16px] font-extrabold tabular-nums text-white">{overallPct}%</span>
+          </ProgressRing>
+          <span className="text-center text-[9px] font-bold uppercase tracking-[0.05em] text-[#c6d9c9]">Readiness</span>
+        </div>
 
-      {/* ── Activity feed ────────────────────────────────────────── */}
-      <section data-testid="activity-feed" className="mb-6">
-        <h2 className="font-headline text-base font-semibold text-on-surface mb-3">Recent activity</h2>
-        {activityEvents.length === 0 ? (
-          <p className="text-sm text-on-surface-variant">No activity yet.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {activityEvents.map(ev => {
-              const labelDef = EVENT_LABELS[ev.event_type]
-              return (
-                <div key={ev.id} className="flex items-center gap-3 bg-surface-container rounded-xl px-3 py-2.5">
-                  <span className="material-symbols-outlined text-on-surface-variant text-lg">
-                    {labelDef?.icon ?? 'bolt'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-on-surface truncate">
-                      {labelDef ? labelDef.label(ev.payload) : ev.event_type}
-                    </p>
-                  </div>
-                  <p className="text-xs text-on-surface-variant whitespace-nowrap">
-                    {new Date(ev.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              )
-            })}
+        <div aria-hidden className="relative hidden w-px self-stretch bg-white/15 lg:block" />
+
+        {streakDays > 0 && (
+          <div className="relative min-w-[126px]">
+            <div className="text-[16px] font-extrabold tabular-nums leading-[1.2] text-white">{streakDays}-day streak</div>
+            {shieldCount > 0 && (
+              <div className="mt-px text-[10.5px] tabular-nums text-[#93ac97]">
+                {shieldCount} shield{shieldCount === 1 ? '' : 's'} banked
+              </div>
+            )}
+          </div>
+        )}
+
+        {xpTotal > 0 && (
+          <div className="relative min-w-[126px]">
+            <div className="text-[16px] font-extrabold tabular-nums leading-[1.2] text-white">{xpTotal.toLocaleString()} XP</div>
+            <div className="text-[11px] text-[#c6d9c9]">Level {level}</div>
+            <div className="mt-px text-[10.5px] tabular-nums text-[#93ac97]">
+              {xpToNext.toLocaleString()} XP to Level {level + 1}
+            </div>
           </div>
         )}
       </section>
 
-      <ReasoningTrajectorySection trajectory={trajectory} loading={trajectoryLoading} />
-
-      {/* ── ACTIVITY ──────────────────────────────────────────── */}
-      <SectionHeading
-        eyebrow="Activity"
-        title="Recent movement."
-        href="/challenges"
-        linkLabel="All history"
+      {/* ── Stat strip (all values real; no invented deltas) ────────── */}
+      <StatStrip
+        className="mb-4"
+        cells={[
+          { key: 'readiness', label: 'Readiness', value: `${overallPct}%` },
+          { key: 'completed', label: 'Reps completed', value: String(attempted) },
+          { key: 'mastered', label: 'Scored 80+', value: String(mastered) },
+          { key: 'coverage', label: 'Library coverage', value: `${attemptedPct}%` },
+          {
+            key: 'xp',
+            label: 'Total XP',
+            value: <span className="text-flame">{xpTotal.toLocaleString()}</span>,
+            valueSuffix: `Level ${level}`,
+          },
+        ]}
       />
-      <div className="mb-5">
-        <section style={{
-          background: 'var(--color-surface-container-low)',
-          borderRadius: 16,
-          padding: 12,
-          border: '1px solid var(--color-outline-variant)',
-          overflow: 'hidden',
-        }}>
-          {hasActivity ? (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2" style={{ minWidth: 0 }}>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span className="material-symbols-outlined text-primary" style={{ fontSize: 16 }}>target</span>
-                    <h3 style={{ margin: 0, fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700 }}>
-                      Challenges
-                    </h3>
-                  </div>
-                  <Link href="/challenges" style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--color-primary)', textDecoration: 'none' }}>
-                    All
-                  </Link>
-                </div>
-                {recentAttempts.length > 0 ? (() => {
-                  // Count occurrences per challenge_id to label repeated attempts
-                  const idCount = new Map<string, number>()
-                  const idSeen = new Map<string, number>()
-                  for (const a of recentAttempts) {
-                    idCount.set(a.challenge_id, (idCount.get(a.challenge_id) ?? 0) + 1)
-                  }
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {recentAttempts.slice(0, 3).map((a, i) => {
-                        const repeatTotal = idCount.get(a.challenge_id) ?? 1
-                        const attemptN = (idSeen.get(a.challenge_id) ?? 0) + 1
-                        idSeen.set(a.challenge_id, attemptN)
-                        const attemptSuffix = repeatTotal > 1 ? ` · Attempt ${attemptN}` : ''
-                        const numberLabel = formatChallengeNumber(a.challenge_type, a.display_number)
-                        return (
-                          <Link
-                            key={i}
-                            href={`/challenges/${a.challenge_id}/feedback${a.id ? `?attempt=${a.id}` : ''}`}
-                            className="hover:bg-surface-container"
-                            style={{
-                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                              padding: '8px 9px', borderRadius: 10, textDecoration: 'none',
-                              transition: 'background 150ms',
-                            }}
-                          >
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {a.challenge_title}{attemptSuffix}
-                              </div>
-                              <div style={{ fontSize: 10.5, color: 'var(--color-on-surface-variant)', marginTop: 1 }}>
-                                {numberLabel ? (
-                                  <span className="font-mono" style={{ fontSize: 10, padding: '0 5px', borderRadius: 9999, background: 'var(--color-surface-container-highest)', marginRight: 5 }}>{numberLabel}</span>
-                                ) : null}
-                                {a.pattern_name ? `${a.pattern_name} · ` : ''}
-                                {new Date(a.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                              </div>
-                            </div>
-                            <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--color-on-surface-variant)', opacity: 0.55 }}>
-                              chevron_right
-                            </span>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  )
-                })() : (
-                  <p style={{ fontSize: 12, color: 'var(--color-on-surface-variant)', padding: '8px 9px', margin: 0 }}>
-                    No practice challenges yet.
-                  </p>
-                )}
-              </div>
 
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span className="material-symbols-outlined text-primary" style={{ fontSize: 16 }}>mic</span>
-                    <h3 style={{ margin: 0, fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700 }}>
-                      Interviews
-                    </h3>
+      {/* ── Row 1: FLOW moves / readiness radar / four-week heatmap ── */}
+      <div className="mb-4 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1.05fr_1.05fr_1fr]">
+        <section className={CARD_CLASS}>
+          <CardTitle>FLOW moves</CardTitle>
+          {flowMoves.map(m => (
+            <div key={m.k} className="py-2">
+              <div className="flex items-center gap-1.5 text-[13.5px] font-extrabold text-ink-strong">
+                <span className={`size-2 rounded-full ${m.dotClass}`} />
+                {m.k}
+                <span className="ml-auto text-[10px] font-black uppercase tracking-[0.04em] text-ink-muted">Lv {m.level}</span>
+              </div>
+              <div className="text-[11.5px] text-ink-secondary">{m.desc}</div>
+              {m.hasReps ? (
+                <div className="mt-1.5 flex items-center gap-2.5">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-hairline">
+                    <span className={`block h-full rounded-full ${m.barClass}`} style={{ width: `${m.pct}%` }} />
                   </div>
-                  <Link href="/live-interviews" style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--color-primary)', textDecoration: 'none' }}>
-                    All
-                  </Link>
+                  <span className="w-[34px] shrink-0 text-right text-[12px] font-extrabold tabular-nums text-ink-strong">{m.pct}%</span>
                 </div>
-                {recentInterviews.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {recentInterviews.slice(0, 3).map(s => {
-                      const mins = s.durationSeconds ? Math.floor(s.durationSeconds / 60) : 0
-                      const secs = s.durationSeconds ? s.durationSeconds % 60 : 0
-                      const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-'
-                      const date = s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
-                      const displayName = s.companyName && s.companyName !== 'Unknown' ? s.companyName : 'Practice interview'
-                      const formattedScore = formatInterviewScore(s.overallScore)
-                      return (
-                        <Link
-                          key={s.id}
-                          href={s.status === 'completed' ? `/live-interviews/${s.id}/debrief` : '/live-interviews'}
-                          className="hover:bg-surface-container"
-                          style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-                            padding: '8px 9px', borderRadius: 10, textDecoration: 'none',
-                            transition: 'background 150ms',
-                          }}
-                        >
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {displayName}
-                            </div>
-                            <div style={{ fontSize: 10.5, color: 'var(--color-on-surface-variant)', marginTop: 1 }}>
-                              {s.roleId} · {duration} · {date}
-                            </div>
-                          </div>
-                          {s.status === 'completed' && formattedScore != null ? (
-                            <span style={{
-                              background: 'var(--color-primary-fixed)', color: 'var(--color-primary)',
-                              padding: '2px 8px', borderRadius: 999,
-                              fontSize: 10.5, fontWeight: 800, fontVariantNumeric: 'tabular-nums',
-                            }}>
-                              {formattedScore}
-                            </span>
-                          ) : s.status === 'abandoned' ? (
-                            <span style={{
-                              background: 'var(--color-surface-container-highest)', color: 'var(--color-on-surface-variant)',
-                              padding: '2px 8px', borderRadius: 999,
-                              fontSize: 10.5, fontWeight: 700,
-                            }}>
-                              Incomplete
-                            </span>
-                          ) : null}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <p style={{ fontSize: 12, color: 'var(--color-on-surface-variant)', padding: '8px 9px', margin: 0 }}>
-                    No live interviews yet.
-                  </p>
-                )}
+              ) : (
+                <div className="mt-1.5 inline-flex rounded-full border border-hairline px-2 py-0.5 text-[10px] font-bold text-ink-muted">
+                  Building reps
+                </div>
+              )}
+            </div>
+          ))}
+          <ViewLink href="/progress/skill-ladder">View FLOW progress</ViewLink>
+        </section>
+
+        <section className={`${CARD_CLASS} flex flex-col`}>
+          <CardTitle>Readiness radar</CardTitle>
+          {dna ? (
+            <>
+              <div className="flex flex-1 items-center justify-center">
+                <CompetencyRadarSvg competencies={dna.competencies} />
+              </div>
+              {dna.weakest_link_label && (
+                <p className="m-0 mt-1 text-center text-[11.5px] font-semibold text-ink-secondary">
+                  Focus area: <span className="font-extrabold text-ink-strong">{dna.weakest_link_label}</span>
+                </p>
+              )}
+              <Link
+                href="/progress/skill-ladder"
+                className="mt-3 flex items-center justify-center gap-1.5 rounded-[10px] border border-hairline bg-card-bright py-2 text-[13px] font-bold text-ink-strong no-underline"
+              >
+                View full breakdown
+                <ArrowRight size={13} strokeWidth={2.2} />
+              </Link>
+            </>
+          ) : (
+            <p className="m-0 flex flex-1 items-center justify-center text-center text-[12.5px] font-semibold text-ink-secondary">
+              Your competency radar appears after Hatch grades a few reps.
+            </p>
+          )}
+        </section>
+
+        <section data-testid="streak-heatmap" className={CARD_CLASS}>
+          <CardTitle>Last four weeks</CardTitle>
+          <FourWeekHeatmap activeDates={streakDates} />
+          <div className="mt-3 grid grid-cols-3 gap-2.5 border-t border-hairline pt-3">
+            <div>
+              <div className="mb-0.5 text-[11px] text-ink-secondary">Active days</div>
+              <div className="font-headline text-[18px] font-bold tabular-nums text-ink-strong">{activeDays28}</div>
+            </div>
+            <div>
+              <div className="mb-0.5 text-[11px] text-ink-secondary">Streak</div>
+              <div className="font-headline text-[18px] font-bold tabular-nums text-ink-strong">
+                {streakDays} day{streakDays === 1 ? '' : 's'}
               </div>
             </div>
+            {shieldCount > 0 && (
+              <div>
+                <div className="mb-0.5 text-[11px] text-ink-secondary">Shields</div>
+                <div className="font-headline text-[18px] font-bold tabular-nums text-ink-strong">{shieldCount}</div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      {/* ── Row 2: recent work timeline + learn progress ────────────── */}
+      <div className="mb-4 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <section data-testid="activity-feed" className={CARD_CLASS}>
+          <CardTitle>Recent work</CardTitle>
+          {timeline.length > 0 ? (
+            <>
+              {timeline.map((item, i) => (
+                <TimelineRow key={item.key} item={item} isLast={i === timeline.length - 1} />
+              ))}
+              <ViewLink href="/challenges">View all</ViewLink>
+            </>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
-              <HatchGlyph size={34} state="idle" className="text-primary shrink-0" />
-              <div style={{ minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--color-on-surface)' }}>
-                  No activity yet.
-                </p>
-                <p style={{ margin: '2px 0 8px', fontSize: 12, color: 'var(--color-on-surface-variant)' }}>
+            <div className="flex items-center gap-3 py-2">
+              <HatchImage state="idle" size={40} />
+              <div>
+                <p className="m-0 text-[13px] font-bold text-ink-strong">No activity yet.</p>
+                <p className="m-0 mt-0.5 text-[12px] text-ink-secondary">
                   Start a challenge or mock interview to give Hatch a signal.
                 </p>
-                <Link
-                  href="/challenges"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    color: 'var(--color-primary)', fontWeight: 800,
-                    fontSize: 12, textDecoration: 'none',
-                  }}
-                >
-                  Start practice
-                  <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-                </Link>
               </div>
             </div>
           )}
         </section>
+
+        <section className={CARD_CLASS}>
+          <CardTitle>Learn progress</CardTitle>
+          {learnModules.length > 0 ? (
+            learnModules.map((mod, i) => (
+              <div key={mod.module_id} className={`py-2.5 ${i < learnModules.length - 1 ? 'border-b border-hairline' : ''}`}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="truncate text-[13px] font-bold text-ink-strong">{mod.module_title}</span>
+                  <span className="shrink-0 text-[11.5px] font-semibold tabular-nums text-ink-secondary">
+                    {mod.completed_chapters}/{mod.total_chapters} chapters
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-hairline">
+                  <div
+                    className="h-full rounded-full bg-forest-600"
+                    style={{ width: mod.total_chapters > 0 ? `${Math.round((mod.completed_chapters / mod.total_chapters) * 100)}%` : '0%' }}
+                  />
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="m-0 text-[12.5px] font-semibold text-ink-secondary">No modules started yet.</p>
+          )}
+        </section>
       </div>
 
-      {/* Share archetype action */}
-      {profile?.archetype && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <ReasoningTrajectorySection trajectory={trajectory} loading={trajectoryLoading} />
+
+      {/* ── Hatch's read (growth reflection) ─────────────────────────── */}
+      <NoteCard tint="mint" as="section" className="grid grid-cols-1 items-center gap-4 rounded-2xl px-5 py-4 sm:grid-cols-[auto_1fr_auto]">
+        <HatchImage state="presenting" size={64} />
+        <div className="min-w-0">
+          <div className="mb-1 text-[15px] font-extrabold text-ink-strong">Hatch&rsquo;s read</div>
+          {reflectionLoading ? (
+            <div className="flex max-w-[560px] flex-col gap-1.5">
+              <div className="h-2 w-[90%] rounded bg-forest-800/10" />
+              <div className="h-2 w-[66%] rounded bg-forest-800/10" />
+            </div>
+          ) : reflection ? (
+            <div className="max-w-[62ch] text-[13px] leading-[1.5] text-ink-secondary">
+              <Md variant="chat" tone="inherit">{reflection}</Md>
+            </div>
+          ) : (
+            <p className="m-0 text-[13px] leading-[1.5] text-ink-secondary">
+              Complete a challenge to see your first read.
+            </p>
+          )}
+        </div>
+        {profile?.archetype && (
           <button
             onClick={() => router.push('/profile/share')}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: 'var(--color-surface-container)',
-              border: '1px solid var(--color-outline-variant)',
-              color: 'var(--color-on-surface)',
-              padding: '10px 20px', borderRadius: 999,
-              fontWeight: 700, fontSize: 13, cursor: 'pointer',
-            }}
+            className="inline-flex shrink-0 items-center gap-2 rounded-[10px] bg-forest-950 px-4 py-2.5 text-[13px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.12)]"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>share</span>
+            <Share2 size={14} strokeWidth={2} />
             Share your archetype
           </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ── Shared helpers ─────────────────────────────────────────────── */
-
-function SectionHeading({ eyebrow, title, href, linkLabel }: {
-  eyebrow: string
-  title: string
-  href: string
-  linkLabel: string
-}) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16, marginBottom: 8 }}>
-      <div>
-        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted)', marginBottom: 4 }}>
-          {eyebrow}
-        </div>
-        <h2 style={{ margin: 0, fontFamily: 'var(--font-headline)', fontSize: 23, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.05 }}>
-          {title}
-        </h2>
-      </div>
-      <Link
-        href={href}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          color: 'var(--color-primary)', fontWeight: 800, fontSize: 12,
-          background: 'transparent', border: 'none', textDecoration: 'none',
-          letterSpacing: '0.04em',
-        }}
-      >
-        {linkLabel}{' '}
-        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-      </Link>
-    </div>
-  )
-}
-
-function HeroStat({ k, v, small = false }: { k: string; v: string; small?: boolean }) {
-  return (
-    <div style={{
-      background: 'rgba(255,255,255,0.05)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 10, padding: '8px 10px',
-      backdropFilter: 'blur(8px)',
-      minWidth: 0,
-    }}>
-      <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(243,237,224,0.5)', marginBottom: 2 }}>
-        {k}
-      </div>
-      <div style={{
-        fontFamily: 'var(--font-headline)',
-        fontSize: small ? 12 : 16,
-        fontWeight: 600, color: '#f3ede0',
-        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        lineHeight: 1.15,
-      }}>
-        {v}
-      </div>
+        )}
+      </NoteCard>
     </div>
   )
 }

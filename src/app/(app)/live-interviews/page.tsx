@@ -4,8 +4,11 @@ import { UsageProvider } from '@/context/UsageContext'
 import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
 import {
   challengeTypeToDiscipline,
+  DISCIPLINE_META,
   type LiveInterviewDiscipline,
 } from '@/lib/live-interview/disciplines'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { HatchSays } from '@/components/redesign/HatchSays'
 import { LiveInterviewsShellClient } from './LiveInterviewsShellClient'
 
 export interface ScenarioBrief {
@@ -95,55 +98,131 @@ async function getScenarios(): Promise<ScenarioBrief[]> {
     .filter((s): s is ScenarioBrief => s !== null)
 }
 
+interface LastSessionBrief {
+  id: string
+  overallScore: number
+  disciplineLabel: string | null
+}
+
+/**
+ * Latest scored session, used only for the hero HatchSays observation
+ * (spec §4: HatchSays names real state, never filler). Read-only; mirrors
+ * the /api/live-interview/history access pattern (admin client scoped to
+ * the signed-in user, since RLS on live_interview_sessions blocks the
+ * anon-key client).
+ */
+async function getLastSessionBrief(): Promise<LastSessionBrief | null> {
+  if (IS_MOCK) return null
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const adminClient = createAdminClient()
+    const { data: sessions } = await adminClient
+      .from('live_interview_sessions')
+      .select('id, challenge_id, debrief_json, ended_at')
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
+      .order('ended_at', { ascending: false })
+      .limit(1)
+
+    const session = sessions?.[0]
+    if (!session) return null
+    const debrief = session.debrief_json as Record<string, unknown> | null
+    const overallScore = typeof debrief?.overallScore === 'number' ? debrief.overallScore : null
+    // A zero score means the debrief never produced a real signal; showing
+    // "scored 0" would be noise, not an observation. Fall back to the starter line.
+    if (overallScore == null || overallScore <= 0) return null
+
+    let disciplineLabel: string | null = null
+    if (session.challenge_id) {
+      const { data: challenge } = await adminClient
+        .from('challenges')
+        .select('challenge_type')
+        .eq('id', session.challenge_id)
+        .maybeSingle()
+      const discipline = challenge ? challengeTypeToDiscipline(challenge.challenge_type) : null
+      disciplineLabel = discipline ? DISCIPLINE_META[discipline].label : null
+    }
+
+    return { id: session.id, overallScore, disciplineLabel }
+  } catch {
+    return null
+  }
+}
+
 export default async function LiveInterviewsPage() {
-  const [personas, scenarios] = await Promise.all([getPersonas(), getScenarios()])
+  const [personas, scenarios, lastSession] = await Promise.all([
+    getPersonas(),
+    getScenarios(),
+    getLastSessionBrief(),
+  ])
+
+  const hatchMessage = lastSession
+    ? `Your last session scored ${lastSession.overallScore}${lastSession.disciplineLabel ? ` on ${lastSession.disciplineLabel}` : ''}. The debrief lists what to fix before the next round.`
+    : 'First session: pick a discipline below. Hatch grades it on the same four moves as your reps.'
 
   return (
     <UsageProvider>
-      <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-6">
-        <section data-tour-target="interviews-hero" className="relative overflow-hidden rounded-[28px] border border-outline-variant/40 bg-hero-forest-deep px-6 py-6 sm:px-8 sm:py-7">
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
-              backgroundSize: '22px 22px',
-              maskImage: 'radial-gradient(ellipse 80% 100% at 78% 50%, black 30%, transparent 78%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 80% 100% at 78% 50%, black 30%, transparent 78%)',
-            }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{ background: 'radial-gradient(520px 360px at 86% 48%, rgba(126,224,153,0.18), transparent 62%)' }}
-          />
-          <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-5 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[11px] font-label font-bold uppercase tracking-[0.12em] text-[#9ee0b8]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#7ee099]" />
-                AI interviewer online
+      <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-5">
+        {/* ── Compact dense dark hero (previews/round4/interviews-hub.html) ── */}
+        <section
+          data-tour-target="interviews-hero"
+          className="relative overflow-hidden rounded-2xl px-[26px] py-6 text-white"
+          style={{
+            background:
+              'radial-gradient(900px 400px at 88% -10%, rgba(30,71,45,.55), transparent 60%), linear-gradient(115deg, var(--color-forest-950) 0%, var(--color-forest-850) 55%, var(--color-forest-800) 100%)',
+          }}
+        >
+          <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
+            <div className="min-w-0 lg:pr-32">
+              <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
+                Live interviews
               </div>
-              <h1 className="mt-4 font-headline text-[38px] sm:text-[46px] font-semibold leading-[1.03] text-[#f3ede0]" style={{ letterSpacing: '-0.02em' }}>
-                Live interviews, run entirely by Hatch.
+              <h1 className="mb-2 max-w-[34ch] font-headline text-[28px] sm:text-[30px] font-semibold leading-[1.2] text-[#f9faf5]">
+                A 45-minute mock with follow-ups, graded on the same rubric as your <span className="hl-word">reps</span>.
               </h1>
-              <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#f3ede0]/70">
-                Pick a discipline, open the room, and work out loud. Hatch probes, watches the canvas or editor, carries context across rounds, and writes the debrief.
+              <p className="max-w-[58ch] text-[13px] leading-[1.55] text-white/72">
+                Hatch probes, watches the canvas or editor, carries context across rounds, and writes the debrief.
               </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="text-[12.5px] leading-none">
+                  <span className="font-extrabold text-[#f9faf5]">Voice or chat</span>{' '}
+                  <span className="text-white/60">mic optional</span>
+                </span>
+                <span className="text-[12px] text-white/30">·</span>
+                <span className="text-[12.5px] leading-none">
+                  <span className="font-extrabold text-[#f9faf5]">Whiteboard and CoderPad</span>{' '}
+                  <span className="text-white/60">when the question needs one</span>
+                </span>
+              </div>
             </div>
-            <div className="hidden lg:flex justify-end">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/hatch-mascot.png"
-                alt="Hatch"
-                className="h-40 w-40 rounded-[24px] object-cover shadow-2xl shadow-black/20"
+
+            <div className="relative flex items-center lg:col-start-2">
+              <div className="pointer-events-none absolute -left-[150px] bottom-[-28px] z-[1] hidden w-[132px] lg:block">
+                <HatchImage state="thinking" size={132} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
+              </div>
+              <HatchSays
+                className="relative z-10 w-full"
+                tint="mint"
+                message={hatchMessage}
+                ctaLabel={lastSession ? 'Start the next round' : 'Set up an interview'}
+                ctaHref="#interview-setup"
               />
             </div>
           </div>
         </section>
 
-        <BillingUsageFromProfile />
+        <div className="mt-4">
+          <BillingUsageFromProfile />
+        </div>
 
-        <LiveInterviewsShellClient personas={personas} scenarios={scenarios} />
+        <div id="interview-setup" className="mt-4 scroll-mt-24">
+          <LiveInterviewsShellClient personas={personas} scenarios={scenarios} />
+        </div>
       </div>
     </UsageProvider>
   )

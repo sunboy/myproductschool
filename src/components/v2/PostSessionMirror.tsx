@@ -2,16 +2,15 @@
 
 import { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Brain, ArrowRight, ArrowUp, ArrowDown, ListChecks, Mic, ChevronDown, ExternalLink } from 'lucide-react'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { StepDetailModal } from './StepDetailModal'
 import { AnswerGalleryPanel } from '@/components/community/AnswerGalleryPanel'
 import {
-  type Verdict,
-  VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL, VERDICT_ICON,
-  QUALITY_BADGE, STEP_ICONS,
+  VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL,
+  QUALITY_BADGE,
   qualityToVerdict,
 } from './flow-constants'
-import { FLOW_MOVES } from '@/lib/flow/moves'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -84,11 +83,13 @@ const STEP_LABELS: Record<string, string> = {
   win: 'Win',
 }
 
+/** Discipline accents per redesign spec §Palette (flow-dot colors in the
+ * feedback-debrief preview): frame=green, list=blue, optimize=purple, win=orange. */
 const STEP_COLORS: Record<string, string> = {
-  frame: FLOW_MOVES.frame.color,
-  list: FLOW_MOVES.list.color,
-  optimize: FLOW_MOVES.optimize.color,
-  win: FLOW_MOVES.win.color,
+  frame: 'var(--color-sd-fg)',
+  list: 'var(--color-ps-fg)',
+  optimize: 'var(--color-dm-fg)',
+  win: 'var(--color-sql-fg)',
 }
 
 const STEP_COMPETENCY_KEYS: Record<string, string[]> = {
@@ -114,16 +115,18 @@ function formatCompetencyName(key: string): string {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function MiniStat({ label, value, color }: { label: string; value: string; color: string }) {
+/** Dark-hero stat cell: serif white value, muted mint-grey label (preview .hero-stat). */
+function HeroStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div style={{
-      display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
-      padding: '4px 10px', borderRadius: 10,
-      background: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)',
-      minWidth: 52,
-    }}>
-      <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', fontWeight: 700, marginTop: 2 }}>{label}</div>
+    <div>
+      <div style={{
+        fontFamily: 'var(--font-headline)', fontWeight: 700, fontSize: 15,
+        color: accent ? 'var(--color-mint-glow)' : '#ffffff',
+        fontVariantNumeric: 'tabular-nums', lineHeight: 1.2,
+      }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 10.5, color: '#9db79f', fontWeight: 600 }}>{label}</div>
     </div>
   )
 }
@@ -152,6 +155,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
   const [expanded, setExpanded] = useState(false)
   const verdict = qualityToVerdict(result.quality_label)
   const verdictColor = VERDICT_COLOR[verdict]
+  const stepColor = STEP_COLORS[result.step]
   const coaching = result.hatchSignal ?? result.competency_signal?.signal
     ?? (verdict === 'pass' ? 'You made this move well. That is the one a panel scores.' : verdict === 'partial' ? 'The move is there, one rep would sharpen it.' : "Caught it here, which beats catching it in the room. This is the move to run again.")
   // Transitional fallback: post-migration rows store `competency`; pre-migration rows store `primary`.
@@ -161,134 +165,118 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
     : (STEP_COMPETENCY_KEYS[result.step]?.[0] ?? null)
   const chips = buildChoiceChips(result)
   const frameworkHint = result.competency_signal?.framework_hint ?? result.frameworkHint ?? null
+  // StepResult.score is the weighted step aggregate on the 0-3 scale
+  // (FlowWorkspace normalizes history rows the same way). Bar width derives
+  // from it; no invented numbers.
+  const stepPct = Math.max(0, Math.min(100, Math.round((result.score / 3) * 100)))
 
   return (
     <div
       ref={cardRef}
       onClick={() => setExpanded(e => !e)}
       style={{
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-outline-variant)',
-        borderRadius: 14,
+        background: 'var(--color-card-bright)',
+        border: '1px solid var(--color-hairline)',
+        borderRadius: 12,
         padding: '14px 16px 12px',
-        display: 'flex', flexDirection: 'column', gap: 10,
+        display: 'flex', flexDirection: 'column', gap: 8,
         position: 'relative',
-        boxShadow: expanded ? '0 4px 20px -6px rgba(30,27,20,0.10)' : '0 1px 2px rgba(30,27,20,0.04)',
         minWidth: 0,
         cursor: 'pointer',
-        transition: 'box-shadow 200ms',
-      }}
-      onMouseEnter={e => {
-        if (expanded) return
-        const el = e.currentTarget as HTMLDivElement
-        el.style.boxShadow = '0 4px 16px -6px rgba(30,27,20,0.12)'
-      }}
-      onMouseLeave={e => {
-        if (expanded) return
-        const el = e.currentTarget as HTMLDivElement
-        el.style.boxShadow = '0 1px 2px rgba(30,27,20,0.04)'
       }}
     >
-      {/* Diamond badge */}
-      <div
-        ref={badgeRef}
-        style={{
-          position: 'absolute', top: -14, left: 14,
-          width: 30, height: 30,
-          background: verdictColor,
-          color: '#fff',
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'var(--font-headline)', fontWeight: 700, fontSize: 12,
-          transform: 'rotate(45deg)',
-          borderRadius: 4,
-          boxShadow: `0 6px 14px -4px ${verdictColor}`,
-          zIndex: 3,
-        }}
-      >
-        <span style={{ transform: 'rotate(-45deg)', display: 'inline-block' }}>
-          {String(index + 1).padStart(2, '0')}
-        </span>
-      </div>
-
-      {/* Header row: step pill + verdict + chevron */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginLeft: 34 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '3px 10px', borderRadius: 999,
-            background: VERDICT_BG[verdict],
-            color: verdictColor,
-            fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 13, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
-              {STEP_ICONS[result.step]}
-            </span>
-            {STEP_LABELS[result.step]}
-          </div>
-          {chips.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-              {chips.map((chip, i) => (
-                <span key={i} style={{
-                  fontSize: 10, fontWeight: 700,
-                  padding: '2px 8px', borderRadius: 99,
-                  background: 'var(--color-surface-container-high)',
-                  color: 'var(--color-on-surface-variant)',
-                  border: '1px solid var(--color-outline-variant)',
-                }}>
-                  {chip}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: verdictColor }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
-              {VERDICT_ICON[verdict]}
-            </span>
-            {VERDICT_LABEL[verdict]}
-          </div>
-          <span className="material-symbols-outlined" style={{
-            fontSize: 18, color: 'var(--color-on-surface-variant)',
-            transition: 'transform 200ms',
-            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-          }}>
-            expand_more
+      {/* Header row: step dot + name + verdict + chevron */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+          <span
+            ref={badgeRef}
+            aria-hidden
+            style={{ width: 8, height: 8, borderRadius: '50%', background: stepColor, flexShrink: 0 }}
+          />
+          <span style={{ fontSize: 13, fontWeight: 700, color: stepColor }}>
+            {String(index + 1).padStart(2, '0')} {STEP_LABELS[result.step]}
           </span>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center',
+            padding: '2px 9px', borderRadius: 999,
+            background: VERDICT_BG[verdict],
+            border: `1.5px solid ${verdictColor}`,
+            color: verdictColor,
+            fontSize: 10, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
+          }}>
+            {VERDICT_LABEL[verdict]}
+          </span>
+          <ChevronDown
+            size={16}
+            strokeWidth={1.8}
+            style={{
+              color: 'var(--color-ink-muted)',
+              transition: 'transform 200ms',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          />
+        </div>
       </div>
 
-      {/* Hatch coaching - always visible, clamp when collapsed */}
-      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <div style={{ flexShrink: 0, marginTop: 1 }}>
-          <HatchGlyph size={22} state={verdict === 'pass' ? 'celebrating' : verdict === 'partial' ? 'listening' : 'idle'} className="text-primary" />
+      {/* Serif step score + bar (real weighted aggregate, 0-3 scale) */}
+      <div>
+        <div style={{
+          fontFamily: 'var(--font-headline)', fontWeight: 700, fontSize: 22,
+          color: 'var(--color-forest-950)', fontVariantNumeric: 'tabular-nums', lineHeight: 1.1,
+        }}>
+          {stepPct}%
         </div>
-        <p style={{
-          fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0,
-          ...(expanded ? {} : {
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }),
-        } as React.CSSProperties}>
-          {coaching}
-        </p>
+        <div style={{ height: 6, borderRadius: 999, background: 'var(--color-hairline)', marginTop: 8, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', borderRadius: 999, width: `${stepPct}%`,
+            background: verdict === 'pass' ? 'var(--color-forest-600)' : 'var(--color-flame)',
+          }} />
+        </div>
       </div>
+
+      {/* Answer chips */}
+      {chips.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {chips.map((chip, i) => (
+            <span key={i} style={{
+              fontSize: 10, fontWeight: 700,
+              padding: '2px 8px', borderRadius: 99,
+              background: 'var(--color-card-bright)',
+              color: 'var(--color-ink-secondary)',
+              border: '1px solid var(--color-hairline)',
+            }}>
+              {chip}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Hatch coaching - always visible, clamp when collapsed */}
+      <p style={{
+        fontSize: 12.5, lineHeight: 1.5, color: 'var(--color-ink-secondary)', margin: 0,
+        ...(expanded ? {} : {
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }),
+      } as React.CSSProperties}>
+        {coaching}
+      </p>
 
       {/* Expanded content */}
       {expanded && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Framework hint */}
+          {/* Framework hint - amber tip note per §7 */}
           {frameworkHint && (
-            <div style={{
-              background: 'rgba(112,92,48,0.07)',
-              border: '1px dashed rgba(112,92,48,0.3)',
+            <div className="note-amber" style={{
               borderRadius: 10, padding: '10px 14px',
-              fontSize: 12, color: '#705c30', lineHeight: 1.5,
-              display: 'flex', gap: 8,
+              fontSize: 12, color: 'var(--color-ink-strong)', lineHeight: 1.5,
+              display: 'flex', gap: 8, alignItems: 'flex-start',
             }}>
-              <span style={{ flexShrink: 0 }}>🧠</span>
+              <Brain size={14} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 2, color: 'var(--color-ink-secondary)' }} />
               <span>{frameworkHint}</span>
             </div>
           )}
@@ -304,20 +292,21 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
                 const b = QUALITY_BADGE[selectedOpt.quality] ?? QUALITY_BADGE.plausible_wrong
                 return (
                   <div key={qi} style={{
-                    background: 'var(--color-surface-container-low)',
+                    background: 'var(--color-page-field)',
+                    border: '1px solid var(--color-hairline)',
                     borderRadius: 10, padding: '10px 12px',
                     fontSize: 12, lineHeight: 1.5,
                   }}>
                     {(result.questions ?? []).length > 1 && (
-                      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-ink-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Q{qi + 1}
                       </div>
                     )}
                     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-on-surface-variant)', flexShrink: 0, paddingTop: 1 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-ink-secondary)', flexShrink: 0, paddingTop: 1 }}>
                         {selectedOpt.option_label}.
                       </span>
-                      <span style={{ flex: 1, color: 'var(--color-on-surface)' }}>{selectedOpt.option_text}</span>
+                      <span style={{ flex: 1, color: 'var(--color-ink-strong)' }}>{selectedOpt.option_text}</span>
                       <span style={{
                         fontSize: 10, fontWeight: 700,
                         padding: '2px 7px', borderRadius: 99,
@@ -328,7 +317,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
                       </span>
                     </div>
                     {selectedOpt.explanation && (
-                      <p style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', margin: '6px 0 0', lineHeight: 1.5 }}>
+                      <p style={{ fontSize: 11, color: 'var(--color-ink-secondary)', margin: '6px 0 0', lineHeight: 1.5 }}>
                         {selectedOpt.explanation}
                       </p>
                     )}
@@ -343,8 +332,9 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
             {competency && (
               <span style={{
                 fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
-                background: 'var(--color-primary-fixed)',
-                color: 'var(--color-primary)',
+                background: 'transparent',
+                border: '1.5px solid var(--color-forest-600)',
+                color: 'var(--color-forest-600)',
               }}>
                 {competency}
               </span>
@@ -353,14 +343,14 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
               type="button"
               onClick={e => { e.stopPropagation(); onOpenModal(result) }}
               style={{
-                fontSize: 12, fontWeight: 600, color: 'var(--color-primary)',
-                display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 'auto',
-                background: 'var(--color-primary-fixed)', border: 'none', cursor: 'pointer',
-                padding: '5px 12px', borderRadius: 99,
+                fontSize: 12, fontWeight: 700, color: '#ffffff',
+                display: 'inline-flex', alignItems: 'center', gap: 5, marginLeft: 'auto',
+                background: 'var(--color-forest-800)', border: 'none', cursor: 'pointer',
+                padding: '6px 12px', borderRadius: 8,
               }}
             >
               Full detail
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>open_in_new</span>
+              <ExternalLink size={13} strokeWidth={1.8} />
             </button>
           </div>
         </div>
@@ -372,13 +362,14 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
           {competency && (
             <span style={{
               fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
-              background: 'var(--color-primary-fixed)',
-              color: 'var(--color-primary)',
+              background: 'transparent',
+              border: '1.5px solid var(--color-forest-600)',
+              color: 'var(--color-forest-600)',
             }}>
               {competency}
             </span>
           )}
-          <span style={{ fontSize: 10, color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 10, color: 'var(--color-ink-muted)', marginLeft: 'auto' }}>
             Click to expand
           </span>
         </div>
@@ -401,12 +392,12 @@ function DeltaChip({ data, refCb }: { data: CompetencyDelta; refCb: (el: HTMLDiv
       style={{
         display: 'flex', flexDirection: 'column', gap: 4,
         padding: '8px 10px', borderRadius: 10,
-        background: 'var(--color-surface-container-low)',
-        border: '1px solid var(--color-outline-variant)',
+        background: 'var(--color-page-field)',
+        border: '1px solid var(--color-hairline)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-on-surface-variant)', lineHeight: 1.2 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-ink-secondary)', lineHeight: 1.2 }}>
           {COMPETENCY_LABELS[data.competency] ?? formatCompetencyName(data.competency)}
         </div>
         {delta !== 0 && (
@@ -415,17 +406,12 @@ function DeltaChip({ data, refCb }: { data: CompetencyDelta; refCb: (el: HTMLDiv
             fontFamily: 'var(--font-headline)', fontWeight: 700, fontSize: 13, color: c,
             padding: '1px 6px', borderRadius: 6, background: bg,
           }}>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 12, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-            >
-              {up ? 'arrow_upward' : 'arrow_downward'}
-            </span>
+            {up ? <ArrowUp size={11} strokeWidth={2.2} /> : <ArrowDown size={11} strokeWidth={2.2} />}
             {up ? '+' : ''}{delta}
           </div>
         )}
       </div>
-      <div style={{ position: 'relative', height: 4, background: 'var(--color-outline-variant)', borderRadius: 999 }}>
+      <div style={{ position: 'relative', height: 4, background: 'var(--color-hairline)', borderRadius: 999 }}>
         <div style={{
           position: 'absolute', top: 0, bottom: 0,
           left: up ? `${data.before}%` : `${data.before + delta}%`,
@@ -434,7 +420,7 @@ function DeltaChip({ data, refCb }: { data: CompetencyDelta; refCb: (el: HTMLDiv
           borderRadius: 999,
         }} />
       </div>
-      <div style={{ fontSize: 9.5, color: 'var(--color-on-surface-variant)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+      <div style={{ fontSize: 9.5, color: 'var(--color-ink-muted)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
         {data.before} → {data.after}
       </div>
     </div>
@@ -444,6 +430,8 @@ function DeltaChip({ data, refCb }: { data: CompetencyDelta; refCb: (el: HTMLDiv
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function PostSessionMirror({
+  totalScore,
+  maxScore = 3,
   xpAwarded,
   stepResults,
   competencyDeltas,
@@ -455,7 +443,6 @@ export function PostSessionMirror({
   onVoiceStep,
 }: PostSessionMirrorProps) {
   const headerRef = useRef<HTMLDivElement>(null)
-  const pathRef = useRef<SVGPathElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const badgeRefs = useRef<(HTMLDivElement | null)[]>([])
   const deltaRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -481,6 +468,31 @@ export function PostSessionMirror({
     ? `You framed the right problem. ${missCount > 0 ? 'The gap was the Win: it needed a real metric, which is the move that turns a good answer into a defensible one' : 'One move below would sharpen the whole answer'}.`
     : "Better to find this here than in the room. The coaching below shows the move to run again while it's fresh."
 
+  // Overall percent from the real attempt score (props come straight from the
+  // completion payload / history record).
+  const overallPct = Number.isFinite(totalScore) && Number.isFinite(maxScore) && maxScore > 0
+    ? Math.max(0, Math.min(100, Math.round((totalScore / maxScore) * 100)))
+    : null
+
+  // Hatch's hero bubble names the weakest move from real verdicts; when all
+  // four landed clean it says so instead of inventing a gap.
+  const verdictRank: Record<string, number> = { miss: 0, partial: 1, pass: 2 }
+  const weakestStep = uniqueStepResults.length > 0
+    ? [...uniqueStepResults].sort((a, b) =>
+        (verdictRank[qualityToVerdict(a.quality_label)] ?? 2) - (verdictRank[qualityToVerdict(b.quality_label)] ?? 2)
+      )[0]
+    : null
+  const hatchBubble = weakestStep && qualityToVerdict(weakestStep.quality_label) !== 'pass'
+    ? `${STEP_LABELS[weakestStep.step]} is the gap. Drill it next.`
+    : uniqueStepResults.length > 0
+      ? 'All four moves landed clean.'
+      : null
+
+  const RING_SIZE = 104
+  const RING_STROKE = 10
+  const ringRadius = (RING_SIZE - RING_STROKE) / 2
+  const ringCircumference = 2 * Math.PI * ringRadius
+
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReduced) {
@@ -495,17 +507,8 @@ export function PostSessionMirror({
     if (xpRef.current) gsap.set(xpRef.current, { opacity: 0, scale: 0.4, rotation: -12 })
     if (footerRef.current) gsap.set(footerRef.current, { opacity: 0, y: 8 })
 
-    if (pathRef.current) {
-      const len = pathRef.current.getTotalLength()
-      pathRef.current.style.strokeDasharray = String(len)
-      pathRef.current.style.strokeDashoffset = String(len)
-    }
-
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
     tl.to(headerRef.current, { opacity: 1, y: 0, duration: 0.4 })
-    if (pathRef.current) {
-      tl.to(pathRef.current, { strokeDashoffset: 0, duration: 1.4, ease: 'power1.inOut' }, '-=0.15')
-    }
 
     uniqueStepResults.forEach((_, i) => {
       tl.to(badgeRefs.current[i], { scale: 1, opacity: 1, rotation: 0, duration: 0.32, ease: 'back.out(2.2)' }, 0.55 + i * 0.22)
@@ -522,82 +525,101 @@ export function PostSessionMirror({
   return (
     <section
       className="w-full h-full overflow-hidden flex flex-col"
-      style={{
-        background: 'var(--color-background)',
-        backgroundImage: `
-          linear-gradient(to right, rgba(74,124,89,0.045) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(74,124,89,0.045) 1px, transparent 1px)
-        `,
-        backgroundSize: '32px 32px',
-      }}
+      style={{ background: 'var(--color-page-field)' }}
     >
       {/* Scrollable body */}
-      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 p-4">
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 p-4">
 
-        {/* Header */}
+        {/* Score hero band — dark forest gradient, ring + headline + XP + Hatch */}
         <div
           ref={headerRef}
-          style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}
+          style={{
+            borderRadius: 16,
+            padding: '20px 24px',
+            background: 'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-800) 100%)',
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 24,
+            flexShrink: 0,
+          }}
         >
-          <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-            <HatchGlyph size={48} state="celebrating" className="text-primary" />
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
-                Hatch&rsquo;s Debrief
+          {overallPct != null && (
+            <div style={{ position: 'relative', width: RING_SIZE, height: RING_SIZE, flexShrink: 0 }}>
+              <svg width={RING_SIZE} height={RING_SIZE} viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`} style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={ringRadius} fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth={RING_STROKE} />
+                <circle
+                  cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={ringRadius} fill="none"
+                  stroke="var(--color-gold)" strokeWidth={RING_STROKE} strokeLinecap="round"
+                  strokeDasharray={ringCircumference}
+                  strokeDashoffset={ringCircumference * (1 - overallPct / 100)}
+                />
+              </svg>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontFamily: 'var(--font-headline)', fontWeight: 700, fontSize: 24, color: '#fff', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+                  {overallPct}<sup style={{ fontSize: 12 }}>%</sup>
+                </span>
               </div>
-              <div style={{ fontFamily: 'var(--font-headline)', fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em', marginTop: 2, lineHeight: 1.3 }}>
-                {summaryLine}
+            </div>
+          )}
+
+          <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9db79f' }}>
+              Hatch&rsquo;s debrief
+            </div>
+            <h2 style={{
+              fontFamily: 'var(--font-headline)', color: '#f9faf5', fontSize: 19, fontWeight: 600,
+              lineHeight: 1.3, margin: '4px 0 10px', maxWidth: 520,
+            }}>
+              {summaryLine}
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+              <div ref={xpRef}>
+                <HeroStat label="earned this session" value={`+${xpAwarded} XP`} accent />
               </div>
-              <div style={{ fontSize: 12, color: 'var(--color-on-surface-variant)', marginTop: 4, maxWidth: 480, lineHeight: 1.5 }}>
-                The FLOW path below shows where you stayed inside the move and where you drifted out.
-              </div>
+              <HeroStat label="moves landed clean" value={`${passCount}/${uniqueStepResults.length || 4}`} />
+              {partialCount > 0 && <HeroStat label="partial" value={String(partialCount)} />}
+              {missCount > 0 && <HeroStat label="caught here" value={String(missCount)} />}
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>
-              Results
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <MiniStat label="Clean" value={`${passCount}/${uniqueStepResults.length}`} color="#2f7a4a" />
-              {partialCount > 0 && <MiniStat label="Partial" value={String(partialCount)} color="#c9933a" />}
-              {missCount > 0 && <MiniStat label="Caught" value={String(missCount)} color="#b23a2a" />}
-            </div>
+          <div style={{ position: 'relative', zIndex: 1, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', width: 128 }}>
+            <HatchImage state="celebrating" size={100} priority />
+            {hatchBubble && (
+              <div style={{
+                marginTop: 4, background: 'rgba(255,255,255,0.95)', color: 'var(--color-forest-900)',
+                fontSize: 11, fontWeight: 700, lineHeight: 1.35, padding: '7px 11px',
+                borderRadius: 10, maxWidth: 140, textAlign: 'center',
+              }}>
+                {hatchBubble}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* FLOW path + step cards */}
+        {/* FLOW breakdown — four step cards */}
         {uniqueStepResults.length > 0 && (
-          <div style={{ position: 'relative', flexShrink: 0, paddingTop: 18 }}>
-            <svg
-              width="100%" height="60"
-              viewBox="0 0 1000 60"
-              preserveAspectRatio="none"
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, pointerEvents: 'none', zIndex: 1 }}
-              aria-hidden
-            >
-              <defs>
-                <marker id="psArrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#c9933a" />
-                </marker>
-              </defs>
-              <path
-                ref={pathRef}
-                d="M 125 50 C 200 10, 300 55, 500 20 S 750 55, 875 30"
-                fill="none"
-                stroke="#c9933a"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeDasharray="6 6"
-                markerEnd="url(#psArrowHead)"
-                style={{ opacity: 0.55 }}
-              />
-            </svg>
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ fontFamily: 'var(--font-headline)', fontSize: 17, fontWeight: 600, color: 'var(--color-forest-950)' }}>
+                FLOW breakdown
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, color: 'var(--color-ink-secondary)' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-forest-600)' }} />
+                  On track
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-flame)' }} />
+                  Needs focus
+                </span>
+              </div>
+            </div>
             <div style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${uniqueStepResults.length}, minmax(0, 1fr))`,
-              gap: 10,
-              position: 'relative', zIndex: 2,
+              gap: 12,
               width: '100%',
               alignItems: 'start',
             }}>
@@ -618,7 +640,7 @@ export function PostSessionMirror({
         {/* Empty state */}
         {uniqueStepResults.length === 0 && (
           <div className="flex-1 flex items-center justify-center">
-            <p className="font-body text-sm text-on-surface-variant italic">Loading results…</p>
+            <p className="font-body text-sm text-ink-secondary italic">Loading results…</p>
           </div>
         )}
 
@@ -631,21 +653,16 @@ export function PostSessionMirror({
           })
           return (
             <div style={{
-              background: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)',
-              borderRadius: 14, padding: '12px 14px', flexShrink: 0,
+              background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)',
+              borderRadius: 12, padding: '12px 14px', flexShrink: 0,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
-                  color: 'var(--color-on-surface-variant)',
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  fontSize: 12, fontWeight: 700,
+                  color: 'var(--color-ink-strong)',
                 }}>
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 16, color: 'var(--color-primary)', fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-                  >
-                    psychology
-                  </span>
+                  <Brain size={15} strokeWidth={1.8} style={{ color: 'var(--color-forest-600)' }} />
                   Mental model movement
                 </div>
               </div>
@@ -672,40 +689,11 @@ export function PostSessionMirror({
           flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '12px 16px',
-          borderTop: '1px solid var(--color-outline-variant)',
-          background: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-hairline)',
+          background: 'var(--color-card-bright)',
           gap: 12,
         }}
       >
-        {/* XP coin */}
-        <div ref={xpRef} style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            position: 'relative', width: 52, height: 52,
-            background: 'radial-gradient(circle at 30% 30%, #f4d98a, #c9933a 60%, #8a6620)',
-            borderRadius: '50%',
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontFamily: 'var(--font-headline)', fontWeight: 700, fontSize: 15,
-            boxShadow: '0 8px 24px -6px rgba(201,147,58,0.5), inset 0 1px 0 rgba(255,255,255,0.5)',
-            border: '2px solid #fff8e6',
-            flexShrink: 0,
-          }}>
-            +{xpAwarded}
-            <div style={{
-              position: 'absolute', inset: -4, borderRadius: '50%',
-              border: '2px dashed rgba(201,147,58,0.4)',
-              animation: 'hatchAntenna 9s linear infinite',
-            }} />
-          </div>
-          <div>
-            <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, lineHeight: 1.15 }}>
-              +{xpAwarded} XP earned
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--color-on-surface-variant)' }}>
-              Keep the streak going
-            </div>
-          </div>
-        </div>
-
         {/* Voice step-2 invite — the activation ladder: written rep first, then
             "now do it out loud". Only rendered when the workspace passes
             onVoiceStep (see FlowWorkspace). Kept visually distinct from the
@@ -713,84 +701,69 @@ export function PostSessionMirror({
         {onVoiceStep && (
           <button
             onClick={onVoiceStep}
-            className="w-full text-left"
+            className="w-full text-left note-mint"
             style={{
               display: 'flex', alignItems: 'center', gap: 12,
-              padding: '12px 14px', borderRadius: 14,
-              background: 'var(--color-primary-fixed)',
-              border: '1px solid var(--color-primary)',
+              padding: '10px 14px', borderRadius: 12,
               cursor: 'pointer',
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 22, color: 'var(--color-primary)', flexShrink: 0,
-                fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24",
-              }}
-            >
-              mic
-            </span>
+            <Mic size={18} strokeWidth={1.8} style={{ color: 'var(--color-forest-600)', flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: 'block', fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 700, color: 'var(--color-on-surface)', lineHeight: 1.2 }}>
+              <span style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: 'var(--color-ink-strong)', lineHeight: 1.2 }}>
                 Now do it out loud
               </span>
-              <span style={{ display: 'block', fontSize: 12, color: 'var(--color-on-surface-variant)', marginTop: 2, lineHeight: 1.3 }}>
+              <span style={{ display: 'block', fontSize: 12, color: 'var(--color-ink-secondary)', marginTop: 2, lineHeight: 1.3 }}>
                 Take the same thinking into a live interview with Hatch. You can stay in chat if you prefer.
               </span>
             </span>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 18, color: 'var(--color-primary)', flexShrink: 0, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
-            >
-              arrow_forward
-            </span>
+            <ArrowRight size={16} strokeWidth={1.8} style={{ color: 'var(--color-forest-600)', flexShrink: 0 }} />
           </button>
         )}
 
         {/* Action buttons */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto', flexShrink: 0 }}>
           <button
             onClick={onDashboard}
-            className="btn btn--ghost"
-            style={{ padding: '9px 14px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            style={{
+              padding: '9px 14px', fontSize: 13, fontWeight: 700,
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'var(--color-card-bright)', color: 'var(--color-ink-strong)',
+              border: '1px solid var(--color-hairline)', borderRadius: 8, cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-            >
-              list_alt
-            </span>
+            <ListChecks size={15} strokeWidth={1.8} />
             Back to practice
           </button>
           {onNextChallenge && (
             <button
               onClick={onNextChallenge}
-              className="btn btn--primary"
-              style={{ padding: '9px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              style={{
+                padding: '9px 16px', fontSize: 13, fontWeight: 700,
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: 'var(--color-forest-950)', color: '#ffffff',
+                border: 'none', borderRadius: 8, cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
             >
-              Next Challenge
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 16, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-              >
-                arrow_forward
-              </span>
+              Next challenge
+              <ArrowRight size={15} strokeWidth={2} />
             </button>
           )}
           {onRunAnother && !onNextChallenge && (
             <button
               onClick={onRunAnother}
-              className="btn btn--primary"
-              style={{ padding: '9px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              style={{
+                padding: '9px 16px', fontSize: 13, fontWeight: 700,
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: 'var(--color-forest-950)', color: '#ffffff',
+                border: 'none', borderRadius: 8, cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
             >
               Run another
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 16, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-              >
-                arrow_forward
-              </span>
+              <ArrowRight size={15} strokeWidth={2} />
             </button>
           )}
         </div>

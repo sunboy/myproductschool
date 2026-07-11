@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import type { LoopDiscipline } from '@/lib/interview-loops/types'
-import SingleRoundPicker from './SingleRoundPicker'
+import SingleRoundPicker, { type SingleRoundSelection } from './SingleRoundPicker'
 import { MotionList, MotionListItem, useMotionPreference } from '@/components/motion'
+import { ProgressRing } from '@/components/redesign/ProgressRing'
 
 // ── Design tokens (exact from styles.css) ─────────────────────────────────────
 const T = {
@@ -89,8 +90,8 @@ function ModeCard({
       onMouseLeave={() => setHovered(false)}
       style={{
         textAlign: 'left', outline: 'none', cursor: 'pointer',
-        borderRadius: 24, // --radius-lg
-        padding: '22px 24px',
+        borderRadius: 16, // spec §4 radius hierarchy: page-level containers 16px
+        padding: '20px 22px',
         display: 'flex', flexDirection: 'column', gap: 10,
         position: 'relative', overflow: 'hidden',
         transition: 'all 200ms cubic-bezier(.2,.8,.2,1)',
@@ -971,7 +972,7 @@ function FullLoopPanel() {
   return (
     <div style={{
       display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
-      borderRadius: 24, overflow: 'hidden',
+      borderRadius: 16, overflow: 'hidden',
       border: `1px solid ${T.outlineFaint}`,
       background: T.surface,
       minHeight: 540,
@@ -1133,6 +1134,62 @@ function EmptyLoopDetail({ onBuild }: { onBuild: () => void }) {
   )
 }
 
+// ── Prep check (previews/round4/interviews-hub.html .prep-card) ───────────────
+// Real client state only: mirrors the picker's own three setup steps.
+function PrepCheckCard({ selection }: { selection: SingleRoundSelection }) {
+  const items = [
+    { label: 'Company selected', done: selection.company },
+    { label: 'Discipline selected', done: selection.discipline },
+    { label: 'Prompt options ready', done: selection.company && selection.discipline },
+  ]
+  const done = items.filter((item) => item.done).length
+
+  return (
+    <div className="note-mint" style={{ borderRadius: 12, padding: '18px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ alignSelf: 'flex-start', fontSize: 16, fontWeight: 700, color: T.onSurface }}>Prep check</div>
+
+      <div style={{ margin: '10px 0 14px' }}>
+        <ProgressRing
+          percent={(done / items.length) * 100}
+          size={110}
+          strokeWidth={11}
+          trackColor="#b9d9a6"
+          color="#fdb41f"
+        >
+          <span style={{ fontSize: 24, fontWeight: 800, color: T.onSurface, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
+            {done}/{items.length}
+          </span>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: T.onSurfaceVariant }}>
+            {done === items.length ? 'Ready' : 'Setup'}
+          </span>
+        </ProgressRing>
+      </div>
+
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {items.map((item) => (
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 600, color: item.done ? T.onSurface : T.onSurfaceMuted }}>
+            {item.done ? (
+              <span style={{
+                width: 23, height: 23, borderRadius: '50%', flexShrink: 0,
+                background: '#266235', color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1, 'wght' 600" }}>check</span>
+              </span>
+            ) : (
+              <span style={{
+                width: 19, height: 19, borderRadius: '50%', flexShrink: 0,
+                border: '1.4px solid #c8c2b6', background: '#fff',
+              }} />
+            )}
+            {item.label}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── Past sessions ─────────────────────────────────────────────────────────────
 interface PastSession {
   id: string; company: string; role: string
@@ -1219,32 +1276,34 @@ function PastSessionsTable() {
   )
 
   return (
-    <MotionList layoutKey="past-live-interview-sessions" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {sessions.map((s) => {
+    <MotionList
+      layoutKey="past-live-interview-sessions"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        background: T.surface,
+        border: `1px solid ${T.outlineFaint}`,
+        borderRadius: 12,
+        padding: '2px 20px',
+      }}
+    >
+      {sessions.map((s, index) => {
         const isScored = s.score != null
         const statusLabel = s.status === 'abandoned' ? 'Incomplete' : isScored ? 'Debrief ready' : 'Completed'
         return (
           <MotionListItem key={s.id}>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '36px minmax(0, 1fr)',
+              gridTemplateColumns: '24px minmax(0, 1fr)',
               alignItems: 'start',
-              gap: 16,
-              padding: '14px 20px',
-              background: T.surface,
-              border: `1px solid ${T.outlineFaint}`,
-              borderRadius: 20,
+              gap: 12,
+              padding: '12px 0',
+              borderBottom: index === sessions.length - 1 ? 'none' : `1px solid ${T.outlineFaint}`,
             }}>
               <span className="material-symbols-outlined" style={{
-                width: 36,
-                height: 36,
-                borderRadius: 14,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: isScored ? T.primaryContainer : T.surfaceContainerLow,
-                fontSize: 20,
-                fontVariationSettings: "'FILL' 1",
+                marginTop: 2,
+                fontSize: 19,
+                fontVariationSettings: "'FILL' 0, 'wght' 400",
                 color: isScored ? T.success : T.onSurfaceMuted,
               }}>
                 {isScored ? 'check_circle' : s.status === 'abandoned' ? 'pause_circle' : 'task_alt'}
@@ -1276,7 +1335,7 @@ function PastSessionsTable() {
                       href={`/live-interviews/${s.id}/debrief`}
                       style={{
                         display: 'inline-flex', alignItems: 'center', gap: 4,
-                        padding: '6px 12px', borderRadius: 999, textDecoration: 'none',
+                        padding: '6px 12px', borderRadius: 8, textDecoration: 'none',
                         background: 'transparent', color: T.onSurface,
                         border: `1px solid ${T.outlineVariant}`,
                         fontSize: 12, fontWeight: 700,
@@ -1304,6 +1363,7 @@ export function LiveInterviewsShell({
   scenarios: ScenarioBrief[]
 }) {
   const [mode, setMode] = useState<'single' | 'loop'>('single')
+  const [pickerSelection, setPickerSelection] = useState<SingleRoundSelection>({ company: false, discipline: false })
   const [loopSummary, setLoopSummary] = useState<LoopSummary>({
     loading: true,
     inProgress: 0,
@@ -1499,15 +1559,34 @@ export function LiveInterviewsShell({
         aria-label={mode === 'loop' ? 'Full loop setup panel' : 'Single round setup panel'}
         style={{ scrollMarginTop: 96, outline: 'none' }}
       >
-        {mode === 'loop' ? <FullLoopPanel /> : <SingleRoundPicker personas={personas} scenarios={scenarios} />}
+        {mode === 'loop' ? (
+          <FullLoopPanel />
+        ) : (
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+            <SingleRoundPicker
+              personas={personas}
+              scenarios={scenarios}
+              onSelectionChange={setPickerSelection}
+            />
+            <PrepCheckCard selection={pickerSelection} />
+          </div>
+        )}
       </div>
 
-      {/* ── Past sessions ── */}
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.onSurfaceMuted, marginBottom: 14 }}>
-          Past sessions
+      {/* ── Recent sessions + after-the-session note ── */}
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.15fr_1fr]">
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.onSurface, marginBottom: 10 }}>
+            Recent sessions
+          </div>
+          <PastSessionsTable />
         </div>
-        <PastSessionsTable />
+        <div className="note-teal" style={{ borderRadius: 12, padding: '18px 20px' }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.onSurface, marginBottom: 6 }}>After the session</div>
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: T.onSurfaceVariant }}>
+            Hatch scores the session on the same four moves as your reps: Frame, List, Optimize, Win. The debrief has per-move scores, the full transcript, and what to fix before your next round.
+          </p>
+        </div>
       </div>
     </div>
   )

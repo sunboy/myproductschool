@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { ReportButton } from '@/components/feedback/ReportButton'
 import { Md } from '@/components/ui/Md'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { VoiceInputButton } from './VoiceInputButton'
 import type { CanvasScene } from '@/lib/hatch/canvas-scene'
 import type { GuidancePhase, GuidanceLabels } from '@/lib/hatch/canvasGuidance'
@@ -182,6 +182,19 @@ function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' |
     'Compare my design to a top response.',
     "What's the trade-off here?",
   ]
+}
+
+/** Two-line copy for the collapsed "Ask Hatch" pill, matched to what Hatch can
+ *  actually see in each workspace context (round4 canvas-workspace preview). */
+function getPillCopy(
+  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics' | 'claude_code_debugging',
+): { title: string; sub: string } {
+  if (challengeType === 'coding') return { title: 'Ask about your code', sub: 'Hatch can see your editor' }
+  if (challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging') {
+    return { title: 'Ask about the session', sub: 'Hatch can see your terminal' }
+  }
+  if (challengeType === 'data_modeling') return { title: 'Ask about your model', sub: 'Hatch can see this diagram' }
+  return { title: 'Ask about your design', sub: 'Hatch can see this diagram' }
 }
 
 export function CanvasChatPanel({
@@ -533,18 +546,27 @@ export function CanvasChatPanel({
   }
 
   if (mode === 'closed') {
+    const pillCopy = getPillCopy(challengeType)
     return (
       <button
         data-hatch-target="workspace-hatch-chat"
         onClick={() => { play('open'); setMode('floating'); onToggle() }}
-        className="absolute bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+        className="absolute bottom-4 right-4 z-20 flex items-center gap-2.5 rounded-full bg-forest-950 py-2 pl-2 pr-4 text-white shadow-[0_12px_28px_-10px_rgba(5,35,22,0.5)] hover:bg-forest-800 transition-colors"
         title="Open Hatch chat"
       >
-        <HatchGlyph size={20} state="idle" className="text-on-primary" />
-        <span className="font-label font-semibold text-sm">Ask Hatch</span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-note-mint">
+          <HatchImage size={28} state="avatar" />
+        </span>
+        <span className="flex flex-col items-start leading-tight">
+          <span className="font-label text-[13px] font-bold">{pillCopy.title}</span>
+          <span className="font-label text-[10.5px] font-semibold text-white/60">{pillCopy.sub}</span>
+        </span>
+        <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
+          <span className="material-symbols-outlined text-[13px]">expand_less</span>
+        </span>
         {hasUnreadNudge && (
           <span
-            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-tertiary-container border-2 border-background"
+            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-gold border-2 border-card-bright"
             aria-label="Hatch has a new tip"
           />
         )}
@@ -559,7 +581,7 @@ export function CanvasChatPanel({
           data-testid="hatch-chat-panel"
           data-hatch-target="workspace-hatch-chat"
           style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
-          className="relative ml-2 flex flex-col rounded-xl border border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
+          className="relative ml-2 flex flex-col rounded-2xl border border-hairline bg-card-bright h-full overflow-hidden shrink-0"
         >
         {/* Drag handle */}
         <div
@@ -567,17 +589,17 @@ export function CanvasChatPanel({
           className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/20 z-10"
         />
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high shrink-0">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-hairline bg-card-bright shrink-0">
           <div className="flex min-w-0 flex-col">
             <div className="flex items-center gap-2">
-              <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
-              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+              <HatchImage size={22} state={isLoading ? 'thinking' : 'avatar'} />
+              <span className="font-label font-bold text-sm text-ink-strong">Hatch</span>
             </div>
             {canvasStatusLabel && (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-on-surface-variant">
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-ink-secondary">
                 <span className="truncate">{canvasStatusLabel}</span>
-                <span className="h-1 w-1 rounded-full bg-outline-variant" />
-                <span className={hasContextPack ? 'text-primary' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
+                <span className="h-1 w-1 rounded-full bg-hairline" />
+                <span className={hasContextPack ? 'text-forest-600' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
               </div>
             )}
           </div>
@@ -613,7 +635,7 @@ export function CanvasChatPanel({
           {messages.map((msg, i) => (
             <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               {msg.role === 'hatch' && (
-                <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
+                <HatchImage size={20} state="avatar" className="mt-0.5" />
               )}
               <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                 <div
@@ -624,7 +646,7 @@ export function CanvasChatPanel({
                       : msg.kind === 'canvas_action'
                         ? 'bg-primary-container text-on-primary-container'
                         : msg.kind === 'nudge'
-                          ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                          ? 'note-amber text-ink-strong'
                           : 'bg-surface-container-high text-on-surface'
                   }`}
                 >
@@ -675,7 +697,7 @@ export function CanvasChatPanel({
           )}
           {isLoading && (
             <div className="flex gap-2">
-              <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
+              <HatchImage size={20} state="thinking" />
               <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
                 {challengeType === 'coding' ? 'Hatch is thinking…' : isAnalyticsMode ? 'Hatch is reading the session…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
               </div>
@@ -729,20 +751,20 @@ export function CanvasChatPanel({
 
   return (
     <>
-    <div data-testid="hatch-chat-panel" data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
+    <div data-testid="hatch-chat-panel" data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-hairline rounded-2xl bg-card-bright shadow-[0_24px_56px_-16px_rgba(5,35,22,0.35)] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-hairline bg-card-bright">
         <div className="flex items-center gap-2">
           <div className="flex min-w-0 flex-col">
             <div className="flex items-center gap-2">
-              <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
-              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+              <HatchImage size={22} state={isLoading ? 'thinking' : 'avatar'} />
+              <span className="font-label font-bold text-sm text-ink-strong">Hatch</span>
             </div>
             {canvasStatusLabel && (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-on-surface-variant">
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-ink-secondary">
                 <span className="truncate">{canvasStatusLabel}</span>
-                <span className="h-1 w-1 rounded-full bg-outline-variant" />
-                <span className={hasContextPack ? 'text-primary' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
+                <span className="h-1 w-1 rounded-full bg-hairline" />
+                <span className={hasContextPack ? 'text-forest-600' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
               </div>
             )}
           </div>
@@ -780,7 +802,7 @@ export function CanvasChatPanel({
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
             {msg.role === 'hatch' && (
-              <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
+              <HatchImage size={20} state="avatar" className="mt-0.5" />
             )}
             <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div
@@ -791,7 +813,7 @@ export function CanvasChatPanel({
                     : msg.kind === 'canvas_action'
                       ? 'bg-primary-container text-on-primary-container'
                       : msg.kind === 'nudge'
-                        ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                        ? 'note-amber text-ink-strong'
                         : 'bg-surface-container-high text-on-surface'
                 }`}
               >
@@ -849,7 +871,7 @@ export function CanvasChatPanel({
         )}
         {isLoading && (
           <div className="flex gap-2">
-            <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
+            <HatchImage size={20} state="thinking" />
             <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
               {challengeType === 'coding' ? 'Hatch is thinking…' : isAnalyticsMode ? 'Hatch is reading the session…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
             </div>

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import gsap from 'gsap'
 import type { FlowStep } from '@/lib/types'
 import type { QuestionRevealRecord } from './FlowWorkspace'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import {
   type Verdict,
   VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL, VERDICT_ICON,
@@ -359,7 +359,7 @@ export function StepReveal({
         }}
       >
         <div style={{ flexShrink: 0 }}>
-          <HatchGlyph size={36} state={roleContext ? 'speaking' : 'reviewing'} className="text-primary" />
+          <HatchImage size={36} state={roleContext ? 'speaking' : 'reviewing'} />
         </div>
         {roleContext ? (
           <div style={{ flex: 1, minWidth: 0 }}>

@@ -10,7 +10,7 @@ import { SkillsLibraryPanel } from './SkillsLibraryPanel'
 import { IdleReapModal } from './IdleReapModal'
 import { MissionBrief, shouldShowMissionBrief, markMissionBriefSeen } from './MissionBrief'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { mergeArc } from './analyticsArc'
@@ -947,7 +947,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         alignItems: 'center', justifyContent: 'center',
         height: '100%', gap: 14, padding: 32,
       }}>
-        <HatchGlyph size={48} state="idle" className="text-primary" />
+        <HatchImage size={48} state="idle" />
         <div style={{
           fontFamily: 'var(--font-headline)', fontSize: 17, fontWeight: 700,
           color: 'var(--color-on-surface)', textAlign: 'center',

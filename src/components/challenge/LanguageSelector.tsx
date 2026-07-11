@@ -48,21 +48,21 @@ export function LanguageSelector({
       disabled={disabled}
     >
       <SelectTrigger
-        className="h-8 w-36 bg-surface-container border-outline-variant text-on-surface text-sm font-label rounded-lg"
+        className="h-8 w-36 bg-card-bright border-hairline text-ink-strong text-sm font-label font-semibold rounded-lg"
         aria-label="Select programming language"
       >
         <SelectValue placeholder="Language" />
       </SelectTrigger>
-      <SelectContent className="bg-surface-container-high border-outline-variant">
+      <SelectContent className="bg-card-bright border-hairline">
         {availableOptions.map((opt) => (
           <SelectItem
             key={opt.value}
             value={opt.value}
-            className="text-on-surface font-label text-sm hover:bg-surface-container-highest focus:bg-surface-container-highest cursor-pointer"
+            className="text-ink-strong font-label text-sm hover:bg-page-field focus:bg-page-field cursor-pointer"
           >
             <span className="flex items-center gap-2">
               <span
-                className="material-symbols-outlined text-[16px] text-on-surface-variant"
+                className="material-symbols-outlined text-[16px] text-ink-secondary"
                 aria-hidden="true"
               >
                 {opt.icon ?? 'code'}

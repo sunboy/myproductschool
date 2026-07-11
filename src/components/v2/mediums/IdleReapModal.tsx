@@ -8,7 +8,7 @@
 // reconnect wait. A closed tab never sees this; the server cron reaps those.
 
 import { useEffect, useRef, useState } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface IdleReapModalProps {
   /** Seconds remaining before the client stops heartbeating and lets the reap proceed. */
@@ -53,7 +53,7 @@ export function IdleReapModal({ countdownSeconds, onKeepWorking }: IdleReapModal
           boxShadow: '0 24px 60px rgba(46,50,48,0.28)',
         }}
       >
-        <HatchGlyph size={40} state="idle" className="text-primary" />
+        <HatchImage size={40} state="idle" />
         <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-on-surface)', margin: 0 }}>
           Still there?
         </h3>

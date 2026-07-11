@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import {
@@ -73,12 +73,20 @@ function groupPersonasByCompany(personas: LiveInterviewPersona[]): CompanyEntry[
   return Array.from(map.values())
 }
 
+export interface SingleRoundSelection {
+  company: boolean
+  discipline: boolean
+}
+
 export default function SingleRoundPicker({
   personas,
   scenarios,
+  onSelectionChange,
 }: {
   personas: LiveInterviewPersona[]
   scenarios: ScenarioBrief[]
+  /** Chrome-only: reports which setup steps are done so the shell's Prep check ring can render real state. */
+  onSelectionChange?: (selection: SingleRoundSelection) => void
 }) {
   const companies = useMemo(() => groupPersonasByCompany(personas), [personas])
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
@@ -90,6 +98,13 @@ export default function SingleRoundPicker({
   const quickStartPersona = selectedPersona ?? companies[0]?.roles[0] ?? personas[0] ?? null
   const activeDiscipline = selectedDiscipline ?? 'product_sense'
   const quickStartScenario = scenarios.find((s) => s.discipline === activeDiscipline) ?? scenarios[0] ?? null
+
+  useEffect(() => {
+    onSelectionChange?.({
+      company: selectedCompanyId !== null,
+      discipline: selectedDiscipline !== null,
+    })
+  }, [onSelectionChange, selectedCompanyId, selectedDiscipline])
 
   const filteredScenarios = useMemo(
     () => selectedDiscipline ? scenarios.filter((s) => s.discipline === selectedDiscipline).slice(0, 8) : [],
@@ -105,7 +120,7 @@ export default function SingleRoundPicker({
   return (
     <div
       style={{
-        borderRadius: 24,
+        borderRadius: 16,
         overflow: 'hidden',
         border: `1px solid ${T.outlineFaint}`,
         background: T.surface,
@@ -511,6 +526,11 @@ function InterviewOptions({
             {persona.interviewStyle}
           </p>
         )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, lineHeight: 1.45, color: T.onSurfaceVariant }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 15, color: T.onSurfaceMuted }}>mic</span>
+          Voice or chat, your pick. The mic is optional; typing runs the same interview and the same grading.
+        </div>
 
         <StartInterviewButton
           variant="hero"

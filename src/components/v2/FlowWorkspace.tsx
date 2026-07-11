@@ -19,7 +19,9 @@ import { StepQuestion } from './StepQuestion'
 import { StepReveal } from './StepReveal'
 import { PostSessionMirror, type StepResult as MirrorStepResult, type CompetencyDelta as MirrorCompetencyDelta } from './PostSessionMirror'
 import type { StepCalibration } from './CalibrationPreview'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
+import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { useHatchContext } from '@/context/HatchContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { CanvasCoachCard } from '@/components/challenge/CanvasCoachCard'
@@ -351,32 +353,23 @@ function BriefSectionCard({ section }: { section: ChallengeBriefSection }) {
       <ol {...props} style={{ fontFamily: 'var(--font-body)', fontSize: isTask ? 14.75 : 14.25, lineHeight: 1.68, fontWeight: bodyWeight, color: 'var(--color-on-surface)', margin: '0 0 10px', paddingLeft: 22 }} />
     ),
   }
-  const background = isTask
-    ? 'var(--color-primary-container)'
-    : isSupport
-      ? 'var(--color-surface-container-high)'
-      : 'var(--color-surface-container-low)'
-  const border = isTask
-    ? '1px solid rgba(74,124,89,0.28)'
-    : '1px solid var(--color-outline-variant)'
-
+  // Round-4 Problem Brief skin (spec 4 "Boxes: fewer, in a hierarchy"):
+  // sections are de-carded — uppercase ink-secondary headings over plain body,
+  // no nested tinted boxes. The task tone keeps a forest heading so the ask
+  // still reads as the anchor.
   return (
     <section
       style={{
-        marginBottom: 14,
-        background,
-        border,
-        borderRadius: 14,
-        padding: '14px 16px',
+        marginBottom: 18,
       }}
     >
       <div
         style={{
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 800,
-          letterSpacing: '0.065em',
+          letterSpacing: '0.04em',
           textTransform: 'uppercase',
-          color: isTask ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+          color: isTask ? 'var(--color-forest-700)' : 'var(--color-ink-secondary)',
           marginBottom: 7,
           fontFamily: 'var(--font-label)',
         }}
@@ -493,10 +486,11 @@ function CanvasTourMount({ active: canvasActive }: { active: boolean }) {
   return <TourRunner config={CANVAS_TOUR} active={run} onFinish={() => setRun(false)} />
 }
 
-// Shared workspace action button treatments — one visual system for every
-// Run/Submit pill in the workspace chrome (visual-clarity overhaul, inc. 1).
-const WORKSPACE_BTN_PRIMARY = 'inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-primary text-on-primary font-label text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity'
-const WORKSPACE_BTN_TONAL = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface font-label text-xs font-semibold hover:bg-surface-container-highest disabled:opacity-50 transition-colors'
+// Shared workspace action button treatments — round-4 chrome (spec §5):
+// buttons are rounded rectangles, not pills. Primary = forest-950 fill with a
+// subtle inner light; secondary = card surface + hairline border.
+const WORKSPACE_BTN_PRIMARY = 'inline-flex items-center gap-1.5 px-5 py-2 rounded-[10px] bg-forest-950 text-white font-label text-xs font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:opacity-90 disabled:opacity-50 transition-opacity'
+const WORKSPACE_BTN_TONAL = 'inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-card-bright border border-hairline text-ink-strong font-label text-xs font-bold hover:bg-page-field disabled:opacity-50 transition-colors'
 
 export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isApiMode = props.mode === 'api'
@@ -3038,7 +3032,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const returnTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : ''
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
-        <HatchGlyph size={48} state="idle" className="text-primary" />
+        <HatchImage size={48} state="idle" />
         <h2 className="font-headline text-2xl font-bold text-on-surface">Your session timed out</h2>
         <p className="text-on-surface-variant max-w-md">Sign back in and you will land right back here. Your latest draft was autosaved.</p>
         <div className="flex gap-3">
@@ -3066,7 +3060,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const capExitHref = workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 py-12 text-center">
-        <HatchGlyph size={56} state="idle" className="text-primary" />
+        <HatchImage size={56} state="idle" />
         {detail?.challenge.title && (
           <p className="font-label text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">
             {detail.challenge.title}
@@ -3091,7 +3085,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   if ((isApiMode && challengeLoading) || phase === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <HatchGlyph size={56} state="reviewing" className="text-primary" />
+        <HatchImage size={56} state="reviewing" />
         <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
       </div>
     )
@@ -3178,6 +3172,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Left pane description content
   const descriptionPane = (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+      {!isInterviewChallenge && (
+        <div className="font-label" style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-ink-strong)', marginBottom: 12 }}>
+          Problem Brief
+        </div>
+      )}
       {/* Chips */}
       {(() => {
         const ch = isApiMode ? detail?.challenge : adapterChallenge
@@ -3507,7 +3506,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                  <HatchGlyph size={22} state="listening" className="text-primary shrink-0" />
+                  <HatchImage size={22} state="listening" />
                   <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 11.5, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
                     Hatch sees these notes with your canvas: {contextPackFieldCount}/{contextPack.length} notes, {scene.entities.length} {apiChallengeType === 'data_modeling' ? 'tables' : 'nodes'}, {scene.connections.length} {apiChallengeType === 'data_modeling' ? 'links' : 'flows'}.
                   </p>
@@ -3594,11 +3593,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         <div data-testid="parts-list" style={{ padding: '0 16px 16px' }}>
           {/* Section header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <div style={{ flex: 1, height: 1, background: 'var(--color-outline-variant)' }} />
-            <span style={{ fontFamily: 'var(--font-label)', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--color-hairline)' }} />
+            <span style={{ fontFamily: 'var(--font-label)', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)' }}>
               Parts
             </span>
-            <div style={{ flex: 1, height: 1, background: 'var(--color-outline-variant)' }} />
+            <div style={{ flex: 1, height: 1, background: 'var(--color-hairline)' }} />
           </div>
 
           {/* Part cards */}
@@ -3613,20 +3612,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
               // Status chip content
               let statusLabel = 'Not started'
-              let statusBg = 'var(--color-surface-container-high)'
-              let statusColor = 'var(--color-on-surface-variant)'
+              let statusBg = 'var(--color-page-field)'
+              let statusColor = 'var(--color-ink-secondary)'
               if (partSub?.submitted) {
                 statusLabel = 'Submitted'
-                statusBg = 'var(--color-primary)'
-                statusColor = 'var(--color-on-primary)'
+                statusBg = 'var(--color-forest-600)'
+                statusColor = '#ffffff'
               } else if (partRunResult) {
                 statusLabel = `${partRunResult.testsPassed}/${partRunResult.testsTotal}`
-                statusBg = partRunResult.testsPassed === partRunResult.testsTotal ? 'var(--color-primary-container)' : 'var(--color-tertiary-container)'
-                statusColor = 'var(--color-on-surface)'
+                statusBg = partRunResult.testsPassed === partRunResult.testsTotal ? 'var(--color-note-mint)' : 'var(--color-note-amber)'
+                statusColor = 'var(--color-ink-strong)'
               } else if (isActive) {
                 statusLabel = 'Open'
-                statusBg = 'var(--color-surface-container)'
-                statusColor = 'var(--color-on-surface-variant)'
+                statusBg = 'var(--color-page-field)'
+                statusColor = 'var(--color-ink-secondary)'
               }
 
               return (
@@ -3634,9 +3633,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   key={part.id}
                   data-testid={`part-card-${part.id}`}
                   style={{
-                    border: isActive ? '1.5px solid var(--color-primary)' : '1px solid var(--color-outline-variant)',
+                    /* Current part = amber sticky note (spec §7: amber = current). */
+                    border: isActive ? '1px solid var(--color-note-amber-border)' : '1px solid var(--color-hairline)',
                     borderRadius: 10,
-                    background: isActive ? 'var(--color-primary-fixed)' : 'var(--color-surface-container-low)',
+                    background: isActive ? 'var(--color-note-amber)' : 'var(--color-card-bright)',
                     overflow: 'hidden',
                     transition: 'border-color 120ms, background 120ms',
                   }}
@@ -3939,7 +3939,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 >
                   {isFinalizingParts ? (
                     <>
-                      <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+                      <HatchImage size={14} state="reviewing" />
                       Grading…
                     </>
                   ) : 'Submit all parts'}
@@ -4138,8 +4138,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      background: 'var(--color-surface)',
-      borderRight: '1px solid var(--color-outline-variant)',
+      background: 'var(--color-card-bright)',
+      borderRight: '1px solid var(--color-hairline)',
       overflow: 'hidden',
       minHeight: 0,
     }}>
@@ -4153,9 +4153,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           width: 24,
           height: 24,
           borderRadius: 999,
-          border: '1px solid var(--color-outline-variant)',
-          background: 'var(--color-surface-container-low)',
-          color: 'var(--color-on-surface-variant)',
+          border: '1px solid var(--color-hairline)',
+          background: 'var(--color-page-field)',
+          color: 'var(--color-ink-secondary)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -4184,13 +4184,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   ) : (
     // ── Full panel ──
     <section
-      className="rounded-xl border border-outline-variant"
+      className="rounded-xl border border-hairline"
       style={{
         width: `${leftWidth}%`,
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--color-surface-container-lowest)',
+        background: 'var(--color-card-bright)',
         overflow: 'hidden',
         minHeight: 0,
       }}>
@@ -4214,8 +4214,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         fontSize: 10.5,
         fontWeight: 800,
         lineHeight: 1,
-        background: active ? 'var(--color-primary)' : 'var(--color-surface-container-high)',
-        color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+        background: active ? 'var(--color-forest-800)' : 'var(--color-page-field)',
+        color: active ? '#ffffff' : 'var(--color-ink-secondary)',
       }}>
         {count}
       </span>
@@ -4227,7 +4227,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const codingActions = isCodingChallenge ? (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
       {currentLanguage === 'sql' && codeRunner.status === 'hydrating' && (
-        <span className="text-xs text-on-surface-variant font-label flex items-center gap-1">
+        <span className="text-xs text-ink-secondary font-label flex items-center gap-1">
           <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
           Setting up database…
         </span>
@@ -4250,7 +4250,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           <>
             <span className="material-symbols-outlined text-[14px]">play_arrow</span>
             Run
-            <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-outline-variant bg-surface-container text-on-surface-variant">⌘'</kbd>
+            <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-hairline bg-page-field text-ink-muted">⌘'</kbd>
           </>
         )}
       </button>
@@ -4264,7 +4264,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           >
             {isSubmittingCoding ? (
               <>
-                <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+                <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
                 Submitting…
               </>
             ) : (
@@ -4284,14 +4284,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         >
           {isSubmittingCoding ? (
             <>
-              <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+              <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
               Submitting…
             </>
           ) : (
             <>
               <span className="material-symbols-outlined text-[14px]">upload</span>
               Submit
-              <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-on-primary/40 bg-transparent text-on-primary">⌘⏎</kbd>
+              <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-white/30 bg-transparent text-white/70">⌘⏎</kbd>
             </>
           )}
         </button>
@@ -4304,8 +4304,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      borderBottom: '1px solid var(--color-outline-faint)',
-      background: 'var(--color-surface)',
+      borderBottom: '1px solid var(--color-hairline)',
+      background: 'var(--color-card-bright)',
       flexShrink: 0,
     }}>
       {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when collapsed) */}
@@ -4357,20 +4357,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   style={{
                     flexShrink: 0,
                     whiteSpace: 'nowrap',
-                    padding: '6.5px 10px',
+                    padding: '8px 10px',
                     fontSize: 12.5,
                     fontWeight: active ? 800 : 650,
-                    color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
-                    background: active ? 'var(--color-primary-fixed)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(74,124,89,0.24)' : 'transparent'}`,
-                    borderRadius: 999,
+                    color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
+                    background: 'transparent',
+                    border: 'none',
+                    /* Round-4 underline tabs (spec §"Signature components" 7):
+                       active = forest underline + semibold, no pill fill. */
+                    boxShadow: active ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
+                    borderRadius: 0,
                     cursor: 'pointer',
                     fontFamily: 'inherit',
-                    transition: 'background 140ms ease, border-color 140ms ease, color 140ms ease',
+                    transition: 'box-shadow 140ms ease, color 140ms ease',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 6,
-                    minHeight: 32,
+                    minHeight: 36,
                   }}
                 >
                   <span>{t}</span>
@@ -4391,9 +4394,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               marginLeft: 2,
               padding: '4px 6px',
               borderRadius: 6,
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-hairline)',
               background: 'transparent',
-              color: 'var(--color-on-surface-variant)',
+              color: 'var(--color-ink-secondary)',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
@@ -4433,19 +4436,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   setHintForceOpen(true)
                   window.setTimeout(() => setHintForceOpen(false), 400)
                 }}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface text-xs font-semibold"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-card-bright border border-hairline text-ink-secondary hover:text-ink-strong text-xs font-semibold"
                 title="How this canvas works"
                 aria-label="How this canvas works"
               >?</button>
               <button
                 onClick={() => setCanvasMaximised((v) => !v)}
-                className="inline-flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-2.5 py-1.5 font-label text-xs font-bold text-ink-secondary hover:text-ink-strong transition-colors"
                 title={canvasMaximised ? 'Exit full screen' : 'Full screen canvas'}
                 aria-label={canvasMaximised ? 'Exit full screen' : 'Full screen canvas'}
               >
-                <span className="material-symbols-outlined text-[20px]">
+                <span className="material-symbols-outlined text-[16px]">
                   {canvasMaximised ? 'fullscreen_exit' : 'fullscreen'}
                 </span>
+                {canvasMaximised ? 'Exit' : 'Full screen'}
               </button>
             </div>
           </>
@@ -4466,16 +4470,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </>
         ) : (
           <>
-            {/* Stepper centered in the right panel */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-              <FlowStepper
-                currentStep={currentStep}
-                completedSteps={completedSteps}
-                /* Commit-forward: completed steps are locked. Retake the challenge to redo a step. */
-                onStepClick={undefined}
-                questionIdx={questionIdx}
-                questionCount={activeStepData?.questions.length}
-              />
+            {/* Round-4 chrome: challenge title + difficulty chip live in the top
+                bar; the stepper moved to its own full-width card below. */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+              {challengeTitle && (
+                <span
+                  className="font-headline"
+                  style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--color-ink-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
+                  title={challengeTitle}
+                >
+                  {challengeTitle}
+                </span>
+              )}
+              {(() => {
+                const diff = (isApiMode ? detail?.challenge : adapterChallenge)?.difficulty
+                const canonical = diff ? coerceDifficulty(diff) : null
+                const label = canonical ? DIFFICULTY_LABEL[canonical] : diff
+                return label ? (
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-soft px-2.5 py-1 font-label text-xs font-bold" style={{ color: '#a16207' }}>
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#eab308' }} />
+                    {label}
+                  </span>
+                ) : null
+              })()}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
               <button
@@ -4500,13 +4517,111 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
+  // Round-4 FLOW method strip: full-width card under the top bar holding the
+  // Frame / List / Optimize / Win stepper (previews/round4/flow-workspace.html
+  // .stepper-card). Desktop FLOW MCQ challenges only; canvas/coding keep their
+  // own chrome and mobile keeps the scrollable stepper bar.
+  const flowStepperStrip = !isInterviewChallenge ? (
+    <div style={{ flexShrink: 0, padding: '10px 16px 2px', background: 'var(--color-page-field)' }}>
+      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '12px 20px' }}>
+        <div className="font-label" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)', marginBottom: 8 }}>
+          FLOW Method
+        </div>
+        <FlowStepper
+          currentStep={currentStep}
+          completedSteps={completedSteps}
+          /* Commit-forward: completed steps are locked. Retake the challenge to redo a step. */
+          onStepClick={undefined}
+          questionIdx={questionIdx}
+          questionCount={activeStepData?.questions.length}
+        />
+      </div>
+    </div>
+  ) : null
+
+  // Round-4 Hatch rail (FLOW MCQ question phase, wide desktop only): coach
+  // header with the listening pose, a mint "Hatch's read" note fed by the real
+  // proactive nudge (falling back to the current move's tagline), and the
+  // session progress ring. Pure chrome: it only displays state that already
+  // exists (proactiveNudge, completedSteps, questionIdx).
+  const flowRightRail = (
+    <aside
+      className="hidden min-[1280px]:flex"
+      style={{ width: 288, flexShrink: 0, flexDirection: 'column', gap: 10, marginLeft: 8, minHeight: 0, overflowY: 'auto' }}
+    >
+      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+        <HatchImage state="listening" size={46} className="rounded-lg" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="font-label" style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-ink-strong)' }}>Hatch</div>
+          <div className="font-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-muted)' }}>AI Coach</div>
+        </div>
+      </div>
+
+      <div className="note-mint" style={{ borderRadius: 16, padding: 14, flexShrink: 0 }}>
+        <div className="font-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)', marginBottom: 6 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 7, height: 7, borderRadius: 999, background: 'var(--color-forest-600)' }} />
+            Hatch&apos;s read
+          </span>
+          {proactiveNudge && (
+            <button
+              onClick={() => setProactiveNudge(null)}
+              aria-label="Dismiss nudge"
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-ink-secondary)', padding: 0, display: 'inline-flex' }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 15 }}>close</span>
+            </button>
+          )}
+        </div>
+        <p className="font-body" style={{ fontSize: 12.8, lineHeight: 1.55, color: 'var(--color-ink-secondary)', margin: 0 }}>
+          {proactiveNudge?.text ?? `${STEP_LABEL[currentStep]} is the move here. ${FLOW_MOVES[currentStep].tagline}.`}
+        </p>
+      </div>
+
+      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, flexShrink: 0 }}>
+        <div className="font-label" style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)' }}>Session progress</div>
+        <p className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)', margin: '2px 0 12px' }}>
+          {completedSteps.length === 0
+            ? 'No steps graded yet.'
+            : `${completedSteps.length} of ${FLOW_STEPS.length} steps graded.`}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <ProgressRing
+            percent={Math.round((completedSteps.length / FLOW_STEPS.length) * 100)}
+            size={76}
+            strokeWidth={7}
+            trackColor="#eee9df"
+            color="var(--color-forest-600)"
+          >
+            <span className="font-label" style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-ink-strong)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              {completedSteps.length}/{FLOW_STEPS.length}
+            </span>
+            <span className="font-label" style={{ fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-ink-muted)', marginTop: 2 }}>Steps</span>
+          </ProgressRing>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Current step</span>
+              <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)' }}>{STEP_LABEL[currentStep]}</span>
+            </div>
+            {stepQuestions.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Question</span>
+                <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)', fontVariantNumeric: 'tabular-nums' }}>{Math.min(questionIdx + 1, stepQuestions.length)} of {stepQuestions.length}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+
   // Shared bottom footer - spans full width so the borderTop is continuous
   const bottomFooter = currentQuestion ? (
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      borderTop: '1px solid var(--color-outline-faint)',
-      background: 'var(--color-surface)',
+      borderTop: '1px solid var(--color-hairline)',
+      background: 'var(--color-card-bright)',
       flexShrink: 0,
     }}>
       {/* Left side: like/bookmark/share + online count */}
@@ -4581,13 +4696,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         )}
         <button
           className="btn btn--primary"
-          style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderRadius: 99, fontWeight: 600, border: 'none' }}
+          style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-forest-950)', color: '#fff', borderRadius: 10, fontWeight: 700, border: 'none', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}
           disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
           onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
         >
           {activeSubmitting ? 'Grading…' : primaryButtonLabel}
           {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
-          {activeSubmitting && <HatchGlyph size={16} state="reviewing" className="text-on-primary" />}
+          {activeSubmitting && <HatchImage size={18} state="reviewing" />}
         </button>
       </div>
     </div>
@@ -4614,7 +4729,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Top bar: back button + horizontally scrollable tabs (no clipping).
   const mobileChrome = isMobile ? (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)', flexShrink: 0, padding: '6px 8px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--color-hairline)', background: 'var(--color-card-bright)', flexShrink: 0, padding: '6px 8px' }}>
       <button
         onClick={props.onExit ?? (() => window.history.back())}
         className="btn btn--ghost"
@@ -4633,10 +4748,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               style={{
                 flexShrink: 0, whiteSpace: 'nowrap', padding: '6.5px 11px', fontSize: 12.5,
                 fontWeight: active ? 800 : 650,
-                color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
-                background: active ? 'var(--color-primary-fixed)' : 'transparent',
-                border: `1px solid ${active ? 'rgba(74,124,89,0.24)' : 'transparent'}`,
-                borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
+                color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
+                background: 'transparent',
+                border: 'none',
+                boxShadow: active ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
+                borderRadius: 0, cursor: 'pointer', fontFamily: 'inherit',
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 minHeight: 32,
               }}
@@ -4709,13 +4825,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       )}
       <button
         className="btn btn--primary"
-        style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderRadius: 99, fontWeight: 600, border: 'none' }}
+        style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-forest-950)', color: '#fff', borderRadius: 10, fontWeight: 700, border: 'none', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}
         disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
         onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
       >
         {activeSubmitting ? 'Grading…' : primaryButtonLabel}
         {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
-        {activeSubmitting && <HatchGlyph size={16} state="reviewing" className="text-on-primary" />}
+        {activeSubmitting && <HatchImage size={18} state="reviewing" />}
       </button>
     </div>
   ) : null
@@ -4732,7 +4848,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // fixed mobile BottomTabs nav so nothing is occluded.
   const mobileInterviewNotice = (
     <div className="flex flex-col items-center text-center gap-3 px-6 pt-8 pb-6 max-w-md mx-auto" style={{ flexShrink: 0 }}>
-      <HatchGlyph size={56} state="idle" className="text-primary" />
+      <HatchImage size={56} state="idle" />
       <h2 className="font-headline text-xl text-on-surface">Best experienced on desktop</h2>
       <p className="font-body text-sm text-on-surface-variant">
         {isCodingChallenge
@@ -4778,6 +4894,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         {/* Same full-width top chrome as question phase (desktop only - on mobile
             the feedback fills the width and carries its own navigation). */}
         {!isMobile && topChrome}
+        {!isMobile && flowStepperStrip}
 
         {/* Middle: resizable two-pane content on desktop, single column on mobile */}
         <div ref={containerRef} className={isMobile ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden'}>
@@ -4785,10 +4902,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           {!isMobile && dragHandle}
 
           {/* Right panel */}
-          <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ background: 'var(--color-background)' }}>
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ background: 'var(--color-page-field)' }}>
             {/* History back-nav banner */}
             {historyRecord && (
-              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)' }}>
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-hairline)', background: 'var(--color-card-bright)' }}>
                 <button
                   className="btn btn--ghost"
                   style={{ fontSize: 12, padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
@@ -4804,9 +4921,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
             {/* Session complete banner */}
             {phase === 'complete' && !historyRecord && (
-              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-primary-fixed)' }}>
-                <span className="material-symbols-outlined msi-sm" style={{ color: 'var(--color-primary)' }}>check_circle</span>
-                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 600, color: 'var(--color-on-surface)' }}>
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-note-mint-border)', background: 'var(--color-note-mint)' }}>
+                <span className="material-symbols-outlined msi-sm" style={{ color: 'var(--color-forest-600)' }}>check_circle</span>
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 600, color: 'var(--color-ink-strong)' }}>
                   {isCodingChallenge
                     ? isLoadingGrading
                       ? 'Tests complete - Hatch is reviewing your solution'
@@ -4839,7 +4956,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {isCanvasChallenge && historyRecord && (
               historyGradeLoading ? (
                 <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4">
-                  <HatchGlyph size={40} state="reviewing" className="text-primary" />
+                  <HatchImage size={40} state="reviewing" />
                   <p className="font-body text-sm text-on-surface-variant">Loading your feedback…</p>
                 </div>
               ) : historyInterviewGrade ? (
@@ -4867,8 +4984,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               <div className="flex-1 min-h-0 overflow-y-auto p-4 animate-step-enter">
                 {historyRecord && historyGradeLoading ? (
                   <div className="flex h-full flex-col items-center justify-center gap-4">
-                    <HatchGlyph size={40} state="reviewing" className="text-primary" />
-                    <p className="font-body text-sm text-on-surface-variant">Loading your SQL/code results…</p>
+                    <HatchImage size={80} state="reviewing" />
+                    <p className="font-body text-sm text-ink-secondary">Loading your SQL/code results…</p>
                   </div>
                 ) : (
                   <CodingFeedback
@@ -4973,7 +5090,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 <StepReveal
                   step={currentStep}
                   stepScore={stepTotalScore ?? stepScore}
-                  maxScore={3.0}
+                  maxScore={FLOW_MAX_SCORE}
                   gradeLabel={stepGrade}
                   roleContext={roleContext}
                   careerSignal={careerSignal}
@@ -5009,28 +5126,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       ) : (
         <>
           {topChrome}
+          {flowStepperStrip}
         </>
       )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
-      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-surface-container-low'}>
+      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-page-field'}>
         {!mobileStacked && leftDescriptionPanel}
         {!mobileStacked && dragHandle}
 
         {/* Right pane: scrollable workspace content only */}
         <section
-          className={!isCanvasChallenge && !isCodingChallenge ? 'rounded-xl border border-outline-variant' : undefined}
+          className={!isCanvasChallenge && !isCodingChallenge ? 'rounded-xl border border-hairline' : undefined}
           style={{
             flex: 1, display: 'flex', flexDirection: 'column',
-            background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-surface-container-lowest)' : 'transparent',
+            background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-card-bright)' : 'transparent',
             overflow: 'hidden', minHeight: 0,
           }}>
           {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 animate-step-enter">
-              <HatchGlyph size={48} state="reviewing" className="text-primary" />
-              <div className="font-headline text-xl text-on-surface">Hatch is reviewing your design…</div>
-              <div className="font-body text-sm text-on-surface-variant max-w-md text-center">
+              <HatchImage size={96} state="reviewing" />
+              <div className="font-headline text-xl text-ink-strong">Hatch is reviewing your design…</div>
+              <div className="font-body text-sm text-ink-secondary max-w-md text-center">
                 Reading the schema, checking relationships, and writing your feedback.
               </div>
             </div>
@@ -5039,15 +5157,59 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           {/* Canvas workspace for interview challenge types */}
           {isCanvasChallenge && !isSubmittingInterview && (
             <div style={canvasMaximised
-              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', background: 'var(--color-background)' }
+              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2vh 2vw', background: 'rgba(5, 35, 22, 0.35)' }
               : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
               }>
+              {/* Overlay panel (round4 canvas-workspace preview): in full screen the
+                  canvas lives on a floating rounded surface above a forest scrim,
+                  with its own top bar. Inline, this wrapper is a flex passthrough
+                  so Excalidraw and the chat rail keep their tree position across
+                  the toggle (no remount = no scene/undo loss). */}
+              <div style={canvasMaximised
+                ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'hidden' }
+                : { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }
+                }>
+                {canvasMaximised && (
+                  <div className="flex items-center justify-between gap-4 px-5 py-3 border-b border-hairline shrink-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {challengeTitle && (
+                        <span className="font-label text-[15px] font-bold text-ink-strong truncate max-w-[420px]" title={challengeTitle}>
+                          {challengeTitle}
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-soft px-2.5 py-1 font-label text-xs font-bold shrink-0" style={{ color: '#a16207' }}>
+                        <span className="h-1.5 w-1.5 rounded-full bg-flame" />
+                        {apiChallengeType === 'data_modeling' ? 'Data modeling' : 'System design'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 shrink-0">
+                      {attemptId && (
+                        <span className="flex items-center gap-1.5 font-label text-xs font-semibold text-ink-muted">
+                          <span className="flex h-[15px] w-[15px] items-center justify-center rounded-full bg-note-mint text-forest-600">
+                            <span className="material-symbols-outlined" style={{ fontSize: 11 }}>check</span>
+                          </span>
+                          Autosave on
+                        </span>
+                      )}
+                      <button
+                        onClick={() => setCanvasMaximised(false)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-forest-950 px-4 py-2 font-label text-[13px] font-bold text-white hover:bg-forest-800 transition-colors"
+                        title="Exit full screen"
+                        aria-label="Exit full screen"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">arrow_back</span>
+                        Done, back to workspace
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div style={{ flex: 1, display: 'flex', minWidth: 0, minHeight: 0 }}>
               {/* Canvas column - top chrome owns the guide so canvas stays clear. */}
               <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                 <div
                   data-tour-target="canvas-surface"
-                  className={canvasMaximised ? undefined : 'rounded-xl border border-outline-variant overflow-hidden ml-2'}
-                  style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative', background: 'var(--color-surface-container-lowest)' }}
+                  className={canvasMaximised ? undefined : 'rounded-2xl border border-hairline overflow-hidden ml-2'}
+                  style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative', background: 'var(--color-card-bright)' }}
                 >
                   <ExcalidrawCanvas
                     sessionId={attemptId ?? 'draft'}
@@ -5083,20 +5245,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       onAskHatch={queueHatchPrompt}
                     />
                   )}
-                  {/* Exit fullscreen - only visible when maximised, since the
-                      topChrome (which holds the toggle in the unmaximised view)
-                      is hidden behind the fixed overlay. */}
-                  {canvasMaximised && (
-                    <button
-                      onClick={() => setCanvasMaximised(false)}
-                      className="absolute top-3 right-3 z-30 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest shadow-sm font-label text-xs font-semibold transition-colors"
-                      title="Exit full screen"
-                      aria-label="Exit full screen"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">fullscreen_exit</span>
-                      Exit full screen
-                    </button>
-                  )}
                 </div>
               </div>
               {/* Chat panel */}
@@ -5120,6 +5268,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 solutionsOpen={solutionsOpen}
                 activeSolutionApproach={activeSolutionApproach}
               />
+                </div>
+              </div>
             </div>
           )}
 
@@ -5144,10 +5294,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     const isActive = activePartId === part.id
                     const partSub = partSubmissions[part.id]
                     const partRun = partRunResults[part.id]
-                    let chipBg = 'var(--color-surface-container-high)'
-                    let chipColor = 'var(--color-on-surface-variant)'
-                    if (partSub?.submitted) { chipBg = 'var(--color-primary)'; chipColor = 'var(--color-on-primary)' }
-                    else if (partRun) { chipBg = 'var(--color-primary-container)'; chipColor = 'var(--color-on-surface)' }
+                    let chipBg = 'var(--color-card-bright)'
+                    let chipColor = 'var(--color-ink-secondary)'
+                    if (partSub?.submitted) { chipBg = 'var(--color-forest-600)'; chipColor = '#ffffff' }
+                    else if (partRun) { chipBg = 'var(--color-note-mint)'; chipColor = 'var(--color-ink-strong)' }
                     return (
                       <button
                         key={part.id}
@@ -5174,7 +5324,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               {codingMaximised && (
                 <button
                   onClick={() => setCodingMaximised(false)}
-                  className="absolute top-3 right-3 z-30 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest shadow-sm font-label text-xs font-semibold transition-colors"
+                  className="absolute top-3 right-3 z-30 inline-flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-card-bright border border-hairline text-ink-secondary hover:text-ink-strong hover:bg-page-field shadow-sm font-label text-xs font-bold transition-colors"
                   title="Exit full screen"
                   aria-label="Exit full screen"
                 >
@@ -5201,7 +5351,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     return names[currentLanguage] ?? 'solution'
                   })()}
                   headerExtra={codingParts.length > 0 && activePartId ? (
-                    <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-on-surface-variant)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-surface-container)', border: '1px solid var(--color-outline-variant)', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-ink-secondary)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-page-field)', border: '1px solid var(--color-hairline)', whiteSpace: 'nowrap' }}>
                       {(() => { const cp = codingParts.find(x => x.id === activePartId); return cp ? `Part ${cp.sequence}` : '' })()}
                     </span>
                   ) : undefined}
@@ -5254,12 +5404,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                   >
-                    <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-outline-variant)', transition: 'background 120ms' }} />
+                    <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-hairline)', transition: 'background 120ms' }} />
                   </div>
                 )}
                 {/* Console card */}
                 <div
-                  className="rounded-xl border border-outline-variant overflow-hidden flex flex-col"
+                  className="rounded-xl border border-hairline overflow-hidden flex flex-col"
                   style={consoleCollapsed ? { flex: '0 0 auto' } : { flex: `${100 - editorHeightPct} 1 0`, minHeight: 0 }}
                 >
                   <CodeOutputPanel
@@ -5336,15 +5486,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   className="animate-step-enter"
                   style={{
                     display: 'flex', alignItems: 'center', gap: 12,
-                    background: 'var(--color-surface-container)',
-                    border: '1px solid var(--color-outline-variant)',
+                    background: 'var(--color-card-bright)',
+                    border: '1px solid var(--color-hairline)',
                     borderRadius: 16,
                     padding: '16px 22px',
                     boxShadow: '0 4px 18px -8px rgba(30,27,20,0.25)',
                   }}
                 >
-                  <HatchGlyph size={34} state="idle" className="text-primary" />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-on-surface)' }}>
+                  <HatchImage size={40} state="listening" />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-ink-strong)' }}>
                     Answer recorded, keep going.
                   </span>
                 </div>
@@ -5353,9 +5503,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
             {/* Hint card */}
             {hintOpen && activeStepData?.nudge && (
-              <div style={{
-                background: 'var(--color-amber-soft, #f3e2b9)',
-                border: '1px solid #e8d09a',
+              <div className="note-amber" style={{
                 borderRadius: 12,
                 padding: '12px 14px',
                 display: 'flex',
@@ -5384,14 +5532,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {/* Question card */}
             {(isApiMode ? stepLoading : false) ? (
               <div className="flex justify-center py-8">
-                <HatchGlyph size={40} state="reviewing" className="text-primary" />
+                <HatchImage size={72} state="reviewing" />
               </div>
             ) : (isApiMode && stepError) ? (
               <p className="font-body text-error text-sm text-center">{stepError}</p>
             ) : currentQuestion ? (
-              <div data-hatch-target="workspace-answer-area" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-outline-faint)', borderRadius: 14, padding: '18px 20px' }}>
+              <div data-hatch-target="workspace-answer-area" style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '18px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
+                  <span className="font-label" style={{ background: 'var(--color-forest-800)', color: '#fff', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.03em', padding: '3px 10px', borderRadius: 999 }}>
+                    Step {FLOW_STEPS.indexOf(currentStep) + 1} of {FLOW_STEPS.length} · {STEP_LABEL[currentStep]}
+                  </span>
+                  {stepQuestions.length > 1 && (
+                    <span className="font-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                      Question {questionIdx + 1} of {stepQuestions.length}
+                    </span>
+                  )}
+                </div>
                 <StepQuestion
                   question={currentQuestion}
+                  questionNumber={questionIdx + 1}
                   responseType={currentQuestion.response_type}
                   selectedOptionId={selectedOptionId}
                   selectedOptionIds={selectedOptionIds}
@@ -5420,12 +5579,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {/* Confidence card */}
             {currentQuestion && (
               <div ref={confidenceCardRef} style={{
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-outline-faint)',
-                borderRadius: 14,
+                background: 'var(--color-card-bright)',
+                border: '1px solid var(--color-hairline)',
+                borderRadius: 16,
                 padding: '14px 16px',
               }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: 10, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-ink-secondary)', marginBottom: 10, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                   Confidence - how sure are you?
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
@@ -5438,12 +5597,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                         disabled={!currentQuestionAnswered}
                         style={{
                           padding: '9px 8px',
-                          borderRadius: 999,
+                          borderRadius: 8,
                           fontSize: 12.5,
-                          fontWeight: 600,
-                          background: active ? 'var(--color-on-surface)' : 'var(--color-surface-container-low)',
-                          color: active ? 'var(--color-inverse-on-surface, #f5f0e8)' : 'var(--color-on-surface-variant)',
-                          border: '1px solid ' + (active ? 'transparent' : 'var(--color-outline-faint)'),
+                          fontWeight: 700,
+                          background: active ? 'var(--color-forest-800)' : 'var(--color-card-bright)',
+                          color: active ? '#ffffff' : 'var(--color-ink-secondary)',
+                          border: '1px solid ' + (active ? 'transparent' : 'var(--color-hairline)'),
                           opacity: currentQuestionAnswered ? 1 : 0.5,
                           cursor: currentQuestionAnswered ? 'pointer' : 'not-allowed',
                           display: 'inline-flex',
@@ -5454,9 +5613,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                           transition: 'background 120ms, color 120ms',
                         }}
                       >
-                        {i === 3 && (
-                          <span className="material-symbols-outlined msi-sm">verified</span>
-                        )}
                         {c}
                       </button>
                     )
@@ -5466,6 +5622,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             )}
           </div>
         </section>
+
+        {!mobileStacked && !isInterviewChallenge && flowRightRail}
       </div>
 
       {/* Submit bar for canvas interview challenge types */}

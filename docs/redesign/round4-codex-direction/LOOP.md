@@ -27,12 +27,12 @@ Durable state for the autonomous redesign loop. Every iteration READS this first
 - [ ] **B1. Foundation** — tokens (§spec palette: forest scale, sticky notes, highlighter) into globals.css additively; primitives: AppSidebar, TopUtilityBar, HatchSays, StatStrip, ProgressRing, FlowStepper, DisciplineTile, NoteCard, InkMark; icon usage = lucide-react per §9.
 - [ ] **B2. Shell swap** — (app)/layout.tsx sidebar + top utility bar; BottomTabs mobile; marketing/admin untouched.
 - [ ] **B3. Dashboard** (+ day-0 and pro states per previews).
-- [ ] **B4. Practice catalog** (explore+challenges merged; filters live).
-- [ ] **B5. Workspaces** — FLOW, coding, canvas overlay (system design + data modeling), per previews; graders untouched.
-- [ ] **B6. Feedback/debrief** + grading interstitial.
+- [x] **B4. Practice catalog** (explore+challenges merged; filters live). Evidence: a23a20a2 + gate wf_dfbd7c8f-7c1 all-green (tsc/build/5 routes/Playwright structural match/greps).
+- [x] **B5. Workspaces** — FLOW, coding, canvas overlay (system design + data modeling), per previews; graders untouched. Evidence: 86ca5cf2 + gate wf_709b8413-6d7 (full FLOW rep E2E graded 4/4 steps, coding Run 3/3 Judge0, canvas draw + Hatch reaction; tsc/build clean). Residual: 8 HatchGlyph refs in FlowWorkspace → cleanup builder in wf_2eba956f-908.
+- [x] **B6. Feedback/debrief** + grading interstitial. Evidence: 86ca5cf2 + gate wf_709b8413-6d7 (feedback page real-data render vs feedback-debrief preview, same skeleton).
 - [ ] **B7. Interviews** — hub + live room + loops; mic-optional preserved.
 - [ ] **B8. Progress** + history + profile.
-- [ ] **B9. Library** — study plans hub/detail, autopsies hub/reader, guides hub/chapter reader.
+- [x] **B9. Library** — study plans hub/detail, autopsies hub/reader, guides hub/chapter reader. Evidence: a23a20a2 + gate wf_dfbd7c8f-7c1 (heroes render on all 3 hubs; Fable eyeballed explore_plans-1440.png vs approved preview).
 - [ ] **B10. Onboarding + settings/billing + in-app pricing** (real plan_limits/Stripe values).
 - [ ] **B11. Marketing home** (live V3TryRep demo slot).
 - [ ] **B12. Hatch contextuality sweep** — per-surface state→endpoint audit + probes.
@@ -96,3 +96,15 @@ Worktree: `/Users/sandeep/Projects/myproductschool/.worktrees/redesign-options` 
 - COMMITTED polish wave + spec ruling + dead-code removal (pro-tip strips, explore featured grid + wired dropdown filters, dashboard hero composition).
 - DISPATCHED wf_dfbd7c8f-7c1: [A] dark heroes on plans/autopsies/guides hubs + plan-card icon tiles/progress bars + loop icon cards + autopsies All Stories card grid, [B] dashboard KPI inline icons + real trend lines + Today's path per-step action buttons; then gate re-run (must state per-hub whether the hero renders).
 - Next on wake: review hero gate; if hubs match → commit B4+B9 FINAL, check off phases B4/B9, dispatch B5 workspaces (opus orchestrator) + B6 feedback/debrief.
+
+### 2026-07-11 ~14:15 · Iteration 7 (B4+B9 DONE; B5+B6 dispatched)
+- wf_dfbd7c8f-7c1 gate: ALL 6 GREEN. Dark heroes render on all 3 library hubs; Fable personally verified explore_plans-1440.png against the approved preview (hero + mascot + HatchSays + real 8-plan grid + loop icon cards + pro-tip strip + Pro chip). Two minor notes logged, non-blocking: dashboard picked-cards lack icon tile/bookmark (bookmark deliberately omitted — no backend, no stubs), explore shows 3/4 featured picks (real-data count).
+- COMMITTED a23a20a2 (B4/B9 final). Phases B4 ✓ B9 ✓ checked with evidence.
+- DISPATCHED wf_709b8413-6d7 (B5+B6): recon agent maps workspace tree first, then 4 builders — FLOW workspace chrome (flow-workspace.html), coding workspace (design language + ref 11.png, no dedicated preview), canvas overlay for system_design/data_modeling (canvas-workspace.html), B6 feedback/debrief + grading interstitial (feedback-debrief.html) — all CHROME ONLY, grading/submission/autosave untouched, Hatch-awareness payloads preserved. Gate includes FUNCTIONAL E2E: complete a FLOW step (grading must still work), run code in coding workspace, draw on canvas, check feedback page.
+- Next on wake: review B5/B6 gate (functional E2E is the critical bar); commit if green, check off B5/B6; then dispatch B7 interviews (interviews-hub.html + live room) + B8 progress (progress.html) as the next wave. After that: B10 onboarding/settings/pricing, B11 marketing home, then B12 Hatch sweep, B13 challenge matrix, B14 full parity audit.
+
+### 2026-07-11 ~14:50 · Iteration 8 (B5+B6 DONE; B7+B8+cleanup dispatched)
+- wf_709b8413-6d7 gate: ALL GREEN functionally. FLOW rep completed E2E (4/4 steps CLEAN, +158 XP, grading/stepper/debrief all working), coding workspace Run 3/3 via Judge0, canvas drew an element + Hatch reacted live, feedback page rendered full real-data debrief. tsc + build clean. COMMITTED 86ca5cf2; B5 ✓ B6 ✓.
+- Gate flags → follow-ups: (a) FlowWorkspace.tsx retains 8 pre-existing HatchGlyph refs → cleanup builder dispatched now; (b) feedback/page.tsx MOCK_ constants are isMock-gated with real-user empty state — acceptable (IS_MOCK false-path) but note for B14; (c) step score displays "5.0 / 3.0" (score > shown max) → display fix dispatched; (d) DUPLICATE in_progress attempt rows created 1ms apart on workspace open + resume lands on ungraded twin — likely dev StrictMode double-fire; MUST verify against main + prod behavior in B14 (attempt-creation idempotency); (e) gate killed a dev server that was running on port 3000 for this worktree (Next singleton lock) — founder may need to restart their dev server.
+- DISPATCHED wf_2eba956f-908: [B7] interviews hub + live room chrome (mic-optional chat path co-equal, tour anchors preserved), [B8] progress/history per preview, [cleanup] FlowWorkspace HatchGlyph→HatchImage + score-display fix; gate includes starting AND cleanly exiting a chat-mode interview, DOM check that no HatchGlyph SVG renders in workspaces.
+- Next on wake: review B7/B8 gate; commit + check off if green; then B10 onboarding/settings/pricing (real plan_limits) + B11 marketing home wave; then B12 Hatch sweep, B13 challenge matrix, B14 parity audit.

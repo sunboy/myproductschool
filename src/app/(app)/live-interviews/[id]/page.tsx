@@ -9,7 +9,6 @@ import { DEFAULT_PLAN_LIMITS } from '@/lib/usage/plan-limits-shared'
 import type { HatchAvatarState } from '@/components/live-interview/HatchAvatar'
 import dynamic from 'next/dynamic'
 import DeepgramVoiceSession, { type DeepgramVoiceSessionHandle } from '@/components/live-interview/DeepgramVoiceSession'
-import { HatchConversationMascot } from '@/components/live-interview/HatchConversationMascot'
 import type { TalkingHeadHandle } from '@/components/live-interview/TalkingHeadAvatar'
 import { LoopProgressBar } from '@/components/live-interviews/LoopProgressBar'
 import { PriorRoundRecap } from '@/components/live-interviews/PriorRoundRecap'
@@ -31,7 +30,8 @@ const MonacoCodeEditor = dynamic(
 )
 
 import type { PasteEvent } from '@/components/challenge/MonacoCodeEditor'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage, type HatchImageState } from '@/components/redesign/HatchImage'
+import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { TourRunner } from '@/components/shell/TourRunner'
 import { INTERVIEW_TOUR, interviewTourSeen } from '@/lib/tours/interviewTour'
 import { setCursor } from '@/lib/tours/shepherdEngine'
@@ -388,16 +388,20 @@ function CtrlBtn({
           width: size,
           height: size,
           background: danger
-            ? '#b23a2a'
+            ? '#3d1512'
             : active
             ? 'rgba(74,124,89,0.4)'
             : 'rgba(255,255,255,0.08)',
-          border: active && !danger ? '2px solid rgba(74,124,89,0.6)' : '2px solid transparent',
+          border: danger
+            ? '2px solid rgba(255,164,152,0.25)'
+            : active
+            ? '2px solid rgba(74,124,89,0.6)'
+            : '2px solid transparent',
           boxShadow: active && !danger ? '0 0 12px rgba(74,124,89,0.3)' : 'none',
         }}
         onMouseEnter={(e) => {
           if (danger) {
-            (e.currentTarget as HTMLButtonElement).style.background = '#c9402a'
+            (e.currentTarget as HTMLButtonElement).style.background = '#52201b'
           } else {
             (e.currentTarget as HTMLButtonElement).style.background = active
               ? 'rgba(74,124,89,0.5)'
@@ -407,7 +411,7 @@ function CtrlBtn({
         }}
         onMouseLeave={(e) => {
           if (danger) {
-            (e.currentTarget as HTMLButtonElement).style.background = '#b23a2a'
+            (e.currentTarget as HTMLButtonElement).style.background = '#3d1512'
           } else {
             (e.currentTarget as HTMLButtonElement).style.background = active
               ? 'rgba(74,124,89,0.4)'
@@ -421,7 +425,7 @@ function CtrlBtn({
           className="material-symbols-outlined"
           style={{
             fontSize: iconSize,
-            color: danger ? '#fff' : active ? 'rgba(126,224,153,0.9)' : 'rgba(243,237,224,0.7)',
+            color: danger ? '#ffa498' : active ? 'rgba(126,224,153,0.9)' : 'rgba(243,237,224,0.7)',
           }}
         >
           {icon}
@@ -1619,9 +1623,9 @@ export default function SessionPage({
   // ─── Ended / Generating Debrief ───
   if (interviewPhase === 'ended') {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#0d1410', zIndex: 200 }}>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#0c0f13', zIndex: 200 }}>
         <div className="flex flex-col items-center gap-6 max-w-sm text-center px-6">
-          <HatchGlyph size={80} state="reviewing" className="text-primary" />
+          <HatchImage size={80} state="reviewing" />
           <div className="space-y-2">
             <h2
               className="font-headline text-2xl font-bold"
@@ -1719,7 +1723,7 @@ export default function SessionPage({
             <span className="material-symbols-outlined text-[18px]" style={{ color: 'rgba(255,255,255,0.5)' }}>close</span>
           </button>
 
-          <HatchGlyph size={64} state="idle" className="text-primary" />
+          <HatchImage size={64} state="idle" />
 
           {/* Company / discipline / role tags */}
           <div className="flex items-center gap-2 flex-wrap justify-center">
@@ -1970,7 +1974,7 @@ export default function SessionPage({
   return (
     <div
       className="dark-room-enter fixed inset-0 flex flex-col overflow-hidden"
-      style={{ background: '#0d1410', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200 }}
+      style={{ background: '#0c0f13', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200 }}
     >
       <InterviewTourMount active={interviewPhase === 'active'} ready={turns.length > 0} />
       <style jsx global>{`
@@ -2208,7 +2212,12 @@ export default function SessionPage({
       <div className="flex min-h-0 flex-1 overflow-hidden">
 
         {/* LEFT: Transcript (320px) */}
-        <PresencePanel isOpen={showTranscriptPanel} data-tour-target="interview-transcript" className="hidden shrink-0 lg:flex">
+        <PresencePanel
+          isOpen={showTranscriptPanel}
+          data-tour-target="interview-transcript"
+          className="hidden shrink-0 lg:flex"
+          style={{ background: '#13191c' }}
+        >
           <CollapsiblePanel
             open
             onOpenChange={setIsTranscriptOpen}
@@ -2244,11 +2253,12 @@ export default function SessionPage({
           data-tour-target="interview-stage"
           style={{ minWidth: 0 }}
         >
-          {/* Ambient radial glow - always visible */}
+          {/* Ambient radial glow + stage vignette (spec dark-room palette) */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'radial-gradient(600px at 50% 40%, rgba(74,124,89,0.1), transparent)',
+              background:
+                'radial-gradient(600px at 50% 40%, rgba(74,124,89,0.1), transparent), radial-gradient(120% 95% at 50% 45%, transparent 55%, rgba(2,9,6,0.55) 100%)',
             }}
           />
           {/* Dot grid */}
@@ -2288,8 +2298,28 @@ export default function SessionPage({
 
           {centerMode === 'orb' && (
             <div className="relative z-10 flex flex-col items-center gap-4">
-              <div style={{ animation: 'floatHatchAnim 5s ease-in-out infinite' }}>
-                <HatchConversationMascot state={hatchState === 'speaking' ? 'speaking' : 'listening'} />
+              <div className="relative flex items-center justify-center" style={{ animation: 'floatHatchAnim 5s ease-in-out infinite' }}>
+                {/* Stage glow behind the mascot; brighter while Hatch is speaking. */}
+                <div
+                  aria-hidden
+                  className="absolute rounded-full"
+                  style={{
+                    width: 210,
+                    height: 210,
+                    background: hatchState === 'speaking'
+                      ? 'radial-gradient(circle, rgba(163,235,177,0.22), rgba(49,82,52,0.10) 52%, transparent 72%)'
+                      : 'radial-gradient(circle, rgba(163,235,177,0.12), rgba(49,82,52,0.06) 54%, transparent 74%)',
+                    filter: 'blur(4px)',
+                    transform: 'translateY(10px)',
+                    transition: 'background 0.4s ease',
+                  }}
+                />
+                <HatchImage
+                  state={hatchState === 'speaking' ? 'speaking' : 'listening'}
+                  size={220}
+                  priority
+                  className="relative drop-shadow-[0_18px_28px_rgba(0,0,0,.45)]"
+                />
               </div>
               <span
                 className="font-label uppercase tracking-widest text-[12px]"
@@ -2355,19 +2385,25 @@ export default function SessionPage({
                 width: 44,
                 height: 44,
                 borderRadius: '50%',
-                background: 'rgba(13,20,16,0.9)',
+                background: 'rgba(12,15,19,0.9)',
                 border: `1px solid ${hatchState === 'listening' ? 'rgba(74,124,89,0.6)' : 'rgba(255,255,255,0.1)'}`,
                 boxShadow: hatchState === 'listening' ? '0 0 12px rgba(74,124,89,0.4)' : 'none',
                 transition: 'border-color 0.3s, box-shadow 0.3s',
                 pointerEvents: 'none',
               }}
             >
-              <HatchGlyph
+              <HatchImage
                 size={28}
                 state={
-                  hatchState === 'thinking'
-                    ? 'reviewing'
-                    : hatchState
+                  ({
+                    idle: 'idle',
+                    listening: 'listening',
+                    speaking: 'speaking',
+                    thinking: 'reviewing',
+                    intrigued: 'thinking',
+                    challenging: 'speaking',
+                    delighted: 'celebrating',
+                  } as Record<string, HatchImageState>)[hatchState] ?? 'idle'
                 }
               />
             </div>
@@ -2375,13 +2411,18 @@ export default function SessionPage({
         </div>
 
         {/* RIGHT: FLOW HUD (280px) */}
-        <PresencePanel isOpen={showFlowPanel} data-tour-target="interview-flow" className="hidden shrink-0 lg:flex">
+        <PresencePanel
+          isOpen={showFlowPanel}
+          data-tour-target="interview-flow"
+          className="hidden shrink-0 lg:flex"
+          style={{ background: '#13191c' }}
+        >
           <CollapsiblePanel
             open
             onOpenChange={setIsFlowPanelOpen}
             title="FLOW Coverage"
             icon="analytics"
-            className="h-full w-[280px] border-l border-white/10 bg-black/15"
+            className="h-full w-[280px] border-l border-white/10"
             headerClassName="px-4 pt-4 pb-3 font-label text-[10.5px] font-semibold uppercase tracking-widest text-white/25 [&_button]:text-white/35 [&_button:hover]:bg-white/10"
             bodyClassName="flex flex-col"
           >
@@ -2421,9 +2462,9 @@ export default function SessionPage({
                 })}
               </div>
 
-              {/* Overall score card */}
+              {/* Overall coverage ring (same signal as before, ring treatment per redesign) */}
               <div
-                className="mt-4 rounded-xl p-3 flex items-center justify-between"
+                className="mt-4 rounded-xl p-3 flex items-center justify-between gap-3"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
                 <div>
@@ -2437,15 +2478,20 @@ export default function SessionPage({
                     {overallScore >= 60 ? 'Strong' : overallScore >= 35 ? 'Building' : 'Developing'}
                   </p>
                 </div>
-                <span
-                  className="font-headline font-bold"
-                  style={{ fontSize: 28, color: 'rgba(243,237,224,0.9)' }}
+                <ProgressRing
+                  percent={overallScore}
+                  size={62}
+                  strokeWidth={7}
+                  trackColor="rgba(255,255,255,0.08)"
+                  color={overallScore >= 60 ? '#7ee099' : '#fdb41f'}
                 >
-                  {overallScore}
-                  <span className="font-label font-normal text-[13px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    /100
+                  <span
+                    className="font-headline font-bold tabular-nums"
+                    style={{ fontSize: 17, color: 'rgba(243,237,224,0.9)', lineHeight: 1 }}
+                  >
+                    {overallScore}
                   </span>
-                </span>
+                </ProgressRing>
               </div>
 
               <div className="flex items-center gap-2 mt-2">
@@ -2647,7 +2693,7 @@ export default function SessionPage({
         exit={{ opacity: 0, x: 36 }}
         style={{
           width: 'min(340px, calc(100vw - 24px))',
-          background: 'rgba(13,20,16,0.97)',
+          background: 'rgba(12,15,19,0.97)',
           backdropFilter: 'blur(16px)',
           borderLeft: '1px solid rgba(255,255,255,0.07)',
         }}
@@ -2864,7 +2910,7 @@ export default function SessionPage({
               animation: 'fadeUp 0.25s ease-out',
             }}
           >
-            <HatchGlyph size={56} state="reviewing" className="text-primary" />
+            <HatchImage size={56} state="reviewing" />
             <div>
               <h3 className="font-headline text-lg font-bold" style={{ color: 'rgba(243,237,224,0.95)' }}>
                 End this interview?
