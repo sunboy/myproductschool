@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 const COMPANIES = ['Meta', 'Google', 'Stripe', 'Airbnb']
 
@@ -50,7 +50,7 @@ export default function SimulationPage() {
           </h2>
           {suggestedCompany && (
             <div className="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
-              <HatchGlyph size={16} state="none" className="text-primary" />
+              <HatchImage size={16} state="idle" />
               <span>Hatch suggests: <span className="font-bold text-primary">{suggestedCompany}</span></span>
             </div>
           )}

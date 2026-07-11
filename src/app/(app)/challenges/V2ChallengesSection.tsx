@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Challenge } from '@/lib/types'
 import { ChallengeCardV2 } from '@/components/v2/ChallengeCardV2'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { challengePath } from '@/lib/challenges/challengeNumber'
 
 interface V2ChallengeWithMeta extends Challenge {
@@ -51,7 +51,7 @@ export function V2ChallengesSection({ paradigm, difficulty, role }: V2Challenges
       </p>
       {loading ? (
         <div className="flex justify-center py-8">
-          <HatchGlyph size={40} state="reviewing" className="text-primary" />
+          <HatchImage size={40} state="reviewing" />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

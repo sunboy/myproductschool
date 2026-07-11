@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createNote } from '@/app/actions/notes'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { NoteCard } from '@/components/notes/NoteCard'
 import type { UserNote } from '@/lib/data/dashboard'
 
@@ -149,7 +149,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
       {/* Notes grid or empty state */}
       {sorted.length === 0 && !adding ? (
         <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-          <HatchGlyph size={64} state="celebrating" className="text-primary" />
+          <HatchImage size={64} state="celebrating" />
           <p className="text-on-surface-variant text-sm max-w-xs">
             Your notes become Hatch&apos;s memory. Jot anything down.
           </p>

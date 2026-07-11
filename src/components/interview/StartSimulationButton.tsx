@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface StartSimulationButtonProps {
   companyId: string
@@ -34,7 +34,7 @@ export function StartSimulationButton({ companyId, companyName }: StartSimulatio
       className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-on-primary font-medium rounded-xl hover:opacity-90 disabled:opacity-70 transition-opacity"
     >
       {loading ? (
-        <><HatchGlyph size={16} className="animate-hatch-glow" />Starting...</>
+        <><HatchImage size={16} state="idle" className="animate-hatch-glow" />Starting...</>
       ) : (
         <><span className="material-symbols-outlined text-sm">play_circle</span>Start {companyName} simulation</>
       )}

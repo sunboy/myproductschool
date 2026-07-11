@@ -33,8 +33,8 @@ Durable state for the autonomous redesign loop. Every iteration READS this first
 - [x] **B7. Interviews** — hub + live room + loops; mic-optional preserved. Evidence: fead1efe + gate wf_2eba956f-908 (chat interview started + debriefed E2E, hub structural match, tour anchors intact).
 - [x] **B8. Progress** + history + profile. Evidence: fead1efe + gate wf_2eba956f-908 (progress structural match vs preview + additive reasoning-trajectory matrix).
 - [x] **B9. Library** — study plans hub/detail, autopsies hub/reader, guides hub/chapter reader. Evidence: a23a20a2 + gate wf_dfbd7c8f-7c1 (heroes render on all 3 hubs; Fable eyeballed explore_plans-1440.png vs approved preview).
-- [ ] **B10. Onboarding + settings/billing + in-app pricing** (real plan_limits/Stripe values).
-- [ ] **B11. Marketing home** (live V3TryRep demo slot).
+- [x] **B10. Onboarding + settings/billing + in-app pricing** (real plan_limits/Stripe values). Evidence: 96fbda23 + gate wf_c21a97d5-215 (paywall/sidebar numbers verified vs /api/billing/limits on free account; pro zero-upsell on app surfaces; toggle persistence; first-run restyled).
+- [x] **B11. Marketing home** (live V3TryRep demo slot). Evidence: 96fbda23 + gate (typed into hero demo, counter live, grade button enabled; no HatchGlyph SVG on marketing home).
 - [ ] **B12. Hatch contextuality sweep** — per-surface state→endpoint audit + probes.
 - [ ] **B13. Challenge-type parity matrix** — 7+ types × (pro, free) E2E green.
 - [ ] **B14. Full parity audit** — PARITY.md 100% evidenced; no-stub/no-mock sweeps; final build+lint+tsc; visual QA 375/768/1440; PostHog events firing.
@@ -115,3 +115,9 @@ Worktree: `/Users/sandeep/Projects/myproductschool/.worktrees/redesign-options` 
 - Phases B7 ✓ B8 ✓ checked. Follow-ups carried: interview chat renders Hatch's raw signal JSON in the opening bubble (opacity violation) → fix dispatched; 11 files still reference HatchGlyph outside workspaces → retirement sweep dispatched.
 - DISPATCHED wf_c21a97d5-215: [B10] onboarding modal/first-run + settings + PaywallModal/pricing (live plan_limits, pro sees zero upsell), [B11] marketing home with live V3TryRep hero demo (static Hatch images only on marketing), [fix] signal-leak render path, [sweep] HatchGlyph retirement. Gate covers BOTH pro and free accounts (paywall numbers vs /api/billing/limits), signal-leak recheck, HatchGlyph grep, no profile-flag resets.
 - Next on wake: review B10/B11 gate; commit + check off if green; then B12 Hatch contextuality sweep (per-surface state→endpoint audit + probes) and B13 challenge-type matrix (9 types × pro/free E2E), then B14 full parity audit against PARITY.md.
+
+### 2026-07-11 ~15:40 · Iteration 10 (B10+B11 DONE; HatchGlyph full retirement + B12 audit dispatched)
+- wf_c21a97d5-215 gate: 8/9 PASS. Signal-leak FIXED (chat interview prose clean both turns, ended + debriefed E2E). Free-account paywall numbers match /api/billing/limits exactly. FAIL item: HatchGlyph retirement incomplete — 97 rendered usages across 50 files remain (FloatingHatch launcher renders on every authed page). WARNs logged for B14 report: /pricing is session-unaware (Pro user sees trial CTAs — pre-existing main behavior, recommend post-launch fix); settings plan card flashes Get Pro while billing loads (fix dispatched); sidebar "30 gradings" copy verified as real plan data (plan-limits-shared).
+- COMMITTED 96fbda23. B10 ✓ B11 ✓ checked.
+- DISPATCHED wf_54ecf4a8-104: inventory → 5 parallel mechanical HatchGlyph→HatchImage batches (tours engine excluded by design) + settings flash fix + B12 READ-ONLY Hatch contextuality audit (7 surfaces: payload wiring INTACT/BROKEN/DEGRADED with file:line evidence). Gate: grep zero, DOM zero on 5 surfaces incl. FloatingHatch, visual sanity on swapped images.
+- Next on wake: review retirement gate + B12 audit report; fix list from audit becomes the next wave alongside B13 challenge-type matrix (9 types × pro/free E2E); then B14 full parity audit vs PARITY.md.

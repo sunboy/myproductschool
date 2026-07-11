@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createNote, deleteNote, updateNote } from '@/app/actions/notes'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface Note {
   id: string
@@ -91,7 +91,7 @@ export function NotesModal({ notes, onClose }: NotesModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <HatchGlyph size={28} state="listening" className="text-primary" />
+            <HatchImage size={28} state="listening" />
             <h2 className="font-headline font-semibold text-lg text-on-surface">Notes</h2>
           </div>
           <button

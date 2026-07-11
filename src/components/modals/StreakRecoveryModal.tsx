@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface StreakRecoveryModalProps {
   isOpen: boolean
@@ -30,7 +30,7 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
         <div className="bg-surface w-full max-w-[360px] rounded-2xl shadow-lg p-6 relative flex flex-col items-center">
           {/* Hatch Mascot Section */}
           <div className="mb-4 relative">
-            <HatchGlyph size={80} className="text-primary" />
+            <HatchImage size={80} state="idle" />
           </div>
 
           {/* Speech Bubble */}

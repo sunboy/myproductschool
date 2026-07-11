@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface DebriefUpgradeCardProps {
   scorePercent: number
@@ -28,10 +28,10 @@ export function DebriefUpgradeCard({ scorePercent, grade, focusArea }: DebriefUp
       className="relative overflow-hidden rounded-xl bg-surface-container p-6 border border-primary/20"
     >
       <div className="flex items-start gap-4">
-        <HatchGlyph
+        <HatchImage
           size={56}
           state={isStrong ? 'celebrating' : 'speaking'}
-          className="text-primary shrink-0"
+          className="shrink-0"
         />
         <div className="flex-1 min-w-0">
           <span className="inline-block bg-primary-container text-on-primary-container rounded-full px-3 py-1 font-label text-xs font-bold mb-2">

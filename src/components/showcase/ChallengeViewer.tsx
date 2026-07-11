@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { HatchInsightBlock } from '@/components/learning/HatchInsightBlock'
 import { OptionCard } from '@/components/v2/OptionCard'
 import type { AutopsyDecision, AutopsyChallenge } from '@/lib/types'
@@ -224,7 +224,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
 
               {/* Coming soon nudge */}
               <div className="flex items-center gap-2 bg-primary-container/30 rounded-xl p-3 mt-2">
-                <HatchGlyph state="idle" size={22} className="text-primary shrink-0" />
+                <HatchImage state="idle" size={22} className="shrink-0" />
                 <p className="text-xs text-on-surface-variant">
                   Answer these in Practice Mode. Graded FLOW challenges coming soon.
                 </p>
@@ -241,7 +241,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
           <div className="mt-10 grid grid-cols-2 gap-4">
             <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
               <div className="flex items-center gap-2 mb-3">
-                <HatchGlyph size={22} state="speaking" className="text-primary" />
+                <HatchImage size={22} state="speaking" />
                 <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">
                   Hatch&rsquo;s Thought Starter
                 </span>
@@ -280,7 +280,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
 
       {/* Hatch coaching strip, pinned to bottom */}
       <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
-        <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
+        <HatchImage size={28} state="speaking" className="flex-shrink-0" />
         <div className="flex-1 text-sm text-on-primary-container font-medium">
           <span className="font-bold">Pro tip:</span> {coaching.tip}
         </div>

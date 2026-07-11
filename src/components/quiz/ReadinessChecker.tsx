@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 /**
  * Public, no-auth "Level Readiness Checker" at /quiz/readiness.
@@ -141,7 +141,7 @@ export function ReadinessChecker() {
       {stage === 'pick' && (
         <div className="flex flex-1 flex-col gap-8">
           <div className="flex flex-col items-center gap-4 text-center">
-            <HatchGlyph size={72} state="idle" className="text-primary" />
+            <HatchImage size={72} state="idle" />
             <p className="font-label text-sm font-semibold uppercase tracking-widest text-tertiary">
               No signup, 20 seconds
             </p>
@@ -227,7 +227,7 @@ export function ReadinessChecker() {
       {stage === 'result' && role && level && (
         <div className="flex flex-1 flex-col gap-6">
           <div className="flex flex-col items-center gap-3 text-center">
-            <HatchGlyph size={64} state="reviewing" className="text-primary" />
+            <HatchImage size={64} state="reviewing" />
             <p className="font-label text-sm font-semibold uppercase tracking-widest text-tertiary">
               {role.label} aiming for {level.label}
             </p>
@@ -342,7 +342,7 @@ export function ReadinessChecker() {
             </div>
 
             <div className="mt-5 flex items-start gap-3 rounded-lg bg-secondary-container p-4">
-              <HatchGlyph size={32} state="speaking" className="mt-0.5 shrink-0 text-primary" />
+              <HatchImage size={32} state="speaking" className="mt-0.5 shrink-0" />
               <div>
                 <p className="font-label text-xs font-bold uppercase tracking-wide text-on-secondary-container">
                   What clears the bar at {level.label}

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import type { ChallengeMode } from '@/lib/types'
 import { getWordCount } from '@/lib/utils'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { CanvasSection } from './CanvasSection'
 import { ConfidenceSlider } from './ConfidenceSlider'
 
@@ -153,7 +153,7 @@ export function PMCanvas({
       >
         {submitting ? (
           <span className="flex items-center justify-center gap-2">
-            <HatchGlyph size={16} className="animate-hatch-glow" />
+            <HatchImage size={16} state="thinking" className="animate-hatch-glow" />
             Hatch is thinking...
           </span>
         ) : (

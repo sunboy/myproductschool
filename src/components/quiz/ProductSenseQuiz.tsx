@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import {
   PRODUCT_SENSE_MCQS,
   PRODUCT_SENSE_FREEFORM,
@@ -121,7 +121,7 @@ export function ProductSenseQuiz() {
       {/* ── Intro ── */}
       {stage === 'intro' && (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-          <HatchGlyph size={72} state="idle" className="text-primary" />
+          <HatchImage size={72} state="idle" />
           <p className="font-label text-sm font-semibold uppercase tracking-widest text-tertiary">
             3 questions, no signup
           </p>
@@ -160,7 +160,7 @@ export function ProductSenseQuiz() {
           </div>
 
           <div className="flex items-start gap-3">
-            <HatchGlyph size={40} state="listening" className="mt-1 shrink-0 text-primary" />
+            <HatchImage size={40} state="listening" className="mt-1 shrink-0" />
             <p className="font-body text-sm leading-relaxed text-on-surface-variant">
               {currentMcq.scenario}
             </p>
@@ -200,7 +200,7 @@ export function ProductSenseQuiz() {
           </div>
 
           <div className="flex items-start gap-3">
-            <HatchGlyph size={40} state="listening" className="mt-1 shrink-0 text-primary" />
+            <HatchImage size={40} state="listening" className="mt-1 shrink-0" />
             <p className="font-body text-sm leading-relaxed text-on-surface-variant">
               {PRODUCT_SENSE_FREEFORM.scenario}
             </p>
@@ -236,7 +236,7 @@ export function ProductSenseQuiz() {
       {/* ── Grading ── */}
       {stage === 'grading' && (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-          <HatchGlyph size={72} state="reviewing" className="text-primary" />
+          <HatchImage size={72} state="reviewing" />
           <p className="font-headline text-2xl font-bold text-on-background">Hatch is reading your call</p>
           <p className="max-w-sm font-body text-sm leading-relaxed text-on-surface-variant">
             Checking whether you scoped the rollout, named a metric, and left yourself a way out.
@@ -247,7 +247,7 @@ export function ProductSenseQuiz() {
       {/* ── Result ── */}
       {stage === 'result' && grade && (
         <div className="flex flex-1 flex-col items-center gap-6 text-center">
-          <HatchGlyph size={80} state="celebrating" className="text-primary" />
+          <HatchImage size={80} state="celebrating" />
           <p className="font-label text-sm font-semibold uppercase tracking-widest text-tertiary">
             {grade.result.total} out of 9
           </p>
@@ -340,7 +340,7 @@ export function ProductSenseQuiz() {
       {/* ── Error ── */}
       {stage === 'error' && (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-          <HatchGlyph size={64} state="idle" className="text-primary" />
+          <HatchImage size={64} state="idle" />
           <h2 className="font-headline text-2xl font-bold text-on-background">Grading hit a snag</h2>
           <p className="max-w-sm font-body text-sm leading-relaxed text-on-surface-variant">
             The scorer did not come back that time. Your answer is still here. Give it one more try.

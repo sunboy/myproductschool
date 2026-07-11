@@ -7,7 +7,7 @@ import { CopyablePre, solutionMarkdownComponents } from '@/components/challenge/
 import { SolutionDiagram } from './diagrams/SolutionDiagram'
 import { InteractiveStepDiagram } from './diagrams/InteractiveStepDiagram'
 import { usePrefersReducedMotion } from './diagrams/hooks'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { SolutionApproach, SolutionContentV1 } from '@/lib/solutions/schema'
 
 type TopView = 'solution' | 'code' | 'visual'
@@ -145,7 +145,7 @@ function AiCollaborationSection({ content }: { content: SolutionContentV1 }) {
           marginBottom: open ? 10 : 0,
         }}
       >
-        <HatchGlyph size={30} state="speaking" className="text-primary" />
+        <HatchImage size={30} state="speaking" />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15.5, fontWeight: 700, color: 'var(--color-on-surface)', lineHeight: 1.25 }}>
             Working this problem with AI

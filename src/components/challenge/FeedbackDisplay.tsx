@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { FeedbackText } from '@/components/ui/FeedbackText'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { WhatWorkedSection } from '@/components/challenge/WhatWorkedSection'
 import { PercentileContext } from '@/components/challenge/PercentileContext'
 import { MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
@@ -56,7 +56,7 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3 p-4 bg-primary-container rounded-2xl">
-          <HatchGlyph size={32} className="text-primary" state="celebrating" />
+          <HatchImage size={32} state="celebrating" />
           <div>
             <p className="font-label font-medium text-on-primary-container">Hatch is reviewing your response...</p>
             <p className="text-sm text-primary">This usually takes 10–15 seconds.</p>
@@ -104,7 +104,7 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
         <>
           {/* Overall Assessment */}
           <div className="flex items-start gap-3 p-4 bg-primary-container rounded-2xl">
-            <HatchGlyph size={32} className="text-primary flex-shrink-0 mt-0.5" />
+            <HatchImage size={32} state="idle" className="flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-label font-medium text-on-primary-container mb-1">Hatch&apos;s Assessment</p>
               <FeedbackText className="text-on-primary-container">{full.overall}</FeedbackText>

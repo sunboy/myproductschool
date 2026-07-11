@@ -95,6 +95,7 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [plan, setPlan] = useState<string>('free')
+  const [planLoading, setPlanLoading] = useState(true)
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
   const [billingAction, setBillingAction] = useState<string | null>(null)
   const [billingError, setBillingError] = useState<string | null>(null)
@@ -160,7 +161,7 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    refreshProfile().catch(() => {})
+    refreshProfile().catch(() => {}).finally(() => setPlanLoading(false))
     refreshIdentities().catch(() => {})
     fetch('/api/billing/prices')
       .then(r => r.ok ? r.json() : null)
@@ -711,6 +712,23 @@ export default function SettingsPage() {
 
         {/* ── Plan & billing card ─────────────────────────────────────────── */}
         <section className="h-fit overflow-hidden rounded-2xl border border-hairline bg-card-bright">
+          {planLoading ? (
+            /* Neutral skeleton while the plan/billing query resolves — never
+               default to the free/upsell state during loading */
+            <div className="animate-pulse" aria-hidden="true">
+              <div className="px-5 py-4">
+                <div className="h-3 w-16 rounded bg-page-field" />
+                <div className="mt-2 h-7 w-48 rounded bg-page-field" />
+                <div className="mt-2 h-4 w-36 rounded bg-page-field" />
+              </div>
+              <div className="p-5">
+                <div className="h-[74px] rounded-[12px] bg-page-field" />
+                <div className="mt-4 h-10 rounded-[10px] bg-page-field" />
+                <div className="mt-4 h-10 w-40 rounded-[10px] bg-page-field" />
+              </div>
+            </div>
+          ) : (
+          <>
           {/* Dark pricing band (Codex ref 10 language) — the page's one dark surface */}
           <div
             className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
@@ -833,6 +851,8 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+          </>
+          )}
         </section>
       </div>
 

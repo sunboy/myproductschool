@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { QUESTIONS } from '@/lib/calibration/questions'
 import {
   scoreMove,
@@ -98,7 +98,7 @@ export function ArchetypeQuiz() {
     <div className="mx-auto flex min-h-[70vh] w-full max-w-2xl flex-col px-4 py-12 sm:px-6 sm:py-16">
       {stage === 'intro' && (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-          <HatchGlyph size={72} state="idle" className="text-primary" />
+          <HatchImage size={72} state="idle" />
           <p className="font-label text-sm font-semibold uppercase tracking-widest text-tertiary">
             60-second quiz, no signup
           </p>
@@ -136,7 +136,7 @@ export function ArchetypeQuiz() {
           </div>
 
           <div className="flex items-start gap-3">
-            <HatchGlyph size={40} state="listening" className="mt-1 shrink-0 text-primary" />
+            <HatchImage size={40} state="listening" className="mt-1 shrink-0" />
             <p className="font-body text-sm leading-relaxed text-on-surface-variant">
               {currentQuestion.scenario}
             </p>
@@ -168,7 +168,7 @@ export function ArchetypeQuiz() {
 
       {stage === 'result' && result && (
         <div className="flex flex-1 flex-col items-center gap-6 text-center">
-          <HatchGlyph size={80} state="celebrating" className="text-primary" />
+          <HatchImage size={80} state="celebrating" />
           <p className="font-label text-sm font-semibold uppercase tracking-widest text-tertiary">
             Your archetype
           </p>

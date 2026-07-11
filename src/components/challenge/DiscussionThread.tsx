@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ReportButton } from '@/components/feedback/ReportButton'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { Md } from '@/components/ui/Md'
 import { ChallengeDiscussion, DiscussionReply } from '@/lib/types'
 
@@ -323,7 +323,7 @@ export function DiscussionThread({
         return (
           <div key={r.id} className="flex items-start gap-2">
             {isHatchReply ? (
-              <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
+              <HatchImage size={28} state="speaking" className="shrink-0" />
             ) : (
               <div className="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0">
                 <span className="text-on-surface-variant text-[10px] font-bold">
@@ -356,7 +356,7 @@ export function DiscussionThread({
     <div className={frameClassName}>
       <div className="flex items-start gap-3">
         {displayAsExpertPick ? (
-          <HatchGlyph size={36} state="speaking" className="text-primary shrink-0" />
+          <HatchImage size={36} state="speaking" className="shrink-0" />
         ) : (
           <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
             <span className="text-on-primary-container font-bold text-sm">{initials}</span>

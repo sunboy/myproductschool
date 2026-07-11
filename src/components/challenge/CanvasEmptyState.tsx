@@ -1,6 +1,6 @@
 'use client'
 
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { CanvasChallengeType, GuidanceState } from '@/lib/hatch/canvasGuidance'
 
 interface CanvasEmptyStateProps {
@@ -46,7 +46,7 @@ export function CanvasEmptyState({
     >
       <div className="pointer-events-auto w-full max-w-md text-center">
         <div className="flex justify-center mb-4">
-          <HatchGlyph size={64} state="speaking" className="text-primary" />
+          <HatchImage size={64} state="speaking" />
         </div>
 
         <h2 className="font-headline text-2xl font-semibold tracking-tight text-on-surface">

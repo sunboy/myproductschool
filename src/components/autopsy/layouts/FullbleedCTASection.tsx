@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { StorySection } from '@/lib/types'
 
 interface Props {
@@ -62,7 +62,7 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
             marginBottom: 32,
           }}
         >
-          <HatchGlyph size={52} state="idle" className="text-primary" />
+          <HatchImage size={52} state="idle" />
         </div>
 
         {/* Label */}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { cleanDisplayCopy } from '@/lib/copy/display'
 
 interface HatchPickData {
@@ -53,7 +53,7 @@ export function HatchPick({ className = 'mb-6' }: { className?: string }) {
       className={`rounded-xl px-4 py-3 flex items-center gap-4 shadow-[0_12px_32px_-20px_rgba(30,53,40,0.35)] ${className}`}
       style={{ background: 'linear-gradient(135deg, #cfe3d3 0%, #d8ead9 60%, #e8f2eb 100%)', border: '1px solid rgba(74,124,89,0.20)' }}
     >
-      <HatchGlyph size={44} state="speaking" className="text-primary flex-shrink-0" />
+      <HatchImage size={44} state="speaking" className="flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-primary/70 font-label mb-0.5">Hatch&apos;s Pick</p>
         <p className="text-[15px] font-bold text-on-surface font-headline leading-snug truncate">{challengeTitle}</p>

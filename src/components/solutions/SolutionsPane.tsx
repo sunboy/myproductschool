@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { SolutionContent } from './SolutionContent'
 import type { SolutionTabResponse } from '@/lib/solutions/schema'
 
@@ -33,7 +33,7 @@ function Skeletons() {
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-        <HatchGlyph size={32} state="reviewing" className="text-primary" />
+        <HatchImage size={32} state="reviewing" />
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>
           Hatch is writing the solution for this challenge. About a minute.
         </p>
