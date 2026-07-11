@@ -16,6 +16,8 @@ import { isInternalUser } from '@/lib/posthog/internal'
 export interface SessionProfile {
   id: string
   streak_days: number
+  /** Longest streak ever (max of user_streaks.streak_days). Seeded by the server layout. */
+  longest_streak?: number
   xp_total: number
   display_name: string | null
   avatar_url: string | null
@@ -72,10 +74,21 @@ const SessionContext = createContext<SessionContextValue>({
   refresh: () => {},
 })
 
-export function SessionProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<SessionProfile | null>(null)
+export function SessionProvider({
+  children,
+  initialProfile = null,
+}: {
+  children: ReactNode
+  /**
+   * Server-fetched profile seed from (app)/layout.tsx. Guarantees the shell
+   * (top bar name, streak/XP pills) renders real data on first paint on every
+   * (app) route instead of flashing fallbacks until /api/profile resolves.
+   */
+  initialProfile?: SessionProfile | null
+}) {
+  const [profile, setProfile] = useState<SessionProfile | null>(initialProfile)
   const [usage, setUsage] = useState<UsageData>(DEFAULT_USAGE)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(initialProfile === null)
   // Guard against overlapping in-flight fetches (e.g. event fires mid-load).
   const inFlight = useRef(false)
 
@@ -96,9 +109,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           if (data.id) {
             identifyUser(data.id, { plan: data.plan ?? null, is_internal: isInternalUser(data.email) })
           }
-          setProfile({
+          setProfile(prev => ({
             id: data.id,
             streak_days: data.streak_days ?? 0,
+            // /api/profile doesn't return longest_streak — keep the
+            // server-layout seed (and never let it drop below the current streak).
+            longest_streak: Math.max(prev?.longest_streak ?? 0, data.streak_days ?? 0),
             xp_total: data.xp_total ?? 0,
             display_name: data.display_name ?? null,
             avatar_url: data.avatar_url ?? null,
@@ -108,7 +124,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             daily_attempts_today: data.daily_attempts_today ?? 0,
             subscription: data.subscription ?? null,
             dunning: data.dunning ?? null,
-          })
+          }))
           if (data.usage) {
             setUsage({
               challenges: data.usage.challenges ?? DEFAULT_USAGE.challenges,

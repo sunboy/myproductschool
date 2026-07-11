@@ -26,3 +26,14 @@ export function difficultyLabel(d: string): string {
   const canonical = coerceDifficulty(d)
   return canonical ? DIFFICULTY_LABELS[canonical] : d
 }
+
+/**
+ * XP required per user level. Single source for the "Level N" readouts in the
+ * top utility bar and the dashboard stat strip — they must always agree.
+ */
+export const XP_PER_USER_LEVEL = 500
+
+/** Derives the user's overall level from profiles.xp_total. Level 1 at 0 XP. */
+export function levelFromXp(xpTotal: number): number {
+  return Math.floor(Math.max(0, xpTotal) / XP_PER_USER_LEVEL) + 1
+}

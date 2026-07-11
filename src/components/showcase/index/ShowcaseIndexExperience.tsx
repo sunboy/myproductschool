@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Search, X } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
 import { HatchSays } from '@/components/redesign/HatchSays';
+import { InkMark } from '@/components/redesign/InkMark';
+import { ProTipStrip } from '@/components/redesign/ProTipStrip';
 import type { AutopsyCompanyWithStories, FeatureAutopsy } from '@/lib/autopsies/types';
 import { getFeaturedAppStory } from '@/lib/autopsies/app-library';
 
@@ -13,6 +15,9 @@ interface ShowcaseIndexExperienceProps {
   companies: AutopsyCompanyWithStories[];
   stories: FeatureAutopsy[];
 }
+
+/** Rows shown in the All Stories list before the user expands it. */
+const INITIAL_STORY_COUNT = 12;
 
 function bySlug<T extends { slug: string }>(items: T[]) {
   return new Map(items.map(item => [item.slug, item]));
@@ -24,6 +29,18 @@ function routeForStory(story: FeatureAutopsy) {
 
 function routeForCompany(company: AutopsyCompanyWithStories) {
   return `/explore/autopsies/${company.slug}`;
+}
+
+/**
+ * `estimatedReadTime` is a free-form DB string — some rows carry "20 min
+ * read", others just "20". Normalize bare numbers so every row reads
+ * "20 min read".
+ */
+function formatReadTime(raw: string) {
+  const trimmed = raw.trim();
+  if (/^\d+$/.test(trimmed)) return `${trimmed} min read`;
+  if (/^\d+\s*min$/i.test(trimmed)) return `${trimmed} read`;
+  return trimmed;
 }
 
 /**
@@ -86,6 +103,13 @@ export function ShowcaseIndexExperience({
           <CompaniesStrip companies={companies} />
         </>
       )}
+
+      <ProTipStrip
+        lead="Predict before you read."
+        tip="Before each stage, write down the call you would make. The gap between your call and the company's is the lesson."
+        ctaLabel="Run a linked rep"
+        ctaHref="/challenges"
+      />
 
       <SearchOverlay
         open={searchOpen}
@@ -170,11 +194,19 @@ function FeaturedStoryCard({
           {typeof totalStages === 'number' && totalStages > 0 && (
             <>
               {' · '}
-              {totalStages} {totalStages === 1 ? 'stage' : 'stages'}
+              <span className="relative inline-block">
+                {totalStages} {totalStages === 1 ? 'stage' : 'stages'}
+                <InkMark
+                  variant="underline"
+                  color="#a3ebb1"
+                  opacity={0.55}
+                  className="absolute -bottom-[7px] left-0 h-2 w-full"
+                />
+              </span>
             </>
           )}
           {' · '}
-          {story.estimatedReadTime}
+          {formatReadTime(story.estimatedReadTime)}
         </div>
         <h2 className="mb-3 max-w-[26ch] font-headline text-[28px] font-semibold leading-[1.16] text-[#f9faf5]">
           {story.title}
@@ -236,13 +268,18 @@ function StoryList({
   stories: FeatureAutopsy[];
   companyMap: Map<string, AutopsyCompanyWithStories>;
 }) {
+  const [showAll, setShowAll] = useState(false);
+
   if (stories.length === 0) {
     return <p className="border-t border-hairline py-6 text-sm text-ink-muted">More stories are on the way.</p>;
   }
 
+  const visible = showAll ? stories : stories.slice(0, INITIAL_STORY_COUNT);
+  const hiddenCount = stories.length - visible.length;
+
   return (
     <div className="mt-2">
-      {stories.map(story => {
+      {visible.map(story => {
         const company = companyMap.get(story.companySlug);
         const stageCount = story.flow?.length;
         return (
@@ -257,7 +294,7 @@ function StoryList({
               </div>
               <div className="mt-1 text-base font-bold leading-[1.32] text-ink-strong">{story.title}</div>
               <div className="mt-1 text-xs tabular-nums text-ink-muted">
-                {story.estimatedReadTime}
+                {formatReadTime(story.estimatedReadTime)}
                 {typeof stageCount === 'number' && stageCount > 0 && (
                   <>
                     <span className="mx-1.5 opacity-55">·</span>
@@ -273,6 +310,16 @@ function StoryList({
           </Link>
         );
       })}
+      {hiddenCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className="flex w-full items-center justify-center gap-1.5 border-t border-hairline py-3.5 text-xs font-bold text-forest-700 transition-colors hover:text-ink-strong"
+        >
+          Show all {stories.length} stories
+          <ArrowRight size={13} strokeWidth={2.2} className="rotate-90" />
+        </button>
+      )}
     </div>
   );
 }
@@ -390,7 +437,7 @@ function SearchOverlay({
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-ink-strong">{story.title}</span>
                       <small className="text-xs text-ink-muted">
-                        {company?.name ?? story.companySlug} · {story.estimatedReadTime}
+                        {company?.name ?? story.companySlug} · {formatReadTime(story.estimatedReadTime)}
                       </small>
                     </span>
                     <ArrowRight size={14} strokeWidth={2} className="shrink-0 text-ink-muted" />

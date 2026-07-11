@@ -20,7 +20,7 @@ import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { getCuratedFirstRepSlug, FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
-import { type ResumeOrStartAction } from '@/components/dashboard/cards/ResumeOrStartCard'
+import { type ResumeOrStartAction } from '@/components/dashboard/cards/resume-or-start'
 import { DashboardHero } from '@/components/redesign/dashboard/DashboardHero'
 import { StatStrip } from '@/components/redesign/StatStrip'
 import { FirstWeekStrip } from '@/components/redesign/dashboard/FirstWeekStrip'
@@ -30,7 +30,10 @@ import { ThisWeekPanel } from '@/components/redesign/dashboard/ThisWeekPanel'
 import { PeersPanel } from '@/components/redesign/dashboard/PeersPanel'
 import { FlowMethodRail } from '@/components/redesign/dashboard/FlowMethodRail'
 import { QuietInviteRow, QuietInviteRail } from '@/components/redesign/dashboard/QuietInvite'
-import { difficultyLabel } from '@/lib/utils'
+import { ProTipStrip } from '@/components/redesign/ProTipStrip'
+import { difficultyLabel, levelFromXp } from '@/lib/utils'
+import { COMPETENCY_LABELS, type Competency } from '@/lib/types'
+import type { FocusArea } from '@/components/redesign/dashboard/ThisWeekPanel'
 
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
@@ -471,7 +474,7 @@ async function loadDashboardCoreUncached() {
     // Most-recent in_progress attempt (mirrors resume-challenge/route.ts:66-72).
     const { data: inProgress } = await adminClient
       .from('challenge_attempts')
-      .select('challenge_id, current_step, started_at, challenges(title)')
+      .select('challenge_id, current_step, started_at, challenges(title, difficulty)')
       .eq('user_id', userId)
       .eq('status', 'in_progress')
       .order('started_at', { ascending: false })
@@ -479,14 +482,14 @@ async function loadDashboardCoreUncached() {
       .maybeSingle()
 
     if (inProgress?.challenge_id) {
-      const resumeTitle =
-        ((inProgress.challenges as unknown as { title?: string } | null)?.title) ?? 'your challenge'
+      const resumeChallenge = inProgress.challenges as unknown as { title?: string; difficulty?: string | null } | null
       resumeOrStartAction = {
         kind: 'resume',
         href: `/workspace/challenges/${inProgress.challenge_id}?resume=1`,
-        title: resumeTitle,
+        title: resumeChallenge?.title ?? 'your challenge',
         step: flowStepNumber(inProgress.current_step as string | null),
         totalSteps: 4,
+        difficulty: resumeChallenge?.difficulty ?? null,
       }
     }
   }
@@ -666,6 +669,19 @@ async function DashboardContent() {
     ? { done: core.weekDates.filter(d => d.completed).length, goal: WEEKLY_GOAL_TARGET }
     : null
 
+  // Focus areas = the user's weakest competencies from learner_competencies
+  // (via hatchContext), lowest score first. Real data only — no competencies
+  // graded yet means the section is absent (spec §4 "no invented metrics").
+  const FOCUS_TONES = ['sd', 'ps', 'sql', 'dm'] as const
+  const focusAreas: FocusArea[] = (lead.hatchContext?.competencies ?? [])
+    .filter(c => c.competency in COMPETENCY_LABELS)
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 3)
+    .map((c, i) => ({
+      label: COMPETENCY_LABELS[c.competency as Competency],
+      tone: FOCUS_TONES[i % FOCUS_TONES.length],
+    }))
+
   return (
     <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_268px]">
       <div className="flex min-w-0 flex-col gap-5">
@@ -711,7 +727,12 @@ async function DashboardContent() {
               steps={core.todaysPathSteps.map(s => ({ label: s.label, sub: s.sub, done: s.done, active: s.active }))}
               completed={core.todaysPathCompleted}
             />
-            <ThisWeekPanel weekDates={core.weekDates} streakDays={core.streakDays} viewPlanHref={core.activePlanSlug ? `/explore/plans/${core.activePlanSlug}` : '/explore/plans'} />
+            <ThisWeekPanel
+              weekDates={core.weekDates}
+              streakDays={core.streakDays}
+              focusAreas={focusAreas}
+              viewPlanHref={core.activePlanSlug ? `/explore/plans/${core.activePlanSlug}` : '/explore/plans'}
+            />
             <PeersPanel entries={core.leaderboard} viewLeaderboardHref="/cohort" />
           </div>
         )}
@@ -747,6 +768,14 @@ async function DashboardContent() {
           </div>
         )}
       </aside>
+
+      <ProTipStrip
+        className="lg:col-span-2"
+        lead="Finish, then start."
+        tip="A completed rep teaches more than three abandoned ones. Short on time? Finish one step of a paused rep instead of opening a new challenge."
+        ctaLabel="Pick a rep"
+        ctaHref="/challenges"
+      />
     </div>
   )
 }
@@ -764,7 +793,13 @@ function buildStatCells(
     cells.push({ key: 'progress', label: 'Overall Progress', value: `${overallProgressPct}%`, progressPercent: overallProgressPct })
   }
 
-  cells.push({ key: 'xp', label: 'Total XP', value: lead.xpTotal.toLocaleString() })
+  cells.push({
+    key: 'xp',
+    label: 'Total XP',
+    value: lead.xpTotal.toLocaleString(),
+    // Same derivation as the top utility bar pill — the two must agree.
+    valueSuffix: lead.xpTotal > 0 ? `Level ${levelFromXp(lead.xpTotal)}` : undefined,
+  })
 
   const completedCount = lead.hatchContext?.practiceStats.completedChallenges ?? null
   if (completedCount !== null && completedCount > 0) {

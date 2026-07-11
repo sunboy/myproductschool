@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Check, ArrowRight } from 'lucide-react'
 import { HatchImage } from '@/components/redesign/HatchImage'
+import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 import type { StudyPlanWithItems } from '@/lib/types'
 import type { Discipline } from '@/components/redesign/DisciplineTile'
 import { trackEvent } from '@/lib/posthog/client'
@@ -112,7 +113,7 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
 
         {headerNote && (
           <div className="note-mint flex max-w-[320px] shrink-0 items-center gap-2.5 px-3 py-2.5">
-            <HatchImage state="avatar" size={28} className="rounded-full" />
+            <HatchImage state="avatar" size={28} className="rounded-full bg-forest-900 p-[3px]" />
             <p className="text-[12.5px] leading-[1.4] text-ink-secondary">
               <b className="font-extrabold text-ink-strong">Hatch:</b> {headerNote}
             </p>
@@ -146,7 +147,7 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
             href={`/explore/plans/${continuePlan.slug}`}
             className="ml-auto flex shrink-0 items-center gap-1.5 rounded-lg bg-forest-950 px-[18px] py-[9px] text-[12.5px] font-extrabold text-white no-underline max-sm:ml-0 max-sm:w-full max-sm:justify-center"
           >
-            Continue {continuePlan.title}
+            {continuePlan.progress_percentage > 0 ? 'Resume plan' : 'Start plan'}
             <ArrowRight size={14} strokeWidth={2} />
           </Link>
         </div>
@@ -201,6 +202,24 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
               ))}
             </div>
           )}
+
+          {/* Preview shows the loop-tracks section below the grid on the
+              default view; the Interview loops tab is a focused shortcut. */}
+          {hasLoops && (
+            <>
+              <div className="mb-1 mt-6 flex items-baseline justify-between">
+                <div>
+                  <div className="font-body text-[17px] font-bold text-ink-strong">Interview loop tracks</div>
+                  <div className="mt-0.5 text-[12.5px] text-ink-muted">Multi-round sequences matched to a target role</div>
+                </div>
+              </div>
+              <div className="mt-2.5 flex flex-col border-t border-hairline">
+                {tracks.loopRows.map(loop => (
+                  <LoopRow key={loop.id} loop={loop} />
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
 
@@ -221,6 +240,13 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
           </div>
         </>
       )}
+
+      <ProTipStrip
+        lead="One plan at a time."
+        tip="Two plans in parallel stall both. Pick the capability you need next, finish the sequence, then enroll in the next one."
+        ctaLabel="See your progress"
+        ctaHref="/progress"
+      />
     </div>
   )
 }

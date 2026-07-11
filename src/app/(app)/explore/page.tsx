@@ -1,15 +1,17 @@
 import Link from 'next/link'
 import {
   Grid2x2, Box, Database, Lightbulb, BrainCircuit, Users,
-  ChevronDown, ArrowRight, Bookmark,
+  ChevronDown, ArrowRight,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   getFeaturedChallenges,
+  getChallenges,
   getChallengeCounts,
   type CountDiscipline,
 } from '@/lib/data/challenges'
+import { DIFFICULTY_OPTIONS } from '@/lib/practice/difficulty'
 import { getStudyPlanSummaries, getEnrolledPlans } from '@/lib/data/study-plans'
 import { getHotChallenges } from '@/lib/data/dashboard'
 import { getAutopsyCompanies } from '@/lib/autopsies/queries'
@@ -19,6 +21,7 @@ import { difficultyLabel } from '@/lib/utils'
 import { getCompanyLabel } from '@/lib/data/taxonomy'
 import { formatCompany } from '@/lib/format/company'
 import { HatchImage } from '@/components/redesign/HatchImage'
+import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 import { DisciplineTile, type Discipline as TileDiscipline } from '@/components/redesign/DisciplineTile'
 import { disciplineFor } from '@/components/redesign/dashboard/discipline'
 import type { ChallengeWithDomain } from '@/lib/types'
@@ -43,6 +46,12 @@ function brandAccentFor(name: string): string | null {
   return AUTOPSY_BRAND_ACCENTS[key] ?? null
 }
 
+/**
+ * Tab set follows the real CountDiscipline taxonomy, not the preview verbatim:
+ * the comp's AI/ML, Behavioral, and More tabs have no backing challenge_type
+ * in the catalog, and a tab must never lead to a fabricated empty state.
+ * Coding/DSA (algorithm) is real taxonomy and stays.
+ */
 const DISCIPLINE_TABS: Array<{ key: CountDiscipline; label: string; icon: typeof Box }> = [
   { key: 'all', label: 'All', icon: Grid2x2 },
   { key: 'system_design', label: 'System Design', icon: Box },
@@ -100,7 +109,14 @@ export default async function ExplorePage({
     loadHeroLead(userId, adminClient),
   ])
 
-  const realInterviewGroups = await loadRealInterviewGroups(adminClient)
+  const { shelfGroups: realInterviewGroups, companyOptions } = await loadRealInterviewGroups(adminClient)
+
+  // `is_featured` has no backing rows in the live DB, so an empty featured set
+  // falls back to one recent published rep per discipline (real challenges via
+  // the existing getChallenges loader — never mock or invented cards).
+  const featuredPicks = featuredChallenges.length > 0
+    ? featuredChallenges.slice(0, 4)
+    : await loadFeaturedFallback()
 
   const autopsyHubs = getReadableAppCompanies(autopsyCompaniesRaw)
   const studyPlansBySlug = new Map(studyPlansRaw.map(p => [p.slug, p]))
@@ -115,10 +131,10 @@ export default async function ExplorePage({
       <CatalogHero lead={profileLead} />
 
       <DisciplineTabs counts={counts} active={activeDiscipline} />
-      <FilterRow />
+      <FilterRow companies={companyOptions} />
 
       <FeaturedPractice
-        challenges={featuredChallenges}
+        challenges={featuredPicks}
         weakestMove={profileLead.weakestMove}
         interviewDate={profileLead.interviewDate}
       />
@@ -129,6 +145,13 @@ export default async function ExplorePage({
         <RealInterviewsShelf groups={realInterviewGroups} />
         <TrendingShelf challenges={hotChallenges} />
       </div>
+
+      <ProTipStrip
+        lead="Depth beats coverage."
+        tip="Rerunning the challenge type you scored lowest on moves your level faster than sampling a new discipline every day."
+        ctaLabel="See your levels"
+        ctaHref="/progress"
+      />
     </main>
   )
 }
@@ -196,7 +219,15 @@ async function loadHeroLead(userId: string | null, adminClient: ReturnType<typeo
   }
 }
 
-async function loadRealInterviewGroups(adminClient: ReturnType<typeof createAdminClient> | null): Promise<CompanyChallengeGroup[]> {
+interface CompanyOption {
+  tag: string
+  label: string
+}
+
+async function loadRealInterviewGroups(adminClient: ReturnType<typeof createAdminClient> | null): Promise<{
+  shelfGroups: CompanyChallengeGroup[]
+  companyOptions: CompanyOption[]
+}> {
   const client = adminClient ?? createAdminClient()
   try {
     const { data } = await client
@@ -215,9 +246,18 @@ async function loadRealInterviewGroups(adminClient: ReturnType<typeof createAdmi
         counts.get(company)!.push(c)
       }
     }
-    const sorted = [...counts.entries()].sort((a, b) => b[1].length - a[1].length).slice(0, 3)
+    const sorted = [...counts.entries()].sort((a, b) => b[1].length - a[1].length)
+
+    // Companies dropdown options: every company here has at least one real
+    // published challenge, so /challenges?company=X can never land empty.
+    const companyOptions: CompanyOption[] = sorted.slice(0, 8).map(([tag]) => ({
+      tag,
+      label: getCompanyLabel(tag) ?? formatCompany(tag),
+    }))
+
     const seenIds = new Set<string>()
-    return sorted
+    const shelfGroups = sorted
+      .slice(0, 3)
       .map(([company, challenges]) => {
         const unique = challenges.filter(c => {
           if (seenIds.has(c.id)) return false
@@ -227,9 +267,35 @@ async function loadRealInterviewGroups(adminClient: ReturnType<typeof createAdmi
         return { company, challenges: unique }
       })
       .filter(g => g.challenges.length > 0)
+
+    return { shelfGroups, companyOptions }
   } catch {
-    return []
+    return { shelfGroups: [], companyOptions: [] }
   }
+}
+
+/* Featured fallback: one recent published rep per discipline, preferring
+ * real-interview questions inside each bucket. Uses the shared getChallenges
+ * loader so difficulty/type normalization matches the Practice hub. */
+async function loadFeaturedFallback(): Promise<ChallengeWithDomain[]> {
+  const disciplines = ['system_design', 'product_sense', 'sql', 'data_modeling'] as const
+  const results = await Promise.all(
+    disciplines.map(type =>
+      getChallenges({ type }, { limit: 6, offset: 0 }).catch(() => [] as ChallengeWithDomain[]),
+    ),
+  )
+  const seen = new Set<string>()
+  const picks: ChallengeWithDomain[] = []
+  for (const rows of results) {
+    const candidate =
+      rows.find(c => (c as unknown as { is_real_interview?: boolean | null }).is_real_interview && !seen.has(c.id)) ??
+      rows.find(c => !seen.has(c.id))
+    if (candidate) {
+      seen.add(candidate.id)
+      picks.push(candidate)
+    }
+  }
+  return picks
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -366,12 +432,41 @@ function DisciplineTabs({ counts, active }: { counts: Record<CountDiscipline, nu
   )
 }
 
-function FilterRow() {
+/**
+ * Preview filter set is All Levels / Durations / Types / Companies / Sort.
+ * Durations and Sort have no backing searchParam on /challenges, so they are
+ * omitted rather than stubbed. Every option below navigates into the existing
+ * Practice-hub filter behavior (difficulty / discipline / company params).
+ */
+function FilterRow({ companies }: { companies: CompanyOption[] }) {
   return (
     <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
-      <FilterLink href="/challenges?difficulty=easy" label="Easy" />
-      <FilterLink href="/challenges?difficulty=medium" label="Medium" />
-      <FilterLink href="/challenges?difficulty=hard" label="Hard" />
+      <FilterDropdown
+        label="All Levels"
+        options={[
+          { label: 'All Levels', href: '/challenges' },
+          ...DIFFICULTY_OPTIONS.map(d => ({ label: d.label, href: `/challenges?difficulty=${d.value}` })),
+        ]}
+      />
+      <FilterDropdown
+        label="All Types"
+        options={[
+          { label: 'All Types', href: '/challenges' },
+          ...DISCIPLINE_TABS.filter(t => t.key !== 'all').map(t => ({
+            label: t.label,
+            href: `/challenges?discipline=${t.key}`,
+          })),
+        ]}
+      />
+      {companies.length > 0 && (
+        <FilterDropdown
+          label="Companies"
+          options={companies.map(c => ({ label: c.label, href: `/challenges?company=${encodeURIComponent(c.tag)}` }))}
+        />
+      )}
+      {DIFFICULTY_OPTIONS.map(d => (
+        <FilterLink key={d.value} href={`/challenges?difficulty=${d.value}`} label={d.label} white />
+      ))}
       <FilterLink href="/challenges?real_interview=1" label="Real interviews" />
       <div className="flex-1" />
       <Link
@@ -385,11 +480,33 @@ function FilterRow() {
   )
 }
 
-function FilterLink({ href, label }: { href: string; label: string }) {
+function FilterDropdown({ label, options }: { label: string; options: Array<{ label: string; href: string }> }) {
+  return (
+    <details className="relative">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-full border-[1.5px] border-ink-secondary bg-card-alt px-3.5 py-2 text-[12.5px] font-bold text-ink-secondary [&::-webkit-details-marker]:hidden">
+        {label}
+        <ChevronDown size={13} strokeWidth={1.8} className="opacity-60" />
+      </summary>
+      <div className="absolute left-0 top-[calc(100%+6px)] z-30 min-w-[180px] rounded-lg border border-hairline bg-white py-1.5 shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.3)]">
+        {options.map(o => (
+          <Link
+            key={`${o.label}-${o.href}`}
+            href={o.href}
+            className="block whitespace-nowrap px-3.5 py-2 text-[12.5px] font-bold text-ink-secondary no-underline hover:bg-card-alt"
+          >
+            {o.label}
+          </Link>
+        ))}
+      </div>
+    </details>
+  )
+}
+
+function FilterLink({ href, label, white = false }: { href: string; label: string; white?: boolean }) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink-secondary bg-card-alt px-3.5 py-2 text-[12.5px] font-bold text-ink-secondary no-underline"
+      className={`inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink-secondary px-3.5 py-2 text-[12.5px] font-bold text-ink-secondary no-underline ${white ? 'bg-white' : 'bg-card-alt'}`}
     >
       {label}
     </Link>
@@ -451,7 +568,8 @@ function reasonFor(challenge: ChallengeWithDomain, weakestMove: string, intervie
   if (moveTags.includes(weakestMove)) {
     return `A ${capitalize(weakestMove)}-heavy scenario, and ${capitalize(weakestMove)} is your weakest move.`
   }
-  return `Editorially picked for this week's practice rotation.`
+  const label = DISCIPLINE_EYEBROW[disciplineFor(challenge.challenge_type, challenge.domain?.title)]
+  return `A recent ${label} rep from the catalog.`
 }
 
 function FeaturedCard({
@@ -473,9 +591,10 @@ function FeaturedCard({
       href={challengePath(challenge)}
       className="flex flex-col rounded-xl border border-hairline bg-card-bright p-4 no-underline shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)]"
     >
+      {/* No bookmark affordance: challenges have no bookmark backend (only
+          autopsy stories do), and stub icons are banned. */}
       <div className="mb-3 flex items-start justify-between gap-2">
         <DisciplineTile discipline={discipline} className="size-11" />
-        <Bookmark size={16} strokeWidth={1.7} className="text-ink-muted" />
       </div>
       <div className={`mb-2 font-label text-[10.5px] font-bold uppercase tracking-[0.06em] ${DISCIPLINE_EYEBROW_CLASS[discipline]}`}>
         {label}

@@ -88,7 +88,7 @@ Direct, confident. No em dashes, no AI slop, no "you are a PM" role framing. UI 
 The first previews had oversized dark heroes with empty regions. The Codex dashboard ref works because its hero is PACKED: welcome line, serif headline, Daily Focus block (label, title, description, chips, two CTAs), weekly-goal ring, HatchSays, mascot — all in one band. Rules:
 - A dark hero band must be a dense 3-column information surface, not a billboard. Every region carries content; no empty gradient acreage. Max height ≈ 300px at 1440.
 - Headline max 2 lines, ~30-34px. Vertical padding 24-28px.
-- Dark heroes are allowed ONLY on: dashboard, practice catalog, progress, interviews hub (the ref screens). All other pages (autopsies hub, study plans hub, guides hub, plan detail, readers) use a compact LIGHT page header instead: serif H1 (~28px) + one-line sub + inline meta chips + optional small CTA, ~90-120px tall, no dark band, no mascot pose in the header.
+- Dark heroes are allowed on: dashboard, practice catalog, progress, interviews hub, AND the three library hubs (study plans, autopsies, guides) — the final approved previews added compact (≤220px) dense dark heroes with a HatchSays card + mascot to the hubs, and the previews win where this list disagrees (Stage B ruling, 2026-07-11). Detail pages and readers (plan detail, autopsy reader, chapter reader) keep the compact LIGHT page header: serif H1 (~28px) + one-line sub + inline meta chips + optional small CTA, ~90-120px tall, no dark band, no mascot pose in the header.
 - "Continue" bands merge INTO the page header row where possible instead of stacking another full-width card below a hero.
 
 ## 2. Icon treatment: kill the tinted-square slop

@@ -7,6 +7,7 @@ import { DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/diffi
 import type { LearnModule, LearnModuleWithProgress } from '@/lib/types'
 import { BackButton } from '@/components/navigation/BackButton'
 import { NoteCard } from '@/components/redesign/NoteCard'
+import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 
 // Guides hub — compact light page header per spec §1 rev-1 (guides hub is
 // explicitly listed among the pages that drop the dark hero band). Module
@@ -177,21 +178,27 @@ export default async function ModulesPage() {
                 href={`/explore/modules/${module.slug}`}
                 className="flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface no-underline"
               >
+                {/* Cover band: tinted surface with the module title as the mark.
+                    Letter-initial covers are banned (spec §8) — the accent
+                    lives in the title text color, never an initial square. */}
                 <div
                   className="flex items-center px-4"
-                  style={{ height: 68, background: tintFromHex(module.cover_color, 0.12) }}
+                  style={{ minHeight: 68, background: tintFromHex(module.cover_color, 0.12) }}
                 >
                   <span
-                    className="font-headline text-[32px] font-bold leading-none"
-                    style={{ color: module.accent_color }}
+                    className="font-body py-3 text-[15.5px] font-bold leading-snug"
+                    style={{
+                      color: module.accent_color,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
                   >
-                    {module.name.charAt(0).toUpperCase()}
+                    {module.name}
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col p-4">
-                  <div className="font-body mb-1.5 text-[15.5px] font-bold leading-snug text-on-surface">
-                    {module.name}
-                  </div>
                   {module.tagline && (
                     <div
                       className="font-body mb-3 text-[13px] leading-relaxed text-on-surface-variant"
@@ -223,8 +230,24 @@ export default async function ModulesPage() {
               </Link>
             )
           })}
+          {/* Quiet closing cell per preview: teal info note, text only. */}
+          <NoteCard
+            tint="teal"
+            className="flex items-center justify-center rounded-xl px-5 py-6"
+          >
+            <span className="font-body text-center text-sm font-bold text-on-surface-variant">
+              More guides are being written
+            </span>
+          </NoteCard>
         </div>
       )}
+
+      <ProTipStrip
+        lead="Theory decays fast."
+        tip="A framework you read but never use fades within the week. After a chapter, run one challenge that grades against it."
+        ctaLabel="Pick a challenge"
+        ctaHref="/challenges"
+      />
     </div>
   )
 }

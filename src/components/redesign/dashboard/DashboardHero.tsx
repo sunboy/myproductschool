@@ -3,7 +3,7 @@ import { Play, ArrowRight } from 'lucide-react'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { HatchSays } from '@/components/redesign/HatchSays'
 import { difficultyLabel } from '@/lib/utils'
-import type { ResumeOrStartAction } from '@/components/dashboard/cards/ResumeOrStartCard'
+import type { ResumeOrStartAction } from '@/components/dashboard/cards/resume-or-start'
 
 export interface WeeklyGoalData {
   done: number
@@ -115,7 +115,10 @@ export function DashboardHero({
 
           <div className="relative flex items-end">
             <HatchSays message={hatchMessage} tint="mint" className="relative z-10 w-full" />
-            <div className="pointer-events-none absolute -bottom-6 -right-4 z-[1] w-32">
+            {/* Overlapping mascot per previews/round4/dashboard-first-run.html
+                .hero-pose (hidden at narrow widths, same as the preview's
+                media query). */}
+            <div className="pointer-events-none absolute -bottom-6 -right-4 z-[1] hidden w-32 lg:block">
               <HatchImage state="thinking" size={128} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
             </div>
           </div>
@@ -165,13 +168,13 @@ export function DashboardHero({
               : (action.domain ? `${action.domain} · ` : '') + (action.difficulty ? difficultyLabel(action.difficulty) : '')}
           </div>
 
-          <div className="mb-3.5 flex gap-2">
-            {action.kind === 'next' && action.difficulty && (
+          {action.difficulty && (
+            <div className="mb-3.5 flex gap-2">
               <span className="rounded-full bg-white/10 px-[11px] py-1 text-[11.5px] font-bold text-white/85">
                 {difficultyLabel(action.difficulty)}
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-4">
             {/* data-hatch-target="dashboard-session" is a real anchor: the
@@ -214,7 +217,10 @@ export function DashboardHero({
           </div>
         )}
 
-        <div className="relative flex items-center">
+        {/* lg:col-start-3 pins this to the 190px column even when the weekly
+            goal ring is absent — without it the grid auto-places the HatchSays
+            card (and the mascot) into the middle column. */}
+        <div className="relative flex items-center lg:col-start-3">
           <div className="relative z-10 w-full rounded-xl bg-note-mint px-[15px] py-[13px]">
             <div className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-bold text-forest-800">
               <HatchImage state="avatar" size={16} className="rounded-full" />
@@ -230,7 +236,10 @@ export function DashboardHero({
               </Link>
             )}
           </div>
-          <div className="pointer-events-none absolute -bottom-6 -right-5 z-[2] w-[130px]">
+          {/* Overlapping mascot per previews/round4/dashboard.html and
+              dashboard-pro.html .hero-pose (130px, bottom-right overlap;
+              hidden at narrow widths per the preview's media query). */}
+          <div className="pointer-events-none absolute -bottom-6 -right-5 z-[2] hidden w-[130px] lg:block">
             <HatchImage state="thinking" size={130} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
           </div>
         </div>

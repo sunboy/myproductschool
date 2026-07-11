@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Flame, Zap, Volume2, VolumeX, Compass, LogOut, Settings, Handshake, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { levelFromXp } from '@/lib/utils'
 import { useSession } from '@/context/SessionContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { FreemiumUsageSummary, SpendIndicator } from '@/components/billing/FreemiumUsageSummary'
@@ -80,7 +81,9 @@ export function AppTopShell() {
   }
 
   const streak = profile?.streak_days ?? 0
+  const bestStreak = Math.max(profile?.longest_streak ?? 0, streak)
   const xp = profile?.xp_total ?? 0
+  const level = levelFromXp(xp)
   const isPro = profile?.plan === 'pro'
 
   // Derive trial/dunning banners from already-fetched profile data (same logic as TopNav).
@@ -217,7 +220,9 @@ export function AppTopShell() {
           onSearchSubmit={handleSearchSubmit}
           searchInputRef={searchInputRef}
           streakDays={streak > 0 ? streak : undefined}
+          bestStreakDays={streak > 0 ? bestStreak : undefined}
           totalXp={xp > 0 ? xp : undefined}
+          level={xp > 0 ? level : undefined}
           avatarInitial={getInitials(profile?.display_name)}
           displayName={profile?.display_name ?? 'You'}
           isPro={isPro}
