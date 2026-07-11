@@ -13,6 +13,7 @@ import {
   monthlyEquivalent,
   savingsPercent,
 } from '@/lib/billing/use-plan-prices'
+import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 const proFeatures = [
   'Live interviews across product, system design, SQL, and coding',
@@ -33,6 +34,8 @@ const CYCLES: BillingPlanId[] = ['monthly', 'annual']
 export function V3PricingSection() {
   const analyticsEnabled = isAnalyticsFeatureEnabled()
   const prices = usePlanPrices()
+  // Live plan_limits values (60s-cached API); never hardcode allowance numbers.
+  const limits = usePlanLimits()
   const [proBilling, setProBilling] = useState<BillingPlanId>('annual')
   // Analytics tier has its own monthly/annual sub-toggle, independent of Pro's.
   const [analyticsBilling, setAnalyticsBilling] = useState<BillingPlanId>('annual')
@@ -62,9 +65,44 @@ export function V3PricingSection() {
         </div>
 
         <div
-          className={analyticsEnabled ? 'pricing-grid' : 'pricing-grid pricing-grid-solo'}
+          className={analyticsEnabled ? 'pricing-grid pricing-grid-three' : 'pricing-grid'}
           aria-label="HackProduct pricing"
         >
+          <article className="pricing-card">
+            <div className="pricing-card-top">
+              <span className="pricing-badge">Free forever</span>
+            </div>
+            <h3>Free</h3>
+            <div className="pricing-price">
+              <span>$0</span>
+              <small>/ forever</small>
+            </div>
+            <p className="pricing-card-copy">
+              Enough monthly reps to test the system before you commit anything.
+            </p>
+            <ul>
+              <li>
+                <Check aria-hidden="true" strokeWidth={2.2} />
+                <span>{limits.free.challenges} practice challenges each month</span>
+              </li>
+              <li>
+                <Check aria-hidden="true" strokeWidth={2.2} />
+                <span>{limits.free.interviews} live interviews each month</span>
+              </li>
+              <li>
+                <Check aria-hidden="true" strokeWidth={2.2} />
+                <span>Hatch feedback and scoring on every rep</span>
+              </li>
+              <li>
+                <Check aria-hidden="true" strokeWidth={2.2} />
+                <span>No credit card required</span>
+              </li>
+            </ul>
+            <PricingCta className="btn btn-outline-dark pricing-cta" next="/dashboard">
+              Start free
+            </PricingCta>
+          </article>
+
           <article className="pricing-card pricing-card-featured">
             <div className="pricing-card-top">
               <span className="pricing-badge">7-day trial</span>
@@ -177,7 +215,7 @@ export function V3PricingSection() {
               </ul>
 
               <PricingCta
-                className="btn btn-forest pricing-cta"
+                className="btn btn-outline-dark pricing-cta"
                 next={`/pricing?plan=${analyticsPlanParam}&checkout=1`}
               >
                 Get Analytics

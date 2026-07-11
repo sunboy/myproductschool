@@ -25,22 +25,23 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Check, Loader2 } from 'lucide-react'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_ONBOARDING_STEP, EVENT_FIRST_REP_ROUTED } from '@/lib/posthog/events'
 import { FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
 
 const ROLES = [
-  { id: 'swe', label: 'Software Engineer', icon: 'terminal' },
-  { id: 'data_eng', label: 'Data Engineer', icon: 'storage' },
-  { id: 'ml_eng', label: 'ML Engineer', icon: 'model_training' },
-  { id: 'devops', label: 'DevOps / Platform', icon: 'settings_suggest' },
-  { id: 'em', label: 'Eng Manager', icon: 'groups' },
-  { id: 'founding_eng', label: 'Founding Engineer', icon: 'rocket_launch' },
-  { id: 'tech_lead', label: 'Tech Lead', icon: 'account_tree' },
-  { id: 'pm', label: 'Product Manager', icon: 'track_changes' },
-  { id: 'designer', label: 'Designer', icon: 'palette' },
-  { id: 'data_scientist', label: 'Data Scientist', icon: 'query_stats' },
+  { id: 'swe', label: 'Software Engineer' },
+  { id: 'data_eng', label: 'Data Engineer' },
+  { id: 'ml_eng', label: 'ML Engineer' },
+  { id: 'devops', label: 'DevOps / Platform' },
+  { id: 'em', label: 'Eng Manager' },
+  { id: 'founding_eng', label: 'Founding Engineer' },
+  { id: 'tech_lead', label: 'Tech Lead' },
+  { id: 'pm', label: 'Product Manager' },
+  { id: 'designer', label: 'Designer' },
+  { id: 'data_scientist', label: 'Data Scientist' },
 ] as const
 
 export default function FirstRunPage() {
@@ -82,70 +83,86 @@ export default function FirstRunPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 bg-background">
-      <div className="w-full max-w-xl">
-        <div className="flex flex-col items-center text-center gap-4">
-          <HatchGlyph size={64} state="idle" className="text-primary" />
-          <div className="space-y-2">
-            <h1 className="font-headline text-3xl font-bold text-on-background">
-              Let&apos;s do a real rep first.
-            </h1>
-            <p className="font-body text-base text-on-surface-variant max-w-md mx-auto leading-relaxed">
-              A short product scenario you work through in writing. Hatch reads how
-              you reason and grades it. Pick where you work today and it will pull a
-              scenario that fits.
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-page-field px-4 py-10">
+      <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-hairline bg-card-bright shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)]">
+        <div className="sm:grid sm:grid-cols-[minmax(0,4fr)_minmax(0,6fr)]">
+
+          {/* ── Welcome panel (Codex ref 2 split layout) ─────────────────── */}
+          <div className="flex flex-col justify-between bg-page-field p-6">
+            <div>
+              <h1 className="font-headline text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink-strong">
+                Let&apos;s do a real <span className="hl-word">rep</span> first
+              </h1>
+              <p className="mt-3 font-body text-[13.5px] leading-relaxed text-ink-secondary">
+                A short product scenario you work through in writing.
+                {' '}<span className="font-bold text-forest-800">Hatch</span> reads
+                how you reason and grades it.
+              </p>
+            </div>
+            <div className="flex justify-center py-3">
+              <HatchImage state="wave" size={140} priority alt="Hatch" />
+            </div>
+            <div className="note-mint px-3.5 py-2.5 font-body text-[12px] font-bold text-forest-800">
+              About 5 minutes. No setup, no microphone.
+            </div>
+          </div>
+
+          {/* ── Role chip-select ─────────────────────────────────────────── */}
+          <div className="flex flex-col justify-center p-6 sm:p-7">
+            <p className="font-label text-[11px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
+              Pick your role
             </p>
+            <h2 className="mt-1.5 font-body text-[18px] font-extrabold leading-tight text-ink-strong">
+              Where do you work today?
+            </h2>
+            <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-secondary">
+              Hatch pulls a scenario that fits. Goals and calibration stay
+              optional, you can set them after this rep.
+            </p>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {ROLES.map((role) => {
+                const isBusy = busyRole === role.id
+                const isDimmed = busyRole !== null && !isBusy
+                return (
+                  <button
+                    key={role.id}
+                    type="button"
+                    onClick={() => pickRole(role.id)}
+                    disabled={busyRole !== null}
+                    aria-label={`Start a ${role.label} rep`}
+                    className={[
+                      'flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 active:scale-[0.98]',
+                      isBusy
+                        ? 'border-forest-600 bg-note-mint'
+                        : 'border-hairline bg-card-bright hover:border-forest-600/40',
+                      isDimmed ? 'opacity-45' : '',
+                      busyRole !== null ? 'cursor-default' : 'cursor-pointer',
+                    ].join(' ')}
+                  >
+                    <span className="font-body text-[13px] font-bold leading-tight text-ink-strong">
+                      {role.label}
+                    </span>
+                    {isBusy && (
+                      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-forest-600" strokeWidth={2.2} />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {busyRole && (
+              <p className="mt-4 flex items-center gap-1.5 font-body text-[12.5px] text-ink-secondary">
+                <Check className="h-3.5 w-3.5 text-forest-600" strokeWidth={2.2} />
+                Pulling your first rep
+              </p>
+            )}
+
+            {error && (
+              <p className="mt-4 font-body text-[12.5px] text-error">{error}</p>
+            )}
           </div>
         </div>
-
-        <div className="mt-8 grid grid-cols-2 sm:grid-cols-2 gap-3">
-          {ROLES.map((role) => {
-            const isBusy = busyRole === role.id
-            const isDimmed = busyRole !== null && !isBusy
-            return (
-              <button
-                key={role.id}
-                type="button"
-                onClick={() => pickRole(role.id)}
-                disabled={busyRole !== null}
-                aria-label={`Start a ${role.label} rep`}
-                className={[
-                  'group flex items-center gap-3 rounded-xl px-4 py-3.5 text-left transition-all',
-                  'bg-surface-container hover:bg-surface-container-high',
-                  'border border-transparent hover:border-outline-variant',
-                  isBusy ? 'ring-2 ring-primary bg-surface-container-high' : '',
-                  isDimmed ? 'opacity-40' : '',
-                  busyRole !== null ? 'cursor-default' : 'cursor-pointer',
-                ].join(' ')}
-              >
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container"
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {isBusy ? 'progress_activity' : role.icon}
-                  </span>
-                </span>
-                <span className="font-label text-sm font-semibold text-on-surface">
-                  {role.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        {busyRole && (
-          <p className="mt-6 text-center font-body text-sm text-on-surface-variant">
-            Pulling your first rep…
-          </p>
-        )}
-
-        {error && (
-          <p className="mt-6 text-center font-body text-sm text-error">{error}</p>
-        )}
-
-        <p className="mt-8 text-center font-label text-xs text-on-surface-variant/70">
-          No setup, no calibration, no microphone. You can explore everything else after this rep.
-        </p>
       </div>
     </div>
   )

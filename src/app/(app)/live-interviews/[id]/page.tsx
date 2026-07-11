@@ -837,14 +837,18 @@ export default function SessionPage({
       })
       .then((data) => {
         if (cancelled || !data?.reply) return
+        // Defensive: strip any grading-signal JSON block so internal signals
+        // never render in the transcript (same as the voice path).
+        const openingContent = parseGradingSignal(String(data.reply)).cleanContent
+        if (!openingContent) return
         setTurns((prev) => prev.length > 0 ? prev : [{
           id: crypto.randomUUID(),
           role: 'hatch',
-          content: data.reply,
+          content: openingContent,
           source: 'chat',
         }])
         setTotalTurns((prev) => Math.max(prev, 1))
-        setCurrentCaption(data.reply)
+        setCurrentCaption(openingContent)
         if (!isVoiceAvailable) {
           setIsChatOpen(true)
           setTimeout(() => chatInputRef.current?.focus(), 50)
@@ -1363,17 +1367,20 @@ export default function SessionPage({
       })
       if (res.ok) {
         const { reply } = await res.json()
+        // Defensive: strip any grading-signal JSON block so internal signals
+        // never render in the transcript (same as the voice path).
+        const replyContent = parseGradingSignal(String(reply ?? '')).cleanContent
         const hatchTurn: TranscriptTurn = {
           id: crypto.randomUUID(),
           role: 'hatch',
-          content: reply,
+          content: replyContent,
           source: 'chat',
         }
         setTurns((prev) => [...prev, hatchTurn])
         setTotalTurns((prev) => prev + 1)
         // Chat mode previously skipped closing detection, so chat sessions never
         // auto-closed. Route the reply through the same check voice uses.
-        maybeAutoEndOnClosing(reply)
+        maybeAutoEndOnClosing(replyContent)
       } else {
         setError(res.status === 410 ? 'This session has ended.' : await liveInterviewErrorMessage(res))
       }
@@ -1426,15 +1433,20 @@ export default function SessionPage({
       const { reply } = await res.json()
       if (!reply) return
 
+      // Defensive: strip any grading-signal JSON block so internal signals
+      // never render in the transcript (same as the voice path).
+      const feelerContent = parseGradingSignal(String(reply)).cleanContent
+      if (!feelerContent) return
+
       const hatchTurn: TranscriptTurn = {
         id: crypto.randomUUID(),
         role: 'hatch',
-        content: reply,
+        content: feelerContent,
         source: 'chat',
       }
       setTurns((prev) => [...prev, hatchTurn])
       setTotalTurns((prev) => prev + 1)
-      setCurrentCaption(reply)
+      setCurrentCaption(feelerContent)
       setIsChatOpen(true)
     } catch {
       // Silent feelers should never interrupt the interview with an error toast.

@@ -80,7 +80,7 @@ export function V3Hero() {
           </ul>
 
           <div className="hero-cta-row">
-            <button type="button" className="btn btn-amber hero-cta" onClick={openSignup}>
+            <button type="button" className="btn btn-primary hero-cta" onClick={openSignup}>
               Start free, no card needed <span aria-hidden>→</span>
             </button>
           </div>

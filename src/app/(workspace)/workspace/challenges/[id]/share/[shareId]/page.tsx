@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ReportButton } from '@/components/feedback/ReportButton'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { SITE_NAME, SITE_URL } from '@/lib/seo/site'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSharedAttemptScorecard, type MoveKey } from '@/lib/share/attempt-scorecard'
@@ -88,7 +88,7 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
         <div className="mx-auto w-full max-w-3xl space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <HatchGlyph size={32} state="celebrating" className="text-primary" />
+              <HatchImage size={32} state="celebrating" />
               <span className="font-headline text-lg font-bold">HackProduct</span>
             </div>
             <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold text-on-primary-fixed-variant">Analytics report</span>
@@ -133,7 +133,7 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
         <section className="rounded-xl border border-white/12 bg-surface-container-low p-6 text-on-background shadow-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <HatchGlyph size={34} state="celebrating" className="text-primary" />
+              <HatchImage size={34} state="celebrating" />
               <span className="font-headline text-lg font-bold text-primary">HackProduct</span>
             </div>
             <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold text-on-primary-fixed-variant">

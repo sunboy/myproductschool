@@ -12,6 +12,7 @@ import { MOCK_LIVE_DEBRIEF, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 import type { LiveInterviewDebrief, LiveInterviewTurn } from '@/lib/mock-live-interviews'
 import type { FlowStep } from '@/lib/types'
 import type { ArtifactGrading } from '@/lib/live-interview/artifact-grader'
+import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 
 interface DebriefPageProps {
   params: Promise<{ id: string }>
@@ -154,7 +155,9 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
         sessionId: t.session_id,
         turnIndex: t.turn_index,
         role: t.role,
-        content: t.content,
+        // Legacy Hatch turns may have the grading-signal JSON block still
+        // attached; internal signals must never render in the transcript.
+        content: t.role === 'hatch' ? parseGradingSignal(t.content ?? '').cleanContent : t.content,
         flowMoveDetected: t.flow_move_detected,
         createdAt: t.created_at,
       }))

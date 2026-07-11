@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useParams, useSearchParams } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import { CommunityStatsPanel } from '@/components/challenge/CommunityStatsPanel'
@@ -294,7 +294,7 @@ function ChallengeDiscussionContent() {
             </div>
           ) : (
             <div className="bg-surface-container-low rounded-xl p-12 text-center border border-outline-variant/30">
-              <HatchGlyph size={48} state="idle" className="text-primary mx-auto mb-4" />
+              <HatchImage size={48} state="idle" className="mx-auto mb-4" />
               <p className="font-bold text-on-surface mb-1">No discussion yet. Start one.</p>
               <p className="text-sm text-on-surface-variant mb-4">Others learn from your thinking, and you learn by explaining.</p>
               <button

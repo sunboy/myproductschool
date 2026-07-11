@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Check, Loader2 } from 'lucide-react'
 import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_ONBOARDING_STEP, EVENT_FIRST_REP_ROUTED } from '@/lib/posthog/events'
 import { FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
@@ -13,16 +13,16 @@ import { FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
 // as a dashboard CTA (CalibrationCtaCard) and reuses CalibrationFlow as-is.
 
 const ROLES = [
-  { id: 'swe',            label: 'Software Engineer',   icon: 'terminal' },
-  { id: 'data_eng',       label: 'Data Engineer',       icon: 'storage' },
-  { id: 'ml_eng',         label: 'ML Engineer',         icon: 'model_training' },
-  { id: 'devops',         label: 'DevOps / Platform',   icon: 'settings_suggest' },
-  { id: 'em',             label: 'Eng Manager',         icon: 'groups' },
-  { id: 'founding_eng',   label: 'Founding Engineer',   icon: 'rocket_launch' },
-  { id: 'tech_lead',      label: 'Tech Lead',           icon: 'account_tree' },
-  { id: 'pm',             label: 'Product Manager',     icon: 'track_changes' },
-  { id: 'designer',       label: 'Designer',            icon: 'palette' },
-  { id: 'data_scientist', label: 'Data Scientist',      icon: 'query_stats' },
+  { id: 'swe',            label: 'Software Engineer' },
+  { id: 'data_eng',       label: 'Data Engineer' },
+  { id: 'ml_eng',         label: 'ML Engineer' },
+  { id: 'devops',         label: 'DevOps / Platform' },
+  { id: 'em',             label: 'Eng Manager' },
+  { id: 'founding_eng',   label: 'Founding Engineer' },
+  { id: 'tech_lead',      label: 'Tech Lead' },
+  { id: 'pm',             label: 'Product Manager' },
+  { id: 'designer',       label: 'Designer' },
+  { id: 'data_scientist', label: 'Data Scientist' },
 ]
 
 export function QuickRoleSelect({
@@ -63,52 +63,63 @@ export function QuickRoleSelect({
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-6 py-8 flex flex-col items-center gap-6 text-center">
-      <HatchGlyph size={72} state="listening" className="text-primary" />
-
-      <div className="space-y-2">
-        <h1 className="font-headline font-bold text-[26px] text-on-surface leading-tight">
-          What&apos;s your primary role?
-        </h1>
-        <p className="text-[14px] text-on-surface-variant font-body leading-relaxed">
-          One tap gets you a real rep in under a minute. Hatch tunes the calibration later, whenever you want it.
+    <div className="flex h-full w-full flex-col justify-center px-6 py-8 sm:px-8">
+      <div>
+        <p className="font-label text-[11px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
+          Pick your role
+        </p>
+        <h2 className="mt-1.5 font-body text-[19px] font-extrabold leading-tight text-ink-strong">
+          Where do you work today?
+        </h2>
+        <p className="mt-1.5 max-w-md font-body text-[13.5px] leading-relaxed text-ink-secondary">
+          One tap starts a real rep, a short written scenario Hatch reads and
+          grades. Calibration and goals stay optional, you can set them after.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 w-full">
-        {ROLES.map(role => (
-          <button
-            key={role.id}
-            onClick={() => handleSelect(role.id)}
-            disabled={submitting}
-            className={[
-              'flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-all duration-150 active:scale-95 disabled:opacity-60',
-              selectedRole === role.id
-                ? 'bg-primary-fixed border-primary'
-                : 'bg-surface-container border-outline-variant hover:bg-surface-container-high',
-            ].join(' ')}
-          >
-            <span
-              className="material-symbols-outlined text-[18px] flex-shrink-0 text-primary"
-              style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        {ROLES.map(role => {
+          const isSelected = selectedRole === role.id
+          return (
+            <button
+              key={role.id}
+              onClick={() => handleSelect(role.id)}
+              disabled={submitting}
+              className={[
+                'flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 active:scale-[0.98]',
+                isSelected
+                  ? 'border-forest-600 bg-note-mint'
+                  : 'border-hairline bg-card-bright hover:border-forest-600/40',
+                submitting && !isSelected ? 'opacity-45' : '',
+                submitting ? 'cursor-default' : 'cursor-pointer',
+              ].join(' ')}
             >
-              {role.icon}
-            </span>
-            <span className="text-[13px] font-label font-semibold text-on-surface leading-tight">
-              {role.label}
-            </span>
-          </button>
-        ))}
+              <span className="font-body text-[13px] font-bold leading-tight text-ink-strong">
+                {role.label}
+              </span>
+              {isSelected && (
+                submitting
+                  ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-forest-600" strokeWidth={2.2} />
+                  : <Check className="h-4 w-4 shrink-0 text-forest-600" strokeWidth={2.2} />
+              )}
+            </button>
+          )
+        })}
       </div>
 
-      <button
-        type="button"
-        onClick={onSkip}
-        disabled={submitting}
-        className="text-[13px] font-label font-semibold text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-60"
-      >
-        Skip for now
-      </button>
+      {submitting ? (
+        <p className="mt-5 font-body text-[12.5px] text-ink-secondary">
+          Pulling your first rep, about 5 minutes, no setup.
+        </p>
+      ) : (
+        <button
+          type="button"
+          onClick={onSkip}
+          className="mt-5 self-start font-label text-[12.5px] font-bold text-ink-secondary transition-colors hover:text-ink-strong"
+        >
+          Skip for now
+        </button>
+      )}
     </div>
   )
 }

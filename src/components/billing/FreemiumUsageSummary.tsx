@@ -31,13 +31,11 @@ function remaining(used: number, limit: number) {
 }
 
 function Meter({
-  icon,
   label,
   used,
   limit,
   compact,
 }: {
-  icon: string
   label: string
   used: number
   limit: number
@@ -49,18 +47,15 @@ function Meter({
   return (
     <div className={compact ? 'min-w-[124px]' : 'min-w-0 flex-1'}>
       <div className="mb-1 flex items-center justify-between gap-2">
-        <span className="inline-flex min-w-0 items-center gap-1.5 text-[11px] font-label font-bold text-on-surface">
-          <span className="material-symbols-outlined text-[14px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
-            {icon}
-          </span>
-          <span className="truncate">{label}</span>
+        <span className="min-w-0 truncate font-label text-[11px] font-bold text-ink-strong">
+          {label}
         </span>
-        <span className="shrink-0 text-[11px] font-label font-bold text-on-surface-variant">
+        <span className="shrink-0 font-label text-[11px] font-bold tabular-nums text-ink-secondary">
           {left}/{limit}
         </span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-high">
-        <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${pct}%` }} />
+      <div className="h-1.5 overflow-hidden rounded-full bg-hairline">
+        <div className="h-full rounded-full bg-forest-600 transition-[width]" style={{ width: `${pct}%` }} />
       </div>
     </div>
   )
@@ -226,22 +221,20 @@ export function FreemiumUsageSummary({ plan, compact = false, className = '' }: 
   if (!data) return null
 
   return (
-    <div className={`rounded-xl border border-outline-variant/50 bg-surface-container-low px-3 py-2 ${className}`}>
+    <div className={`rounded-[12px] border border-hairline bg-page-field px-3.5 py-2.5 ${className}`}>
       <div className="mb-2 flex items-center gap-2">
-        <span className="text-[10px] font-label font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">
+        <span className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
           Free reps left
         </span>
       </div>
       <div className={compact ? 'flex gap-3' : 'grid grid-cols-1 gap-3 sm:grid-cols-2'}>
         <Meter
-          icon="track_changes"
           label="Challenges"
           used={data.challenges.used}
           limit={data.challenges.limit}
           compact={compact}
         />
         <Meter
-          icon="graphic_eq"
           label="Interviews"
           used={data.interviews.used}
           limit={data.interviews.limit}

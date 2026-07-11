@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 type SubscriptionInfo = {
   status?: string | null
@@ -33,6 +35,7 @@ function formatDate(value?: string | null) {
 }
 
 export default function BillingSettingsPage() {
+  const { pro } = usePlanLimits()
   const [plan, setPlan] = useState<string>('free')
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -94,33 +97,39 @@ export default function BillingSettingsPage() {
   const cancelDate = formatDate(subscription?.cancel_at ?? subscription?.current_period_end)
 
   return (
-    <div className="max-w-xl">
-      <h2 className="font-headline text-xl text-on-surface mb-1">Billing</h2>
-      <p className="text-sm font-body text-on-surface-variant mb-6">
-        Manage your subscription, payment method, and invoices.
-      </p>
+    <main className="mx-auto max-w-[720px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      {/* ── Light page header ─────────────────────────────────────────────── */}
+      <div className="mb-5">
+        <Link href="/settings" className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-ink-secondary transition-colors hover:text-ink-strong">
+          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
+          Settings
+        </Link>
+        <p className="mt-4 font-label text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
+          Account
+        </p>
+        <h1 className="mt-1 font-headline text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] text-ink-strong">
+          Billing
+        </h1>
+        <p className="mt-1 font-body text-[13.5px] text-ink-secondary">
+          Subscription, payment method, and invoices.
+        </p>
+      </div>
 
       {/* Current plan card */}
-      <div className="bg-surface-container rounded-xl p-6 border border-outline-variant mb-4">
-        <div className="flex items-start justify-between gap-4 mb-5">
+      <div className="mb-4 rounded-2xl border border-hairline bg-card-bright p-5">
+        <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant mb-1.5">
+            <p className="mb-1.5 font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
               Current plan
             </p>
             {loading ? (
-              <div className="h-5 w-24 rounded-full bg-surface-container-highest animate-pulse" />
+              <div className="h-5 w-24 animate-pulse rounded-full bg-page-field" />
             ) : isPro ? (
-              <span className="inline-flex items-center gap-1.5 bg-primary text-on-primary rounded-full px-3 py-1 text-xs font-label font-semibold">
-                <span
-                  className="material-symbols-outlined text-[13px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  workspace_premium
-                </span>
+              <span className="inline-flex items-center rounded-full border-[1.5px] border-gold bg-note-amber px-3 py-1 font-label text-xs font-bold text-forest-800">
                 Pro
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 bg-surface-container-high text-on-surface rounded-full px-3 py-1 text-xs font-label font-semibold">
+              <span className="inline-flex items-center rounded-full border border-hairline bg-page-field px-3 py-1 font-label text-xs font-bold text-ink-secondary">
                 Free
               </span>
             )}
@@ -128,27 +137,27 @@ export default function BillingSettingsPage() {
 
           {isPro && !loading && price && (
             <div className="text-right">
-              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant mb-1">
+              <p className="mb-1 font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
                 Price
               </p>
-              <p className="text-sm font-body font-semibold text-on-surface">{price}</p>
+              <p className="font-body text-sm font-bold tabular-nums text-ink-strong">{price}</p>
             </div>
           )}
         </div>
 
         {isPro && !loading && (
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="rounded-2xl bg-background/70 px-4 py-3">
-              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">
+          <div className="mb-4 grid grid-cols-2 divide-x divide-hairline rounded-[12px] border border-hairline">
+            <div className="px-4 py-3">
+              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
                 Billing
               </p>
-              <p className="mt-1.5 text-sm font-body font-semibold text-on-surface">{interval}</p>
+              <p className="mt-1.5 font-body text-sm font-bold text-ink-strong">{interval}</p>
             </div>
-            <div className="rounded-2xl bg-background/70 px-4 py-3">
-              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">
+            <div className="px-4 py-3">
+              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
                 {cancelScheduled ? 'Cancels on' : 'Next billing'}
               </p>
-              <p className="mt-1.5 text-sm font-body font-semibold text-on-surface">
+              <p className="mt-1.5 font-body text-sm font-bold tabular-nums text-ink-strong">
                 {nextBillingDate ?? 'Not available'}
               </p>
             </div>
@@ -156,66 +165,57 @@ export default function BillingSettingsPage() {
         )}
 
         {cancelScheduled && cancelDate && !loading && (
-          <div className="mb-5 flex items-start gap-2 rounded-2xl border border-amber-200 bg-[#f3e2b9]/55 px-4 py-3 text-sm font-body text-on-surface">
-            <span className="material-symbols-outlined text-base text-tertiary mt-0.5 shrink-0">
-              event_busy
-            </span>
+          <div className="note-amber mb-4 px-4 py-3 font-body text-sm text-ink-strong">
             Pro remains active until {cancelDate}, then your account moves to Free.
           </div>
         )}
 
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-body text-on-surface-variant">
+        <div className="flex items-center justify-between gap-4">
+          <p className="font-body text-[13px] text-ink-secondary">
             {isPro
               ? 'Update payment method, cancel, or view invoices'
               : 'Invoices and payment method are managed through Stripe'}
-          </div>
+          </p>
           {isPro && (
             <button
               onClick={openPortal}
               disabled={portalLoading || loading}
-              className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-label font-semibold disabled:opacity-60 hover:opacity-90 transition-opacity shrink-0 ml-4"
+              className="inline-flex shrink-0 items-center gap-2 rounded-[10px] bg-forest-950 px-4 py-2.5 font-label text-sm font-bold text-white transition-colors hover:bg-forest-900 active:scale-[0.98] disabled:opacity-60"
             >
-              <span className="material-symbols-outlined text-[16px]">account_balance_wallet</span>
-              {portalLoading ? 'Opening…' : 'Manage billing'}
+              {portalLoading ? 'Opening' : 'Manage billing'}
             </button>
           )}
         </div>
 
         {error && (
-          <div className="mt-4 p-3 bg-error/10 border border-error/20 rounded-lg text-sm font-body text-error">
+          <p className="mt-4 rounded-[8px] bg-error/10 px-3 py-2 font-body text-sm text-error">
             {error}
-          </div>
+          </p>
         )}
       </div>
 
-      {/* Free upgrade nudge */}
+      {/* Free upgrade path — plan management surface, live limits only */}
       {!isPro && !loading && (
-        <div className="bg-surface-container rounded-xl p-6 border border-outline-variant">
-          <div className="flex items-start gap-4">
-            <span
-              className="material-symbols-outlined text-2xl text-primary shrink-0 mt-0.5"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              workspace_premium
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="font-label font-semibold text-on-surface mb-1">Ready to go further?</p>
-              <p className="text-sm font-body text-on-surface-variant mb-4">
-                Unlimited challenges, unlimited live interviews, and priority Hatch coaching
-                {prices?.monthly?.formatted ? `, starting at ${prices.monthly.formatted}/mo` : ''}.
-              </p>
-              <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-label font-semibold hover:opacity-90 transition-opacity"
-              >
-                See pricing
-                <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
-              </Link>
-            </div>
+        <div
+          className="flex flex-col gap-3 rounded-2xl px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+          style={{ background: 'linear-gradient(120deg, #052316 0%, #123b20 78%, #1e472d 100%)' }}
+        >
+          <div>
+            <p className="font-headline text-[18px] font-semibold text-white">HackProduct Pro</p>
+            <p className="mt-0.5 font-body text-[12.5px] tabular-nums text-white/65">
+              {pro.challenges} challenge starts and {pro.interviews} interview starts a month
+              {prices?.monthly?.formatted ? `, from ${prices.monthly.formatted}/mo` : ''}.
+            </p>
           </div>
+          <Link
+            href="/pricing"
+            className="inline-flex w-fit shrink-0 items-center gap-2 rounded-[10px] bg-white px-4 py-2.5 font-label text-sm font-bold text-forest-950 transition-opacity hover:opacity-90"
+          >
+            See pricing
+            <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
+          </Link>
         </div>
       )}
-    </div>
+    </main>
   )
 }
