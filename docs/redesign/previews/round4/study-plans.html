@@ -1,0 +1,924 @@
+<meta charset="UTF-8" />
+<title>Study Plans · Round 4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --forest-950: #052316;
+    --forest-900: #0b2d1c;
+    --forest-850: #103020;
+    --forest-800: #123b20;
+    --forest-700: #1d432b;
+    --forest-600: #266235;
+    --forest-500: #1c5a34;
+    --mint-glow: #a3ebb1;
+
+    --page: #faf8f4;
+    --card: #fffdfa;
+    --card-alt: #fcfcfc;
+    --sidebar: #ffffff;
+    --hairline: #ece7dd;
+    --ink: #20291f;
+    --ink-secondary: #5b685e;
+    --ink-muted: #a6a9a4;
+
+    --flame: #fe9817;
+    --gold: #fdb41f;
+    --amber-soft: #fef3e2;
+    --amber-deep: #fce2c2;
+
+    /* Say Briefly sticky-note palette (§7) */
+    --mint-note: #dff3d0;
+    --mint-note-border: #b9d9a6;
+    --amber-note: #fdf0c2;
+    --amber-note-border: #ecd48a;
+    --highlighter: #ffe95c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Nunito Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, .serif { font-family: 'Literata', serif; }
+  h2, h3 { font-family: 'Nunito Sans', sans-serif; }
+  .hl-word {
+    display: inline-block;
+    background: var(--highlighter);
+    transform: rotate(-1deg);
+    padding: 0 .14em;
+  }
+  a { text-decoration: none; color: inherit; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .shell {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------------- SIDEBAR (copied from practice-catalog.html) ---------------- */
+  .sidebar {
+    width: 232px;
+    flex-shrink: 0;
+    background: var(--sidebar);
+    border-right: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .logo-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 0 8px;
+  }
+  .logo-word {
+    font-family: 'Literata', serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--ink);
+  }
+  .logo-spark { color: var(--forest-600); font-size: 14px; }
+  .tagline {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    padding: 2px 8px 20px;
+  }
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+  }
+  .nav-item svg { flex-shrink: 0; opacity: 0.75; }
+  .nav-item.active {
+    background: var(--forest-800);
+    color: #fff;
+  }
+  .nav-item.active svg { opacity: 1; }
+  .nav-item .live-pill {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    background: var(--amber-soft);
+    color: var(--flame);
+    padding: 2px 7px;
+    border-radius: 999px;
+  }
+
+  .sidebar-spacer { flex: 1; }
+
+  .hatch-card {
+    background: var(--card-alt);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 12px;
+  }
+  .hatch-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hatch-card-top img {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--forest-900);
+    padding: 3px;
+  }
+  .hatch-card-name { font-size: 13.5px; font-weight: 800; color: var(--ink); }
+  .hatch-card-role { font-size: 11px; color: var(--ink-muted); }
+  .hatch-card-chevron { margin-left: auto; color: var(--ink-muted); }
+  .hatch-card-msg {
+    font-size: 12px;
+    color: var(--ink-secondary);
+    margin-top: 10px;
+    line-height: 1.45;
+  }
+
+  .pro-card {
+    background: linear-gradient(155deg, var(--forest-900), var(--forest-800));
+    border-radius: 12px;
+    padding: 16px 14px;
+    margin-top: 12px;
+    color: #fff;
+  }
+  .pro-title { font-family: 'Nunito Sans', sans-serif; font-weight: 700; font-size: 15px; margin: 0 0 4px; }
+  .pro-blurb { font-size: 11.5px; color: rgba(255,255,255,0.72); line-height: 1.4; margin-bottom: 12px; }
+  .pro-btn {
+    width: 100%;
+    background: #fff;
+    color: var(--forest-900);
+    border: none;
+    border-radius: 8px;
+    padding: 9px 0;
+    font-size: 12.5px;
+    font-weight: 800;
+  }
+
+  .help-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 12px 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-secondary);
+    margin-top: 8px;
+  }
+  .help-row svg { opacity: 0.7; }
+  .help-row .chev { margin-left: auto; }
+
+  /* ---------------- MAIN ---------------- */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 20px 28px 48px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 14px;
+  }
+  .search-pill {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-alt);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 10px 16px;
+    color: var(--ink-muted);
+    font-size: 13.5px;
+  }
+  .search-pill svg { flex-shrink: 0; }
+  .search-pill .kbd {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 1px 6px;
+  }
+  .top-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .stat-cluster {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-cluster svg { flex-shrink: 0; }
+  .stat-cluster .num { font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .stat-cluster .lbl { font-size: 10.5px; color: var(--ink-muted); font-weight: 700; }
+  .stat-text { display: flex; flex-direction: column; line-height: 1.15; }
+  .bell {
+    color: var(--ink-secondary);
+    display: flex;
+  }
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .avatar-row img {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .avatar-name { font-size: 13.5px; font-weight: 700; }
+
+  /* ---------------- PAGE HEADER (compact, light) ---------------- */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 2px 2px 16px;
+    border-bottom: 1px solid var(--hairline);
+    min-height: 100px;
+  }
+  .page-header-left { min-width: 0; }
+  .page-title {
+    font-family: 'Literata', serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--ink);
+    margin: 0 0 5px;
+  }
+  .page-sub {
+    font-size: 13.5px;
+    color: var(--ink-secondary);
+    max-width: 480px;
+    line-height: 1.45;
+  }
+  .header-coach-note {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 300px;
+    background: var(--mint-note);
+    border: 1px solid var(--mint-note-border);
+    border-radius: 10px;
+    padding: 9px 12px;
+  }
+  .header-coach-note img {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--forest-900);
+    padding: 3px;
+    flex-shrink: 0;
+  }
+  .header-coach-note p {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--ink-secondary);
+  }
+  .header-coach-note b { color: var(--ink); font-weight: 800; }
+
+  /* ---------------- CONTINUE PLAN BAND (slim, amber note = the "current" object) ---------------- */
+  .continue-band {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 11px 16px;
+    background: var(--amber-note);
+    border: 1px solid var(--amber-note-border);
+    border-radius: 10px;
+  }
+  .continue-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+  }
+  .continue-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--ink);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .continue-meta {
+    font-size: 12.5px;
+    color: var(--ink-secondary);
+    font-weight: 700;
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .continue-bar-track {
+    flex: 1;
+    max-width: 220px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--hairline);
+    overflow: hidden;
+  }
+  .continue-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--forest-600);
+    width: 45%;
+  }
+  .continue-pct {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--forest-700);
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .continue-spacer { flex: 1; }
+  .continue-btn {
+    background: var(--forest-950);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 12.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ---------------- TRACK TABS ---------------- */
+  .tabs-row {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    border-bottom: 1px solid var(--hairline);
+    margin-top: 20px;
+    padding: 0 2px;
+    overflow-x: auto;
+  }
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 2px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    border-bottom: 2.5px solid transparent;
+    white-space: nowrap;
+  }
+  .tab.active {
+    color: var(--forest-700);
+    border-bottom-color: var(--forest-700);
+  }
+
+  /* ---------------- SECTION HEADERS ---------------- */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 22px 0 4px;
+  }
+  .section-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+  }
+  .section-sub {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    margin-top: 3px;
+  }
+
+  /* ---------------- PLANS GRID ---------------- */
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 14px;
+  }
+  .plan-card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .plan-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .plan-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15.5px;
+    line-height: 1.32;
+    color: var(--ink);
+    margin-bottom: 7px;
+    min-height: 40px;
+  }
+  .plan-meta {
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .plan-desc {
+    font-size: 12.5px;
+    color: var(--ink-secondary);
+    line-height: 1.45;
+    margin-bottom: 12px;
+    flex: 1;
+  }
+  .day-dots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .day-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.4px solid #c8c2b6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .day-dot.done {
+    width: 24px; height: 24px;
+    background: var(--forest-600);
+    border: none;
+  }
+  .day-dot.done svg { display: block; }
+  .day-dot svg { display: none; }
+
+  .plan-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .plan-bar-track {
+    flex: 1;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--hairline);
+    overflow: hidden;
+  }
+  .plan-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--forest-600);
+  }
+  .plan-pct {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--forest-700);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .plan-btn {
+    margin-top: auto;
+    background: var(--forest-950);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 0;
+    font-size: 13px;
+    font-weight: 800;
+    width: 100%;
+  }
+  .plan-btn.secondary {
+    background: #fff;
+    border: 1px solid var(--hairline);
+    color: var(--ink);
+  }
+
+  /* ---------------- LOOP TRACKS (text rows) ---------------- */
+  .loops-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    border-top: 1px solid var(--hairline);
+  }
+  .loop-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 4px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .loop-body { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; }
+  .loop-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .loop-meta {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .loop-btn {
+    flex-shrink: 0;
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ---------------- CONTEXT STRIP ---------------- */
+  .protip-strip {
+    margin-top: 22px;
+    background: var(--amber-note);
+    border: 1px solid var(--amber-note-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .protip-text { font-size: 13px; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+  .protip-text b { color: var(--ink); font-weight: 800; }
+  .protip-spacer { flex: 1; }
+  .protip-btn {
+    background: var(--forest-950);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 12.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  /* ---------------- MINI PILL ---------------- */
+  .round-pill {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    background: var(--forest-950);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(5,35,22,0.3);
+    z-index: 50;
+  }
+
+  /* ---------------- RESPONSIVE ---------------- */
+  @media (max-width: 1180px) {
+    .plans-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .page-header { flex-direction: column; align-items: flex-start; min-height: 0; gap: 12px; }
+    .header-coach-note { max-width: 100%; margin-top: 4px; }
+    .continue-band { flex-wrap: wrap; }
+    .continue-spacer { display: none; }
+    .continue-btn { width: 100%; justify-content: center; order: 10; }
+  }
+  @media (max-width: 640px) {
+    .main { padding: 16px 14px 40px; }
+    .topbar { flex-wrap: wrap; gap: 10px; }
+    .top-right { gap: 14px; }
+    .plans-grid { grid-template-columns: 1fr; }
+    .page-title { font-size: 22px; }
+    .loop-row { flex-wrap: wrap; }
+  }
+</style>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-row">
+        <span class="logo-word">HackProduct</span>
+        <span class="logo-spark">✦</span>
+      </div>
+      <div class="tagline">The practice gym for product thinking.</div>
+
+      <nav class="nav">
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+          Home
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v5h5"/></svg>
+          Explore / Practice
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c1-3.3 3.6-5 6.5-5s5.5 1.7 6.5 5"/></svg>
+          Interviews
+          <span class="live-pill">Live</span>
+        </a>
+        <a class="nav-item active" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          Study Plans
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          Progress
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.8"/><circle cx="17" cy="9" r="2.3"/><path d="M3.5 19c.7-2.9 2.9-4.5 5.5-4.5s4.8 1.6 5.5 4.5"/><path d="M14.5 15c2.1.2 3.7 1.7 4.2 4"/></svg>
+          Community
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          Analytics
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="hatch-card">
+      <div class="hatch-card-top">
+        <img src="../../../../public/hatch/avatar.png" alt="Hatch" />
+        <div>
+          <div class="hatch-card-name">Hatch</div>
+          <div class="hatch-card-role">AI Coach</div>
+        </div>
+        <span class="hatch-card-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      </div>
+      <div class="hatch-card-msg">You're enrolled in one plan, Product Sense Sprint. Keeping it to one until it's done is the right call.</div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-title">Go Pro</div>
+      <div class="pro-blurb">Free covers 20 challenges, 5 interviews, and 30 gradings a month. Pro removes the caps.</div>
+      <button class="pro-btn">Upgrade to Pro</button>
+    </div>
+
+    <div class="help-row">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.6 2.3c-.8.5-1.1.9-1.1 1.8" stroke-linecap="round"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>
+      Help &amp; Support
+      <span class="chev">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="search-pill">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        Search challenges, topics, companies...
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="top-right">
+        <div class="stat-cluster">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fe9817" stroke-width="1.8"><path d="M12 2c1 4-3 5-3 8.5A3.5 3.5 0 0 0 12 14a3.5 3.5 0 0 0 3-5.3c1.5 1 2.5 2.8 2.5 4.8a5.5 5.5 0 0 1-11 0C6.5 9.5 9 7 12 2Z"/></svg>
+          <div class="stat-text">
+            <span class="num">12-day</span>
+            <span class="lbl">streak</span>
+          </div>
+        </div>
+        <div class="stat-cluster">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fdb41f" stroke="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+          <div class="stat-text">
+            <span class="num">9,860 XP</span>
+            <span class="lbl">level 12</span>
+          </div>
+        </div>
+        <span class="bell">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+        </span>
+        <div class="avatar-row">
+          <img src="../../../../public/hatch/avatar.png" alt="Sandeep" />
+          <span class="avatar-name">Sandeep</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE HEADER (compact, light) -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Study <span class="hl-word">plans</span></h1>
+        <div class="page-sub">Sequenced reps with a fixed order and an end.</div>
+      </div>
+      <div class="header-coach-note">
+        <img src="../../../../public/hatch/avatar.png" alt="Hatch" />
+        <p><b>Hatch:</b> Product Sense Sprint, week 2. You're on step 3 of 5; finishing it today keeps the week on schedule.</p>
+      </div>
+    </div>
+
+    <!-- CONTINUE PLAN (slim band) -->
+    <div class="continue-band">
+      <span class="continue-label">Continue</span>
+      <span class="continue-title">Product Sense Sprint</span>
+      <span class="continue-meta">Week 2 · Step 3 of 5</span>
+      <div class="continue-bar-track"><div class="continue-bar-fill"></div></div>
+      <span class="continue-pct">45%</span>
+      <div class="continue-spacer"></div>
+      <button class="continue-btn">Start step 3</button>
+    </div>
+
+    <!-- TRACK TABS -->
+    <div class="tabs-row">
+      <div class="tab active">Study plans</div>
+      <div class="tab">Interview loops</div>
+    </div>
+
+    <!-- PLANS GRID -->
+    <div class="section-head">
+      <div>
+        <div class="section-title">All study plans</div>
+        <div class="section-sub">Six plans, one capability each</div>
+      </div>
+    </div>
+
+    <div class="plans-grid">
+      <!-- 7-Day Interview Prep -->
+      <div class="plan-card">
+        <div class="plan-eyebrow" style="color:#fe9817;">Interview prep</div>
+        <div class="plan-title">7-Day Interview Prep</div>
+        <div class="plan-meta">7 days · 14 challenges · Beginner</div>
+        <div class="plan-desc">Two challenges a day, from Diagnose Like a PM through Metrics Fluency and Tradeoffs to Final Stretch. Day 1 is done; Day 2, Metrics Fluency, is next.</div>
+        <div class="day-dots">
+          <div class="day-dot done">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <div class="day-dot"></div>
+          <div class="day-dot"></div>
+          <div class="day-dot"></div>
+          <div class="day-dot"></div>
+          <div class="day-dot"></div>
+          <div class="day-dot"></div>
+        </div>
+        <button class="plan-btn">Start Day 2</button>
+      </div>
+
+      <!-- AI Product Fluency -->
+      <div class="plan-card">
+        <div class="plan-eyebrow" style="color:#1c8a5f;">AI / ML</div>
+        <div class="plan-title">AI Product Fluency</div>
+        <div class="plan-meta">4 chapters · 12 challenges</div>
+        <div class="plan-desc">Four chapters, three challenges each: AI Product Basics, AI Tradeoffs &amp; Trust, Agentic &amp; AI-Native, and Monetizing AI.</div>
+        <div class="plan-progress-row">
+          <div class="plan-bar-track"><div class="plan-bar-fill" style="width:0%;"></div></div>
+          <span class="plan-pct">0%</span>
+        </div>
+        <button class="plan-btn">Start</button>
+      </div>
+
+      <!-- Data Eng -> Product -->
+      <div class="plan-card">
+        <div class="plan-eyebrow" style="color:#9d61c8;">Data modeling</div>
+        <div class="plan-title">Data Eng → Product</div>
+        <div class="plan-meta">Study plan</div>
+        <div class="plan-desc">Opens with From Data to Product Thinking, then points the instincts you already use on schemas and pipelines at product decisions.</div>
+        <div class="plan-progress-row">
+          <div class="plan-bar-track"><div class="plan-bar-fill" style="width:0%;"></div></div>
+          <span class="plan-pct">0%</span>
+        </div>
+        <button class="plan-btn">Start</button>
+      </div>
+
+      <!-- DevOps -> Product Impact -->
+      <div class="plan-card">
+        <div class="plan-eyebrow" style="color:#266235;">System design</div>
+        <div class="plan-title">DevOps → Product Impact</div>
+        <div class="plan-meta">12 challenges · Study plan</div>
+        <div class="plan-desc">Twelve challenges that trace infrastructure decisions to product outcomes: what an outage costs, when reliability work beats feature work, and how to argue for it.</div>
+        <div class="plan-progress-row">
+          <div class="plan-bar-track"><div class="plan-bar-fill" style="width:0%;"></div></div>
+          <span class="plan-pct">0%</span>
+        </div>
+        <button class="plan-btn">Start</button>
+      </div>
+
+      <!-- Founding Engineer -->
+      <div class="plan-card">
+        <div class="plan-eyebrow" style="color:#2778f2;">Product sense</div>
+        <div class="plan-title">Founding Engineer</div>
+        <div class="plan-meta">12 challenges · Study plan</div>
+        <div class="plan-desc">Twelve challenges on the calls a first engineer owns: what to build first, what to cut before launch, and which customer to say no to.</div>
+        <div class="plan-progress-row">
+          <div class="plan-bar-track"><div class="plan-bar-fill" style="width:0%;"></div></div>
+          <span class="plan-pct">0%</span>
+        </div>
+        <button class="plan-btn">Start</button>
+      </div>
+
+      <!-- Learn Claude Code -->
+      <div class="plan-card">
+        <div class="plan-eyebrow" style="color:#fe9817;">SQL &amp; tooling</div>
+        <div class="plan-title">Learn Claude Code</div>
+        <div class="plan-meta">Study plan</div>
+        <div class="plan-desc">Claude Code fundamentals in sequence: the session model, context, skills, and agent workflows, for engineers who use it on real work.</div>
+        <div class="plan-progress-row">
+          <div class="plan-bar-track"><div class="plan-bar-fill" style="width:0%;"></div></div>
+          <span class="plan-pct">0%</span>
+        </div>
+        <button class="plan-btn">Start</button>
+      </div>
+    </div>
+
+    <!-- LOOP TRACKS -->
+    <div class="section-head">
+      <div>
+        <div class="section-title">Interview loop tracks</div>
+        <div class="section-sub">Multi-round sequences matched to a target role</div>
+      </div>
+    </div>
+
+    <div class="loops-list">
+      <div class="loop-row">
+        <div class="loop-body">
+          <div class="loop-title">Staff Eng Loop</div>
+          <span class="loop-meta">Paused · round 2 of 3 · interview in 18 days</span>
+        </div>
+        <button class="loop-btn">Resume round 2</button>
+      </div>
+
+      <div class="loop-row">
+        <div class="loop-body">
+          <div class="loop-title">PM Switch Loop</div>
+          <span class="loop-meta">Not started</span>
+        </div>
+        <button class="loop-btn">Start loop</button>
+      </div>
+
+      <div class="loop-row">
+        <div class="loop-body">
+          <div class="loop-title">Founding Eng Loop</div>
+          <span class="loop-meta">Not started</span>
+        </div>
+        <button class="loop-btn">Start loop</button>
+      </div>
+    </div>
+
+    <!-- CONTEXT STRIP -->
+    <div class="protip-strip">
+      <div class="protip-text"><b>This week: 3 of 5 sessions done.</b> The paused Frame step on Designing the First Screen of an AI-Native App is the quickest fourth.</div>
+      <div class="protip-spacer"></div>
+      <button class="protip-btn">Resume Frame step</button>
+    </div>
+  </main>
+</div>
+
+<div class="round-pill">Round 4 · Study Plans</div>

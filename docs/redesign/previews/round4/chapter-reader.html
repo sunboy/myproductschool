@@ -1,0 +1,688 @@
+<meta charset="UTF-8">
+<title>Guide Chapter Reader · Round 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest-950:#052316;
+    --forest-900:#0b2d1c;
+    --forest-850:#103020;
+    --forest-800:#123b20;
+    --forest-700:#1d432b;
+    --forest-600:#266235;
+    --forest-500:#1c5a34;
+    --mint-glow:#a3ebb1;
+    --page:#faf8f4;
+    --card:#fffdfa;
+    --hairline:#ece7dd;
+    --ink:#20291f;
+    --ink-secondary:#5b685e;
+    --ink-muted:#a6a9a4;
+    --flame:#fe9817;
+    --gold:#fdb41f;
+    --amber-soft:#fef3e2;
+    --dm-soft:#f4e9f6;
+    --dm-fg:#9d61c8;
+    --note-mint:#dff3d0;
+    --note-mint-border:#b9d9a6;
+    --note-amber:#fdf0c2;
+    --note-amber-border:#ecd48a;
+    --note-teal:#d9efec;
+    --note-teal-border:#a9d4cf;
+    --note-blush:#f6e3f3;
+    --note-blush-border:#dcbcd6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--page);
+    color:var(--ink);
+    font-family:'Nunito Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:'Literata', serif;}
+  svg{display:block;}
+
+  /* ===== Top bar (copied pattern from flow-workspace.html) ===== */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 24px;
+    max-width:1400px;
+    margin:0 auto;
+    border-bottom:1px solid var(--hairline);
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Literata', serif;
+    font-weight:700;
+    font-size:20px;
+    color:var(--forest-950);
+  }
+  .logo .spark{color:var(--gold);font-size:14px;}
+  .breadcrumb{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    color:var(--ink-secondary);
+    margin-left:20px;
+  }
+  .breadcrumb .sep{color:var(--ink-muted);}
+  .breadcrumb .current{color:var(--ink);font-weight:600;}
+  .topbar-left{display:flex;align-items:center;flex:1;min-width:0;}
+  .topbar-right{display:flex;align-items:center;gap:28px;flex-shrink:0;}
+  .stat-cluster{display:flex;align-items:center;gap:8px;}
+  .stat-cluster .num{font-family:'Literata',serif;font-weight:700;font-size:15px;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums;}
+  .stat-cluster .label{font-size:10.5px;color:var(--ink-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.03em;line-height:1.2;}
+  .avatar-cluster{display:flex;align-items:center;gap:8px;cursor:default;}
+  .avatar-circle{
+    width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(135deg,#eadfc8,#d9c7a0);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:var(--forest-800);font-size:13px;
+    border:1px solid var(--hairline);
+  }
+  .bell-btn{
+    width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-secondary);
+  }
+
+  /* ===== Page shell: TOC + reading column + rail ===== */
+  .reader-shell{
+    max-width:1400px;
+    margin:0 auto;
+    padding:24px 24px 48px;
+    display:grid;
+    grid-template-columns:240px 1fr 280px;
+    gap:32px;
+    align-items:start;
+  }
+
+  /* ===== LEFT: module TOC ===== */
+  .toc-rail{
+    position:sticky;
+    top:24px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .toc-module-head{
+    display:flex;align-items:center;gap:12px;
+  }
+  .toc-ring-wrap{position:relative;width:40px;height:40px;flex-shrink:0;}
+  .toc-ring-wrap svg{transform:rotate(-90deg);}
+  .toc-ring-center{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10.5px;font-weight:800;color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .toc-module-name{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:12px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.03em;
+    color:var(--ink-secondary);
+    line-height:1.35;
+  }
+  .toc-list{
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .toc-item{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:13px;
+    line-height:1.4;
+    color:var(--ink-secondary);
+    cursor:default;
+  }
+  .toc-item .toc-num{
+    width:20px;height:20px;border-radius:50%;
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10.5px;font-weight:800;
+    background:#eee9df;color:var(--ink-muted);
+    margin-top:1px;
+  }
+  .toc-item.done .toc-num{background:var(--forest-800);color:#fff;}
+  .toc-item.current{
+    background:var(--forest-800);
+    color:#fff;
+  }
+  .toc-item.current .toc-num{background:rgba(255,255,255,0.22);color:#fff;}
+  .toc-item.current .toc-title{color:#fff;font-weight:700;}
+  .toc-item .toc-title{font-family:'Nunito Sans',sans-serif;color:var(--ink);font-weight:700;}
+  .toc-item.muted .toc-title{color:var(--ink-muted);font-weight:700;}
+  .toc-item.muted .toc-num{background:#f2efe8;color:var(--ink-muted);}
+  .toc-back{
+    display:flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:700;
+    color:var(--ink-secondary);
+    padding-top:12px;
+    border-top:1px solid var(--hairline);
+    cursor:default;
+  }
+
+  /* ===== CENTER: reading column ===== */
+  .reading-col{max-width:720px;margin:0 auto;width:100%;}
+  .chapter-eyebrow{
+    display:flex;align-items:center;gap:8px;
+    font-size:11px;font-weight:800;
+    text-transform:uppercase;letter-spacing:0.08em;
+    color:var(--dm-fg);
+    margin-bottom:14px;
+  }
+  .chapter-eyebrow .dot{width:4px;height:4px;border-radius:50%;background:var(--ink-muted);}
+  .chapter-eyebrow .plain{color:var(--ink-muted);font-weight:700;letter-spacing:0.06em;}
+  .chapter-title{
+    font-family:'Literata',serif;
+    font-size:38px;
+    font-weight:700;
+    line-height:1.18;
+    letter-spacing:-0.015em;
+    color:var(--ink);
+    margin:0 0 20px;
+  }
+  .chapter-hook{
+    font-family:'Literata',serif;
+    font-size:20px;
+    font-weight:500;
+    line-height:1.55;
+    color:var(--ink);
+    margin:0 0 32px;
+    padding-bottom:32px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .prose{
+    font-family:'Literata',serif;
+    font-size:17px;
+    line-height:1.75;
+    color:var(--ink);
+  }
+  .prose p{margin:0 0 24px;}
+  .prose p:last-child{margin-bottom:0;}
+
+  /* Figure card */
+  .figure-card{
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:12px;
+    padding:20px 20px 18px;
+    margin:24px 0;
+  }
+  .figure-label{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.06em;
+    color:var(--ink-muted);
+    margin-bottom:14px;
+  }
+  .figure-caption{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:12.5px;
+    color:var(--ink-secondary);
+    text-align:center;
+    margin-top:14px;
+    line-height:1.5;
+  }
+
+  /* Callout card — amber note recipe (tip/rule-of-thumb content class) */
+  .callout-card{
+    background:var(--note-amber);
+    border:1px solid var(--note-amber-border);
+    border-radius:12px;
+    padding:16px 20px;
+    margin:22px 0;
+  }
+  .callout-text{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:14.5px;
+    line-height:1.6;
+    color:var(--ink);
+  }
+  .callout-text b{font-weight:800;}
+
+  /* HatchSays margin note (light variant) */
+  .hatch-note{
+    display:flex;
+    gap:14px;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:12px;
+    padding:16px 18px;
+    margin:22px 0;
+  }
+  .hatch-note-avatar{
+    width:40px;height:40px;border-radius:8px;
+    object-fit:cover;
+    background:#eef4ec;
+    flex-shrink:0;
+  }
+  .hatch-note-body{flex:1;}
+  .hatch-note-top{
+    font-family:'Nunito Sans',sans-serif;
+    display:flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:700;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  .hatch-note-msg{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink-secondary);
+    margin:0;
+  }
+
+  /* Chapter footer nav */
+  .chapter-footer{
+    margin-top:36px;
+    padding-top:24px;
+    border-top:1px solid var(--hairline);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .footer-prev{
+    font-family:'Nunito Sans',sans-serif;
+    display:flex;align-items:center;gap:7px;
+    font-size:13.5px;font-weight:700;
+    color:var(--ink-secondary);
+    cursor:default;
+  }
+  .footer-next-btn{
+    display:flex;align-items:center;gap:10px;
+    background:var(--forest-950);
+    color:#fff;
+    border:1px solid var(--forest-950);
+    border-radius:8px;
+    padding:13px 18px;
+    cursor:default;
+    max-width:420px;
+  }
+  .footer-next-btn .ntext{
+    font-family:'Nunito Sans',sans-serif;
+    display:flex;flex-direction:column;align-items:flex-start;line-height:1.3;
+    text-align:left;
+  }
+  .footer-next-btn .n1{font-size:10.5px;font-weight:700;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.04em;}
+  .footer-next-btn .n2{font-size:14px;font-weight:700;}
+
+  /* ===== RIGHT: rail ===== */
+  .rail{
+    position:sticky;
+    top:24px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:12px;
+  }
+  /* Practice card — mint note recipe (coach/practice-nudge content class), sole rotated surface */
+  .practice-card{
+    padding:16px;
+    background:var(--note-mint);
+    border-color:var(--note-mint-border);
+    display:inline-block;
+    width:100%;
+    transform:rotate(-0.7deg);
+  }
+  .practice-eyebrow{
+    display:flex;align-items:center;gap:7px;
+    font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.05em;
+    color:var(--ink-secondary);
+    margin-bottom:10px;
+  }
+  .practice-tile-row{
+    display:flex;align-items:flex-start;gap:12px;
+    margin-bottom:6px;
+  }
+  .practice-title{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:15px;font-weight:700;
+    color:var(--ink);
+    line-height:1.35;
+    margin:0 0 4px;
+  }
+  .practice-meta{
+    display:flex;align-items:center;gap:6px;
+    font-size:11.5px;
+    color:var(--ink-secondary);
+    flex-wrap:wrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .practice-reason{
+    font-size:12.5px;
+    line-height:1.5;
+    color:var(--ink-secondary);
+    margin:0 0 12px;
+  }
+  .practice-meta .sep{color:var(--ink-secondary);}
+  .diff-chip{
+    display:inline-flex;align-items:center;gap:5px;
+    background:var(--amber-soft);
+    color:#a16207;
+    border:1.5px solid #a16207;
+    font-size:11px;font-weight:700;
+    padding:3px 9px 3px 7px;
+    border-radius:999px;
+  }
+  .diff-chip .dot{width:5px;height:5px;border-radius:50%;background:#eab308;}
+  .practice-start-btn{
+    width:100%;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--forest-950);
+    color:#fff;
+    border:1px solid var(--forest-950);
+    border-radius:8px;
+    padding:10px;
+    font-size:13.5px;font-weight:700;
+    cursor:default;
+  }
+
+  .in-chapter-panel{padding:16px;}
+  .in-chapter-panel h3{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:12px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.04em;
+    color:var(--ink-secondary);
+    margin:0 0 10px;
+  }
+  .mini-toc-item{
+    display:flex;align-items:center;gap:9px;
+    padding:6px 0;
+    font-size:13px;
+    color:var(--ink-secondary);
+    cursor:default;
+  }
+  .mini-toc-item .mdot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--ink-muted);
+    flex-shrink:0;
+  }
+  .mini-toc-item.active{color:var(--forest-800);font-weight:700;}
+  .mini-toc-item.active .mdot{background:var(--forest-700);}
+
+  .reading-progress-panel{padding:16px;}
+  .reading-progress-panel h3{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:12px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.04em;
+    color:var(--ink-secondary);
+    margin:0 0 10px;
+  }
+  .rp-bar-track{
+    height:6px;border-radius:999px;
+    background:#eee9df;
+    overflow:hidden;
+    margin-bottom:8px;
+  }
+  .rp-bar-fill{
+    height:100%;border-radius:999px;
+    background:var(--forest-600);
+    width:38%;
+  }
+  .rp-label{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:12px;color:var(--ink-muted);
+    font-variant-numeric:tabular-nums;
+  }
+  .rp-label b{color:var(--ink);font-weight:700;}
+  .ink-mark-wrap{position:relative;display:inline-flex;align-items:center;}
+  .ink-mark{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);opacity:0.28;pointer-events:none;}
+
+  /* ===== Round pill ===== */
+  .round-pill{
+    position:fixed;
+    bottom:18px;right:18px;
+    background:var(--forest-950);
+    color:#fff;
+    font-size:11.5px;font-weight:700;
+    padding:8px 14px;
+    border-radius:999px;
+    box-shadow:0 8px 24px -8px rgba(5,35,22,0.5);
+    z-index:50;
+    font-family:'Nunito Sans',sans-serif;
+  }
+
+  @media (max-width: 1180px){
+    .reader-shell{grid-template-columns:210px 1fr;}
+    .rail{display:none;}
+  }
+  @media (max-width: 860px){
+    .reader-shell{grid-template-columns:1fr;}
+    .toc-rail{position:relative;top:0;}
+    .chapter-title{font-size:30px;}
+    .chapter-hook{font-size:17px;}
+  }
+  @media (max-width: 640px){
+    .breadcrumb{display:none;}
+    .footer-next-btn{max-width:none;width:100%;justify-content:flex-start;}
+    .chapter-footer{flex-direction:column;align-items:stretch;}
+    .topbar{flex-wrap:wrap;gap:12px;row-gap:10px;}
+    .topbar-right{gap:16px;flex-wrap:wrap;}
+    .avatar-cluster span{display:none;}
+  }
+</style>
+
+<!-- ===== TOP BAR (slim, no sidebar) ===== -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo"><span class="spark">✦</span> HackProduct</div>
+    <div class="breadcrumb">
+      <span>Guides</span>
+      <span class="sep">&rsaquo;</span>
+      <span class="current">Data Modeling from Scratch</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="stat-cluster">
+      <div>
+        <div class="num">12 days</div>
+        <div class="label">Streak</div>
+      </div>
+    </div>
+    <div class="stat-cluster">
+      <div>
+        <div class="num">9,860 <span style="font-size:11px;font-weight:700;color:var(--ink-muted);">XP</span></div>
+        <div class="label">Level 12</div>
+      </div>
+    </div>
+    <div class="bell-btn">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </div>
+    <div class="avatar-cluster">
+      <div class="avatar-circle">S</div>
+      <span style="font-size:13.5px;font-weight:700;color:var(--ink);">Sandeep</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SHELL: TOC + reading column + rail ===== -->
+<div class="reader-shell">
+
+  <!-- LEFT: module TOC -->
+  <div class="toc-rail">
+    <div class="toc-module-head">
+      <div class="toc-ring-wrap">
+        <svg width="40" height="40" viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="16" fill="none" stroke="#eee9df" stroke-width="4.5"/>
+          <circle cx="20" cy="20" r="16" fill="none" stroke="#266235" stroke-width="4.5"
+            stroke-dasharray="100.5" stroke-dashoffset="83.75" stroke-linecap="round"/>
+        </svg>
+        <div class="toc-ring-center">1/6</div>
+      </div>
+      <div class="toc-module-name">Data Modeling<br>from Scratch</div>
+    </div>
+
+    <div class="toc-list">
+      <div class="toc-item current">
+        <span class="toc-num">1</span>
+        <span class="toc-title">Entities vs. Attributes</span>
+      </div>
+      <div class="toc-item">
+        <span class="toc-num">2</span>
+        <span class="toc-title">Cardinality Explosion: When One-to-Many Becomes Many-to-Disaster</span>
+      </div>
+      <div class="toc-item">
+        <span class="toc-num">3</span>
+        <span class="toc-title">Bridge Tables and the Many-to-Many Trap</span>
+      </div>
+      <div class="toc-item">
+        <span class="toc-num">4</span>
+        <span class="toc-title">Surrogate vs. Natural Keys: The Identity Crisis in Your Primary Key</span>
+      </div>
+      <div class="toc-item muted">
+        <span class="toc-num">5</span>
+        <span class="toc-title">Normal Forms in Practice</span>
+      </div>
+      <div class="toc-item muted">
+        <span class="toc-num">6</span>
+        <span class="toc-title">Designing for the Query You Haven't Written Yet</span>
+      </div>
+    </div>
+
+    <div class="toc-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></svg>
+      Module overview
+    </div>
+  </div>
+
+  <!-- CENTER: reading column -->
+  <div class="reading-col">
+    <div class="chapter-eyebrow">
+      DATA MODELING FROM SCRATCH <span class="dot"></span> <span class="plain">CHAPTER 1 OF 6</span>
+    </div>
+
+    <h1 class="chapter-title">Entities vs. Attributes: The Decision That Haunts You Later</h1>
+
+    <p class="chapter-hook">Most modeling mistakes aren't about normalization. They're about misidentifying what an entity actually is.</p>
+
+    <div class="prose">
+      <p>Most modeling mistakes aren't about normalization. They're about misidentifying what an entity actually is, and that decision propagates through every index, migration, and join you write for the next five years.</p>
+
+      <p>Here's the test that actually works: does it have its own lifecycle? An entity gets created, updated, and deleted independently of the things around it. An attribute doesn't exist without its parent. A customer has an address, but the address isn't an entity unless you need to track when it changed, who verified it, or whether it's shared across multiple customers. The moment any of those questions matter, the address stops being a field and starts being a table.</p>
+
+      <p>This is where most schemas go wrong early. A team models "status" as a column because it feels like a property of the order. Then someone asks for a status history, an audit trail, or a way to see who changed it and why. Now status needs its own identity, its own timestamps, its own foreign key back to the order. What should have been a table from day one gets bolted on as a migration, and every query that used to read one row now has to join, sort, and filter to find the current value.</p>
+
+      <p>The cost isn't visible on day one. It shows up at the moment you least want it: the migration that touches every row in a hot table, the index that has to be rebuilt while traffic keeps flowing, the join that turns a 10ms query into something your monitoring flags at 2am. Getting the entity boundary right up front is cheaper than any optimization you'll apply later.</p>
+    </div>
+
+    <div class="figure-card">
+      <div class="figure-label">Figure 1.1 · Entity vs. attribute</div>
+      <svg width="100%" height="150" viewBox="0 0 640 150" fill="none">
+        <rect x="20" y="40" width="200" height="70" rx="12" fill="#f4e9f6" stroke="#e6d3ea" stroke-width="1.5"/>
+        <text x="120" y="70" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="13" font-weight="800" fill="#9d61c8">CUSTOMER</text>
+        <text x="120" y="90" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="11" fill="#5b685e">entity, own lifecycle</text>
+
+        <path d="M220 75 H 300" stroke="#c4c8bc" stroke-width="1.6"/>
+        <path d="M300 75 l-8 -5 v10 z" fill="#c4c8bc"/>
+        <text x="260" y="65" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="10.5" fill="#a6a9a4">has</text>
+
+        <rect x="300" y="20" width="150" height="45" rx="10" fill="#fffdfa" stroke="#ece7dd" stroke-width="1.5"/>
+        <text x="375" y="47" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="12" font-weight="700" fill="#20291f">name</text>
+
+        <rect x="300" y="75" width="150" height="45" rx="10" fill="#fffdfa" stroke="#ece7dd" stroke-width="1.5"/>
+        <text x="375" y="102" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="12" font-weight="700" fill="#20291f">email</text>
+
+        <path d="M300 42.5 H 265 V 75" stroke="#e6d3ea" stroke-width="1.4" fill="none"/>
+        <path d="M300 97.5 H 265 V 75" stroke="#e6d3ea" stroke-width="1.4" fill="none"/>
+
+        <path d="M460 60 H 500" stroke="#c4c8bc" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <path d="M500 60 l-8 -5 v10 z" fill="#c4c8bc"/>
+        <text x="480" y="50" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="10.5" fill="#a6a9a4">tracks</text>
+
+        <rect x="500" y="35" width="120" height="70" rx="12" fill="#f4e9f6" stroke="#e6d3ea" stroke-width="1.5"/>
+        <text x="560" y="65" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="13" font-weight="800" fill="#9d61c8">ADDRESS</text>
+        <text x="560" y="85" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="10" fill="#5b685e">only if versioned</text>
+      </svg>
+      <div class="figure-caption">Name and email stay attributes on Customer. Address only earns its own box once you need to track when it changed or who verified it.</div>
+    </div>
+
+    <div class="callout-card">
+      <div class="callout-text"><b>Rule of thumb:</b> if it has its own lifecycle, it's an entity. If it only ever exists as part of something else, and never needs to be queried, audited, or shared on its own, it's an attribute.</div>
+    </div>
+
+    <div class="prose">
+      <p>Apply that test before you touch normalization rules. Normalization tells you how to arrange entities once you already know what they are. It has nothing to say about the harder question of where one entity ends and another begins, and that question is the one that decides whether your schema still makes sense at ten times the data volume.</p>
+    </div>
+
+    <div class="hatch-note">
+      <img class="hatch-note-avatar" src="../../../../public/hatch/avatar.png" alt="Hatch">
+      <div class="hatch-note-body">
+        <div class="hatch-note-top">Hatch</div>
+        <p class="hatch-note-msg">Try the lifecycle test on a schema you own. Pick one column that might deserve its own table, and ask what breaks if two rows need to share it.</p>
+      </div>
+    </div>
+
+    <!-- Footer chapter nav -->
+    <div class="chapter-footer">
+      <div class="footer-prev">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m15 18-6-6 6-6"/></svg>
+        Module overview
+      </div>
+      <button class="footer-next-btn">
+        <span class="ntext">
+          <span class="n1">Next chapter</span>
+          <span class="n2">Cardinality Explosion: When One-to-Many Becomes Many-to-Disaster</span>
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="flex-shrink:0;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT: rail -->
+  <div class="rail">
+    <div class="panel practice-card">
+      <div class="practice-eyebrow">
+        Try it in practice
+      </div>
+      <div class="practice-tile-row">
+        <div>
+          <p class="practice-title">Model a Subscription Billing System</p>
+          <div class="practice-meta">
+            <span>Data Modeling</span>
+            <span class="sep">·</span>
+            <span class="diff-chip"><span class="dot"></span>Intermediate</span>
+            <span class="sep">·</span>
+            <span>40 min</span>
+          </div>
+        </div>
+      </div>
+      <p class="practice-reason">The billing-system rep uses this exact entity decision.</p>
+      <button class="practice-start-btn">
+        Start the rep
+      </button>
+    </div>
+
+    <div class="panel in-chapter-panel">
+      <h3>In this chapter</h3>
+      <div class="mini-toc-item active"><span class="mdot"></span>The lifecycle test</div>
+      <div class="mini-toc-item"><span class="mdot"></span>Where schemas go wrong early</div>
+      <div class="mini-toc-item"><span class="mdot"></span>The cost isn't visible on day one</div>
+      <div class="mini-toc-item"><span class="mdot"></span>Rule of thumb</div>
+    </div>
+
+    <div class="panel reading-progress-panel">
+      <h3>Reading progress</h3>
+      <div class="rp-bar-track"><div class="rp-bar-fill"></div></div>
+      <div class="rp-label"><span>Chapter 1 of 6</span><span class="ink-mark-wrap"><b>38%</b><svg class="ink-mark" width="46" height="26" viewBox="0 0 46 26" fill="none"><path d="M4 13c0-6.5 7-10.5 17-10.5S41 6 41.5 13c.5 7-8 11-19 10.5C11.5 23 3 20 4 13Z" stroke="#052316" stroke-width="1.8" stroke-linecap="round"/></svg></span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="round-pill">Round 4 · Guide Chapter Reader</div>

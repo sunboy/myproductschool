@@ -1,0 +1,56 @@
+# Stage B Loop — Full Redesign Implementation Charter
+
+Durable state for the autonomous redesign loop. Every iteration READS this first, works, then APPENDS to the Iteration Log. The founder's commission (2026-07-11):
+
+> Feature parity with main. No stubbed buttons/elements, no mock data anywhere. Everything functional and tested. Hatch contextual and excellent across the app. All Hatch assets generated via Codex as real images — no SVG Hatch anywhere. Every challenge type works without errors. Sonnet/Opus build; Fable guides, reviews, unblocks, grounds.
+
+## Hard requirements (acceptance = ALL true)
+1. **Parity**: every route, button, and flow that works on `main` works in the redesign (PARITY.md is the checklist; generated from main, checked off with evidence).
+2. **No stubs**: zero dead buttons, `href="#"`, empty onClick, disabled-without-reason, TODO-rendered UI.
+3. **No mock data**: no `MOCK_*` constants rendered, `IS_MOCK` stays false-path, every number/list from real loaders.
+4. **Hatch excellence**: every surface passes its state to Hatch endpoints (CLAUDE.md Hatch-awareness checklist); chat copy contextual per surface; graders aware. Probe test per surface: ask Hatch something answerable only from the new state.
+5. **Hatch imagery**: ALL Hatch renders are real images from `public/hatch/v2/` (Codex/gpt-image-1 generated, consistent character). `HatchGlyph` SVG is fully retired from rendered UI (founder override of the old CLAUDE.md rule — documented here). A `<HatchImage state=... />` component maps the old states to images.
+6. **Challenge types green**: flow, algorithm, sql, system_design, data_modeling, quick_take, cc_analytics (+ labs) each pass start → work → submit → grade → feedback E2E, on pro AND free accounts.
+7. **Design law**: spec.md §1–§9 + writing-style-guide are binding on every built screen; approved previews in `previews/round4/` are the visual source of truth.
+
+## Operating protocol
+- **Fable (main loop)**: plans each iteration, dispatches, reviews diffs/proofs against spec+previews, unblocks stuck agents, grounds decisions, updates this file. Writes code only to unblock.
+- **Sonnet agents**: all implementation (workflows/teams, one scoped task each).
+- **Opus agent**: orchestrates multi-file phases when a team needs a standing reviewer.
+- **Haiku agents**: Playwright visual probes + E2E walks.
+- **Codex (gpt-image-1 via scripts/imagegen)**: all Hatch asset generation.
+- Verification gates per iteration: `npx tsc --noEmit` clean → `npm run build` green → affected pages screenshot-compared to previews → no-stub grep → Hatch probe on touched surfaces. A phase is DONE only with evidence in the log.
+- Commits: one per phase on `feature/redesign-options`, descriptive message, **no co-author lines**. Never commit .env*, never touch prod data destructively; test accounts per CLAUDE.md; delete throwaway accounts after E2E.
+
+## Phases
+- [ ] **B0. Hatch asset system** — character sheet + 12 poses via gpt-image-1 (transparent PNG → public/hatch/v2/), `<HatchImage>` component with state map, retire HatchGlyph renders app-wide.
+- [ ] **B1. Foundation** — tokens (§spec palette: forest scale, sticky notes, highlighter) into globals.css additively; primitives: AppSidebar, TopUtilityBar, HatchSays, StatStrip, ProgressRing, FlowStepper, DisciplineTile, NoteCard, InkMark; icon usage = lucide-react per §9.
+- [ ] **B2. Shell swap** — (app)/layout.tsx sidebar + top utility bar; BottomTabs mobile; marketing/admin untouched.
+- [ ] **B3. Dashboard** (+ day-0 and pro states per previews).
+- [ ] **B4. Practice catalog** (explore+challenges merged; filters live).
+- [ ] **B5. Workspaces** — FLOW, coding, canvas overlay (system design + data modeling), per previews; graders untouched.
+- [ ] **B6. Feedback/debrief** + grading interstitial.
+- [ ] **B7. Interviews** — hub + live room + loops; mic-optional preserved.
+- [ ] **B8. Progress** + history + profile.
+- [ ] **B9. Library** — study plans hub/detail, autopsies hub/reader, guides hub/chapter reader.
+- [ ] **B10. Onboarding + settings/billing + in-app pricing** (real plan_limits/Stripe values).
+- [ ] **B11. Marketing home** (live V3TryRep demo slot).
+- [ ] **B12. Hatch contextuality sweep** — per-surface state→endpoint audit + probes.
+- [ ] **B13. Challenge-type parity matrix** — 7+ types × (pro, free) E2E green.
+- [ ] **B14. Full parity audit** — PARITY.md 100% evidenced; no-stub/no-mock sweeps; final build+lint+tsc; visual QA 375/768/1440; PostHog events firing.
+
+## Key paths
+Worktree: `/Users/sandeep/Projects/myproductschool/.worktrees/redesign-options` (branch `feature/redesign-options`). Spec: `docs/redesign/round4-codex-direction/spec.md`. Previews: `docs/redesign/previews/round4/`. Icons kit: `round4-codex-direction/icons.html`. Parity: `round4-codex-direction/PARITY.md`. Asset gen: `round4-codex-direction/generate-hatch-assets.mjs`.
+
+## Iteration Log
+(append: date · iteration # · dispatched · landed · evidence · next)
+
+### 2026-07-11 · Iteration 1 (kickoff)
+- Dispatched: [A] Hatch asset gen — 12 poses via gpt-image-1 → public/hatch/v2/ (background). [B] B1 foundation workflow — globals.css tokens (additive), src/components/redesign/ primitives (AppSidebar, TopUtilityBar, HatchSays, StatStrip, ProgressRing, FlowStepper, DisciplineTile, NoteCard, InkMark), HatchImage w/ v2→static fallback chain. [C] Parity inventory agent reading MAIN → PARITY.md (acceptance contract).
+- Also landed before kickoff: all 15 approved previews final (incl. canvas overlay + day-0 + pro variants); spec.md §1–§9 complete; icons.html canonical kit.
+- Next on wake: review B1 diffs vs spec, verify tsc, check asset gen quality (character consistency), review PARITY.md completeness, then dispatch B2 (shell swap) + B3 (dashboard) with sonnet team.
+
+### 2026-07-11 ~00:50 · Iteration 1 results + limit event
+- LANDED: [A] Hatch assets 12/12 generated → public/hatch/v2/ (wave, idle, listening, reviewing, speaking, celebrating, thinking, reading, writing, presenting, pointing, avatar — ~1.5MB each, OPTIMIZE LATER: compress/resize before shipping). [B] B1 effectively complete despite one builder dying on session limits: all 10 primitives in src/components/redesign/ + globals.css +88 lines tokens. tsc = 0 errors. [C] Parity agent DIED on session limit before writing PARITY.md — MUST RE-RUN first thing next iteration.
+- LIMIT EVENT: Claude session limit hit ~00:45, resets 1:50am CT. Resurrection cron active: hourly at :52 (job de1bf77c, session-only — terminal must stay open), guarded against duplicate loop instances (25-min freshness check) and self-deletes when loop completes. In-session wakeup for 01:13 will fire during the limit window: it must NO-OP (limits active) per this note.
+- NEXT ITERATION (first post-reset): (1) re-dispatch parity inventory agent → PARITY.md; (2) Fable spec-review of B1 primitives + tokens (diff vs previews); (3) image-optimize hatch/v2 (sharp/squoosh to ~150-250KB, keep originals in round4-codex-direction/hatch-src/); (4) dispatch B2 shell swap + B3 dashboard (sonnet team, opus orchestrator per CLAUDE.md team pattern); (5) commit B0+B1 as phase commits (no co-author lines).

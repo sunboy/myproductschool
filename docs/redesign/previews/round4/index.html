@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Round 4 — Codex Direction: ref vs preview</title>
+<style>
+  body { font-family: 'Nunito Sans', -apple-system, sans-serif; background:#faf8f4; color:#20291f; margin:0; padding:32px; }
+  h1 { font-family: Georgia, 'Literata', serif; font-size:28px; margin:0 0 6px; }
+  .sub { color:#5b685e; font-size:14px; margin-bottom:28px; }
+  .screen { margin-bottom:48px; }
+  h2 { font-family: Georgia, serif; font-size:20px; margin:0 0 12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .cell { background:#fffdfa; border:1px solid #ece7dd; border-radius:14px; padding:12px; }
+  .cell .label { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#5b685e; margin-bottom:8px; }
+  .cell img { width:100%; border-radius:8px; display:block; }
+  .links a { font-size:13px; color:#123b20; font-weight:700; margin-right:14px; }
+</style>
+</head>
+<body>
+<h1>Round 4 — Codex direction, rebuilt in code</h1>
+<p class="sub">Left: approved Codex reference. Right: our HTML preview with REAL content (live DB challenge titles, real autopsies, real user state) and our real Hatch assets. Click links to open the live HTML.</p>
+<div id="screens"></div>
+<script>
+const screens = [
+  ['Dashboard (Home)', '03-dashboard', 'dashboard'],
+  ['Practice Catalog', '04-practice-catalog', 'practice-catalog'],
+  ['FLOW Workspace', '05-flow-workspace', 'flow-workspace'],
+  ['Feedback / Debrief', '06-feedback-debrief', 'feedback-debrief'],
+  ['Interviews Hub', '07-interviews-hub', 'interviews-hub'],
+  ['Progress', '09-progress', 'progress'],
+]
+// batch 2: no Codex refs — these EXTEND the language (preview only, full width)
+const extended = [
+  ['Autopsies Hub', 'autopsies-hub'],
+  ['Autopsy Reader (Netflix, Decoded)', 'autopsy-reader'],
+  ['Study Plans Hub', 'study-plans'],
+  ['Study Plan Detail (7-Day Interview Prep)', 'study-plan-detail'],
+  ['Guides / Learn Hub', 'guides-hub'],
+  ['Chapter Reader (Data Modeling ch.1)', 'chapter-reader'],
+  ['Canvas Overlay (system design visual step)', 'canvas-workspace'],
+  ['Dashboard — Day-0 First-Time (free)', 'dashboard-first-run'],
+  ['Dashboard — Returning Pro', 'dashboard-pro'],
+]
+document.getElementById('screens').innerHTML = screens.map(([name, ref, prev]) => `
+  <div class="screen">
+    <h2>${name}</h2>
+    <p class="links"><a href="${prev}.html" target="_blank">open live preview</a></p>
+    <div class="pair">
+      <div class="cell"><div class="label">Codex reference</div><img src="../../round4-codex-direction/refs/${ref}.png"></div>
+      <div class="cell"><div class="label">Our preview (real content)</div><img src="../../screenshots/round4/${prev}-1440.png"></div>
+    </div>
+  </div>`).join('')
+  + '<h1 style="margin-top:16px">Extended screens (no ref — language applied to new surfaces)</h1>'
+  + extended.map(([name, prev]) => `
+  <div class="screen">
+    <h2>${name}</h2>
+    <p class="links"><a href="${prev}.html" target="_blank">open live preview</a></p>
+    <div class="cell"><div class="label">Our preview (real content)</div><img src="../../screenshots/round4/${prev}-1440.png"></div>
+  </div>`).join('')
+</script>
+</body>
+</html>
