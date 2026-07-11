@@ -28,7 +28,7 @@ export default function HatchPreviewPage() {
       <V3PageHero
         eyebrow="Hatch"
         title="Hatch animation states."
-        subtitle="Every HatchGlyph animation state used across coaching, feedback, and practice surfaces, shown at three sizes."
+        subtitle="Every Hatch animation state used across coaching, feedback, and practice surfaces, shown at three sizes."
       />
 
       <V3Section title="States at a glance.">

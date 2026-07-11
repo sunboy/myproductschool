@@ -35,7 +35,7 @@ Durable state for the autonomous redesign loop. Every iteration READS this first
 - [x] **B9. Library** — study plans hub/detail, autopsies hub/reader, guides hub/chapter reader. Evidence: a23a20a2 + gate wf_dfbd7c8f-7c1 (heroes render on all 3 hubs; Fable eyeballed explore_plans-1440.png vs approved preview).
 - [x] **B10. Onboarding + settings/billing + in-app pricing** (real plan_limits/Stripe values). Evidence: 96fbda23 + gate wf_c21a97d5-215 (paywall/sidebar numbers verified vs /api/billing/limits on free account; pro zero-upsell on app surfaces; toggle persistence; first-run restyled).
 - [x] **B11. Marketing home** (live V3TryRep demo slot). Evidence: 96fbda23 + gate (typed into hero demo, counter live, grade button enabled; no HatchGlyph SVG on marketing home).
-- [ ] **B12. Hatch contextuality sweep** — per-surface state→endpoint audit + probes.
+- [x] **B12. Hatch contextuality sweep** — per-surface state→endpoint audit + probes. Evidence: audit in wf_54ecf4a8-104 journal — all 7 surfaces INTACT vs main (server-side builders zero-diff), live-interview signal handling IMPROVED; one MEDIUM fix (FLOW rail static read) dispatched in wf_338bfead-9a8.
 - [ ] **B13. Challenge-type parity matrix** — 7+ types × (pro, free) E2E green.
 - [ ] **B14. Full parity audit** — PARITY.md 100% evidenced; no-stub/no-mock sweeps; final build+lint+tsc; visual QA 375/768/1440; PostHog events firing.
 
@@ -121,3 +121,9 @@ Worktree: `/Users/sandeep/Projects/myproductschool/.worktrees/redesign-options` 
 - COMMITTED 96fbda23. B10 ✓ B11 ✓ checked.
 - DISPATCHED wf_54ecf4a8-104: inventory → 5 parallel mechanical HatchGlyph→HatchImage batches (tours engine excluded by design) + settings flash fix + B12 READ-ONLY Hatch contextuality audit (7 surfaces: payload wiring INTACT/BROKEN/DEGRADED with file:line evidence). Gate: grep zero, DOM zero on 5 surfaces incl. FloatingHatch, visual sanity on swapped images.
 - Next on wake: review retirement gate + B12 audit report; fix list from audit becomes the next wave alongside B13 challenge-type matrix (9 types × pro/free E2E); then B14 full parity audit vs PARITY.md.
+
+### 2026-07-11 ~16:10 · Iteration 11 (HatchGlyph retirement DONE; B12 audited; B13 matrix dispatched)
+- wf_54ecf4a8-104 gate 7/7 PASS: zero rendered HatchGlyph outside tour engine; DOM-verified images on dashboard/explore/FLOW/canvas/settings/marketing (FloatingHatch FAB now /hatch/v2/idle.png). COMMITTED 0ddb2c43.
+- B12 audit (read-only vs main): FLOW/coding/canvas/interview/feedback/hubs/nudges payloads ALL INTACT; HatchSays copy contextual everywhere, none static-filler; live-interview signal path improved (parse+persist flow_move/competency signals, strip on all render paths). Fix list: MEDIUM = FLOW right-rail "Hatch's read" permanently static (proactiveNudge never set on FLOW path); LOW = maximized coding chat missing activePart props (pre-existing on main); INFO = dead CoachSpineCard + orphaned useHatchStream/growth-reflection endpoints. B12 ✓ checked (fixes in flight).
+- DISPATCHED wf_338bfead-9a8: [fix] Hatch read rail wiring + maximized-chat context, [cleanup] dead code + hatch-preview copy + avatar flex box; then B13 MATRIX — sequential Playwright walkers: PRO account across flow/algorithm/sql/system_design/data_modeling/quick_take/cc_analytics(start-only, end immediately)/claude_code_debugging(flag state), then FREE account (limit gates = GATED-OK pass; reports remaining usage).
+- Next on wake: review matrix results; fix any type failures; check off B13; then B14 full parity audit — PARITY.md evidence pass, no-stub/no-mock sweeps, visual QA 375/768/1440, PostHog events, final build+lint+tsc, and the founder report.

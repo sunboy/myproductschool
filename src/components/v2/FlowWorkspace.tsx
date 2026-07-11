@@ -1462,6 +1462,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         if (isInterviewChallenge) {
           setProactiveNudge({ id: `idle-${Date.now()}`, text: data.nudge })
         } else {
+          // FLOW (MCQ): feed the wide-desktop right rail's "Hatch's read" note
+          // with the live nudge, and keep the floating cue for narrow viewports
+          // where the rail is hidden.
+          if (isFlowChallenge) {
+            setProactiveNudge({ id: `idle-${Date.now()}`, text: data.nudge })
+          }
           emitHatchCue?.({
             surface: 'workspace',
             message: data.nudge,
@@ -4561,7 +4567,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         <div className="font-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)', marginBottom: 6 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 7, height: 7, borderRadius: 999, background: 'var(--color-forest-600)' }} />
-            Hatch&apos;s read
+            {/* Only brand the note as live Hatch output when a real nudge is
+                showing; the static fallback is a method reminder, not a read. */}
+            {proactiveNudge ? <>Hatch&apos;s read</> : <>The move</>}
           </span>
           {proactiveNudge && (
             <button
@@ -5028,26 +5036,35 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     CanvasChatPanel is unmounted here, so mount a dedicated instance
                     so "Ask Hatch" has a panel to open. Available for the live
                     complete view and the just-graded current attempt. */}
-                {codingControlsLive && (
-                  <CanvasChatPanel
-                    attemptId={attemptId ?? ''}
-                    challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
-                    challengeType="coding"
-                    scene={scene}
-                    queuedPrompt={queuedHatchPrompt}
-                    isOpen={chatPanelOpen}
-                    onToggle={() => setChatPanelOpen((v) => !v)}
-                    onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
-                    currentCode={currentCode}
-                    currentLanguage={currentLanguage}
-                    lastRunResult={lastRunResult}
-                    challengeTitle={challengeTitle ?? undefined}
-                    problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
-                    solutionsOpen={solutionsOpen}
-                    activeSolutionApproach={activeSolutionApproach}
-                    guidanceLevel={coachRegister}
-                  />
-                )}
+                {codingControlsLive && (() => {
+                  const activePart = codingParts.find(p => p.id === activePartId)
+                  return (
+                    <CanvasChatPanel
+                      attemptId={attemptId ?? ''}
+                      challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
+                      challengeType="coding"
+                      scene={scene}
+                      queuedPrompt={queuedHatchPrompt}
+                      isOpen={chatPanelOpen}
+                      onToggle={() => setChatPanelOpen((v) => !v)}
+                      onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
+                      currentCode={currentCode}
+                      currentLanguage={currentLanguage}
+                      lastRunResult={lastRunResult}
+                      challengeTitle={challengeTitle ?? undefined}
+                      problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
+                      activePartId={activePart?.id}
+                      activePartSequence={activePart?.sequence}
+                      activePartTitle={activePart?.title}
+                      activePartPrompt={activePart?.coding_subtask_prompt ?? null}
+                      activePartResponseType={activePart?.response_type}
+                      activePartWeightPct={activePart ? Math.round(activePart.grading_weight_within_step * 100) : undefined}
+                      solutionsOpen={solutionsOpen}
+                      activeSolutionApproach={activeSolutionApproach}
+                      guidanceLevel={coachRegister}
+                    />
+                  )
+                })()}
               </div>
             )}
 

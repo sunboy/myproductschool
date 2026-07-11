@@ -635,7 +635,7 @@ export function CanvasChatPanel({
           {messages.map((msg, i) => (
             <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               {msg.role === 'hatch' && (
-                <HatchImage size={20} state="avatar" className="mt-0.5" />
+                <HatchImage size={20} state="avatar" className="mt-0.5 self-start h-5 w-5" />
               )}
               <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                 <div
@@ -802,7 +802,7 @@ export function CanvasChatPanel({
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
             {msg.role === 'hatch' && (
-              <HatchImage size={20} state="avatar" className="mt-0.5" />
+              <HatchImage size={20} state="avatar" className="mt-0.5 self-start h-5 w-5" />
             )}
             <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div
