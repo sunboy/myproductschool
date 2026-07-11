@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 
 export type Discipline = 'system-design' | 'product-sense' | 'data-modeling' | 'sql' | 'ai-ml'
 
-const DISCIPLINE_ICON: Record<Discipline, typeof Box> = {
+export const DISCIPLINE_ICON: Record<Discipline, typeof Box> = {
   'system-design': Box,
   'product-sense': Lightbulb,
   'data-modeling': Database,
@@ -19,6 +19,11 @@ const DISCIPLINE_CLASSES: Record<Discipline, { bg: string; border: string; fg: s
   sql: { bg: 'bg-sql-bg', border: 'border-sql-fg/40', fg: 'text-sql-fg' },
   'ai-ml': { bg: 'bg-aiml-bg', border: 'border-aiml-fg/40', fg: 'text-aiml-fg' },
 }
+
+/** Bare fg text-color class per discipline, for inline eyebrow labels/icons that carry no tile (spec §9.4). */
+export const DISCIPLINE_FG_CLASS: Record<Discipline, string> = Object.fromEntries(
+  (Object.keys(DISCIPLINE_CLASSES) as Discipline[]).map(d => [d, DISCIPLINE_CLASSES[d].fg])
+) as Record<Discipline, string>
 
 export interface DisciplineTileProps {
   discipline: Discipline

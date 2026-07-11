@@ -1,295 +1,327 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { StudyPlanCard } from '@/components/explore/StudyPlanCard'
-import { BackButton } from '@/components/navigation/BackButton'
+import { Check, ArrowRight } from 'lucide-react'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { StudyPlanWithItems } from '@/lib/types'
+import type { Discipline } from '@/components/redesign/DisciplineTile'
 import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_STUDY_PLAN_VIEWED } from '@/lib/posthog/events'
 
-const DIFFICULTY_FILTERS = ['All', 'Beginner', 'Intermediate', 'Advanced'] as const
-type DifficultyFilter = typeof DIFFICULTY_FILTERS[number]
-
-function SpiralSVG() {
-  const points: string[] = []
-  for (let t = 0; t <= Math.PI * 6; t += 0.10) {
-    const r = 5 + t * 6
-    const x = 110 + r * Math.cos(t)
-    const y = 85 + r * Math.sin(t)
-    points.push(`${x.toFixed(1)},${y.toFixed(1)}`)
-  }
-  return (
-    <svg
-      viewBox="0 0 220 170"
-      style={{ position: 'absolute', bottom: -10, right: -10, width: '70%', height: '70%', pointerEvents: 'none', zIndex: 0 }}
-      aria-hidden
-    >
-      <polyline points={points.join(' ')} stroke="#7ee099" strokeWidth={1.6} fill="none" opacity={0.15} />
-    </svg>
-  )
-}
-
 interface Props {
   studyPlans: StudyPlanWithItems[]
+  enrolledPlans: StudyPlanWithItems[]
 }
 
-export function StudyPlansClient({ studyPlans }: Props) {
-  const [activeFilter, setActiveFilter] = useState<DifficultyFilter>('All')
+const EYEBROW_FG_CLASS: Record<Discipline, string> = {
+  'system-design': 'text-sd-fg',
+  'product-sense': 'text-ps-fg',
+  'data-modeling': 'text-dm-fg',
+  sql: 'text-sql-fg',
+  'ai-ml': 'text-aiml-fg',
+}
+
+const DISCIPLINE_LABEL: Record<Discipline, string> = {
+  'system-design': 'System design',
+  'product-sense': 'Product sense',
+  'data-modeling': 'Data modeling',
+  sql: 'SQL & tooling',
+  'ai-ml': 'AI / ML',
+}
+
+/**
+ * study_plans.disciplines / move_tag has no dedicated taxonomy for the
+ * study-plan grid — most rows carry an empty disciplines[] array (see
+ * getStudyPlanSummaries live check). Derive a real eyebrow from whatever
+ * signal the row actually has (first discipline tag, else move_tag), and
+ * omit the eyebrow entirely rather than invent one.
+ */
+function disciplineForPlan(plan: StudyPlanWithItems): Discipline | null {
+  const first = plan.disciplines?.[0]
+  if (first) {
+    if (first === 'system_design') return 'system-design'
+    if (first === 'data_modeling') return 'data-modeling'
+    if (first === 'coding') return 'sql'
+    if (first === 'product_sense') return 'product-sense'
+  }
+  switch (plan.move_tag) {
+    case 'frame':
+    case 'list':
+    case 'optimize':
+    case 'win':
+      return 'product-sense'
+    default:
+      return null
+  }
+}
+
+function planMetaLine(plan: StudyPlanWithItems): string {
+  const bits: string[] = []
+  if (plan.chapter_count > 0) bits.push(`${plan.chapter_count} ${plan.chapter_count === 1 ? 'chapter' : 'chapters'}`)
+  if ((plan.item_count ?? 0) > 0) bits.push(`${plan.item_count} ${plan.item_count === 1 ? 'challenge' : 'challenges'}`)
+  if (plan.difficulty) bits.push(plan.difficulty.charAt(0).toUpperCase() + plan.difficulty.slice(1))
+  return bits.join(' · ')
+}
+
+export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
+  const [activeTab, setActiveTab] = useState<'study_plan' | 'loop'>('study_plan')
 
   useEffect(() => {
     trackEvent(EVENT_STUDY_PLAN_VIEWED, { plan_slug: 'all' })
   }, [])
 
-  const enrolledPlans = studyPlans.filter(p => p.is_enrolled && p.progress_percentage > 0)
-  const firstEnrolled = enrolledPlans[0]
+  const tracks = useMemo(() => {
+    const studyPlanRows = studyPlans.filter(p => (p.track_type ?? 'study_plan') === 'study_plan')
+    const loopRows = studyPlans.filter(p => p.track_type === 'loop')
+    return { studyPlanRows, loopRows }
+  }, [studyPlans])
 
-  // Only surface stats we can derive from real data. Community-wide metrics
-  // (enrolled learners, avg completion rate) are not available client-side, so
-  // they are intentionally omitted rather than faked.
-  const heroStats: { label: string; value: string }[] = []
-  if (studyPlans.length > 0) {
-    heroStats.push({
-      label: studyPlans.length === 1 ? 'Study Plan' : 'Study Plans',
-      value: String(studyPlans.length),
-    })
-  }
-  const myEnrolledCount = studyPlans.filter(p => p.is_enrolled).length
-  if (myEnrolledCount > 0) {
-    heroStats.push({ label: 'Your active plans', value: String(myEnrolledCount) })
-  }
+  const hasLoops = tracks.loopRows.length > 0
 
-  const filtered = activeFilter === 'All'
-    ? studyPlans
-    : studyPlans.filter(p => (p.difficulty ?? '').toLowerCase() === activeFilter.toLowerCase())
+  // Continue band: most-recently-active enrolled plan with real progress.
+  // getEnrolledPlans already orders by last_active_at desc.
+  const continuePlan = enrolledPlans.find(p => p.progress_percentage > 0) ?? enrolledPlans[0] ?? null
+
+  // Hatch header note: names the specific enrolled plan and where the user
+  // left off. Falls back to nothing (omitted) if there's no real enrollment
+  // to reference — no generic filler per spec §4.
+  const headerNote = continuePlan
+    ? `${continuePlan.completed_count} of ${continuePlan.item_count} challenges done in ${continuePlan.title}. ${
+        continuePlan.item_count - continuePlan.completed_count === 1
+          ? 'One left to finish it.'
+          : `${continuePlan.item_count - continuePlan.completed_count} left to finish it.`
+      }`
+    : null
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
+    <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-5">
+      {/* ── Compact light page header (spec §1) ── */}
+      <div
+        data-tour-target="study-plans-hero"
+        className="flex flex-col gap-4 border-b border-hairline pb-4 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div>
+          <h1 className="font-headline text-[28px] font-bold leading-tight text-ink-strong">
+            Study <span className="hl-word">plans</span>
+          </h1>
+          <p className="mt-1 max-w-[480px] text-[13.5px] leading-[1.45] text-ink-secondary">
+            Sequenced reps with a fixed order and an end.
+          </p>
+        </div>
 
-      <BackButton href="/explore" label="Back to Explore" className="mb-5" />
-
-      {/* ── Hero ── */}
-      <div data-tour-target="study-plans-hero" style={{
-        borderRadius: 32,
-        overflow: 'hidden',
-        marginBottom: 32,
-        background: 'linear-gradient(135deg, #1e3528 0%, #14241c 58%, #0e1a14 100%)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        padding: '44px 52px',
-        position: 'relative',
-      }}>
-        {/* Dot grid */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
-          backgroundSize: '22px 22px',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 100% at 72% 50%, black 35%, transparent 78%)',
-          maskImage: 'radial-gradient(ellipse 80% 100% at 72% 50%, black 35%, transparent 78%)',
-        }} />
-        {/* Ambient glow */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-          background: 'radial-gradient(600px 420px at 82% 55%, rgba(78,180,120,0.17), transparent 62%)',
-        }} />
-        <SpiralSVG />
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 36, alignItems: 'center', position: 'relative', zIndex: 1 }}>
-          {/* Left */}
-          <div>
-            <div style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
-              color: 'rgba(243,237,224,0.45)', marginBottom: 18,
-            }}>
-              Explore › Study Plans
-            </div>
-            <h1 style={{
-              fontFamily: 'var(--font-headline)',
-              fontSize: 52, fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.05,
-              color: '#f3ede0', marginBottom: 16,
-            }}>
-              Structured paths<br />
-              <span style={{
-                background: 'linear-gradient(90deg, #7ee099, #c9e86e)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}>
-                to sharper thinking
-              </span>
-            </h1>
-            <p style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 16, lineHeight: 1.58,
-              color: 'rgba(243,237,224,0.70)',
-              maxWidth: 500, marginBottom: 28,
-            }}>
-              Hatch curates multi-week tracks across all four FLOW moves. Follow a plan, or build your own from any challenge.
+        {headerNote && (
+          <div className="note-mint flex max-w-[320px] shrink-0 items-center gap-2.5 px-3 py-2.5">
+            <HatchImage state="avatar" size={28} className="rounded-full" />
+            <p className="text-[12.5px] leading-[1.4] text-ink-secondary">
+              <b className="font-extrabold text-ink-strong">Hatch:</b> {headerNote}
             </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Link href="/explore/plans" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7,
-                background: '#f3ede0', color: '#1e1b14',
-                padding: '14px 24px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 15,
-                textDecoration: 'none',
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1" }}>school</span>
-                Browse all plans
-              </Link>
-              {/* TODO: wire builder modal when Hatch plan-generator endpoint is ready */}
-              <Link href="/explore/plans?builder=hatch" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7,
-                background: 'rgba(255,255,255,0.08)', color: '#f3ede0',
-                border: '1px solid rgba(255,255,255,0.14)',
-                padding: '14px 24px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 15,
-                textDecoration: 'none',
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>auto_awesome</span>
-                Hatch builds mine
-              </Link>
+          </div>
+        )}
+      </div>
+
+      {/* ── Continue band (slim amber note, real progress) ── */}
+      {continuePlan && (
+        <div className="note-amber mt-3.5 flex flex-wrap items-center gap-4 px-4 py-2.5">
+          <span className="shrink-0 text-[11px] font-extrabold uppercase tracking-[0.05em] text-ink-muted">
+            Continue
+          </span>
+          <span className="shrink-0 whitespace-nowrap text-[14.5px] font-bold text-ink-strong">
+            {continuePlan.title}
+          </span>
+          <span className="shrink-0 whitespace-nowrap text-[12.5px] font-bold tabular-nums text-ink-secondary">
+            {continuePlan.completed_count} of {continuePlan.item_count} done
+          </span>
+          <div className="h-2 max-w-[220px] flex-1 overflow-hidden rounded-full bg-hairline">
+            <div
+              className="h-full rounded-full bg-forest-600"
+              style={{ width: `${Math.max(0, Math.min(100, continuePlan.progress_percentage))}%` }}
+            />
+          </div>
+          <span className="shrink-0 whitespace-nowrap text-[13px] font-extrabold tabular-nums text-forest-700">
+            {continuePlan.progress_percentage}%
+          </span>
+          <div className="flex-1 max-sm:hidden" />
+          <Link
+            href={`/explore/plans/${continuePlan.slug}`}
+            className="ml-auto flex shrink-0 items-center gap-1.5 rounded-lg bg-forest-950 px-[18px] py-[9px] text-[12.5px] font-extrabold text-white no-underline max-sm:ml-0 max-sm:w-full max-sm:justify-center"
+          >
+            Continue {continuePlan.title}
+            <ArrowRight size={14} strokeWidth={2} />
+          </Link>
+        </div>
+      )}
+
+      {/* ── Track tabs ── */}
+      {hasLoops && (
+        <div className="mt-5 flex items-center gap-6 overflow-x-auto border-b border-hairline">
+          <button
+            type="button"
+            onClick={() => setActiveTab('study_plan')}
+            className={`shrink-0 whitespace-nowrap border-b-[2.5px] px-0.5 py-2.5 text-[13.5px] font-bold ${
+              activeTab === 'study_plan'
+                ? 'border-forest-700 text-forest-700'
+                : 'border-transparent text-ink-muted'
+            }`}
+          >
+            Study plans
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('loop')}
+            className={`shrink-0 whitespace-nowrap border-b-[2.5px] px-0.5 py-2.5 text-[13.5px] font-bold ${
+              activeTab === 'loop'
+                ? 'border-forest-700 text-forest-700'
+                : 'border-transparent text-ink-muted'
+            }`}
+          >
+            Interview loops
+          </button>
+        </div>
+      )}
+
+      {/* ── Plans grid ── */}
+      {activeTab === 'study_plan' && (
+        <>
+          <div className="mb-1 mt-5 flex items-baseline justify-between">
+            <div>
+              <div className="font-body text-[17px] font-bold text-ink-strong">All study plans</div>
+              <div className="mt-0.5 text-[12.5px] text-ink-muted">
+                {tracks.studyPlanRows.length} {tracks.studyPlanRows.length === 1 ? 'plan' : 'plans'}, one capability each
+              </div>
             </div>
           </div>
 
-          {/* Right - stat pills (only real, derivable numbers) */}
-          {heroStats.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-              {heroStats.map(stat => (
-                <div key={stat.label} style={{
-                  background: 'rgba(255,255,255,0.07)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  borderRadius: 18, padding: '12px 20px', minWidth: 190,
-                }}>
-                  <div style={{
-                    fontFamily: 'var(--font-label)',
-                    fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-                    color: 'rgba(243,237,224,0.45)', marginBottom: 3,
-                  }}>
-                    {stat.label}
-                  </div>
-                  <div style={{
-                    fontFamily: 'var(--font-headline)',
-                    fontSize: 22, fontWeight: 600, color: '#f3ede0',
-                  }}>
-                    {stat.value}
-                  </div>
-                </div>
+          {tracks.studyPlanRows.length === 0 ? (
+            <div className="py-12 text-center text-sm text-ink-muted">No study plans yet.</div>
+          ) : (
+            <div className="mt-3.5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {tracks.studyPlanRows.map(plan => (
+                <PlanCard key={plan.id} plan={plan} />
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      {/* ── Hatch recommendation banner ── */}
-      {firstEnrolled && (
-        <div style={{
-          display: 'flex', alignItems: 'flex-start', gap: 16,
-          padding: '18px 20px',
-          background: 'var(--color-primary-container, #cfe3d3)',
-          borderRadius: 24,
-          border: '1px solid rgba(0,0,0,0.04)',
-          marginBottom: 28,
-        }}>
-          <HatchGlyph size={48} state="speaking" className="text-primary flex-shrink-0" />
-          <div>
-            <div style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: 'var(--color-on-primary-container, #0f3d1f)', opacity: 0.7, marginBottom: 4,
-            }}>
-              Hatch&rsquo;s Recommendation
-            </div>
-            <div style={{
-              fontFamily: 'var(--font-headline)',
-              fontSize: 17, fontWeight: 600, color: 'var(--color-on-primary-container, #0f3d1f)', marginBottom: 4,
-            }}>
-              {firstEnrolled.title} is your best next step.
-            </div>
-            <p style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 13.5, lineHeight: 1.55, color: 'var(--color-on-primary-container, #0f3d1f)',
-              opacity: 0.85, maxWidth: 580, margin: '0 0 12px',
-            }}>
-              Based on your progress across FLOW moves, this track is calibrated to push your weakest moves without dropping what you&rsquo;ve already built.
-            </p>
-            <Link href={`/explore/plans/${firstEnrolled.slug}`} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: 'var(--color-primary, #4a7c59)', color: '#fff',
-              borderRadius: 999, padding: '8px 16px',
-              fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 700,
-              textDecoration: 'none',
-            }}>
-              Continue {firstEnrolled.title}
-              <span className="material-symbols-outlined" style={{ fontSize: 15 }}>arrow_forward</span>
-            </Link>
-          </div>
-        </div>
+        </>
       )}
 
-      {/* ── Section heading + filters ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
-        <div>
-          <div style={{
-            fontFamily: 'var(--font-label)',
-            fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: 'var(--color-on-surface-muted, #78715f)', marginBottom: 4,
-          }}>
-            All study plans
+      {/* ── Loop tracks ── */}
+      {activeTab === 'loop' && hasLoops && (
+        <>
+          <div className="mb-1 mt-5 flex items-baseline justify-between">
+            <div>
+              <div className="font-body text-[17px] font-bold text-ink-strong">Interview loop tracks</div>
+              <div className="mt-0.5 text-[12.5px] text-ink-muted">Multi-round sequences matched to a target role</div>
+            </div>
           </div>
-          <h2 style={{
-            fontFamily: 'var(--font-headline)',
-            fontSize: 36, fontWeight: 700, letterSpacing: '-0.02em',
-            color: 'var(--color-on-surface, #1e1b14)', margin: 0,
-          }}>
-            Pick your track.
-          </h2>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span style={{
-            fontFamily: 'var(--font-label)',
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: 'var(--color-on-surface-muted, #78715f)', marginRight: 4,
-          }}>
-            Difficulty
-          </span>
-          {DIFFICULTY_FILTERS.map(f => (
-            <button
-              key={f}
-              onClick={() => setActiveFilter(f)}
-              style={{
-                padding: '7px 14px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 700,
-                cursor: 'pointer', transition: 'background 150ms, color 150ms',
-                background: activeFilter === f ? 'var(--color-on-surface, #1e1b14)' : 'transparent',
-                color: activeFilter === f ? '#f7ede0' : 'var(--color-on-surface-variant, #4e4a3f)',
-                border: activeFilter === f ? '1px solid transparent' : '1px solid var(--color-outline-variant, #d5cab1)',
-              }}
-            >
-              {f}
-            </button>
-          ))}
+          <div className="mt-2.5 flex flex-col border-t border-hairline">
+            {tracks.loopRows.map(loop => (
+              <LoopRow key={loop.id} loop={loop} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function PlanCard({ plan }: { plan: StudyPlanWithItems }) {
+  const discipline = disciplineForPlan(plan)
+  const isEnrolled = plan.is_enrolled ?? false
+  const hasProgress = plan.progress_percentage > 0
+  const meta = planMetaLine(plan)
+
+  // Day-dots only render when the plan's chapter count is small enough to
+  // read as a day sequence (per task: "day-dots only where chapter counts
+  // exist"). Cap at 10 so an unrelated 30-chapter plan doesn't render an
+  // unreadable dot strip.
+  const showDayDots = plan.chapter_count > 0 && plan.chapter_count <= 10
+  const doneDays = showDayDots
+    ? Math.min(plan.chapter_count, Math.round((plan.progress_percentage / 100) * plan.chapter_count))
+    : 0
+
+  const ctaLabel = hasProgress
+    ? showDayDots
+      ? `Start Day ${Math.min(doneDays + 1, plan.chapter_count)}`
+      : 'Continue'
+    : isEnrolled
+    ? 'Begin'
+    : 'Start'
+
+  return (
+    <div className="flex flex-col rounded-xl border border-hairline bg-card-bright p-4">
+      {discipline && (
+        <div className={`mb-2.5 text-[11px] font-extrabold uppercase tracking-[0.04em] ${EYEBROW_FG_CLASS[discipline]}`}>
+          {DISCIPLINE_LABEL[discipline]}
         </div>
+      )}
+      <div className="mb-1.5 min-h-[40px] font-body text-[15.5px] font-bold leading-[1.32] text-ink-strong">
+        {plan.title}
       </div>
+      {meta && <div className="mb-2 text-xs font-bold tabular-nums text-ink-muted">{meta}</div>}
+      {plan.description && (
+        <p className="mb-3 flex-1 text-[12.5px] leading-[1.45] text-ink-secondary">{plan.description}</p>
+      )}
 
-      {/* ── Plan grid ── */}
-      {filtered.length === 0 ? (
-        <div style={{
-          textAlign: 'center', padding: '60px 0',
-          fontFamily: 'var(--font-label)', fontSize: 14,
-          color: 'var(--color-on-surface-muted, #78715f)',
-        }}>
-          No {activeFilter !== 'All' ? activeFilter.toLowerCase() : ''} plans yet.
+      {showDayDots ? (
+        <div className="mb-3 flex gap-1.5">
+          {Array.from({ length: plan.chapter_count }).map((_, i) => (
+            <div
+              key={i}
+              className={
+                i < doneDays
+                  ? 'flex size-6 shrink-0 items-center justify-center rounded-full bg-forest-600'
+                  : 'size-3.5 shrink-0 rounded-full border-[1.4px] border-ink-muted/40'
+              }
+            >
+              {i < doneDays && <Check size={13} strokeWidth={2.2} className="text-white" />}
+            </div>
+          ))}
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {filtered.map((plan, i) => (
-            <StudyPlanCard key={plan.id} plan={plan} index={i} />
-          ))}
+        <div className="mb-3 flex items-center gap-2">
+          <div className="h-[5px] flex-1 overflow-hidden rounded-full bg-hairline">
+            <div
+              className="h-full rounded-full bg-forest-600"
+              style={{ width: `${Math.max(0, Math.min(100, plan.progress_percentage))}%` }}
+            />
+          </div>
+          <span className="text-[11px] font-extrabold tabular-nums text-forest-700">{plan.progress_percentage}%</span>
         </div>
       )}
+
+      <Link
+        href={`/explore/plans/${plan.slug}`}
+        className="mt-auto flex w-full items-center justify-center rounded-lg bg-forest-950 py-2.5 text-[13px] font-extrabold text-white no-underline"
+      >
+        {ctaLabel}
+      </Link>
+    </div>
+  )
+}
+
+function LoopRow({ loop }: { loop: StudyPlanWithItems }) {
+  const isEnrolled = loop.is_enrolled ?? false
+  const hasProgress = loop.progress_percentage > 0
+  const meta = hasProgress
+    ? `${loop.completed_count} of ${loop.item_count} done · ${loop.progress_percentage}%`
+    : isEnrolled
+    ? 'Enrolled · not started'
+    : 'Not started'
+  const ctaLabel = hasProgress ? 'Resume' : 'Start loop'
+
+  return (
+    <div className="flex items-center gap-3.5 border-b border-hairline py-2.5">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <span className="text-[13.5px] font-extrabold text-ink-strong">{loop.title}</span>
+        <span className="text-xs font-bold tabular-nums text-ink-muted">{meta}</span>
+      </div>
+      <Link
+        href={`/explore/plans/${loop.slug}`}
+        className="shrink-0 whitespace-nowrap rounded-lg border border-hairline bg-white px-3.5 py-2 text-xs font-extrabold text-ink-strong no-underline"
+      >
+        {ctaLabel}
+      </Link>
     </div>
   )
 }

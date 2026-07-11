@@ -5,6 +5,7 @@ import { PublicFeatureAutopsyPage } from '@/components/autopsy/PublicFeatureAuto
 import { StoryReader } from '@/components/autopsy/StoryReader'
 import { getAutopsyAccess } from '@/lib/autopsies/access'
 import { getLegacyCompanyTeardown } from '@/lib/autopsies/legacy-showcase'
+import { resolvePracticeCards } from '@/lib/autopsies/practice-links'
 import { getAutopsyStory, getAutopsyStoryParams } from '@/lib/autopsies/queries'
 import { buildMetadata } from '@/lib/seo/site'
 
@@ -59,6 +60,7 @@ export default async function FeatureAutopsyPage({
           backHref={`/autopsies/${companySlug}`}
           backLabel={`${legacy.product.name} hub`}
           closingHref="/autopsies"
+          practiceCards={await resolvePracticeCards(legacy.product)}
         />
       )
     }

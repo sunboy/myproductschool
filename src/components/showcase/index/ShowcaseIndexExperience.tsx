@@ -3,167 +3,89 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { StoryTile } from './StoryTile';
-import { StoryVisual } from '@/components/showcase/StoryVisual';
-import { CompanyArt } from '@/components/showcase/CompanyArt';
-import type { ReadingPath } from '@/lib/showcase/reading-paths';
-import type { AutopsyCompanyWithStories, FeatureAutopsy } from '@/lib/autopsies/types';
+import { ArrowRight, Search, X } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
+import { HatchSays } from '@/components/redesign/HatchSays';
+import type { AutopsyCompanyWithStories, FeatureAutopsy } from '@/lib/autopsies/types';
+import { getFeaturedAppStory } from '@/lib/autopsies/app-library';
 
 interface ShowcaseIndexExperienceProps {
   companies: AutopsyCompanyWithStories[];
   stories: FeatureAutopsy[];
-  readingPaths: ReadingPath[];
 }
-
-type StoryFilter = 'all' | 'company_teardown' | 'feature_autopsy';
-type StorySort = 'recent' | 'reading' | 'company';
 
 function bySlug<T extends { slug: string }>(items: T[]) {
   return new Map(items.map(item => [item.slug, item]));
-}
-
-function featuredStory(stories: FeatureAutopsy[]) {
-  return stories.find(story => story.slug === 'buffer-fake-landing-page-mvp')
-    ?? stories.find(story => story.slug === 'gmail-undo-send')
-    ?? stories.find(story => story.featured)
-    ?? stories[0];
-}
-
-function storyKindLabel(story: FeatureAutopsy) {
-  return story.storyType === 'company_teardown' ? 'Company teardown' : 'Feature autopsy';
 }
 
 function routeForStory(story: FeatureAutopsy) {
   return `/explore/autopsies/${story.companySlug}/stories/${story.slug}`;
 }
 
+function routeForCompany(company: AutopsyCompanyWithStories) {
+  return `/explore/autopsies/${company.slug}`;
+}
+
+/**
+ * Editorial autopsies hub: light page header, dark featured-story card built
+ * from real loader data (metrics only render when the story actually
+ * carries them), an editorial article list (brand-colored text label, no
+ * marks, no spines per spec §8), and a quiet companies text strip. Search
+ * and the full company list stay real and wired, restyled to the same
+ * tokens.
+ */
 export function ShowcaseIndexExperience({
   companies,
   stories,
-  readingPaths,
 }: ShowcaseIndexExperienceProps) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [filter, setFilter] = useState<StoryFilter>('all');
-  const [sort, setSort] = useState<StorySort>('recent');
-  const featured = featuredStory(stories);
+  const featured = useMemo(() => getFeaturedAppStory(stories), [stories]);
 
   const companyMap = useMemo(() => bySlug(companies), [companies]);
-  const companyStories = useMemo(() => {
-    const map = new Map<string, FeatureAutopsy[]>();
-    stories.forEach(story => {
-      const next = map.get(story.companySlug) ?? [];
-      next.push(story);
-      map.set(story.companySlug, next);
-    });
-    return map;
-  }, [stories]);
+  const featuredCompany = featured ? companyMap.get(featured.companySlug) : undefined;
 
-  const teardownStories = stories.filter(story => story.storyType === 'company_teardown');
-  const featureStories = stories.filter(story => story.storyType === 'feature_autopsy');
+  const restStories = useMemo(
+    () => (featured ? stories.filter(story => story.slug !== featured.slug) : stories),
+    [featured, stories]
+  );
 
-  const visibleStories = useMemo(() => {
-    let list = filter === 'all'
-      ? [...stories]
-      : stories.filter(story => story.storyType === filter);
-
-    if (sort === 'reading') {
-      list = list.sort((a, b) => Number.parseInt(a.estimatedReadTime, 10) - Number.parseInt(b.estimatedReadTime, 10));
-    } else if (sort === 'company') {
-      list = list.sort((a, b) => {
-        const aCompany = companyMap.get(a.companySlug)?.name ?? a.companySlug;
-        const bCompany = companyMap.get(b.companySlug)?.name ?? b.companySlug;
-        return aCompany.localeCompare(bCompany) || a.title.localeCompare(b.title);
-      });
-    }
-
-    return list;
-  }, [companyMap, filter, sort, stories]);
+  const totalStages = featured?.flow?.length;
 
   return (
-    <div className="sc-page">
+    <div className="mx-auto max-w-[1180px] px-4 pb-12 pt-5 lg:px-0">
       <BackButton href="/explore" label="Back to Explore" className="mb-3" />
-      <HeroHybrid
-        featured={featured}
-        company={featured ? companyMap.get(featured.companySlug) : undefined}
+
+      <PageHeader
+        storyCount={stories.length}
+        companyCount={companies.length}
         onOpenSearch={() => setSearchOpen(true)}
       />
 
-      <CompanyBrowseStrip
-        companies={companies}
-        companyStories={companyStories}
-        onOpenDrawer={() => setDrawerOpen(true)}
-      />
-
-      {teardownStories.length > 0 && (
-        <CompanyTeardownStrip stories={teardownStories} companyMap={companyMap} />
+      {featured && (
+        <div
+          data-tour-target="autopsies-hero"
+          className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]"
+        >
+          <FeaturedStoryCard story={featured} company={featuredCompany} totalStages={totalStages} />
+          <WhyAutopsiesCard />
+        </div>
       )}
 
-      {/* Hidden until stories carry reading-path tags */}
-      {/* {readingPaths.length > 0 && (
-        <ReadingPathShelf readingPaths={readingPaths} stories={stories} companyMap={companyMap} />
-      )} */}
+      <SectionHead
+        title="All stories"
+        subtitle="Each story follows one user through the full funnel"
+      />
+      <StoryList stories={restStories} companyMap={companyMap} />
 
-      <div className="sc-index-shelves">
-        {featureStories.length > 0 && (
-          <StoryShelf
-            eyebrow="One specific feature"
-            title="Featured autopsies"
-            subtitle="Decisions, mechanisms, evidence, one feature deep."
-          >
-            {featureStories.slice(0, 8).map(story => {
-              const company = companyMap.get(story.companySlug);
-              return (
-                <StoryTile
-                  key={story.slug}
-                  story={story}
-                  companyName={company?.name ?? story.companySlug}
-                  companyAccent={company?.accent}
-                />
-              );
-            })}
-          </StoryShelf>
-        )}
-      </div>
-
-      <section className="sc-firehose">
-        <div className="sc-section-heading">
-          <div>
-            <div className="sc-eyebrow">The library</div>
-            <h2 className="sc-h2">All {stories.length} autopsies</h2>
-          </div>
-          <div className="sc-firehose-controls">
-            <SegmentedFilter value={filter} onChange={setFilter} />
-            <label className="sr-only" htmlFor="showcase-sort">Sort stories</label>
-            <select
-              id="showcase-sort"
-              value={sort}
-              onChange={event => setSort(event.target.value as StorySort)}
-              className="sc-select"
-            >
-              <option value="recent">Sort: Recent</option>
-              <option value="company">Sort: Company</option>
-              <option value="reading">Sort: Shortest first</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="sc-firehose-grid">
-          {visibleStories.map(story => {
-            const company = companyMap.get(story.companySlug);
-            return (
-              <StoryTile
-                key={story.slug}
-                story={story}
-                companyName={company?.name ?? story.companySlug}
-                companyAccent={company?.accent}
-                size="compact"
-              />
-            );
-          })}
-        </div>
-      </section>
+      {companies.length > 0 && (
+        <>
+          <SectionHead
+            title="Browse by company"
+            subtitle="More stories coming from these companies"
+          />
+          <CompaniesStrip companies={companies} />
+        </>
+      )}
 
       <SearchOverlay
         open={searchOpen}
@@ -171,282 +93,202 @@ export function ShowcaseIndexExperience({
         stories={stories}
         companies={companies}
       />
-      <LibraryCompanyDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        companies={companies}
-        companyStories={companyStories}
-      />
     </div>
   );
 }
 
-function HeroHybrid({
-  featured,
-  company,
+function PageHeader({
+  storyCount,
+  companyCount,
   onOpenSearch,
 }: {
-  featured?: FeatureAutopsy;
-  company?: AutopsyCompanyWithStories;
+  storyCount: number;
+  companyCount: number;
   onOpenSearch: () => void;
 }) {
-  if (!featured) return null;
+  return (
+    <header className="flex flex-col gap-3 border-b border-hairline pb-4 pt-1.5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
+        <h1 className="font-headline text-[28px] font-semibold leading-[1.2] text-ink-strong">
+          Product autopsies
+        </h1>
+        <p className="mt-1 max-w-[62ch] text-[13.5px] leading-[1.45] text-ink-secondary">
+          Teardowns of how real companies grew, monetized, and retained. Each story ends in practice reps you can run.
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        <span className="whitespace-nowrap text-xs font-medium tabular-nums text-ink-secondary">
+          {storyCount} {storyCount === 1 ? 'story' : 'stories'}
+          <span className="mx-2 text-ink-muted">·</span>
+          {companyCount} {companyCount === 1 ? 'company' : 'companies'}
+        </span>
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className="flex items-center gap-2 rounded-full border border-hairline bg-card-bright px-3.5 py-2 text-xs font-semibold text-ink-secondary transition-colors hover:text-ink-strong"
+        >
+          <Search size={15} strokeWidth={1.8} />
+          Search
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function FeaturedStoryCard({
+  story,
+  company,
+  totalStages,
+}: {
+  story: FeatureAutopsy;
+  company?: AutopsyCompanyWithStories;
+  totalStages?: number;
+}) {
+  const stats = story.metrics.slice(0, 3);
 
   return (
-    <div className="sc-hero-hybrid">
-      <section data-tour-target="autopsies-hero" className="sc-hero-ink">
-        <div className="sc-hero-ink-dotgrid" />
-        <div className="sc-hero-ink-glow-green" />
-        <div className="sc-hero-ink-glow-amber" />
-        <div className="sc-hero-copy">
-          <div className="sc-eyebrow sc-eyebrow--ink">The Showcase · long-form product autopsies</div>
-          <h1 className="sc-h1 sc-hero-title">
-            How <em>actually</em> shipped products got
-            <br />
-            <span>shipped.</span>
-          </h1>
-          <p className="sc-hero-dek">
-            Mechanisms, decisions, evidence. Search a company, a pattern, or the move you are trying to make.
-          </p>
-          <button className="sc-hero-search" type="button" onClick={onOpenSearch}>
-            <span className="material-symbols-outlined" aria-hidden="true">search</span>
-            <span className="sc-hero-search-input">How Spotify built Wrapped...</span>
-            <span className="sc-hero-search-kbd">⌘ K</span>
-          </button>
-          <div className="sc-hero-chips">
-            {['Onboarding teardowns', 'Pricing pivots', 'Cold-start tricks', 'Retention masterclass'].map(label => (
-              <button key={label} type="button" className="sc-hero-chip" onClick={onOpenSearch}>
-                {label}
-              </button>
-            ))}
+    <Link
+      href={routeForStory(story)}
+      className="relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-2xl px-5 py-5 text-white no-underline"
+      style={{
+        background: 'linear-gradient(120deg, var(--color-forest-900) 0%, var(--color-forest-850) 70%, var(--color-forest-800) 100%)',
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-20 h-[380px] w-[380px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(163,235,177,0.14) 0%, transparent 70%)' }}
+      />
+      <div className="relative z-[1]">
+        {company?.name && (
+          <div className="mb-2 text-xs font-bold" style={{ color: company.accent }}>
+            {company.name}
           </div>
+        )}
+        <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-mint-glow">
+          {story.storyType === 'company_teardown' ? 'Company teardown' : 'Feature autopsy'}
+          {typeof totalStages === 'number' && totalStages > 0 && (
+            <>
+              {' · '}
+              {totalStages} {totalStages === 1 ? 'stage' : 'stages'}
+            </>
+          )}
+          {' · '}
+          {story.estimatedReadTime}
         </div>
-      </section>
+        <h2 className="mb-3 max-w-[26ch] font-headline text-[28px] font-semibold leading-[1.16] text-[#f9faf5]">
+          {story.title}
+        </h2>
+        <p className="mb-5 max-w-[52ch] text-sm leading-[1.55] text-white/78">{story.dek}</p>
+      </div>
 
-      <Link href={routeForStory(featured)} className="sc-featured-card">
-        <div className="sc-tile-art sc-featured-card__art">
-          <StoryVisual
-            story={featured}
-            company={company ? { name: company.name, slug: company.slug, accent: company.accent } : undefined}
-            variant="hero"
-            priority
-          />
-          <div className="sc-tile-art-fade" />
-          <span className="sc-tile-corner">
-            <span
-              className="sc-dot"
-              style={{ background: company?.accent ?? 'var(--sc-accent)' }}
-              aria-hidden="true"
-            />
-            Editor&apos;s pick
-          </span>
+      {stats.length > 0 && (
+        <div className="relative z-[1] mb-5 flex flex-wrap gap-6">
+          {stats.map(stat => (
+            <div key={stat.label} className="leading-tight">
+              <div className="font-headline text-xl font-bold tabular-nums text-white">{stat.value}</div>
+              <div className="mt-1 text-[11px] font-bold text-white/60">{stat.label}</div>
+            </div>
+          ))}
         </div>
-        <div className="sc-tile-body sc-featured-card__body">
-          <div className="sc-tile-meta">
-            <span style={{ color: company?.accent ?? 'var(--sc-accent)' }}>
-              {company?.name ?? featured.companySlug}
-            </span>
-            <span className="dot" />
-            <span>{featured.estimatedReadTime}</span>
-            <span className="dot" />
-            <span>{storyKindLabel(featured)}</span>
-          </div>
-          <div className="sc-tile-title sc-featured-card__title">{featured.title}</div>
-          <div className="sc-tile-dek sc-featured-card__dek">{featured.dek}</div>
-        </div>
-      </Link>
+      )}
+
+      <span className="relative z-[1] inline-flex w-fit items-center gap-2 self-start rounded-lg bg-white px-[18px] py-2.5 text-[13.5px] font-bold text-forest-900">
+        Read the autopsy
+        <ArrowRight size={14} strokeWidth={2.2} />
+      </span>
+    </Link>
+  );
+}
+
+function WhyAutopsiesCard() {
+  return (
+    <div className="flex min-h-[220px] -rotate-[0.8deg] flex-col rounded-xl border border-note-amber-border bg-note-amber p-5">
+      <h3 className="mb-2.5 text-[17px] font-bold text-ink-strong">Why autopsies</h3>
+      <p className="mb-4 text-[13px] leading-[1.6] text-ink-secondary">
+        A case study tells you what happened. An autopsy shows each decision as it looked before the outcome was known: the constraint, the tradeoff, the call someone had to ship. Then you make the same call yourself in a linked rep.
+      </p>
+      <div className="mt-auto">
+        <HatchSays
+          tint="amber"
+          message="Autopsies pair with practice reps. Read a stage, then run the linked challenge to make the same call yourself."
+        />
+      </div>
     </div>
   );
 }
 
-function StoryShelf({
-  eyebrow,
-  title,
-  subtitle,
-  density = 'regular',
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  density?: 'regular' | 'compact';
-  children: ReactNode;
-}) {
-  const railRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (dir: -1 | 1) => {
-    const rail = railRef.current;
-    if (!rail) return;
-    rail.scrollBy({ left: dir * rail.clientWidth * 0.8, behavior: 'smooth' });
-  };
-
+function SectionHead({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <section className="sc-shelf">
-      <div className="sc-section-heading">
-        <div>
-          <div className="sc-eyebrow">{eyebrow}</div>
-          <h2 className="sc-h2">{title}</h2>
-          <div className="sc-section-subtitle">{subtitle}</div>
-        </div>
-        <div className="sc-shelf-actions">
-          <button className="sc-icon-btn" type="button" onClick={() => scroll(-1)} aria-label={`Scroll ${title} left`}>
-            <span className="material-symbols-outlined msi-sm" aria-hidden="true">chevron_left</span>
-          </button>
-          <button className="sc-icon-btn" type="button" onClick={() => scroll(1)} aria-label={`Scroll ${title} right`}>
-            <span className="material-symbols-outlined msi-sm" aria-hidden="true">chevron_right</span>
-          </button>
-        </div>
+    <div className="mb-1 mt-6 flex items-baseline justify-between gap-4">
+      <div>
+        <div className="text-lg font-bold text-ink-strong">{title}</div>
+        <div className="mt-0.5 text-[12.5px] text-ink-muted">{subtitle}</div>
       </div>
-      <div
-        className={`sc-shelf-rail ${density === 'compact' ? 'sc-shelf-rail--compact' : ''}`}
-        ref={railRef}
-      >
-        {children}
-      </div>
-    </section>
+    </div>
   );
 }
 
-function ReadingPathShelf({
-  readingPaths,
-  stories,
-  companyMap,
-}: {
-  readingPaths: ReadingPath[];
-  stories: FeatureAutopsy[];
-  companyMap: Map<string, AutopsyCompanyWithStories>;
-}) {
-  const storyMap = bySlug(stories);
-
-  return (
-    <section className="sc-reading-paths">
-      <div className="sc-section-heading">
-        <div>
-          <div className="sc-eyebrow">Reading paths</div>
-          <h2 className="sc-h2">Follow a thread.</h2>
-          <div className="sc-section-subtitle">Structured sequences for repeated product moves.</div>
-        </div>
-      </div>
-      <div className="sc-reading-path-grid">
-        {readingPaths.slice(0, 4).map(path => {
-          const firstItem = path.items[0];
-          const firstStory = firstItem ? storyMap.get(firstItem.storySlug) : undefined;
-          const company = firstStory ? companyMap.get(firstStory.companySlug) : undefined;
-          return (
-            <Link key={path.slug} href="/explore/autopsies" className="sc-reading-path-card">
-              <div className="sc-reading-path-art">
-                {firstStory ? (
-                  <StoryVisual story={firstStory} company={company} variant="rail" />
-                ) : (
-                  <CompanyArt name={path.title} slug={path.slug} variant="mini" />
-                )}
-              </div>
-              <div>
-                <div className="sc-eyebrow">{path.coverEmoji} Path</div>
-                <h3 className="sc-h3">{path.title}</h3>
-                <p>{path.dek}</p>
-                <span>{path.items.length} stories</span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function CompanyBrowseStrip({
-  companies,
-  companyStories,
-  onOpenDrawer,
-}: {
-  companies: AutopsyCompanyWithStories[];
-  companyStories: Map<string, FeatureAutopsy[]>;
-  onOpenDrawer: () => void;
-}) {
-  return (
-    <section className="sc-company-strip">
-      <div className="sc-section-heading">
-        <div>
-          <div className="sc-eyebrow">Secondary axis</div>
-          <h2 className="sc-h2">Browse by company</h2>
-        </div>
-        <button className="sc-section-link" type="button" onClick={onOpenDrawer}>
-          All {companies.length} companies
-          <span className="material-symbols-outlined msi-sm" aria-hidden="true">arrow_forward</span>
-        </button>
-      </div>
-      <div className="sc-company-grid">
-        {companies.slice(0, 12).map(company => {
-          const count = companyStories.get(company.slug)?.length ?? 0;
-          return (
-            <Link key={company.slug} href={`/explore/autopsies/${company.slug}`} className="sc-company-card">
-              <span className="sc-company-card__name">
-                <span className="sc-dot" style={{ background: company.accent }} aria-hidden="true" />
-                {company.name}
-              </span>
-              <span className="sc-company-card__meta">{count} {count === 1 ? 'story' : 'stories'}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function CompanyTeardownStrip({
+function StoryList({
   stories,
   companyMap,
 }: {
   stories: FeatureAutopsy[];
   companyMap: Map<string, AutopsyCompanyWithStories>;
 }) {
+  if (stories.length === 0) {
+    return <p className="border-t border-hairline py-6 text-sm text-ink-muted">More stories are on the way.</p>;
+  }
+
   return (
-    <StoryShelf
-      eyebrow="Full product"
-      title="Company teardowns"
-      subtitle="The whole product, one read."
-    >
+    <div className="mt-2">
       {stories.map(story => {
         const company = companyMap.get(story.companySlug);
+        const stageCount = story.flow?.length;
         return (
-          <StoryTile
+          <Link
             key={story.slug}
-            story={story}
-            companyName={company?.name ?? story.companySlug}
-            companyAccent={company?.accent}
-            size="regular"
-          />
+            href={routeForStory(story)}
+            className="flex items-center gap-4 border-t border-hairline py-4 no-underline last:border-b"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-[11.5px] font-bold" style={{ color: company?.accent ?? 'var(--color-ink-secondary)' }}>
+                {company?.name ?? story.companySlug}
+              </div>
+              <div className="mt-1 text-base font-bold leading-[1.32] text-ink-strong">{story.title}</div>
+              <div className="mt-1 text-xs tabular-nums text-ink-muted">
+                {story.estimatedReadTime}
+                {typeof stageCount === 'number' && stageCount > 0 && (
+                  <>
+                    <span className="mx-1.5 opacity-55">·</span>
+                    {stageCount} {stageCount === 1 ? 'stage' : 'stages'}
+                  </>
+                )}
+              </div>
+            </div>
+            <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-bold text-forest-700">
+              Read
+              <ArrowRight size={13} strokeWidth={2.2} />
+            </span>
+          </Link>
         );
       })}
-    </StoryShelf>
+    </div>
   );
 }
 
-function SegmentedFilter({
-  value,
-  onChange,
-}: {
-  value: StoryFilter;
-  onChange: (value: StoryFilter) => void;
-}) {
-  const options: Array<{ value: StoryFilter; label: string }> = [
-    { value: 'all', label: 'All' },
-    { value: 'company_teardown', label: 'Teardowns' },
-    { value: 'feature_autopsy', label: 'Feature autopsies' },
-  ];
-
+function CompaniesStrip({ companies }: { companies: AutopsyCompanyWithStories[] }) {
   return (
-    <div className="sc-segmented" role="group" aria-label="Filter autopsies">
-      {options.map(option => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => onChange(option.value)}
-          className={value === option.value ? 'active' : ''}
+    <div className="mt-2 flex flex-wrap border-y border-hairline">
+      {companies.map(company => (
+        <Link
+          key={company.slug}
+          href={routeForCompany(company)}
+          className="border-r border-hairline px-4 py-3 text-xs font-bold no-underline last:border-r-0"
+          style={{ color: company.accent }}
         >
-          {option.label}
-        </button>
+          {company.name}
+        </Link>
       ))}
     </div>
   );
@@ -507,44 +349,51 @@ function SearchOverlay({
     : [];
 
   return (
-    <div className="sc-search-overlay" onClick={onClose}>
-      <div className="sc-search-panel" onClick={event => event.stopPropagation()}>
-        <div className="sc-search-input-row">
-          <span className="material-symbols-outlined" aria-hidden="true">search</span>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/45 px-4 pt-[10vh]"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[560px] rounded-2xl border border-hairline bg-card-bright"
+        onClick={event => event.stopPropagation()}
+      >
+        <div className="flex items-center gap-2.5 border-b border-hairline px-4 py-3.5">
+          <Search size={17} strokeWidth={1.8} className="shrink-0 text-ink-muted" />
           <input
             ref={inputRef}
             value={query}
             onChange={event => setQuery(event.target.value)}
             placeholder="Search autopsies, companies, patterns"
+            className="min-w-0 flex-1 bg-transparent text-sm text-ink-strong placeholder:text-ink-muted focus:outline-none"
           />
-          <kbd>ESC</kbd>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close search"
+            className="flex shrink-0 items-center justify-center rounded-md p-1 text-ink-muted hover:text-ink-strong"
+          >
+            <X size={16} strokeWidth={1.8} />
+          </button>
         </div>
-        <div className="sc-search-results">
-          {!normalized && (
-            <SearchSection label="Try these">
-              <div className="sc-search-chips">
-                {['How Spotify built Wrapped', 'Why Gmail added Undo Send', 'Buffer fake landing page', 'Cold-start tricks'].map(label => (
-                  <button key={label} type="button" className="sc-chip sc-chip--ghost" onClick={() => setQuery(label)}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </SearchSection>
-          )}
+        <div className="max-h-[60vh] overflow-y-auto px-2 py-2">
           {matches.length > 0 && (
             <SearchSection label={normalized ? `${matches.length} stories` : 'Popular this week'}>
               {matches.map(story => {
                 const company = companyMap.get(story.companySlug);
                 return (
-                  <Link key={story.slug} href={routeForStory(story)} className="sc-search-row" onClick={onClose}>
-                    <span className="sc-search-thumb">
-                      <StoryVisual story={story} company={company} variant="rail" />
+                  <Link
+                    key={story.slug}
+                    href={routeForStory(story)}
+                    onClick={onClose}
+                    className="flex items-center gap-3 rounded-lg px-2.5 py-2 no-underline hover:bg-page-field"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-ink-strong">{story.title}</span>
+                      <small className="text-xs text-ink-muted">
+                        {company?.name ?? story.companySlug} · {story.estimatedReadTime}
+                      </small>
                     </span>
-                    <span className="sc-search-row__body">
-                      <span>{story.title}</span>
-                      <small>{company?.name ?? story.companySlug} · {story.estimatedReadTime}</small>
-                    </span>
-                    <span className="material-symbols-outlined msi-sm" aria-hidden="true">arrow_forward</span>
+                    <ArrowRight size={14} strokeWidth={2} className="shrink-0 text-ink-muted" />
                   </Link>
                 );
               })}
@@ -553,25 +402,29 @@ function SearchOverlay({
           {companyMatches.length > 0 && (
             <SearchSection label="Companies">
               {companyMatches.map(company => (
-                <Link key={company.slug} href={`/explore/autopsies/${company.slug}`} className="sc-search-row" onClick={onClose}>
-                  <span className="sc-search-company-dot" style={{ background: company.accent }} />
-                  <span className="sc-search-row__body">
-                    <span>{company.name}</span>
-                    <small>{company.stories.length} stories</small>
+                <Link
+                  key={company.slug}
+                  href={routeForCompany(company)}
+                  onClick={onClose}
+                  className="flex items-center gap-3 rounded-lg px-2.5 py-2 no-underline hover:bg-page-field"
+                >
+                  <span className="text-sm font-bold" style={{ color: company.accent }}>
+                    {company.name}
                   </span>
+                  <span className="text-xs text-ink-muted">{company.stories.length} stories</span>
                 </Link>
               ))}
             </SearchSection>
           )}
           {normalized && matches.length === 0 && companyMatches.length === 0 && (
-            <div className="sc-search-empty">
-              <div className="sc-eyebrow">No matches</div>
-              <p>Try a company name, a feature, or a pattern like cold start or pricing.</p>
+            <div className="px-2.5 py-6 text-center">
+              <div className="text-xs font-bold uppercase tracking-[0.06em] text-ink-muted">No matches</div>
+              <p className="mt-1.5 text-sm text-ink-secondary">Try a company name, a feature, or a pattern like cold start or pricing.</p>
             </div>
           )}
         </div>
-        <div className="sc-search-footer">
-          <span>↑↓ Navigate · ↵ Open · ⌘K Toggle</span>
+        <div className="flex items-center justify-between border-t border-hairline px-4 py-2.5 text-[11px] text-ink-muted">
+          <span>Esc to close</span>
           <span>{stories.length} stories · {companies.length} companies</span>
         </div>
       </div>
@@ -581,60 +434,9 @@ function SearchOverlay({
 
 function SearchSection({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="sc-search-section">
-      <div className="sc-search-section__label">{label}</div>
+    <div className="mb-1.5">
+      <div className="px-2.5 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-ink-muted">{label}</div>
       <div>{children}</div>
-    </div>
-  );
-}
-
-function LibraryCompanyDrawer({
-  open,
-  onClose,
-  companies,
-  companyStories,
-}: {
-  open: boolean;
-  onClose: () => void;
-  companies: AutopsyCompanyWithStories[];
-  companyStories: Map<string, FeatureAutopsy[]>;
-}) {
-  if (!open) return null;
-
-  return (
-    <div className="sc-company-drawer-shell">
-      <div className="sc-company-drawer-scrim" onClick={onClose} aria-hidden="true" />
-      <aside className="sc-company-drawer" aria-label="Browse companies">
-        <header>
-          <div>
-            <div className="sc-eyebrow">Browse by company</div>
-            <h2>All {companies.length} companies</h2>
-          </div>
-          <button className="sc-icon-btn" type="button" onClick={onClose} aria-label="Close company drawer">
-            <span className="material-symbols-outlined msi-sm" aria-hidden="true">close</span>
-          </button>
-        </header>
-        <div className="sc-company-drawer-list">
-          {companies.map(company => {
-            const count = companyStories.get(company.slug)?.length ?? 0;
-            return (
-              <Link key={company.slug} href={`/explore/autopsies/${company.slug}`} className="sc-company-drawer-row" onClick={onClose}>
-                <span className="sc-company-drawer-art">
-                  <CompanyArt name={company.name} slug={company.slug} accent={company.accent} variant="mini" />
-                </span>
-                <span>
-                  <strong>
-                    <span className="sc-dot" style={{ background: company.accent }} aria-hidden="true" />
-                    {company.name}
-                  </strong>
-                  <small>{company.thesis || company.dek}</small>
-                </span>
-                <em>{count}</em>
-              </Link>
-            );
-          })}
-        </div>
-      </aside>
     </div>
   );
 }

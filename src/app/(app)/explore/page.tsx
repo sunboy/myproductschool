@@ -1,27 +1,56 @@
 import Link from 'next/link'
-import type { StudyPlan, LearnModule, DomainWithProgress, AutopsyProduct } from '@/lib/types'
-import { getStudyPlanSummaries } from '@/lib/data/study-plans'
-import { getShowcaseProducts } from '@/lib/data/showcase'
-import { getLearnModuleSummaries, getLearnModuleCount } from '@/lib/data/learn-modules'
-import { getDomainsWithProgress } from '@/lib/data/domains'
-import { getReadableAppCompanies, getReadableLegacyOnlyShowcaseProducts } from '@/lib/autopsies/app-library'
-import { getAutopsyCompanies } from '@/lib/autopsies/queries'
-import type { AutopsyCompanyWithStories } from '@/lib/autopsies/types'
+import {
+  Grid2x2, Box, Database, Lightbulb, BrainCircuit, Users,
+  ChevronDown, ArrowRight, Bookmark,
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { AppTooltip } from '@/components/ui/AppTooltip'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { StudyPlanGrid } from './StudyPlanGrid'
+import {
+  getFeaturedChallenges,
+  getChallengeCounts,
+  type CountDiscipline,
+} from '@/lib/data/challenges'
+import { getStudyPlanSummaries, getEnrolledPlans } from '@/lib/data/study-plans'
+import { getHotChallenges } from '@/lib/data/dashboard'
+import { getAutopsyCompanies } from '@/lib/autopsies/queries'
+import { getReadableAppCompanies } from '@/lib/autopsies/app-library'
+import { challengePath } from '@/lib/challenges/challengeNumber'
+import { difficultyLabel } from '@/lib/utils'
 import { getCompanyLabel } from '@/lib/data/taxonomy'
 import { formatCompany } from '@/lib/format/company'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { DisciplineTile, type Discipline as TileDiscipline } from '@/components/redesign/DisciplineTile'
+import { disciplineFor } from '@/components/redesign/dashboard/discipline'
+import type { ChallengeWithDomain } from '@/lib/types'
 
-interface PersonalisedPlan {
-  slug: string
-  title: string
-  description: string | null
-  move_tag: string | null
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
+
+const AUTOPSY_BRAND_ACCENTS: Record<string, string> = {
+  netflix: '#e50914',
+  airbnb: '#ff5a5f',
+  amazon: '#ff9900',
+  dropbox: '#0061ff',
+  slack: '#611f69',
+  uber: '#000000',
+  'uber-eats': '#06c167',
+  openai: '#10a37f',
+}
+
+function brandAccentFor(name: string): string | null {
+  const key = name.toLowerCase().replace(/\s+/g, '-')
+  return AUTOPSY_BRAND_ACCENTS[key] ?? null
+}
+
+const DISCIPLINE_TABS: Array<{ key: CountDiscipline; label: string; icon: typeof Box }> = [
+  { key: 'all', label: 'All', icon: Grid2x2 },
+  { key: 'system_design', label: 'System Design', icon: Box },
+  { key: 'product_sense', label: 'Product Sense', icon: Lightbulb },
+  { key: 'sql', label: 'SQL', icon: Database },
+  { key: 'data_modeling', label: 'Data Modeling', icon: Grid2x2 },
+  { key: 'algorithm', label: 'Coding/DSA', icon: BrainCircuit },
+]
 
 interface CuratedChallenge {
   id: string
@@ -39,781 +68,611 @@ interface CompanyChallengeGroup {
   challenges: CuratedChallenge[]
 }
 
-interface PlanItem {
-  title: string
-  sub: string
-  diff: string
-  color: string
-  bg: string
-  enrolled: number
-  icon: string
-  slug: string
-}
-
-type ExploreAutopsyCardItem =
-  | { kind: 'modern'; product: AutopsyCompanyWithStories; legacyProduct?: AutopsyProduct }
-  | { kind: 'legacy'; product: AutopsyProduct }
-
-const PLANS_STATIC: PlanItem[] = [
-  { title: 'Staff Engineer Path', sub: '6 weeks', diff: 'Intermediate', color: '#4a7c59', bg: '#dfe7e1', enrolled: 1243, icon: 'route', slug: 'staff-engineer-path' },
-  { title: 'AI Product Foundations', sub: '3 weeks', diff: 'Beginner', color: '#3a6e4a', bg: '#cfe3d3', enrolled: 892, icon: 'smart_toy', slug: 'ai-product-foundations' },
-  { title: 'Decision-Making Under Pressure', sub: '4 weeks', diff: 'Advanced', color: '#2e5e40', bg: '#b8d4bf', enrolled: 441, icon: 'bolt', slug: 'decision-making-under-pressure' },
-  { title: 'From Engineer to PM', sub: '8 weeks', diff: 'Beginner', color: '#5d9070', bg: '#e8f2eb', enrolled: 2104, icon: 'trending_up', slug: 'from-engineer-to-pm' },
-]
-
-// Module covers use dark forest-green tint family — same hue, varying depth.
-const MODULES_STATIC = [
-  { slug: 'flow-framework', name: 'The FLOW Framework', tagline: 'How product decisions get made.', cover_color: '#1e3528', accent_color: '#7ee099', chapter_count: 8, est_minutes: 90, difficulty: 'easy' },
-  { slug: 'product-sense', name: 'Product Sense', tagline: 'Developing taste and judgment.', cover_color: '#152e20', accent_color: '#8ed4a8', chapter_count: 7, est_minutes: 75, difficulty: 'medium' },
-  { slug: 'agentic-pm', name: 'Agentic PM', tagline: 'Managing AI systems end-to-end.', cover_color: '#102418', accent_color: '#6ec48e', chapter_count: 6, est_minutes: 80, difficulty: 'hard' },
-  { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#1a3022', accent_color: '#a0d8b8', chapter_count: 5, est_minutes: 60, difficulty: 'medium' },
-] as const
-
-// Single forest-green accent family — tint/lightness varies by index, not hue.
-const DOMAIN_THEMES = [
-  { bg: 'linear-gradient(135deg, #dfe7e1 0%, #f5f1ea 100%)', accent: '#4a7c59', soft: 'rgba(74,124,89,0.14)' },
-  { bg: 'linear-gradient(135deg, #cfe3d3 0%, #f5f1ea 100%)', accent: '#3a6e4a', soft: 'rgba(58,110,74,0.13)' },
-  { bg: 'linear-gradient(135deg, #c4dbc9 0%, #f5f1ea 100%)', accent: '#2f6040', soft: 'rgba(47,96,64,0.13)' },
-  { bg: 'linear-gradient(135deg, #b8d4bf 0%, #f5f1ea 100%)', accent: '#2e5e40', soft: 'rgba(46,94,64,0.13)' },
-  { bg: 'linear-gradient(135deg, #e8f2eb 0%, #f5f1ea 100%)', accent: '#5d9070', soft: 'rgba(93,144,112,0.13)' },
-  { bg: 'linear-gradient(135deg, #d5e8da 0%, #f5f1ea 100%)', accent: '#3e7450', soft: 'rgba(62,116,80,0.13)' },
-] as const
-
-export default async function ExplorePage() {
+export default async function ExplorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ discipline?: string }>
+}) {
+  const resolvedSearchParams = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const userId = user?.id ?? null
+  const activeDiscipline: CountDiscipline =
+    (resolvedSearchParams.discipline as CountDiscipline) ?? 'all'
 
-  const [studyPlansRaw, autopsyCompanies, legacyProducts, modulesRaw, moduleCount, domains, personalisedPlan, topCompanyChallenges] = await Promise.all([
-    getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
-    getAutopsyCompanies().catch(() => [] as AutopsyCompanyWithStories[]),
-    getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
-    getLearnModuleSummaries(4).catch(() => [] as LearnModule[]),
-    getLearnModuleCount().catch(() => 0),
-    getDomainsWithProgress().catch(() => [] as DomainWithProgress[]),
-    (async (): Promise<PersonalisedPlan | null> => {
-      if (!user) return null
-      try {
-        const admin = createAdminClient()
-        const { data } = await admin
-          .from('user_study_plan_enrollments')
-          .select('plan_id, study_plans(id, slug, title, description, move_tag)')
-          .eq('user_id', user.id)
-          .order('enrolled_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-        return (data as unknown as { study_plans: PersonalisedPlan | null } | null)?.study_plans ?? null
-      } catch {
-        return null
-      }
-    })(),
-    // Curated group: Top companies by real interview challenge count, each with a compact question list.
-    (async (): Promise<CompanyChallengeGroup[]> => {
-      try {
-        const admin = createAdminClient()
-        const { data } = await admin
-          .from('challenges')
-          .select('id, title, slug, difficulty, challenge_type, company_tags, topic_tags, technique_tags')
-          .eq('is_published', true)
-          .eq('is_real_interview', true)
-          .not('company_tags', 'eq', '{}')
-          // The page only renders the top 4 companies x 5 challenges. Bound the
-          // scan so it doesn't grow with the whole real-interview catalog.
-          .order('created_at', { ascending: false })
-          .limit(200)
-        const rows = (data ?? []) as CuratedChallenge[]
-        // Count per company
-        const counts = new Map<string, CuratedChallenge[]>()
-        for (const c of rows) {
-          for (const company of (c.company_tags ?? [])) {
-            if (!counts.has(company)) counts.set(company, [])
-            counts.get(company)!.push(c)
-          }
-        }
-        // Top 4 companies by challenge count
-        const sorted = [...counts.entries()]
-          .sort((a, b) => b[1].length - a[1].length)
-          .slice(0, 4)
-        // Dedupe challenges across groups: each challenge id appears in only one group (the first that claims it)
-        const seenIds = new Set<string>()
-        return sorted.map(([company, challenges]) => {
-          const unique = challenges.filter(c => {
-            if (seenIds.has(c.id)) return false
-            seenIds.add(c.id)
-            return true
-          })
-          return { company, challenges: unique.slice(0, 5) }
-        }).filter(g => g.challenges.length > 0)
-      } catch { return [] }
-    })(),
+  const adminClient = userId ? createAdminClient() : null
+
+  const [
+    counts,
+    featuredChallenges,
+    studyPlansRaw,
+    enrolledPlans,
+    autopsyCompaniesRaw,
+    hotChallenges,
+    profileLead,
+  ] = await Promise.all([
+    getChallengeCounts(),
+    getFeaturedChallenges(),
+    getStudyPlanSummaries(6),
+    userId ? getEnrolledPlans(userId) : Promise.resolve([]),
+    getAutopsyCompanies().catch(() => []),
+    getHotChallenges(),
+    loadHeroLead(userId, adminClient),
   ])
 
-  const plans: PlanItem[] = studyPlansRaw.length > 0
-    ? studyPlansRaw.map((plan, index) => ({
-        title: plan.title,
-        sub: `${plan.estimated_hours} hrs`,
-        diff: (plan as unknown as { difficulty?: string }).difficulty ?? 'Intermediate',
-        color: PLANS_STATIC[index % PLANS_STATIC.length].color,
-        bg: PLANS_STATIC[index % PLANS_STATIC.length].bg,
-        enrolled: (plan as unknown as { participant_count?: number }).participant_count ?? 0,
-        icon: PLANS_STATIC[index % PLANS_STATIC.length].icon,
-        slug: plan.slug,
-      }))
-    : PLANS_STATIC
+  const realInterviewGroups = await loadRealInterviewGroups(adminClient)
 
-  const modules = modulesRaw.length > 0 ? modulesRaw.slice(0, 4) : MODULES_STATIC
-  // True total of guides for the "See all" label + meta chip. Only `modules`
-  // (max 4) is rendered, so never derive the count from its length. Fall back
-  // to the rendered count if the count query failed (so it never shows 0).
-  const guidesCount = moduleCount > 0 ? moduleCount : modules.length
-  const autopsyHubs = getReadableAppCompanies(autopsyCompanies)
-  const legacyOnlyAutopsyHubs = getReadableLegacyOnlyShowcaseProducts(
-    legacyProducts,
-    autopsyHubs.map(hub => hub.slug)
-  )
-  const legacyProductsBySlug = new Map(legacyProducts.map(product => [product.slug, product]))
-  const autopsyCards: ExploreAutopsyCardItem[] = [
-    ...autopsyHubs.map(product => ({
-      kind: 'modern' as const,
-      product,
-      legacyProduct: legacyProductsBySlug.get(product.slug),
-    })),
-    ...legacyOnlyAutopsyHubs.map(product => ({ kind: 'legacy' as const, product })),
-  ]
-  const totalAutopsyHubs = autopsyCards.length
-  const autopsies = autopsyCards.slice(0, 4)
-  const topDomains = domains.filter(d => (d.challenge_count ?? 0) >= 1).slice(0, 6)
+  const autopsyHubs = getReadableAppCompanies(autopsyCompaniesRaw)
+  const studyPlansBySlug = new Map(studyPlansRaw.map(p => [p.slug, p]))
+  const enrolledSlugs = new Set(enrolledPlans.map(p => p.slug))
+  const shelfPlans = [
+    ...enrolledPlans,
+    ...studyPlansRaw.filter(p => !enrolledSlugs.has(p.slug)),
+  ].slice(0, 3)
 
   return (
-    <main className="animate-fade-in-up relative isolate mx-auto max-w-[1440px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
-      <ExplorePageBackdrop />
+    <main data-tour-target="practice-hero" className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 lg:px-8">
+      <CatalogHero lead={profileLead} />
 
-      <header data-tour-target="explore-hero" className="relative mb-8 grid overflow-hidden rounded-[26px] border border-outline-variant/35 bg-surface-container-low/85 p-5 shadow-[0_24px_70px_-58px_rgba(46,50,48,0.7)] backdrop-blur-sm sm:p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
-        <ExploreHeroPattern />
-        <div className="relative">
-          <div className="flex items-center gap-3">
-            <HatchGlyph size={40} state="idle" className="shrink-0 text-primary" />
-            <h1 className="font-headline text-[36px] font-bold leading-tight text-on-surface sm:text-[44px]">
-              Explore
-            </h1>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <MetaChip icon="menu_book" label={`${guidesCount} guides`} />
-            {totalAutopsyHubs > 0 && <MetaChip icon="troubleshoot" label={`${totalAutopsyHubs} autopsy hubs`} />}
-            {topDomains.length > 0 && <MetaChip icon="category" label={`${topDomains.length} domains`} />}
-          </div>
-        </div>
+      <DisciplineTabs counts={counts} active={activeDiscipline} />
+      <FilterRow />
 
-        <AppTooltip
-          label={personalisedPlan ? 'Hatch keeps your current plan ready so you can continue without re-browsing.' : 'Start with practice if Hatch has not generated a plan yet.'}
-          side="bottom"
-          className="flex"
-        >
-          <Link
-            href={personalisedPlan ? `/explore/plans/${personalisedPlan.slug}` : '/challenges'}
-            data-hatch-sound="open"
-            className="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border border-on-hero-accent/20 bg-hero-forest p-4 no-underline shadow-[0_22px_48px_-30px_rgba(30,53,40,0.85)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_62px_-34px_rgba(30,53,40,0.95)]"
-          >
-            <DarkPathTexture accent="#7ee099" />
-            <PathMiniArt kind="plans" accent="#7ee099" className="absolute -right-4 -bottom-6 h-24 w-32 opacity-30 transition-transform duration-500 group-hover:scale-105" />
-            <div className="relative min-w-0">
-              <div className="font-label text-[11px] font-bold uppercase tracking-[0.10em] text-on-hero-accent-soft">
-                {personalisedPlan ? 'Current plan' : 'Start here'}
-              </div>
-              <div className="mt-1 truncate font-headline text-base font-bold text-on-hero">
-                {personalisedPlan?.title ?? 'Find a practice rep'}
-              </div>
-              <div className="mt-1 text-[11px] font-semibold text-on-hero/55">
-                {personalisedPlan ? 'Continue where you left off' : 'Hatch will adapt as you practice'}
-              </div>
-            </div>
-            <span className="material-symbols-outlined relative shrink-0 text-[20px] text-on-hero-accent transition-transform group-hover:translate-x-0.5">
-              arrow_forward
-            </span>
-          </Link>
-        </AppTooltip>
-      </header>
-
-      {/* ── Tier 1 (marquee): curated study plans first ──────────────────────
-          The sequenced plan is the funnel primitive the reference platforms
-          lead with. Returning users see their "Continue your plan" card first
-          (rendered by StudyPlanGrid); everyone gets a "Start here" beginner
-          lane so a cold user lands on easy reps, not medium/hard. */}
-      <SectionHeading
-        title={personalisedPlan ? 'Your plan, and where to go next' : 'Start with a plan'}
-        href="/explore/plans"
-        linkLabel={`See all (${plans.length})`}
+      <FeaturedPractice
+        challenges={featuredChallenges}
+        weakestMove={profileLead.weakestMove}
+        interviewDate={profileLead.interviewDate}
       />
-      <section data-tour-target="explore-plans" className="mb-4">
-        <StudyPlanGrid plans={plans} personalisedPlan={personalisedPlan} />
-      </section>
-      <div className="mb-10">
-        <StartHereLane />
+
+      <div className="mt-6 grid grid-cols-1 gap-3.5 lg:grid-cols-4">
+        <StudyPlansShelf plans={shelfPlans} studyPlansBySlug={studyPlansBySlug} enrolledSlugs={enrolledSlugs} />
+        <AutopsiesShelf hubs={autopsyHubs.slice(0, 3)} />
+        <RealInterviewsShelf groups={realInterviewGroups} />
+        <TrendingShelf challenges={hotChallenges} />
       </div>
-
-      {/* ── Tier 2: one filterable index + the curated real-interview block ──
-          The three separate path cards + domains collapse into a single
-          "Browse all practice" entry that deep-links the filterable catalog. */}
-      <BrowseAllPracticeBand />
-
-      {topCompanyChallenges.length > 0 && (
-        <RealInterviewSpotlight companyGroups={topCompanyChallenges} />
-      )}
-
-      {/* ── Tier 3 (quiet browse, below the fold): guides, autopsies, domains ── */}
-      <SectionHeading title="Guides" href="/explore/modules" linkLabel={`See all (${guidesCount})`} />
-      <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {modules.map((module, index) => (
-          <ModuleCard key={module.slug} module={module} index={index} />
-        ))}
-      </section>
-
-      {autopsies.length > 0 && (
-        <>
-          <SectionHeading title="Autopsies" href="/explore/autopsies" linkLabel={`See all (${totalAutopsyHubs})`} />
-          <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {autopsies.map((item, index) => (
-              <AutopsyCard key={item.product.slug} item={item} index={index} />
-            ))}
-          </section>
-        </>
-      )}
-
-      {topDomains.length > 0 && (
-        <>
-          <SectionHeading title="Domains" href="/explore/domains" linkLabel={`See all (${topDomains.length})`} />
-          <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {topDomains.map((domain, index) => (
-              <DomainRow key={domain.slug} domain={domain} index={index} />
-            ))}
-          </section>
-        </>
-      )}
     </main>
   )
 }
 
-// Tier 1 companion: a single beginner "Start here" lane so a cold user lands on
-// easy reps. Deep-links the filterable catalog pre-scoped to easy difficulty.
-function StartHereLane() {
-  return (
-    <Link
-      href="/challenges?difficulty=easy"
-      data-hatch-sound="open"
-      className="group relative flex items-center gap-4 overflow-hidden rounded-xl border border-primary/20 bg-primary-fixed/70 p-4 no-underline shadow-[0_16px_38px_-32px_rgba(30,53,40,0.7)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_26px_52px_-34px_rgba(30,53,40,0.85)]"
-    >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary shadow-[0_10px_24px_-18px_rgba(0,0,0,0.6)]">
-        <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-          school
-        </span>
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block font-headline text-[16px] font-bold text-on-surface">New here? Start with an easy rep.</span>
-        <span className="mt-0.5 block font-label text-[12.5px] font-semibold text-on-surface-variant">
-          A five-minute written scenario Hatch grades. No setup.
-        </span>
-      </span>
-      <span className="material-symbols-outlined shrink-0 text-[18px] text-primary transition-transform group-hover:translate-x-0.5">
-        arrow_forward
-      </span>
-    </Link>
-  )
-}
-
-// Tier 2: the single "browse the whole catalog" entry that replaces the three
-// separate path cards. One band, one primary link into the filterable index,
-// with the filter dimensions named so a user knows what they can narrow by.
-function BrowseAllPracticeBand() {
-  const filters = ['Discipline', 'Role', 'Company', 'Difficulty', 'Format']
-  return (
-    <section className="mb-10">
-      <Link
-        href="/challenges"
-        data-tour-target="explore-paths"
-        data-hatch-sound="open"
-        className="group relative flex flex-col gap-4 overflow-hidden rounded-[22px] border border-outline-variant/35 bg-surface-container-low p-5 no-underline shadow-[0_22px_54px_-42px_rgba(46,50,48,0.7)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_32px_64px_-44px_rgba(46,50,48,0.82)] sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div className="min-w-0">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary">
-              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>tune</span>
-            </span>
-            <h2 className="m-0 font-headline text-[22px] font-bold leading-tight text-on-surface">Browse all practice</h2>
-          </div>
-          <p className="mt-2 font-label text-[12.5px] font-semibold text-on-surface-variant">
-            Filter the full catalog by discipline, role, company, difficulty, and format.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {filters.map(f => (
-              <span key={f} className="rounded-full bg-secondary-container px-2.5 py-0.5 font-label text-[11px] font-semibold text-on-secondary-container">
-                {f}
-              </span>
-            ))}
-          </div>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 font-label text-sm font-semibold text-on-primary transition-transform group-hover:translate-x-0.5">
-          Open the catalog
-          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-        </span>
-      </Link>
-    </section>
-  )
-}
-
-function ExplorePageBackdrop() {
-  return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[760px] overflow-hidden" aria-hidden="true">
-      <div
-        className="absolute inset-x-[-8%] top-[-120px] h-[520px] opacity-80"
-        style={{
-          background:
-            'radial-gradient(720px 260px at 18% 22%, rgba(74,124,89,0.12), transparent 62%), radial-gradient(620px 260px at 88% 12%, rgba(201,147,58,0.12), transparent 64%)',
-        }}
-      />
-      <svg className="absolute left-1/2 top-0 h-[460px] w-[1100px] -translate-x-1/2 opacity-[0.18]" viewBox="0 0 1100 460" fill="none">
-        <path d="M56 216 C186 118, 302 316, 458 180 S752 80, 1032 220" stroke="#4a7c59" strokeWidth="1.5" strokeDasharray="8 12" />
-        <path d="M38 312 C202 188, 356 388, 532 246 S802 140, 1068 294" stroke="#c9933a" strokeWidth="1.2" strokeDasharray="5 13" />
-        <path d="M154 96 C300 34, 380 188, 516 122 S764 20, 942 92" stroke="#2e5e40" strokeWidth="1" strokeDasharray="4 14" />
-        <circle cx="178" cy="152" r="5" fill="#4a7c59" />
-        <circle cx="704" cy="96" r="5" fill="#c9933a" />
-        <circle cx="940" cy="238" r="5" fill="#2e5e40" />
-      </svg>
-    </div>
-  )
-}
-
-function ExploreHeroPattern() {
-  return (
-    <svg className="pointer-events-none absolute inset-y-0 right-0 h-full w-[58%] opacity-[0.16]" viewBox="0 0 620 260" fill="none" aria-hidden="true">
-      <path d="M40 192 C114 86, 204 224, 294 116 S472 58, 590 132" stroke="#4a7c59" strokeWidth="8" strokeLinecap="round" opacity="0.18" />
-      <path d="M92 52 H524 M92 92 H424 M92 132 H560 M92 172 H380" stroke="#2e3230" strokeWidth="1" strokeDasharray="4 10" opacity="0.36" />
-      <rect x="388" y="50" width="86" height="60" rx="16" fill="#4a7c59" opacity="0.12" />
-      <rect x="468" y="132" width="72" height="72" rx="18" fill="#c9933a" opacity="0.12" />
-      <circle cx="302" cy="110" r="34" fill="#2e5e40" opacity="0.10" />
-    </svg>
-  )
-}
-
-function DarkPathTexture({ accent }: { accent: string }) {
-  return (
-    <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-30" viewBox="0 0 420 150" fill="none" aria-hidden="true">
-      <path d="M-12 116 C80 42, 142 162, 230 78 S340 32, 434 88" stroke={accent} strokeWidth="1.4" strokeDasharray="7 10" opacity="0.45" />
-      <path d="M18 42 H386 M46 74 H312 M82 106 H410" stroke="#f3ede0" strokeWidth="1" strokeDasharray="2 12" opacity="0.18" />
-    </svg>
-  )
-}
-
-function MetaChip({ icon, label }: { icon: string; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-outline-variant/30 bg-background/70 px-2.5 py-1 text-xs font-label font-bold text-on-surface-variant shadow-[0_8px_20px_-18px_rgba(46,50,48,0.65)]">
-      <span className="material-symbols-outlined text-[14px]">{icon}</span>
-      {label}
-    </span>
-  )
-}
-
-function PathMiniArt({ kind, accent, className = '' }: {
-  kind: string
-  accent: string
-  className?: string
-}) {
-  if (kind === 'interview') {
-    return (
-      <svg viewBox="0 0 160 120" className={className} fill="none" aria-hidden="true">
-        <path d="M28 78 C42 52, 62 44, 80 56 C98 68, 112 34, 134 28" stroke={accent} strokeWidth="8" strokeLinecap="round" />
-        <circle cx="34" cy="82" r="12" fill={accent} opacity="0.24" />
-        <circle cx="80" cy="56" r="16" fill={accent} opacity="0.18" />
-        <rect x="106" y="20" width="34" height="46" rx="17" stroke={accent} strokeWidth="7" opacity="0.48" />
-        <path d="M123 66 V88 M108 88 H138" stroke={accent} strokeWidth="7" strokeLinecap="round" opacity="0.55" />
-      </svg>
-    )
+/* ────────────────────────────────────────────────────────────────────────
+ * Hero lead: same real signals the dashboard hero uses (weekly goal from
+ * user_streaks, weakest move from move_levels, active plan from
+ * user_study_plans) so the catalog hero is grounded, not decorative.
+ * ──────────────────────────────────────────────────────────────────────── */
+async function loadHeroLead(userId: string | null, adminClient: ReturnType<typeof createAdminClient> | null) {
+  const empty = {
+    displayName: 'there',
+    weakestMove: 'frame',
+    weakestMoveLevel: null as number | null,
+    weakestMoveProgress: null as number | null,
+    weeklyDone: 0,
+    weeklyGoal: 5,
+    activePlanTitle: null as string | null,
+    activePlanSlug: null as string | null,
+    interviewDate: null as string | null,
   }
+  if (!userId || !adminClient) return empty
 
-  if (kind === 'plans') {
-    return (
-      <svg viewBox="0 0 160 120" className={className} fill="none" aria-hidden="true">
-        <path d="M34 88 C50 42, 86 88, 126 36" stroke={accent} strokeWidth="8" strokeLinecap="round" />
-        <circle cx="34" cy="88" r="11" fill={accent} opacity="0.28" />
-        <circle cx="82" cy="70" r="11" fill={accent} opacity="0.20" />
-        <circle cx="126" cy="36" r="13" fill={accent} opacity="0.32" />
-        <path d="M114 36 H126 V24" stroke={accent} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity="0.65" />
-      </svg>
-    )
+  const supabase = await createClient()
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const localDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  const dayOfWeek = now.getDay()
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const weekStart = new Date(now)
+  weekStart.setDate(now.getDate() + mondayOffset)
+  weekStart.setHours(0, 0, 0, 0)
+  const weekStartStr = localDate(weekStart)
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekStart.getDate() + 6)
+  const weekEndStr = localDate(weekEnd)
+
+  const [{ data: profile }, { data: moveLevelsData }, { data: streakRows }, { data: activePlanRow }] = await Promise.all([
+    supabase.from('profiles').select('display_name, interview_date').eq('id', userId).single(),
+    adminClient.from('move_levels').select('move, level, progress_pct').eq('user_id', userId).order('xp', { ascending: true }),
+    adminClient.from('user_streaks').select('date, completed').eq('user_id', userId).gte('date', weekStartStr).lte('date', weekEndStr),
+    adminClient
+      .from('user_study_plans')
+      .select('study_plans(slug, title)')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .maybeSingle(),
+  ])
+
+  const moveLevels = (moveLevelsData ?? []) as { move: string; level: number; progress_pct: number }[]
+  const weakest = moveLevels[0] ?? null
+  const weeklyDone = (streakRows ?? []).filter(r => r.completed).length
+  const activePlan = (activePlanRow?.study_plans as unknown as { slug: string; title: string } | null) ?? null
+
+  return {
+    displayName: profile?.display_name ?? 'there',
+    weakestMove: weakest?.move ?? 'frame',
+    weakestMoveLevel: weakest?.level ?? null,
+    weakestMoveProgress: weakest?.progress_pct ?? null,
+    weeklyDone,
+    weeklyGoal: 5,
+    activePlanTitle: activePlan?.title ?? null,
+    activePlanSlug: activePlan?.slug ?? null,
+    interviewDate: profile?.interview_date ?? null,
   }
-
-  return (
-    <svg viewBox="0 0 160 120" className={className} fill="none" aria-hidden="true">
-      <rect x="28" y="28" width="42" height="42" rx="10" fill={accent} opacity="0.22" />
-      <rect x="88" y="42" width="44" height="44" rx="10" fill={accent} opacity="0.16" />
-      <path d="M48 78 H104 M104 78 L92 66 M104 78 L92 90" stroke={accent} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity="0.62" />
-      <circle cx="48" cy="48" r="8" fill={accent} opacity="0.75" />
-      <circle cx="110" cy="64" r="8" fill={accent} opacity="0.75" />
-    </svg>
-  )
 }
 
-function ModuleTexture({ accent }: { accent: string }) {
-  return (
-    <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-35 transition-transform duration-500 group-hover:scale-[1.03]" viewBox="0 0 260 180" fill="none" aria-hidden="true">
-      <path d="M-12 126 C42 72, 92 160, 148 88 S228 40, 282 92" stroke={accent} strokeWidth="5" strokeLinecap="round" opacity="0.18" />
-      <path d="M28 38 H232 M48 72 H178 M22 106 H238" stroke="#ffffff" strokeWidth="1" strokeDasharray="3 10" opacity="0.18" />
-      <circle cx="210" cy="48" r="30" fill={accent} opacity="0.10" />
-      <rect x="168" y="104" width="48" height="48" rx="14" fill={accent} opacity="0.08" />
-    </svg>
-  )
+async function loadRealInterviewGroups(adminClient: ReturnType<typeof createAdminClient> | null): Promise<CompanyChallengeGroup[]> {
+  const client = adminClient ?? createAdminClient()
+  try {
+    const { data } = await client
+      .from('challenges')
+      .select('id, title, slug, difficulty, challenge_type, company_tags, topic_tags, technique_tags')
+      .eq('is_published', true)
+      .eq('is_real_interview', true)
+      .not('company_tags', 'eq', '{}')
+      .order('created_at', { ascending: false })
+      .limit(200)
+    const rows = (data ?? []) as CuratedChallenge[]
+    const counts = new Map<string, CuratedChallenge[]>()
+    for (const c of rows) {
+      for (const company of c.company_tags ?? []) {
+        if (!counts.has(company)) counts.set(company, [])
+        counts.get(company)!.push(c)
+      }
+    }
+    const sorted = [...counts.entries()].sort((a, b) => b[1].length - a[1].length).slice(0, 3)
+    const seenIds = new Set<string>()
+    return sorted
+      .map(([company, challenges]) => {
+        const unique = challenges.filter(c => {
+          if (seenIds.has(c.id)) return false
+          seenIds.add(c.id)
+          return true
+        })
+        return { company, challenges: unique }
+      })
+      .filter(g => g.challenges.length > 0)
+  } catch {
+    return []
+  }
 }
 
-function ModuleCard({ module, index }: {
-  module: Pick<LearnModule, 'slug' | 'name' | 'tagline' | 'cover_color' | 'accent_color' | 'chapter_count' | 'est_minutes' | 'difficulty'>
-  index: number
-}) {
-  return (
-    <Link
-      href={`/explore/modules/${module.slug}`}
-      data-hatch-sound="open"
-      className="animate-fade-in-up group relative flex min-h-[158px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline shadow-[0_20px_42px_-30px_rgba(20,24,22,0.9)] transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_56px_-32px_rgba(20,24,22,0.98)]"
-      style={{ background: module.cover_color, border: '1px solid rgba(255,255,255,0.10)', animationDelay: `${index * 60}ms` }}
-    >
-      <ModuleTexture accent={module.accent_color} />
-      <span className="relative">
-        <span
-          className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-label font-bold uppercase tracking-[0.08em]"
-          style={{ background: 'rgba(255,255,255,0.10)', color: module.accent_color }}
-        >
-          {DIFFICULTY_LABELS[coerceDifficulty(module.difficulty) ?? 'easy']}
-        </span>
-        <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-on-hero">
-          {module.name}
-        </span>
-        <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-on-hero/65">
-          {module.tagline}
-        </span>
-      </span>
-      <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-on-hero/55">
-        <span>{module.chapter_count} chapters · {module.est_minutes} min</span>
-        <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5" style={{ color: module.accent_color }}>
-          arrow_forward
-        </span>
-      </span>
-    </Link>
-  )
-}
+/* ──────────────────────────────────────────────────────────────────────── */
 
-function AutopsyCard({ item, index }: { item: ExploreAutopsyCardItem; index: number }) {
-  const product = item.product
-  const bg = item.kind === 'modern' ? item.product.accent : item.product.cover_color ?? '#1e1b14'
-  const teardownCount = item.kind === 'modern'
-    ? item.product.stories.filter(story => story.storyType === 'company_teardown').length
-      + Math.max(
-        0,
-        (item.legacyProduct?.story_count ?? 0)
-          - item.product.stories.filter(story => story.storyType === 'company_teardown').length
-      )
-    : item.product.story_count ?? 0
-  const featureCount = item.kind === 'modern'
-    ? item.product.stories.filter(story => story.storyType === 'feature_autopsy').length
-    : 0
-  const dek = item.kind === 'modern' ? item.product.dek : item.product.tagline
-  const industry = item.kind === 'modern'
-    ? item.product.industry
-    : item.product.industry ?? item.product.paradigm ?? 'Company teardown'
-
-  return (
-    <Link
-      href={`/explore/autopsies/${product.slug}`}
-      data-hatch-sound="open"
-      className="animate-fade-in-up group relative flex min-h-[142px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline shadow-[0_20px_42px_-30px_rgba(20,24,22,0.9)] transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_56px_-32px_rgba(20,24,22,0.98)]"
-      style={{ background: bg, border: '1px solid rgba(255,255,255,0.10)', animationDelay: `${index * 60}ms` }}
-    >
-      <ModuleTexture accent="#f3ede0" />
-      <span className="relative">
-        <span className="flex items-center gap-2">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/14 font-label text-[11px] font-black tracking-[0.02em] text-white">
-            {getCompanyMark(product.name)}
-          </span>
-          <span className="font-label text-[10px] font-bold uppercase tracking-[0.08em] text-white/65">
-            {industry}
-          </span>
-        </span>
-        <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-white">
-          {product.name}
-        </span>
-        <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-white/72">
-          {dek}
-        </span>
-      </span>
-      <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-white/62">
-        <span>
-          {item.kind === 'modern'
-            ? `${teardownCount > 0 ? `${teardownCount} teardown · ` : ''}${featureCount} features`
-            : `${teardownCount} ${teardownCount === 1 ? 'teardown' : 'teardowns'}`}
-        </span>
-        <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5">
-          arrow_forward
-        </span>
-      </span>
-    </Link>
-  )
-}
-
-function DomainRow({ domain, index }: { domain: DomainWithProgress; index: number }) {
-  const theme = DOMAIN_THEMES[index % DOMAIN_THEMES.length]
-
-  return (
-    <Link
-      href={`/explore/domains/${domain.slug}`}
-      data-hatch-sound="open"
-      className="animate-fade-in-up group relative flex min-h-[112px] items-center gap-3 overflow-hidden rounded-xl border border-outline-variant/35 p-4 no-underline shadow-[0_16px_38px_-32px_rgba(46,50,48,0.72)] ring-1 ring-white/35 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_26px_52px_-34px_rgba(46,50,48,0.82)]"
-      style={{ background: theme.bg, animationDelay: `${index * 55}ms` }}
-    >
-      <DomainSketch accent={theme.accent} soft={theme.soft} />
-      <span className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white shadow-[0_10px_24px_-18px_rgba(0,0,0,0.6)]" style={{ background: theme.accent }}>
-        <span className="material-symbols-outlined text-[21px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-          {domain.icon ?? 'category'}
-        </span>
-      </span>
-      <span className="relative min-w-0 flex-1">
-        <span className="block truncate font-headline text-[15px] font-bold text-on-surface">
-          {domain.title}
-        </span>
-        <span className="mt-0.5 block text-[12px] font-label font-semibold text-on-surface-variant">
-          {domain.challenge_count} challenges
-          {domain.progress_percentage > 0 ? ` · ${Math.round(domain.progress_percentage)}% complete` : ''}
-        </span>
-        <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-white/65">
-          <span
-            className="block h-full rounded-full transition-[width] duration-500"
-            style={{
-              width: `${Math.min(100, Math.max(8, Math.round(domain.progress_percentage || 0)))}%`,
-              background: theme.accent,
-            }}
-          />
-        </span>
-      </span>
-      <span className="material-symbols-outlined relative shrink-0 text-[16px] text-on-surface-variant transition-transform group-hover:translate-x-0.5">
-        arrow_forward
-      </span>
-    </Link>
-  )
-}
-
-function DomainSketch({ accent, soft }: { accent: string; soft: string }) {
-  return (
-    <svg
-      viewBox="0 0 220 120"
-      className="pointer-events-none absolute inset-y-0 right-0 h-full w-44"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle cx="158" cy="22" r="44" fill={soft} />
-      <circle cx="198" cy="92" r="38" fill={soft} />
-      <path d="M92 82 C116 42, 152 90, 196 28" stroke={accent} strokeWidth="7" strokeLinecap="round" opacity="0.16" />
-      <path d="M138 30 H196 V88" stroke={accent} strokeWidth="2" strokeDasharray="5 7" opacity="0.20" />
-      <rect x="132" y="48" width="22" height="22" rx="7" fill={accent} opacity="0.12" />
-      <rect x="170" y="66" width="26" height="26" rx="8" fill={accent} opacity="0.10" />
-    </svg>
-  )
-}
-
-function RealInterviewSpotlight({ companyGroups }: { companyGroups: CompanyChallengeGroup[] }) {
-  const questionCount = companyGroups.reduce((total, group) => total + group.challenges.length, 0)
+function CatalogHero({ lead }: { lead: Awaited<ReturnType<typeof loadHeroLead>> }) {
+  const weakestLabel = capitalize(lead.weakestMove)
+  const headlineHasSignal = lead.weakestMoveLevel !== null
+  const title = headlineHasSignal
+    ? `${weakestLabel} is your weakest move. The picks below work on it.`
+    : `Pick up where the practice gym leaves off.`
 
   return (
     <section
-      className="relative mb-10 overflow-hidden rounded-[22px] border border-primary/18 bg-surface-container-low p-4 shadow-[0_28px_72px_-54px_rgba(30,53,40,0.72)] sm:p-5"
+      data-hatch-target="practice-hero"
+      className="relative flex flex-col gap-4 overflow-hidden rounded-2xl px-5 py-5 text-white sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:gap-5"
       style={{
-        background:
-          'linear-gradient(135deg, rgba(74,124,89,0.12) 0%, rgba(255,255,255,0.42) 48%, rgba(201,147,58,0.10) 100%)',
+        background: 'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-850) 55%, var(--color-forest-800) 100%)',
       }}
     >
-      <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.18]" viewBox="0 0 1040 360" fill="none" aria-hidden="true">
-        <path d="M-28 272 C180 90, 300 350, 498 178 S792 82, 1078 218" stroke="#4a7c59" strokeWidth="2" strokeDasharray="9 14" />
-        <path d="M92 74 H964 M126 122 H760 M56 172 H1012" stroke="#2e3230" strokeWidth="1" strokeDasharray="3 13" />
-      </svg>
-      <div className="relative mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-background/60 px-2 py-1 font-label text-[11px] font-bold text-primary ring-1 ring-primary/15">
-            <span className="material-symbols-outlined text-[14px]">verified</span>
-            Real interviews
-          </span>
-          <h2 className="mt-2 font-headline text-[25px] font-bold leading-tight text-on-surface">
-            Asked at top companies
-          </h2>
-          <p className="mt-1 font-label text-[12px] font-semibold text-on-surface-variant">
-            {questionCount} questions across {companyGroups.length} company loops
-          </p>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-10 -top-24 h-[420px] w-[420px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(30,71,45,.55) 0%, rgba(30,71,45,0) 70%)' }}
+      />
+
+      <div className="relative z-10 min-w-0 flex-[1.15]">
+        <div className="mb-2 text-[13px] font-bold text-white/88">Welcome back, {lead.displayName}</div>
+        <h1 className="mb-3.5 max-w-[460px] font-headline text-[24px] font-semibold leading-[1.22] text-[#f9faf5] sm:text-[26px]">
+          {highlightWord(title, weakestLabel)}
+        </h1>
+        <div className="flex flex-wrap gap-2.5">
+          <HeroChip label="Weekly goal" value={`${lead.weeklyDone} of ${lead.weeklyGoal} sessions`} />
+          {lead.weakestMoveLevel !== null && (
+            <HeroChip label="Weakest move" value={`${weakestLabel} Lv${lead.weakestMoveLevel}${lead.weakestMoveProgress !== null ? ` · ${lead.weakestMoveProgress}%` : ''}`} />
+          )}
+          {lead.activePlanTitle && (
+            <HeroChip label="Current plan" value={lead.activePlanTitle} />
+          )}
         </div>
-        <Link
-          href="/challenges?real_interview=1"
-          data-hatch-sound="open"
-          className="inline-flex w-fit items-center gap-1 rounded-md bg-white/60 px-3 py-2 font-label text-xs font-bold text-primary no-underline ring-1 ring-primary/15 transition-colors hover:bg-primary-container hover:text-on-primary-container"
-        >
-          Browse all
-          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-        </Link>
       </div>
 
-      <div className="relative grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {companyGroups.map(({ company, challenges }) => (
-          <AskedAtCompanyGroup key={company} company={company} challenges={challenges} />
-        ))}
+      <div className="relative z-10 hidden shrink-0 self-end lg:block">
+        <HatchImage state="thinking" size={128} priority className="drop-shadow-[0_14px_28px_rgba(0,0,0,.35)]" />
+      </div>
+
+      <div className="relative z-10 w-full shrink-0 rounded-xl bg-note-mint px-[14px] py-3 lg:w-[190px]">
+        <div className="mb-1.5 flex items-center gap-1.5 text-[12px] font-bold text-forest-800">
+          <HatchImage state="avatar" size={16} className="rounded-full" />
+          Hatch says
+        </div>
+        <div className="mb-2.5 text-[11.5px] leading-[1.4] text-ink-strong">
+          {hatchHeroMessage(lead)}
+        </div>
+        {lead.activePlanSlug ? (
+          <Link
+            href={`/explore/plans/${lead.activePlanSlug}`}
+            className="inline-flex w-full items-center justify-center rounded-lg bg-forest-600 px-2.5 py-2 text-[11.5px] font-extrabold text-white no-underline"
+          >
+            Resume plan
+          </Link>
+        ) : (
+          <Link
+            href="/challenges?difficulty=easy"
+            className="inline-flex w-full items-center justify-center rounded-lg bg-forest-600 px-2.5 py-2 text-[11.5px] font-extrabold text-white no-underline"
+          >
+            Start an easy rep
+          </Link>
+        )}
       </div>
     </section>
   )
 }
 
-function AskedAtCompanyGroup({ company, challenges }: CompanyChallengeGroup) {
-  const companyLabel = getCompanyDisplayName(company)
-  const companyVisual = getCompanyVisual(company)
-  const visibleChallenges = challenges.slice(0, 3)
+function hatchHeroMessage(lead: Awaited<ReturnType<typeof loadHeroLead>>): string {
+  const weakestLabel = capitalize(lead.weakestMove)
+  if (lead.weakestMoveLevel !== null) {
+    return `${weakestLabel} is the gap right now. The featured picks below drill exactly that.`
+  }
+  return 'Start with an easy rep and Hatch will start reading your weak moves.'
+}
 
+function highlightWord(headline: string, word: string): React.ReactNode {
+  const idx = headline.toLowerCase().indexOf(word.toLowerCase())
+  if (idx === -1) return headline
+  const before = headline.slice(0, idx)
+  const match = headline.slice(idx, idx + word.length)
+  const after = headline.slice(idx + word.length)
   return (
-    <article
-      className="group relative flex min-h-[188px] flex-col overflow-hidden rounded-lg border border-outline-variant/35 bg-surface-container-low p-3.5 shadow-[0_16px_34px_-31px_rgba(46,50,48,0.68)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_26px_50px_-34px_rgba(46,50,48,0.82)]"
-      style={{
-        background: `linear-gradient(135deg, ${companyVisual.soft} 0%, rgba(255,255,255,0.34) 46%, transparent 100%)`,
-      }}
-    >
-      <span
-        className="pointer-events-none absolute inset-x-0 top-0 h-1"
-        style={{ background: companyVisual.accent }}
-        aria-hidden="true"
-      />
-      <span
-        className="pointer-events-none absolute -right-8 top-0 h-full w-24 opacity-[0.08]"
-        style={{
-          backgroundImage: `repeating-linear-gradient(135deg, ${companyVisual.accent} 0 2px, transparent 2px 10px)`,
-        }}
-        aria-hidden="true"
-      />
-
-      <div className="relative flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md font-headline text-[15px] font-bold text-white shadow-[0_10px_22px_-18px_rgba(0,0,0,0.7)]"
-            style={{ background: companyVisual.accent }}
-            aria-hidden="true"
-          >
-            {getCompanyMark(companyLabel)}
-          </span>
-          <span className="min-w-0">
-            <h3 className="truncate font-headline text-[17px] font-bold leading-tight text-on-surface">
-              {companyLabel}
-            </h3>
-            <span className="mt-0.5 block font-label text-[11px] font-semibold text-on-surface-variant">
-              {challenges.length} real interview {challenges.length === 1 ? 'question' : 'questions'}
-            </span>
-          </span>
-        </div>
-        <Link
-          href={`/challenges?company=${company}`}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/55 text-on-surface-variant no-underline ring-1 ring-outline-variant/40 transition-colors hover:bg-primary-container hover:text-on-primary-container"
-          aria-label={`Browse ${companyLabel} questions`}
-          data-hatch-sound="open"
-        >
-          <span className="material-symbols-outlined text-[17px]">arrow_forward</span>
-        </Link>
-      </div>
-
-      <div className="relative mt-3 flex flex-1 flex-col gap-1.5">
-        {visibleChallenges.map((challenge, index) => (
-          <AskedAtChallengeRow
-            key={challenge.id}
-            challenge={challenge}
-            index={index}
-            accent={companyVisual.accent}
-          />
-        ))}
-      </div>
-
-    </article>
+    <>
+      {before}
+      <span className="hl-word">{match}</span>
+      {after}
+    </>
   )
 }
 
-function AskedAtChallengeRow({ challenge, index, accent }: {
-  challenge: CuratedChallenge
-  index: number
-  accent: string
-}) {
-  const href = `/challenges/${challenge.slug ?? challenge.id}`
-  const detail = challenge.technique_tags?.[0] ?? challenge.topic_tags?.[0] ?? challenge.challenge_type.replace(/_/g, ' ')
+function HeroChip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-full border border-white/12 bg-white/8 px-3 py-1.5">
+      <div className="leading-[1.2]">
+        <div className="text-[10px] font-bold text-white/65">{label}</div>
+        <div className="text-[12.5px] font-extrabold tabular-nums text-white">{value}</div>
+      </div>
+    </div>
+  )
+}
 
+/* ──────────────────────────────────────────────────────────────────────── */
+
+function DisciplineTabs({ counts, active }: { counts: Record<CountDiscipline, number>; active: CountDiscipline }) {
+  return (
+    <nav data-tour-target="explore-paths" className="mt-5 flex items-center gap-5 overflow-x-auto border-b border-hairline">
+      {DISCIPLINE_TABS.map(tab => {
+        const Icon = tab.icon
+        const isActive = tab.key === active
+        const href = tab.key === 'all' ? '/challenges' : `/challenges?discipline=${tab.key}`
+        return (
+          <Link
+            key={tab.key}
+            href={href}
+            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-[2.5px] py-2.5 text-[13.5px] font-bold no-underline ${
+              isActive ? 'border-forest-700 text-forest-700' : 'border-transparent text-ink-muted'
+            }`}
+          >
+            <Icon size={16} strokeWidth={1.8} className={isActive ? 'text-forest-600' : 'opacity-80'} />
+            {tab.label}
+            <span className="ml-0.5 tabular-nums text-[11px] font-semibold text-ink-muted">
+              {counts[tab.key]}
+            </span>
+          </Link>
+        )
+      })}
+    </nav>
+  )
+}
+
+function FilterRow() {
+  return (
+    <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
+      <FilterLink href="/challenges?difficulty=easy" label="Easy" />
+      <FilterLink href="/challenges?difficulty=medium" label="Medium" />
+      <FilterLink href="/challenges?difficulty=hard" label="Hard" />
+      <FilterLink href="/challenges?real_interview=1" label="Real interviews" />
+      <div className="flex-1" />
+      <Link
+        href="/challenges"
+        className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink-secondary bg-white px-3.5 py-2 text-[12.5px] font-bold text-ink-secondary no-underline"
+      >
+        Open full filters
+        <ChevronDown size={13} strokeWidth={1.8} />
+      </Link>
+    </div>
+  )
+}
+
+function FilterLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="group/row flex min-h-[38px] items-center gap-2.5 rounded-md bg-white/50 px-2 py-1.5 no-underline shadow-[0_8px_18px_-18px_rgba(46,50,48,0.8)] ring-1 ring-outline-variant/20 transition-[background-color,box-shadow] hover:bg-white/76 hover:shadow-[0_12px_24px_-19px_rgba(46,50,48,0.9)] hover:ring-primary/20"
-      data-hatch-sound="open"
+      className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink-secondary bg-card-alt px-3.5 py-2 text-[12.5px] font-bold text-ink-secondary no-underline"
     >
-      <span
-        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] font-label text-[10px] font-bold tabular-nums text-white"
-        style={{ background: accent }}
-        aria-hidden="true"
-      >
-        {index + 1}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-body text-[13px] font-semibold leading-snug text-on-surface transition-colors group-hover/row:text-primary">
-          {challenge.title}
-        </span>
-        <span className="mt-0.5 block truncate font-label text-[10.5px] font-semibold capitalize text-on-surface-variant">
-          {challenge.difficulty.replace(/_/g, ' ')} · {detail.replace(/_/g, ' ')}
-        </span>
-      </span>
-      <span className="material-symbols-outlined shrink-0 text-[14px] text-on-surface-variant transition-transform group-hover/row:translate-x-0.5 group-hover/row:text-primary">
-        chevron_right
+      {label}
+    </Link>
+  )
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+
+function FeaturedPractice({
+  challenges,
+  weakestMove,
+  interviewDate,
+}: {
+  challenges: ChallengeWithDomain[]
+  weakestMove: string
+  interviewDate: string | null
+}) {
+  if (challenges.length === 0) return null
+  const cards = challenges.slice(0, 4)
+
+  return (
+    <div className="mt-6">
+      <div className="flex items-baseline justify-between gap-4">
+        <div>
+          <h2 className="m-0 text-[18px] font-bold text-ink-strong">Picked for you</h2>
+          <div className="mt-0.5 text-[12.5px] text-ink-muted">
+            Curated picks across disciplines
+          </div>
+        </div>
+        <Link href="/challenges" className="inline-flex shrink-0 items-center gap-1 text-[12.5px] font-extrabold text-forest-700 no-underline">
+          View all
+          <ArrowRight size={13} strokeWidth={2} />
+        </Link>
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+        {cards.map(challenge => (
+          <FeaturedCard
+            key={challenge.id}
+            challenge={challenge}
+            weakestMove={weakestMove}
+            interviewDate={interviewDate}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function reasonFor(challenge: ChallengeWithDomain, weakestMove: string, interviewDate: string | null): string {
+  const companies = (challenge as unknown as { company_tags?: string[] | null }).company_tags ?? []
+  if (challenge.is_real_interview && companies.length > 0) {
+    const label = getCompanyLabel(companies[0]) ?? formatCompany(companies[0])
+    return interviewDate
+      ? `Asked in real ${label} loops. Your mock interview is coming up.`
+      : `Asked in real ${label} interview loops.`
+  }
+  const moveTags = (challenge as unknown as { move_tags?: string[] | null }).move_tags ?? []
+  if (moveTags.includes(weakestMove)) {
+    return `A ${capitalize(weakestMove)}-heavy scenario, and ${capitalize(weakestMove)} is your weakest move.`
+  }
+  return `Editorially picked for this week's practice rotation.`
+}
+
+function FeaturedCard({
+  challenge,
+  weakestMove,
+  interviewDate,
+}: {
+  challenge: ChallengeWithDomain
+  weakestMove: string
+  interviewDate: string | null
+}) {
+  const discipline = disciplineFor(challenge.challenge_type, challenge.domain?.title)
+  const label = DISCIPLINE_EYEBROW[discipline]
+  const minutes = (challenge as unknown as { estimated_minutes?: number | null }).estimated_minutes
+  const meta = [difficultyLabel(challenge.difficulty), minutes ? `${minutes} min` : null].filter(Boolean).join(' · ')
+
+  return (
+    <Link
+      href={challengePath(challenge)}
+      className="flex flex-col rounded-xl border border-hairline bg-card-bright p-4 no-underline shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)]"
+    >
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <DisciplineTile discipline={discipline} className="size-11" />
+        <Bookmark size={16} strokeWidth={1.7} className="text-ink-muted" />
+      </div>
+      <div className={`mb-2 font-label text-[10.5px] font-bold uppercase tracking-[0.06em] ${DISCIPLINE_EYEBROW_CLASS[discipline]}`}>
+        {label}
+      </div>
+      <div className="mb-2.5 min-h-[40px] text-[15px] font-bold leading-[1.32] text-ink-strong">
+        {challenge.title}
+      </div>
+      {meta && <div className="mb-2.5 text-[12px] font-medium tabular-nums text-ink-muted">{meta}</div>}
+      <div className="mb-3.5 min-h-[44px] border-t border-hairline pt-2.5 text-[12px] leading-[1.45] text-ink-secondary">
+        {reasonFor(challenge, weakestMove, interviewDate)}
+      </div>
+      <span className="mt-auto flex w-full items-center justify-center rounded-lg bg-forest-950 py-2.5 text-[13px] font-bold text-white">
+        Start now
       </span>
     </Link>
   )
 }
 
-function getCompanyDisplayName(company: string) {
-  return getCompanyLabel(company) ?? formatCompany(company)
+const DISCIPLINE_EYEBROW: Record<TileDiscipline, string> = {
+  'system-design': 'System Design',
+  'product-sense': 'Product Sense',
+  'data-modeling': 'Data Modeling',
+  sql: 'SQL',
+  'ai-ml': 'AI / ML',
 }
 
-function getCompanyMark(label: string) {
-  const words = label.split(/\s+/).filter(Boolean)
-  const mark = words.length > 1
-    ? `${words[0]?.[0] ?? ''}${words[1]?.[0] ?? ''}`
-    : label.slice(0, 2)
-
-  return mark.toUpperCase()
+const DISCIPLINE_EYEBROW_CLASS: Record<TileDiscipline, string> = {
+  'system-design': 'text-sd-fg',
+  'product-sense': 'text-ps-fg',
+  'data-modeling': 'text-dm-fg',
+  sql: 'text-sql-fg',
+  'ai-ml': 'text-aiml-fg',
 }
 
-function getCompanyVisual(company: string) {
-  // Single forest-green family — six tint steps so adjacent companies look distinct.
-  const palette = [
-    { accent: '#4a7c59', soft: 'rgba(74,124,89,0.10)' },
-    { accent: '#3a6e4a', soft: 'rgba(58,110,74,0.10)' },
-    { accent: '#2e5e40', soft: 'rgba(46,94,64,0.10)' },
-    { accent: '#5d9070', soft: 'rgba(93,144,112,0.10)' },
-    { accent: '#2f6040', soft: 'rgba(47,96,64,0.10)' },
-    { accent: '#3e7450', soft: 'rgba(62,116,80,0.10)' },
-  ]
-  const hash = [...company].reduce((sum, char) => sum + char.charCodeAt(0), 0)
+/* ──────────────────────────────────────────────────────────────────────── */
 
-  return palette[hash % palette.length]
-}
-
-function SectionHeading({ title, href, linkLabel }: {
+function ShelfCard({ title, href, viewAllLabel = 'View all', sub, children }: {
   title: string
   href: string
-  linkLabel: string
+  viewAllLabel?: string
+  sub?: string
+  children: React.ReactNode
 }) {
   return (
-    <div className="mb-3 flex items-end justify-between gap-4">
-      <div className="flex items-center gap-2.5">
-        <span className="h-3 w-3 rounded-sm bg-primary/80 shadow-[0_8px_16px_-10px_rgba(74,124,89,0.75)]" />
-        <h2 className="m-0 font-headline text-[24px] font-bold leading-tight text-on-surface">
-          {title}
-        </h2>
+    <div className="flex flex-col rounded-xl border border-hairline bg-card-bright p-4">
+      <div className="mb-0.5 flex items-baseline justify-between">
+        <h3 className="m-0 text-[15.5px] font-bold text-ink-strong">{title}</h3>
+        <Link href={href} className="inline-flex shrink-0 items-center gap-1 text-[11.5px] font-bold text-forest-700 no-underline">
+          {viewAllLabel}
+          <ArrowRight size={12} strokeWidth={2} />
+        </Link>
       </div>
-      <Link
-        href={href}
-        data-hatch-sound="open"
-        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-label font-bold text-primary no-underline transition-colors hover:bg-primary-fixed"
-      >
-        {linkLabel}
-        <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-      </Link>
+      {sub && <div className="mb-3 text-[11.5px] font-medium text-ink-muted">{sub}</div>}
+      <div className="flex flex-1 flex-col">{children}</div>
     </div>
+  )
+}
+
+function ShelfRow({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="flex min-h-[44px] items-center gap-2.5 border-t border-hairline py-2 no-underline first:border-t-0"
+    >
+      {children}
+    </Link>
+  )
+}
+
+function StudyPlansShelf({
+  plans,
+  studyPlansBySlug,
+  enrolledSlugs,
+}: {
+  plans: Array<{ slug: string; title: string; item_count?: number; progress_percentage?: number }>
+  studyPlansBySlug: Map<string, { title: string; challenge_count?: number | null }>
+  enrolledSlugs: Set<string>
+}) {
+  if (plans.length === 0) return null
+  const primaryEnrolled = plans.find(p => enrolledSlugs.has(p.slug) && typeof p.progress_percentage === 'number')
+
+  return (
+    <ShelfCard
+      title="Study Plans"
+      href="/explore/plans"
+      sub={primaryEnrolled ? `Your plan is ${Math.round(primaryEnrolled.progress_percentage ?? 0)}% complete` : 'Sequenced practice paths'}
+    >
+      {plans.map(plan => {
+        const isEnrolled = enrolledSlugs.has(plan.slug)
+        const challengeCount = plan.item_count ?? studyPlansBySlug.get(plan.slug)?.challenge_count ?? null
+        return (
+          <ShelfRow key={plan.slug} href={`/explore/plans/${plan.slug}`}>
+            <span
+              aria-hidden
+              className={isEnrolled ? 'size-3 shrink-0 rounded-full bg-forest-600 shadow-[0_0_0_3px_var(--color-sd-bg)]' : 'size-2.5 shrink-0 rounded-full border-[1.4px] border-hairline'}
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[12.5px] font-bold leading-[1.3] text-ink-strong">{plan.title}</span>
+              <span className="mt-0.5 block text-[10.5px] font-medium text-ink-muted">
+                {isEnrolled ? 'Enrolled' : challengeCount ? `${challengeCount} challenges` : 'Not started'}
+              </span>
+            </span>
+            {isEnrolled && typeof plan.progress_percentage === 'number' && (
+              <span className="shrink-0 text-right">
+                <span className="block text-[10.5px] font-medium tabular-nums text-ink-muted">{Math.round(plan.progress_percentage)}%</span>
+                <span className="mt-1 block h-1 w-11 overflow-hidden rounded-full bg-hairline">
+                  <span className="block h-full rounded-full bg-forest-600" style={{ width: `${Math.min(100, Math.round(plan.progress_percentage))}%` }} />
+                </span>
+              </span>
+            )}
+          </ShelfRow>
+        )
+      })}
+    </ShelfCard>
+  )
+}
+
+function AutopsiesShelf({ hubs }: { hubs: Array<{ slug: string; name: string; stories: unknown[] }> }) {
+  if (hubs.length === 0) return null
+  return (
+    <ShelfCard title="Product Autopsies" href="/explore/autopsies" sub="Real products taken apart, stage by stage">
+      {hubs.map(hub => {
+        const accent = brandAccentFor(hub.name)
+        const storyCount = hub.stories.length
+        return (
+          <ShelfRow key={hub.slug} href={`/explore/autopsies/${hub.slug}`}>
+            <span className="min-w-0 flex-1">
+              <span
+                className="block text-[11.5px] font-bold"
+                style={accent ? { color: accent } : undefined}
+              >
+                {accent ? hub.name : <span className="text-ink-secondary">{hub.name}</span>}
+              </span>
+              <span className="block text-[12.5px] font-bold leading-[1.3] text-ink-strong">Decoded</span>
+              {storyCount > 0 && (
+                <span className="mt-0.5 block text-[10.5px] font-medium text-ink-muted">
+                  {storyCount} {storyCount === 1 ? 'story' : 'stories'}
+                </span>
+              )}
+            </span>
+          </ShelfRow>
+        )
+      })}
+    </ShelfCard>
+  )
+}
+
+function RealInterviewsShelf({ groups }: { groups: CompanyChallengeGroup[] }) {
+  if (groups.length === 0) return null
+  return (
+    <ShelfCard title="Real Interviews" href="/challenges?real_interview=1" sub="Questions asked in real loops, grouped by company">
+      {groups.map(group => {
+        const label = getCompanyLabel(group.company) ?? formatCompany(group.company)
+        const accent = brandAccentFor(label)
+        const topChallenge = group.challenges[0]
+        return (
+          <ShelfRow
+            key={group.company}
+            href={topChallenge ? challengePath(topChallenge) : `/challenges?company=${group.company}`}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11.5px] font-bold" style={accent ? { color: accent } : undefined}>
+                {label}
+              </span>
+              <span className="mt-0.5 block text-[10.5px] font-medium text-ink-muted">System design</span>
+            </span>
+            <span className="shrink-0 rounded-full border-[1.5px] border-forest-700 bg-sd-bg px-2 py-0.5 text-[10.5px] font-bold text-forest-700">
+              {group.challenges.length} {group.challenges.length === 1 ? 'Q' : 'Qs'}
+            </span>
+          </ShelfRow>
+        )
+      })}
+    </ShelfCard>
+  )
+}
+
+function TrendingShelf({ challenges }: { challenges: Array<{ id: string; slug?: string | null; title: string; challenge_type?: string | null; display_number?: number | null; attempts: number; domain?: string | null }> }) {
+  if (challenges.length === 0) return null
+  return (
+    <ShelfCard title="Trending" href="/cohort" viewAllLabel="Leaderboard">
+      <div className="mb-2.5 -mt-1 inline-block rounded-lg border border-note-teal-border bg-note-teal px-2.5 py-1.5 text-[11.5px] font-medium text-[#2c5f58]">
+        Most attempts in the last 7 days
+      </div>
+      {challenges.slice(0, 5).map((challenge, index) => (
+        <ShelfRow key={challenge.id} href={challengePath(challenge)}>
+          <span className="w-[18px] shrink-0 text-[13px] font-bold tabular-nums text-ink-muted">{index + 1}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[12.5px] font-bold leading-[1.3] text-ink-strong">{challenge.title}</span>
+            {challenge.domain && (
+              <span className="mt-0.5 block text-[10.5px] font-medium text-ink-muted">{challenge.domain}</span>
+            )}
+          </span>
+          <span className="shrink-0 text-[10.5px] font-medium tabular-nums text-ink-muted">
+            {challenge.attempts} {challenge.attempts === 1 ? 'attempt' : 'attempts'}
+          </span>
+        </ShelfRow>
+      ))}
+    </ShelfCard>
   )
 }

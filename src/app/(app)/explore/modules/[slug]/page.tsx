@@ -3,306 +3,306 @@
 import { use, useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
 import { useLearnModule } from '@/hooks/useLearnModule'
 import { useLearnChapter } from '@/hooks/useLearnChapter'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_CHAPTER_OPENED, EVENT_CHAPTER_COMPLETED } from '@/lib/posthog/events'
-import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import { ChapterBody } from '@/components/learning/ChapterBody'
-import { BackButton } from '@/components/navigation/BackButton'
-import { motion, useScrollCollapse } from '@/components/motion'
+import { BackCrumb } from '@/components/navigation/BackButton'
+import { ProgressRing } from '@/components/redesign/ProgressRing'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { LearnModule, LearnChapterWithProgress } from '@/lib/types'
-import { DIFFICULTY_LABELS as PRACTICE_DIFFICULTY_LABELS, coerceDifficulty } from '@/lib/practice/difficulty'
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// Chapter body rendering stays in `src/components/learning/ChapterBody.tsx`
+// (untouched) — figures render as typed React components.
 
-type ModuleData = { module: LearnModule; chapters: LearnChapterWithProgress[] }
-
-// Chapter body rendering moved to `src/components/learning/ChapterBody.tsx`.
-// Figures are typed React components (src/components/learning/figures/*).
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function ModuleMiniHeader({ module }: { module: LearnModule }) {
-  return (
-    <div className="p-3 pb-2.5 border-b border-outline-variant flex-shrink-0">
-      <div className="h-1.5 rounded-full mb-2.5" style={{ background: module.cover_color }} />
-      <div className="font-headline text-sm font-bold text-on-surface leading-tight mb-1.5">{module.name}</div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="bg-primary-fixed text-primary font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-          {PRACTICE_DIFFICULTY_LABELS[coerceDifficulty(module.difficulty) ?? 'easy']}
-        </span>
-        <span className="text-[10px] text-on-surface-variant">{module.chapter_count} chapters · ~{module.est_minutes} min</span>
-      </div>
-    </div>
-  )
+function cn(...args: Array<string | false | null | undefined>) {
+  return args.filter(Boolean).join(' ')
 }
 
-function ChapterList({
+// ─── LEFT: module TOC rail (sticky, real chapters, current pill) ────────────
+
+function TocRail({
+  module,
   chapters,
   activeSlug,
+  completedCount,
   onSelect,
+  backHref,
 }: {
+  module: LearnModule
   chapters: LearnChapterWithProgress[]
   activeSlug: string | null
+  completedCount: number
   onSelect: (slug: string) => void
+  backHref: string
 }) {
+  const pct = module.chapter_count > 0 ? Math.round((completedCount / module.chapter_count) * 100) : 0
+  const activeIdx = chapters.findIndex(c => c.slug === activeSlug)
+
   return (
-    <div className="flex-1 overflow-y-auto py-1.5 px-2 space-y-0.5">
-      {chapters.map((ch, i) => {
-        const locked = !ch.is_unlocked && !ch.is_completed
-        const isActive = ch.slug === activeSlug
-        return (
-          <button
-            key={ch.id}
-            disabled={locked}
-            onClick={() => !locked && onSelect(ch.slug)}
-            className={[
-              'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors',
-              isActive ? 'bg-primary-fixed' : locked ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-container',
-            ].join(' ')}
-          >
-            <div
-              className={[
-                'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0',
-                ch.is_completed ? 'bg-primary-fixed text-primary' : 'bg-surface-container-highest text-on-surface-variant',
-              ].join(' ')}
+    <aside
+      className="hidden lg:flex shrink-0 flex-col gap-4"
+      style={{ width: 240, position: 'sticky', top: 24 }}
+    >
+      <div className="flex items-center gap-3">
+        <ProgressRing percent={pct} size={40} strokeWidth={4.5} trackColor="#eee9df" color="#266235">
+          <span className="font-body text-[10.5px] font-extrabold tabular-nums text-ink-strong">
+            {activeIdx >= 0 ? activeIdx + 1 : 1}/{module.chapter_count}
+          </span>
+        </ProgressRing>
+        <div className="font-body text-xs font-bold uppercase tracking-[0.03em] leading-[1.35] text-ink-secondary">
+          {module.name}
+        </div>
+      </div>
+
+      <nav className="flex flex-col gap-0.5">
+        {chapters.map((ch, i) => {
+          const locked = !ch.is_unlocked && !ch.is_completed
+          const isActive = ch.slug === activeSlug
+          return (
+            <button
+              key={ch.id}
+              disabled={locked}
+              onClick={() => !locked && onSelect(ch.slug)}
+              className={cn(
+                'flex items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] leading-[1.4]',
+                isActive ? 'bg-forest-800' : locked ? 'opacity-40 cursor-not-allowed' : 'text-ink-secondary hover:bg-surface-container',
+              )}
             >
-              {ch.is_completed ? (
-                <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
-              ) : (
-                i + 1
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className={[
-                'text-xs font-bold truncate',
-                isActive ? 'text-primary' : locked ? 'text-on-surface-variant' : 'text-on-surface',
-              ].join(' ')}>
-                {ch.title}
-              </div>
-              <div className="text-[10px] text-on-surface-variant truncate">{ch.subtitle}</div>
-              {ch.hook_text && (
-                <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-2 font-body">{ch.hook_text}</p>
-              )}
-            </div>
-            {ch.is_completed && !isActive && (
-              <span className="material-symbols-outlined text-primary text-sm flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>
-                check_circle
+              <span
+                className={cn(
+                  'mt-px flex size-5 shrink-0 items-center justify-center rounded-full text-[10.5px] font-extrabold',
+                  ch.is_completed ? 'bg-forest-800 text-white' : isActive ? 'bg-white/20 text-white' : 'bg-[#eee9df] text-ink-muted',
+                )}
+              >
+                {ch.is_completed ? <Check size={12} strokeWidth={2.4} /> : i + 1}
               </span>
-            )}
-            {locked && (
-              <span className="material-symbols-outlined text-on-surface-variant text-sm flex-shrink-0 opacity-50">lock</span>
-            )}
-          </button>
-        )
-      })}
-    </div>
+              <span className={cn('font-body font-bold', isActive ? 'text-white' : locked ? 'text-ink-muted' : 'text-ink-strong')}>
+                {ch.title}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
+
+      <Link
+        href={backHref}
+        className="flex items-center gap-1.5 border-t border-hairline pt-3 font-body text-[12.5px] font-bold text-ink-secondary no-underline"
+      >
+        <ArrowLeft size={14} strokeWidth={2} />
+        Module overview
+      </Link>
+    </aside>
   )
 }
 
-function ChapterEmptyState() {
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8">
-      <span className="material-symbols-outlined text-on-surface-variant opacity-20" style={{ fontSize: 48 }}>auto_stories</span>
-      <p className="font-label text-sm font-bold text-on-surface opacity-40">Select a chapter to start reading</p>
-      <p className="text-xs text-on-surface-variant opacity-50">Click any chapter from the list on the left</p>
-    </div>
-  )
-}
+// ─── CENTER: Literata reading column ─────────────────────────────────────────
 
-function ChapterPane({
+function ReadingColumn({
   moduleSlug,
+  module,
   chapterSlug,
-  moduleData,
+  chapters,
   onNext,
   onComplete,
+  bodyRef,
+  headingsRef,
 }: {
   moduleSlug: string
+  module: LearnModule
   chapterSlug: string
-  moduleData: ModuleData | null
+  chapters: LearnChapterWithProgress[]
   onNext: (slug: string) => void
   onComplete: () => void
+  bodyRef: React.RefObject<HTMLDivElement | null>
+  headingsRef: React.MutableRefObject<{ text: string; el: HTMLElement }[]>
 }) {
   const { data, isLoading, markComplete, isMarkingComplete } = useLearnChapter(moduleSlug, chapterSlug)
   const [markedDone, setMarkedDone] = useState(false)
-  const bodyRef = useRef<HTMLDivElement>(null)
-  const { isCollapsed: isTitleCollapsed } = useScrollCollapse(bodyRef, {
-    threshold: 88,
-    revealOffset: 10,
-    resetKey: data?.id ?? chapterSlug,
-  })
 
-  const chapters = moduleData?.chapters ?? []
   const currentIdx = chapters.findIndex(c => c.slug === chapterSlug)
   const nextChapter = chapters[currentIdx + 1]
 
   useEffect(() => {
     setMarkedDone(false)
-    bodyRef.current?.scrollTo({ top: 0 })
   }, [chapterSlug])
+
+  // Collect in-body headings for the right-rail mini-TOC, once content mounts.
+  useEffect(() => {
+    if (!data) return
+    const container = bodyRef.current
+    if (!container) return
+    const nodes = Array.from(container.querySelectorAll('h2, h3')) as HTMLElement[]
+    headingsRef.current = nodes.map(el => ({ text: el.textContent ?? '', el }))
+  }, [data, bodyRef, headingsRef])
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-6 space-y-4 animate-pulse">
-        <div className="h-28 rounded-xl bg-surface-container" />
-        <div className="h-4 rounded bg-surface-container w-3/4" />
-        <div className="h-4 rounded bg-surface-container w-full" />
-        <div className="h-4 rounded bg-surface-container w-5/6" />
+      <div className="reading-col mx-auto w-full max-w-[720px] animate-pulse space-y-4">
+        <div className="h-8 w-3/4 rounded bg-surface-container" />
+        <div className="h-4 rounded bg-surface-container" />
+        <div className="h-4 w-5/6 rounded bg-surface-container" />
+        <div className="h-4 w-full rounded bg-surface-container" />
       </div>
     )
   }
 
   if (!data) return null
 
-  const coverColor = moduleData?.module.cover_color ?? '#1a3a2a'
-  const moduleName = moduleData?.module.name ?? 'Learning module'
-
   return (
-    <div
-      className="flex flex-col h-[calc(100vh-52px)] overflow-hidden"
-      data-hatch-context-root
-      data-hatch-page-type="learning_module"
-      data-hatch-entity-id={moduleSlug}
-      data-hatch-active-chapter={chapterSlug}
-    >
-      {/* Hook card */}
-      <motion.div
-        data-hatch-context="Active chapter header"
-        layout
-        initial={false}
-        animate={isTitleCollapsed ? 'collapsed' : 'visible'}
-        variants={{
-          visible: {
-            opacity: 1,
-            y: 0,
-            maxHeight: 240,
-            paddingTop: 20,
-            paddingBottom: 20,
-          },
-          collapsed: {
-            opacity: 0,
-            y: -14,
-            maxHeight: 0,
-            paddingTop: 0,
-            paddingBottom: 0,
-          },
-        }}
-        transition={{ type: 'spring', stiffness: 320, damping: 34, mass: 0.8 }}
-        className="overflow-hidden px-6 flex-shrink-0"
-        style={{ background: coverColor }}
-        aria-hidden={isTitleCollapsed}
-      >
-        <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-1.5">
-          Chapter {data.sort_order} · {data.subtitle}
-        </p>
-        <h1
-          className="font-headline text-xl font-bold text-white leading-snug mb-2"
-          data-hatch-page-title
-        >
-          {moduleName}: {data.title}
-        </h1>
-        {data.hook_text && (
-          <p className="text-sm leading-relaxed italic text-white/75">{data.hook_text}</p>
-        )}
-      </motion.div>
-
-      {/* Body - scrollable */}
-      <ChapterBody
-        ref={bodyRef}
-        body_mdx={data.body_mdx}
-        figures={data.figures ?? []}
-        hatchContextLabel="Active chapter body"
-      />
-
-      {/* Footer */}
-      <div className="px-5 py-3 border-t border-outline-variant bg-surface-container-low flex items-center justify-between flex-shrink-0">
-        {!markedDone ? (
-          <button
-            onClick={async () => {
-              await markComplete()
-              setMarkedDone(true)
-              trackEvent(EVENT_CHAPTER_COMPLETED, { module_slug: moduleSlug, chapter_slug: chapterSlug })
-              onComplete()
-            }}
-            disabled={isMarkingComplete}
-            className="inline-flex items-center gap-1.5 bg-primary text-on-primary rounded-full px-4 py-2 text-xs font-bold font-label disabled:opacity-50 hover:opacity-90 transition-opacity"
-          >
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-            {isMarkingComplete ? 'Saving…' : 'Mark complete'}
-          </button>
-        ) : (
-          <div className="inline-flex items-center gap-1.5 text-primary text-xs font-bold font-label">
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-            Done!
-          </div>
-        )}
-        {nextChapter && (nextChapter.is_unlocked || nextChapter.is_completed) && (
-          <button
-            onClick={() => onNext(nextChapter.slug)}
-            className="inline-flex items-center gap-1.5 bg-surface-container-high text-on-surface rounded-full px-4 py-2 text-xs font-bold font-label hover:bg-surface-container-highest transition-colors"
-          >
-            Next chapter
-            <span className="material-symbols-outlined text-sm">arrow_forward</span>
-          </button>
-        )}
+    <div className="reading-col mx-auto w-full max-w-[720px] min-w-0" ref={bodyRef}>
+      <div className="mb-3.5 flex items-center gap-2 font-body text-[11px] font-extrabold uppercase tracking-[0.08em] text-dm-fg">
+        {module.name.toUpperCase()}
+        <span className="size-1 shrink-0 rounded-full bg-ink-muted" />
+        <span className="font-bold tracking-[0.06em] text-ink-muted">
+          CHAPTER {data.sort_order} OF {module.chapter_count}
+        </span>
       </div>
-    </div>
-  )
-}
 
-function ProgressCard({ module, completedCount }: { module: LearnModule; completedCount: number }) {
-  const pct = module.chapter_count > 0 ? Math.round((completedCount / module.chapter_count) * 100) : 0
-  const r = 18
-  const circumference = 2 * Math.PI * r
-  return (
-    <div className="bg-surface-container rounded-xl p-3 space-y-2">
-      <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Your Progress</div>
-      <div className="flex items-center gap-3">
-        <svg width="48" height="48" viewBox="0 0 48 48">
-          <circle cx="24" cy="24" r={r} fill="none" stroke="#e4e0d8" strokeWidth="3.5" />
-          <circle
-            cx="24" cy="24" r={r}
-            fill="none"
-            stroke={module.accent_color}
-            strokeWidth="3.5"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference * (1 - pct / 100)}
-            transform="rotate(-90 24 24)"
-          />
-          <text x="24" y="28" textAnchor="middle" fill="#2e3230" fontSize="11" fontWeight="700" fontFamily="sans-serif">{pct}%</text>
-        </svg>
-        <div>
-          <div className="font-label text-sm font-bold text-on-surface">{completedCount} / {module.chapter_count}</div>
-          <div className="text-[10px] text-on-surface-variant">chapters done</div>
+      <h1 className="mb-5 font-headline text-[38px] font-bold leading-[1.18] tracking-[-0.015em] text-ink-strong">
+        {data.title}
+      </h1>
+
+      {data.hook_text && (
+        <p className="mb-8 border-b border-hairline pb-8 font-headline text-xl font-medium leading-[1.55] text-ink-strong">
+          {data.hook_text}
+        </p>
+      )}
+
+      <ChapterBody body_mdx={data.body_mdx} figures={data.figures ?? []} hatchContextLabel="Active chapter body" />
+
+      {/* Chapter footer nav — real prev/next titles. Per-chapter prev
+          navigation lives in the left TOC rail (current pill), so the footer
+          "back" affordance points at the module overview, matching the
+          preview's footer-prev slot. */}
+      <div className="mt-9 flex flex-wrap items-center justify-between gap-4 border-t border-hairline pt-6">
+        <Link
+          href="/explore/modules"
+          className="flex items-center gap-1.5 font-body text-[13.5px] font-bold text-ink-secondary no-underline"
+        >
+          <ArrowLeft size={15} strokeWidth={1.9} />
+          Module overview
+        </Link>
+
+        <div className="flex items-center gap-3">
+          {!markedDone ? (
+            <button
+              onClick={async () => {
+                await markComplete()
+                setMarkedDone(true)
+                trackEvent(EVENT_CHAPTER_COMPLETED, { module_slug: moduleSlug, chapter_slug: chapterSlug })
+                onComplete()
+              }}
+              disabled={isMarkingComplete}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-forest-950 px-[18px] py-3 font-body text-[13.5px] font-bold text-white disabled:opacity-50"
+            >
+              <Check size={16} strokeWidth={2.2} />
+              {isMarkingComplete ? 'Saving…' : 'Mark chapter complete'}
+            </button>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 font-body text-[13.5px] font-bold text-forest-700">
+              <Check size={16} strokeWidth={2.2} />
+              Done
+            </div>
+          )}
+
+          {nextChapter && (nextChapter.is_unlocked || nextChapter.is_completed) && (
+            <button
+              onClick={() => onNext(nextChapter.slug)}
+              className="flex max-w-[420px] items-center gap-2.5 rounded-lg border border-forest-950 bg-forest-950 px-[18px] py-[13px] text-left text-white"
+            >
+              <span className="flex flex-col items-start leading-[1.3]">
+                <span className="font-body text-[10.5px] font-bold uppercase tracking-[0.04em] text-white/65">Next chapter</span>
+                <span className="font-body text-sm font-bold">{nextChapter.title}</span>
+              </span>
+              <ArrowRight size={16} strokeWidth={2} className="shrink-0" />
+            </button>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function AfterThisModule({ currentSlug }: { currentSlug: string }) {
-  const nextModules = LEARN_MODULES_SEED.filter(m => m.slug !== currentSlug).slice(0, 2)
+// ─── RIGHT: mini-TOC + reading progress rail ─────────────────────────────────
+
+function ReaderRail({
+  module,
+  chapters,
+  activeChapterSlug,
+  headings,
+}: {
+  module: LearnModule
+  chapters: LearnChapterWithProgress[]
+  activeChapterSlug: string | null
+  headings: { text: string; el: HTMLElement }[]
+}) {
+  const [activeHeadingIdx, setActiveHeadingIdx] = useState(0)
+
+  useEffect(() => {
+    setActiveHeadingIdx(0)
+    if (headings.length === 0) return
+    const onScroll = () => {
+      let idx = 0
+      for (let i = 0; i < headings.length; i++) {
+        const rect = headings[i].el.getBoundingClientRect()
+        if (rect.top <= 120) idx = i
+      }
+      setActiveHeadingIdx(idx)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [headings])
+
+  const currentIdx = chapters.findIndex(c => c.slug === activeChapterSlug)
+  const pct = chapters.length > 0 ? Math.round(((currentIdx + 1) / chapters.length) * 100) : 0
+
   return (
-    <div className="bg-surface-container rounded-xl p-3 space-y-2">
-      <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">After this module</div>
-      {nextModules.map(nm => (
-        <Link
-          key={nm.slug}
-          href={`/explore/modules/${nm.slug}`}
-          className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-surface-container-high transition-colors"
-        >
-          <div className="w-6 h-6 rounded-md flex-shrink-0" style={{ background: nm.cover_color }} />
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-on-surface truncate">{nm.name}</div>
-            <div className="text-[10px] text-on-surface-variant">{nm.chapter_count} chapters</div>
+    <aside
+      className="hidden lg:flex shrink-0 flex-col gap-3"
+      style={{ width: 280, position: 'sticky', top: 24 }}
+    >
+      {headings.length > 0 && (
+        <div className="rounded-xl border border-hairline bg-card-bright p-4">
+          <h3 className="m-0 mb-2.5 font-body text-xs font-bold uppercase tracking-[0.04em] text-ink-secondary">
+            In this chapter
+          </h3>
+          <div className="flex flex-col">
+            {headings.map((h, i) => (
+              <button
+                key={i}
+                onClick={() => h.el.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className={cn(
+                  'flex items-center gap-2.5 py-1.5 text-left font-body text-[13px]',
+                  i === activeHeadingIdx ? 'font-bold text-forest-800' : 'text-ink-secondary',
+                )}
+              >
+                <span className={cn('size-1.5 shrink-0 rounded-full', i === activeHeadingIdx ? 'bg-forest-700' : 'bg-ink-muted')} />
+                {h.text}
+              </button>
+            ))}
           </div>
-          <span className="material-symbols-outlined text-on-surface-variant text-sm">arrow_forward</span>
-        </Link>
-      ))}
-    </div>
+        </div>
+      )}
+
+      <div className="rounded-xl border border-hairline bg-card-bright p-4">
+        <h3 className="m-0 mb-2.5 font-body text-xs font-bold uppercase tracking-[0.04em] text-ink-secondary">
+          Reading progress
+        </h3>
+        <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-[#eee9df]">
+          <div className="h-full rounded-full bg-forest-600" style={{ width: `${pct}%` }} />
+        </div>
+        <div className="flex items-center justify-between font-body text-xs tabular-nums text-ink-muted">
+          <span>
+            Chapter {currentIdx >= 0 ? currentIdx + 1 : 1} of {module.chapter_count}
+          </span>
+          <b className="font-bold text-ink-strong">{pct}%</b>
+        </div>
+      </div>
+    </aside>
   )
 }
 
@@ -314,6 +314,9 @@ function ModulePageInner({ slug }: { slug: string }) {
   const searchParams = useSearchParams()
   const { data, isLoading, error, refetch } = useLearnModule(slug)
   const [activeChapterSlug, setActiveChapterSlug] = useState<string | null>(null)
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const headingsRef = useRef<{ text: string; el: HTMLElement }[]>([])
+  const [headings, setHeadings] = useState<{ text: string; el: HTMLElement }[]>([])
 
   // Sync active chapter from URL param or auto-select on data load
   useEffect(() => {
@@ -332,6 +335,7 @@ function ModulePageInner({ slug }: { slug: string }) {
   const handleSelectChapter = (chSlug: string) => {
     setActiveChapterSlug(chSlug)
     router.replace(`/explore/modules/${slug}?chapter=${chSlug}`, { scroll: false })
+    window.scrollTo({ top: 0 })
     const idx = data?.chapters.findIndex(c => c.slug === chSlug) ?? -1
     trackEvent(EVENT_CHAPTER_OPENED, { module_slug: slug, chapter_slug: chSlug, chapter_index: idx >= 0 ? idx : undefined })
   }
@@ -340,18 +344,24 @@ function ModulePageInner({ slug }: { slug: string }) {
     handleSelectChapter(chSlug)
   }
 
+  // Poll the collected heading refs into state once per chapter render pass
+  // so the right-rail mini-TOC picks them up after ChapterBody mounts.
+  useEffect(() => {
+    const t = setTimeout(() => setHeadings(headingsRef.current), 50)
+    return () => clearTimeout(t)
+  }, [activeChapterSlug, data])
+
   if (isLoading) {
     return (
-      <div className="flex h-full animate-pulse">
-        <div className="w-[220px] border-r border-outline-variant p-3 space-y-2">
-          <div className="h-5 rounded bg-surface-container w-3/4" />
-          <div className="h-3 rounded bg-surface-container w-1/2" />
-          {Array(7).fill(0).map((_, i) => <div key={i} className="h-9 rounded-lg bg-surface-container" />)}
+      <div className="mx-auto flex max-w-[1400px] animate-pulse gap-8 px-6 py-7">
+        <div className="hidden lg:block w-[240px] shrink-0 space-y-2">
+          <div className="h-10 rounded bg-surface-container" />
+          {Array(6).fill(0).map((_, i) => <div key={i} className="h-9 rounded-lg bg-surface-container" />)}
         </div>
-        <div className="flex-1 p-6 space-y-4">
-          <div className="h-28 rounded-xl bg-surface-container" />
-          <div className="h-4 rounded bg-surface-container w-3/4" />
-          <div className="h-4 rounded bg-surface-container w-full" />
+        <div className="flex-1 max-w-[720px] mx-auto space-y-4">
+          <div className="h-8 w-3/4 rounded bg-surface-container" />
+          <div className="h-4 rounded bg-surface-container" />
+          <div className="h-4 w-full rounded bg-surface-container" />
         </div>
       </div>
     )
@@ -370,49 +380,48 @@ function ModulePageInner({ slug }: { slug: string }) {
   const completedCount = chapters.filter(c => c.is_completed).length
 
   return (
-    <div className="flex flex-col h-[calc(100vh-52px)] overflow-hidden">
-      {/* Top back-navigation bar */}
-      <div className="h-11 flex items-center px-4 border-b border-outline-variant flex-shrink-0 bg-background">
-        <BackButton href="/explore/modules" label="Back to Guides" />
+    <div
+      className="min-h-screen bg-page-field font-body"
+      data-hatch-context-root
+      data-hatch-page-type="learning_module"
+      data-hatch-entity-id={slug}
+      data-hatch-active-chapter={activeChapterSlug ?? undefined}
+    >
+      <div className="hidden items-center gap-2 border-b border-hairline bg-surface-container-low px-4 py-2 lg:flex">
+        <BackCrumb href="/explore/modules" label="Guides" />
       </div>
 
-      {/* Three-column body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="mx-auto flex max-w-[1400px] items-start gap-8 px-6 pb-24 pt-6">
+        <TocRail
+          module={module}
+          chapters={chapters}
+          activeSlug={activeChapterSlug}
+          completedCount={completedCount}
+          onSelect={handleSelectChapter}
+          backHref="/explore/modules"
+        />
 
-        {/* LEFT: Chapter list */}
-        <div className="w-[220px] flex-shrink-0 border-r border-outline-variant flex flex-col overflow-hidden">
-          <ModuleMiniHeader module={module} />
-          <ChapterList chapters={chapters} activeSlug={activeChapterSlug} onSelect={handleSelectChapter} />
-        </div>
-
-        {/* MIDDLE: Chapter content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="min-w-0 flex-1" data-hatch-page-title>
           {activeChapterSlug ? (
-            <ChapterPane
+            <ReadingColumn
               moduleSlug={slug}
+              module={module}
               chapterSlug={activeChapterSlug}
-              moduleData={data}
+              chapters={chapters}
               onNext={handleNext}
               onComplete={refetch}
+              bodyRef={bodyRef}
+              headingsRef={headingsRef}
             />
           ) : (
-            <ChapterEmptyState />
+            <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 text-center">
+              <HatchImage state="idle" size={56} />
+              <p className="font-body text-sm font-bold text-ink-muted">Select a chapter to start reading</p>
+            </div>
           )}
-        </div>
+        </main>
 
-        {/* RIGHT: Sidebar */}
-        <div className="w-[240px] flex-shrink-0 border-l border-outline-variant overflow-y-auto p-3 space-y-3">
-          {/* Hatch tip */}
-          <div className="flex items-start gap-2.5 bg-primary-fixed rounded-xl p-3">
-            <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
-            <p className="text-[11px] text-on-surface leading-relaxed">
-              <span className="font-bold">Hatch tip:</span> Complete chapters in order - each builds on the last.
-            </p>
-          </div>
-
-          <ProgressCard module={module} completedCount={completedCount} />
-          <AfterThisModule currentSlug={slug} />
-        </div>
+        <ReaderRail module={module} chapters={chapters} activeChapterSlug={activeChapterSlug} headings={headings} />
       </div>
     </div>
   )
@@ -423,7 +432,7 @@ function ModulePageInner({ slug }: { slug: string }) {
 export default function LearnModulePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
   return (
-    <Suspense fallback={<div className="flex h-full animate-pulse bg-surface-container" />}>
+    <Suspense fallback={<div className="min-h-screen animate-pulse bg-page-field" />}>
       <ModulePageInner slug={slug} />
     </Suspense>
   )

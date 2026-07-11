@@ -5,11 +5,12 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
+import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp } from 'lucide-react'
 import type { AutopsyProductDetail, AarrrStageContent } from '@/lib/types'
 import { BackCrumb } from '@/components/navigation/BackButton'
-import { ReaderRail } from '@/components/showcase/reader/ReaderRail'
-import { ReaderDock } from '@/components/showcase/reader/ReaderDock'
 import { ResumeBanner } from '@/components/showcase/reader/ResumeBanner'
+import { ProgressRing } from '@/components/redesign/ProgressRing'
+import { NoteCard } from '@/components/redesign/NoteCard'
 import { useReaderResume } from '@/hooks/useReaderResume'
 import { trackEvent } from '@/lib/posthog/client'
 import {
@@ -17,12 +18,6 @@ import {
   EVENT_AUTOPSY_SECTION_VIEWED,
   EVENT_AUTOPSY_FINISHED,
 } from '@/lib/posthog/events'
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function splitWords(text: string): string[] {
-  return text.split(' ')
-}
 
 // ─── Local content types ──────────────────────────────────────────────────────
 
@@ -38,6 +33,14 @@ interface ClosingContent {
   summary: string
   cta_text: string
   cta_path: string
+}
+
+export interface PracticeLinkCard {
+  id: string
+  title: string
+  href: string
+  disciplineLabel: string
+  difficultyLabel: string | null
 }
 
 // ─── Stage data extracted from sections ──────────────────────────────────────
@@ -83,17 +86,6 @@ function animateMetric(el: HTMLElement, rawValue: string) {
   })
 }
 
-// ─── Role color map ───────────────────────────────────────────────────────────
-
-const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
-  PM:     { bg: '#ede9fe', text: '#5b21b6' },
-  ENG:    { bg: '#dbeafe', text: '#1e40af' },
-  DATA:   { bg: '#d1fae5', text: '#065f46' },
-  DESIGN: { bg: '#fce7f3', text: '#9d174d' },
-  OPS:    { bg: '#ffedd5', text: '#c2410c' },
-}
-
-
 // ─── Go Deeper collapsible ────────────────────────────────────────────────────
 
 function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColor: string }) {
@@ -101,76 +93,51 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
   const gd = stage.go_deeper
   if (!gd) return null
 
-  const sectionLabelStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-label)',
-    fontSize: 10,
-    fontWeight: 800,
-    letterSpacing: '0.12em',
-    textTransform: 'uppercase',
-    color: '#9c9589',
-    marginBottom: 12,
-    paddingBottom: 8,
-    borderBottom: '1px solid #e7dfc9',
-  }
-
   return (
-    <div
-      style={{
-        border: '1px solid #e7dfc9',
-        borderRadius: 14,
-        overflow: 'hidden',
-        marginTop: 36,
-        background: '#f8f5ef',
-      }}
-    >
+    <div className="mt-9 overflow-hidden rounded-[14px] border border-hairline bg-page-field">
       <button
         onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          padding: '18px 22px',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          textAlign: 'left',
-        }}
+        className="flex w-full items-center gap-3 px-[22px] py-[18px] text-left"
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 18, color: accentColor }}>
-          {open ? 'expand_less' : 'expand_more'}
-        </span>
-        <span style={{ fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 700, color: '#2e3230', letterSpacing: '0.04em' }}>
-          Go Deeper
-        </span>
-        <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: '#9c9589', marginLeft: 'auto' }}>
-          Metrics · System Design · Do&apos;s &amp; Don&apos;ts
+        {open ? (
+          <ChevronUp size={18} strokeWidth={1.8} color={accentColor} />
+        ) : (
+          <ChevronDown size={18} strokeWidth={1.8} color={accentColor} />
+        )}
+        <span className="font-label text-[13px] font-bold tracking-[0.04em] text-ink-strong">Go Deeper</span>
+        <span className="ml-auto font-label text-[11px] text-ink-muted">
+          Metrics &middot; System Design &middot; Do&apos;s &amp; Don&apos;ts
         </span>
       </button>
 
       {open && (
-        <div style={{ padding: '0 22px 24px', display: 'flex', flexDirection: 'column', gap: 28 }}>
-
-          {/* Metric definitions */}
+        <div className="flex flex-col gap-7 px-[22px] pb-6">
           {(gd.metric_definitions ?? []).length > 0 && (
             <div>
-              <div style={sectionLabelStyle}>Key Metric Definitions</div>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
+              <div className="mb-3 border-b border-hairline pb-2 font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink-muted">
+                Key Metric Definitions
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-[12.5px]">
                   <thead>
-                    <tr style={{ background: '#2e3230' }}>
+                    <tr className="bg-forest-950">
                       {['Metric', 'Definition', 'How to Calculate', 'Healthy Range'].map(col => (
-                        <th key={col} style={{ padding: '8px 12px', color: '#fff', fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 700, textAlign: 'left', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{col}</th>
+                        <th
+                          key={col}
+                          className="whitespace-nowrap px-3 py-2 text-left font-label text-[10px] font-bold uppercase tracking-[0.08em] text-white"
+                        >
+                          {col}
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {(gd.metric_definitions ?? []).map((m, i) => (
-                      <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#f8f5ef', borderBottom: '1px solid #e7dfc9' }}>
-                        <td style={{ padding: '9px 12px', fontWeight: 600, color: '#2e3230', fontFamily: 'var(--font-label)', fontSize: 12, whiteSpace: 'nowrap' }}>{m.metric}</td>
-                        <td style={{ padding: '9px 12px', color: '#4a4e4a', fontFamily: 'var(--font-body)', lineHeight: 1.5 }}>{m.definition}</td>
-                        <td style={{ padding: '9px 12px', color: '#4a4e4a', fontFamily: 'var(--font-body)', lineHeight: 1.5 }}>{m.how_to_calculate}</td>
-                        <td style={{ padding: '9px 12px', color: '#4a4e4a', fontFamily: 'var(--font-body)', lineHeight: 1.5 }}>{m.healthy_range}</td>
+                      <tr key={i} className={cn('border-b border-hairline', i % 2 === 0 ? 'bg-card-bright' : 'bg-page-field')}>
+                        <td className="whitespace-nowrap px-3 py-2.5 font-label text-xs font-semibold text-ink-strong">{m.metric}</td>
+                        <td className="px-3 py-2.5 font-body leading-[1.5] text-ink-secondary">{m.definition}</td>
+                        <td className="px-3 py-2.5 font-body leading-[1.5] text-ink-secondary">{m.how_to_calculate}</td>
+                        <td className="px-3 py-2.5 font-body leading-[1.5] text-ink-secondary">{m.healthy_range}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -179,24 +146,30 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
             </div>
           )}
 
-          {/* System design */}
           {gd.system_design && (
             <div>
-              <div style={sectionLabelStyle}>System Design</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="mb-3 border-b border-hairline pb-2 font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink-muted">
+                System Design
+              </div>
+              <div className="flex flex-col gap-2.5">
                 {(gd.system_design.components ?? []).map((c, i) => (
-                  <div key={i} style={{ background: '#fff', borderRadius: 10, padding: '14px 16px', border: '1px solid #e7dfc9' }}>
-                    <div style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 700, color: '#2e3230', marginBottom: 6 }}>{c.component}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#4a4e4a', lineHeight: 1.55, marginBottom: 6 }}>{c.what_it_does}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#78715f', lineHeight: 1.5, fontStyle: 'italic' }}>{c.key_technologies}</div>
+                  <div key={i} className="rounded-[10px] border border-hairline bg-card-bright px-4 py-3.5">
+                    <div className="mb-1.5 font-label text-xs font-bold text-ink-strong">{c.component}</div>
+                    <div className="mb-1.5 font-body text-[12.5px] leading-[1.55] text-ink-secondary">{c.what_it_does}</div>
+                    <div className="font-body text-xs italic leading-[1.5] text-ink-muted">{c.key_technologies}</div>
                   </div>
                 ))}
               </div>
               {(gd.system_design.links ?? []).length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+                <div className="mt-3 flex flex-wrap gap-2">
                   {(gd.system_design.links ?? []).map((lk, i) => (
-                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #e7dfc9', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontFamily: 'var(--font-label)', color: '#2e3230' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, background: '#e4e0d8', borderRadius: 4, padding: '1px 6px', color: '#4a4e4a' }}>{lk.tag}</span>
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-1.5 font-label text-[11px] text-ink-strong"
+                    >
+                      <span className="rounded bg-surface-container-highest px-1.5 py-px font-label text-[10px] font-bold text-ink-secondary">
+                        {lk.tag}
+                      </span>
                       {lk.label}
                     </span>
                   ))}
@@ -205,17 +178,18 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
             </div>
           )}
 
-          {/* Failures */}
           {(gd.failures ?? []).length > 0 && (
             <div>
-              <div style={{ ...sectionLabelStyle, color: '#b83230', borderBottomColor: '#ffd5d6' }}>What Didn&apos;t Work</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+              <div className="mb-3 border-b border-[#ffd5d6] pb-2 font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-error">
+                What Didn&apos;t Work
+              </div>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
                 {(gd.failures ?? []).map((f, i) => (
-                  <div key={i} style={{ background: '#fff5f5', borderRadius: 12, padding: '16px 18px' }}>
-                    <div style={{ fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 700, color: '#b83230', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{f.name}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#2e3230', marginBottom: 8, lineHeight: 1.55 }}>{f.what}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 11.5, color: '#6b6358', lineHeight: 1.5, borderTop: '1px solid #ffd5d6', paddingTop: 8 }}>
-                      <strong style={{ color: '#b83230' }}>Lesson: </strong>{f.lesson}
+                  <div key={i} className="rounded-xl bg-[#fff5f5] px-[18px] py-4">
+                    <div className="mb-1.5 font-label text-[10px] font-bold uppercase tracking-[0.08em] text-error">{f.name}</div>
+                    <div className="mb-2 font-body text-[12.5px] leading-[1.55] text-ink-strong">{f.what}</div>
+                    <div className="border-t border-[#ffd5d6] pt-2 font-body text-[11.5px] leading-[1.5] text-ink-secondary">
+                      <strong className="text-error">Lesson: </strong>{f.lesson}
                     </div>
                   </div>
                 ))}
@@ -223,27 +197,42 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
             </div>
           )}
 
-          {/* Do / Don't */}
           {gd.do_dont && (
             <div>
-              <div style={sectionLabelStyle}>Do&apos;s &amp; Don&apos;ts</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', borderTop: '4px solid #27ae60' }}>
-                  <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: '#27ae60', marginBottom: 12, letterSpacing: '0.08em' }}>DO</div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="mb-3 border-b border-hairline pb-2 font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink-muted">
+                Do&apos;s &amp; Don&apos;ts
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-xl border-t-4 border-forest-600 bg-card-bright px-5 py-[18px]">
+                  <div className="mb-3 font-label text-[11px] font-extrabold tracking-[0.08em] text-forest-600">DO</div>
+                  <ul className="m-0 flex list-none flex-col gap-2 p-0">
                     {(gd.do_dont.dos ?? []).map((item, i) => (
-                      <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#4a4e4a', lineHeight: 1.55, paddingBottom: 8, borderBottom: i < (gd.do_dont!.dos ?? []).length - 1 ? '1px solid #f0ece4' : 'none' }}>
-                        <span style={{ color: '#27ae60', fontWeight: 700, marginRight: 6 }}>✓</span>{item}
+                      <li
+                        key={i}
+                        className={cn(
+                          'font-body text-[12.5px] leading-[1.55] text-ink-secondary pb-2',
+                          i < (gd.do_dont!.dos ?? []).length - 1 && 'border-b border-hairline'
+                        )}
+                      >
+                        <Check size={13} strokeWidth={2.4} className="mr-1.5 inline text-forest-600" />
+                        {item}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', borderTop: '4px solid #e74c3c' }}>
-                  <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: '#e74c3c', marginBottom: 12, letterSpacing: '0.08em' }}>DON&apos;T</div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="rounded-xl border-t-4 border-error bg-card-bright px-5 py-[18px]">
+                  <div className="mb-3 font-label text-[11px] font-extrabold tracking-[0.08em] text-error">DON&apos;T</div>
+                  <ul className="m-0 flex list-none flex-col gap-2 p-0">
                     {(gd.do_dont.donts ?? []).map((item, i) => (
-                      <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#4a4e4a', lineHeight: 1.55, paddingBottom: 8, borderBottom: i < (gd.do_dont!.donts ?? []).length - 1 ? '1px solid #f0ece4' : 'none' }}>
-                        <span style={{ color: '#e74c3c', fontWeight: 700, marginRight: 6 }}>✗</span>{item}
+                      <li
+                        key={i}
+                        className={cn(
+                          'font-body text-[12.5px] leading-[1.55] text-ink-secondary pb-2',
+                          i < (gd.do_dont!.donts ?? []).length - 1 && 'border-b border-hairline'
+                        )}
+                      >
+                        <span className="mr-1.5 font-bold text-error">&times;</span>
+                        {item}
                       </li>
                     ))}
                   </ul>
@@ -252,25 +241,34 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
             </div>
           )}
 
-          {/* Competitor table */}
           {gd.competitor_table && (
             <div>
-              <div style={{ ...sectionLabelStyle, color: '#1a4a8a', borderBottomColor: '#d8e4f5' }}>vs. The Competition</div>
-              <div style={{ overflowX: 'auto', borderRadius: 12, border: '1px solid #d8e4f5' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
+              <div className="mb-3 border-b border-[#d8e4f5] pb-2 font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#1a4a8a]">
+                vs. The Competition
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-[#d8e4f5]">
+                <table className="w-full border-collapse text-[12.5px]">
                   <thead>
-                    <tr style={{ background: '#1a4a8a' }}>
+                    <tr className="bg-[#1a4a8a]">
                       {(gd.competitor_table.columns ?? []).map((col, i) => (
-                        <th key={i} style={{ padding: '10px 14px', color: '#fff', fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, textAlign: 'left' }}>{col}</th>
+                        <th key={i} className="px-3.5 py-2.5 text-left font-label text-[11px] font-semibold text-white">
+                          {col}
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {(gd.competitor_table.rows ?? []).map((row, ri) => (
-                      <tr key={ri} style={{ background: ri % 2 === 0 ? '#fff' : '#f5f8ff', borderBottom: '1px solid #e8eef8' }}>
-                        <td style={{ padding: '9px 14px', fontWeight: 600, color: '#1a4a8a', fontFamily: 'var(--font-label)', fontSize: 12 }}>{row.dimension}</td>
+                      <tr key={ri} className={cn('border-b border-[#e8eef8]', ri % 2 === 0 ? 'bg-card-bright' : 'bg-[#f5f8ff]')}>
+                        <td className="px-3.5 py-2.5 font-label text-xs font-semibold text-[#1a4a8a]">{row.dimension}</td>
                         {(row.values ?? []).map((v, vi) => (
-                          <td key={vi} style={{ padding: '9px 14px', fontFamily: 'var(--font-body)', color: v.outcome === 'win' ? '#1a7a3a' : v.outcome === 'loss' ? '#b0192a' : '#8a6a00', fontWeight: v.outcome === 'tie' ? 400 : 600 }}>
+                          <td
+                            key={vi}
+                            className={cn(
+                              'px-3.5 py-2.5 font-body',
+                              v.outcome === 'win' ? 'text-forest-600 font-semibold' : v.outcome === 'loss' ? 'font-semibold text-error' : 'text-[#8a6a00]'
+                            )}
+                          >
                             {v.text}
                           </td>
                         ))}
@@ -281,94 +279,77 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
               </div>
             </div>
           )}
-
         </div>
       )}
     </div>
   )
 }
 
-// ─── Practice Prompts ─────────────────────────────────────────────────────────
+// ─── Practice Prompts (on-the-job / interview-prep, per-stage real content) ──
 
 function PracticePrompts({ stage }: { stage: AarrrStageContent }) {
   const pp = stage.practice_prompts
   if (!pp) return null
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginTop: 36 }}>
+    <div className="mt-9 grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
       {[
-        { label: '🏢 On the Job', card: pp.on_the_job, bg: '#1e3a2f' },
-        { label: '🎯 Interview Prep', card: pp.interview_prep, bg: '#2e3230' },
-      ].map(({ label, card, bg }) => (
-        <div key={label} style={{ background: bg, borderRadius: 16, padding: '26px 28px' }}>
-          <div style={{ fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 10 }}>{label}</div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 700, color: '#fff', lineHeight: 1.5, marginBottom: 12 }}>{card.question}</div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginBottom: 0 }}>{card.guidance}</div>
-          <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.1)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', lineHeight: 1.5 }}>{card.hint}</div>
+        { label: 'On the job', card: pp.on_the_job },
+        { label: 'Interview prep', card: pp.interview_prep },
+      ].map(({ label, card }) => (
+        <div key={label} className="rounded-2xl bg-forest-950 px-7 py-[26px]">
+          <div className="mb-2.5 font-label text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">{label}</div>
+          <div className="mb-3 font-body text-sm font-bold leading-[1.5] text-white">{card.question}</div>
+          <div className="font-body text-[13px] leading-[1.6] text-white/55">{card.guidance}</div>
+          <div className="mt-3.5 border-t border-white/10 pt-3.5 font-body text-xs italic leading-[1.5] text-white/30">{card.hint}</div>
         </div>
       ))}
     </div>
   )
 }
 
-// ─── Stage Section ────────────────────────────────────────────────────────────
+// ─── Stage Section (light 3-zone reading column content) ────────────────────
 
 interface StageSectionProps {
   stage: AarrrStageContent
+  stageIndex: number
+  totalStages: number
   accentColor: string
-  isEven: boolean
   sectionRef: (el: HTMLDivElement | null) => void
   sectionId: string
+  onNextStage?: () => void
 }
 
-function StageSection({ stage, accentColor, isEven, sectionRef, sectionId }: StageSectionProps) {
-  const headerRef = useRef<HTMLDivElement>(null)
-  const labelRef = useRef<HTMLSpanElement>(null)
-  const questionRef = useRef<HTMLParagraphElement>(null)
+function StageSection({ stage, stageIndex, totalStages, accentColor, sectionRef, sectionId, onNextStage }: StageSectionProps) {
   const narrativeRef = useRef<HTMLDivElement>(null)
   const metricsRef = useRef<HTMLDivElement>(null)
   const warRoomRef = useRef<HTMLDivElement>(null)
-  const dividerRef = useRef<HTMLDivElement>(null)
   const metricValueRefs = useRef<HTMLSpanElement[]>([])
 
   useEffect(() => {
+    const sectionEl = narrativeRef.current?.closest('[data-stage-section]') as HTMLElement | null
+    if (!sectionEl) return
     const ctx = gsap.context(() => {
-      const sectionEl = headerRef.current?.closest('[data-stage-section]') as HTMLElement
-      if (!sectionEl) return
-
       const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionEl,
-          start: 'top 72%',
-          once: true,
-        },
+        scrollTrigger: { trigger: sectionEl, start: 'top 75%', once: true },
       })
-
-      if (dividerRef.current) {
-        tl.fromTo(dividerRef.current, { scaleX: 0, transformOrigin: 'left' }, { scaleX: 1, duration: 0.6, ease: 'power3.out' }, 0)
-      }
-      if (labelRef.current) {
-        tl.fromTo(labelRef.current, { x: 20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-      }
-      if (questionRef.current) {
-        tl.fromTo(questionRef.current, { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'power2.out' }, 0.22)
-      }
       if (narrativeRef.current) {
-        tl.fromTo(narrativeRef.current, { y: 12, opacity: 0, filter: 'blur(6px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.7, ease: 'power2.out' }, 0.4)
+        tl.fromTo(narrativeRef.current, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0)
       }
       if (metricsRef.current) {
-        const cards = metricsRef.current.querySelectorAll('[data-metric-card]')
-        tl.fromTo(cards, { y: 28, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.09, ease: 'back.out(1.4)' }, 0.5)
+        const cards = metricsRef.current.querySelectorAll('[data-metric-cell]')
+        tl.fromTo(cards, { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.08, ease: 'power2.out' }, 0.1)
         tl.call(() => {
           metricValueRefs.current.forEach(el => { if (el) animateMetric(el, el.dataset.raw ?? '') })
-        }, [], 0.55)
+        }, [], 0.15)
       }
       if (warRoomRef.current) {
         const rows = warRoomRef.current.querySelectorAll('[data-war-row]')
-        tl.fromTo(rows, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.07, ease: 'power2.out' }, 0.65)
+        tl.fromTo(rows, { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, stagger: 0.06, ease: 'power2.out' }, 0.3)
       }
     })
     return () => ctx.revert()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -377,235 +358,314 @@ function StageSection({ stage, accentColor, isEven, sectionRef, sectionId }: Sta
       data-section-id={sectionId}
       data-hatch-context={`Reading teardown stage: ${stage.stage_name}`}
       ref={sectionRef}
-      style={{ background: isEven ? '#ffffff' : '#faf6f0' }}
+      className="reading-col min-w-0"
     >
-      {/* Top divider */}
-      <div
-        ref={dividerRef}
-        style={{ height: 2, background: `linear-gradient(to right, ${accentColor}, ${accentColor}22, transparent)`, transformOrigin: 'left' }}
-      />
+      <div className="mb-3.5 font-label text-[11px] font-extrabold uppercase tracking-[0.08em] tabular-nums text-forest-700">
+        Stage {stage.stage_number} of {totalStages}
+      </div>
+      <h2 className="mb-1.5 font-headline text-[30px] font-bold leading-[1.15] tracking-[-0.01em] text-ink-strong">
+        {stage.stage_name}
+      </h2>
+      <p className="mb-[26px] font-headline text-lg italic leading-[1.4] text-forest-700">{stage.question}</p>
 
-      <div style={{ padding: '48px 56px 56px' }}>
-        {/* Stage header */}
-        <div ref={headerRef} style={{ marginBottom: 32 }}>
-          <span
-            ref={labelRef}
-            style={{
-              display: 'inline-block',
-              fontFamily: 'var(--font-label)',
-              fontSize: 11,
-              fontWeight: 800,
-              letterSpacing: '0.15em',
-              textTransform: 'uppercase',
-              color: accentColor,
-              marginBottom: 12,
-            }}
-          >
-            Stage {stage.stage_number} · {stage.stage_name}
-          </span>
-
-          <p
-            ref={questionRef}
-            style={{
-              fontFamily: 'var(--font-headline)',
-              fontSize: 28,
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              color: '#1a1612',
-              lineHeight: 1.25,
-              margin: 0,
-            }}
-          >
-            {stage.question}
-          </p>
-        </div>
-
-        {/* Narrative paragraphs */}
-        <div
-          ref={narrativeRef}
-          style={{ marginBottom: 40, maxWidth: 700 }}
-        >
+      {(stage.narrative_paragraphs ?? []).length > 0 && (
+        <div ref={narrativeRef} className="story-body">
           {(stage.narrative_paragraphs ?? []).map((para, i) => (
             <p
               key={i}
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: 16,
-                color: '#4a4e4a',
-                lineHeight: 1.8,
-                margin: '0 0 18px',
-              }}
+              className="mb-[22px] max-w-[68ch] font-headline text-[17px] leading-[1.7] text-ink-strong"
               dangerouslySetInnerHTML={{ __html: para }}
             />
           ))}
         </div>
+      )}
 
-        {/* Callout */}
-        {stage.callout && (
-          <div
-            style={{
-              background: '#fff9e6',
-              borderRadius: 12,
-              padding: '18px 22px',
-              marginBottom: 36,
-              maxWidth: 700,
-            }}
-          >
-            {stage.callout.label && (
-              <div style={{ fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 800, color: accentColor, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
-                {stage.callout.label}
-              </div>
-            )}
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: '#3a3520', lineHeight: 1.65, margin: 0 }}>
-              {stage.callout.text}
-            </p>
-          </div>
-        )}
-
-        {/* Data tables */}
-        {(stage.data_tables ?? []).map((tbl, ti) => (
-          <div key={ti} style={{ marginBottom: 36, maxWidth: 700 }}>
-            <div style={{ fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9c9589', marginBottom: 10 }}>
-              {tbl.label}
+      {stage.callout && (
+        <NoteCard tint="amber" className="mb-9 max-w-[68ch] rounded-xl px-[22px] py-[18px]">
+          {stage.callout.label && (
+            <div className="mb-2 font-label text-[10px] font-extrabold uppercase tracking-[0.1em]" style={{ color: accentColor }}>
+              {stage.callout.label}
             </div>
-            <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid #e7dfc9' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                <thead>
-                  <tr style={{ background: '#2e3230' }}>
-                    {(tbl.columns ?? []).map((col, ci) => (
-                      <th key={ci} style={{ padding: '9px 14px', color: '#fff', fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 700, textAlign: 'left', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{col}</th>
+          )}
+          <p className="m-0 font-body text-sm leading-[1.65] text-ink-strong">{stage.callout.text}</p>
+        </NoteCard>
+      )}
+
+      {(stage.data_tables ?? []).map((tbl, ti) => (
+        <div key={ti} className="mb-9 max-w-[68ch]">
+          <div className="mb-2.5 font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink-muted">{tbl.label}</div>
+          <div className="overflow-x-auto rounded-[10px] border border-hairline">
+            <table className="w-full border-collapse text-[13px]">
+              <thead>
+                <tr className="bg-forest-950">
+                  {(tbl.columns ?? []).map((col, ci) => (
+                    <th key={ci} className="whitespace-nowrap px-3.5 py-2.5 text-left font-label text-[10px] font-bold uppercase tracking-[0.08em] text-white">
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(tbl.rows ?? []).map((row, ri) => (
+                  <tr key={ri} className={cn('border-b border-hairline', ri % 2 === 0 ? 'bg-card-bright' : 'bg-page-field')}>
+                    {(row ?? []).map((cell, ci) => (
+                      <td
+                        key={ci}
+                        className={cn('px-3.5 py-2.5 font-body leading-[1.5]', ci === 0 ? 'font-semibold text-ink-strong' : 'text-ink-secondary')}
+                      >
+                        {cell}
+                      </td>
                     ))}
                   </tr>
-                </thead>
-                <tbody>
-                  {(tbl.rows ?? []).map((row, ri) => (
-                    <tr key={ri} style={{ background: ri % 2 === 0 ? '#fff' : '#faf6f0', borderBottom: '1px solid #f0ece4' }}>
-                      {(row ?? []).map((cell, ci) => (
-                        <td key={ci} style={{ padding: '9px 14px', fontFamily: 'var(--font-body)', color: ci === 0 ? '#2e3230' : '#4a4e4a', lineHeight: 1.5, fontWeight: ci === 0 ? 600 : 400 }}>{cell}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
+        </div>
+      ))}
 
-        {/* Metrics */}
-        {stage.metrics && stage.metrics.length > 0 && (
-          <div
-            ref={metricsRef}
-            style={{ display: 'flex', gap: 16, marginBottom: 40, flexWrap: 'wrap' }}
-          >
-            {(stage.metrics ?? []).map((m, i) => (
-              <div
-                key={i}
-                data-metric-card
-                style={{
-                  background: '#fff',
-                  border: '1.5px solid #e7dfc9',
-                  borderRadius: 16,
-                  padding: '20px 24px',
-                  minWidth: 140,
-                  flex: '1 1 140px',
-                  borderTop: `3px solid ${accentColor}`,
-                }}
+      {/* Metrics strip — 3-up bordered cells, per preview .metrics-strip */}
+      {stage.metrics && stage.metrics.length > 0 && (
+        <div
+          ref={metricsRef}
+          className="metrics-strip mb-11 grid overflow-hidden rounded-2xl border border-hairline bg-card-bright shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)]"
+          style={{ gridTemplateColumns: `repeat(${Math.min(stage.metrics.length, 3)}, 1fr)` }}
+        >
+          {(stage.metrics ?? []).map((m, i) => (
+            <div
+              key={i}
+              data-metric-cell
+              className={cn('flex flex-col gap-1 px-[22px] py-5', i > 0 && 'border-l border-hairline')}
+            >
+              <span
+                ref={el => { metricValueRefs.current[i] = el! }}
+                data-raw={m.value}
+                className="font-headline text-[26px] font-bold leading-[1.1] tabular-nums text-forest-800"
               >
-                <span
-                  ref={el => { metricValueRefs.current[i] = el! }}
-                  data-raw={m.value}
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-headline)',
-                    fontSize: 28,
-                    fontWeight: 800,
-                    color: accentColor,
-                    lineHeight: 1,
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {m.value}
-                </span>
-                <span style={{ display: 'block', fontFamily: 'var(--font-label)', fontSize: 11, color: '#78715f', marginTop: 6, lineHeight: 1.4 }}>
-                  {m.label}
-                </span>
+                {m.value}
+              </span>
+              <span className="font-label text-xs font-semibold text-ink-muted">{m.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* War Room — dark card, role-labeled quotes */}
+      {stage.war_room && stage.war_room.length > 0 && (
+        <div ref={warRoomRef} className="war-room mb-9 rounded-2xl bg-gradient-to-br from-forest-950 to-forest-800 px-[30px] py-7 shadow-[0_1px_2px_rgba(5,35,22,.2),0_20px_40px_-24px_rgba(5,35,22,.5)]">
+          <div className="mb-5 flex items-center gap-2.5">
+            <h4 className="m-0 font-body text-base font-bold text-[#f9faf5]">War Room</h4>
+            <span className="ml-auto font-label text-xs font-semibold uppercase tracking-[0.04em] tabular-nums text-white/55">
+              {stage.war_room.length} perspective{stage.war_room.length === 1 ? '' : 's'}
+            </span>
+          </div>
+          <div className="flex flex-col gap-4">
+            {(stage.war_room ?? []).map((row, i) => (
+              <div key={i}>
+                <div data-war-row className="flex items-start gap-3.5">
+                  <span className="w-14 shrink-0 pt-0.5 font-label text-[11px] font-extrabold uppercase tracking-[0.04em] text-mint-glow">
+                    {row.role}
+                  </span>
+                  <p className="m-0 font-headline text-[15px] italic leading-[1.55] text-[#eef2ec] before:content-['\201C'] after:content-['\201D']">
+                    {row.insight}
+                  </p>
+                </div>
+                {i < stage.war_room!.length - 1 && <div className="mt-4 h-px bg-white/10" />}
               </div>
             ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* War Room */}
-        {stage.war_room && stage.war_room.length > 0 && (
-          <div ref={warRoomRef} style={{ marginBottom: 36, maxWidth: 700 }}>
-            <div style={{ fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#c4c8bc', marginBottom: 14 }}>
-              War Room
-            </div>
-            <div style={{ background: '#f5f1ea', borderRadius: 12, overflow: 'hidden', border: '1px solid #e7dfc9' }}>
-              {(stage.war_room ?? []).map((row, i) => {
-                const roleStyle = ROLE_COLORS[row.role] ?? { bg: '#e4e0d8', text: '#4a4e4a' }
-                return (
-                  <div
-                    key={i}
-                    data-war-row
-                    style={{
-                      display: 'flex',
-                      gap: 14,
-                      padding: '12px 18px',
-                      borderBottom: i < (stage.war_room ?? []).length - 1 ? '1px solid #e7dfc9' : 'none',
-                      alignItems: 'flex-start',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-label)',
-                        fontSize: 9,
-                        fontWeight: 800,
-                        background: roleStyle.bg,
-                        color: roleStyle.text,
-                        padding: '3px 7px',
-                        borderRadius: 4,
-                        whiteSpace: 'nowrap',
-                        flexShrink: 0,
-                        marginTop: 2,
-                        letterSpacing: '0.06em',
-                      }}
-                    >
-                      {row.role}
-                    </span>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, color: '#3a3d38', lineHeight: 1.55 }}>
-                      {row.insight}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
+      <GoDeeper stage={stage} accentColor={accentColor} />
+      <PracticePrompts stage={stage} />
 
-        {/* Go Deeper (collapsible) */}
-        <GoDeeper stage={stage} accentColor={accentColor} />
+      {stage.transition && (
+        <p className="mx-0 mb-0 mt-12 text-center font-body text-[15px] italic leading-[1.6] text-ink-muted">
+          {stage.transition.text}
+        </p>
+      )}
 
-        {/* Practice Prompts */}
-        <PracticePrompts stage={stage} />
-
-        {/* Transition text */}
-        {stage.transition && (
-          <p
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 15,
-              fontStyle: 'italic',
-              color: '#9c9589',
-              textAlign: 'center',
-              margin: '48px 0 -8px',
-              lineHeight: 1.6,
-            }}
+      {/* Section footer — matches preview's next-stage-btn pattern */}
+      {onNextStage && (
+        <div className="section-footer mt-11 flex items-center justify-between border-t border-hairline pt-6">
+          <span className="font-label text-[13px] font-semibold tabular-nums text-ink-muted">
+            Stage {stage.stage_number} of {totalStages} &middot; {stage.stage_name}
+          </span>
+          <button
+            onClick={onNextStage}
+            className="flex items-center gap-2 rounded-lg bg-forest-950 px-[22px] py-3 font-body text-sm font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
           >
-            {stage.transition.text}
-          </p>
-        )}
-      </div>
+            Next stage
+            <ArrowRight size={15} strokeWidth={2.2} />
+          </button>
+        </div>
+      )}
     </div>
+  )
+}
+
+// ─── Left stage rail (sticky, ring + numbered list per preview) ─────────────
+
+interface StageRailProps {
+  stages: AarrrStageContent[]
+  activeStageIdx: number
+  scrollProgress: number
+  accentColor: string
+  productName: string
+  backHref: string
+  backLabel: string
+  onNavigate: (idx: number) => void
+}
+
+function StageRail({ stages, activeStageIdx, scrollProgress, accentColor, productName, backHref, backLabel, onNavigate }: StageRailProps) {
+  const totalWithHero = stages.length + 1
+  const currentPosition = activeStageIdx + 1 // 1 = hero
+  const ringPct = Math.round((currentPosition / totalWithHero) * 100)
+  const circumference = 2 * Math.PI * 18
+
+  return (
+    <aside className="hidden lg:flex" style={{ width: 220, flexShrink: 0, position: 'sticky', top: 67, height: 'calc(100vh - 67px)', overflowY: 'auto', flexDirection: 'column', gap: 16, paddingTop: 4 }}>
+      <Link
+        href={backHref}
+        aria-label={`Back to ${backLabel}`}
+        className="inline-flex items-center gap-1.5 font-label text-[11.5px] font-bold text-forest-700 no-underline"
+      >
+        <ArrowLeft size={14} strokeWidth={1.8} />
+        {backLabel}
+      </Link>
+
+      <div className="flex items-center gap-3 border-b border-hairline pb-3.5">
+        <div className="relative size-11 shrink-0">
+          <ProgressRing percent={ringPct} size={44} strokeWidth={5} trackColor="#eee9df" color={accentColor}>
+            <span className="font-body text-xs font-bold tabular-nums text-ink-strong">
+              {currentPosition}/{totalWithHero}
+            </span>
+          </ProgressRing>
+        </div>
+        <div>
+          <div className="text-[12.5px] font-extrabold leading-[1.3] text-ink-strong">
+            Stage {currentPosition} of {totalWithHero}
+          </div>
+          <div className="font-label text-[11px] font-semibold text-ink-muted">Reading progress</div>
+        </div>
+      </div>
+
+      <nav className="flex flex-col gap-px">
+        {['Hero', ...stages.map(s => s.stage_name)].map((name, idx) => {
+          const status = idx < activeStageIdx ? 'done' : idx === activeStageIdx ? 'current' : 'upcoming'
+          return (
+            <button
+              key={`${name}-${idx}`}
+              onClick={() => onNavigate(idx)}
+              className={cn('flex items-center gap-2.5 rounded-lg px-2 py-[7px] text-left', status === 'current' && 'bg-[#eef4ec]')}
+            >
+              {status === 'done' && (
+                <span className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-forest-600 text-white">
+                  <Check size={12} strokeWidth={2.2} />
+                </span>
+              )}
+              {status === 'current' && (
+                <span
+                  className="flex size-5 shrink-0 items-center justify-center rounded-full border-[1.4px] text-[10.5px] font-bold tabular-nums"
+                  style={{ borderColor: accentColor, color: accentColor }}
+                >
+                  {idx + 1}
+                </span>
+              )}
+              {status === 'upcoming' && (
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-full border-[1.4px] border-hairline text-[10.5px] font-bold tabular-nums text-ink-muted">
+                  {idx + 1}
+                </span>
+              )}
+              <span
+                className={cn(
+                  'text-[13.5px]',
+                  status === 'current' ? 'font-bold text-forest-800' : status === 'done' ? 'font-semibold text-ink-strong' : 'font-semibold text-ink-muted'
+                )}
+              >
+                {name}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
+      <div className="sr-only" aria-live="polite">{Math.round(scrollProgress * 100)}% read</div>
+    </aside>
+  )
+}
+
+function cn(...args: Array<string | false | null | undefined>) {
+  return args.filter(Boolean).join(' ')
+}
+
+// ─── Right rail: Practice what you read + mini-TOC ───────────────────────────
+
+interface RightRailProps {
+  practiceCards: PracticeLinkCard[]
+  stages: AarrrStageContent[]
+  activeStageIdx: number
+  onNavigate: (idx: number) => void
+}
+
+function RightRail({ practiceCards, stages, activeStageIdx, onNavigate }: RightRailProps) {
+  return (
+    <aside className="hidden lg:flex" style={{ width: 272, flexShrink: 0, position: 'sticky', top: 67, maxHeight: 'calc(100vh - 67px)', overflowY: 'auto', flexDirection: 'column', gap: 12, paddingTop: 4, paddingBottom: 24 }}>
+      {practiceCards.length > 0 && (
+        <NoteCard tint="mint" className="rounded-2xl px-4 py-4">
+          <h3 className="m-0 mb-1 font-body text-[15px] font-bold text-ink-strong">Practice what you read</h3>
+          <p className="mb-3 font-body text-xs leading-[1.45] text-ink-secondary">
+            {practiceCards.length === 1 ? 'One rep' : `${practiceCards.length} reps`} built on this story&apos;s decisions.
+          </p>
+          <div className="flex flex-col">
+            {practiceCards.map((card, i) => (
+              <Link
+                key={card.id}
+                href={card.href}
+                className={cn('block py-2.5 no-underline', i > 0 && 'border-t border-forest-600/20')}
+              >
+                <p className="m-0 mb-1.5 font-body text-[13.5px] font-bold leading-[1.35] text-ink-strong">{card.title}</p>
+                <div className="mb-2.5 flex items-center gap-2">
+                  <span className="rounded-full bg-white/70 px-2.5 py-0.5 font-label text-[10.5px] font-bold text-forest-800">
+                    {card.disciplineLabel}
+                  </span>
+                  {card.difficultyLabel && (
+                    <span className="font-label text-[11px] font-semibold text-ink-secondary">{card.difficultyLabel}</span>
+                  )}
+                </div>
+                <span className="inline-flex items-center gap-1 font-label text-[12.5px] font-bold text-forest-700">
+                  Start
+                  <ArrowRight size={12} strokeWidth={2.2} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </NoteCard>
+      )}
+
+      <div className="rounded-2xl border border-hairline bg-card-bright px-4 py-4">
+        <h3 className="m-0 mb-1 font-body text-[15px] font-bold text-ink-strong">In this story</h3>
+        <p className="mb-3 font-body text-xs leading-[1.45] text-ink-secondary">{stages.length}-stage AARRR walkthrough</p>
+        <div className="flex flex-col gap-px">
+          {['Hero', ...stages.map(s => s.stage_name)].map((name, idx) => {
+            const active = idx === activeStageIdx
+            return (
+              <button
+                key={`${name}-${idx}`}
+                onClick={() => onNavigate(idx)}
+                className={cn(
+                  'flex items-center gap-2.5 py-[7px] text-left font-body text-[13px] font-semibold',
+                  active ? 'font-bold text-forest-800' : 'text-ink-muted'
+                )}
+              >
+                <span className="size-1.5 shrink-0 rounded-full bg-current" />
+                {name}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </aside>
   )
 }
 
@@ -616,6 +676,7 @@ interface Props {
   backHref?: string
   backLabel?: string
   closingHref?: string
+  practiceCards?: PracticeLinkCard[]
 }
 
 export function AutopsyReaderClient({
@@ -623,11 +684,12 @@ export function AutopsyReaderClient({
   backHref = '/explore/autopsies',
   backLabel = 'All autopsies',
   closingHref,
+  practiceCards = [],
 }: Props) {
   const stages = getStages(product)
   const hero = getHero(product)
   const closing = getClosing(product)
-  const accentColor = (hero?.accent_color ?? product.cover_color) || '#FF5A5F'
+  const accentColor = (hero?.accent_color ?? product.cover_color) || '#4a7c59'
 
   const [activeStageIdx, setActiveStageIdx] = useState(0)
   const [scrollProgress, setScrollProgress] = useState(0)
@@ -637,7 +699,6 @@ export function AutopsyReaderClient({
   const heroTitleRef = useRef<HTMLHeadingElement>(null)
   const heroMetaRef = useRef<HTMLDivElement>(null)
   const heroTaglineRef = useRef<HTMLParagraphElement>(null)
-  const railRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
   const closingRef = useRef<HTMLDivElement>(null)
   const closingTextRef = useRef<HTMLParagraphElement>(null)
@@ -654,27 +715,25 @@ export function AutopsyReaderClient({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // "Practice what you read" cards arrive resolved from the server page
+  // (resolvePracticeCards) — the rail panel omits itself when empty.
+
   useEffect(() => {
     if (!heroRef.current) return
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-
       if (heroBgRef.current) {
         tl.fromTo(heroBgRef.current, { scaleX: 0, transformOrigin: 'left' }, { scaleX: 1, duration: 0.7 }, 0)
       }
       if (heroTitleRef.current) {
-        const words = heroTitleRef.current.querySelectorAll('[data-word]')
-        tl.fromTo(words, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger: 0.04 }, 0.35)
+        tl.fromTo(heroTitleRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55 }, 0.2)
       }
       if (heroTaglineRef.current) {
-        tl.fromTo(heroTaglineRef.current, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 0.6)
+        tl.fromTo(heroTaglineRef.current, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 0.4)
       }
       if (heroMetaRef.current) {
         const chips = heroMetaRef.current.querySelectorAll('[data-chip]')
-        tl.fromTo(chips, { x: -16, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.07 }, 0.75)
-      }
-      if (railRef.current) {
-        tl.fromTo(railRef.current, { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5 }, 0.8)
+        tl.fromTo(chips, { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.06 }, 0.1)
       }
     }, heroRef)
     return () => ctx.revert()
@@ -690,17 +749,11 @@ export function AutopsyReaderClient({
           trigger: el,
           start: 'top center',
           end: 'bottom center',
-          onEnter: (self) => {
+          onEnter: () => {
             setActiveStageIdx(idx)
-            // self.progress is 0 at start of overall page scroll body — capture current body progress
             const bodyTrigger = ScrollTrigger.getById('autopsy-body')
             const pct = bodyTrigger ? Math.round(bodyTrigger.progress * 100) : 0
-            trackEvent(EVENT_AUTOPSY_SECTION_VIEWED, {
-              slug,
-              section_index: idx,
-              pct,
-            })
-            void self
+            trackEvent(EVENT_AUTOPSY_SECTION_VIEWED, { slug, section_index: idx, pct })
           },
           onEnterBack: () => setActiveStageIdx(idx),
         })
@@ -708,6 +761,7 @@ export function AutopsyReaderClient({
 
       if (scrollBodyRef.current) {
         ScrollTrigger.create({
+          id: 'autopsy-body',
           trigger: scrollBodyRef.current,
           start: 'top top',
           end: 'bottom bottom',
@@ -729,45 +783,44 @@ export function AutopsyReaderClient({
         scrollTrigger: { trigger: closingRef.current, start: 'top 75%', once: true },
       })
       if (closingTextRef.current) {
-        const words = closingTextRef.current.querySelectorAll('[data-word]')
-        tl.fromTo(words, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.018, ease: 'power2.out' }, 0)
+        tl.fromTo(closingTextRef.current, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 0)
       }
       if (closingCtaRef.current) {
-        tl.fromTo(closingCtaRef.current, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }, 0.8)
+        tl.fromTo(closingCtaRef.current, { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }, 0.3)
       }
     })
     return () => ctx.revert()
   }, [])
 
   function jumpToStage(idx: number) {
+    if (idx === -1) {
+      gsap.to(window, { scrollTo: { y: heroRef.current ?? 0, offsetY: 68 }, duration: 0.85, ease: 'power3.inOut' })
+      return
+    }
     const el = sectionRefs.current[idx]
     if (!el) return
     gsap.to(window, { scrollTo: { y: el, offsetY: 68 }, duration: 0.85, ease: 'power3.inOut' })
   }
 
-  const heroWords = splitWords(hero?.product_name ?? product.name)
-  const closingWords = closing ? splitWords(closing.summary) : []
+  // Rail index 0 = hero. Stage index N maps to rail index N+1.
+  function navigateToRailIndex(railIdx: number) {
+    if (railIdx === 0) {
+      gsap.to(window, { scrollTo: { y: 0 }, duration: 0.85, ease: 'power3.inOut' })
+      return
+    }
+    jumpToStage(railIdx - 1)
+  }
 
-  // Shared rail / dock wiring. The reader keeps its GSAP-driven activeStageIdx;
-  // we adapt it to the section-id contract the shared components expect.
   const productName = hero?.product_name ?? product.name
   const story = product.stories?.[0]
-  const railItems = stages.map((s, i) => ({
-    id: `stage-${i}`,
-    label: s.stage_name,
-    sub: `Stage ${s.stage_number}`,
-  }))
+  const railItemIds = ['hero', ...stages.map((_, i) => `stage-${i}`)]
   const activeSectionId = `stage-${activeStageIdx}`
-  const navById = (id: string) => {
-    const idx = railItems.findIndex(it => it.id === id)
-    if (idx >= 0) jumpToStage(idx)
-  }
 
   const [persistReady, setPersistReady] = useState(false)
   const { resumeSection, resumeScrollPct, showResumeBanner, dismissBanner, clearResume, restored } =
     useReaderResume({
       storyKey: `${product.slug}/${story?.slug ?? 'aarrr'}`,
-      sectionIds: railItems.map(it => it.id),
+      sectionIds: railItemIds,
       activeId: activeSectionId,
       scrollPct: scrollProgress * 100,
       canPersist: persistReady,
@@ -776,120 +829,121 @@ export function AutopsyReaderClient({
   const didRestoreRef = useRef(false)
   useEffect(() => {
     if (didRestoreRef.current) return
-    // Wait for the hook's mount-read to finish before deciding.
     if (!restored) return
     if (resumeScrollPct == null) {
       const t = setTimeout(() => setPersistReady(true), 0)
       return () => clearTimeout(t)
     }
     didRestoreRef.current = true
-    // Restore by scroll percentage (reliable) rather than section element.
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight
     if (maxScroll > 0) {
       window.scrollTo({ top: Math.round((resumeScrollPct / 100) * maxScroll), behavior: 'auto' })
     }
-    // Let the programmatic scroll + GSAP ScrollTrigger settle before writing.
     const t = setTimeout(() => setPersistReady(true), 600)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeScrollPct, restored])
-  const resumeLabel = railItems.find(it => it.id === resumeSection)?.label ?? 'where you left off'
+
+  const resumeLabel = (() => {
+    if (resumeSection === 'hero') return 'Hero'
+    const idx = stages.findIndex((_, i) => `stage-${i}` === resumeSection)
+    return idx >= 0 ? stages[idx].stage_name : 'where you left off'
+  })()
+
+  const heroChips = [
+    'Product Autopsy',
+    `${stages.length} Stages`,
+    hero?.meta?.split('·').pop()?.trim() ?? story?.read_time ?? null,
+  ].filter((c): c is string => Boolean(c))
 
   return (
-    <div style={{ minHeight: '100vh', background: '#faf6f0', fontFamily: 'var(--font-body)' }}>
-      {/* Back bar - single link to the company hub, matching the other autopsy
-          readers. Desktop-only: below lg the sticky progress header owns this
-          band (its product name links back instead). In normal flow — the old
-          fixed top-[52px] band sat under the ~67px TopNav and cropped content. */}
-      <div className="hidden lg:flex items-center px-4 py-2 gap-2 bg-surface-container-low border-b border-outline-variant/40">
+    <div className="min-h-screen bg-page-field font-body">
+      {/* Back bar — desktop-only; the sticky stage rail also carries a back link. */}
+      <div className="hidden items-center gap-2 border-b border-hairline bg-surface-container-low px-4 py-2 lg:flex">
         <BackCrumb href={`/explore/autopsies/${product.slug}`} label={product.name} />
       </div>
+
       {/* Mobile sticky progress header */}
       <div
-        style={{
-          position: 'sticky',
-          top: 48,
-          zIndex: 30,
-          background: '#faf6f0',
-          borderBottom: '1px solid #e7dfc9',
-          padding: '10px 20px 8px',
-          alignItems: 'center',
-          gap: 12,
-        }}
-        className="flex lg:hidden"
+        className="sticky z-30 flex items-center gap-3 border-b border-hairline bg-page-field px-5 pb-2 pt-2.5 lg:hidden"
+        style={{ top: 48 }}
       >
         <Link
           href={`/explore/autopsies/${product.slug}`}
-          style={{ fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 800, color: accentColor, display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', flexShrink: 0 }}
           aria-label={`Back to ${product.name}`}
+          className="inline-flex shrink-0 items-center gap-1 font-label text-[13px] font-extrabold no-underline"
+          style={{ color: accentColor }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }} aria-hidden="true">arrow_back</span>
+          <ArrowLeft size={14} strokeWidth={1.8} />
           {product.name}
         </Link>
-        <div style={{ flex: 1, height: 3, background: '#e7dfc9', borderRadius: 99, overflow: 'hidden' }}>
-          <div style={{ height: '100%', background: accentColor, width: `${scrollProgress * 100}%`, borderRadius: 99, transition: 'width 100ms linear' }} />
+        <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-hairline">
+          <div
+            className="h-full rounded-full transition-[width] duration-100 ease-linear"
+            style={{ background: accentColor, width: `${scrollProgress * 100}%` }}
+          />
         </div>
-        <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: '#78715f', flexShrink: 0 }}>
+        <span className="shrink-0 font-label text-[11px] text-ink-secondary">
           {activeStageIdx + 1}/{stages.length}
         </span>
       </div>
 
-      {/* Layout wrapper */}
-      <div ref={scrollBodyRef} style={{ display: 'flex', alignItems: 'flex-start' }}>
-        {/* Left sticky rail (desktop only) — shared across autopsy + teardown readers.
-            alignSelf:stretch grows this wrapper to the full flex-row height so the inner
-            sticky <aside> has scroll runway (parent sets align-items:flex-start). */}
-        <div ref={railRef} className="hidden lg:block" style={{ alignSelf: 'stretch' }}>
-          <ReaderRail
-            variant="aarrr"
-            items={railItems}
-            activeId={activeSectionId}
-            scrollPct={scrollProgress * 100}
-            title={productName}
-            kicker="Product Teardown"
-            accent={accentColor}
-            backHref={backHref}
-            backLabel={backLabel}
-            onNavigate={navById}
-          />
-        </div>
+      {/* 3-zone reader shell */}
+      <div ref={scrollBodyRef} className="mx-auto flex max-w-[1400px] items-start gap-8 px-6 pb-24 pt-7">
+        <StageRail
+          stages={stages}
+          activeStageIdx={activeStageIdx}
+          scrollProgress={scrollProgress}
+          accentColor={accentColor}
+          productName={productName}
+          backHref={backHref}
+          backLabel={backLabel}
+          onNavigate={navigateToRailIndex}
+        />
 
-        {/* Main content */}
-        <main style={{ flex: 1, minWidth: 0 }}>
+        <main className="min-w-0 flex-1">
           {showResumeBanner && resumeLabel && (
-            <div style={{ position: 'fixed', top: 100, left: 0, right: 0, zIndex: 40, padding: '0 16px' }}>
-              <ResumeBanner
-                variant="aarrr"
-                label={resumeLabel}
-                onBackToTop={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                  clearResume()
-                }}
-                onDismiss={dismissBanner}
-              />
-            </div>
+            <ResumeBanner
+              variant="aarrr"
+              label={resumeLabel}
+              onBackToTop={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+                clearResume()
+              }}
+              onDismiss={dismissBanner}
+            />
           )}
+
           {/* Hero */}
-          <div
-            ref={heroRef}
-            style={{ position: 'relative', overflow: 'hidden', minHeight: 320, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
-          >
+          <div ref={heroRef} className="relative mb-11 flex min-h-[220px] flex-col justify-end overflow-hidden rounded-2xl">
             <div
               ref={heroBgRef}
+              className="absolute inset-0"
               style={{
-                position: 'absolute',
-                inset: 0,
                 background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 60%, ${accentColor}88 100%)`,
                 transformOrigin: 'left',
               }}
             />
-            <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '22px 22px', WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 80% 50%, black 20%, transparent 80%)', maskImage: 'radial-gradient(ellipse 100% 100% at 80% 50%, black 20%, transparent 80%)' }} />
-            <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.35) 100%)' }} />
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
+                backgroundSize: '22px 22px',
+                WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 80% 50%, black 20%, transparent 80%)',
+                maskImage: 'radial-gradient(ellipse 100% 100% at 80% 50%, black 20%, transparent 80%)',
+              }}
+            />
+            <div aria-hidden className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.35) 100%)' }} />
 
-            <div style={{ position: 'relative', padding: '60px 56px 52px' }}>
-              <div ref={heroMetaRef} style={{ marginBottom: 20, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {['Product Autopsy', `${stages.length} Stages`, hero?.meta?.split('·').pop()?.trim() ?? '~20 min read'].map(chip => (
-                  <span key={chip} data-chip style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '4px 12px', borderRadius: 99, backdropFilter: 'blur(6px)' }}>
+            <div className="relative px-9 py-9">
+              <div ref={heroMetaRef} className="mb-4 flex flex-wrap gap-2">
+                {heroChips.map(chip => (
+                  <span
+                    key={chip}
+                    data-chip
+                    className="rounded-full bg-white/20 px-3 py-1 font-label text-[11px] font-bold text-white backdrop-blur-sm"
+                  >
                     {chip}
                   </span>
                 ))}
@@ -897,87 +951,73 @@ export function AutopsyReaderClient({
 
               <h1
                 ref={heroTitleRef}
-                style={{ fontFamily: 'var(--font-headline)', fontSize: 'clamp(40px, 5vw, 72px)', fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-0.03em', margin: '0 0 20px' }}
+                className="m-0 mb-3 font-headline font-black leading-[1.05] tracking-[-0.02em] text-white"
+                style={{ fontSize: 'clamp(32px, 4vw, 52px)' }}
               >
-                {heroWords.map((word, i) => (
-                  <span key={i} data-word style={{ display: 'inline-block', marginRight: '0.25em' }}>{word}</span>
-                ))}
+                {hero?.product_name ?? product.name}
               </h1>
 
-              <p ref={heroTaglineRef} style={{ fontFamily: 'var(--font-body)', fontSize: 17, color: 'rgba(255,255,255,0.82)', lineHeight: 1.6, maxWidth: 560, margin: 0 }}>
+              <p ref={heroTaglineRef} className="m-0 max-w-[560px] font-body text-[15px] leading-[1.6] text-white/85">
                 {hero?.tagline}
               </p>
             </div>
           </div>
 
-          {/* Stage Sections */}
+          {/* Stage sections */}
           {stages.map((stage, idx) => (
-            <StageSection
-              key={stage.stage_name}
-              stage={stage}
-              accentColor={accentColor}
-              isEven={idx % 2 === 0}
-              sectionId={`stage-${idx}`}
-              sectionRef={el => { sectionRefs.current[idx] = el }}
-            />
+            <div key={stage.stage_name} className={idx < stages.length - 1 ? 'mb-2' : undefined}>
+              <StageSection
+                stage={stage}
+                stageIndex={idx}
+                totalStages={stages.length}
+                accentColor={accentColor}
+                sectionId={`stage-${idx}`}
+                sectionRef={el => { sectionRefs.current[idx] = el }}
+                onNextStage={idx < stages.length - 1 ? () => jumpToStage(idx + 1) : undefined}
+              />
+              {idx < stages.length - 1 && <div className="my-11 h-px bg-hairline" />}
+            </div>
           ))}
 
-          {/* Closing Section */}
+          {/* Closing */}
           {closing && (
-            <div
-              ref={closingRef}
-              style={{ background: '#0c0c0e', padding: '80px 56px 80px', position: 'relative', overflow: 'hidden' }}
-            >
-              <div aria-hidden style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: `radial-gradient(circle, ${accentColor}22 0%, transparent 70%)`, right: -80, top: -80, pointerEvents: 'none' }} />
-
-              <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: accentColor, marginBottom: 24 }}>
+            <div ref={closingRef} className="relative mt-11 overflow-hidden rounded-2xl bg-[#0c0c0e] px-9 py-14">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-20 -top-20 size-[400px] rounded-full"
+                style={{ background: `radial-gradient(circle, ${accentColor}22 0%, transparent 70%)` }}
+              />
+              <div className="mb-6 font-label text-[11px] font-extrabold uppercase tracking-[0.15em]" style={{ color: accentColor }}>
                 {closing.headline}
               </div>
-
               <p
                 ref={closingTextRef}
-                style={{ fontFamily: 'var(--font-headline)', fontSize: 'clamp(20px, 2.5vw, 30px)', fontWeight: 700, color: '#f0ede8', lineHeight: 1.55, maxWidth: 720, marginBottom: 48 }}
+                className="mb-10 max-w-[720px] font-headline font-bold leading-[1.55] text-[#f0ede8]"
+                style={{ fontSize: 'clamp(20px, 2.5vw, 30px)' }}
               >
-                {closingWords.map((word, i) => (
-                  <span key={i} data-word style={{ display: 'inline-block', marginRight: '0.28em' }}>{word}</span>
-                ))}
+                {closing.summary}
               </p>
-
               <Link
                 ref={closingCtaRef}
                 href={closingHref ?? closing.cta_path}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  fontFamily: 'var(--font-label)',
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: accentColor,
-                  background: `${accentColor}18`,
-                  border: `1.5px solid ${accentColor}44`,
-                  padding: '12px 24px',
-                  borderRadius: 99,
-                  textDecoration: 'none',
-                }}
+                className="inline-flex items-center gap-2 rounded-full border-[1.5px] px-6 py-3 font-label text-sm font-bold no-underline"
+                style={{ color: accentColor, background: `${accentColor}18`, borderColor: `${accentColor}44` }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_back</span>
+                <ArrowLeft size={16} strokeWidth={1.8} />
                 {closing.cta_text}
               </Link>
             </div>
           )}
         </main>
+
+        <RightRail
+          practiceCards={practiceCards}
+          stages={stages}
+          activeStageIdx={activeStageIdx}
+          onNavigate={navigateToRailIndex}
+        />
       </div>
 
-      <ReaderDock
-        scrollPct={scrollProgress * 100}
-        activeSection={activeSectionId}
-        tocItems={railItems}
-        backHref={backHref}
-        companyName={productName}
-        storyTitle={story?.title ?? productName}
-        onNavigate={navById}
-      />
     </div>
   )
 }

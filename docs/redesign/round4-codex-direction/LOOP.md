@@ -64,3 +64,14 @@ Worktree: `/Users/sandeep/Projects/myproductschool/.worktrees/redesign-options` 
 ### 2026-07-11 ~02:05 · Grounding correction (parity agent finding)
 - The PRIMARY checkout (/Users/sandeep/Projects/myproductschool) is on fix/cc-reap-health-alert, NOT main — 242 files stale vs origin/main. Parity target is ORIGIN/MAIN (byte-identical stand-in: .worktrees/adaptive-workspaces). Parity agent self-corrected and is re-researching against it; PARITY.md must cover the adaptive-workspaces additions (labs registry, claude_code_debugging challenge type, feedback design system, canvasTour).
 - OUR branch check: feature/redesign-options is only 5 commits behind origin/main (833 ins / 20 files: cc cold-start UX PR#19, sentry PR#18, migration, tests — no redesign-surface overlap) and already contains the adaptive-workspaces merge. REQUIRED STEP after B2/B3 commit: `git merge origin/main` + resolve + re-verify gates. Challenge-type matrix (B13) must include claude_code_debugging lab.
+
+### 2026-07-11 ~08:55 · Iteration 3 (cron-resumed)
+- LANDED + VERIFIED: B2 shell swap + B3 dashboard — ALL GATES GREEN (tsc 0; build pass; authed /dashboard 200 with all 5 sidebar nav items; 'Calibrate to personalize FLOW' absent; no-stub grep clean across 20 changed files). Committed 2369ccb3. origin/main merged (d12b97ef, no conflicts, tsc 0 post-merge) — branch now current. Phases B0 ✓ B1 ✓ B2 ✓ B3 ✓ (visual probe vs preview queued in current gate).
+- PARITY.md STILL MISSING — parity agent resumed via SendMessage with a write-now-improve-later directive (its research: 142 pages, 194 APIs, 9 challenge types incl. claude_code_debugging).
+- DISPATCHED: B4 catalog + B9a-f library (plans hub/detail, autopsies hub/reader, guides hub/chapter reader) — 7 sonnet builders + a gate agent (tsc/build/authed curls/Playwright screenshots vs previews/no-stub/no-HatchGlyph/no-MOCK greps) in one workflow (wf_50d4c968-704).
+- Next on wake: review B4/B9 gate + visual mismatch report; commit if green; confirm PARITY.md landed; then dispatch B5 workspaces (opus orchestrator — biggest phase) + B6 feedback, and B7 interviews + B8 progress as the following wave.
+
+### 2026-07-11 · Iteration 4 (new session — previous Claude process exited mid-wave)
+- Process exit killed the B4/B9 workflow mid-run + both safety nets (session-scoped). Durable state held: 6/7 builders had landed edits (catalog, plans hub+detail, autopsies hub+reader client, guides hub) with tsc 0; chapter reader (B9f) + verification gate unfinished.
+- RESUMED workflow wf_50d4c968-704 from cache (completed builders replay; B9f + gate re-run). Re-armed resurrection cron (7d3e089b, hourly :52) — reminder: cron/wakeups are session-only; if the terminal closes, reopen and say "resume work".
+- Next on wake: review resumed gate (tsc/build/authed curls/Playwright vs previews/no-stub/no-HatchGlyph greps), commit B4+B9 if green, then dispatch B5 workspaces (opus orchestrator) + B6 feedback.
