@@ -38,10 +38,10 @@ const NAV_ENTRIES: NavEntry[] = [
   { key: 'home', label: 'Home', href: '/dashboard', icon: Home },
   { key: 'practice', label: 'Practice', href: '/challenges', icon: Compass },
   { key: 'interviews', label: 'Interviews', href: '/live-interviews', icon: Mic, showLivePill: true },
-  { key: 'study-plans', label: 'Study Plans', href: '/prep/study-plans', icon: BookOpen },
+  { key: 'study-plans', label: 'Study Plans', href: '/explore/plans', icon: BookOpen },
   { key: 'progress', label: 'Progress', href: '/progress', icon: ChartColumn },
   { key: 'community', label: 'Community', href: '/cohort', icon: Users },
-  { key: 'analytics', label: 'Analytics', href: '/analytics', icon: ChartLine },
+  { key: 'analytics', label: 'Analytics', href: '/challenges?discipline=cc_analytics', icon: ChartLine },
 ]
 
 export interface AppSidebarProps {
@@ -88,7 +88,7 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        'flex w-[232px] shrink-0 flex-col gap-5 border-r border-hairline bg-white p-4',
+        'flex h-full w-[232px] shrink-0 flex-col gap-5 border-r border-hairline bg-white p-4',
         className
       )}
     >
@@ -108,6 +108,7 @@ export function AppSidebar({
               key={entry.key}
               href={entry.href}
               aria-current={isActive ? 'page' : undefined}
+              data-hatch-target={entry.key === 'home' ? 'nav-dashboard' : `nav-${entry.key}`}
               className={cn(
                 'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-secondary transition-colors',
                 isActive && 'bg-forest-800 text-white'
