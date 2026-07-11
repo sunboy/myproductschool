@@ -69,39 +69,6 @@ const MODULES_STATIC = [
   { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#1a3022', accent_color: '#a0d8b8', chapter_count: 5, est_minutes: 60, difficulty: 'medium' },
 ] as const
 
-const PRIMARY_PATHS = [
-  {
-    title: 'Practice',
-    body: 'Filter challenges by discipline, role, company, difficulty, and format.',
-    href: '/challenges',
-    icon: 'target',
-    accent: '#4a7c59',
-    bg: 'linear-gradient(135deg, #dfe7e1 0%, #f5f1ea 100%)',
-    art: 'practice',
-    tooltip: 'Use this when you know the exact rep you want: SQL, coding, product sense, systems, data, company, or role.',
-  },
-  {
-    title: 'Interview loops',
-    body: 'Run a Hatch-led mock interview across product, systems, data, SQL, and coding.',
-    href: '/live-interviews',
-    icon: 'graphic_eq',
-    accent: '#3a6e4a',
-    bg: 'linear-gradient(135deg, #cfe3d3 0%, #f5f1ea 100%)',
-    art: 'interview',
-    tooltip: 'Simulate live pressure with Hatch asking follow-ups and scoring your interview moves.',
-  },
-  {
-    title: 'Study plans',
-    body: 'Follow a sequenced plan instead of browsing from scratch.',
-    href: '/explore/plans',
-    icon: 'route',
-    accent: '#2e5e40',
-    bg: 'linear-gradient(135deg, #b8d4bf 0%, #f5f1ea 100%)',
-    art: 'plans',
-    tooltip: 'Let Hatch sequence a path across disciplines based on your role and current FLOW profile.',
-  },
-] as const
-
 // Single forest-green accent family — tint/lightness varies by index, not hue.
 const DOMAIN_THEMES = [
   { bg: 'linear-gradient(135deg, #dfe7e1 0%, #f5f1ea 100%)', accent: '#4a7c59', soft: 'rgba(74,124,89,0.14)' },
@@ -266,12 +233,33 @@ export default async function ExplorePage() {
         </AppTooltip>
       </header>
 
-      <section data-tour-target="explore-paths" className="mb-9 grid grid-cols-1 gap-3 md:grid-cols-3">
-        {PRIMARY_PATHS.map((path, index) => (
-          <CompactPathCard key={path.title} {...path} index={index} />
-        ))}
+      {/* ── Tier 1 (marquee): curated study plans first ──────────────────────
+          The sequenced plan is the funnel primitive the reference platforms
+          lead with. Returning users see their "Continue your plan" card first
+          (rendered by StudyPlanGrid); everyone gets a "Start here" beginner
+          lane so a cold user lands on easy reps, not medium/hard. */}
+      <SectionHeading
+        title={personalisedPlan ? 'Your plan, and where to go next' : 'Start with a plan'}
+        href="/explore/plans"
+        linkLabel={`See all (${plans.length})`}
+      />
+      <section data-tour-target="explore-plans" className="mb-4">
+        <StudyPlanGrid plans={plans} personalisedPlan={personalisedPlan} />
       </section>
+      <div className="mb-10">
+        <StartHereLane />
+      </div>
 
+      {/* ── Tier 2: one filterable index + the curated real-interview block ──
+          The three separate path cards + domains collapse into a single
+          "Browse all practice" entry that deep-links the filterable catalog. */}
+      <BrowseAllPracticeBand />
+
+      {topCompanyChallenges.length > 0 && (
+        <RealInterviewSpotlight companyGroups={topCompanyChallenges} />
+      )}
+
+      {/* ── Tier 3 (quiet browse, below the fold): guides, autopsies, domains ── */}
       <SectionHeading title="Guides" href="/explore/modules" linkLabel={`See all (${guidesCount})`} />
       <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((module, index) => (
@@ -300,15 +288,74 @@ export default async function ExplorePage() {
           </section>
         </>
       )}
-
-      {/* Curated group: real interview questions */}
-      {topCompanyChallenges.length > 0 && (
-        <RealInterviewSpotlight companyGroups={topCompanyChallenges} />
-      )}
-
-      <SectionHeading title="Study Plans" href="/explore/plans" linkLabel={`See all (${plans.length})`} />
-      <StudyPlanGrid plans={plans} personalisedPlan={personalisedPlan} />
     </main>
+  )
+}
+
+// Tier 1 companion: a single beginner "Start here" lane so a cold user lands on
+// easy reps. Deep-links the filterable catalog pre-scoped to easy difficulty.
+function StartHereLane() {
+  return (
+    <Link
+      href="/challenges?difficulty=easy"
+      data-hatch-sound="open"
+      className="group relative flex items-center gap-4 overflow-hidden rounded-xl border border-primary/20 bg-primary-fixed/70 p-4 no-underline shadow-[0_16px_38px_-32px_rgba(30,53,40,0.7)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_26px_52px_-34px_rgba(30,53,40,0.85)]"
+    >
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary shadow-[0_10px_24px_-18px_rgba(0,0,0,0.6)]">
+        <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+          school
+        </span>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-headline text-[16px] font-bold text-on-surface">New here? Start with an easy rep.</span>
+        <span className="mt-0.5 block font-label text-[12.5px] font-semibold text-on-surface-variant">
+          A five-minute written scenario Hatch grades. No setup.
+        </span>
+      </span>
+      <span className="material-symbols-outlined shrink-0 text-[18px] text-primary transition-transform group-hover:translate-x-0.5">
+        arrow_forward
+      </span>
+    </Link>
+  )
+}
+
+// Tier 2: the single "browse the whole catalog" entry that replaces the three
+// separate path cards. One band, one primary link into the filterable index,
+// with the filter dimensions named so a user knows what they can narrow by.
+function BrowseAllPracticeBand() {
+  const filters = ['Discipline', 'Role', 'Company', 'Difficulty', 'Format']
+  return (
+    <section className="mb-10">
+      <Link
+        href="/challenges"
+        data-tour-target="explore-paths"
+        data-hatch-sound="open"
+        className="group relative flex flex-col gap-4 overflow-hidden rounded-[22px] border border-outline-variant/35 bg-surface-container-low p-5 no-underline shadow-[0_22px_54px_-42px_rgba(46,50,48,0.7)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_32px_64px_-44px_rgba(46,50,48,0.82)] sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div className="min-w-0">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary">
+              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>tune</span>
+            </span>
+            <h2 className="m-0 font-headline text-[22px] font-bold leading-tight text-on-surface">Browse all practice</h2>
+          </div>
+          <p className="mt-2 font-label text-[12.5px] font-semibold text-on-surface-variant">
+            Filter the full catalog by discipline, role, company, difficulty, and format.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {filters.map(f => (
+              <span key={f} className="rounded-full bg-secondary-container px-2.5 py-0.5 font-label text-[11px] font-semibold text-on-secondary-container">
+                {f}
+              </span>
+            ))}
+          </div>
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 font-label text-sm font-semibold text-on-primary transition-transform group-hover:translate-x-0.5">
+          Open the catalog
+          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </span>
+      </Link>
+    </section>
   )
 }
 
@@ -401,48 +448,6 @@ function PathMiniArt({ kind, accent, className = '' }: {
       <circle cx="48" cy="48" r="8" fill={accent} opacity="0.75" />
       <circle cx="110" cy="64" r="8" fill={accent} opacity="0.75" />
     </svg>
-  )
-}
-
-function CompactPathCard({ title, body, href, icon, accent, bg, art, tooltip, index }: {
-  title: string
-  body: string
-  href: string
-  icon: string
-  accent: string
-  bg: string
-  art: string
-  tooltip: string
-  index: number
-}) {
-  return (
-    <AppTooltip label={tooltip} side="bottom" className="flex">
-      <Link
-        href={href}
-        data-hatch-sound="open"
-        className="animate-fade-in-up group relative flex min-h-[148px] w-full flex-col justify-between overflow-hidden rounded-xl border border-outline-variant/35 p-4 no-underline shadow-[0_16px_36px_-30px_rgba(46,50,48,0.70)] ring-1 ring-white/35 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_28px_54px_-34px_rgba(46,50,48,0.82)]"
-        style={{ background: bg, animationDelay: `${index * 70}ms` }}
-      >
-        <span
-          className="pointer-events-none absolute inset-0 opacity-[0.13]"
-          style={{ backgroundImage: `repeating-linear-gradient(135deg, ${accent} 0 1px, transparent 1px 12px)` }}
-          aria-hidden="true"
-        />
-        <PathMiniArt kind={art} accent={accent} className="absolute -right-5 -bottom-7 h-28 w-36 opacity-80 transition-transform duration-500 group-hover:scale-105" />
-        <span className="relative flex items-start justify-between gap-3">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white shadow-[0_12px_26px_-18px_rgba(0,0,0,0.75)]" style={{ background: accent }}>
-            <span className="material-symbols-outlined text-[21px]" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-          </span>
-          <span className="material-symbols-outlined text-[16px] text-on-surface-variant transition-transform group-hover:translate-x-0.5">
-            arrow_forward
-          </span>
-        </span>
-        <span className="relative pr-8">
-          <span className="block font-headline text-[17px] font-bold text-on-surface">{title}</span>
-          <span className="mt-1 block text-[12.5px] font-semibold leading-snug text-on-surface-variant">{body}</span>
-        </span>
-      </Link>
-    </AppTooltip>
   )
 }
 
@@ -660,7 +665,6 @@ function AskedAtCompanyGroup({ company, challenges }: CompanyChallengeGroup) {
   const companyLabel = getCompanyDisplayName(company)
   const companyVisual = getCompanyVisual(company)
   const visibleChallenges = challenges.slice(0, 3)
-  const hiddenCount = Math.max(0, challenges.length - visibleChallenges.length)
 
   return (
     <article
@@ -721,16 +725,6 @@ function AskedAtCompanyGroup({ company, challenges }: CompanyChallengeGroup) {
         ))}
       </div>
 
-      {hiddenCount > 0 && (
-        <Link
-          href={`/challenges?company=${company}`}
-          className="relative mt-2 inline-flex w-fit items-center gap-1 rounded-md px-1 py-0.5 font-label text-[11px] font-bold text-on-surface-variant no-underline transition-colors hover:text-primary"
-          data-hatch-sound="open"
-        >
-          +{hiddenCount} more
-          <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-        </Link>
-      )}
     </article>
   )
 }

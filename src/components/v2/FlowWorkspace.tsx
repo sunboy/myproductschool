@@ -2304,9 +2304,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setIsLoadingGrading(true)
 
     try {
-      const correctnessResult = await codeRunner.submit(currentCode)
-      if (!correctnessResult) {
-        throw new Error('Could not run final tests. Your attempt is saved locally.')
+      // Submit is self-sufficient: it runs the full test suite itself, so the
+      // user never has to manually Run first. If the runner is momentarily busy
+      // or returns an empty result (transient Judge0 hiccup), retry once before
+      // giving up — this is what otherwise surfaced as the server 422 "not_ready"
+      // reset-to-question bounce.
+      let correctnessResult = await codeRunner.submit(currentCode)
+      if ((!correctnessResult || correctnessResult.testsTotal === 0)) {
+        correctnessResult = await codeRunner.submit(currentCode)
+      }
+      if (!correctnessResult || correctnessResult.testsTotal === 0) {
+        // Still no runnable signal — keep the user in place with an actionable
+        // message instead of POSTing (which would 422 and reset the phase).
+        setPhase('question')
+        throw new Error(
+          currentLanguage === 'sql'
+            ? 'Could not run your query against the tests. Try Run once, then submit again.'
+            : 'Could not run the tests for this submission. Try Run once, then submit again.'
+        )
       }
 
       setLastRunResult(correctnessResult)
@@ -3039,6 +3054,36 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div className="text-center py-12 space-y-2">
         <p className="font-body text-error text-sm">{challengeError}</p>
         <button onClick={reload} className="text-primary font-label text-sm underline">Retry</button>
+      </div>
+    )
+  }
+
+  // Usage cap reached on start: render an inline, non-navigating panel in place
+  // of the (otherwise infinite) loading spinner. The paywall modal handles the
+  // upgrade offer; this keeps the user on the page with the challenge title in
+  // view and one explicit way out, instead of ejecting them.
+  if (isApiMode && paywallData && !attemptId) {
+    const capExitHref = workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 py-12 text-center">
+        <HatchGlyph size={56} state="idle" className="text-primary" />
+        {detail?.challenge.title && (
+          <p className="font-label text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">
+            {detail.challenge.title}
+          </p>
+        )}
+        <h2 className="font-headline text-2xl font-bold text-on-surface">
+          You&rsquo;ve used {paywallData.used} of {paywallData.limit} free reps this month
+        </h2>
+        <p className="max-w-md font-body text-sm text-on-surface-variant">
+          Upgrade to keep practicing without limits, or come back next month when your free reps reset.
+        </p>
+        <Link
+          href={capExitHref}
+          className="font-label text-sm font-semibold text-on-surface-variant underline underline-offset-4 transition-colors hover:text-primary"
+        >
+          Browse challenges
+        </Link>
       </div>
     )
   }
@@ -4911,6 +4956,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   onDashboard={props.onExit ?? (() => window.history.back())}
                   onNextChallenge={nextChallengeHref && !historyRecord
                     ? () => { window.location.href = nextChallengeHref }
+                    : undefined
+                  }
+                  onVoiceStep={!historyRecord
+                    ? () => { window.location.href = '/live-interviews' }
                     : undefined
                   }
                 />

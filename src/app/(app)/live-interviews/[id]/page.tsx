@@ -1902,19 +1902,18 @@ export default function SessionPage({
             >
               {micCheckState === 'idle' ? 'Check mic above first' : micCheckState === 'checking' ? 'Checking mic…' : "I'm ready"}
             </button>
-            {!canStartWithVoice && !isMicDenied && micCheckState === 'idle' && (
-              <p className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.52)' }}>
-                Allow mic access above so voice works, or continue in chat below.
-              </p>
-            )}
+            {/* Chat is a co-equal path, not a fallback. Voice needs hardware
+                (a mic + permission); chat needs nothing, so a user should never
+                feel they must clear the mic gate to start. Styled as a real
+                secondary button (solid border, readable text), not a whisper. */}
             <button
               onClick={handleStartWithChatFallback}
-              className="w-full rounded-full py-2.5 font-label text-sm font-semibold transition-colors"
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)' }}
+              className="w-full rounded-full py-3 font-label text-base font-semibold transition-colors"
+              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.35)', color: 'rgba(255,255,255,0.9)' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)' }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
             >
-              Continue in chat instead
+              Continue in chat, no mic
             </button>
             <button
               onClick={leaveReadyModal}

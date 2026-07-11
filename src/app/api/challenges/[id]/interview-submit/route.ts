@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { gradeInterviewSession } from '@/lib/v2/skills/interview-grading'
+import { gradeInterviewSession, neutralInterviewGradeFallback } from '@/lib/v2/skills/interview-grading'
 import type { ChallengeType } from '@/lib/types'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
@@ -29,30 +29,6 @@ function gradeLabelForScore(score: number): string {
   if (score >= 4.5) return 'best'
   if (score >= 3) return 'good'
   return 'surface'
-}
-
-function aiLimitResponse(error: unknown) {
-  if (error instanceof PlanLimitExceeded) {
-    return NextResponse.json({
-      error: 'limit_reached',
-      feature: error.feature,
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    }, { status: 402 })
-  }
-
-  if (error instanceof AiBudgetExceededError) {
-    return NextResponse.json({
-      error: 'limit_reached',
-      feature: 'hatch_ai_cents',
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    }, { status: 402 })
-  }
-
-  return null
 }
 
 export const POST = withRoute(async (
@@ -135,7 +111,14 @@ export const POST = withRoute(async (
     })
     .eq('id', attemptId)
 
-  // Grade
+  // Grade.
+  //
+  // Grading a session the user already finished is the payoff, not a metered
+  // feature. When the AI grading-runs limit (or the observe-only budget) is hit,
+  // we do NOT 402 and strand the attempt in_progress — we fall open to a neutral
+  // fallback grade (mid score, honest headline) so the user still completes and
+  // can re-submit later for a detailed grade. The rep-count limit stays enforced
+  // on *starting* a rep.
   const userPlan = await getUserPlanForBudget(user.id)
   let grade
   try {
@@ -146,10 +129,12 @@ export const POST = withRoute(async (
       route: 'interview_challenge_grade',
     })
   } catch (err) {
-    const response = aiLimitResponse(err)
-    if (response) return response
-    console.error('Interview grading failed:', err)
-    return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
+    if (err instanceof PlanLimitExceeded || err instanceof AiBudgetExceededError) {
+      grade = neutralInterviewGradeFallback(challengeType)
+    } else {
+      console.error('Interview grading failed:', err)
+      return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
+    }
   }
 
   const admin = createAdminClient()

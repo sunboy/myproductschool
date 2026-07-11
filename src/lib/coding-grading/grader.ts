@@ -329,7 +329,7 @@ function deterministicCodingGrade(input: GradingInput): GradingFeedback {
 // signal IS available. Anchors the score to the objective test pass rate so the
 // user gets a usable grade (and the success UI) instead of a hard error. The
 // "Retry grading" button lets them request a real AI re-grade.
-function gradeFromCorrectnessFallback(input: GradingInput): GradingFeedback {
+export function gradeFromCorrectnessFallback(input: GradingInput): GradingFeedback {
   const { testsPassed, testsTotal } = input.correctness
   // No runnable signal either — defer to the existing empty-state grade.
   if (testsTotal <= 0) return deterministicCodingGrade(input)

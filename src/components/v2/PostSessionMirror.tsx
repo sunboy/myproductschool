@@ -66,6 +66,13 @@ interface PostSessionMirrorProps {
   onRunAnother?: () => void
   onDashboard: () => void
   onNextChallenge?: () => void
+  /**
+   * Optional "do it out loud" step-2 invite. When set, renders a celebrated
+   * band above the action row pointing the just-graded user into a live voice
+   * interview. This is the P2 activation ladder: written graded rep first
+   * (mic-free), voice as the deliberate next step. Omitted → band hidden.
+   */
+  onVoiceStep?: () => void
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -445,6 +452,7 @@ export function PostSessionMirror({
   onRunAnother,
   onDashboard,
   onNextChallenge,
+  onVoiceStep,
 }: PostSessionMirrorProps) {
   const headerRef = useRef<HTMLDivElement>(null)
   const pathRef = useRef<SVGPathElement>(null)
@@ -697,6 +705,48 @@ export function PostSessionMirror({
             </div>
           </div>
         </div>
+
+        {/* Voice step-2 invite — the activation ladder: written rep first, then
+            "now do it out loud". Only rendered when the workspace passes
+            onVoiceStep (see FlowWorkspace). Kept visually distinct from the
+            action row so it reads as the deliberate next move, not a competing CTA. */}
+        {onVoiceStep && (
+          <button
+            onClick={onVoiceStep}
+            className="w-full text-left"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '12px 14px', borderRadius: 14,
+              background: 'var(--color-primary-fixed)',
+              border: '1px solid var(--color-primary)',
+              cursor: 'pointer',
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 22, color: 'var(--color-primary)', flexShrink: 0,
+                fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24",
+              }}
+            >
+              mic
+            </span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: 'block', fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 700, color: 'var(--color-on-surface)', lineHeight: 1.2 }}>
+                Now do it out loud
+              </span>
+              <span style={{ display: 'block', fontSize: 12, color: 'var(--color-on-surface-variant)', marginTop: 2, lineHeight: 1.3 }}>
+                Take the same thinking into a live interview with Hatch. You can stay in chat if you prefer.
+              </span>
+            </span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 18, color: 'var(--color-primary)', flexShrink: 0, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
+            >
+              arrow_forward
+            </span>
+          </button>
+        )}
 
         {/* Action buttons */}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

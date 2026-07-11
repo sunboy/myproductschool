@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { gradeCodingAttempt, shouldUseDeterministicCodingGrade } from '@/lib/coding-grading/grader'
+import { gradeCodingAttempt, gradeFromCorrectnessFallback, shouldUseDeterministicCodingGrade } from '@/lib/coding-grading/grader'
 import type { RunResult } from '@/lib/coding/types'
 import type { SessionEvent } from '@/lib/coding-grading/grader'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
@@ -60,30 +60,6 @@ function validationIssues(error: ZodError) {
     path: issue.path.join('.'),
     message: issue.message,
   }))
-}
-
-function aiLimitResponse(error: unknown) {
-  if (error instanceof PlanLimitExceeded) {
-    return NextResponse.json({
-      error: 'limit_reached',
-      feature: error.feature,
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    }, { status: 402 })
-  }
-
-  if (error instanceof AiBudgetExceededError) {
-    return NextResponse.json({
-      error: 'limit_reached',
-      feature: 'hatch_ai_cents',
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    }, { status: 402 })
-  }
-
-  return null
 }
 
 // ---------------------------------------------------------------------------
@@ -385,7 +361,13 @@ export const POST = withRoute(async (
     budget: { userId: user.id, userPlan, route: 'coding_submit_grade' },
   }
 
-  // Grade the attempt
+  // Grade the attempt.
+  //
+  // Grading a rep the user already solved is the payoff, not a metered feature.
+  // When the AI grading-runs limit (or the observe-only budget) is hit, we do NOT
+  // 402 and strand the attempt in_progress — we fall open to a correctness-anchored
+  // fallback grade (degraded: true) so the user still completes and sees a real,
+  // test-derived score. The rep-count limit stays enforced on *starting* a rep.
   let grade
   try {
     if (!shouldUseDeterministicCodingGrade(gradingInput)) {
@@ -393,10 +375,12 @@ export const POST = withRoute(async (
     }
     grade = await gradeCodingAttempt(gradingInput)
   } catch (err) {
-    const response = aiLimitResponse(err)
-    if (response) return response
-    console.error('Coding grading failed:', err)
-    return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
+    if (err instanceof PlanLimitExceeded || err instanceof AiBudgetExceededError) {
+      grade = gradeFromCorrectnessFallback(gradingInput)
+    } else {
+      console.error('Coding grading failed:', err)
+      return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
+    }
   }
 
   const admin = createAdminClient()

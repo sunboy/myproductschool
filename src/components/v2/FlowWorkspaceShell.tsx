@@ -41,7 +41,8 @@ export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, 
         feature="challenges"
         used={paywallData?.used}
         limit={paywallData?.limit}
-        onClose={() => router.push(exitHref)}
+        onClose={() => setPaywallData(null)}
+        secondaryAction={{ label: 'Keep reading this challenge', onClick: () => setPaywallData(null) }}
       />
     </div>
   )

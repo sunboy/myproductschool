@@ -3,25 +3,32 @@
 /**
  * First-run flow. New users land here straight from signup (see auth/callback +
  * signup redirect) instead of the heavy bento dashboard, which is where ~68% of
- * signups were last seen before abandoning (never reaching the one feature that
- * works: the live interview). This is deliberately ONE screen with ONE action.
+ * signups were last seen before abandoning. This is deliberately ONE screen with
+ * ONE action.
  *
- * Tapping a role does three things at once:
- *  1. Creates the interview session server-side (POST /api/live-interview/start) —
- *     this IS the pre-warm; the personalized system prompt is built now, so by the
- *     time we land on the interview page only the opening turn is left to fetch.
- *  2. Persists the role + marks onboarding complete (fire-and-forget) so the
- *     dashboard's onboarding modal never fires later.
- *  3. Navigates straight into the interview with ?autostart=1, which skips the
- *     "Ready to begin?" breathe modal entirely.
+ * Tapping a role does two things in one server round-trip
+ * (POST /api/onboarding/quick-start):
+ *  1. Persists the role AND marks onboarding complete in a single atomic update
+ *     (profiles.preferred_role + onboarding_completed_at), and clears any partial
+ *     calibration draft. This is AWAITED — navigation only happens on success, so
+ *     a returning not-yet-onboarded user is never stranded on a "calibrated"
+ *     dashboard having done nothing.
+ *  2. Returns the curated first-rep challenge URL for that role — a written,
+ *     graded FLOW rep that grades in place with no microphone and no Run
+ *     round-trip. First value must never depend on hardware.
  *
- * Everything else the old 12-screen calibration collected is deferred. Calibration
- * can happen after the first rep, not as a wall before it.
+ * The live voice interview is not the first thing anymore; it is a celebrated
+ * step 2 offered on the rep's completion screen, where the mic gate meets an
+ * already-activated user. Full calibration is likewise deferred: it stays
+ * available afterward as a dashboard CTA, never as a wall before first value.
  */
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_ONBOARDING_STEP, EVENT_FIRST_REP_ROUTED } from '@/lib/posthog/events'
+import { FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
 
 const ROLES = [
   { id: 'swe', label: 'Software Engineer', icon: 'terminal' },
@@ -46,54 +53,31 @@ export default function FirstRunPage() {
     setBusyRole(roleId)
     setError(null)
 
-    // Persist the role eagerly — it's harmless on its own and useful even if the user
-    // never finishes. We do NOT mark onboarding complete yet: that's irreversible and
-    // gates the dashboard's calibrated state + the onboarding modal, so it must only
-    // happen once we know the interview actually starts (below). Marking it here and
-    // then failing to start (e.g. a 402 at the limit) would strand a returning user on
-    // a "calibrated" dashboard having done nothing, with no path back into onboarding.
-    void fetch('/api/onboarding/role', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: roleId }),
-    }).catch(() => {})
+    trackEvent(EVENT_ONBOARDING_STEP, { step: 'role_quick', step_index: 0 })
 
     try {
-      const res = await fetch('/api/live-interview/start', {
+      // One round-trip: sets preferred_role + onboarding_completed_at atomically
+      // and returns the curated first-rep URL. Awaited on purpose — we only
+      // navigate once onboarding is genuinely closed out server-side, so the
+      // dashboard's onboarding modal can never re-wall this user later.
+      const res = await fetch('/api/onboarding/quick-start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roleId }),
+        body: JSON.stringify({ role: roleId }),
       })
 
-      // A brand-new free user has interview quota, but a returning not-yet-onboarded
-      // user could be at the limit. Don't strand them here — send them to the
-      // dashboard, where the usual paywall/limit surface lives. Onboarding is left
-      // incomplete on purpose so they can still be onboarded properly later.
-      if (res.status === 402) {
-        router.push('/dashboard')
-        return
-      }
+      if (!res.ok) throw new Error('quick_start_failed')
 
-      if (!res.ok) throw new Error('start_failed')
       const data = await res.json()
-      if (!data.sessionId) throw new Error('no_session')
+      const challengeHref = typeof data?.challenge_href === 'string' && data.challenge_href
+        ? data.challenge_href
+        : FIRST_REP_FALLBACK_HREF
 
-      // The interview is starting — now it's safe to close out onboarding. Fire-and-
-      // forget: the redirect shouldn't wait on it, and a straggler is harmless since
-      // the user is already in the interview.
-      void fetch('/api/onboarding/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      }).catch(() => {})
-
-      const params = new URLSearchParams({ autostart: '1', role: data.role ?? roleId })
-      if (data.scenarioTitle) params.set('scenario_title', data.scenarioTitle)
-      if (data.discipline) params.set('discipline', data.discipline)
-      router.push(`/live-interviews/${data.sessionId}?${params.toString()}`)
+      trackEvent(EVENT_FIRST_REP_ROUTED, { role: roleId, challenge_href: challengeHref })
+      router.push(challengeHref)
     } catch {
       setBusyRole(null)
-      setError('Could not start your session. Try that again.')
+      setError('Could not set up your first rep. Try that again.')
     }
   }
 
@@ -107,8 +91,9 @@ export default function FirstRunPage() {
               Let&apos;s do a real rep first.
             </h1>
             <p className="font-body text-base text-on-surface-variant max-w-md mx-auto leading-relaxed">
-              Hatch runs a live mock interview and reacts to how you actually think.
-              Pick where you work today and it will pull a scenario that fits.
+              A short product scenario you work through in writing. Hatch reads how
+              you reason and grades it. Pick where you work today and it will pull a
+              scenario that fits.
             </p>
           </div>
         </div>
@@ -123,7 +108,7 @@ export default function FirstRunPage() {
                 type="button"
                 onClick={() => pickRole(role.id)}
                 disabled={busyRole !== null}
-                aria-label={`Start a ${role.label} interview`}
+                aria-label={`Start a ${role.label} rep`}
                 className={[
                   'group flex items-center gap-3 rounded-xl px-4 py-3.5 text-left transition-all',
                   'bg-surface-container hover:bg-surface-container-high',
@@ -150,7 +135,7 @@ export default function FirstRunPage() {
 
         {busyRole && (
           <p className="mt-6 text-center font-body text-sm text-on-surface-variant">
-            Setting up your interview…
+            Pulling your first rep…
           </p>
         )}
 
@@ -159,7 +144,7 @@ export default function FirstRunPage() {
         )}
 
         <p className="mt-8 text-center font-label text-xs text-on-surface-variant/70">
-          No setup, no calibration. You can explore everything else after this rep.
+          No setup, no calibration, no microphone. You can explore everything else after this rep.
         </p>
       </div>
     </div>

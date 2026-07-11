@@ -86,7 +86,15 @@ export function OnboardingModalProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    // Fetch server-side onboarding state once to check meaningful progress
+    // Fetch server-side onboarding state once to check meaningful progress.
+    // This feeds a dismissible "resume calibration" CTA — it NO LONGER
+    // auto-launches the 12-screen CalibrationFlow. The old auto-open on
+    // /dashboard was the onboarding re-wall: a signed-up user who completed the
+    // one-tap first-run path (which sets onboarding_completed_at) skips this
+    // entirely, but anyone who bounced before that got the full calibration
+    // shoved in front of the dashboard as an interstitial. Calibration is now
+    // strictly opt-in — reachable only through the explicit
+    // 'open-onboarding-modal' event (TopNav / an optional dashboard CTA) below.
     getOnboardingState()
       .then(state => {
         if (!state) return
@@ -97,16 +105,6 @@ export function OnboardingModalProvider({ children }: { children: ReactNode }) {
         setHasMeaningfulProgress(meaningful)
       })
       .catch(() => {})
-      .finally(() => {
-        // Auto-launch: only on /dashboard, only if not dismissed this session
-        if (
-          typeof window !== 'undefined' &&
-          window.location.pathname.startsWith('/dashboard') &&
-          !sessionStorage.getItem(DISMISSED_KEY)
-        ) {
-          setOpen(true)
-        }
-      })
   }, [profile])
 
   // ── Window event listener: mirror open-upgrade-modal pattern ─────────────

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { cache, Suspense, type ReactNode } from 'react'
+import { cache, Suspense } from 'react'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -12,15 +12,13 @@ import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { getCcAnalyticsFrontDoor } from '@/lib/data/cc-analytics-frontdoor'
 import { getHatchContext, type HatchUserContext } from '@/lib/hatch-context'
-import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
+import { challengePath } from '@/lib/challenges/challengeNumber'
 import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
-import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
 import { CoachSpineCard } from '@/components/dashboard/cards/CoachSpineCard'
 import { AnalyticsLabCard } from '@/components/dashboard/cards/AnalyticsLabCard'
 import { UpgradeSponsorCard } from '@/components/dashboard/cards/UpgradeSponsorCard'
 import { CadenceRibbon } from '@/components/dashboard/cards/CadenceRibbon'
-import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsCard'
 import { LatestInterviewCard } from '@/components/dashboard/cards/LatestInterviewCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
@@ -35,11 +33,20 @@ import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
-import { getAppFlag } from '@/lib/config/app-flags'
 import { getCuratedFirstRepSlug, FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
-import { CalibrationCtaCard } from '@/components/dashboard/cards/CalibrationCtaCard'
+import { ResumeOrStartCard, type ResumeOrStartAction } from '@/components/dashboard/cards/ResumeOrStartCard'
 
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
+
+// FLOW steps are stored on challenge_attempts.current_step as a move name
+// ('frame' | 'list' | 'optimize' | 'win') or 'done'. Map to a 1-based step
+// number for the resume card's "Step n of 4" readout.
+const FLOW_STEP_ORDER = ['frame', 'list', 'optimize', 'win'] as const
+function flowStepNumber(currentStep: string | null | undefined): number | null {
+  if (!currentStep) return null
+  const idx = FLOW_STEP_ORDER.indexOf(currentStep as (typeof FLOW_STEP_ORDER)[number])
+  return idx >= 0 ? idx + 1 : null
+}
 
 function moveHatchInsight(
   move: string,
@@ -131,22 +138,6 @@ function normalizeChallenge(raw: RawChallenge | null): NextChallenge | null {
   }
 }
 
-function LockOverlay({ children, label = 'Unlocks after calibration' }: { children: ReactNode; label?: string }) {
-  return (
-    <div className="relative">
-      <div className="pointer-events-none select-none opacity-40 blur-[1.5px]" aria-hidden>
-        {children}
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-3 py-1.5 text-[11px] font-label text-on-surface-variant shadow-sm">
-          <span className="material-symbols-outlined text-[13px]">lock</span>
-          {label}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function withSoftTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
   let timeout: ReturnType<typeof setTimeout> | undefined
   return Promise.race([
@@ -173,9 +164,6 @@ async function loadDashboardLeadUncached() {
     allMoveLevels: [] as { move: string; xp: number; level: number; progress_pct: number }[],
     weakestMove: 'frame',
     hatchContext: null as HatchUserContext | null,
-    valueFirst: false,
-    hasAnyAttempts: true,
-    firstRepHref: FIRST_REP_FALLBACK_HREF,
   }
 
   if (!user?.id) return defaults
@@ -184,7 +172,7 @@ async function loadDashboardLeadUncached() {
   const adminClient = createAdminClient()
   const profilePromise = supabase
     .from('profiles')
-    .select('display_name, onboarding_completed_at, streak_days, xp_total, plan, preferred_role')
+    .select('display_name, onboarding_completed_at, streak_days, xp_total, plan')
     .eq('id', user.id)
     .single()
   const dailyCountPromise = supabase
@@ -192,40 +180,20 @@ async function loadDashboardLeadUncached() {
     .select('id', { count: 'exact', head: true })
     .eq('user_id', user.id)
     .gte('created_at', today)
-  const totalAttemptsPromise = supabase
-    .from('challenge_attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id)
   const moveLevelsPromise = adminClient
     .from('move_levels')
     .select('move, xp, level, progress_pct')
     .eq('user_id', user.id)
     .order('xp', { ascending: true })
   const hatchContextPromise = withSoftTimeout<HatchUserContext | null>(getHatchContext(user.id), 1200, null)
-  const valueFirstPromise = getAppFlag('onboarding_value_first', false)
 
-  const [{ data: profile }, { count: dailyCount }, { count: totalAttempts }, { data: moveLevelsData }, hatchContext, valueFirst] = await Promise.all([
+  const [{ data: profile }, { count: dailyCount }, { data: moveLevelsData }, hatchContext] = await Promise.all([
     profilePromise,
     dailyCountPromise,
-    totalAttemptsPromise,
     moveLevelsPromise,
     hatchContextPromise,
-    valueFirstPromise,
   ])
   const allMoveLevels = (moveLevelsData ?? []) as { move: string; xp: number; level: number; progress_pct: number }[]
-  const preferredRole = ((profile as Record<string, unknown> | null)?.preferred_role as string | null) ?? null
-
-  let firstRepHref = FIRST_REP_FALLBACK_HREF
-  if (valueFirst) {
-    const slug = getCuratedFirstRepSlug(preferredRole)
-    const { data: challengeRow } = await adminClient
-      .from('challenges')
-      .select('id, slug, challenge_type, display_number')
-      .eq('slug', slug)
-      .eq('is_published', true)
-      .maybeSingle()
-    if (challengeRow) firstRepHref = challengePath(challengeRow)
-  }
 
   return {
     userId: user.id,
@@ -238,9 +206,6 @@ async function loadDashboardLeadUncached() {
     allMoveLevels,
     weakestMove: allMoveLevels[0]?.move ?? 'frame',
     hatchContext,
-    valueFirst,
-    hasAnyAttempts: (totalAttempts ?? 0) > 0,
-    firstRepHref,
   }
 }
 
@@ -259,13 +224,14 @@ async function loadDashboardCoreUncached() {
   let prepTimeline: string | null = null
   let roleContext: string | null = null
   let rawDisplayName: string | null = null
+  let preferredRoleForFirstRep: string | null = null
 
   if (user) {
     const today = new Date().toISOString().split('T')[0]
     const [{ data: profile }, { count: dailyCount }] = await Promise.all([
       supabase
         .from('profiles')
-        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan, primary_goal, prep_timeline, role_context')
+        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan, primary_goal, prep_timeline, role_context, preferred_role')
         .eq('id', user.id)
         .single(),
       supabase
@@ -286,6 +252,7 @@ async function loadDashboardCoreUncached() {
     primaryGoal = ((profile as Record<string, unknown> | null)?.primary_goal as string | null) ?? null
     prepTimeline = ((profile as Record<string, unknown> | null)?.prep_timeline as string | null) ?? null
     roleContext = ((profile as Record<string, unknown> | null)?.role_context as string | null) ?? null
+    preferredRoleForFirstRep = ((profile as Record<string, unknown> | null)?.preferred_role as string | null) ?? null
   }
 
   const userId = user?.id ?? ''
@@ -487,6 +454,74 @@ async function loadDashboardCoreUncached() {
     nextChallenge = { ...nextChallenge, hatch_insight: moveHatchInsight(weakestMove, weakestLevel, primaryGoal) }
   }
 
+  // ── Resume-or-start action ────────────────────────────────────────────────
+  // The single dominant dashboard CTA. Precedence: (1) resume the most-recent
+  // in_progress attempt — these are the 41 stalls the dashboard was blind to;
+  // (2) first rep for a brand-new user; (3) the next recommended rep. The
+  // resume destination mirrors resume-challenge/route.ts:186 exactly
+  // (/workspace/challenges/{id}?resume=1) so the email link and this card point
+  // at the same attempt.
+  let resumeOrStartAction: ResumeOrStartAction | null = null
+  let hasAnyAttempts = false
+
+  if (userId) {
+    const { count: attemptCount } = await adminClient
+      .from('challenge_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+    hasAnyAttempts = (attemptCount ?? 0) > 0
+
+    // Most-recent in_progress attempt (mirrors resume-challenge/route.ts:66-72).
+    const { data: inProgress } = await adminClient
+      .from('challenge_attempts')
+      .select('challenge_id, current_step, started_at, challenges(title)')
+      .eq('user_id', userId)
+      .eq('status', 'in_progress')
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (inProgress?.challenge_id) {
+      const resumeTitle =
+        ((inProgress.challenges as unknown as { title?: string } | null)?.title) ?? 'your challenge'
+      resumeOrStartAction = {
+        kind: 'resume',
+        href: `/workspace/challenges/${inProgress.challenge_id}?resume=1`,
+        title: resumeTitle,
+        step: flowStepNumber(inProgress.current_step as string | null),
+        totalSteps: 4,
+      }
+    }
+  }
+
+  // No in-progress rep → first rep for a brand-new user, else the next rep.
+  if (!resumeOrStartAction) {
+    if (userId && !hasAnyAttempts) {
+      const slug = getCuratedFirstRepSlug(preferredRoleForFirstRep)
+      const { data: firstRepRow } = await adminClient
+        .from('challenges')
+        .select('id, slug, challenge_type, display_number')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .maybeSingle()
+      resumeOrStartAction = {
+        kind: 'first',
+        href: firstRepRow ? challengePath(firstRepRow) : FIRST_REP_FALLBACK_HREF,
+      }
+    } else if (nextChallenge) {
+      resumeOrStartAction = {
+        kind: 'next',
+        href: nextChallenge.slug || nextChallenge.id
+          ? challengePath(nextChallenge)
+          : FIRST_REP_FALLBACK_HREF,
+        title: nextChallenge.title,
+        difficulty: nextChallenge.difficulty ?? null,
+        domain: nextChallenge.domainName ?? null,
+        hatchInsight: nextChallenge.hatch_insight ?? null,
+      }
+    }
+  }
+
   let todaysPathSteps: PathStep[] = []
   let todaysPathCompleted = 0
 
@@ -494,6 +529,9 @@ async function loadDashboardCoreUncached() {
     const doneQuickTake = todayAttempts.some(a => a.challenges?.challenge_type === 'quick_take')
     const doneFlowChallenge = todayAttempts.some(a => a.challenges?.challenge_type !== 'quick_take')
 
+    // Rendered as a pure progress readout — no per-step hrefs. The single
+    // dominant action lives in ResumeOrStartCard, so these steps show where the
+    // user is in today's loop without adding three competing CTAs.
     todaysPathSteps = [
       {
         label: 'Quick Take',
@@ -501,7 +539,6 @@ async function loadDashboardCoreUncached() {
         icon: 'bolt',
         done: doneQuickTake,
         active: !doneQuickTake,
-        href: '/dashboard#quick-take',
       },
       {
         label: 'Core challenge',
@@ -511,7 +548,6 @@ async function loadDashboardCoreUncached() {
         icon: 'track_changes',
         done: doneFlowChallenge,
         active: doneQuickTake && !doneFlowChallenge,
-        href: nextChallenge ? challengePath(nextChallenge) : undefined,
       },
       {
         label: 'Reflect',
@@ -519,7 +555,6 @@ async function loadDashboardCoreUncached() {
         icon: 'edit_note',
         done: false,
         active: doneFlowChallenge,
-        href: '/progress',
       },
     ]
     todaysPathCompleted = todaysPathSteps.filter(s => s.done).length
@@ -561,6 +596,8 @@ async function loadDashboardCoreUncached() {
     userRank,
     interviews,
     hatchContext,
+    resumeOrStartAction,
+    hasAnyAttempts,
   }
 }
 
@@ -581,19 +618,22 @@ export default function DashboardPage() {
         <UpgradedBanner />
       </Suspense>
 
+      {/* One dominant action. The hero column leads with the greeting strip and
+          the single ResumeOrStartCard; the sidebar carries the upgrade sponsor.
+          Everything browsable/social lives below, subordinate to the one rep the
+          user should do next. */}
       <section className="grid min-w-0 grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.58fr)]">
-        <Suspense fallback={<CoachBriefSkeleton />}>
-          <CoachBriefSection />
-        </Suspense>
+        <div className="grid min-w-0 content-start gap-4">
+          <Suspense fallback={<CoachBriefSkeleton />}>
+            <CoachBriefSection />
+          </Suspense>
+          <Suspense fallback={<ResumeOrStartSkeleton />}>
+            <ResumeOrStartSection />
+          </Suspense>
+        </div>
         <aside className="grid min-w-0 content-start gap-4">
           <Suspense fallback={<SponsorSkeleton />}>
             <SponsorSection />
-          </Suspense>
-          <Suspense fallback={<FlowLeadSkeleton />}>
-            <FlowLeadSection />
-          </Suspense>
-          <Suspense fallback={null}>
-            <CalibrationCtaSection />
           </Suspense>
         </aside>
       </section>
@@ -605,14 +645,22 @@ export default function DashboardPage() {
   )
 }
 
+async function ResumeOrStartSection() {
+  const data = await getDashboardCore()
+  if (!data.resumeOrStartAction) return null
+  return <ResumeOrStartCard action={data.resumeOrStartAction} />
+}
+
 async function CoachBriefSection() {
   const data = await getDashboardLead()
   const weakestCompetency = data.hatchContext?.weakestCompetency ?? null
   const competency = weakestCompetency
     ? data.hatchContext?.competencies.find(c => c.competency === weakestCompetency)
     : null
-  const isFirstRep = data.valueFirst && !data.hasAnyAttempts
 
+  // The card's own CTA row is suppressed — ResumeOrStartCard directly below is
+  // the single dominant action now, so the hero reads as a greeting + streak
+  // strip and never competes for the click.
   return (
     <CoachSpineCard
       displayName={data.displayName}
@@ -622,14 +670,11 @@ async function CoachBriefSection() {
       focusLevel={data.allMoveLevels[0]?.level ?? 1}
       dailyDone={data.dailyDone}
       isCalibrated={data.isCalibrated}
-      sessionHref="/challenges"
-      studyPlanHref="/explore/plans"
       weakestCompetency={weakestCompetency}
       competencyScore={competency?.score ?? null}
       competencyTrend={competency?.trend ?? null}
       recentCompletions={data.hatchContext?.recentCompletions.length ?? 0}
-      isFirstRep={isFirstRep}
-      firstRepHref={data.firstRepHref}
+      hideActions
     />
   )
 }
@@ -648,37 +693,6 @@ async function SponsorSection() {
       analyticsHasAccess={analytics?.hasAccess ?? false}
     />
   )
-}
-
-async function FlowLeadSection() {
-  const data = await getDashboardLead()
-  const card = <FlowMoveLevelsCard levels={data.allMoveLevels} variant="compact" />
-
-  // Value-first users get onboarding_completed_at set immediately (see
-  // /api/onboarding/quick-start) without ever running real calibration, so
-  // move_levels stays empty until they do. Flag-off behavior is untouched:
-  // isCalibrated alone still gates the lock for the full-calibration path.
-  const hasRealFlowData = !data.valueFirst || data.allMoveLevels.length > 0
-  const unlocked = data.isCalibrated && hasRealFlowData
-
-  return unlocked ? (
-    card
-  ) : (
-    <LockOverlay label="Calibrate to personalize FLOW">
-      {card}
-    </LockOverlay>
-  )
-}
-
-// Deferred-calibration CTA: only surfaces for the value-first cohort (they
-// already completed onboarding via the one-tap role path, so the full
-// CalibrationHero-style card would be redundant) who hasn't run real
-// calibration yet. Flag-off users never see this — they still get the full
-// CalibrationFlow modal as the only calibration entry point.
-async function CalibrationCtaSection() {
-  const data = await getDashboardLead()
-  if (!data.valueFirst || !data.isCalibrated || data.allMoveLevels.length > 0) return null
-  return <CalibrationCtaCard />
 }
 
 async function AnalyticsLabSection() {
@@ -707,40 +721,20 @@ async function DashboardBodySection() {
             </Suspense>
           </div>
 
+          {/* QuickTake is the single, visually subordinate warm-up. The full
+              "next challenge" action is no longer duplicated here — it lives in
+              the dominant ResumeOrStartCard above. */}
           <SectionHeading
-            title="Start with a quick warm-up, then take on a full challenge."
+            title="Warm up in a minute."
             href="/challenges"
             action="All practice"
           />
-
-          <div className="grid min-w-0 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-            <div id="quick-take" className="scroll-mt-24 h-full">
-              <QuickTakeCard
-                prompt={data.quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
-                challengeId={data.quickTakePrompt?.id ?? 'orientation'}
-                hatchContext={null}
-              />
-            </div>
-            {data.nextChallenge?.domainName ? (
-              <NextChallengeCard
-                title={data.nextChallenge.title}
-                domain={data.nextChallenge.domainName}
-                difficulty={data.nextChallenge.difficulty ?? 'standard'}
-                challengeId={data.nextChallenge.slug ?? data.nextChallenge.id}
-                catalogNumber={formatChallengeNumber(data.nextChallenge.challenge_type, data.nextChallenge.display_number)}
-                hatchInsight={data.nextChallenge.hatch_insight ?? null}
-                activePlanSlug={data.activePlanSlug}
-              />
-            ) : (
-              <NextChallengeCard
-                title="Designing a Metric Dashboard for a B2B SaaS Tool"
-                domain="Product Sense"
-                difficulty="standard"
-                challengeId="orientation"
-                hatchInsight={null}
-                activePlanSlug={data.activePlanSlug}
-              />
-            )}
+          <div id="quick-take" className="scroll-mt-24 max-w-[640px]">
+            <QuickTakeCard
+              prompt={data.quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
+              challengeId={data.quickTakePrompt?.id ?? 'orientation'}
+              hatchContext={null}
+            />
           </div>
 
           {/* FLOW discipline map sits high in the column so it anchors the page
@@ -856,8 +850,8 @@ function SponsorSkeleton() {
   return <div className="h-[196px] animate-pulse rounded-[22px] bg-surface-container" />
 }
 
-function FlowLeadSkeleton() {
-  return <div className="h-[170px] animate-pulse rounded-[22px] bg-surface-container" />
+function ResumeOrStartSkeleton() {
+  return <div className="h-[210px] animate-pulse rounded-[24px] bg-surface-container" />
 }
 
 function AnalyticsLabSkeleton() {

@@ -105,6 +105,12 @@ export interface CoachSpineCardProps {
   isFirstRep?: boolean
   /** Curated first-rep challenge link (src/lib/onboarding/curated-first-rep.ts), used only when isFirstRep is true. */
   firstRepHref?: string
+  /**
+   * Suppress the in-card CTA row (start session / study plan / calibrate / first
+   * rep). The dashboard now owns the single dominant action via ResumeOrStartCard,
+   * so this card reads as a greeting + streak strip, not a competing menu.
+   */
+  hideActions?: boolean
 }
 
 export function CoachSpineCard({
@@ -123,6 +129,7 @@ export function CoachSpineCard({
   recentCompletions = 0,
   isFirstRep = false,
   firstRepHref,
+  hideActions = false,
 }: CoachSpineCardProps) {
   const [whyOpen, setWhyOpen] = useState(false)
   const { openModal } = useOnboardingModal()
@@ -222,7 +229,7 @@ export function CoachSpineCard({
           </div>
         )}
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className={`mt-3 flex flex-wrap gap-2 ${hideActions ? 'hidden' : ''}`}>
           {isCalibrated && isFirstRep && firstRepHref ? (
             <Link
               href={firstRepHref}

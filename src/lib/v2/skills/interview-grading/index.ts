@@ -137,7 +137,7 @@ Grade this session according to the rubric.`
 // Fallback when the AI grader exhausts its retries. There is no objective score
 // signal for a canvas/conversation interview, so use a neutral mid score and an
 // honest headline. The user can re-submit for a real AI grade.
-function neutralInterviewGradeFallback(challengeType: ChallengeType): InterviewGrade {
+export function neutralInterviewGradeFallback(challengeType: ChallengeType): InterviewGrade {
   const note = "Hatch's detailed review was unavailable this time."
   const dim = (verdict: string): InterviewGradeDimension => ({
     score: 3,
