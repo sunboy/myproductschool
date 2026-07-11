@@ -401,8 +401,15 @@ export async function getChallengePreviews(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Analytics is flag-gated: include its preview slice only when the feature is
+  // on, so the "All practice" AI Analytics section has cards to seed it (its
+  // section total comes from getChallengeCounts, which gates the same way).
+  const previewDisciplines: CountDiscipline[] = isAnalyticsFeatureEnabled()
+    ? [...COUNT_DISCIPLINES, 'analytics']
+    : [...COUNT_DISCIPLINES]
+
   const slices = await Promise.all(
-    COUNT_DISCIPLINES.map(async (discipline) => {
+    previewDisciplines.map(async (discipline) => {
       let q = supabase
         .from('challenges')
         .select(CHALLENGE_LIST_COLUMNS)

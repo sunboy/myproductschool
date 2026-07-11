@@ -982,6 +982,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
       {showBrief && (
         <MissionBrief
           question={scenario?.question || challenge.title || 'Answer the business question with real data.'}
+          subtitle={lab.missionBrief.subtitle}
+          promises={lab.missionBrief.promises}
+          readyLabel={lab.missionBrief.readyLabel}
           briefBody={[scenario?.context, scenario?.trigger].filter(Boolean).join(' ') || undefined}
           ready={mcpConnected && replRunning}
           firstPrompt={activeSubProblem?.suggestedPrompts?.[0] ?? lab.missionBrief.fallbackFirstPrompt}

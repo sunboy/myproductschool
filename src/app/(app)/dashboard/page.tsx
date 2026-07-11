@@ -27,6 +27,7 @@ import { StatStrip } from '@/components/redesign/StatStrip'
 import { FirstWeekStrip } from '@/components/redesign/dashboard/FirstWeekStrip'
 import { RecommendedRow, type RecommendedCardData } from '@/components/redesign/dashboard/RecommendedRow'
 import { TodaysPathPanel } from '@/components/redesign/dashboard/TodaysPathPanel'
+import { QuickTakePanel, QUICK_TAKE_ANCHOR } from '@/components/redesign/dashboard/QuickTakePanel'
 import { ThisWeekPanel } from '@/components/redesign/dashboard/ThisWeekPanel'
 import { PeersPanel } from '@/components/redesign/dashboard/PeersPanel'
 import { FlowMethodRail } from '@/components/redesign/dashboard/FlowMethodRail'
@@ -587,9 +588,9 @@ async function loadDashboardCoreUncached() {
 
     // Per-step action buttons (Start/Continue/Review per the round4 preview),
     // each wired to the step's real destination. A step without a live
-    // destination gets no button (spec: no stubs) — the Quick Take step has no
-    // standalone surface in this redesign (the workspace redirects quick_take
-    // to /challenges), so it stays a progress marker only.
+    // destination gets no button (spec: no stubs). The Quick Take step links
+    // to the inline QuickTakePanel card rendered below Today's path (the
+    // workspace still redirects quick_take challenge routes to /challenges).
     const lastFlowAttemptToday = [...todayAttempts]
       .reverse()
       .find(a => a.challenges?.challenge_type !== 'quick_take')
@@ -610,6 +611,9 @@ async function loadDashboardCoreUncached() {
         icon: 'bolt',
         done: doneQuickTake,
         active: !doneQuickTake,
+        // Anchor of the inline QuickTakePanel below (id="quick-take").
+        href: !doneQuickTake && quickTakePrompt?.prompt_text ? '#quick-take' : undefined,
+        cta: 'Warm up',
       },
       {
         label: 'Core challenge',
@@ -795,10 +799,19 @@ async function DashboardContent() {
           <QuietInviteRow text="Your week view and cohort appear after your first rep." />
         ) : (
           <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-[1.35fr_1fr_1fr]">
-            <TodaysPathPanel
-              steps={core.todaysPathSteps.map(s => ({ label: s.label, sub: s.sub, done: s.done, active: s.active, href: s.href, cta: s.cta }))}
-              completed={core.todaysPathCompleted}
-            />
+            <div className="flex min-w-0 flex-col gap-4">
+              <TodaysPathPanel
+                steps={core.todaysPathSteps.map(s => ({ label: s.label, sub: s.sub, done: s.done, active: s.active, href: s.href, cta: s.cta }))}
+                completed={core.todaysPathCompleted}
+              />
+              {core.quickTakePrompt?.prompt_text && (
+                <QuickTakePanel
+                  prompt={core.quickTakePrompt.prompt_text}
+                  challengeId={core.quickTakePrompt.id}
+                  move={core.quickTakePrompt.move_tags?.[0] ?? null}
+                />
+              )}
+            </div>
             <ThisWeekPanel
               weekDates={core.weekDates}
               streakDays={core.streakDays}

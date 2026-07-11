@@ -67,6 +67,8 @@ export interface LabClientDefinition {
     subtitle: string
     promises: Array<{ icon: string; text: string; accent?: boolean }>
     fallbackFirstPrompt: string
+    /** Readiness pill text once the sandbox is live, e.g. 'Sandbox live · BigQuery connected'. */
+    readyLabel: string
   }
   startup: {
     /** Step labels for the determinate startup progress, in order. */

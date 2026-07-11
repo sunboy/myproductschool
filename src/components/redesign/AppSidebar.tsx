@@ -41,7 +41,7 @@ const NAV_ENTRIES: NavEntry[] = [
   { key: 'study-plans', label: 'Study Plans', href: '/explore/plans', icon: BookOpen },
   { key: 'progress', label: 'Progress', href: '/progress', icon: ChartColumn },
   { key: 'community', label: 'Community', href: '/cohort', icon: Users },
-  { key: 'analytics', label: 'Analytics', href: '/challenges?discipline=cc_analytics', icon: ChartLine },
+  { key: 'analytics', label: 'Analytics', href: '/challenges?discipline=analytics', icon: ChartLine },
 ]
 
 export interface AppSidebarProps {

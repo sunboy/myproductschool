@@ -51,6 +51,7 @@ export const ANALYTICS_LAB_CLIENT: LabClientDefinition = {
       { icon: 'construction', text: 'A reusable skill that teaches the agent this analysis for next time', accent: true },
     ],
     fallbackFirstPrompt: 'What tables are in the dataset?',
+    readyLabel: 'Sandbox live · BigQuery connected',
   },
   startup: {
     steps: [

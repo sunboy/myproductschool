@@ -142,8 +142,11 @@ function getInitialMessage(
   if (challengeType === 'data_modeling') {
     return "Let's model this data together. Draw your entities and relationships, or describe them and I'll add them to the canvas."
   }
-  if (challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging') {
+  if (challengeType === 'claude_code_analytics') {
     return "I can see your session, the dataset connection, and the skills you have written. Ask me how to push the analysis further."
+  }
+  if (challengeType === 'claude_code_debugging') {
+    return "I can see your session, the repository, and the failing tests. Ask me how to corner the root cause or prove your fix."
   }
   return "I'm here to help you design this system. You can draw by hand, type here, or speak - I'll help build and critique your diagram."
 }
@@ -170,11 +173,18 @@ function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' |
       "What's the trade-off in this relationship?",
     ]
   }
-  if (challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging') {
+  if (challengeType === 'claude_code_analytics') {
     return [
       "Why is my query returning nothing?",
       'How do I segment this by device?',
       'Is this finding strong enough to mark the step?',
+    ]
+  }
+  if (challengeType === 'claude_code_debugging') {
+    return [
+      'How do I reproduce this failure reliably?',
+      'Is this the root cause or just a symptom?',
+      'Does my fix hold against the full test suite?',
     ]
   }
   return [

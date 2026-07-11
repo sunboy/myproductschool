@@ -12,6 +12,12 @@ import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface MissionBriefProps {
   question: string
+  /** Lab-specific one-liner under "Your mission", from the lab client definition. */
+  subtitle: string
+  /** Lab-specific promised outcomes, from the lab client definition. */
+  promises: Array<{ icon: string; text: string; accent?: boolean }>
+  /** Readiness pill text once the sandbox is live, from the lab client definition. */
+  readyLabel: string
   /** Composed scenario context/trigger, shown as the brief body if present. */
   briefBody?: string
   /** True once the sandbox is live and the analyst REPL is running. */
@@ -28,6 +34,9 @@ interface MissionBriefProps {
 
 export function MissionBrief({
   question,
+  subtitle,
+  promises,
+  readyLabel,
   briefBody,
   ready,
   firstPrompt,
@@ -68,7 +77,7 @@ export function MissionBrief({
               Your mission
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--color-on-surface-variant)', marginTop: 1 }}>
-              A live Claude Code session against real BigQuery data.
+              {subtitle}
             </div>
           </div>
         </div>
@@ -105,9 +114,9 @@ export function MissionBrief({
             You will walk out with
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <PromiseRow icon="verified" text="A proven answer, backed by a real number from the data" />
-            <PromiseRow icon="description" text="A report you can share, written to the workspace" accent />
-            <PromiseRow icon="construction" text="A reusable skill that teaches the agent this analysis for next time" accent />
+            {promises.map((p) => (
+              <PromiseRow key={p.text} icon={p.icon} text={p.text} accent={p.accent} />
+            ))}
           </div>
         </div>
 
@@ -124,7 +133,7 @@ export function MissionBrief({
                 width: 8, height: 8, borderRadius: 99, background: 'currentColor',
                 boxShadow: ready ? '0 0 0 3px rgba(74,124,89,0.22)' : 'none',
               }} />
-              {ready ? 'Sandbox live · BigQuery connected' : 'Sandbox not started yet'}
+              {ready ? readyLabel : 'Sandbox not started yet'}
             </span>
           </div>
 

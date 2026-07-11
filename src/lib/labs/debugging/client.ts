@@ -53,6 +53,7 @@ export const DEBUGGING_LAB_CLIENT: LabClientDefinition = {
       { icon: 'construction', text: 'A reusable debugging skill the agent keeps for next time', accent: true },
     ],
     fallbackFirstPrompt: 'Run the test suite and show me what fails',
+    readyLabel: 'Sandbox live · repo checked out',
   },
   startup: {
     steps: [
