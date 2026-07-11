@@ -1,4 +1,5 @@
 import { cache, Suspense } from 'react'
+import { Star, Target, TrendingUp, Trophy, Zap } from 'lucide-react'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -119,7 +120,7 @@ type AttemptRow = {
   created_at: string
   challenges: { title: string; slug: string | null; challenge_type: string | null } | null
 }
-type PathStep = { label: string; sub: string; icon: string; done: boolean; active: boolean; href?: string }
+type PathStep = { label: string; sub: string; icon: string; done: boolean; active: boolean; href?: string; cta?: string }
 type WeekDate = { dayLabel: string; dateLabel: string; completed: boolean; isToday: boolean }
 
 function normalizeChallenge(raw: RawChallenge | null): NextChallenge | null {
@@ -306,6 +307,14 @@ async function loadDashboardCoreUncached() {
   let achievementData: { id: string; name: string; icon: string; unlocked: boolean; color: string }[] = []
   let weekDates: WeekDate[] = []
   let todayAttempts: AttemptRow[] = []
+  // Real week-over-week trend inputs for the stat strip. Stats whose trend
+  // cannot be derived from real data (overall progress, total XP) carry no
+  // delta line. Spec §4: no invented metrics.
+  let weeklyTrends: { solvedThisWeek: number; interviewsThisWeek: number; avgScoreDeltaPct: number | null } = {
+    solvedThisWeek: 0,
+    interviewsThisWeek: 0,
+    avgScoreDeltaPct: null,
+  }
 
   if (userId) {
     const now = new Date()
@@ -325,11 +334,19 @@ async function loadDashboardCoreUncached() {
       weekDateStrings.push(localDate(d))
     }
 
-    const [achievementsResult, streakResult, todayAttemptsResult, userAchievements] = await Promise.all([
+    const lastWeekStart = new Date(weekStart)
+    lastWeekStart.setDate(weekStart.getDate() - 7)
+    const lastWeekStartStr = localDate(lastWeekStart)
+
+    const [achievementsResult, streakResult, todayAttemptsResult, userAchievements, twoWeekAttemptsResult, weekInterviewsResult] = await Promise.all([
       adminClient.from('achievement_definitions').select('id, name, icon, xp_reward, criteria_type, criteria_value'),
       adminClient.from('user_streaks').select('date, completed').eq('user_id', userId).gte('date', weekDateStrings[0]).lte('date', weekDateStrings[6]),
       adminClient.from('challenge_attempts').select('challenge_id, created_at, challenges(title, slug, challenge_type)').eq('user_id', userId).eq('status', 'completed').gte('created_at', todayStr).order('created_at', { ascending: true }).limit(10),
       adminClient.from('user_achievements').select('achievement_id').eq('user_id', userId),
+      // Two-week window of completed attempts: this week's solved count plus
+      // the this-week-vs-last-week average-score movement for the stat strip.
+      adminClient.from('challenge_attempts').select('created_at, total_score, max_score, challenges(challenge_type)').eq('user_id', userId).eq('status', 'completed').gte('created_at', lastWeekStartStr).limit(500),
+      adminClient.from('live_interview_sessions').select('ended_at').eq('user_id', userId).eq('status', 'completed').gte('ended_at', weekDateStrings[0]),
     ])
 
     const unlockedIds = new Set((userAchievements.data ?? []).map(a => a.achievement_id as string))
@@ -351,6 +368,37 @@ async function loadDashboardCoreUncached() {
     }))
 
     todayAttempts = (todayAttemptsResult.data ?? []) as unknown as AttemptRow[]
+
+    type TwoWeekAttempt = {
+      created_at: string
+      total_score: number | string | null
+      max_score: number | string | null
+      challenges: { challenge_type: string | null } | { challenge_type: string | null }[] | null
+    }
+    const twoWeekAttempts = (twoWeekAttemptsResult.data ?? []) as unknown as TwoWeekAttempt[]
+    const weekStartStr = weekDateStrings[0]
+    const isQuickTakeAttempt = (a: TwoWeekAttempt) => {
+      const c = Array.isArray(a.challenges) ? a.challenges[0] : a.challenges
+      return c?.challenge_type === 'quick_take'
+    }
+    // ISO timestamps compare lexicographically against a YYYY-MM-DD prefix.
+    const thisWeekRows = twoWeekAttempts.filter(a => a.created_at >= weekStartStr)
+    const lastWeekRows = twoWeekAttempts.filter(a => a.created_at < weekStartStr)
+    const avgScorePct = (rows: TwoWeekAttempt[]): number | null => {
+      const graded = rows
+        .map(r => ({ total: Number(r.total_score), max: Number(r.max_score) }))
+        .filter(r => Number.isFinite(r.total) && Number.isFinite(r.max) && r.max > 0)
+      if (graded.length === 0) return null
+      return (graded.reduce((sum, r) => sum + (r.total / r.max) * 100, 0) / graded.length)
+    }
+    const thisWeekAvg = avgScorePct(thisWeekRows)
+    const lastWeekAvg = avgScorePct(lastWeekRows)
+    weeklyTrends = {
+      solvedThisWeek: thisWeekRows.filter(a => !isQuickTakeAttempt(a)).length,
+      interviewsThisWeek: (weekInterviewsResult.data ?? []).length,
+      avgScoreDeltaPct:
+        thisWeekAvg !== null && lastWeekAvg !== null ? Math.round(thisWeekAvg - lastWeekAvg) : null,
+    }
   }
 
   let nextChallenge: NextChallenge | null = null
@@ -537,9 +585,24 @@ async function loadDashboardCoreUncached() {
     const doneQuickTake = todayAttempts.some(a => a.challenges?.challenge_type === 'quick_take')
     const doneFlowChallenge = todayAttempts.some(a => a.challenges?.challenge_type !== 'quick_take')
 
-    // Rendered as a pure progress readout — no per-step hrefs. The single
-    // dominant action lives in ResumeOrStartCard, so these steps show where the
-    // user is in today's loop without adding three competing CTAs.
+    // Per-step action buttons (Start/Continue/Review per the round4 preview),
+    // each wired to the step's real destination. A step without a live
+    // destination gets no button (spec: no stubs) — the Quick Take step has no
+    // standalone surface in this redesign (the workspace redirects quick_take
+    // to /challenges), so it stays a progress marker only.
+    const lastFlowAttemptToday = [...todayAttempts]
+      .reverse()
+      .find(a => a.challenges?.challenge_type !== 'quick_take')
+    const reflectHref = lastFlowAttemptToday
+      ? `/challenges/${lastFlowAttemptToday.challenges?.slug ?? lastFlowAttemptToday.challenge_id}/feedback`
+      : undefined
+    const coreHref =
+      resumeOrStartAction?.kind === 'resume'
+        ? resumeOrStartAction.href
+        : nextChallenge
+          ? challengePath(nextChallenge)
+          : undefined
+
     todaysPathSteps = [
       {
         label: 'Quick Take',
@@ -556,6 +619,12 @@ async function loadDashboardCoreUncached() {
         icon: 'track_changes',
         done: doneFlowChallenge,
         active: doneQuickTake && !doneFlowChallenge,
+        href: doneFlowChallenge ? reflectHref : coreHref,
+        cta: doneFlowChallenge
+          ? 'Review'
+          : resumeOrStartAction?.kind === 'resume'
+            ? 'Continue'
+            : 'Start',
       },
       {
         label: 'Reflect',
@@ -563,6 +632,8 @@ async function loadDashboardCoreUncached() {
         icon: 'edit_note',
         done: false,
         active: doneFlowChallenge,
+        href: reflectHref,
+        cta: 'Review',
       },
     ]
     todaysPathCompleted = todaysPathSteps.filter(s => s.done).length
@@ -601,6 +672,7 @@ async function loadDashboardCoreUncached() {
     quickTakePrompt,
     todaysPathSteps,
     todaysPathCompleted,
+    weeklyTrends,
     userRank,
     interviews,
     hatchContext,
@@ -724,7 +796,7 @@ async function DashboardContent() {
         ) : (
           <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-[1.35fr_1fr_1fr]">
             <TodaysPathPanel
-              steps={core.todaysPathSteps.map(s => ({ label: s.label, sub: s.sub, done: s.done, active: s.active }))}
+              steps={core.todaysPathSteps.map(s => ({ label: s.label, sub: s.sub, done: s.done, active: s.active, href: s.href, cta: s.cta }))}
               completed={core.todaysPathCompleted}
             />
             <ThisWeekPanel
@@ -785,17 +857,29 @@ function buildStatCells(
   core: Awaited<ReturnType<typeof loadDashboardCoreUncached>>,
 ) {
   const cells: Parameters<typeof StatStrip>[0]['cells'] = []
+  const trends = core.weeklyTrends
 
+  // Overall Progress and Total XP carry no trend line: move_levels stores no
+  // weekly history and the preview shows Total XP without a delta. Solved,
+  // interviews, and avg score derive real this-week movement from the
+  // two-week attempt/interview window loaded above.
   const overallProgressPct = core.allMoveLevels.length > 0
     ? Math.round(core.allMoveLevels.reduce((sum, m) => sum + m.progress_pct, 0) / core.allMoveLevels.length)
     : null
   if (overallProgressPct !== null) {
-    cells.push({ key: 'progress', label: 'Overall Progress', value: `${overallProgressPct}%`, progressPercent: overallProgressPct })
+    cells.push({
+      key: 'progress',
+      label: 'Overall Progress',
+      icon: <TrendingUp size={16} strokeWidth={1.7} className="text-forest-600" />,
+      value: `${overallProgressPct}%`,
+      progressPercent: overallProgressPct,
+    })
   }
 
   cells.push({
     key: 'xp',
     label: 'Total XP',
+    icon: <Zap size={16} strokeWidth={1.7} className="text-gold" />,
     value: lead.xpTotal.toLocaleString(),
     // Same derivation as the top utility bar pill — the two must agree.
     valueSuffix: lead.xpTotal > 0 ? `Level ${levelFromXp(lead.xpTotal)}` : undefined,
@@ -803,17 +887,38 @@ function buildStatCells(
 
   const completedCount = lead.hatchContext?.practiceStats.completedChallenges ?? null
   if (completedCount !== null && completedCount > 0) {
-    cells.push({ key: 'solved', label: 'Problems Solved', value: completedCount.toLocaleString() })
+    cells.push({
+      key: 'solved',
+      label: 'Problems Solved',
+      icon: <Target size={16} strokeWidth={1.7} className="text-ps-fg" />,
+      value: completedCount.toLocaleString(),
+      delta: trends.solvedThisWeek > 0 ? `↑ ${trends.solvedThisWeek} this week` : undefined,
+    })
   }
 
   const completedInterviews = lead.hatchContext?.practiceStats.completedLiveInterviews ?? null
   if (completedInterviews !== null && completedInterviews > 0) {
-    cells.push({ key: 'interviews', label: 'Mock Interviews', value: completedInterviews.toLocaleString() })
+    cells.push({
+      key: 'interviews',
+      label: 'Mock Interviews',
+      icon: <Trophy size={16} strokeWidth={1.7} className="text-sql-fg" />,
+      value: completedInterviews.toLocaleString(),
+      delta: trends.interviewsThisWeek > 0 ? `↑ ${trends.interviewsThisWeek} this week` : undefined,
+    })
   }
 
   const avgScore = lead.hatchContext?.practiceStats.averageChallengeScore ?? null
   if (avgScore !== null) {
-    cells.push({ key: 'avg-score', label: 'Avg. Score', value: `${Math.round(avgScore)}%` })
+    cells.push({
+      key: 'avg-score',
+      label: 'Avg. Score',
+      icon: <Star size={16} strokeWidth={1.7} className="text-amber" />,
+      value: `${Math.round(avgScore)}%`,
+      delta:
+        trends.avgScoreDeltaPct !== null && trends.avgScoreDeltaPct !== 0
+          ? `${trends.avgScoreDeltaPct > 0 ? '↑' : '↓'} ${Math.abs(trends.avgScoreDeltaPct)}% this week`
+          : undefined,
+    })
   }
 
   return cells

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { HatchImage } from '@/components/redesign/HatchImage'
 
@@ -18,6 +19,8 @@ export interface HatchSaysProps {
   tint?: NoteTint
   ctaLabel?: string
   onCtaClick?: () => void
+  /** Renders the CTA as a Link instead of a button. Server-component safe (no handler needed). */
+  ctaHref?: string
   /** Applies the -0.6 to -1deg pinned-note rotation. At most one tinted surface per page should rotate (spec §7). */
   rotate?: boolean
   className?: string
@@ -28,7 +31,7 @@ export interface HatchSaysProps {
  * optional CTA. Per spec "Signature components" #1 and previews/round4/
  * dashboard.html .hatch-says block.
  */
-export function HatchSays({ message, tint = 'mint', ctaLabel, onCtaClick, rotate, className }: HatchSaysProps) {
+export function HatchSays({ message, tint = 'mint', ctaLabel, onCtaClick, ctaHref, rotate, className }: HatchSaysProps) {
   return (
     <div
       className={cn(
@@ -43,7 +46,15 @@ export function HatchSays({ message, tint = 'mint', ctaLabel, onCtaClick, rotate
         Hatch says
       </div>
       <div className="mb-2.5 text-xs leading-[1.45] text-ink-strong">{message}</div>
-      {ctaLabel && (
+      {ctaLabel && ctaHref && (
+        <Link
+          href={ctaHref}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-forest-800 px-[11px] py-1.5 text-[11.5px] font-bold text-white no-underline"
+        >
+          {ctaLabel}
+        </Link>
+      )}
+      {ctaLabel && !ctaHref && (
         <button
           type="button"
           onClick={onCtaClick}

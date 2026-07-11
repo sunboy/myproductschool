@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Search, X } from 'lucide-react';
+import { ArrowRight, BookOpen, Building2, Clock, Search, X } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
+import { HatchImage } from '@/components/redesign/HatchImage';
 import { HatchSays } from '@/components/redesign/HatchSays';
 import { InkMark } from '@/components/redesign/InkMark';
 import { ProTipStrip } from '@/components/redesign/ProTipStrip';
@@ -72,17 +73,15 @@ export function ShowcaseIndexExperience({
     <div className="mx-auto max-w-[1180px] px-4 pb-12 pt-5 lg:px-0">
       <BackButton href="/explore" label="Back to Explore" className="mb-3" />
 
-      <PageHeader
-        storyCount={stories.length}
+      <HubHero
+        stories={stories}
         companyCount={companies.length}
+        featured={featured}
         onOpenSearch={() => setSearchOpen(true)}
       />
 
       {featured && (
-        <div
-          data-tour-target="autopsies-hero"
-          className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]"
-        >
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
           <FeaturedStoryCard story={featured} company={featuredCompany} totalStages={totalStages} />
           <WhyAutopsiesCard />
         </div>
@@ -121,41 +120,114 @@ export function ShowcaseIndexExperience({
   );
 }
 
-function PageHeader({
-  storyCount,
+/**
+ * Parses "20 min read" / "20 min" / "20" DB strings to minutes. Returns null
+ * for anything non-numeric so the avg-read chip can honestly omit itself.
+ */
+function parseReadMinutes(raw: string): number | null {
+  const match = raw.trim().match(/^(\d+)/);
+  if (!match) return null;
+  const minutes = Number(match[1]);
+  return Number.isFinite(minutes) && minutes > 0 ? minutes : null;
+}
+
+/**
+ * Compact dense dark hero per autopsies-hub-1440.png (spec §1 amendment:
+ * library hubs keep the approved previews' dark hero bands). Stat chips only
+ * render with real backing data; avg read time derives from the stories'
+ * estimatedReadTime strings and omits itself when none parse.
+ */
+function HubHero({
+  stories,
   companyCount,
+  featured,
   onOpenSearch,
 }: {
-  storyCount: number;
+  stories: FeatureAutopsy[];
   companyCount: number;
+  featured: FeatureAutopsy | undefined;
   onOpenSearch: () => void;
 }) {
+  const readMinutes = stories
+    .map(story => parseReadMinutes(story.estimatedReadTime))
+    .filter((minutes): minutes is number => minutes !== null);
+  const avgRead = readMinutes.length > 0
+    ? Math.round(readMinutes.reduce((sum, minutes) => sum + minutes, 0) / readMinutes.length)
+    : null;
+
+  const hatchMessage = featured
+    ? `Read ${featured.title} first. The ${featured.flow?.[0]?.move ?? 'Frame'} stage sets up the linked reps.`
+    : `${stories.length} ${stories.length === 1 ? 'story' : 'stories'} to pick from. Start with a company you know as a user.`;
+
   return (
-    <header className="flex flex-col gap-3 border-b border-hairline pb-4 pt-1.5 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        <h1 className="font-headline text-[28px] font-semibold leading-[1.2] text-ink-strong">
-          Product autopsies
-        </h1>
-        <p className="mt-1 max-w-[62ch] text-[13.5px] leading-[1.45] text-ink-secondary">
-          Teardowns of how real companies grew, monetized, and retained. Each story ends in practice reps you can run.
-        </p>
+    <div
+      data-tour-target="autopsies-hero"
+      className="relative overflow-hidden rounded-2xl px-[26px] py-6 text-white"
+      style={{
+        background:
+          'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-850) 75%, var(--color-forest-700) 130%)',
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-10 -top-16 h-[420px] w-[420px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(30,71,45,.55) 0%, rgba(30,71,45,0) 70%)' }}
+      />
+      <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
+        <div className="min-w-0 lg:pr-32">
+          <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
+            Product autopsies
+          </div>
+          <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-[#f9faf5]">
+            Learn from real product wins and misses.
+          </h1>
+          <p className="mb-3.5 max-w-[54ch] text-[13px] leading-[1.5] text-white/72">
+            Stage-by-stage breakdowns of how real companies built their growth loops, monetization, and retention mechanics. Read one, then practice the decisions yourself.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {stories.length > 0 && (
+              <span className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-bold text-white/85">
+                <BookOpen size={15} strokeWidth={1.8} className="shrink-0 text-gold" />
+                {stories.length} {stories.length === 1 ? 'story' : 'stories'}
+              </span>
+            )}
+            {companyCount > 0 && (
+              <span className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-bold tabular-nums text-white/85">
+                <Building2 size={15} strokeWidth={1.8} className="shrink-0 text-gold" />
+                {companyCount} {companyCount === 1 ? 'company' : 'companies'}
+              </span>
+            )}
+            {avgRead !== null && (
+              <span className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-bold tabular-nums text-white/85">
+                <Clock size={15} strokeWidth={1.8} className="shrink-0 text-gold" />
+                {avgRead} min avg read
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              className="flex items-center gap-2 rounded-lg border border-white/20 bg-transparent px-3 py-1.5 text-[12px] font-bold text-white/85 transition-colors hover:bg-white/10"
+            >
+              <Search size={15} strokeWidth={1.8} className="shrink-0" />
+              Search
+            </button>
+          </div>
+        </div>
+
+        <div className="relative flex items-center lg:col-start-2">
+          <div className="pointer-events-none absolute -left-[150px] bottom-[-28px] z-[1] hidden w-[132px] lg:block">
+            <HatchImage state="reading" size={132} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
+          </div>
+          <HatchSays
+            className="relative z-10 w-full"
+            tint="mint"
+            message={hatchMessage}
+            ctaLabel={featured ? 'Read the autopsy' : undefined}
+            ctaHref={featured ? routeForStory(featured) : undefined}
+          />
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
-        <span className="whitespace-nowrap text-xs font-medium tabular-nums text-ink-secondary">
-          {storyCount} {storyCount === 1 ? 'story' : 'stories'}
-          <span className="mx-2 text-ink-muted">·</span>
-          {companyCount} {companyCount === 1 ? 'company' : 'companies'}
-        </span>
-        <button
-          type="button"
-          onClick={onOpenSearch}
-          className="flex items-center gap-2 rounded-full border border-hairline bg-card-bright px-3.5 py-2 text-xs font-semibold text-ink-secondary transition-colors hover:text-ink-strong"
-        >
-          <Search size={15} strokeWidth={1.8} />
-          Search
-        </button>
-      </div>
-    </header>
+    </div>
   );
 }
 
@@ -237,15 +309,9 @@ function WhyAutopsiesCard() {
   return (
     <div className="flex min-h-[220px] -rotate-[0.8deg] flex-col rounded-xl border border-note-amber-border bg-note-amber p-5">
       <h3 className="mb-2.5 text-[17px] font-bold text-ink-strong">Why autopsies</h3>
-      <p className="mb-4 text-[13px] leading-[1.6] text-ink-secondary">
+      <p className="text-[13px] leading-[1.6] text-ink-secondary">
         A case study tells you what happened. An autopsy shows each decision as it looked before the outcome was known: the constraint, the tradeoff, the call someone had to ship. Then you make the same call yourself in a linked rep.
       </p>
-      <div className="mt-auto">
-        <HatchSays
-          tint="amber"
-          message="Autopsies pair with practice reps. Read a stage, then run the linked challenge to make the same call yourself."
-        />
-      </div>
     </div>
   );
 }
@@ -278,22 +344,24 @@ function StoryList({
   const hiddenCount = stories.length - visible.length;
 
   return (
-    <div className="mt-2">
-      {visible.map(story => {
-        const company = companyMap.get(story.companySlug);
-        const stageCount = story.flow?.length;
-        return (
-          <Link
-            key={story.slug}
-            href={routeForStory(story)}
-            className="flex items-center gap-4 border-t border-hairline py-4 no-underline last:border-b"
-          >
-            <div className="min-w-0 flex-1">
+    <div className="mt-3">
+      {/* Card grid per autopsies-hub-1440.png: brand-accent company text
+          label leads each card (letter avatars are banned, spec §8). */}
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {visible.map(story => {
+          const company = companyMap.get(story.companySlug);
+          const stageCount = story.flow?.length;
+          return (
+            <Link
+              key={story.slug}
+              href={routeForStory(story)}
+              className="flex flex-col rounded-xl border border-hairline bg-card-bright p-4 no-underline"
+            >
               <div className="text-[11.5px] font-bold" style={{ color: company?.accent ?? 'var(--color-ink-secondary)' }}>
                 {company?.name ?? story.companySlug}
               </div>
-              <div className="mt-1 text-base font-bold leading-[1.32] text-ink-strong">{story.title}</div>
-              <div className="mt-1 text-xs tabular-nums text-ink-muted">
+              <div className="mt-1.5 flex-1 text-[15px] font-bold leading-[1.32] text-ink-strong">{story.title}</div>
+              <div className="mt-2 text-xs tabular-nums text-ink-muted">
                 {formatReadTime(story.estimatedReadTime)}
                 {typeof stageCount === 'number' && stageCount > 0 && (
                   <>
@@ -302,19 +370,19 @@ function StoryList({
                   </>
                 )}
               </div>
-            </div>
-            <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-bold text-forest-700">
-              Read
-              <ArrowRight size={13} strokeWidth={2.2} />
-            </span>
-          </Link>
-        );
-      })}
+              <span className="mt-3 flex items-center gap-1 whitespace-nowrap text-xs font-bold text-forest-700">
+                Read
+                <ArrowRight size={13} strokeWidth={2.2} />
+              </span>
+            </Link>
+          );
+        })}
+      </div>
       {hiddenCount > 0 && (
         <button
           type="button"
           onClick={() => setShowAll(true)}
-          className="flex w-full items-center justify-center gap-1.5 border-t border-hairline py-3.5 text-xs font-bold text-forest-700 transition-colors hover:text-ink-strong"
+          className="mt-3 flex w-full items-center justify-center gap-1.5 border-t border-hairline py-3.5 text-xs font-bold text-forest-700 transition-colors hover:text-ink-strong"
         >
           Show all {stories.length} stories
           <ArrowRight size={13} strokeWidth={2.2} className="rotate-90" />

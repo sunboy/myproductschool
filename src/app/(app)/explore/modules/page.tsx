@@ -6,29 +6,17 @@ import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
 import { DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import type { LearnModule, LearnModuleWithProgress } from '@/lib/types'
 import { BackButton } from '@/components/navigation/BackButton'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { HatchSays } from '@/components/redesign/HatchSays'
 import { NoteCard } from '@/components/redesign/NoteCard'
 import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 
-// Guides hub — compact light page header per spec §1 rev-1 (guides hub is
-// explicitly listed among the pages that drop the dark hero band). Module
-// grid comes straight from getLearnModuleSummaries; the continue-reading band
-// is real per-user chapter progress from user_learn_progress (same source
-// /api/learn uses), rendered only when a module is genuinely in progress.
-
-function highlightWord(headline: string, word: string): React.ReactNode {
-  const idx = headline.toLowerCase().indexOf(word.toLowerCase())
-  if (idx === -1) return headline
-  const before = headline.slice(0, idx)
-  const match = headline.slice(idx, idx + word.length)
-  const after = headline.slice(idx + word.length)
-  return (
-    <>
-      {before}
-      <span className="hl-word">{match}</span>
-      {after}
-    </>
-  )
-}
+// Guides hub — compact dense dark hero band per spec §1 amendment (the three
+// library hubs keep the approved previews' dark heroes; guides-hub-1440.png).
+// Module grid comes straight from getLearnModuleSummaries; the
+// continue-reading band is real per-user chapter progress from
+// user_learn_progress (same source /api/learn uses), rendered only when a
+// module is genuinely in progress.
 
 function tintFromHex(hex: string, alpha: number): string {
   const clean = hex.replace('#', '')
@@ -84,20 +72,57 @@ export default async function ModulesPage() {
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 48px' }}>
       <BackButton href="/explore" label="Back to Explore" className="mb-4" />
 
-      {/* ── Compact light page header ── */}
-      <header style={{ padding: '4px 2px 18px' }}>
-        <h1
-          className="font-headline"
-          style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, color: 'var(--color-on-surface, #20291f)', margin: '0 0 6px' }}
-        >
-          {highlightWord('Guides', 'Guides')}
-        </h1>
-        <p className="font-body" style={{ fontSize: 13.5, color: 'var(--color-on-surface-variant, #5b685e)', lineHeight: 1.5, margin: 0 }}>
-          Every challenge type grades against a framework. These guides teach them
-          {modules.length > 0 ? `, ${modules.length} in all` : ''}
-          {totalChapters > 0 ? ` across ${totalChapters} chapters` : ''}.
-        </p>
-      </header>
+      {/* ── Compact dense dark hero band (guides-hub-1440.png) ── */}
+      <div
+        className="relative mb-5 overflow-hidden rounded-2xl px-[26px] py-6 text-white"
+        style={{
+          background:
+            'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-850) 75%, var(--color-forest-700) 130%)',
+        }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-16 h-[420px] w-[420px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(30,71,45,.55) 0%, rgba(30,71,45,0) 70%)' }}
+        />
+        <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
+          <div className="min-w-0 lg:pr-32">
+            <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
+              Guides
+            </div>
+            <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-[#f9faf5]">
+              Read the theory. Then go train it.
+            </h1>
+            <p className="max-w-[54ch] text-[13px] leading-[1.5] text-white/72">
+              Short, sharp chapters on the frameworks behind every challenge
+              {modules.length > 0 ? `: ${modules.length} guides` : ''}
+              {totalChapters > 0 ? `, ${totalChapters} chapters` : ''}
+              {totalMinutes > 0 ? `, about ${totalMinutes} minutes end to end` : ''}.
+            </p>
+          </div>
+
+          <div className="relative flex items-center lg:col-start-2">
+            <div className="pointer-events-none absolute -left-[150px] bottom-[-28px] z-[1] hidden w-[132px] lg:block">
+              <HatchImage state="reading" size={132} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
+            </div>
+            {(continueModule || modules.length > 0) && (
+              <HatchSays
+                className="relative z-10 w-full"
+                tint="mint"
+                message={
+                  continueModule
+                    ? `You're ${continueModule.completed_chapters} ${
+                        continueModule.completed_chapters === 1 ? 'chapter' : 'chapters'
+                      } into ${continueModule.name}. Chapter ${resumeChapterNumber} is next.`
+                    : `Start with ${modules[0].name}: ${modules[0].chapter_count} chapters, about ${modules[0].est_minutes} minutes.`
+                }
+                ctaLabel={continueModule ? `Resume chapter ${resumeChapterNumber}` : 'Start reading'}
+                ctaHref={`/explore/modules/${(continueModule ?? modules[0]).slug}`}
+              />
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* ── Continue reading (real progress only) ── */}
       {continueModule && (

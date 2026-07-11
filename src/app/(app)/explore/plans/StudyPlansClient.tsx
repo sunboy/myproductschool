@@ -4,31 +4,16 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Check, ArrowRight } from 'lucide-react'
 import { HatchImage } from '@/components/redesign/HatchImage'
+import { HatchSays } from '@/components/redesign/HatchSays'
 import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 import type { StudyPlanWithItems } from '@/lib/types'
-import type { Discipline } from '@/components/redesign/DisciplineTile'
+import { DisciplineTile, type Discipline } from '@/components/redesign/DisciplineTile'
 import { trackEvent } from '@/lib/posthog/client'
 import { EVENT_STUDY_PLAN_VIEWED } from '@/lib/posthog/events'
 
 interface Props {
   studyPlans: StudyPlanWithItems[]
   enrolledPlans: StudyPlanWithItems[]
-}
-
-const EYEBROW_FG_CLASS: Record<Discipline, string> = {
-  'system-design': 'text-sd-fg',
-  'product-sense': 'text-ps-fg',
-  'data-modeling': 'text-dm-fg',
-  sql: 'text-sql-fg',
-  'ai-ml': 'text-aiml-fg',
-}
-
-const DISCIPLINE_LABEL: Record<Discipline, string> = {
-  'system-design': 'System design',
-  'product-sense': 'Product sense',
-  'data-modeling': 'Data modeling',
-  sql: 'SQL & tooling',
-  'ai-ml': 'AI / ML',
 }
 
 /**
@@ -84,70 +69,102 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
   // getEnrolledPlans already orders by last_active_at desc.
   const continuePlan = enrolledPlans.find(p => p.progress_percentage > 0) ?? enrolledPlans[0] ?? null
 
-  // Hatch header note: names the specific enrolled plan and where the user
-  // left off. Falls back to nothing (omitted) if there's no real enrollment
-  // to reference — no generic filler per spec §4.
-  const headerNote = continuePlan
-    ? `${continuePlan.completed_count} of ${continuePlan.item_count} challenges done in ${continuePlan.title}. ${
-        continuePlan.item_count - continuePlan.completed_count === 1
-          ? 'One left to finish it.'
-          : `${continuePlan.item_count - continuePlan.completed_count} left to finish it.`
+  // Hero HatchSays: names the specific enrolled plan and where the user left
+  // off, with a working Continue CTA. Without a real enrollment it falls back
+  // to a starter line pointing at the plans grid — no invented state.
+  const remaining = continuePlan ? continuePlan.item_count - continuePlan.completed_count : 0
+  const hatchMessage = continuePlan
+    ? `${continuePlan.title} is ${continuePlan.progress_percentage}% done. ${
+        remaining === 1 ? 'One challenge left to finish it.' : `${remaining} challenges left to finish it.`
       }`
-    : null
+    : 'Pick one plan and run it to the end. Sequenced reps compound; scattered ones stall.'
+
+  const continueDiscipline = continuePlan ? disciplineForPlan(continuePlan) : null
+  const nextStep = continuePlan ? Math.min(continuePlan.completed_count + 1, continuePlan.item_count) : 0
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-5">
-      {/* ── Compact light page header (spec §1) ── */}
+      {/* ── Compact dense dark hero band (spec §1 amendment: library hubs keep
+          the approved previews' dark heroes; study-plans-1440.png) ── */}
       <div
         data-tour-target="study-plans-hero"
-        className="flex flex-col gap-4 border-b border-hairline pb-4 sm:flex-row sm:items-center sm:justify-between"
+        className="relative overflow-hidden rounded-2xl px-[26px] py-6 text-white"
+        style={{
+          background:
+            'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-850) 75%, var(--color-forest-700) 130%)',
+        }}
       >
-        <div>
-          <h1 className="font-headline text-[28px] font-bold leading-tight text-ink-strong">
-            Study <span className="hl-word">plans</span>
-          </h1>
-          <p className="mt-1 max-w-[480px] text-[13.5px] leading-[1.45] text-ink-secondary">
-            Sequenced reps with a fixed order and an end.
-          </p>
-        </div>
-
-        {headerNote && (
-          <div className="note-mint flex max-w-[320px] shrink-0 items-center gap-2.5 px-3 py-2.5">
-            <HatchImage state="avatar" size={28} className="rounded-full bg-forest-900 p-[3px]" />
-            <p className="text-[12.5px] leading-[1.4] text-ink-secondary">
-              <b className="font-extrabold text-ink-strong">Hatch:</b> {headerNote}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-16 h-[420px] w-[420px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(30,71,45,.55) 0%, rgba(30,71,45,0) 70%)' }}
+        />
+        <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
+          <div className="min-w-0 lg:pr-32">
+            <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
+              Study plans
+            </div>
+            <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-[#f9faf5]">
+              Follow a path. Ship a skill.
+            </h1>
+            <p className="max-w-[52ch] text-[13px] leading-[1.5] text-white/72">
+              Structured, multi-day sequences that build one capability at a time, so practice compounds instead of scattering.
             </p>
           </div>
-        )}
-      </div>
 
-      {/* ── Continue band (slim amber note, real progress) ── */}
-      {continuePlan && (
-        <div className="note-amber mt-3.5 flex flex-wrap items-center gap-4 px-4 py-2.5">
-          <span className="shrink-0 text-[11px] font-extrabold uppercase tracking-[0.05em] text-ink-muted">
-            Continue
-          </span>
-          <span className="shrink-0 whitespace-nowrap text-[14.5px] font-bold text-ink-strong">
-            {continuePlan.title}
-          </span>
-          <span className="shrink-0 whitespace-nowrap text-[12.5px] font-bold tabular-nums text-ink-secondary">
-            {continuePlan.completed_count} of {continuePlan.item_count} done
-          </span>
-          <div className="h-2 max-w-[220px] flex-1 overflow-hidden rounded-full bg-hairline">
-            <div
-              className="h-full rounded-full bg-forest-600"
-              style={{ width: `${Math.max(0, Math.min(100, continuePlan.progress_percentage))}%` }}
+          <div className="relative flex items-center lg:col-start-2">
+            {/* Pointing mascot sits between the copy and the HatchSays card,
+                per study-plans-1440.png (hidden at narrow widths). */}
+            <div className="pointer-events-none absolute -left-[150px] bottom-[-28px] z-[1] hidden w-[132px] lg:block">
+              <HatchImage state="pointing" size={132} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
+            </div>
+            <HatchSays
+              className="relative z-10 w-full"
+              tint="mint"
+              message={hatchMessage}
+              ctaLabel={continuePlan ? 'Continue plan' : 'Browse plans'}
+              ctaHref={continuePlan ? `/explore/plans/${continuePlan.slug}` : '#all-plans'}
             />
           </div>
-          <span className="shrink-0 whitespace-nowrap text-[13px] font-extrabold tabular-nums text-forest-700">
-            {continuePlan.progress_percentage}%
-          </span>
-          <div className="flex-1 max-sm:hidden" />
+        </div>
+      </div>
+
+      {/* ── Continue-your-plan strip (icon tile + name + progress + step chip
+          + Continue button; real enrollment only) ── */}
+      {continuePlan && (
+        <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-hairline bg-card-bright px-4 py-3.5">
+          {continueDiscipline && <DisciplineTile discipline={continueDiscipline} />}
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.05em] text-ink-muted">
+                Continue your plan
+              </span>
+              <span className="whitespace-nowrap text-[15px] font-bold text-ink-strong">
+                {continuePlan.title}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="h-2 w-full max-w-[260px] overflow-hidden rounded-full bg-hairline">
+                <div
+                  className="h-full rounded-full bg-forest-600"
+                  style={{ width: `${Math.max(0, Math.min(100, continuePlan.progress_percentage))}%` }}
+                />
+              </div>
+              <span className="whitespace-nowrap text-[13px] font-extrabold tabular-nums text-forest-700">
+                {continuePlan.progress_percentage}%
+              </span>
+              {continuePlan.item_count > 0 && (
+                <span className="whitespace-nowrap rounded-full border border-hairline bg-page-field px-2.5 py-[3px] text-[11.5px] font-bold tabular-nums text-ink-secondary">
+                  Step {nextStep} of {continuePlan.item_count}
+                </span>
+              )}
+            </div>
+          </div>
           <Link
             href={`/explore/plans/${continuePlan.slug}`}
-            className="ml-auto flex shrink-0 items-center gap-1.5 rounded-lg bg-forest-950 px-[18px] py-[9px] text-[12.5px] font-extrabold text-white no-underline max-sm:ml-0 max-sm:w-full max-sm:justify-center"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-forest-950 px-[18px] py-[9px] text-[12.5px] font-extrabold text-white no-underline max-sm:w-full max-sm:justify-center"
           >
-            {continuePlan.progress_percentage > 0 ? 'Resume plan' : 'Start plan'}
+            {continuePlan.progress_percentage > 0 ? 'Continue' : 'Start plan'}
             <ArrowRight size={14} strokeWidth={2} />
           </Link>
         </div>
@@ -184,7 +201,7 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
       {/* ── Plans grid ── */}
       {activeTab === 'study_plan' && (
         <>
-          <div className="mb-1 mt-5 flex items-baseline justify-between">
+          <div id="all-plans" className="mb-1 mt-5 flex items-baseline justify-between">
             <div>
               <div className="font-body text-[17px] font-bold text-ink-strong">All study plans</div>
               <div className="mt-0.5 text-[12.5px] text-ink-muted">
@@ -213,9 +230,9 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
                   <div className="mt-0.5 text-[12.5px] text-ink-muted">Multi-round sequences matched to a target role</div>
                 </div>
               </div>
-              <div className="mt-2.5 flex flex-col border-t border-hairline">
+              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {tracks.loopRows.map(loop => (
-                  <LoopRow key={loop.id} loop={loop} />
+                  <LoopCard key={loop.id} loop={loop} />
                 ))}
               </div>
             </>
@@ -233,9 +250,9 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
             </div>
           </div>
 
-          <div className="mt-2.5 flex flex-col border-t border-hairline">
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tracks.loopRows.map(loop => (
-              <LoopRow key={loop.id} loop={loop} />
+              <LoopCard key={loop.id} loop={loop} />
             ))}
           </div>
         </>
@@ -276,11 +293,10 @@ function PlanCard({ plan }: { plan: StudyPlanWithItems }) {
 
   return (
     <div className="flex flex-col rounded-xl border border-hairline bg-card-bright p-4">
-      {discipline && (
-        <div className={`mb-2.5 text-[11px] font-extrabold uppercase tracking-[0.04em] ${EYEBROW_FG_CLASS[discipline]}`}>
-          {DISCIPLINE_LABEL[discipline]}
-        </div>
-      )}
+      {/* Icon tile treatment per study-plans-1440.png plan cards (spec §9.3:
+          the 44px tile is allowed on featured/plan/loop cards). Only rendered
+          when the plan carries a real discipline signal. */}
+      {discipline && <DisciplineTile discipline={discipline} className="mb-3" />}
       <div className="mb-1.5 min-h-[40px] font-body text-[15.5px] font-bold leading-[1.32] text-ink-strong">
         {plan.title}
       </div>
@@ -326,21 +342,28 @@ function PlanCard({ plan }: { plan: StudyPlanWithItems }) {
   )
 }
 
-function LoopRow({ loop }: { loop: StudyPlanWithItems }) {
-  const isEnrolled = loop.is_enrolled ?? false
+/**
+ * Interview-loop card per study-plans-1440.png: icon tile + "Interview loop"
+ * eyebrow + loop name, with a working Start/Resume link on the right.
+ */
+function LoopCard({ loop }: { loop: StudyPlanWithItems }) {
+  const discipline = disciplineForPlan(loop)
   const hasProgress = loop.progress_percentage > 0
-  const meta = hasProgress
-    ? `${loop.completed_count} of ${loop.item_count} done · ${loop.progress_percentage}%`
-    : isEnrolled
-    ? 'Enrolled · not started'
-    : 'Not started'
   const ctaLabel = hasProgress ? 'Resume' : 'Start loop'
 
   return (
-    <div className="flex items-center gap-3.5 border-b border-hairline py-2.5">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="text-[13.5px] font-extrabold text-ink-strong">{loop.title}</span>
-        <span className="text-xs font-bold tabular-nums text-ink-muted">{meta}</span>
+    <div className="flex items-center gap-3.5 rounded-xl border border-hairline bg-card-bright p-4">
+      {discipline && <DisciplineTile discipline={discipline} />}
+      <div className="min-w-0 flex-1">
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-forest-700">
+          Interview loop
+        </div>
+        <div className="mt-0.5 truncate text-[14px] font-bold text-ink-strong">{loop.title}</div>
+        {hasProgress && (
+          <div className="mt-0.5 text-[11.5px] font-bold tabular-nums text-ink-muted">
+            {loop.completed_count} of {loop.item_count} done · {loop.progress_percentage}%
+          </div>
+        )}
       </div>
       <Link
         href={`/explore/plans/${loop.slug}`}

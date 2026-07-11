@@ -4,6 +4,11 @@ import { cn } from '@/lib/utils'
 export interface StatStripCell {
   key: string
   label: string
+  /**
+   * Optional bare stroke icon (16px, 1.6-1.8 stroke, discipline/fg color)
+   * rendered inline beside the label. Spec §2 — never a tile box (§4).
+   */
+  icon?: ReactNode
   /** The serif tabular-nums headline value, e.g. "68%" or "9,860". */
   value: ReactNode
   /** Optional small non-serif suffix rendered beside the value, e.g. "Level 12". */
@@ -20,9 +25,9 @@ export interface StatStripProps {
 }
 
 /**
- * Hairline-separated stat cells: label, serif Literata tabular-nums number,
- * delta line. No icon tiles per spec §4 "Stat strips: label + serif number +
- * delta ONLY, hairline separators between cells."
+ * Hairline-separated stat cells: optional bare inline stroke icon + label,
+ * serif Literata tabular-nums number, delta line. Icons are bare glyphs in
+ * the discipline/fg color per spec §2 — icon TILES stay banned per §4.
  */
 export function StatStrip({ cells, className }: StatStripProps) {
   return (
@@ -41,7 +46,10 @@ export function StatStrip({ cells, className }: StatStripProps) {
             i < cells.length - 1 && 'border-r border-hairline'
           )}
         >
-          <div className="text-xs font-semibold text-ink-secondary">{cell.label}</div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-ink-secondary">
+            {cell.icon}
+            {cell.label}
+          </div>
           <div className="flex items-baseline gap-1.5 font-headline text-[25px] font-bold tabular-nums text-ink-strong">
             {cell.value}
             {cell.valueSuffix && (
