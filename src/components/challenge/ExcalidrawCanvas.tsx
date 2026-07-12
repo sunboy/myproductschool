@@ -42,6 +42,12 @@ export default function ExcalidrawCanvas({
   const apiRef = externalApiRef ?? internalApiRef
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevElementCount = useRef(0)
+  // Signature of the last emitted scene. Excalidraw fires onChange continuously
+  // (pointer moves, appState ticks), so without this every ~2s a NEW scene
+  // object reached consumers whose effects depend on it — FlowWorkspace's 10s
+  // autosave debounce reset forever and drafts were never persisted. Only emit
+  // when the element content actually changed.
+  const lastSceneSigRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!exportRef) return
@@ -118,8 +124,15 @@ export default function ExcalidrawCanvas({
       if (debounceTimer.current) clearTimeout(debounceTimer.current)
       debounceTimer.current = setTimeout(() => {
         if (!apiRef.current) return
+        const sceneElements = apiRef.current.getSceneElements() as Array<{
+          id?: string
+          version?: number
+        }>
+        const sig = sceneElements.map((el) => `${el.id}:${el.version}`).join('|')
+        if (sig === lastSceneSigRef.current) return
+        lastSceneSigRef.current = sig
         const scene = {
-          elements: apiRef.current.getSceneElements() as unknown[],
+          elements: sceneElements as unknown[],
           appState: apiRef.current.getAppState() as unknown,
         }
         onSnapshot(scene)

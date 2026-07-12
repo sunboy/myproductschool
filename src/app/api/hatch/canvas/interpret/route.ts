@@ -17,6 +17,8 @@ import { logger } from '@/lib/log'
 import { extractJson, truncateForLog } from '@/lib/anthropic/extract-json'
 import * as Sentry from '@sentry/nextjs'
 import { getRecentHatchInteractions, recordHatchInteraction } from '@/lib/hatch/interactions'
+import { allDesignSections } from '@/components/challenge/design/designSteps'
+import type { CanvasChallengeType } from '@/lib/hatch/canvasGuidance'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
 
 const ROUTE_KEY = 'hatch_canvas_interpret'
@@ -82,6 +84,15 @@ const RequestSchema = z.object({
   challengeType: z.enum(['system_design', 'data_modeling', 'coding', 'claude_code_analytics', 'claude_code_debugging']).optional(),
   attemptId: z.string().max(200).optional(),
   context_pack: z.string().max(50000).nullable().optional(),
+  // ── Structured SD/DM workspace fields ────────────────────────────────────
+  // {stepId: {sectionId: text}} — the write-up beside the canvas, plus which
+  // sub-section the user is looking at right now. Canvas branch only.
+  step_answers: z
+    .record(z.string().max(50), z.record(z.string().max(100), z.string().max(5000)))
+    .nullable()
+    .optional(),
+  active_step: z.enum(['frame', 'list', 'optimize', 'win']).nullable().optional(),
+  active_section: z.string().max(100).nullable().optional(),
   guidance_phase: z
     .enum(['empty', 'sketching', 'has_canvas_no_notes', 'notes_no_tradeoffs', 'ready'])
     .nullable()
@@ -546,6 +557,47 @@ function buildAnalyticsUserContent(body: InterpretBody): string {
   return parts.join('\n\n')
 }
 
+// Per-section excerpt cap for the write-up block. Sections are capped at
+// 600-1500 chars client-side; 700 keeps every turn's prompt bounded while
+// preserving enough text for Hatch to quote specifics.
+const WRITE_UP_EXCERPT_CHARS = 700
+
+/**
+ * Structured SD/DM workspace write-up. Renders the filled sub-sections in
+ * template order (capped excerpts) and marks the one the user has on screen so
+ * Hatch coaches the section they are actually writing, not the design at large.
+ */
+function writeUpBlock(body: InterpretBody): string | null {
+  const canvasType: CanvasChallengeType =
+    body.challengeType === 'data_modeling' ? 'data_modeling' : 'system_design'
+  const answers = body.step_answers ?? null
+  const hasAnswers =
+    answers && Object.values(answers).some((step) => Object.values(step ?? {}).some((t) => t?.trim()))
+  if (!hasAnswers && !body.active_section) return null
+
+  const lines: string[] = []
+  for (const section of allDesignSections(canvasType)) {
+    if (section.kind === 'diagram') continue // the diagram IS the canvas state above
+    const isActive = body.active_section === section.id
+    const text = answers?.[section.stepId]?.[section.id]?.trim() ?? ''
+    if (!text && !isActive) continue
+    const marker = isActive ? ' [ACTIVE — the user is on this sub-section right now]' : ''
+    const excerpt = text
+      ? text.length > WRITE_UP_EXCERPT_CHARS
+        ? `${text.slice(0, WRITE_UP_EXCERPT_CHARS)}…`
+        : text
+      : `(empty so far. The brief for this sub-section: ${section.prompt})`
+    lines.push(`## ${section.stepId.toUpperCase()} — ${section.label}${marker}\n${excerpt}`)
+  }
+  if (lines.length === 0) return null
+  return (
+    `# Write-up (structured notes beside the canvas)\n` +
+    `Treat these sections plus the canvas as one design. When a section conflicts with the diagram, name the conflict. ` +
+    `When the user asks for feedback, weigh the ACTIVE sub-section first.\n\n` +
+    lines.join('\n\n')
+  )
+}
+
 function buildUserContent(body: InterpretBody): string {
   if (body.challengeType === 'coding') {
     return buildCodingUserContent(body)
@@ -563,6 +615,7 @@ function buildUserContent(body: InterpretBody): string {
   return [
     `# Canvas state\n${sceneText}`,
     body.context_pack?.trim() ? `# Context Pack\n${body.context_pack.trim()}` : null,
+    writeUpBlock(body),
     body.guidance_level ? `# Coaching register\n${canvasRegisterHint(body.guidance_level)}` : null,
     body.guidance_phase ? `# Guidance phase\n${guidancePhaseHint(body.guidance_phase)}` : null,
     solutionsContextBlock(body),

@@ -7,6 +7,8 @@ import { SYSTEM_DESIGN_GRADING_PROMPT } from './prompts/system-design'
 import { DATA_MODELING_GRADING_PROMPT } from './prompts/data-modeling'
 import { validateInterviewGrade } from './schemas/feedback-output'
 import { summarizeScene, sceneToPrompt } from '@/lib/hatch/canvas-scene'
+import { designStepsFor } from '@/components/challenge/design/designSteps'
+import type { CanvasChallengeType } from '@/lib/hatch/canvasGuidance'
 import type { InterviewGrade, InterviewGradeDimension, ChallengeType } from '@/lib/types'
 
 type AiBudget = { userId: string; userPlan: string; route: string }
@@ -19,6 +21,33 @@ function buildCanvasSummary(snapshot: Record<string, unknown> | null): string {
       ? `\n\nCONTEXT PACK:\n${snapshot.context_pack.trim()}`
       : ''
   return `${sceneToPrompt(summarizeScene(elements))}${contextPack}`
+}
+
+/**
+ * Renders the structured write-up (step_answers persisted inside
+ * canvas_final_snapshot by interview-submit) as labeled sections in template
+ * order. Returns '' for legacy attempts with no write-up so the prompt shape
+ * stays backward-compatible.
+ */
+function buildWriteUpSummary(
+  snapshot: Record<string, unknown> | null,
+  challengeType: CanvasChallengeType
+): string {
+  const raw = snapshot?.step_answers
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return ''
+  const stepAnswers = raw as Record<string, unknown>
+  const blocks: string[] = []
+  for (const step of designStepsFor(challengeType)) {
+    const answers = stepAnswers[step.id]
+    if (!answers || typeof answers !== 'object' || Array.isArray(answers)) continue
+    for (const section of step.sections) {
+      if (section.kind === 'diagram') continue // the diagram is the canvas itself
+      const text = (answers as Record<string, unknown>)[section.id]
+      if (typeof text !== 'string' || !text.trim()) continue
+      blocks.push(`### ${step.label} — ${section.label}\n${text.trim().slice(0, 5000)}`)
+    }
+  }
+  return blocks.join('\n\n')
 }
 
 export async function gradeInterviewSession(
@@ -44,8 +73,11 @@ export async function gradeInterviewSession(
     .eq('id', attempt.challenge_id)
     .single()
 
-  const canvasSummary = buildCanvasSummary(
-    attempt.canvas_final_snapshot as Record<string, unknown> | null
+  const snapshot = attempt.canvas_final_snapshot as Record<string, unknown> | null
+  const canvasSummary = buildCanvasSummary(snapshot)
+  const writeUpSummary = buildWriteUpSummary(
+    snapshot,
+    challengeType === 'data_modeling' ? 'data_modeling' : 'system_design'
   )
 
   const metadata = (challenge?.metadata ?? {}) as Record<string, unknown>
@@ -72,7 +104,7 @@ ${requiredComponents.map((c) => `- ${c}`).join('\n') || 'Not specified'}
 
 CANVAS STATE:
 ${canvasSummary}
-
+${writeUpSummary ? `\nWRITE-UP (the learner's structured notes, by workspace section):\n${writeUpSummary}\n` : ''}
 CONVERSATION HISTORY:
 ${attempt.conversation_summary ?? 'No conversation recorded.'}
 

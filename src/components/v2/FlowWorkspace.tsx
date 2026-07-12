@@ -24,11 +24,18 @@ import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { useHatchContext } from '@/context/HatchContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
-import { CanvasCoachCard } from '@/components/challenge/CanvasCoachCard'
 import { CanvasEmptyState } from '@/components/challenge/CanvasEmptyState'
-import { canvasStarterTemplate } from '@/lib/hatch/canvasSeeds'
-import { CanvasReadinessMeter } from '@/components/challenge/CanvasReadinessMeter'
-import { CanvasThinkingDock } from '@/components/challenge/CanvasThinkingDock'
+import { canvasStarterTemplate, canvasTemplatesFor, type CanvasTemplate } from '@/lib/hatch/canvasSeeds'
+import { DesignStepForm } from '@/components/challenge/design/DesignStepForm'
+import { DesignRail } from '@/components/challenge/design/DesignRail'
+import {
+  designStepsFor,
+  allDesignSections,
+  isDesignStepId,
+  type DesignStepId,
+  type DesignSection,
+} from '@/components/challenge/design/designSteps'
+import { Lightbulb, ListChecks } from 'lucide-react'
 import { TourRunner } from '@/components/shell/TourRunner'
 import { CANVAS_TOUR, canvasTourSeen } from '@/lib/tours/canvasTour'
 import { setCursor } from '@/lib/tours/shepherdEngine'
@@ -100,6 +107,11 @@ export interface ContextPackField {
 }
 
 type ContextPackState = ContextPackField[]
+
+/** Structured SD/DM write-up: {stepId: {sectionId: text}}. Autosaved as
+ *  step_answers, submitted into canvas_final_snapshot, and sent to Hatch's
+ *  interpret/nudge endpoints on every turn. */
+type StepAnswers = Partial<Record<DesignStepId, Record<string, string>>>
 
 function buildDefaultContextPackFields(challengeType?: string): ContextPackField[] {
   const isDataModeling = challengeType === 'data_modeling'
@@ -559,14 +571,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Canvas / interview challenge state
   const [canvasMaximised, setCanvasMaximised] = useState(false)
-  const [canvasLoopExpanded, setCanvasLoopExpanded] = useState(false)
+  // Structured SD/DM workspace: per-step write-up answers + which step/section
+  // the user is on. Free navigation between design steps (unlike MCQ FLOW).
+  const [stepAnswers, setStepAnswers] = useState<StepAnswers>({})
+  const [activeDesignStep, setActiveDesignStep] = useState<DesignStepId>('frame')
+  const [activeDesignSection, setActiveDesignSection] = useState<string | null>(null)
+  // Object URL of the latest diagram snapshot embedded in the write-up.
+  const [diagramThumbUrl, setDiagramThumbUrl] = useState<string | null>(null)
+  const diagramThumbUrlRef = useRef<string | null>(null)
+  useEffect(() => { diagramThumbUrlRef.current = diagramThumbUrl }, [diagramThumbUrl])
+  useEffect(() => () => { if (diagramThumbUrlRef.current) URL.revokeObjectURL(diagramThumbUrlRef.current) }, [])
+  const diagramThumbBusyRef = useRef(false)
+  const didHydrateCanvasRef = useRef<string | null>(null)
   const [codingMaximised, setCodingMaximised] = useState(false)
   // Console collapse (visual-clarity inc. 4): header-only console, editor takes the space.
   const [consoleCollapsed, setConsoleCollapsed] = useState(false)
   const [editorHeightPct, setEditorHeightPct] = useState(60)
   const [chatPanelOpen, setChatPanelOpen] = useState(false)
   const [queuedHatchPrompt, setQueuedHatchPrompt] = useState<QueuedHatchPrompt | null>(null)
-  const [hintForceOpen, setHintForceOpen] = useState(false)
   const [interviewGrade, setInterviewGrade] = useState<InterviewGrade | null>(null)
   const [submittedCanvasPngUrl, setSubmittedCanvasPngUrl] = useState<string | null>(null)
   const [historyInterviewGrade, setHistoryInterviewGrade] = useState<InterviewGrade | null>(null)
@@ -743,14 +765,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // are gated to a "best on desktop" notice instead (see Fork C below).
   const mobileStacked = isMobile && !isInterviewChallenge
 
-  const openContextPack = useCallback(() => {
-    setLeftTab('Description')
-    setLeftCollapsed(false)
-    setContextPackOpen(true)
-    window.setTimeout(() => {
-      contextPackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }, 0)
-  }, [])
+  // (The old openContextPack jump helper died with the thinking dock — the
+  // Context Pack drawer still lives in the Description pane and opens inline.)
 
   // Discussions tab state
   const [discussions, setDiscussions] = useState<ChallengeDiscussion[]>([])
@@ -1168,14 +1184,85 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const contextPackText = useMemo(() => formatContextPack(contextPack), [contextPack])
   const contextPackFieldCount = contextPack.filter((field) => field.value.trim().length > 0).length
 
+  // ── Structured SD/DM workspace derivations ────────────────────────────────
+  const canvasType: CanvasChallengeType =
+    apiChallengeType === 'data_modeling' ? 'data_modeling' : 'system_design'
+  const designSteps = useMemo(
+    () => (isCanvasChallenge ? designStepsFor(canvasType) : []),
+    [isCanvasChallenge, canvasType]
+  )
+  const activeDesignStepDef =
+    designSteps.find((s) => s.id === activeDesignStep) ?? designSteps[0] ?? null
+
+  // The write-up sections feed the guidance phase machine alongside the
+  // context pack — the `tradeoffs` section id advances it to ready unchanged.
+  const designGuidanceFields = useMemo(() => {
+    if (!isCanvasChallenge) return contextPack
+    const sectionFields = allDesignSections(canvasType)
+      .filter((s) => s.kind === 'textarea')
+      .map((s) => ({ id: s.id, value: stepAnswers[s.stepId]?.[s.id] ?? '' }))
+    return [...contextPack, ...sectionFields]
+  }, [isCanvasChallenge, canvasType, contextPack, stepAnswers])
+
   // Single source of truth for the draw → notes → ask → submit phase. Consumed
-  // by the coach card, readiness meter, and Hatch opener (later tasks).
+  // by the design rail's live guidance panel and Hatch's chat opener.
   const guidance = useCanvasGuidance({
-    challengeType: apiChallengeType === 'data_modeling' ? 'data_modeling' : 'system_design',
+    challengeType: canvasType,
     scene,
-    fields: contextPack,
+    fields: designGuidanceFields,
     register: coachRegister,
   })
+
+  const isDesignSectionDone = useCallback(
+    (stepId: DesignStepId, section: DesignSection) => {
+      if (section.kind === 'diagram') return scene.entities.length > 0
+      const text = stepAnswers[stepId]?.[section.id] ?? ''
+      return text.trim().length >= (section.minCharsDone ?? 80)
+    },
+    [scene.entities.length, stepAnswers]
+  )
+  const completedDesignSteps = useMemo(
+    () =>
+      designSteps
+        .filter((s) => s.sections.every((sec) => isDesignSectionDone(s.id, sec)))
+        .map((s) => s.id),
+    [designSteps, isDesignSectionDone]
+  )
+  const designSectionTotals = useMemo(() => {
+    const all = designSteps.flatMap((s) => s.sections.map((sec) => ({ stepId: s.id, sec })))
+    return {
+      done: all.filter((x) => isDesignSectionDone(x.stepId, x.sec)).length,
+      total: all.length,
+    }
+  }, [designSteps, isDesignSectionDone])
+
+  // The sub-section Hatch should treat as active: the focused textarea, else
+  // the first section of the active step.
+  const effectiveActiveSectionId = useMemo(() => {
+    if (!activeDesignStepDef) return null
+    if (
+      activeDesignSection &&
+      activeDesignStepDef.sections.some((s) => s.id === activeDesignSection)
+    ) {
+      return activeDesignSection
+    }
+    return activeDesignStepDef.sections[0]?.id ?? null
+  }, [activeDesignStepDef, activeDesignSection])
+
+  const selectDesignStep = useCallback((id: DesignStepId) => {
+    setActiveDesignStep(id)
+    setActiveDesignSection(null)
+  }, [])
+
+  const handleDesignAnswerChange = useCallback(
+    (sectionId: string, value: string) => {
+      setStepAnswers((prev) => ({
+        ...prev,
+        [activeDesignStep]: { ...(prev[activeDesignStep] ?? {}), [sectionId]: value },
+      }))
+    },
+    [activeDesignStep]
+  )
 
   // Excalidraw API + library refs (for canvas action execution)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1244,6 +1331,55 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       actions: canvasStarterTemplate(apiChallengeType),
     })
   }, [apiChallengeType, handleCanvasActions])
+
+  // Overlay template chips — same executeActions path as Hatch and the
+  // empty-state starter. Blank is an intentional no-op (empty actions list).
+  const applyCanvasTemplate = useCallback(
+    (template: CanvasTemplate) => {
+      if (template.actions.length === 0) return
+      setEmptyStateDismissed(true)
+      void handleCanvasActions({ message: template.label, actions: template.actions })
+    },
+    [handleCanvasActions]
+  )
+
+  // Export the current drawing to a PNG object URL for the DiagramSlot inset.
+  // One in flight at a time; the previous URL is revoked on replace.
+  const refreshDiagramThumb = useCallback(async () => {
+    const exportFn = canvasExportRef.current
+    if (!exportFn || diagramThumbBusyRef.current) return
+    diagramThumbBusyRef.current = true
+    try {
+      const blob = await exportFn()
+      if (blob) {
+        const url = URL.createObjectURL(blob)
+        setDiagramThumbUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev)
+          return url
+        })
+      }
+    } catch {
+      /* the thumbnail is cosmetic — the counts fallback renders instead */
+    } finally {
+      diagramThumbBusyRef.current = false
+    }
+  }, [])
+
+  // "Done, back to write-up": snapshot the drawing into the write-up inset,
+  // then close the overlay. Excalidraw and the chat stay mounted throughout.
+  const closeCanvasOverlay = useCallback(() => {
+    void refreshDiagramThumb()
+    setCanvasMaximised(false)
+  }, [refreshDiagramThumb])
+
+  // Keep the write-up's embedded snapshot in sync while the overlay is closed
+  // (covers resume hydration and Hatch drawing from the docked chat).
+  useEffect(() => {
+    if (!isCanvasChallenge || canvasMaximised) return
+    if (scene.entities.length === 0) return
+    const t = window.setTimeout(() => { void refreshDiagramThumb() }, 800)
+    return () => window.clearTimeout(t)
+  }, [isCanvasChallenge, canvasMaximised, scene, refreshDiagramThumb])
 
   // Seed type-specific default field labels when challenge type is known
   useEffect(() => {
@@ -1331,6 +1467,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     codeTail: string | null
     testsPassed: number | null
     testsTotal: number | null
+    designStep: DesignStepId | null
+    designSection: string | null
+    designSectionText: string | null
   }>({
     flowStep: null,
     flowQuestion: null,
@@ -1339,6 +1478,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     codeTail: null,
     testsPassed: null,
     testsTotal: null,
+    designStep: null,
+    designSection: null,
+    designSectionText: null,
   })
 
   useEffect(() => {
@@ -1365,6 +1507,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             attemptId,
             lastNudgeAt: lastNudgeAtRef.current || undefined,
             nudgeCount: nudgeCountRef.current,
+            active_step: nudgeGroundingRef.current.designStep,
+            active_section: nudgeGroundingRef.current.designSection,
+            active_section_text: nudgeGroundingRef.current.designSectionText?.slice(0, 5000) ?? null,
           }),
         })
         if (!res.ok) return
@@ -1383,6 +1528,60 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // chatPanelOpen intentionally excluded - we only want the snapshot at fire time, not retriggers
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props])
+
+  // "Show me a hint" (design rail): on-demand nudge grounded in the diagram and
+  // the active write-up sub-section. Lands in the rail's guidance panel and the
+  // chat thread via proactiveNudge.
+  const [hintLoading, setHintLoading] = useState(false)
+  const requestManualHint = useCallback(async () => {
+    if (!isCanvasChallenge || !attemptId || hintLoading) return
+    setHintLoading(true)
+    const ground = nudgeGroundingRef.current
+    try {
+      const res = await fetch('/api/hatch/canvas/nudge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scene,
+          recentDelta: { added: 1 },
+          challengeId: isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : '',
+          challengeType: apiChallengeType,
+          attemptId,
+          nudgeCount: nudgeCountRef.current,
+          active_step: ground.designStep,
+          active_section: ground.designSection,
+          active_section_text: ground.designSectionText?.slice(0, 5000) ?? null,
+        }),
+      })
+      if (!res.ok) return
+      const data = (await res.json()) as { nudge: string | null }
+      lastNudgeAtRef.current = Date.now()
+      if (data.nudge) nudgeCountRef.current += 1
+      setProactiveNudge({
+        id: `hint-${Date.now()}`,
+        text: data.nudge ?? 'Nothing urgent from me. Keep building the section you are on.',
+      })
+    } catch {
+      /* a missed hint is non-critical */
+    } finally {
+      setHintLoading(false)
+    }
+  }, [isCanvasChallenge, attemptId, hintLoading, scene, apiChallengeType, isApiMode, props])
+
+  // "Run self-check" (design rail): asks Hatch for a verdict on the active step
+  // through the interpret endpoint. The chat panel sends step_answers +
+  // active_section with the turn, so the verdict reads the real write-up.
+  const runSelfCheck = useCallback(() => {
+    if (!activeDesignStepDef) return
+    const section = effectiveActiveSectionId
+      ? activeDesignStepDef.sections.find((s) => s.id === effectiveActiveSectionId)
+      : undefined
+    const focus = section && section.kind === 'textarea' ? `, weighing my "${section.label}" section first` : ''
+    queueHatchPrompt(
+      `Run a self-check on my ${activeDesignStepDef.label} step${focus}. Start with a one-word verdict: pass, partial, or retry. Then name the single most important fix.`,
+      true
+    )
+  }, [activeDesignStepDef, effectiveActiveSectionId, queueHatchPrompt])
 
   useEffect(() => {
     lastWorkspaceProgressRef.current = Date.now()
@@ -1435,9 +1634,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         body.tests_passed = ground.testsPassed
         body.tests_total = ground.testsTotal
       } else if (isCanvasChallenge) {
-        if (!scene || scene.elementCount < 2) return
+        const sectionDraft = ground.designSectionText?.trim() ?? ''
+        if ((!scene || scene.elementCount < 2) && sectionDraft.length < 40) return
         body.scene = scene
         body.recentDelta = { added: 1 }
+        body.active_step = ground.designStep
+        body.active_section = ground.designSection
+        body.active_section_text = ground.designSectionText?.slice(0, 5000) ?? null
       } else {
         return
       }
@@ -1507,9 +1710,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     scene,
   ])
 
-  // Autosave canvas snapshot and Context Pack every 10s when changed
+  // Autosave canvas snapshot, Context Pack, and write-up every 10s when changed
   useEffect(() => {
-    if (!isCanvasChallenge || !attemptId || (!canvasScene && !contextPackText)) return
+    if (
+      !isCanvasChallenge ||
+      !attemptId ||
+      (!canvasScene && !contextPackText && Object.keys(stepAnswers).length === 0)
+    ) return
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
     autosaveTimerRef.current = setTimeout(async () => {
       try {
@@ -1523,6 +1730,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               ...(canvasScene ?? { elements: [], appState: {} }),
               context_pack: contextPackText || null,
               context_pack_fields: contextPack,
+              step_answers: stepAnswers,
+              active_design_step: activeDesignStep,
             },
             updatedAt: new Date().toISOString(),
           }),
@@ -1530,7 +1739,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       } catch { /* fire and forget */ }
     }, 10000)
     return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current) }
-  }, [canvasScene, contextPack, contextPackText, isCanvasChallenge, attemptId])
+  }, [canvasScene, contextPack, contextPackText, stepAnswers, activeDesignStep, isCanvasChallenge, attemptId])
 
   // Autosave coding drafts every 10s when currentCode changes
   useEffect(() => {
@@ -1686,6 +1895,68 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail?.current_attempt?.id, attemptId, isCodingChallenge, detail?.challenge?.id])
 
+  // Hydrate the canvas workspace (write-up + context pack + scene) from the
+  // persisted draft_snapshot once per attempt — mirrors the coding pattern
+  // above. Elements restore goes through canvasInitialData below; setting
+  // canvasScene here keeps summarizeScene + guidance in step immediately.
+  useEffect(() => {
+    if (!isCanvasChallenge || !detail?.challenge) return
+    const attemptKey = detail.current_attempt?.id ?? attemptId
+    if (!attemptKey || didHydrateCanvasRef.current === attemptKey) return
+
+    const snap = detail.current_attempt?.draft_snapshot as
+      | {
+          type?: string
+          elements?: unknown[]
+          step_answers?: StepAnswers
+          active_design_step?: string
+          context_pack?: string
+          context_pack_fields?: ContextPackField[]
+        }
+      | undefined
+
+    if (snap?.type === 'canvas') {
+      if (snap.step_answers && typeof snap.step_answers === 'object') {
+        setStepAnswers(snap.step_answers)
+      }
+      if (isDesignStepId(snap.active_design_step)) {
+        setActiveDesignStep(snap.active_design_step)
+      }
+      if (Array.isArray(snap.context_pack_fields)) {
+        const saved = snap.context_pack_fields
+        setContextPack((prev) =>
+          prev.map((field) => {
+            const match = saved.find((s) => s?.id === field.id)
+            return match && typeof match.value === 'string' && match.value
+              ? { ...field, value: match.value }
+              : field
+          })
+        )
+      }
+      if (Array.isArray(snap.elements) && snap.elements.length > 0) {
+        setCanvasScene({ elements: snap.elements, appState: {} })
+        setEmptyStateDismissed(true)
+      }
+    }
+
+    didHydrateCanvasRef.current = attemptKey
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail?.current_attempt?.id, attemptId, isCanvasChallenge, detail?.challenge?.id])
+
+  // Elements-only initial data for Excalidraw on resume. Never pass the saved
+  // appState — a persisted getAppState() carries `collaborators` and breaks
+  // Excalidraw's initialData restore.
+  const canvasInitialData = useMemo(() => {
+    const snap = detail?.current_attempt?.draft_snapshot as
+      | { type?: string; elements?: unknown[] }
+      | undefined
+    if (snap?.type === 'canvas' && Array.isArray(snap.elements) && snap.elements.length > 0) {
+      return { elements: snap.elements }
+    }
+    return undefined
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail?.current_attempt?.id])
+
   // useCodeRunner hook - always called (React rules of hooks); only active for coding challenges
   const codeChallenge = (isCodingChallenge && detail?.challenge)
     ? { id: detail.challenge.id, metadata: detail.challenge.metadata as Record<string, unknown> }
@@ -1821,6 +2092,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       codeTail: isCodingChallenge && currentCode ? currentCode.slice(-1500) : null,
       testsPassed: lastRunResult ? lastRunResult.testsPassed : null,
       testsTotal: lastRunResult ? lastRunResult.testsTotal : null,
+      designStep: isCanvasChallenge ? activeDesignStep : null,
+      designSection: isCanvasChallenge ? effectiveActiveSectionId : null,
+      designSectionText:
+        isCanvasChallenge && effectiveActiveSectionId
+          ? stepAnswers[activeDesignStep]?.[effectiveActiveSectionId] ?? null
+          : null,
     }
   }, [
     currentQuestion,
@@ -1831,6 +2108,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     currentLanguage,
     lastRunResult,
     isCodingChallenge,
+    isCanvasChallenge,
+    activeDesignStep,
+    effectiveActiveSectionId,
+    stepAnswers,
   ])
 
   // Rehydrate MCQ step drafts from the persisted snapshot once per attempt, but
@@ -2223,6 +2504,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           },
           contextPack: contextPackText || null,
           canvasPngUrl: canvasPngUrl ?? null,
+          // Structured write-up — the server merges this into
+          // canvas_final_snapshot.step_answers for the grader.
+          stepAnswers,
         }),
       })
       if (!res.ok) throw new Error('Submit failed')
@@ -2255,7 +2539,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setIsSubmittingInterview(false)
     }
-  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, playHatchSound, uploadCanvasPng])
+  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, stepAnswers, isSubmittingInterview, playHatchSound, uploadCanvasPng])
 
   // Derived: active coding parts from detail (only meaningful for coding challenges)
   const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])
@@ -4422,40 +4706,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', gap: 16 }}>
         {isCanvasChallenge ? (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-              <CanvasThinkingDock
-                challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
-                scene={scene}
-                contextPackFilledCount={contextPackFieldCount}
-                contextPackTotal={contextPack.length}
-                contextPackText={contextPackText}
-                expanded={canvasLoopExpanded}
-                onAskHatch={queueHatchPrompt}
-                onOpenContextPack={openContextPack}
-                onToggleExpanded={() => setCanvasLoopExpanded((v) => !v)}
-              />
+            {/* Round-4 structured workspace chrome: title + discipline chip on the
+                left; the single guidance voice lives in the DesignRail, so the old
+                thinking dock is gone. */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+              {challengeTitle && (
+                <span
+                  className="font-headline"
+                  style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--color-ink-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
+                  title={challengeTitle}
+                >
+                  {challengeTitle}
+                </span>
+              )}
+              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-secondary-container px-2.5 py-1 font-label text-xs font-bold text-on-secondary-container">
+                {apiChallengeType === 'data_modeling' ? 'Data modeling' : 'System design'}
+              </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <button
-                onClick={() => {
-                  window.dispatchEvent(new Event('start-canvas-tour'))
-                  setHintForceOpen(true)
-                  window.setTimeout(() => setHintForceOpen(false), 400)
-                }}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-card-bright border border-hairline text-ink-secondary hover:text-ink-strong text-xs font-semibold"
-                title="How this canvas works"
-                aria-label="How this canvas works"
-              >?</button>
-              <button
-                onClick={() => setCanvasMaximised((v) => !v)}
+                onClick={() => setCanvasMaximised(true)}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-2.5 py-1.5 font-label text-xs font-bold text-ink-secondary hover:text-ink-strong transition-colors"
-                title={canvasMaximised ? 'Exit full screen' : 'Full screen canvas'}
-                aria-label={canvasMaximised ? 'Exit full screen' : 'Full screen canvas'}
+                title="Open the canvas"
+                aria-label="Open the canvas"
               >
-                <span className="material-symbols-outlined text-[16px]">
-                  {canvasMaximised ? 'fullscreen_exit' : 'fullscreen'}
-                </span>
-                {canvasMaximised ? 'Exit' : 'Full screen'}
+                <span className="material-symbols-outlined text-[16px]">fullscreen</span>
+                Open canvas
               </button>
             </div>
           </>
@@ -4540,6 +4816,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           onStepClick={undefined}
           questionIdx={questionIdx}
           questionCount={activeStepData?.questions.length}
+        />
+      </div>
+    </div>
+  ) : null
+
+  // Structured SD/DM workspace: the same FLOW method strip drives the four
+  // design steps. Navigation is free (unlike MCQ commit-forward) — the stepper
+  // and the DesignRail both call selectDesignStep.
+  const designStepperStrip = isCanvasChallenge ? (
+    <div style={{ flexShrink: 0, padding: '10px 16px 2px', background: 'var(--color-page-field)' }}>
+      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '12px 20px' }}>
+        <div className="font-label" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)', marginBottom: 8 }}>
+          FLOW Method
+        </div>
+        <FlowStepper
+          currentStep={activeDesignStep}
+          completedSteps={completedDesignSteps}
+          onStepClick={(step) => { if (isDesignStepId(step)) selectDesignStep(step) }}
         />
       </div>
     </div>
@@ -5144,6 +5438,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         <>
           {topChrome}
           {flowStepperStrip}
+          {designStepperStrip}
         </>
       )}
 
@@ -5171,17 +5466,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </div>
           )}
 
-          {/* Canvas workspace for interview challenge types */}
+          {/* Structured canvas workspace for interview challenge types (refs/14
+              anatomy + the approved round4 canvas-workspace overlay). Inline:
+              FLOW stepper (above) + Problem Brief (left panel) + DesignStepForm
+              (center) + DesignRail (right) + docked Hatch chat. The Excalidraw
+              canvas lives in a full-screen overlay that stays MOUNTED when
+              closed (display:none) so scene, undo history, and the chat thread
+              survive every round trip between drawing and writing. */}
           {isCanvasChallenge && !isSubmittingInterview && (
             <div style={canvasMaximised
               ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2vh 2vw', background: 'rgba(5, 35, 22, 0.35)' }
               : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
               }>
-              {/* Overlay panel (round4 canvas-workspace preview): in full screen the
-                  canvas lives on a floating rounded surface above a forest scrim,
-                  with its own top bar. Inline, this wrapper is a flex passthrough
-                  so Excalidraw and the chat rail keep their tree position across
-                  the toggle (no remount = no scene/undo loss). */}
+              {/* Overlay panel: in full screen everything floats on a rounded
+                  surface above a forest scrim with its own top bar. Inline, this
+                  wrapper is a flex passthrough — the same children switch
+                  columns via display so nothing remounts across the toggle. */}
               <div style={canvasMaximised
                 ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'hidden' }
                 : { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }
@@ -5194,12 +5494,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                           {challengeTitle}
                         </span>
                       )}
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-soft px-2.5 py-1 font-label text-xs font-bold shrink-0" style={{ color: '#a16207' }}>
-                        <span className="h-1.5 w-1.5 rounded-full bg-flame" />
-                        {apiChallengeType === 'data_modeling' ? 'Data modeling' : 'System design'}
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-note-mint px-2.5 py-1 font-label text-xs font-bold text-forest-800 shrink-0">
+                        <span className="h-1.5 w-1.5 rounded-full bg-forest-600" />
+                        {activeDesignStepDef?.label ?? 'Optimize'} · {apiChallengeType === 'data_modeling' ? 'Data modeling' : 'System design'}
                       </span>
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
+                      <button
+                        onClick={() => window.dispatchEvent(new Event('start-canvas-tour'))}
+                        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-card-bright border border-hairline text-ink-secondary hover:text-ink-strong text-xs font-semibold"
+                        title="How this canvas works"
+                        aria-label="How this canvas works"
+                      >?</button>
                       {attemptId && (
                         <span className="flex items-center gap-1.5 font-label text-xs font-semibold text-ink-muted">
                           <span className="flex h-[15px] w-[15px] items-center justify-center rounded-full bg-note-mint text-forest-600">
@@ -5209,82 +5515,176 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                         </span>
                       )}
                       <button
-                        onClick={() => setCanvasMaximised(false)}
+                        onClick={closeCanvasOverlay}
                         className="inline-flex items-center gap-2 rounded-lg bg-forest-950 px-4 py-2 font-label text-[13px] font-bold text-white hover:bg-forest-800 transition-colors"
-                        title="Exit full screen"
-                        aria-label="Exit full screen"
+                        title="Done, back to write-up"
+                        aria-label="Done, back to write-up"
                       >
                         <span className="material-symbols-outlined text-[15px]">arrow_back</span>
-                        Done, back to workspace
+                        Done, back to write-up
                       </button>
                     </div>
                   </div>
                 )}
                 <div style={{ flex: 1, display: 'flex', minWidth: 0, minHeight: 0 }}>
-              {/* Canvas column - top chrome owns the guide so canvas stays clear. */}
-              <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <div
-                  data-tour-target="canvas-surface"
-                  className={canvasMaximised ? undefined : 'rounded-2xl border border-hairline overflow-hidden ml-2'}
-                  style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative', background: 'var(--color-card-bright)' }}
-                >
-                  <ExcalidrawCanvas
-                    sessionId={attemptId ?? 'draft'}
-                    onSnapshot={setCanvasScene}
-                    onElementsAdded={(count) => requestNudge(count)}
-                    apiRef={excalidrawApiRef}
-                    exportRef={canvasExportRef}
+                  {/* Write-up column (inline only, kept mounted so scroll and
+                      focus state survive the overlay round trip) */}
+                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', display: canvasMaximised ? 'none' : 'block', padding: '2px 8px 16px' }}>
+                    <div className="rounded-2xl border border-hairline bg-card-bright" style={{ maxWidth: 780, margin: '0 auto', padding: '20px 24px' }}>
+                      {activeDesignStepDef && (
+                        <DesignStepForm
+                          step={activeDesignStepDef}
+                          values={stepAnswers[activeDesignStep] ?? {}}
+                          onChange={handleDesignAnswerChange}
+                          onSectionFocus={setActiveDesignSection}
+                          diagramThumbUrl={diagramThumbUrl}
+                          diagramEntityCount={scene.entities.length}
+                          diagramConnectionCount={scene.connections.length}
+                          diagramLabels={guidance.labels}
+                          onOpenCanvas={() => setCanvasMaximised(true)}
+                        />
+                      )}
+                      {/* Free step navigation footer (design steps are not
+                          commit-forward like MCQ FLOW) */}
+                      {designSteps.length > 0 && (() => {
+                        const idx = designSteps.findIndex((s) => s.id === activeDesignStep)
+                        const prev = idx > 0 ? designSteps[idx - 1] : null
+                        const next = idx >= 0 && idx < designSteps.length - 1 ? designSteps[idx + 1] : null
+                        return (
+                          <div className="mt-5 flex items-center justify-between border-t border-hairline pt-4">
+                            {prev ? (
+                              <button
+                                type="button"
+                                onClick={() => selectDesignStep(prev.id)}
+                                className={WORKSPACE_BTN_TONAL}
+                              >
+                                <span className="material-symbols-outlined text-[15px]">arrow_back</span>
+                                {prev.label}
+                              </button>
+                            ) : <span />}
+                            {next && (
+                              <button
+                                type="button"
+                                onClick={() => selectDesignStep(next.id)}
+                                className={WORKSPACE_BTN_PRIMARY}
+                              >
+                                Next: {next.label}
+                                <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  </div>
+                  {/* Design rail (inline only): progress ring, free step nav,
+                      live guidance, and the hint / self-check actions */}
+                  <aside style={{ width: 300, flexShrink: 0, display: canvasMaximised ? 'none' : 'flex', flexDirection: 'column', gap: 10, minHeight: 0, overflowY: 'auto', paddingBottom: 8 }}>
+                    <DesignRail
+                      steps={designSteps}
+                      activeStepId={activeDesignStep}
+                      onSelectStep={selectDesignStep}
+                      isSectionDone={isDesignSectionDone}
+                      guidance={guidance}
+                      nudge={proactiveNudge ? { text: proactiveNudge.text, onDismiss: () => setProactiveNudge(null) } : null}
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { void requestManualHint() }}
+                        disabled={hintLoading || !attemptId}
+                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-2 font-label text-xs font-bold text-ink-strong hover:bg-page-field disabled:opacity-50 transition-colors"
+                      >
+                        <Lightbulb size={14} strokeWidth={1.8} />
+                        {hintLoading ? 'Asking…' : 'Show me a hint'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={runSelfCheck}
+                        disabled={!attemptId}
+                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-2 font-label text-xs font-bold text-ink-strong hover:bg-page-field disabled:opacity-50 transition-colors"
+                      >
+                        <ListChecks size={14} strokeWidth={1.8} />
+                        Run self-check
+                      </button>
+                    </div>
+                  </aside>
+                  {/* Canvas column — mounted always so Excalidraw keeps its scene
+                      and undo stack; visible only while the overlay is up. */}
+                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: canvasMaximised ? 'flex' : 'none', flexDirection: 'column' }}>
+                    <div
+                      data-tour-target="canvas-surface"
+                      style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative', background: 'var(--color-card-bright)' }}
+                    >
+                      <ExcalidrawCanvas
+                        sessionId={attemptId ?? 'draft'}
+                        onSnapshot={setCanvasScene}
+                        onElementsAdded={(count) => requestNudge(count)}
+                        initialData={canvasInitialData}
+                        apiRef={excalidrawApiRef}
+                        exportRef={canvasExportRef}
+                      />
+                      <CanvasTourMount active={isCanvasChallenge && !isSubmittingInterview && canvasMaximised} />
+                      {/* Branded empty-state: replaces the blank-Excalidraw paralysis
+                          with a centered Hatch + three first moves. Shown only while
+                          the canvas has no entity; un-mounts the moment one lands. */}
+                      {!emptyStateDismissed && scene.entities.length === 0 && (
+                        <CanvasEmptyState
+                          challengeType={apiChallengeType as CanvasChallengeType}
+                          guidance={guidance}
+                          onUseTemplate={handleUseTemplate}
+                          onAskHatch={(text, autoSend) => {
+                            setEmptyStateDismissed(true)
+                            queueHatchPrompt(text, autoSend)
+                          }}
+                          onOpenNotes={closeCanvasOverlay}
+                        />
+                      )}
+                      {/* Template chips (approved overlay preview): one tap drops a
+                          starting shape through the same executeActions path Hatch
+                          uses. Blank templates are filtered — nothing to draw. */}
+                      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5">
+                        {canvasTemplatesFor(canvasType)
+                          .filter((t) => t.actions.length > 0)
+                          .map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => applyCanvasTemplate(t)}
+                              className="rounded-full border border-hairline bg-card-bright px-3 py-1.5 font-label text-[11.5px] font-bold text-ink-secondary shadow-sm hover:text-ink-strong transition-colors"
+                            >
+                              {t.label}
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Hatch chat — stable tree position so the thread survives the
+                      overlay toggle. Docked, it is the rail's chat slot inline and
+                      the right column of the overlay when the canvas is up. */}
+                  <CanvasChatPanel
+                    attemptId={attemptId ?? ''}
+                    challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
+                    challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
+                    scene={scene}
+                    contextPack={contextPackText || undefined}
+                    queuedPrompt={queuedHatchPrompt}
+                    isOpen={chatPanelOpen}
+                    onToggle={() => setChatPanelOpen((v) => !v)}
+                    autoOpenKey="canvas"
+                    onCanvasActions={handleCanvasActions}
+                    proactiveNudge={proactiveNudge}
+                    guidanceLevel={coachRegister}
+                    onDismissNudge={() => setProactiveNudge(null)}
+                    canvasDrawFailure={canvasDrawFailure}
+                    guidancePhase={guidance.phase}
+                    guidanceLabels={guidance.labels}
+                    stepAnswers={stepAnswers}
+                    activeStep={activeDesignStep}
+                    activeSection={effectiveActiveSectionId}
+                    solutionsOpen={solutionsOpen}
+                    activeSolutionApproach={activeSolutionApproach}
                   />
-                  <CanvasTourMount active={isCanvasChallenge && !isSubmittingInterview} />
-                  {/* Branded empty-state: replaces the blank-Excalidraw paralysis
-                      with a centered Hatch + three first moves. Shown only while
-                      the canvas has no entity; un-mounts the moment one lands. */}
-                  {!emptyStateDismissed && scene.entities.length === 0 && (
-                    <CanvasEmptyState
-                      challengeType={apiChallengeType as CanvasChallengeType}
-                      guidance={guidance}
-                      onUseTemplate={handleUseTemplate}
-                      onAskHatch={(text, autoSend) => {
-                        setEmptyStateDismissed(true)
-                        queueHatchPrompt(text, autoSend)
-                      }}
-                      onOpenNotes={openContextPack}
-                    />
-                  )}
-                  {/* The compact coach card carries the later phases once the user
-                      has drawn; hidden while the full empty-state is up. */}
-                  {scene.entities.length > 0 && (
-                    <CanvasCoachCard
-                      challengeType={apiChallengeType as CanvasChallengeType}
-                      guidance={guidance}
-                      forceOpen={hintForceOpen}
-                      onOpenNotes={openContextPack}
-                      onAskHatch={queueHatchPrompt}
-                    />
-                  )}
-                </div>
-              </div>
-              {/* Chat panel */}
-              <CanvasChatPanel
-                attemptId={attemptId ?? ''}
-                challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
-                challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
-                scene={scene}
-                contextPack={contextPackText || undefined}
-                queuedPrompt={queuedHatchPrompt}
-                isOpen={chatPanelOpen}
-                onToggle={() => setChatPanelOpen((v) => !v)}
-                autoOpenKey="canvas"
-                onCanvasActions={handleCanvasActions}
-                proactiveNudge={proactiveNudge}
-                guidanceLevel={coachRegister}
-                onDismissNudge={() => setProactiveNudge(null)}
-                canvasDrawFailure={canvasDrawFailure}
-                guidancePhase={guidance.phase}
-                guidanceLabels={guidance.labels}
-                solutionsOpen={solutionsOpen}
-                activeSolutionApproach={activeSolutionApproach}
-              />
                 </div>
               </div>
             </div>
@@ -5655,7 +6055,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           flexShrink: 0,
           padding: '10px 16px',
         }}>
-          <CanvasReadinessMeter guidance={guidance} />
+          {/* Readiness folded into the DesignRail's progress ring; the footer
+              keeps a one-line summary so submit intent stays informed. */}
+          <span className="font-label text-xs font-semibold text-ink-secondary">
+            {designSectionTotals.done} of {designSectionTotals.total} sections have enough substance to grade
+            {guidance.phase === 'ready' ? ' · reads ready to submit' : ''}
+          </span>
           <button
             onClick={handleInterviewSubmit}
             disabled={isSubmittingInterview}

@@ -83,6 +83,12 @@ interface CanvasChatPanelProps {
   // in the draw → notes → ask → submit loop, per CLAUDE.md Hatch-awareness.
   guidancePhase?: GuidancePhase
   guidanceLabels?: GuidanceLabels
+  // Structured SD/DM workspace write-up (canvas types only): {stepId: {sectionId: text}}
+  // plus the sub-section the user has on screen. Sent on every interpret turn so
+  // Hatch reads the write-up alongside the diagram (CLAUDE.md Hatch-awareness).
+  stepAnswers?: Partial<Record<string, Record<string, string>>> | null
+  activeStep?: 'frame' | 'list' | 'optimize' | 'win' | null
+  activeSection?: string | null
   // Solutions tab awareness — set while the user has the official solution open,
   // so Hatch can coach relative to the approach they are reading.
   solutionsOpen?: boolean
@@ -250,6 +256,9 @@ export function CanvasChatPanel({
   assertedFinding,
   guidancePhase,
   guidanceLabels,
+  stepAnswers = null,
+  activeStep = null,
+  activeSection = null,
   solutionsOpen = false,
   activeSolutionApproach = null,
 }: CanvasChatPanelProps) {
@@ -369,6 +378,11 @@ export function CanvasChatPanel({
         context_pack: contextPack,
         guidance_level: guidanceLevel,
         guidance_phase: guidancePhase ?? null,
+        // Structured SD/DM write-up context — the server's canvas branch renders
+        // these into the prompt; other branches ignore them.
+        step_answers: stepAnswers ?? undefined,
+        active_step: activeStep ?? undefined,
+        active_section: activeSection ?? undefined,
         solutions_tab_open: solutionsOpen,
         solution_approach_title: activeSolutionApproach?.title ?? null,
         solution_approach_tagline: activeSolutionApproach?.tagline ?? null,
@@ -495,6 +509,8 @@ export function CanvasChatPanel({
       markedFindings, assertedFinding,
       // Canvas guidance context
       guidancePhase,
+      // Structured write-up context
+      stepAnswers, activeStep, activeSection,
       // Solutions tab context
       solutionsOpen, activeSolutionApproach,
       play, isThrottled])

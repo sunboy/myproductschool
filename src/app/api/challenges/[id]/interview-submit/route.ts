@@ -10,11 +10,23 @@ import { withRoute } from '@/lib/api/withRoute'
 import { calculateChallengeXp } from '@/lib/scoring/xp-calculator'
 import { captureServerImmediate } from '@/lib/posthog/server'
 
+// {stepId: {sectionId: text}} — the structured write-up from the SD/DM
+// workspace. Per-section text is capped client-side (max 1500 chars); the
+// server cap is generous but bounded so a hostile payload cannot bloat the row.
+const StepAnswersSchema = z.record(
+  z.string().max(50),
+  z.record(z.string().max(100), z.string().max(5000))
+)
+
 const RequestSchema = z.object({
   attemptId: z.string().uuid(),
   canvasFinalSnapshot: z.record(z.string(), z.unknown()).nullable().optional(),
   contextPack: z.string().max(50000).nullable().optional(),
   canvasPngUrl: z.string().url().nullable().optional(),
+  // Accept both spellings: FlowWorkspace state is camelCase, the autosave
+  // draft key is snake_case. Persisted as step_answers either way.
+  stepAnswers: StepAnswersSchema.nullable().optional(),
+  step_answers: StepAnswersSchema.nullable().optional(),
 })
 
 function validationIssues(error: ZodError) {
@@ -54,6 +66,7 @@ export const POST = withRoute(async (
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
   const { attemptId, canvasFinalSnapshot, contextPack, canvasPngUrl } = body
+  const stepAnswers = body.stepAnswers ?? body.step_answers ?? null
 
   // Verify ownership
   const { data: attempt } = await supabase
@@ -96,10 +109,13 @@ export const POST = withRoute(async (
   // Store the final snapshot first so the grader has data to read, but DO NOT
   // flip status to 'completed' yet - if grading fails we want the user to be
   // able to retry without hitting the "Already submitted" 409.
-  const snapshotWithContext = canvasFinalSnapshot || contextPack
+  const snapshotWithContext = canvasFinalSnapshot || contextPack || stepAnswers
     ? {
         ...(canvasFinalSnapshot ?? {}),
         ...(contextPack ? { context_pack: contextPack } : {}),
+        // Structured write-up persists inside the same jsonb column the grader
+        // already reads (canvas_final_snapshot) — no new column needed.
+        ...(stepAnswers && Object.keys(stepAnswers).length > 0 ? { step_answers: stepAnswers } : {}),
       }
     : null
 
