@@ -12,6 +12,7 @@ import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { urlForChallenge, urlForStudyPlan } from '@/lib/hatch/urls'
+import { getRecentHatchInteractions } from '@/lib/hatch/interactions'
 
 const ROUTE_KEY = 'hatch_chat'
 const MessageSchema = z.object({
@@ -488,7 +489,7 @@ export async function POST(req: NextRequest) {
     const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
     // Build all context blocks in parallel
-    const [contextBlock, pageContextBlock, recommendedBlock] = await Promise.all([
+    const [contextBlock, pageContextBlock, recommendedBlock, recentInteractionsBlock] = await Promise.all([
       buildSkillContextPrompt(user.id, {
         surface: 'chat',
         challengeType: challengeType === 'coding' ? 'algorithm' : (challengeType ?? null),
@@ -498,6 +499,7 @@ export async function POST(req: NextRequest) {
       }).catch(() => ''),
       pageContext ? buildPageContextBlock(pageContext) : Promise.resolve(''),
       buildRecommendedChallengesBlock(user.id),
+      getRecentHatchInteractions(user.id),
     ])
 
     const basePrompt = challengeId ? HATCH_CHAT_SYSTEM_PROMPT : HATCH_GLOBAL_CHAT_SYSTEM_PROMPT
@@ -506,6 +508,12 @@ export async function POST(req: NextRequest) {
     if (contextBlock) systemPrompt += '\n\n## Learner Context\n' + contextBlock
     if (pageContextBlock) systemPrompt += '\n\n' + pageContextBlock
     if (recommendedBlock) systemPrompt += '\n\n' + recommendedBlock
+    if (recentInteractionsBlock) {
+      systemPrompt +=
+        '\n\n## RECENT HATCH INTERACTIONS\n' +
+        'This IS your memory of this learner across sessions, newest first. When they ask what they worked on or asked for before, answer from these entries in your own words. Never claim you have no memory or that sessions start fresh; if the list is empty on a topic, say you have not seen that yet. Never recite the raw list back.\n' +
+        recentInteractionsBlock
+    }
 
     if (challengeType === 'system_design' || challengeType === 'data_modeling') {
       const canvasAddendum = `\n\n--- CANVAS COACHING MODE ---

@@ -12,6 +12,7 @@ import { apiError } from '@/lib/api/error'
 import { buildEmptyStateResponse, buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 import { extractJson, truncateForLog } from '@/lib/anthropic/extract-json'
 import { logger } from '@/lib/log'
+import { recordHatchInteraction } from '@/lib/hatch/interactions'
 
 const NUDGE_GATE_MS = 30_000
 const MAX_ELEMENT_COUNT_FOR_NUDGE = 40 // skip if canvas is large; user is mid-deep-work
@@ -319,6 +320,13 @@ export async function POST(req: NextRequest) {
       typeof parsed.nudge === 'string' && parsed.nudge.trim().length > 0
         ? parsed.nudge.trim()
         : null
+    // Session memory: fire-and-forget, never blocks or fails the response.
+    if (nudge) {
+      recordHatchInteraction(user.id, 'hint_request', {
+        challenge_id: body.challengeId ?? null,
+        challenge_type: body.challengeType ?? null,
+      })
+    }
     return NextResponse.json({ nudge })
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {

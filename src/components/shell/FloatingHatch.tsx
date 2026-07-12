@@ -8,7 +8,7 @@ import { HatchImage } from '@/components/redesign/HatchImage'
 import type { HatchImageState } from '@/components/redesign/HatchImage'
 import { HatchChoreography } from '@/components/shell/HatchChoreography'
 import { HatchTargetPointer } from '@/components/shell/hatch/HatchTargetPointer'
-import { getPagePrompt } from '@/components/shell/hatch/pagePrompts'
+import { getPagePromptEntry, type PagePromptCta } from '@/components/shell/hatch/pagePrompts'
 import { useHatchContext } from '@/context/HatchContext'
 import type { HatchChatMessage, HatchCue } from '@/context/HatchContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
@@ -121,15 +121,21 @@ export function FloatingHatch() {
   const [loading, setLoading] = useState(false)
   const [bubble, setBubble] = useState(false)
   const [bubbleDismissed, setBubbleDismissed] = useState(false)
+  const [pageCtaBusy, setPageCtaBusy] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const bubbleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Show bubble on each page change (but not if chat has started)
+  // Show bubble on each page change (but not if chat has started, and not if
+  // the user already dismissed the bubble on this path this session)
   useEffect(() => {
     if (messages.length > 0) return
-    setBubbleDismissed(false)
+    let dismissedHere = false
+    try {
+      dismissedHere = sessionStorage.getItem(`hatch-bubble-dismissed:${pathname}`) === '1'
+    } catch {}
+    setBubbleDismissed(dismissedHere)
     setBubble(false)
     if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current)
     bubbleTimerRef.current = setTimeout(() => setBubble(true), 1200)
@@ -225,10 +231,36 @@ export function FloatingHatch() {
     e.stopPropagation()
     setBubble(false)
     setBubbleDismissed(true)
+    // Explicit dismissal sticks for the session on this path (founder rule:
+    // the bubble must not re-show every time the user returns to the page).
+    try {
+      sessionStorage.setItem(`hatch-bubble-dismissed:${pathname}`, '1')
+    } catch {}
   }
+
+  // Fire-and-forget click log so Hatch's session memory sees which cues convert.
+  // Contract shared with /api/hatch/interactions: { kind, payload } (payload jsonb).
+  const logCueClick = useCallback((cta: string) => {
+    try {
+      const body = JSON.stringify({ kind: 'cue_click', payload: { path: pathname, cta } })
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        navigator.sendBeacon('/api/hatch/interactions', new Blob([body], { type: 'application/json' }))
+      } else {
+        void fetch('/api/hatch/interactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          keepalive: true,
+        }).catch(() => {})
+      }
+    } catch {
+      // Logging must never break the interaction itself.
+    }
+  }, [pathname])
 
   function runCueAction(cue: HatchCue) {
     const cta = cue.cta
+    if (cta?.label) logCueClick(cta.label)
     if (cta?.href) {
       hatchCtx?.clearCue()
       router.push(cta.href)
@@ -286,11 +318,79 @@ export function FloatingHatch() {
     hatchCtx?.dismissCue({ snooze: true })
   }
 
+  const pagePrompt = getPagePromptEntry(pathname)
+
+  /** Wrap a page-prompt CTA in a synthetic cue so it rides the existing runCueAction path. */
+  function syntheticPromptCue(cta: PagePromptCta, prompt?: string): HatchCue {
+    return {
+      id: `page-prompt-${Date.now()}`,
+      surface: 'page-prompt',
+      message: pagePrompt.message,
+      state: 'speaking',
+      animation: 'idle-hover',
+      cta: { label: cta.label, action: 'open-chat', prompt: prompt ?? cta.prompt },
+      priority: 0,
+      source: 'route',
+      createdAt: Date.now(),
+    }
+  }
+
+  /** Page-bubble CTA: every passive bubble click now does something concrete. */
+  async function runPagePromptCta(e: React.MouseEvent, cta: PagePromptCta) {
+    e.stopPropagation()
+    if (pageCtaBusy) return
+
+    // open-chat routes through runCueAction (which also logs the click).
+    if (cta.action === 'open-chat') {
+      runCueAction(syntheticPromptCue(cta))
+      return
+    }
+
+    setPageCtaBusy(true)
+    try {
+      let pick: { weakestMove?: string; planSlug?: string | null } | null = null
+      try {
+        const res = await fetch('/api/hatch/pick')
+        pick = res.ok ? await res.json() : null
+      } catch {
+        pick = null
+      }
+
+      if (cta.action === 'filter-practice') {
+        logCueClick(cta.label)
+        // The practice hub has no FLOW-move filter param today; every FLOW
+        // move drills through product sense reps, so the pick narrows the
+        // hub to that discipline.
+        setBubble(false)
+        setBubbleDismissed(true)
+        router.push('/challenges?discipline=product_sense')
+        return
+      }
+
+      // show-plan: navigate to a plan the user can actually open; when none
+      // exists, fall back to a concrete chat ask instead of a dead click
+      // (runCueAction logs that branch itself).
+      if (pick?.planSlug) {
+        logCueClick(cta.label)
+        setBubble(false)
+        setBubbleDismissed(true)
+        router.push(`/explore/plans/${pick.planSlug}`)
+      } else {
+        runCueAction(syntheticPromptCue(cta, 'Which study plan fits my weakest FLOW move right now?'))
+      }
+    } finally {
+      setPageCtaBusy(false)
+    }
+  }
+
   const contextMessage = (hatchCtx?.message && hatchCtx.message.length > 0)
     ? hatchCtx.message
-    : getPagePrompt(pathname)
+    : pagePrompt.message
 
-  const cueMessage = activeCue?.message ?? contextMessage
+  // Passive page bubble: when the matched page prompt carries a CTA, show its
+  // own message so the copy and the button always agree (hatchCtx.message can
+  // be stale from a previous page's cue).
+  const cueMessage = activeCue?.message ?? (pagePrompt.cta ? pagePrompt.message : contextMessage)
   const suppressPageBubble = pathname.startsWith('/live-interviews') || pathname.startsWith('/dashboard')
   const showBubble = !open && (
     Boolean(activeCue) ||
@@ -495,6 +595,23 @@ export function FloatingHatch() {
             <p className="m-0 font-label text-[12px] leading-relaxed">
               {cueMessage}
             </p>
+            {!activeCue && pagePrompt.cta && (
+              <button
+                type="button"
+                data-testid="hatch-cue-action"
+                onClick={(e) => { void runPagePromptCta(e, pagePrompt.cta!) }}
+                disabled={pageCtaBusy}
+                className="mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-label text-[11px] font-extrabold transition-transform active:scale-95 disabled:opacity-60"
+                style={{
+                  background: 'rgba(255,255,255,0.14)',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  color: 'var(--color-inverse-on-surface)',
+                }}
+              >
+                {pageCtaBusy ? 'One moment' : pagePrompt.cta.label}
+                <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+              </button>
+            )}
             {activeCue?.cta && (
               <button
                 type="button"

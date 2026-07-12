@@ -12,6 +12,7 @@ import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { getCcAnalyticsFrontDoor } from '@/lib/data/cc-analytics-frontdoor'
 import { getHatchContext, type HatchUserContext } from '@/lib/hatch-context'
+import { weakestMoveFrom } from '@/lib/hatch/weakest-move'
 import { challengePath } from '@/lib/challenges/challengeNumber'
 import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { AnalyticsLabCard } from '@/components/dashboard/cards/AnalyticsLabCard'
@@ -205,7 +206,7 @@ async function loadDashboardLeadUncached() {
     dailyDone: dailyCount ?? 0,
     plan: profile?.plan ?? 'free',
     allMoveLevels,
-    weakestMove: allMoveLevels[0]?.move ?? 'frame',
+    weakestMove: weakestMoveFrom(allMoveLevels),
     hatchContext,
   }
 }
@@ -428,7 +429,7 @@ async function loadDashboardCoreUncached() {
     ])
 
     allMoveLevels = (moveLevelsData ?? []) as { move: string; xp: number; level: number; progress_pct: number }[]
-    weakestMove = allMoveLevels[0]?.move ?? 'frame'
+    weakestMove = weakestMoveFrom(allMoveLevels)
 
     const avgXp = allMoveLevels.length > 0
       ? allMoveLevels.reduce((s, m) => s + m.xp, 0) / allMoveLevels.length

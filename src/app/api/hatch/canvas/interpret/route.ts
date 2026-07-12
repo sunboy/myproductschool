@@ -16,6 +16,7 @@ import { withRoute } from '@/lib/api/withRoute'
 import { logger } from '@/lib/log'
 import { extractJson, truncateForLog } from '@/lib/anthropic/extract-json'
 import * as Sentry from '@sentry/nextjs'
+import { getRecentHatchInteractions, recordHatchInteraction } from '@/lib/hatch/interactions'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
 
 const ROUTE_KEY = 'hatch_canvas_interpret'
@@ -721,7 +722,19 @@ export const POST = withRoute(async (req: NextRequest) => {
   const isCodingMode = challengeType === 'coding'
   const isAnalyticsMode = isClaudeCodeLab(challengeType)
   const systemPrompt = buildSystemPrompt(challengeType)
-  const userContent = buildUserContent(body)
+  let userContent = buildUserContent(body)
+
+  // Session memory across time: what this learner recently did with Hatch.
+  const recentInteractions = await getRecentHatchInteractions(user.id)
+  if (recentInteractions) {
+    userContent +=
+      `\n\n# RECENT HATCH INTERACTIONS\n` +
+      `This IS your memory of this learner across sessions, newest first. When they ask ` +
+      `what they worked on or asked for before, answer from these entries in your own ` +
+      `words. Never claim you have no memory or that sessions start fresh; if the list ` +
+      `has nothing on a topic, say you have not seen that yet. Never recite the raw list back.\n` +
+      recentInteractions
+  }
 
   try {
     await assertPlanLimit(user.id, userPlan, 'hatch_canvas_interprets')
@@ -737,6 +750,15 @@ export const POST = withRoute(async (req: NextRequest) => {
         isAnalyticsMode,
         budget
       )
+    }
+    // Session memory: a request carrying an asserted finding is a self-check.
+    // Fire-and-forget, never blocks or fails the response.
+    if (body.asserted_finding?.trim()) {
+      recordHatchInteraction(user.id, 'self_check', {
+        challenge_id: body.challengeId ?? null,
+        challenge_type: challengeType,
+        verdict: (result as { verdict?: string }).verdict ?? null,
+      })
     }
     return NextResponse.json(result)
   } catch (error) {
