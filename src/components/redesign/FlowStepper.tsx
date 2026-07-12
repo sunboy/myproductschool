@@ -39,25 +39,30 @@ export function FlowStepper({ steps, className }: FlowStepperProps) {
         return (
           <div key={step.key} className="flex min-w-0 flex-1 items-center last:flex-none">
             <div className="flex shrink-0 items-center gap-3">
-              {step.status === 'done' && (
-                <div className="flex size-[23px] shrink-0 items-center justify-center rounded-full bg-forest-600 text-white">
-                  <Check size={13} strokeWidth={2.2} />
-                </div>
-              )}
-              {step.status === 'current' && (
-                <div className="flex size-[25px] shrink-0 items-center justify-center rounded-full bg-forest-800 text-[12.5px] font-bold text-white shadow-[0_0_0_4px_rgba(18,59,32,0.12)]">
-                  {stepNumber}
-                </div>
-              )}
-              {step.status === 'upcoming' && (
-                <div className="flex size-[22px] shrink-0 items-center justify-center rounded-full border-[1.4px] border-hairline-strong text-[11.5px] font-bold text-ink-muted">
-                  {stepNumber}
-                </div>
-              )}
+              {/* One stable node per step: advancing transitions colors and the
+                  current ring in place (quick, eased, no bounce); the check
+                  eases in via .animate-check-in. */}
+              <div
+                className={cn(
+                  'flex shrink-0 items-center justify-center rounded-full transition-[background-color,border-color,box-shadow,color] duration-150',
+                  step.status === 'done' &&
+                    'size-[23px] bg-forest-600 text-white',
+                  step.status === 'current' &&
+                    'size-[25px] bg-forest-800 text-[12.5px] font-bold text-white shadow-[0_0_0_4px_rgba(18,59,32,0.12)]',
+                  step.status === 'upcoming' &&
+                    'size-[22px] border-[1.4px] border-hairline-strong text-[11.5px] font-bold text-ink-muted'
+                )}
+              >
+                {step.status === 'done' ? (
+                  <Check size={13} strokeWidth={2.2} className="animate-check-in" />
+                ) : (
+                  stepNumber
+                )}
+              </div>
               <div className="flex flex-col gap-px">
                 <span
                   className={cn(
-                    'text-[14.5px] font-bold',
+                    'text-[14.5px] font-bold transition-colors duration-150',
                     step.status === 'upcoming' ? 'text-ink-muted' : 'text-ink-strong'
                   )}
                 >

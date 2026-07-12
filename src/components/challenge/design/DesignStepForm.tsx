@@ -4,7 +4,7 @@ import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { GuidanceLabels } from '@/lib/hatch/canvasGuidance'
 import type { DesignSection, DesignStep } from './designSteps'
-import { DiagramSlot } from './DiagramSlot'
+import { DiagramSlot, type CanvasOpenOrigin } from './DiagramSlot'
 
 export interface DesignStepFormProps {
   step: DesignStep
@@ -17,8 +17,8 @@ export interface DesignStepFormProps {
   diagramConnectionCount: number
   /** Discipline nouns (node/flow vs table/link). */
   diagramLabels: GuidanceLabels
-  /** Opens the full-screen canvas overlay. */
-  onOpenCanvas: () => void
+  /** Opens the full-screen canvas overlay (origin = trigger center, for the scale-from-slot entrance). */
+  onOpenCanvas: (origin?: CanvasOpenOrigin) => void
   /** Fired when a textarea section takes focus — lets the workspace track the
    *  active sub-section for Hatch's interpret/nudge payloads. */
   onSectionFocus?: (sectionId: string) => void
@@ -72,15 +72,18 @@ export function DesignStepForm({
           return (
             <section key={section.id} className="py-4 first:pt-0 last:pb-0">
               <div className="mb-2 flex items-start gap-2.5">
-                {done ? (
-                  <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-forest-600 text-white">
-                    <Check size={12} strokeWidth={2.2} />
-                  </span>
-                ) : (
-                  <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-forest-800 text-[10.5px] font-bold text-forest-800">
-                    {i + 1}
-                  </span>
-                )}
+                {/* One stable element per marker so the done-state flip is a
+                    quick color transition; the check itself eases in. */}
+                <span
+                  className={cn(
+                    'mt-px flex size-5 shrink-0 items-center justify-center rounded-full transition-colors duration-150',
+                    done
+                      ? 'bg-forest-600 text-white'
+                      : 'border-[1.5px] border-forest-800 text-[10.5px] font-bold text-forest-800'
+                  )}
+                >
+                  {done ? <Check size={12} strokeWidth={2.2} className="animate-check-in" /> : i + 1}
+                </span>
                 <div className="min-w-0">
                   <h3 className="text-[13.5px] font-bold leading-snug text-ink-strong">
                     {section.label}

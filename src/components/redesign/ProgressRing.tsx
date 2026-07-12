@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface ProgressRingProps {
@@ -49,6 +49,8 @@ export function ProgressRing({
           stroke={trackColor}
           strokeWidth={strokeWidth}
         />
+        {/* Fills once on load from empty to its value (spec §5.7); the global
+            reduced-motion guard makes it instant for motion-sensitive users. */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -60,6 +62,8 @@ export function ProgressRing({
           strokeDasharray={circumference}
           strokeDashoffset={dashOffset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          className="animate-ring-fill"
+          style={{ '--ring-circ': `${circumference}` } as CSSProperties}
         />
         {Array.isArray(color) && (
           <defs>

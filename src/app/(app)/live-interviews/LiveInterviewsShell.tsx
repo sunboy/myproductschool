@@ -1223,7 +1223,7 @@ function PastSessionsTable() {
             return {
               id: s.id, company: s.companyName, role: s.roleId,
               score: s.overallScore, grade: s.grade ?? null,
-              duration: s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-',
+              duration: s.durationSeconds ? (secs > 0 ? `${mins}m ${secs}s` : `${mins}m`) : '',
               date: s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '',
               status: s.status ?? 'completed',
               scenarioTitle: s.scenarioTitle ?? null,
@@ -1312,23 +1312,24 @@ function PastSessionsTable() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
                   <div style={{ minWidth: 0, flex: '1 1 260px' }}>
                     <div style={{ fontWeight: 700, fontSize: 14, color: T.onSurface }}>
-                      {s.company} <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>· {s.role}</span>
+                      <span style={{ textTransform: 'capitalize' }}>{s.company}</span> <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>· {s.role}</span>
                     </div>
                     <div style={{ fontSize: 12, color: T.onSurfaceMuted, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {s.scenarioTitle ?? 'Persona-led interview'}{s.disciplineLabel ? ` · ${s.disciplineLabel}` : ''}
                     </div>
                   </div>
-                  {isScored ? (
+                  {/* Unscored rows carry no right-side chip: the status already
+                      reads once in the meta line below ("Incomplete"), and the
+                      repeated italic "stopped" was pure noise across the list. */}
+                  {isScored && (
                     <span style={{ fontSize: 13, fontWeight: 800, color: T.primary, background: T.primaryFixed, padding: '4px 10px', borderRadius: 999 }}>
                       {s.score} · {s.grade}
                     </span>
-                  ) : (
-                    <span style={{ fontSize: 12, color: T.onSurfaceMuted, fontStyle: 'italic' }}>{s.status === 'abandoned' ? 'stopped' : 'unscored'}</span>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 10 }}>
                   <div style={{ fontSize: 11.5, color: T.onSurfaceMuted }}>
-                    {s.duration} · {s.date || 'Date unavailable'} · {statusLabel}
+                    {[s.duration, s.date || 'Date unavailable', statusLabel].filter(Boolean).join(' · ')}
                   </div>
                   {isScored ? (
                     <Link
@@ -1510,43 +1511,35 @@ export function LiveInterviewsShell({
         </ModeCard>
       </div>
 
+      {/* One container with hairline-separated cells (spec §4 "de-card list
+          content") instead of four identical icon tiles. */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: 10,
+        borderRadius: 12,
+        background: T.surface,
+        border: `1px solid ${T.outlineFaint}`,
+        overflow: 'hidden',
       }}>
         {[
-          { icon: 'forum', label: 'Live pressure', sub: 'Fast probing, no scheduling' },
-          { icon: 'draw', label: 'Artifacts watched', sub: 'Canvas, schema, code, SQL' },
-          { icon: 'memory', label: 'Round memory', sub: 'Signals carry into the loop' },
-          { icon: 'summarize', label: 'Debrief engine', sub: 'Scores, transcript, next drills' },
-        ].map((item) => (
+          { label: 'Live pressure', sub: 'Fast probing, no scheduling' },
+          { label: 'Artifacts watched', sub: 'Canvas, schema, code, SQL' },
+          { label: 'Round memory', sub: 'Signals carry into the loop' },
+          { label: 'Debrief engine', sub: 'Scores, transcript, next drills' },
+        ].map((item, i) => (
           <div
             key={item.label}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
               minWidth: 0,
-              padding: '12px 14px',
-              borderRadius: 16,
-              background: T.surfaceContainerLow,
-              border: `1px solid ${T.outlineFaint}`,
+              padding: '11px 16px',
+              borderLeft: i > 0 ? `1px solid ${T.outlineFaint}` : 'none',
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ color: T.primary, fontSize: 20, fontVariationSettings: "'FILL' 1" }}
-            >
-              {item.icon}
+            <span style={{ display: 'block', fontSize: 12.5, fontWeight: 800, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {item.label}
             </span>
-            <span style={{ minWidth: 0 }}>
-              <span style={{ display: 'block', fontSize: 12.5, fontWeight: 800, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {item.label}
-              </span>
-              <span style={{ display: 'block', fontSize: 11.5, color: T.onSurfaceMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {item.sub}
-              </span>
+            <span style={{ display: 'block', marginTop: 2, fontSize: 11.5, color: T.onSurfaceMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {item.sub}
             </span>
           </div>
         ))}

@@ -23,7 +23,7 @@ import { formatCompany } from '@/lib/format/company'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 import { DisciplineTile, type Discipline as TileDiscipline } from '@/components/redesign/DisciplineTile'
-import { disciplineFor } from '@/components/redesign/dashboard/discipline'
+import { disciplineFor, disciplineLabelFor } from '@/components/redesign/dashboard/discipline'
 import type { ChallengeWithDomain } from '@/lib/types'
 
 function capitalize(s: string) {
@@ -568,7 +568,7 @@ function reasonFor(challenge: ChallengeWithDomain, weakestMove: string, intervie
   if (moveTags.includes(weakestMove)) {
     return `A ${capitalize(weakestMove)}-heavy scenario, and ${capitalize(weakestMove)} is your weakest move.`
   }
-  const label = DISCIPLINE_EYEBROW[disciplineFor(challenge.challenge_type, challenge.domain?.title)]
+  const label = disciplineLabelFor(challenge.challenge_type, challenge.domain?.title)
   return `A recent ${label} rep from the catalog.`
 }
 
@@ -582,7 +582,9 @@ function FeaturedCard({
   interviewDate: string | null
 }) {
   const discipline = disciplineFor(challenge.challenge_type, challenge.domain?.title)
-  const label = DISCIPLINE_EYEBROW[discipline]
+  // Label comes from the challenge type, not the discipline: 'algorithm'
+  // shares the sql tint but must read "Coding / DSA", never "SQL".
+  const label = disciplineLabelFor(challenge.challenge_type, challenge.domain?.title)
   const minutes = (challenge as unknown as { estimated_minutes?: number | null }).estimated_minutes
   const meta = [difficultyLabel(challenge.difficulty), minutes ? `${minutes} min` : null].filter(Boolean).join(' · ')
 
@@ -611,14 +613,6 @@ function FeaturedCard({
       </span>
     </Link>
   )
-}
-
-const DISCIPLINE_EYEBROW: Record<TileDiscipline, string> = {
-  'system-design': 'System Design',
-  'product-sense': 'Product Sense',
-  'data-modeling': 'Data Modeling',
-  sql: 'SQL',
-  'ai-ml': 'AI / ML',
 }
 
 const DISCIPLINE_EYEBROW_CLASS: Record<TileDiscipline, string> = {

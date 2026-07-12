@@ -66,7 +66,10 @@ function inputPreview(testCase: TestCase): string {
 
 function formatInput(testCase: TestCase, result?: TestResult): string {
   if (testCase.args.length > 0) {
-    return testCase.args.map((arg) => JSON.stringify(arg, null, 2)).join('\n')
+    // Compact one-line-per-arg formatting: pretty-printed JSON put every array
+    // element on its own line, which rendered "[1,3,5,7,9]" as a 7-line column
+    // in the narrow detail pane.
+    return testCase.args.map((arg) => JSON.stringify(arg)).join('\n')
   }
   if (result?.input !== undefined) return formatValue(result.input)
   return '—'
@@ -156,8 +159,9 @@ export function TestCasePanel({
         <span className="ml-auto flex items-center gap-2">
           {results && status !== 'running' && (
             <span
+              key={results.runId}
               className={cn(
-                'font-label text-xs font-bold tabular-nums',
+                'animate-fade-in font-label text-xs font-bold tabular-nums',
                 allPassed ? 'text-forest-600' : 'text-error'
               )}
             >
@@ -212,7 +216,10 @@ export function TestCasePanel({
                           >
                             <span
                               aria-hidden="true"
-                              className={cn('size-2 shrink-0 rounded-full', statusDotClass(r?.status))}
+                              className={cn(
+                                'size-2 shrink-0 rounded-full transition-colors duration-150',
+                                statusDotClass(r?.status)
+                              )}
                             />
                             <span className="min-w-0 flex-1">
                               <span className="block truncate font-label text-xs font-bold text-ink-strong">
@@ -300,7 +307,7 @@ export function TestCasePanel({
                           ) : (
                             <pre
                               className={cn(
-                                'overflow-x-auto whitespace-pre-wrap rounded-lg px-3 py-2.5 text-xs',
+                                'overflow-x-auto whitespace-pre-wrap rounded-lg px-3 py-2.5 text-xs transition-colors duration-150',
                                 selectedResult.status === 'passed'
                                   ? 'bg-surface-container-high'
                                   : 'bg-error/10'
@@ -363,7 +370,7 @@ export function TestCasePanel({
                 isSqlMode ? (
                   <SqlTabbedResults key={results.runId} results={results} />
                 ) : (
-                  <AlgoRunSummary results={results} />
+                  <AlgoRunSummary key={results.runId} results={results} />
                 )
               )}
 
@@ -381,14 +388,15 @@ export function TestCasePanel({
   )
 }
 
-/** Run-level summary for algorithm runs: banner + per-case rows. */
+/** Run-level summary for algorithm runs: banner + per-case rows. Keyed on
+ *  runId by the caller so each completed run fades in (no layout shift). */
 function AlgoRunSummary({ results }: { results: RunResult }) {
   const visible = results.results.filter((r) => !r.hidden)
   const hiddenInRun = results.results.length - visible.length
   const allPassed = results.testsTotal > 0 && results.testsPassed === results.testsTotal
 
   return (
-    <div className="flex flex-col">
+    <div className="animate-fade-in flex flex-col">
       <div
         className={cn(
           'mx-3 mt-3 rounded-lg px-3 py-2.5',
@@ -415,7 +423,10 @@ function AlgoRunSummary({ results }: { results: RunResult }) {
           const chip = statusChip(r)
           return (
             <div key={r.id} className="flex items-center gap-2 border-b border-hairline px-3 py-2 last:border-0">
-              <span aria-hidden="true" className={cn('size-2 shrink-0 rounded-full', statusDotClass(r.status))} />
+              <span
+                aria-hidden="true"
+                className={cn('size-2 shrink-0 rounded-full transition-colors duration-150', statusDotClass(r.status))}
+              />
               <span className="min-w-0 flex-1 truncate font-label text-xs font-bold text-ink-strong">{r.label}</span>
               {r.durationMs !== undefined && (
                 <span className="font-label text-[11px] text-ink-muted tabular-nums">{r.durationMs}ms</span>

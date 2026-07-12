@@ -28,6 +28,7 @@ const EYEBROW_CLASS: Record<string, string> = {
   'Product Sense': 'text-ps-fg',
   'Data Modeling': 'text-dm-fg',
   SQL: 'text-sql-fg',
+  'Coding / DSA': 'text-sql-fg',
   'AI / ML': 'text-aiml-fg',
 }
 
@@ -80,7 +81,7 @@ export function RecommendedRow({ title = 'Picked for you', viewAllHref, cards }:
                 type="button"
                 aria-label="Scroll recommendations left"
                 onClick={() => scrollByAmount(-480)}
-                className="flex size-[26px] items-center justify-center rounded-full border border-hairline bg-card-bright text-ink-secondary shadow-[0_1px_2px_rgba(30,27,20,.04)]"
+                className="flex size-[26px] items-center justify-center rounded-full border border-hairline bg-card-bright text-ink-secondary shadow-[0_1px_2px_rgba(30,27,20,.04)] transition-[background-color,color,transform] duration-150 hover:bg-page-field hover:text-ink-strong active:scale-[0.92]"
               >
                 <ChevronLeft size={14} strokeWidth={2.2} />
               </button>
@@ -88,7 +89,7 @@ export function RecommendedRow({ title = 'Picked for you', viewAllHref, cards }:
                 type="button"
                 aria-label="Scroll recommendations right"
                 onClick={() => scrollByAmount(480)}
-                className="flex size-[26px] items-center justify-center rounded-full border border-hairline bg-card-bright text-ink-secondary shadow-[0_1px_2px_rgba(30,27,20,.04)]"
+                className="flex size-[26px] items-center justify-center rounded-full border border-hairline bg-card-bright text-ink-secondary shadow-[0_1px_2px_rgba(30,27,20,.04)] transition-[background-color,color,transform] duration-150 hover:bg-page-field hover:text-ink-strong active:scale-[0.92]"
               >
                 <ChevronRight size={14} strokeWidth={2.2} />
               </button>
@@ -116,7 +117,7 @@ export function RecommendedRow({ title = 'Picked for you', viewAllHref, cards }:
               <Link
                 key={card.key}
                 href={card.href}
-                className="flex w-[240px] shrink-0 grow-0 snap-start flex-col gap-2.5 rounded-xl border border-hairline bg-card-bright p-4 no-underline shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)]"
+                className="flex w-[240px] shrink-0 grow-0 snap-start flex-col gap-2.5 rounded-xl border border-hairline bg-card-bright p-4 no-underline shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)] transition-transform duration-150 hover:-translate-y-px"
               >
                 <div className={`font-label text-[10.5px] font-extrabold uppercase tracking-[0.07em] ${EYEBROW_CLASS[label] ?? 'text-ink-secondary'}`}>
                   {label}
@@ -131,10 +132,12 @@ export function RecommendedRow({ title = 'Picked for you', viewAllHref, cards }:
           })}
         </div>
 
-        {scrollable && !atEnd && (
+        {/* Edge fade stays mounted and transitions opacity, so reaching the
+            end eases the fade out instead of snapping it away. */}
+        {scrollable && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background to-transparent"
+            className={`pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background to-transparent transition-opacity duration-200 ${atEnd ? 'opacity-0' : 'opacity-100'}`}
           />
         )}
       </div>

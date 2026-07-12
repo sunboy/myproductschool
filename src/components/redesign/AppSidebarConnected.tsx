@@ -30,8 +30,8 @@ export function AppSidebarConnected() {
   const isPro = profile?.plan === 'pro'
 
   const coachLine = profile?.streak_days
-    ? `${profile.streak_days}-day streak. Keep the FLOW rhythm going.`
-    : 'Ready to look at your next rep.'
+    ? `${profile.streak_days}-day streak. Today's rep is picked on your dashboard.`
+    : 'Your next rep is picked on the dashboard.'
 
   return (
     <AppSidebar

@@ -57,7 +57,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         prompt:
           'Name the core job, the user who feels it, and the one constraint that makes this system hard to build.',
         placeholder:
-          'Restaurants push live menu and price changes while thousands of carts are open against them…',
+          'e.g. Restaurants push live menu and price changes while thousands of carts are open against them…',
         kind: 'textarea',
         maxChars: 900,
       },
@@ -66,7 +66,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         label: 'Scope',
         prompt:
           'What this session covers and what it deliberately leaves out. A sharp out-of-scope list buys depth where it counts.',
-        placeholder: 'In: cart state, pricing consistency. Out: payments, fraud, recommendations.',
+        placeholder: 'e.g. In: cart state, pricing consistency. Out: payments, fraud, recommendations.',
         kind: 'textarea',
         maxChars: 600,
       },
@@ -83,7 +83,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         label: 'Functional requirements',
         prompt:
           'The operations the system must support, written as verbs. Lead with the ones that break first under load.',
-        placeholder: 'Update a menu item. Read an open cart. Reprice a cart when the menu changes…',
+        placeholder: 'e.g. Update a menu item. Read an open cart. Reprice a cart when the menu changes…',
         kind: 'textarea',
         maxChars: 900,
       },
@@ -92,7 +92,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         label: 'Scale and constraints',
         prompt:
           'Real numbers: users, requests per second, data size, latency budget. Where the brief is silent, estimate and say which estimate you would defend.',
-        placeholder: '2M daily carts, 500 menu writes/s at dinner peak, cart reads must stay under 100ms…',
+        placeholder: 'e.g. 2M daily carts, 500 menu writes/s at dinner peak, cart reads must stay under 100ms…',
         kind: 'textarea',
         maxChars: 900,
       },
@@ -110,7 +110,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         prompt:
           'The shape of the solution in plain words before any boxes. Name the moving parts and why this decomposition over the obvious alternative.',
         placeholder:
-          'A menu service owns writes, carts subscribe to a change feed, and repricing happens at read time…',
+          'e.g. A menu service owns writes, carts subscribe to a change feed, and repricing happens at read time…',
         kind: 'textarea',
         maxChars: 1000,
       },
@@ -128,7 +128,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         prompt:
           'Pick the hardest component in your diagram and go one level down: its data model, its API, and what happens when it fails.',
         placeholder:
-          'The change feed: ordered per restaurant, at-least-once delivery, consumers dedupe on version…',
+          'e.g. The change feed: ordered per restaurant, at-least-once delivery, consumers dedupe on version…',
         kind: 'textarea',
         maxChars: 1500,
       },
@@ -138,7 +138,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         prompt:
           'The decision you are betting on. What you gained, what you gave up, and why the sacrifice is acceptable.',
         placeholder:
-          'Repricing at read time keeps writes cheap. We give up a stable cart total between refreshes…',
+          'e.g. Repricing at read time keeps writes cheap. We give up a stable cart total between refreshes…',
         kind: 'textarea',
         maxChars: 1000,
       },
@@ -156,7 +156,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         prompt:
           'The load test, shadow read, or migration dry run that would expose the weak point before real traffic does.',
         placeholder:
-          'Replay a dinner-peak write trace against a shadow cart store and diff the repriced totals…',
+          'e.g. Replay a dinner-peak write trace against a shadow cart store and diff the repriced totals…',
         kind: 'textarea',
         maxChars: 800,
       },
@@ -166,7 +166,7 @@ const SYSTEM_DESIGN_STEPS: DesignStep[] = [
         prompt:
           'The number that says this works, its threshold, and the counter-signal that says it failed.',
         placeholder:
-          'p99 cart read under 100ms at peak. Failure signal: stale-price complaints above 0.1% of orders…',
+          'e.g. p99 cart read under 100ms at peak. Failure signal: stale-price complaints above 0.1% of orders…',
         kind: 'textarea',
         maxChars: 700,
       },
@@ -187,7 +187,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         prompt:
           'Name what the data must answer: the queries that run constantly, and the write pattern that shapes everything else.',
         placeholder:
-          'Every page load asks for a member and their active subscriptions. Writes are rare but must never double-bill…',
+          'e.g. Every page load asks for a member and their active subscriptions. Writes are rare but must never double-bill…',
         kind: 'textarea',
         maxChars: 900,
       },
@@ -196,7 +196,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         label: 'Scope',
         prompt:
           'What this session covers and what it deliberately leaves out. A sharp out-of-scope list buys depth where it counts.',
-        placeholder: 'In: members, plans, billing state. Out: invoicing, dunning emails, analytics rollups.',
+        placeholder: 'e.g. In: members, plans, billing state. Out: invoicing, dunning emails, analytics rollups.',
         kind: 'textarea',
         maxChars: 600,
       },
@@ -212,7 +212,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         id: 'functional_requirements',
         label: 'Entities and relationships',
         prompt: 'The things the business talks about and how they relate. Plural nouns, real cardinalities.',
-        placeholder: 'members, plans, subscriptions. A member holds many subscriptions; a plan has many members…',
+        placeholder: 'e.g. members, plans, subscriptions. A member holds many subscriptions; a plan has many members…',
         kind: 'textarea',
         maxChars: 900,
       },
@@ -220,7 +220,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         id: 'scale_constraints',
         label: 'Volume and access',
         prompt: 'Row counts, write rates, the hot queries, and how stale a read is allowed to be.',
-        placeholder: '10M members, 40M subscription rows, 2k reads/s on the member lookup, reads can lag writes by a minute…',
+        placeholder: 'e.g. 10M members, 40M subscription rows, 2k reads/s on the member lookup, reads can lag writes by a minute…',
         kind: 'textarea',
         maxChars: 900,
       },
@@ -238,7 +238,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         prompt:
           'The shape of the solution in plain words before any boxes. Name the moving parts and why this decomposition over the obvious alternative.',
         placeholder:
-          'Subscriptions as a state-carrying join between members and plans, with billing events appended, never updated…',
+          'e.g. Subscriptions as a state-carrying join between members and plans, with billing events appended, never updated…',
         kind: 'textarea',
         maxChars: 1000,
       },
@@ -256,7 +256,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         prompt:
           'Take the trickiest relationship or the hottest table one level down: keys, indexes, and what a migration does to it.',
         placeholder:
-          'subscriptions: composite index on (member_id, status), unique partial index guarding one active row per plan…',
+          'e.g. subscriptions: composite index on (member_id, status), unique partial index guarding one active row per plan…',
         kind: 'textarea',
         maxChars: 1500,
       },
@@ -266,7 +266,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         prompt:
           'Usually normalization against read speed. Name the denormalization you accepted, or the joins you chose to keep, and why.',
         placeholder:
-          'Kept plan price normalized so a price change is one write. The member page pays for it with one extra join…',
+          'e.g. Kept plan price normalized so a price change is one write. The member page pays for it with one extra join…',
         kind: 'textarea',
         maxChars: 1000,
       },
@@ -283,7 +283,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         label: 'How you would validate',
         prompt: 'The queries that must stay fast and the dataset size you would prove them at.',
         placeholder:
-          'Load 40M subscription rows and run the member lookup and the renewal sweep against production-shaped data…',
+          'e.g. Load 40M subscription rows and run the member lookup and the renewal sweep against production-shaped data…',
         kind: 'textarea',
         maxChars: 800,
       },
@@ -293,7 +293,7 @@ const DATA_MODELING_STEPS: DesignStep[] = [
         prompt:
           'The number that says this works, its threshold, and the counter-signal that says it failed.',
         placeholder:
-          'Member lookup p99 under 20ms at 2k reads/s. Failure signal: any double-active subscription row…',
+          'e.g. Member lookup p99 under 20ms at 2k reads/s. Failure signal: any double-active subscription row…',
         kind: 'textarea',
         maxChars: 700,
       },

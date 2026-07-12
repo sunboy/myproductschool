@@ -135,6 +135,10 @@ export function QuickTakePanel({ prompt: initialPrompt, challengeId: initialChal
 
   return (
     <div id={QUICK_TAKE_ANCHOR} className="note-amber scroll-mt-24 rounded-2xl p-4">
+      {/* Rendered full-width under the dashboard trio grid: prompt column left,
+          answer column right at lg so the panel uses the row it now owns. */}
+      <div className="grid grid-cols-1 gap-x-6 gap-y-2.5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+      <div className="min-w-0">
       <div className="mb-2.5 flex items-center gap-2.5">
         <HatchImage size={26} state="avatar" />
         <div className="min-w-0 flex-1">
@@ -151,8 +155,10 @@ export function QuickTakePanel({ prompt: initialPrompt, challengeId: initialChal
         )}
       </div>
 
-      <p className="mb-3 text-[13.5px] leading-[1.5] text-ink-strong">&ldquo;{prompt}&rdquo;</p>
+      <p className="text-[13.5px] leading-[1.5] text-ink-strong">&ldquo;{prompt}&rdquo;</p>
+      </div>
 
+      <div className="min-w-0 lg:pt-1">
       {result ? (
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center gap-2 text-[12px] font-semibold text-ink-secondary tabular-nums">
@@ -221,6 +227,8 @@ export function QuickTakePanel({ prompt: initialPrompt, challengeId: initialChal
           </button>
         </div>
       )}
+      </div>
+      </div>
     </div>
   )
 }

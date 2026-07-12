@@ -37,5 +37,8 @@ export const DISCIPLINE_LABEL: Record<Discipline, string> = {
 }
 
 export function disciplineLabelFor(challengeType: string | null | undefined, domainName?: string | null): string {
+  // 'algorithm' shares the sql discipline tint (no dedicated DSA accent in the
+  // spec) but is NOT SQL content — the chip must say so.
+  if (challengeType === 'algorithm') return 'Coding / DSA'
   return DISCIPLINE_LABEL[disciplineFor(challengeType, domainName)]
 }

@@ -1,5 +1,5 @@
 import { cache, Suspense } from 'react'
-import { Star, Target, TrendingUp, Trophy, Zap } from 'lucide-react'
+import { CircleCheck, Mic, Star, TrendingUp, Zap } from 'lucide-react'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -729,7 +729,7 @@ async function DashboardContent() {
   const hatchHeroMessage = isDayZero
     ? "I grade how you reason, not whether you memorized the answer. Write plainly."
     : weakestCompetency && weakestCompetencyScore !== null
-    ? `${weakestMoveLabel} is your weakest move at ${weakestCompetencyScore}%. ${
+    ? `${weakestMoveLabel} is your weakest move at ${Math.round(weakestCompetencyScore)}%. ${
         core.resumeOrStartAction?.kind === 'resume'
           ? 'The step you paused on drills exactly that.'
           : 'This rep drills exactly that.'
@@ -798,28 +798,31 @@ async function DashboardContent() {
         {isDayZero ? (
           <QuietInviteRow text="Your week view and cohort appear after your first rep." />
         ) : (
-          <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-[1.35fr_1fr_1fr]">
-            <div className="flex min-w-0 flex-col gap-4">
+          <>
+            <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-[1.35fr_1fr_1fr]">
               <TodaysPathPanel
                 steps={core.todaysPathSteps.map(s => ({ label: s.label, sub: s.sub, done: s.done, active: s.active, href: s.href, cta: s.cta }))}
                 completed={core.todaysPathCompleted}
               />
-              {core.quickTakePrompt?.prompt_text && (
-                <QuickTakePanel
-                  prompt={core.quickTakePrompt.prompt_text}
-                  challengeId={core.quickTakePrompt.id}
-                  move={core.quickTakePrompt.move_tags?.[0] ?? null}
-                />
-              )}
+              <ThisWeekPanel
+                weekDates={core.weekDates}
+                streakDays={core.streakDays}
+                focusAreas={focusAreas}
+                viewPlanHref={core.activePlanSlug ? `/explore/plans/${core.activePlanSlug}` : '/explore/plans'}
+              />
+              <PeersPanel entries={core.leaderboard} viewLeaderboardHref="/cohort" />
             </div>
-            <ThisWeekPanel
-              weekDates={core.weekDates}
-              streakDays={core.streakDays}
-              focusAreas={focusAreas}
-              viewPlanHref={core.activePlanSlug ? `/explore/plans/${core.activePlanSlug}` : '/explore/plans'}
-            />
-            <PeersPanel entries={core.leaderboard} viewLeaderboardHref="/cohort" />
-          </div>
+            {/* Full-width row below the trio grid: the panel used to sit inside
+                the first grid column, leaving a two-column white hole beside it
+                whenever the week/peers panels ran shorter. */}
+            {core.quickTakePrompt?.prompt_text && (
+              <QuickTakePanel
+                prompt={core.quickTakePrompt.prompt_text}
+                challengeId={core.quickTakePrompt.id}
+                move={core.quickTakePrompt.move_tags?.[0] ?? null}
+              />
+            )}
+          </>
         )}
 
         {core.pausedLoopData && (
@@ -903,7 +906,7 @@ function buildStatCells(
     cells.push({
       key: 'solved',
       label: 'Problems Solved',
-      icon: <Target size={16} strokeWidth={1.7} className="text-ps-fg" />,
+      icon: <CircleCheck size={16} strokeWidth={1.7} className="text-ps-fg" />,
       value: completedCount.toLocaleString(),
       delta: trends.solvedThisWeek > 0 ? `↑ ${trends.solvedThisWeek} this week` : undefined,
     })
@@ -914,19 +917,22 @@ function buildStatCells(
     cells.push({
       key: 'interviews',
       label: 'Mock Interviews',
-      icon: <Trophy size={16} strokeWidth={1.7} className="text-sql-fg" />,
+      icon: <Mic size={16} strokeWidth={1.7} className="text-sql-fg" />,
       value: completedInterviews.toLocaleString(),
       delta: trends.interviewsThisWeek > 0 ? `↑ ${trends.interviewsThisWeek} this week` : undefined,
     })
   }
 
+  // averageChallengeScore is on the 0-5 scale (hatch-context.ts renders it as
+  // "avg challenge score X/5"); convert to a percentage so the cell agrees
+  // with the % delta line below instead of printing the raw /5 value as "2%".
   const avgScore = lead.hatchContext?.practiceStats.averageChallengeScore ?? null
   if (avgScore !== null) {
     cells.push({
       key: 'avg-score',
       label: 'Avg. Score',
       icon: <Star size={16} strokeWidth={1.7} className="text-amber" />,
-      value: `${Math.round(avgScore)}%`,
+      value: `${Math.min(100, Math.round((avgScore / 5) * 100))}%`,
       delta:
         trends.avgScoreDeltaPct !== null && trends.avgScoreDeltaPct !== 0
           ? `${trends.avgScoreDeltaPct > 0 ? '↑' : '↓'} ${Math.abs(trends.avgScoreDeltaPct)}% this week`

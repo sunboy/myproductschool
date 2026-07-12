@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { HatchImage } from '@/components/redesign/HatchImage'
+import { Md } from '@/components/ui/Md'
 
 export interface CodingRailRunSummary {
   testsPassed: number
@@ -61,6 +62,41 @@ function guidanceMessage(lastRun: CodingRailRunSummary | null | undefined, isRun
     : `${failing} visible tests are failing. Start with the simplest failing case and work up.`
 }
 
+/**
+ * Compliance backstop for live Hatch text in this rail: the writing style
+ * bans em dashes, so any that slip past the model prompt are rewritten to a
+ * comma at render time.
+ */
+function stripEmDashes(text: string): string {
+  return text.replace(/\s*—\s*/g, ', ')
+}
+
+type SelfCheckVerdictToken = 'pass' | 'partial' | 'retry'
+
+/** pass=mint / partial=amber / retry=blush chip recipes (spec §7 note tints). */
+const VERDICT_CHIP: Record<SelfCheckVerdictToken, { label: string; className: string }> = {
+  pass: { label: 'Pass', className: 'note-mint text-forest-800' },
+  partial: { label: 'Partial', className: 'note-amber text-ink-strong' },
+  retry: { label: 'Retry', className: 'note-blush text-ink-strong' },
+}
+
+/**
+ * The interpret self-check prompt asks Hatch to start its reply with one word:
+ * pass / partial / retry. Split that token off so it renders as a styled chip
+ * instead of leaking into the body text ("pass One thing worth confirming…").
+ */
+function parseSelfCheckVerdict(text: string): { token: SelfCheckVerdictToken | null; body: string } {
+  const match = /^\s*(pass|partial|retry)\b[\s:,.]*/i.exec(text)
+  if (!match) return { token: null, body: text.trim() }
+  const body = text.slice(match[0].length).trim()
+  return {
+    token: match[1].toLowerCase() as SelfCheckVerdictToken,
+    // A verdict-only reply keeps the original text as the body rather than
+    // rendering an empty pane under the chip.
+    body: body || text.trim(),
+  }
+}
+
 const CONFIDENCE_OPTIONS: Array<{ value: 'low' | 'medium' | 'high'; label: string }> = [
   { value: 'low', label: 'Low' },
   { value: 'medium', label: 'Medium' },
@@ -109,7 +145,7 @@ export function CodingRail({
           )}
         </div>
         <p className="text-xs leading-[1.45] text-ink-strong">
-          {nudge?.text ?? guidanceMessage(lastRun, isRunning)}
+          {nudge?.text ? stripEmDashes(nudge.text) : guidanceMessage(lastRun, isRunning)}
         </p>
       </div>
 
@@ -121,7 +157,7 @@ export function CodingRail({
             {hints.map((hint, i) => (
               <li key={i} className="flex items-start gap-2">
                 <span className="mt-1 size-1.5 shrink-0 rounded-full bg-forest-600" aria-hidden="true" />
-                <span className="text-xs leading-[1.45] text-ink-strong">{hint}</span>
+                <span className="text-xs leading-[1.45] text-ink-strong">{stripEmDashes(hint)}</span>
               </li>
             ))}
           </ul>
@@ -168,7 +204,27 @@ export function CodingRail({
         <div className="rounded-xl border border-hairline bg-card-bright p-4">
           <p className="mb-2 text-[13px] font-bold text-ink-strong">Check your approach</p>
           {selfCheck.status === 'done' && selfCheck.verdict ? (
-            <p className="mb-3 text-xs leading-[1.45] text-ink-strong">{selfCheck.verdict}</p>
+            (() => {
+              const { token, body } = parseSelfCheckVerdict(stripEmDashes(selfCheck.verdict))
+              return (
+                <div className="mb-3">
+                  {token && (
+                    <span
+                      className={cn(
+                        'mb-2 inline-flex items-center rounded-full px-2.5 py-0.5 font-label text-[11px] font-bold uppercase tracking-[0.05em]',
+                        VERDICT_CHIP[token].className
+                      )}
+                      data-testid="coding-self-check-verdict"
+                    >
+                      {VERDICT_CHIP[token].label}
+                    </span>
+                  )}
+                  <div className="text-xs leading-[1.45] text-ink-strong">
+                    <Md variant="compact" tone="inherit">{body}</Md>
+                  </div>
+                </div>
+              )
+            })()
           ) : (
             <p className="mb-3 text-xs leading-normal text-ink-secondary">
               Hatch reads your current code and says whether the approach holds before you spend more time on it.

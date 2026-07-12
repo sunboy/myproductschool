@@ -618,6 +618,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Canvas / interview challenge state
   const [canvasMaximised, setCanvasMaximised] = useState(false)
+  // transform-origin for the overlay's scale-in, as viewport percentages of
+  // the trigger's center (DiagramSlot / "Open canvas" button) — the overlay
+  // grows out of the slot instead of hard-swapping (Stage B motion pass).
+  const [canvasOverlayOrigin, setCanvasOverlayOrigin] = useState<string>('50% 50%')
+  const openCanvasOverlay = useCallback((origin?: { x: number; y: number }) => {
+    if (origin && typeof window !== 'undefined' && window.innerWidth > 0 && window.innerHeight > 0) {
+      const ox = Math.round((origin.x / window.innerWidth) * 100)
+      const oy = Math.round((origin.y / window.innerHeight) * 100)
+      setCanvasOverlayOrigin(`${ox}% ${oy}%`)
+    } else {
+      setCanvasOverlayOrigin('50% 50%')
+    }
+    setCanvasMaximised(true)
+  }, [])
   // Structured SD/DM workspace: per-step write-up answers + which step/section
   // the user is on. Free navigation between design steps (unlike MCQ FLOW).
   const [stepAnswers, setStepAnswers] = useState<StepAnswers>({})
@@ -837,6 +851,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // On a phone, FLOW/MCQ challenges stack vertically. Canvas/coding challenges
   // are gated to a "best on desktop" notice instead (see Fork C below).
   const mobileStacked = isMobile && !isInterviewChallenge
+
+  // Coding left pane: floor the width so all four content tabs (Description /
+  // Examples / Constraints / Notes) stay inline at >=1280 instead of clipping
+  // behind the trailing More menu. The 38vw term keeps narrow desktops from
+  // starving the editor; the strip's overflow scroll remains the fallback.
+  const leftPaneMinWidth = isCodingChallenge && !leftCollapsed ? 'min(400px, 38vw)' : undefined
 
   // Coding challenges use the Notes tab fields (Plan / Edge cases / Complexity),
   // not the canvas Context Pack defaults the state initializes with. Swap them
@@ -3783,10 +3803,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 href={practiceFilterHref('discipline', disciplineCopy.discipline)}
                 title={`Browse ${disciplineCopy.label} practice`}
                 style={{
+                  // Sticker chip (spec §7): tinted fill + 1.5px fg border, never
+                  // a solid heavy pill on an inactive element.
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: 'var(--color-primary)', color: '#fff',
+                  background: 'var(--color-sd-bg)', color: 'var(--color-sd-fg)',
+                  border: '1.5px solid var(--color-sd-fg)',
                   fontSize: 10.5, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
-                  padding: '3px 9px', borderRadius: 999,
+                  padding: '2px 9px', borderRadius: 999,
                   fontFamily: 'var(--font-label)', textDecoration: 'none',
                 }}
               >
@@ -3800,10 +3823,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               const filterVal = canonical ? DIFFICULTY_FILTER_VALUE[canonical] : diff
               return (
                 <Link href={practiceFilterHref('difficulty', filterVal ?? diff)} title={`Browse ${label} practice`} style={{
+                  // Amber taxonomy chip instead of the near-black pill — heavy
+                  // fills are reserved for active/primary elements.
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)',
+                  background: 'var(--color-note-amber)', color: '#8a6116',
+                  border: '1px solid var(--color-note-amber-border)',
                   fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-                  padding: '3px 9px', borderRadius: 999,
+                  padding: '2.5px 9px', borderRadius: 999,
                   fontFamily: 'var(--font-label)', textDecoration: 'none',
                   position: 'relative', zIndex: 0,
                 }}>
@@ -3813,13 +3839,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             })()}
             {companyTags.map(tag => (
               <Link key={tag} href={practiceFilterHref('company', tag)} title={`Browse ${formatCompany(tag)} practice`} style={{
+                // Quiet neutral chip, no repeated glyph (icon budget §4) and no
+                // dark fill — company names are taxonomy, not state.
                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: 'var(--color-hero-forest)', color: '#9ee0b8',
-                fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
-                padding: '3px 9px', borderRadius: 999,
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface-variant)',
+                border: '1px solid var(--color-outline-variant)',
+                fontSize: 10.5, fontWeight: 600, letterSpacing: '0.04em',
+                padding: '2.5px 9px', borderRadius: 999,
                 fontFamily: 'var(--font-label)', textDecoration: 'none',
               }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>apartment</span>
                 {formatCompany(tag)}
               </Link>
             ))}
@@ -4852,6 +4881,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       className="rounded-xl border border-hairline"
       style={{
         width: `${leftWidth}%`,
+        minWidth: leftPaneMinWidth,
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
@@ -4984,7 +5014,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         gap: 6,
         padding: leftCollapsed ? '6px 4px' : '6px 8px',
         flexShrink: 0,
-        minWidth: 0,
+        minWidth: leftPaneMinWidth ?? 0,
         overflow: 'hidden',
       }}>
         <button
@@ -5025,7 +5055,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   style={{
                     flexShrink: 0,
                     whiteSpace: 'nowrap',
-                    padding: '8px 10px',
+                    /* Coding packs four content tabs plus the More trigger into
+                       the strip — tighter padding keeps them all inline. */
+                    padding: isCodingChallenge ? '8px 8px' : '8px 10px',
                     fontSize: 12.5,
                     fontWeight: active ? 800 : 650,
                     color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
@@ -5065,6 +5097,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 onClick={() => setMoreTabsOpen(v => !v)}
                 aria-haspopup="menu"
                 aria-expanded={moreTabsOpen}
+                aria-label="More tabs"
+                title="More"
                 data-testid="coding-more-tabs"
                 style={{
                   whiteSpace: 'nowrap',
@@ -5084,9 +5118,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   minHeight: 36,
                 }}
               >
-                <span>{activeMoreTab ?? 'More'}</span>
+                {/* Icon-only when idle: the trigger stays discoverable while
+                    leaving the strip room for all four content tabs. */}
+                {activeMoreTab && <span>{activeMoreTab}</span>}
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                  {moreTabsOpen ? 'expand_less' : 'expand_more'}
+                  {activeMoreTab ? (moreTabsOpen ? 'expand_less' : 'expand_more') : 'more_horiz'}
                 </span>
               </button>
               {moreTabsOpen && (
@@ -5193,7 +5229,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <button
-                onClick={() => setCanvasMaximised(true)}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  openCanvasOverlay({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
+                }}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-2.5 py-1.5 font-label text-xs font-bold text-ink-secondary hover:text-ink-strong transition-colors"
                 title="Open the canvas"
                 aria-label="Open the canvas"
@@ -5423,6 +5462,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {/* Left side: like/bookmark/share + online count */}
       <div style={{
         width: leftCollapsed ? 32 : `${leftWidth}%`,
+        minWidth: leftPaneMinWidth,
         flexShrink: 0,
         padding: '10px 16px',
         display: 'flex',
@@ -5971,16 +6011,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               closed (display:none) so scene, undo history, and the chat thread
               survive every round trip between drawing and writing. */}
           {isCanvasChallenge && !isSubmittingInterview && (
-            <div style={canvasMaximised
+            <div
+              className={canvasMaximised ? 'canvas-overlay-scrim' : undefined}
+              style={canvasMaximised
               ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2vh 2vw', background: 'rgba(5, 35, 22, 0.35)' }
               : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
               }>
               {/* Overlay panel: in full screen everything floats on a rounded
                   surface above a forest scrim with its own top bar. Inline, this
                   wrapper is a flex passthrough — the same children switch
-                  columns via display so nothing remounts across the toggle. */}
-              <div style={canvasMaximised
-                ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'hidden' }
+                  columns via display so nothing remounts across the toggle.
+                  Entry scales from the DiagramSlot's viewport position
+                  (canvasOverlayOrigin); exit is instant, the snapshot settling
+                  into the slot carries the return. */}
+              <div
+                className={canvasMaximised ? 'canvas-overlay-panel' : undefined}
+                style={canvasMaximised
+                ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'hidden', transformOrigin: canvasOverlayOrigin }
                 : { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }
                 }>
                 {canvasMaximised && (
@@ -6038,7 +6085,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                           diagramEntityCount={scene.entities.length}
                           diagramConnectionCount={scene.connections.length}
                           diagramLabels={guidance.labels}
-                          onOpenCanvas={() => setCanvasMaximised(true)}
+                          onOpenCanvas={openCanvasOverlay}
                         />
                       )}
                       {/* Free step navigation footer (design steps are not

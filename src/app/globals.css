@@ -195,6 +195,19 @@
 /* Shared gradients (referenced from style={{}} where Tailwind utilities can't) */
 :root {
   --gradient-hero-forest: linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%);
+
+  /* ── Motion tokens ─────────────────────────────────────────────
+     Single easing/duration vocabulary for all CSS motion. Mirrors the
+     framer-motion tokens in src/components/motion/tokens.ts
+     (motionDurations fast/base, motionEasing standard/exit) so JS- and
+     CSS-driven transitions read as one system. All animations that use
+     these are neutralised by the global prefers-reduced-motion guard. */
+  --motion-fast:        140ms; /* press feedback, color/check state flips */
+  --motion-base:        180ms; /* small element enter, hover transforms */
+  --motion-overlay:     260ms; /* overlay/panel enter (mirrors motionDurations.base) */
+  --motion-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);  /* = motionEasing.standard */
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --motion-ease-exit:   cubic-bezier(0.7, 0, 0.84, 0);  /* = motionEasing.exit */
 }
 
 /* ── Base ─────────────────────────────────────────────────────── */
@@ -415,14 +428,14 @@ body::before {
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in-up {
-  animation: fade-in-up 0.4s ease both;
+  animation: fade-in-up var(--motion-overlay) var(--motion-ease-out) both;
 }
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 .animate-fade-in {
-  animation: fade-in 0.3s ease both;
+  animation: fade-in var(--motion-overlay) var(--motion-ease-out) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
@@ -435,10 +448,69 @@ body::before {
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-step-enter {
-  animation: step-enter 0.35s ease-out both;
+  animation: step-enter var(--motion-overlay) var(--motion-ease-out) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-step-enter { animation: none; }
+}
+
+/* ── Canvas overlay (SD/DM full-screen canvas) ─────────────────────
+   The overlay element stays mounted across the toggle (display swap), so
+   entry is a one-shot class-triggered animation: the scrim fades, the
+   panel scales up from the DiagramSlot's position (transform-origin is
+   set inline from the trigger's viewport coords). Close is intentionally
+   instant (asymmetric exit) — the returning snapshot settles into the
+   slot via .animate-thumb-settle instead. */
+@keyframes overlay-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes overlay-panel-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.canvas-overlay-scrim {
+  animation: overlay-scrim-in var(--motion-overlay) var(--motion-ease-out) both;
+}
+.canvas-overlay-panel {
+  animation: overlay-panel-in var(--motion-overlay) var(--motion-ease-out) both;
+}
+
+/* Diagram snapshot settling into the write-up slot after the overlay
+   closes (or refreshes in the background). Subtle: it confirms "the
+   snapshot updated", nothing more. */
+@keyframes thumb-settle {
+  from { opacity: 0.4; transform: scale(1.015); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-thumb-settle {
+  animation: thumb-settle var(--motion-overlay) var(--motion-ease-out) both;
+}
+
+/* Stepper check appearing on step completion. Quick, eased, no bounce. */
+@keyframes check-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-check-in {
+  animation: check-in var(--motion-fast) var(--motion-ease-out) both;
+}
+
+/* Progress ring fills once on load (spec §5.7). One-shot, not looping.
+   --ring-circ is set inline by ProgressRing. */
+@keyframes ring-fill {
+  from { stroke-dashoffset: var(--ring-circ); }
+}
+.animate-ring-fill {
+  animation: ring-fill 600ms var(--motion-ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-overlay-scrim,
+  .canvas-overlay-panel,
+  .animate-thumb-settle,
+  .animate-check-in,
+  .animate-ring-fill { animation: none; }
 }
 
 /* ── Hatch state: thinking eye scan ───────────────────────────── */
@@ -585,7 +657,7 @@ body::before {
   0%, 100% { box-shadow: 0 0 0 0 rgba(243, 237, 224, 0.55); }
   50%      { box-shadow: 0 0 0 10px rgba(243, 237, 224, 0); }
 }
-.animate-fade-up    { animation: fade-up 420ms cubic-bezier(.2,.8,.2,1) both; }
+.animate-fade-up    { animation: fade-up var(--motion-overlay) var(--motion-ease-out) both; }
 .animate-hatch-float { animation: hatch-float 4.5s ease-in-out infinite; }
 .animate-pulse-dot  { animation: pulse-dot 2s ease-in-out infinite; }
 .animate-cta-pulse  { animation: cta-pulse 2.4s ease-in-out infinite; }
@@ -807,4 +879,7 @@ body::before {
   color: var(--color-forest-950);
   transform: rotate(-1deg);
   padding: 0 .14em;
+  /* Pull the wash overhang back so trailing punctuation hugs the word
+     instead of reading as a stray space before the period. */
+  margin: 0 -0.09em;
 }

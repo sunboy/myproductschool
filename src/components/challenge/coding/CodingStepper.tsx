@@ -40,7 +40,7 @@ export function CodingStepper({ activeStep, onSelectStep, className }: CodingSte
               <span
                 aria-hidden="true"
                 className={cn(
-                  'mx-1.5 h-px w-4 shrink-0 lg:w-6',
+                  'mx-1.5 h-px w-4 shrink-0 transition-colors duration-150 lg:w-6',
                   i <= activeIdx ? 'bg-forest-600' : 'bg-hairline'
                 )}
               />
@@ -54,22 +54,22 @@ export function CodingStepper({ activeStep, onSelectStep, className }: CodingSte
                 onSelectStep && 'cursor-pointer'
               )}
             >
-              {done ? (
-                <span className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-forest-600 text-white">
-                  <Check size={12} strokeWidth={2.2} />
-                </span>
-              ) : current ? (
-                <span className="flex size-[24px] shrink-0 items-center justify-center rounded-full bg-forest-800 text-[11.5px] font-extrabold text-white">
-                  {i + 1}
-                </span>
-              ) : (
-                <span className="flex size-[22px] shrink-0 items-center justify-center rounded-full border-[1.4px] border-hairline-strong text-[10.5px] font-bold text-ink-muted">
-                  {i + 1}
-                </span>
-              )}
+              {/* One stable node per step: advancing transitions colors in
+                  place; the check eases in via .animate-check-in. */}
               <span
                 className={cn(
-                  'hidden font-label text-[12.5px] xl:inline',
+                  'flex shrink-0 items-center justify-center rounded-full transition-[background-color,border-color,color] duration-150',
+                  done && 'size-[22px] bg-forest-600 text-white',
+                  current && 'size-[24px] bg-forest-800 text-[11.5px] font-extrabold text-white',
+                  !done && !current &&
+                    'size-[22px] border-[1.4px] border-hairline-strong text-[10.5px] font-bold text-ink-muted'
+                )}
+              >
+                {done ? <Check size={12} strokeWidth={2.2} className="animate-check-in" /> : i + 1}
+              </span>
+              <span
+                className={cn(
+                  'hidden font-label text-[12.5px] transition-colors duration-150 xl:inline',
                   current
                     ? 'font-extrabold text-ink-strong'
                     : done
