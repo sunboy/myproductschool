@@ -3,11 +3,14 @@
 import { useRouter, usePathname } from 'next/navigation'
 import { useSession } from '@/context/SessionContext'
 import { AppSidebar, type SidebarItem } from '@/components/redesign/AppSidebar'
+import { openFeedbackModal } from '@/components/feedback/FeedbackWidget'
 
 function resolveActive(pathname: string): SidebarItem {
   if (pathname === '/' || pathname.startsWith('/dashboard')) return 'home'
   if (pathname.startsWith('/live-interviews')) return 'interviews'
   if (pathname.startsWith('/explore/plans')) return 'study-plans'
+  if (pathname.startsWith('/explore/autopsies')) return 'autopsies'
+  if (pathname.startsWith('/explore/modules')) return 'guides'
   if (pathname.startsWith('/progress')) return 'progress'
   if (pathname.startsWith('/cohort')) return 'community'
   if (pathname.startsWith('/challenges')) return 'practice'
@@ -37,6 +40,7 @@ export function AppSidebarConnected() {
       coachLine={coachLine}
       onUpgradeClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
       onHelpClick={() => router.push('/help')}
+      onFeedbackClick={openFeedbackModal}
     />
   )
 }

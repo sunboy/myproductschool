@@ -6,7 +6,7 @@ import { HatchDirector } from '@/components/shell/HatchDirector'
 import { IntroTourController } from '@/components/shell/IntroTourController'
 import { UpgradeModalHost } from '@/components/paywalls/UpgradeModalHost'
 import { IdleTimer } from '@/components/auth/IdleTimer'
-import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
+import { FeedbackModalHost } from '@/components/feedback/FeedbackWidget'
 import { HatchProvider } from '@/context/HatchContext'
 import { SessionProvider, type SessionProfile } from '@/context/SessionContext'
 import { OnboardingModalProvider } from '@/context/OnboardingModalContext'
@@ -36,7 +36,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         <HatchDirector />
         <IntroTourController />
         <FloatingHatch />
-        <FeedbackWidget />
+        <FeedbackModalHost />
         <IdleTimer />
         <UpgradeModalHost />
         <OnboardingModal />

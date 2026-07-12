@@ -791,7 +791,6 @@ async function DashboardContent() {
 
         <RecommendedRow
           viewAllHref="/challenges"
-          withArrow={!isDayZero}
           cards={buildRecommendedCards(core, isDayZero)}
         />
 

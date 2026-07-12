@@ -10,15 +10,21 @@ import {
   ChartLine,
   CircleHelp,
   ChevronRight,
+  FileSearch,
+  GraduationCap,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HatchImage } from '@/components/redesign/HatchImage'
+import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 export type SidebarItem =
   | 'home'
   | 'practice'
   | 'interviews'
   | 'study-plans'
+  | 'autopsies'
+  | 'guides'
   | 'progress'
   | 'community'
   | 'analytics'
@@ -34,14 +40,19 @@ interface NavEntry {
   showLivePill?: boolean
 }
 
-const NAV_ENTRIES: NavEntry[] = [
+const MAIN_NAV_ENTRIES: NavEntry[] = [
   { key: 'home', label: 'Home', href: '/dashboard', icon: Home },
   { key: 'practice', label: 'Practice', href: '/challenges', icon: Compass },
   { key: 'interviews', label: 'Interviews', href: '/live-interviews', icon: Mic, showLivePill: true },
-  { key: 'study-plans', label: 'Study Plans', href: '/explore/plans', icon: BookOpen },
   { key: 'progress', label: 'Progress', href: '/progress', icon: ChartColumn },
   { key: 'community', label: 'Community', href: '/cohort', icon: Users },
   { key: 'analytics', label: 'Analytics', href: '/challenges?discipline=analytics', icon: ChartLine },
+]
+
+const LIBRARY_NAV_ENTRIES: NavEntry[] = [
+  { key: 'study-plans', label: 'Study Plans', href: '/explore/plans', icon: BookOpen },
+  { key: 'autopsies', label: 'Autopsies', href: '/explore/autopsies', icon: FileSearch },
+  { key: 'guides', label: 'Guides', href: '/explore/modules', icon: GraduationCap },
 ]
 
 export interface AppSidebarProps {
@@ -68,6 +79,8 @@ export interface AppSidebarProps {
   onUpgradeClick?: () => void
   /** Called when Help & Support is clicked. */
   onHelpClick?: () => void
+  /** Called when the Send feedback footer row is clicked. */
+  onFeedbackClick?: () => void
   className?: string
 }
 
@@ -83,8 +96,34 @@ export function AppSidebar({
   proSlot,
   onUpgradeClick,
   onHelpClick,
+  onFeedbackClick,
   className,
 }: AppSidebarProps) {
+  const renderEntry = (entry: NavEntry) => {
+    const Icon = entry.icon
+    const isActive = entry.key === active
+    return (
+      <Link
+        key={entry.key}
+        href={entry.href}
+        aria-current={isActive ? 'page' : undefined}
+        data-hatch-target={entry.key === 'home' ? 'nav-dashboard' : `nav-${entry.key}`}
+        className={cn(
+          'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-secondary transition-colors',
+          isActive && 'bg-forest-800 text-white'
+        )}
+      >
+        <Icon size={18} strokeWidth={1.8} className={cn('shrink-0', isActive ? 'opacity-100' : 'opacity-85')} />
+        {entry.label}
+        {entry.showLivePill && (
+          <span className="ml-auto rounded-full bg-amber-soft px-[7px] py-0.5 text-[10px] font-extrabold uppercase tracking-[0.03em] text-flame">
+            Live
+          </span>
+        )}
+      </Link>
+    )
+  }
+
   return (
     <aside
       className={cn(
@@ -92,38 +131,17 @@ export function AppSidebar({
         className
       )}
     >
-      <div className="px-2">
-        <div className="flex items-baseline gap-1 font-headline text-[21px] font-bold text-ink-strong">
-          HackProduct
-        </div>
-        <div className="mt-0.5 text-[11.5px] text-ink-muted">The practice gym for product thinking</div>
-      </div>
+      <Link href="/dashboard" aria-label="HackProduct dashboard" className="flex items-center px-2 py-1">
+        <HackProductWordmark className="h-8 w-[168px] object-cover" sizes="168px" priority />
+      </Link>
 
       <nav className="mt-2 flex flex-col gap-0.5">
-        {NAV_ENTRIES.map((entry) => {
-          const Icon = entry.icon
-          const isActive = entry.key === active
-          return (
-            <Link
-              key={entry.key}
-              href={entry.href}
-              aria-current={isActive ? 'page' : undefined}
-              data-hatch-target={entry.key === 'home' ? 'nav-dashboard' : `nav-${entry.key}`}
-              className={cn(
-                'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-secondary transition-colors',
-                isActive && 'bg-forest-800 text-white'
-              )}
-            >
-              <Icon size={18} strokeWidth={1.8} className={cn('shrink-0', isActive ? 'opacity-100' : 'opacity-85')} />
-              {entry.label}
-              {entry.showLivePill && (
-                <span className="ml-auto rounded-full bg-amber-soft px-[7px] py-0.5 text-[10px] font-extrabold uppercase tracking-[0.03em] text-flame">
-                  Live
-                </span>
-              )}
-            </Link>
-          )
-        })}
+        {MAIN_NAV_ENTRIES.map(renderEntry)}
+
+        <div className="mt-4 mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+          Library
+        </div>
+        {LIBRARY_NAV_ENTRIES.map(renderEntry)}
       </nav>
 
       <div className="mt-auto flex flex-col gap-3.5">
@@ -164,17 +182,29 @@ export function AppSidebar({
 
         {planTier === 'pro' && proSlot}
 
-        <button
-          type="button"
-          onClick={onHelpClick}
-          className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm font-semibold text-ink-secondary"
-        >
-          <span className="flex items-center gap-2">
-            <CircleHelp size={16} strokeWidth={1.8} />
-            Help &amp; Support
-          </span>
-          <ChevronRight size={14} strokeWidth={2} />
-        </button>
+        <div className="flex flex-col gap-0.5">
+          <button
+            type="button"
+            onClick={onFeedbackClick}
+            className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm font-semibold text-ink-secondary"
+          >
+            <span className="flex items-center gap-2">
+              <MessageSquare size={16} strokeWidth={1.8} />
+              Send feedback
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={onHelpClick}
+            className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm font-semibold text-ink-secondary"
+          >
+            <span className="flex items-center gap-2">
+              <CircleHelp size={16} strokeWidth={1.8} />
+              Help &amp; Support
+            </span>
+            <ChevronRight size={14} strokeWidth={2} />
+          </button>
+        </div>
       </div>
     </aside>
   )

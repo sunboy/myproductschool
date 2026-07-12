@@ -45,7 +45,7 @@ function highlightWord(headline: string, word: string): React.ReactNode {
  * dashboard*.html. Renders three distinct layouts driven by resumeOrStartAction.kind:
  * resume (3-col: headline+focus / weekly ring / HatchSays), first (2-col: eyebrow+
  * scenario+CTA / HatchSays, no ring — no week exists yet), next (same 3-col shape
- * as resume, headline built from the next challenge).
+ * as resume, one-line headline; the challenge title lives in the dot+title block).
  */
 export function DashboardHero({
   displayName,
@@ -85,19 +85,6 @@ export function DashboardHero({
                 {firstRepScenario.context}
               </p>
             )}
-            <div className="mb-4 flex flex-wrap gap-2">
-              <span className="rounded-full bg-white/10 px-[11px] py-1 text-[11.5px] font-bold text-white/85">
-                Product Sense
-              </span>
-              {firstRepScenario?.difficulty && (
-                <span className="rounded-full bg-white/10 px-[11px] py-1 text-[11.5px] font-bold text-white/85">
-                  {difficultyLabel(firstRepScenario.difficulty)}
-                </span>
-              )}
-              <span className="rounded-full bg-white/10 px-[11px] py-1 text-[11.5px] font-bold text-white/85">
-                About 5 minutes, no setup
-              </span>
-            </div>
             <div>
               {/* Same anchor contract as the resume/next CTA below — see the
                   comment there. A brand-new user still needs this marker
@@ -129,15 +116,13 @@ export function DashboardHero({
 
   // resume | next — same dense 3-column shape.
   const isResume = action.kind === 'resume'
-  const headline = isResume
-    ? `You paused mid-${capitalize(inferStepMove(action))} on ${action.title}. ${stepsRemainingCopy(action)} finishes the step.`
-    : `Next up: ${action.title}.`
-  const highlight = isResume ? inferStepMove(action) : action.title.split(' ').slice(-1)[0]
+  const headline = isResume ? 'Pick up where you left off.' : 'Your next rep is ready.'
+  const highlight = isResume ? 'left off' : 'ready'
 
   return (
     <div
       data-hatch-target="dashboard-hero"
-      className="relative overflow-hidden rounded-2xl px-[26px] py-[22px] text-white"
+      className="relative overflow-hidden rounded-2xl px-[26px] py-4 text-white"
       style={{
         background:
           'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-850) 75%, var(--color-forest-700) 130%)',
@@ -150,14 +135,16 @@ export function DashboardHero({
       />
       <div className="relative z-10 grid grid-cols-1 items-stretch gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_190px]">
         <div className="flex min-w-0 flex-col">
-          <div className="mb-1.5 text-[13.5px] font-bold text-white/85">Welcome back, {displayName}</div>
-          <h1 className="mb-4 max-w-[32ch] font-headline text-[26px] font-semibold leading-[1.2] text-on-hero-strong">
+          <div className="mb-1 text-[13.5px] font-bold text-white/85">Welcome back, {displayName}</div>
+          <h1 className="mb-2.5 max-w-[32ch] font-headline text-[26px] font-semibold leading-[1.2] text-on-hero-strong">
             {highlightWord(headline, highlight)}
           </h1>
 
-          <div className="mb-1.5 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-white/55">
-            {isResume ? 'In Progress' : 'Picked for you'}
-          </div>
+          {isResume && (
+            <div className="mb-1 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-white/55">
+              In Progress
+            </div>
+          )}
           <div className="mb-1 flex items-center gap-2">
             <span className="size-[7px] shrink-0 rounded-full bg-on-hero-accent" />
             <span className="font-body text-[16.5px] font-bold text-white">{action.title}</span>
@@ -167,14 +154,6 @@ export function DashboardHero({
               ? `${capitalize(inferStepMove(action))}, step ${action.step ?? 1} of ${action.totalSteps ?? 4}. ${remainingMoves(action)} follow.`
               : (action.domain ? `${action.domain} · ` : '') + (action.difficulty ? difficultyLabel(action.difficulty) : '')}
           </div>
-
-          {action.difficulty && (
-            <div className="mb-3.5 flex gap-2">
-              <span className="rounded-full bg-white/10 px-[11px] py-1 text-[11.5px] font-bold text-white/85">
-                {difficultyLabel(action.difficulty)}
-              </span>
-            </div>
-          )}
 
           <div className="flex flex-wrap items-center gap-4">
             {/* data-hatch-target="dashboard-session" is a real anchor: the
@@ -193,7 +172,7 @@ export function DashboardHero({
         </div>
 
         {weeklyGoal && (
-          <div className="flex items-center gap-3.5 pt-5 lg:pt-[22px]">
+          <div className="flex items-center gap-3.5">
             <div
               className="relative flex size-[72px] shrink-0 items-center justify-center rounded-full"
               style={{
@@ -206,13 +185,6 @@ export function DashboardHero({
                 </span>
                 <span className="text-[8px] text-white/60">Weekly Goal</span>
               </div>
-            </div>
-            <div className="max-w-[150px] text-xs leading-[1.42] text-white/62">
-              {weeklyGoal.done} of {weeklyGoal.goal} done.{' '}
-              <b className="font-bold text-white">
-                {Math.max(0, weeklyGoal.goal - weeklyGoal.done)} session{weeklyGoal.goal - weeklyGoal.done === 1 ? '' : 's'}
-              </b>{' '}
-              left on this week&apos;s goal.
             </div>
           </div>
         )}
@@ -267,12 +239,6 @@ function remainingMoves(action: ResumeOrStartAction): string {
   if (remaining.length === 0) return 'Nothing else'
   if (remaining.length === 1) return remaining[0]
   return `${remaining.slice(0, -1).join(', ')}, and ${remaining[remaining.length - 1]}`
-}
-
-function stepsRemainingCopy(action: ResumeOrStartAction): string {
-  if (action.kind !== 'resume') return 'This'
-  // No reliable per-step time estimate from the loader — keep it generic and honest.
-  return 'Picking it back up'
 }
 
 function extractHighlightWord(title: string): string {

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Flame, Zap, Volume2, VolumeX, Compass, LogOut, Settings, Handshake, Sparkles } from 'lucide-react'
+import { Flame, Zap, Volume2, VolumeX, Compass, LogOut, Settings, Handshake, Sparkles, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { levelFromXp } from '@/lib/utils'
 import { useSession } from '@/context/SessionContext'
@@ -12,6 +12,7 @@ import { FreemiumUsageSummary, SpendIndicator } from '@/components/billing/Freem
 import { TrialBanner } from '@/components/billing/TrialBanner'
 import { DunningBanner } from '@/components/billing/DunningBanner'
 import { HackProductWordmark } from '@/components/brand/HackProductBrand'
+import { openFeedbackModal } from '@/components/feedback/FeedbackWidget'
 import { TopUtilityBar } from '@/components/redesign/TopUtilityBar'
 
 const AFFILIATES_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
@@ -167,6 +168,18 @@ export function AppTopShell() {
               <Handshake size={16} strokeWidth={1.8} className="text-ink-secondary" />
               Affiliates
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                openFeedbackModal()
+                setMenuOpen(false)
+              }}
+              data-hatch-sound="open"
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink-strong transition-colors hover:bg-page-field"
+            >
+              <MessageSquare size={16} strokeWidth={1.8} className="text-ink-secondary" />
+              Send feedback
+            </button>
             <Link
               href="/settings"
               data-hatch-sound="open"

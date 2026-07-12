@@ -21,6 +21,7 @@ export function HatchPick({ className = 'mb-6' }: { className?: string }) {
     fetch('/api/challenges/next')
       .then(r => r.ok ? r.json() : null)
       .then(json => { if (json?.challenge) setData(json) })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 

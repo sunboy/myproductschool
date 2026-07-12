@@ -60,13 +60,6 @@ const DISCIPLINES: Array<{
   accent: string
 }> = [
   {
-    key: 'all',
-    label: 'All practice',
-    description: 'Every rep across product, data, systems, SQL, and coding.',
-    icon: 'apps',
-    accent: '#4a7c59',
-  },
-  {
     key: 'algorithm',
     label: 'Coding/DSA',
     description: 'DSA practice for implementation speed and correctness.',
@@ -106,6 +99,13 @@ const DISCIPLINES: Array<{
     label: 'Product sense',
     description: 'MCQs and judgment drills for product-quality thinking.',
     icon: 'psychology',
+    accent: '#4a7c59',
+  },
+  {
+    key: 'all',
+    label: 'All practice',
+    description: 'Every rep across product, data, systems, SQL, and coding.',
+    icon: 'apps',
     accent: '#4a7c59',
   },
 ]
