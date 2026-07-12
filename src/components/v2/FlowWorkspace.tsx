@@ -47,18 +47,23 @@ import { executeActions } from '@/components/challenge/canvasActionExecutor'
 import type { CanvasAction } from '@/lib/types'
 import { InterviewFeedback } from '@/components/v2/InterviewFeedback'
 import { MonacoCodeEditor } from '@/components/challenge/MonacoCodeEditor'
-import { CodeOutputPanel } from '@/components/challenge/CodeOutputPanel'
 import { LanguageSelector } from '@/components/challenge/LanguageSelector'
+import { CodingStepper } from '@/components/challenge/coding/CodingStepper'
+import { advanceCodingStep, isCodingStep, type CodingStep } from '@/components/challenge/coding/codingSteps'
+import { splitProblemSections } from '@/components/challenge/coding/descriptionTabs'
+import { TestCasePanel } from '@/components/challenge/coding/TestCasePanel'
+import { CodingRail, type CodingRailSelfCheck } from '@/components/challenge/coding/CodingRail'
+import { CodingStatusBar } from '@/components/challenge/coding/StatusBar'
 import { SchemaDiagram } from '@/components/challenge/SchemaDiagram'
 import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
 import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
-import { useCodeRunner } from '@/hooks/useCodeRunner'
+import { useCodeRunner, getTestCases } from '@/hooks/useCodeRunner'
 import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
 import { WorkspacePanel } from '@/components/v2/WorkspacePanel'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
+import type { SupportedLanguage, RunResult, GradingFeedback, TestCase } from '@/lib/coding/types'
 import type { SchemaDiagramData } from '@/components/challenge/SchemaDiagram'
 import { formatCompany } from '@/lib/format/company'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
@@ -114,6 +119,48 @@ type ContextPackState = ContextPackField[]
 type StepAnswers = Partial<Record<DesignStepId, Record<string, string>>>
 
 function buildDefaultContextPackFields(challengeType?: string): ContextPackField[] {
+  // Coding (algorithm / sql) — the Notes tab: plan the approach before typing,
+  // list the edge cases the tests will probe, and commit to a complexity claim.
+  if (challengeType === 'algorithm' || challengeType === 'sql') {
+    const isSql = challengeType === 'sql'
+    return [
+      {
+        id: 'plan',
+        label: 'Plan',
+        helper: isSql
+          ? 'The shape of the query before you write it: joins, filters, grouping.'
+          : 'The approach in plain words before you write code.',
+        icon: 'route',
+        placeholder: isSql
+          ? 'e.g. join orders to users, filter to last 30 days, group by user, keep counts > 3'
+          : 'e.g. two pointers from both ends, move the smaller side inward',
+        value: '',
+        removable: false,
+      },
+      {
+        id: 'edge_cases',
+        label: 'Edge cases',
+        helper: 'Inputs that would break a naive version.',
+        icon: 'warning',
+        placeholder: isSql
+          ? 'ties, NULLs, users with no orders, duplicate rows'
+          : 'empty input, single element, duplicates, overflow',
+        value: '',
+        removable: false,
+      },
+      {
+        id: 'complexity',
+        label: 'Complexity',
+        helper: 'Your time and space claim, checked against the constraints.',
+        icon: 'speed',
+        placeholder: isSql
+          ? 'which index makes this fast? what does the join multiply?'
+          : 'O(n log n) time, O(1) extra space',
+        value: '',
+        removable: false,
+      },
+    ]
+  }
   const isDataModeling = challengeType === 'data_modeling'
   return [
     {
@@ -746,8 +793,34 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } catch { /* ignore */ }
   }, [challengeId, leftWidth, leftCollapsed])
 
-  // Left description tab state
-  const [leftTab, setLeftTab] = useState<'Description' | 'Discussions' | 'Submissions' | 'Solutions'>('Description')
+  // Left description tab state. Coding challenges add doc tabs (Examples /
+  // Constraints, present only when the description carries those sections) and
+  // Notes; Solutions/Discussions/Submissions move behind a trailing More menu.
+  const [leftTab, setLeftTab] = useState<
+    'Description' | 'Examples' | 'Constraints' | 'Notes' | 'Discussions' | 'Submissions' | 'Solutions'
+  >('Description')
+  const [moreTabsOpen, setMoreTabsOpen] = useState(false)
+
+  // ── Coding workspace state (round-4 rebuild) ─────────────────────────────
+  // Advisory solving path (Understand → Plan → Code → Test → Optimize).
+  // Auto-signals only ever move it forward; a click can move it anywhere.
+  const [codingStep, setCodingStep] = useState<CodingStep>('understand')
+  const advanceStep = useCallback((next: CodingStep) => {
+    setCodingStep((prev) => advanceCodingStep(prev, next))
+  }, [])
+  // Baseline editor text captured at hydration/starter init, so the first REAL
+  // edit (differs from baseline) advances the path to Code.
+  const initialCodeRef = useRef<string | null>(null)
+  // Hints Hatch has delivered this session (rail list), oldest first.
+  const [codingHints, setCodingHints] = useState<string[]>([])
+  const [codingHintPending, setCodingHintPending] = useState(false)
+  // Check-your-approach verdict flow (interpret self-check).
+  const [codingSelfCheck, setCodingSelfCheck] = useState<CodingRailSelfCheck>({ status: 'idle' })
+  // Learner-declared confidence before submitting (persisted with the draft).
+  const [codingConfidence, setCodingConfidence] = useState<'low' | 'medium' | 'high' | null>(null)
+  // Status bar autosave cell: real save lifecycle of the draft autosave below.
+  const [codingSaveState, setCodingSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [codingSavedAt, setCodingSavedAt] = useState<Date | null>(null)
 
   // Helper: true for interview challenge types that use canvas/coding instead of MCQ
   // Canvas and coding challenges are only supported in API mode; adapter mode always returns false
@@ -764,6 +837,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // On a phone, FLOW/MCQ challenges stack vertically. Canvas/coding challenges
   // are gated to a "best on desktop" notice instead (see Fork C below).
   const mobileStacked = isMobile && !isInterviewChallenge
+
+  // Coding challenges use the Notes tab fields (Plan / Edge cases / Complexity),
+  // not the canvas Context Pack defaults the state initializes with. Swap them
+  // in as soon as the type is known; the draft-hydration effect below merges any
+  // persisted values on top, and typed values are never clobbered.
+  useEffect(() => {
+    if (!isCodingChallenge) return
+    setContextPack((prev) => {
+      if (prev.some((f) => f.id === 'plan')) return prev
+      if (prev.some((f) => f.value.trim().length > 0)) return prev
+      return buildDefaultContextPackFields(apiChallengeType)
+    })
+  }, [isCodingChallenge, apiChallengeType])
 
   // (The old openContextPack jump helper died with the thinking dock — the
   // Context Pack drawer still lives in the Description pane and opens inline.)
@@ -1741,12 +1827,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current) }
   }, [canvasScene, contextPack, contextPackText, stepAnswers, activeDesignStep, isCanvasChallenge, attemptId])
 
-  // Autosave coding drafts every 10s when currentCode changes
+  // Autosave coding drafts every 10s when the code, notes, path step, or
+  // confidence changes. Still silent in the chrome, but the status bar reflects
+  // the real save lifecycle (saving → saved + timestamp).
   useEffect(() => {
-    if (!isCodingChallenge || !attemptId || !currentCode) return
+    if (!isCodingChallenge || !attemptId) return
+    if (!currentCode && !contextPackText) return
     if (codingAutosaveTimerRef.current) clearTimeout(codingAutosaveTimerRef.current)
     codingAutosaveTimerRef.current = setTimeout(async () => {
       try {
+        setCodingSaveState('saving')
         // Merge over ALL existing buckets (codingDraftsRef is the freshest copy)
         // so multi-part challenges don't lose other parts' code on each save.
         // Write the current code into the active part's bucket.
@@ -1764,14 +1854,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               type: apiChallengeType ?? 'coding',
               language: currentLanguage,
               drafts: mergedDrafts,
+              coding_step: codingStep,
+              coding_confidence: codingConfidence,
+              context_pack_fields: contextPack,
             },
             updatedAt: new Date().toISOString(),
           }),
         })
-      } catch { /* fire and forget */ }
+        setCodingSaveState('saved')
+        setCodingSavedAt(new Date())
+      } catch {
+        // fire and forget — a failed save retries on the next change tick
+        setCodingSaveState('idle')
+      }
     }, 10000)
     return () => { if (codingAutosaveTimerRef.current) clearTimeout(codingAutosaveTimerRef.current) }
-  }, [currentCode, currentLanguage, isCodingChallenge, attemptId, activePartId, apiChallengeType])
+  }, [currentCode, currentLanguage, isCodingChallenge, attemptId, activePartId, apiChallengeType, codingStep, codingConfidence, contextPack, contextPackText])
 
   // Autosave MCQ FLOW step drafts every 8s when they change. Without this a
   // refresh or expired session mid-step silently wipes the user's in-progress
@@ -1849,6 +1947,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const partKey = activePartId ?? 'default'
     const draft = codingDraftsRef.current[partKey]?.[currentLanguage]
     setCurrentCode(draft ?? starterCode)
+    // Baseline for the advisory path's Code signal: the first edit that
+    // differs from this text means the user is writing code.
+    initialCodeRef.current = draft ?? starterCode
     // Open chat panel by default for coding challenges
     setChatPanelOpen(true)
   // Only run when challenge first loads (detail.challenge.id changes) or language flips
@@ -1865,8 +1966,34 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (!attemptKey || didHydrateDraftRef.current === attemptKey) return
 
     const snap = detail.current_attempt?.draft_snapshot as
-      | { type?: string; language?: string; drafts?: Record<string, Partial<Record<SupportedLanguage, string>>> }
+      | {
+          type?: string
+          language?: string
+          drafts?: Record<string, Partial<Record<SupportedLanguage, string>>>
+          coding_step?: string
+          coding_confidence?: string
+          context_pack_fields?: ContextPackField[]
+        }
       | undefined
+
+    // Coding Notes tab fields (Plan / Edge cases / Complexity) — start from the
+    // coding defaults and merge any values persisted with this attempt.
+    const baseNoteFields = buildDefaultContextPackFields(apiChallengeType)
+    const savedNoteFields = Array.isArray(snap?.context_pack_fields) ? snap.context_pack_fields : []
+    setContextPack(
+      baseNoteFields.map((field) => {
+        const match = savedNoteFields.find((s) => s?.id === field.id)
+        return match && typeof match.value === 'string' && match.value
+          ? { ...field, value: match.value }
+          : field
+      })
+    )
+    // Restore the advisory path position and declared confidence. Direct set
+    // (not advance) — the snapshot is this attempt's own truth.
+    if (isCodingStep(snap?.coding_step)) setCodingStep(snap.coding_step)
+    if (snap?.coding_confidence === 'low' || snap?.coding_confidence === 'medium' || snap?.coding_confidence === 'high') {
+      setCodingConfidence(snap.coding_confidence)
+    }
 
     if (snap?.drafts && Object.keys(snap.drafts).length > 0) {
       // Restore saved drafts for this attempt.
@@ -1880,6 +2007,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       const metadata = detail.challenge.metadata as { starter_code?: Record<string, string> } | null | undefined
       const saved = snap.drafts[partKey]?.[normLang]
       setCurrentCode(saved ?? metadata?.starter_code?.[normLang] ?? '')
+      initialCodeRef.current = saved ?? metadata?.starter_code?.[normLang] ?? ''
     } else {
       // Fresh attempt with no saved draft: clear any ref left over from a prior
       // attempt AND reset the editor to starter. The starter-init effect doesn't
@@ -1889,6 +2017,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setCodingDrafts({})
       const metadata = detail.challenge.metadata as { starter_code?: Record<string, string> } | null | undefined
       setCurrentCode(metadata?.starter_code?.[currentLanguage] ?? '')
+      initialCodeRef.current = metadata?.starter_code?.[currentLanguage] ?? ''
     }
 
     didHydrateDraftRef.current = attemptKey
@@ -2551,6 +2680,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // inline closure that bypassed the guidance machine.
   const handleCodingRun = useCallback(async () => {
     if (codeRunner.status === 'running') return
+    // Advisory path: a run is the Test move (never regresses a later step).
+    advanceStep('test')
     setOutputPanelStatus('running')
     setOutputPanelError(undefined)
     setCodingGradingError(undefined)
@@ -2564,6 +2695,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         setLastRunResult(result)
         feedRunVerdict(result)
         setOutputPanelStatus('done')
+        // All visible tests green — the remaining move is Optimize (check
+        // complexity against constraints, then submit for the hidden set).
+        if (result.testsTotal > 0 && result.testsPassed === result.testsTotal) {
+          advanceStep('optimize')
+        }
         if (activePartId) {
           setPartRunResults(prev => ({ ...prev, [activePartId]: result }))
         }
@@ -2574,7 +2710,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setOutputPanelStatus('error')
       setOutputPanelError(err instanceof Error ? err.message : 'Run failed')
     }
-  }, [codeRunner, currentCode, feedRunVerdict, codingParts, activePartId])
+  }, [codeRunner, currentCode, feedRunVerdict, codingParts, activePartId, advanceStep])
 
   // Submit handler for coding challenges - final correctness first, then Hatch grading.
   const handleCodingSubmit = useCallback(async () => {
@@ -2688,6 +2824,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
     const partId = activePartId
     if (!partId || !challengeId || !attemptId || isSubmittingCoding) return
+    // Advisory path: a part submit runs its tests — the Test move.
+    advanceStep('test')
     setIsSubmittingCoding(true)
     setOutputPanelStatus('running')
     setOutputPanelError(undefined)
@@ -2728,7 +2866,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setIsSubmittingCoding(false)
     }
-  }, [isApiMode, props, activePartId, attemptId, isSubmittingCoding, codingParts, codeRunner, currentCode, currentLanguage])
+  }, [isApiMode, props, activePartId, attemptId, isSubmittingCoding, codingParts, codeRunner, currentCode, currentLanguage, advanceStep])
 
   // Keyboard shortcuts for the workspace bar actions (coding only):
   // Cmd/Ctrl+' runs, Cmd/Ctrl+Enter submits — but never while Monaco has
@@ -2751,6 +2889,136 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [isCodingChallenge, handleCodingRun, handleCodingSubmit, handleSubmitPart, codingParts.length])
+
+  // ── Coding workspace derivations + Hatch actions (round-4 rebuild) ─────────
+
+  // Visible test cases for the Test Cases panel, from challenge metadata —
+  // the same source useCodeRunner executes. Part-scoped when a multi-part
+  // subtask is active (mirrors handleCodingRun). Hidden cases are counted for
+  // the "+N hidden tests run on submit" footer, never shown.
+  const { visibleTestCases, hiddenTestCount } = useMemo((): { visibleTestCases: TestCase[]; hiddenTestCount: number } => {
+    if (!isCodingChallenge) return { visibleTestCases: [], hiddenTestCount: 0 }
+    const all = getTestCases(detail?.challenge?.metadata as Record<string, unknown> | undefined)
+    const activePart = codingParts.find(p => p.id === activePartId)
+    const scoped = activePart?.coding_test_case_ids?.length
+      ? all.filter(tc => activePart.coding_test_case_ids!.includes(tc.id))
+      : all
+    return {
+      visibleTestCases: scoped
+        .filter(tc => !tc.hidden)
+        .map(tc => ({
+          id: tc.id,
+          label: tc.label,
+          hidden: false,
+          args: 'args' in tc && Array.isArray(tc.args) ? tc.args : [],
+          expected: 'expected_rows' in tc ? tc.expected_rows : ('expected' in tc ? tc.expected : undefined),
+        })),
+      hiddenTestCount: scoped.filter(tc => tc.hidden).length,
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCodingChallenge, detail?.challenge?.id, detail?.challenge?.metadata, codingParts, activePartId])
+
+  // Editor onChange wrapper: the first edit that differs from the hydrated
+  // baseline advances the advisory path to Code. Run/submit stay untouched.
+  const handleEditorChange = useCallback((value: string) => {
+    setCurrentCode(value)
+    if (initialCodeRef.current !== null && value !== initialCodeRef.current) {
+      advanceStep('code')
+    }
+  }, [advanceStep])
+
+  // Advisory path: 20s of reading the Description while the session is live
+  // counts as moving into Plan (the other Plan signal is a Notes edit).
+  useEffect(() => {
+    if (!isCodingChallenge || phase !== 'question' || leftTab !== 'Description') return
+    const timer = setTimeout(() => advanceStep('plan'), 20_000)
+    return () => clearTimeout(timer)
+  }, [isCodingChallenge, phase, leftTab, advanceStep])
+
+  // "Show me a hint" (coding rail): on-demand nudge grounded in the current
+  // code and last run — the same /api/hatch/canvas/nudge coding grounding the
+  // idle nudge sends. Delivered hints accumulate in the rail's list.
+  const requestCodingHint = useCallback(async () => {
+    if (!isCodingChallenge || !attemptId || codingHintPending) return
+    setCodingHintPending(true)
+    try {
+      const res = await fetch('/api/hatch/canvas/nudge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : '',
+          challengeType: apiChallengeType,
+          attemptId,
+          nudgeCount: nudgeCountRef.current,
+          code_language: currentLanguage,
+          code_tail: currentCode ? currentCode.slice(-2000) : null,
+          tests_passed: lastRunResult?.testsPassed ?? null,
+          tests_total: lastRunResult?.testsTotal ?? null,
+        }),
+      })
+      if (!res.ok) return
+      const data = (await res.json()) as { nudge: string | null }
+      lastNudgeAtRef.current = Date.now()
+      if (data.nudge) nudgeCountRef.current += 1
+      const hint = data.nudge ?? 'Nothing urgent from me. Run what you have — the failing case will say more than I can.'
+      setCodingHints((prev) => [...prev, hint])
+    } catch {
+      /* a missed hint is non-critical */
+    } finally {
+      setCodingHintPending(false)
+    }
+  }, [isCodingChallenge, attemptId, codingHintPending, isApiMode, props, apiChallengeType, currentLanguage, currentCode, lastRunResult])
+
+  // "Check your approach" (coding rail): asks Hatch for a pass / partial /
+  // retry verdict on the current code through the interpret endpoint's
+  // asserted_finding self-check flow. The verdict renders in the rail.
+  const runCodingSelfCheck = useCallback(async () => {
+    if (!isCodingChallenge || !attemptId || codingSelfCheck.status === 'checking') return
+    setCodingSelfCheck((prev) => ({ status: 'checking', verdict: prev.verdict }))
+    // challengeTitle / scenarioContext consts are declared later in the render
+    // body (after the loading forks) — derive locally to avoid the TDZ.
+    const selfCheckTitle = detail?.challenge?.title
+    const selfCheckStatement = detail?.challenge?.scenario_context ?? detail?.challenge?.scenario_question
+    try {
+      const res = await fetch('/api/hatch/canvas/interpret', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'Check my approach before I go further.',
+          challengeId: isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : '',
+          challengeType: 'coding',
+          attemptId,
+          asserted_finding: 'I believe my current approach solves this problem and handles the constraints.',
+          current_code: currentCode,
+          current_language: currentLanguage,
+          last_run_result: lastRunResult,
+          coding_step: codingStep,
+          context_pack: contextPackText || undefined,
+          challenge_title: selfCheckTitle ?? undefined,
+          problem_statement: selfCheckStatement ?? undefined,
+          guidance_level: coachRegister,
+          history: [],
+        }),
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null) as { error?: string } | null
+        setCodingSelfCheck({
+          status: 'done',
+          verdict: payload?.error === 'limit_reached'
+            ? 'You have hit the free Hatch review limit for now. The tests still tell the truth — run them.'
+            : 'Hatch could not review that just now. Try again in a moment.',
+        })
+        return
+      }
+      const data = (await res.json()) as { message?: string }
+      setCodingSelfCheck({
+        status: 'done',
+        verdict: data.message?.trim() || 'Hatch could not review that just now. Try again in a moment.',
+      })
+    } catch {
+      setCodingSelfCheck({ status: 'done', verdict: 'Hatch could not review that just now. Try again in a moment.' })
+    }
+  }, [isCodingChallenge, attemptId, codingSelfCheck.status, isApiMode, props, currentCode, currentLanguage, lastRunResult, codingStep, contextPackText, coachRegister, detail?.challenge])
 
   // Re-run Hatch grading on the SAME submission, in place. Used by the "Retry
   // grading" button on the complete screen when the AI grader errored. Reuses the
@@ -3458,6 +3726,36 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   const tabs = ['Description', 'Solutions', 'Discussions', 'Submissions'] as const
 
+  // Coding doc tabs: split the description on ## Examples / ## Constraints
+  // boundaries (per CHALLENGE_DESCRIPTION_SPEC — sql's ## Output is the ask and
+  // stays in Description). An absent section means an absent tab, never an
+  // empty pane. Non-coding challenge types keep the four tabs unchanged.
+  const problemSections = isCodingChallenge
+    ? splitProblemSections(
+        challengeBriefSections
+          .filter((s) => s.tone === 'context')
+          .map((s) => s.body)
+          .join('\n\n')
+      )
+    : null
+  const codingPrimaryTabs: Array<'Description' | 'Examples' | 'Constraints' | 'Notes'> = [
+    'Description',
+    ...(problemSections?.examples ? (['Examples'] as const) : []),
+    ...(problemSections?.constraints ? (['Constraints'] as const) : []),
+    'Notes',
+  ]
+  const codingMoreTabs = ['Solutions', 'Discussions', 'Submissions'] as const
+  // Description pane body for coding: the split description replaces the raw
+  // context sections; change/task/support sections keep rendering as before.
+  const briefSectionsForDisplay = isCodingChallenge && problemSections
+    ? (() => {
+        const nonContext = challengeBriefSections.filter((s) => s.tone !== 'context')
+        const firstContext = challengeBriefSections.find((s) => s.tone === 'context')
+        return firstContext
+          ? [{ ...firstContext, body: problemSections.description }, ...nonContext]
+          : challengeBriefSections
+      })()
+    : challengeBriefSections
 
   // Left pane description content
   const descriptionPane = (
@@ -3559,7 +3857,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {challengeBriefSections.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           {(isCodingChallenge || isCanvasChallenge) ? (
-            <ProblemDocument sections={challengeBriefSections} />
+            <ProblemDocument sections={briefSectionsForDisplay} />
           ) : (
             challengeBriefSections.map((section) => (
               <BriefSectionCard key={section.id} section={section} />
@@ -4247,6 +4545,83 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
+  // ── Coding doc tabs: Examples / Constraints / Notes panes ─────────────────
+  // Examples and Constraints render the split markdown substrings through the
+  // same document renderer as the Description. They exist only when the
+  // description carries the section (tab absent otherwise, never empty).
+  const examplesPane = problemSections?.examples ? (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
+        <ReactMarkdown components={documentMarkdownComponents}>{problemSections.examples}</ReactMarkdown>
+      </div>
+    </div>
+  ) : null
+
+  const constraintsPane = problemSections?.constraints ? (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
+        <ReactMarkdown components={documentMarkdownComponents}>{problemSections.constraints}</ReactMarkdown>
+      </div>
+    </div>
+  ) : null
+
+  // Notes: the coding flavor of the context-pack fields (Plan / Edge cases /
+  // Complexity). Autosaved with the draft and sent to Hatch as working notes
+  // on every chat turn. The first edit advances the advisory path to Plan.
+  const notesPane = (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <HatchImage size={22} state="listening" />
+        <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
+          Hatch reads these notes with your code, so hints and reviews land on your actual plan.
+        </p>
+      </div>
+      {contextPack.map((field, fieldIdx) => (
+        <div key={field.id}>
+          <label
+            htmlFor={`coding-note-${field.id}`}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: 'var(--color-on-surface-variant)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 2 }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 13 }}>{field.icon}</span>
+            {field.label}
+          </label>
+          {field.helper && (
+            <p style={{ margin: '0 0 5px', fontFamily: 'var(--font-label)', fontSize: 10.5, lineHeight: 1.4, color: 'var(--color-on-surface-variant)' }}>
+              {field.helper}
+            </p>
+          )}
+          <textarea
+            id={`coding-note-${field.id}`}
+            value={field.value}
+            onChange={(event) => {
+              const text = event.target.value
+              setContextPack((prev) => prev.map((f, i) => (i === fieldIdx ? { ...f, value: text } : f)))
+              advanceStep('plan')
+            }}
+            placeholder={field.placeholder}
+            rows={field.id === 'plan' ? 4 : 3}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              resize: 'vertical',
+              minHeight: field.id === 'plan' ? 92 : 72,
+              borderRadius: 12,
+              border: '1px solid var(--color-outline-variant)',
+              background: 'var(--color-card-bright)',
+              color: 'var(--color-on-surface)',
+              padding: '9px 10px',
+              fontFamily: 'var(--font-body)',
+              fontSize: 12.5,
+              lineHeight: 1.45,
+              outline: 'none',
+            }}
+            data-testid={`coding-note-${field.id}`}
+          />
+        </div>
+      ))}
+    </div>
+  )
+
   const solutionsPane = !challengeId ? (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 20 }}>
       <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>menu_book</span>
@@ -4485,6 +4860,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         minHeight: 0,
       }}>
       {leftTab === 'Description' && descriptionPane}
+      {leftTab === 'Examples' && examplesPane}
+      {leftTab === 'Constraints' && constraintsPane}
+      {leftTab === 'Notes' && notesPane}
       {leftTab === 'Discussions' && discussionsPane}
       {leftTab === 'Submissions' && submissionsPane}
       {leftTab === 'Solutions' && solutionsPane}
@@ -4638,12 +5016,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
           }}>
-            {tabs.map(t => {
+            {(isCodingChallenge ? codingPrimaryTabs : tabs).map(t => {
               const active = leftTab === t
               return (
                 <button
                   key={t}
-                  onClick={() => setLeftTab(t)}
+                  onClick={() => { setLeftTab(t); setMoreTabsOpen(false) }}
                   style={{
                     flexShrink: 0,
                     whiteSpace: 'nowrap',
@@ -4674,6 +5052,96 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             })}
           </div>
         )}
+        {/* Coding: Solutions / Discussions / Submissions live behind a trailing
+            More menu so the doc tabs (the ref's left-panel anatomy) stay primary.
+            Sits OUTSIDE the scrollable strip so the dropdown never clips. */}
+        {!leftCollapsed && isCodingChallenge && (() => {
+          const activeMoreTab = (codingMoreTabs as readonly string[]).includes(leftTab)
+            ? leftTab
+            : null
+          return (
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <button
+                onClick={() => setMoreTabsOpen(v => !v)}
+                aria-haspopup="menu"
+                aria-expanded={moreTabsOpen}
+                data-testid="coding-more-tabs"
+                style={{
+                  whiteSpace: 'nowrap',
+                  padding: '8px 8px',
+                  fontSize: 12.5,
+                  fontWeight: activeMoreTab ? 800 : 650,
+                  color: activeMoreTab ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
+                  background: 'transparent',
+                  border: 'none',
+                  boxShadow: activeMoreTab ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
+                  borderRadius: 0,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  minHeight: 36,
+                }}
+              >
+                <span>{activeMoreTab ?? 'More'}</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                  {moreTabsOpen ? 'expand_less' : 'expand_more'}
+                </span>
+              </button>
+              {moreTabsOpen && (
+                <div
+                  role="menu"
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    zIndex: 40,
+                    minWidth: 156,
+                    background: 'var(--color-card-bright)',
+                    border: '1px solid var(--color-hairline)',
+                    borderRadius: 10,
+                    boxShadow: '0 8px 24px -8px rgba(30,27,20,0.25)',
+                    padding: 4,
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  {codingMoreTabs.map(t => {
+                    const active = leftTab === t
+                    return (
+                      <button
+                        key={t}
+                        role="menuitem"
+                        onClick={() => { setLeftTab(t); setMoreTabsOpen(false) }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 8,
+                          padding: '7px 10px',
+                          fontSize: 12.5,
+                          fontWeight: active ? 800 : 650,
+                          color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
+                          background: active ? 'var(--color-page-field)' : 'transparent',
+                          border: 'none',
+                          borderRadius: 7,
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <span>{t}</span>
+                        {t === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, active)}
+                        {t === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, active)}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })()}
         {/* Collapse button - only shown when expanded and on coding challenges */}
         {!leftCollapsed && isCodingChallenge && (
           <button
@@ -4835,6 +5303,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           completedSteps={completedDesignSteps}
           onStepClick={(step) => { if (isDesignStepId(step)) selectDesignStep(step) }}
         />
+      </div>
+    </div>
+  ) : null
+
+  // Coding workspace: the advisory Understand → Plan → Code → Test → Optimize
+  // path in the header (round-4 coding ref). Purely advisory — clicking a node
+  // never gates or submits anything, it just points the workspace at the
+  // matching surface (Understand → Description, Plan → Notes, Test → console).
+  const codingStepperStrip = isCodingChallenge && phase === 'question' && !mobileStacked ? (
+    <div style={{ flexShrink: 0, padding: '10px 16px 2px', background: 'var(--color-page-field)' }}>
+      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div className="font-label" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)', flexShrink: 0 }}>
+          Solving path
+        </div>
+        <CodingStepper
+          activeStep={codingStep}
+          onSelectStep={(id) => {
+            setCodingStep(id)
+            if (id === 'understand') setLeftTab('Description')
+            else if (id === 'plan') setLeftTab('Notes')
+            else if (id === 'test') setConsoleCollapsed(false)
+          }}
+        />
+        <span className="font-label hidden min-[1180px]:inline" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-ink-muted)', flexShrink: 0 }}>
+          A path, not a gate
+        </span>
       </div>
     </div>
   ) : null
@@ -5439,6 +5933,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           {topChrome}
           {flowStepperStrip}
           {designStepperStrip}
+          {codingStepperStrip}
         </>
       )}
 
@@ -5461,7 +5956,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               <HatchImage size={96} state="reviewing" />
               <div className="font-headline text-xl text-ink-strong">Hatch is reviewing your design…</div>
               <div className="font-body text-sm text-ink-secondary max-w-md text-center">
-                Reading the schema, checking relationships, and writing your feedback.
+                {apiChallengeType === 'data_modeling'
+                  ? 'Reading the schema, checking relationships, and writing your feedback.'
+                  : 'Tracing the request path, weighing your tradeoffs, and writing your feedback.'}
               </div>
             </div>
           )}
@@ -5690,12 +6187,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </div>
           )}
 
-          {/* Coding workspace - Monaco editor + output panel + Hatch chat */}
+          {/* Coding workspace - Monaco editor + test-case console + Hatch rail/chat
+              + status bar (round-4 rebuild). Column: workspace row on top, the
+              status bar pinned underneath. */}
           {isCodingChallenge && phase === 'question' && (
             <div style={codingMaximised
-              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', background: 'var(--color-background)' }
-              : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
+              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', background: 'var(--color-background)' }
+              : { flex: '1 1 auto', display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 }
             }>
+            <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }}>
               {/* Floating tab strip - visible only when panel is collapsed + multi-part */}
               {leftCollapsed && codingParts.length > 0 && (
                 <div data-testid="floating-tab-strip" style={{
@@ -5801,7 +6301,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   <div style={{ flex: 1, minHeight: 0 }} data-testid="monaco-editor-container">
                     <MonacoCodeEditor
                       value={currentCode}
-                      onChange={setCurrentCode}
+                      onChange={handleEditorChange}
                       language={currentLanguage}
                       height="100%"
                       onPaste={handleCodePaste}
@@ -5824,21 +6324,43 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-hairline)', transition: 'background 120ms' }} />
                   </div>
                 )}
-                {/* Console card */}
+                {/* Console card — Test Cases / Run Results tabbed panel */}
                 <div
                   className="rounded-xl border border-hairline overflow-hidden flex flex-col"
                   style={consoleCollapsed ? { flex: '0 0 auto' } : { flex: `${100 - editorHeightPct} 1 0`, minHeight: 0 }}
                 >
-                  <CodeOutputPanel
+                  <TestCasePanel
+                    testCases={visibleTestCases}
                     results={lastRunResult}
                     status={outputPanelStatus}
                     isSqlMode={currentLanguage === 'sql'}
                     errorMessage={outputPanelError}
+                    hiddenCount={hiddenTestCount}
                     collapsed={consoleCollapsed}
                     onToggleCollapse={() => setConsoleCollapsed(v => !v)}
                   />
                 </div>
               </div>
+
+              {/* Coding rail — live guidance, hints, patterns, self-check,
+                  confidence. The chat dock renders beside it (its chat slot). */}
+              <aside
+                style={{ width: 288, flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', paddingLeft: 8, paddingBottom: 4 }}
+              >
+                <CodingRail
+                  nudge={proactiveNudge ? { text: proactiveNudge.text, onDismiss: () => setProactiveNudge(null) } : null}
+                  lastRun={lastRunResult ? { testsPassed: lastRunResult.testsPassed, testsTotal: lastRunResult.testsTotal } : null}
+                  isRunning={outputPanelStatus === 'running'}
+                  hints={codingHints}
+                  hintPending={codingHintPending}
+                  onRequestHint={() => { void requestCodingHint() }}
+                  patterns={(detail?.challenge as { tags?: string[] } | null | undefined)?.tags?.filter(t => typeof t === 'string' && t.trim().length > 0)}
+                  selfCheck={codingSelfCheck}
+                  onRunSelfCheck={() => { void runCodingSelfCheck() }}
+                  confidence={codingConfidence}
+                  onConfidenceChange={setCodingConfidence}
+                />
+              </aside>
 
               {/* Hatch chat panel - right side */}
               {(() => {
@@ -5849,17 +6371,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
                     challengeType="coding"
                     scene={scene}
+                    contextPack={contextPackText || undefined}
                     queuedPrompt={queuedHatchPrompt}
                     isOpen={chatPanelOpen}
                     onToggle={() => setChatPanelOpen((v) => !v)}
                     autoOpenKey="coding"
                     proactiveNudge={proactiveNudge}
-                guidanceLevel={coachRegister}
+                    guidanceLevel={coachRegister}
                     onDismissNudge={() => setProactiveNudge(null)}
                     onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
                     currentCode={currentCode}
                     currentLanguage={currentLanguage}
                     lastRunResult={lastRunResult}
+                    codingStep={codingStep}
                     challengeTitle={challengeTitle ?? undefined}
                     problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
                     activePartId={activePart?.id}
@@ -5873,6 +6397,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   />
                 )
               })()}
+            </div>
+
+            {/* Status bar — real autosave state, the actual shortcuts, last
+                run count, active language, and the exit flow. */}
+            <CodingStatusBar
+              saveState={codingSaveState}
+              savedAt={codingSavedAt}
+              language={{ python: 'Python', javascript: 'JavaScript', java: 'Java', cpp: 'C++', go: 'Go', sql: 'SQL' }[currentLanguage]}
+              lastRun={lastRunResult ? { testsPassed: lastRunResult.testsPassed, testsTotal: lastRunResult.testsTotal } : null}
+              onEndSession={props.onExit ?? (() => window.history.back())}
+              className="mt-2 rounded-xl border border-hairline"
+            />
             </div>
           )}
 

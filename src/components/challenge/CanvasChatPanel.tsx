@@ -56,6 +56,10 @@ interface CanvasChatPanelProps {
   timeRemaining?: number
   challengeTitle?: string
   problemStatement?: string
+  /** Advisory coding-path step (Understand → Plan → Code → Test → Optimize).
+   *  Sent as coding_step on every interpret turn so Hatch weights guidance
+   *  toward the step's move (CLAUDE.md Hatch-awareness). */
+  codingStep?: 'understand' | 'plan' | 'code' | 'test' | 'optimize' | null
   // Multi-part coding context (only when a part is active)
   activePartId?: string
   activePartSequence?: number
@@ -237,6 +241,7 @@ export function CanvasChatPanel({
   challengeTitle,
   problemStatement,
   activePartId,
+  codingStep = null,
   activePartSequence,
   activePartTitle,
   activePartPrompt,
@@ -401,6 +406,7 @@ export function CanvasChatPanel({
         time_remaining_seconds: timeRemaining,
         challenge_title: challengeTitle,
         problem_statement: problemStatement,
+        coding_step: codingStep ?? undefined,
         active_part_id: activePartId,
         active_part_sequence: activePartSequence,
         active_part_title: activePartTitle,
@@ -499,7 +505,7 @@ export function CanvasChatPanel({
     }
   }, [isLoading, scene, contextPack, challengeId, challengeType, attemptId, messages, onCanvasActions,
       currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
-      challengeTitle, problemStatement,
+      challengeTitle, problemStatement, codingStep,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
       activePartResponseType, activePartWeightPct,
       // Analytics context

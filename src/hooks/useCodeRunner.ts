@@ -120,7 +120,7 @@ function isSqlChallenge(metadata: CodingChallengeMetadata | Record<string, unkno
   return Boolean((metadata as CodingChallengeMetadata).sql_schema?.setup_script)
 }
 
-function getTestCases(metadata: CodingChallengeMetadata | Record<string, unknown> | undefined): CodingTestCase[] {
+export function getTestCases(metadata: CodingChallengeMetadata | Record<string, unknown> | undefined): CodingTestCase[] {
   if (!metadata) return []
   return (metadata as CodingChallengeMetadata).test_cases ?? []
 }
