@@ -182,20 +182,20 @@ export default async function LiveInterviewsPage() {
               <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
                 Live interviews
               </div>
-              <h1 className="mb-2 max-w-[34ch] font-headline text-[28px] sm:text-[30px] font-semibold leading-[1.2] text-[#f9faf5]">
-                A 45-minute mock with follow-ups, graded on the same rubric as your <span className="hl-word">reps</span>.
+              <h1 className="mb-2 max-w-[34ch] font-headline text-[28px] sm:text-[30px] font-semibold leading-[1.2] text-on-hero-strong">
+                A 45-minute mock with follow-ups, graded on the same rubric as your <span className="whitespace-nowrap"><span className="hl-word">reps</span>.</span>
               </h1>
               <p className="max-w-[58ch] text-[13px] leading-[1.55] text-white/72">
                 Hatch probes, watches the canvas or editor, carries context across rounds, and writes the debrief.
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="text-[12.5px] leading-none">
-                  <span className="font-extrabold text-[#f9faf5]">Voice or chat</span>{' '}
+                  <span className="font-extrabold text-on-hero-strong">Voice or chat</span>{' '}
                   <span className="text-white/60">mic optional</span>
                 </span>
                 <span className="text-[12px] text-white/30">·</span>
                 <span className="text-[12.5px] leading-none">
-                  <span className="font-extrabold text-[#f9faf5]">Whiteboard and CoderPad</span>{' '}
+                  <span className="font-extrabold text-on-hero-strong">Whiteboard and CoderPad</span>{' '}
                   <span className="text-white/60">when the question needs one</span>
                 </span>
               </div>

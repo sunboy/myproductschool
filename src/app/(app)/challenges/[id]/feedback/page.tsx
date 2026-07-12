@@ -474,11 +474,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </div>
 
             <div className="relative z-[1] min-w-0 flex-1">
-              <h2 className="font-headline text-xl font-semibold leading-tight text-[#f9faf5] max-w-[520px]">
+              <h2 className="font-headline text-xl font-semibold leading-tight text-on-hero-strong max-w-[520px]">
                 {scoreDescriptor}
               </h2>
               {full.overall && (
-                <FeedbackText className="mt-2 block max-w-[470px] text-[13px] leading-relaxed text-[#cdd8cd]">
+                <FeedbackText className="mt-2 block max-w-[470px] text-[13px] leading-relaxed text-on-hero-muted">
                   {full.overall}
                 </FeedbackText>
               )}
@@ -723,6 +723,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               <ul className="space-y-2">
                 {full.what_to_fix.map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5">
+                    {/* Raw hex kept intentionally: nearest token (note-blush-border #dcbcd6) is far
+                        lighter and the bullet would lose contrast against the blush note fill. */}
                     <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#b06ba3]" />
                     <FeedbackText className="min-w-0 flex-1 text-[13px] leading-snug text-ink-strong">{item}</FeedbackText>
                   </li>

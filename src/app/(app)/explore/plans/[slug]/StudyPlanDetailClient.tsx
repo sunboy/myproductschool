@@ -239,7 +239,7 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
                 </div>
 
                 {isCurrent && (
-                  <div className="mt-0.5 border-t border-[#ecd48a] px-4 pb-3">
+                  <div className="mt-0.5 border-t border-note-amber-border px-4 pb-3">
                     {chapter.items.map((item, itemIdx) => {
                       const href = itemHref(item, slug)
                       const completed = itemIsCompleted(item)
@@ -273,7 +273,7 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
                               item_id: item.id,
                             })
                           }}
-                          className={`flex min-h-11 items-center gap-3 py-2.5 no-underline ${itemIdx > 0 ? 'border-t border-[#ecd48a]' : ''}`}
+                          className={`flex min-h-11 items-center gap-3 py-2.5 no-underline ${itemIdx > 0 ? 'border-t border-note-amber-border' : ''}`}
                         >
                           <div className="min-w-0 flex-1">
                             {eyebrow && (

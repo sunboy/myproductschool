@@ -26,7 +26,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex min-w-0 flex-1 flex-col">
             <AppTopShell />
-            <main className="min-w-0 flex-1 pb-20 md:pb-8">
+            <main className="min-w-0 flex-1 pb-20 lg:pb-8">
               {children}
             </main>
           </div>

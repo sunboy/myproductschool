@@ -6,7 +6,7 @@ import {
   EVENT_MAGNET_QUIZ_STARTED,
   EVENT_MAGNET_QUIZ_COMPLETED,
 } from '@/lib/posthog/events'
-import { MOCK_PROMPTS } from '@/lib/lead-magnets/quizzes/mock'
+import { MOCK_INTERVIEW_PROMPTS } from '@/lib/lead-magnets/quizzes/mock'
 
 // The homepage hero's right pane: a live "try one rep" card that grades an
 // anonymous answer before any signup wall. Lifted from MockClient
@@ -47,7 +47,7 @@ function getDailyPromptIndex(): number {
   const dayOfYear = Math.floor(
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
   )
-  return dayOfYear % MOCK_PROMPTS.length
+  return dayOfYear % MOCK_INTERVIEW_PROMPTS.length
 }
 
 function openSignup() {
@@ -57,7 +57,7 @@ function openSignup() {
 export function V3TryRep() {
   const { track } = useMagnetTracking('mock')
 
-  const prompt = MOCK_PROMPTS[getDailyPromptIndex()]
+  const prompt = MOCK_INTERVIEW_PROMPTS[getDailyPromptIndex()]
 
   const [answer, setAnswer] = useState('')
   const [status, setStatus] = useState<'idle' | 'grading' | 'done' | 'error' | 'limit'>('idle')

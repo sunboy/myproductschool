@@ -54,7 +54,7 @@ export function RecommendedRow({ title = 'Picked for you', viewAllHref, cards, w
       <div className="relative mt-3">
         <div
           className="grid gap-4"
-          style={{ gridTemplateColumns: `repeat(${Math.min(cards.length, 4)}, minmax(0, 1fr))` }}
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))' }}
         >
           {cards.map(card => {
             const label = disciplineLabelFor(card.challengeType, card.domainName)

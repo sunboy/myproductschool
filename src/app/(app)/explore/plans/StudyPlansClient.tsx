@@ -104,7 +104,7 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
             <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
               Study plans
             </div>
-            <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-[#f9faf5]">
+            <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-on-hero-strong">
               Follow a path. Ship a skill.
             </h1>
             <p className="max-w-[52ch] text-[13px] leading-[1.5] text-white/72">

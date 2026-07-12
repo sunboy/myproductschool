@@ -50,7 +50,7 @@ export function FlowStepper({ steps, className }: FlowStepperProps) {
                 </div>
               )}
               {step.status === 'upcoming' && (
-                <div className="flex size-[22px] shrink-0 items-center justify-center rounded-full border-[1.4px] border-[#c8c2b6] text-[11.5px] font-bold text-ink-muted">
+                <div className="flex size-[22px] shrink-0 items-center justify-center rounded-full border-[1.4px] border-hairline-strong text-[11.5px] font-bold text-ink-muted">
                   {stepNumber}
                 </div>
               )}

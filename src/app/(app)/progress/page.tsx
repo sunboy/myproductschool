@@ -830,7 +830,7 @@ export default function ProgressPage() {
           style={{ background: 'radial-gradient(600px 300px at 85% -10%, rgba(163,235,177,.16), transparent 60%)' }}
         />
         <div className="relative min-w-0">
-          <div className="mb-1 text-[13px] font-bold text-[#dff0e2]">Your progress</div>
+          <div className="mb-1 text-[13px] font-bold text-on-hero-soft">Your progress</div>
           <h1 className="m-0 mb-1.5 font-headline text-[25px] font-semibold leading-[1.15] text-white">
             {weakest ? (
               <><span className="hl-word">{weakest.k}</span> is your slowest move.</>
@@ -838,7 +838,7 @@ export default function ProgressPage() {
               <>Every completed <span className="hl-word">rep</span> lands here.</>
             )}
           </h1>
-          <p className="m-0 max-w-[42ch] text-[13px] leading-[1.4] text-[#c6d9c9]">
+          <p className="m-0 max-w-[42ch] text-[13px] leading-[1.4] text-on-hero-muted">
             {attempted > 0
               ? `${attempted} completed rep${attempted === 1 ? '' : 's'}. ${mastered} scored 80 or higher.`
               : 'Complete a challenge to put numbers on this page.'}
@@ -854,7 +854,7 @@ export default function ProgressPage() {
           <ProgressRing percent={overallPct} size={64} strokeWidth={9} color={['#fdb41f', '#a3ebb1']}>
             <span className="font-body text-[16px] font-extrabold tabular-nums text-white">{overallPct}%</span>
           </ProgressRing>
-          <span className="text-center text-[9px] font-bold uppercase tracking-[0.05em] text-[#c6d9c9]">Readiness</span>
+          <span className="text-center text-[9px] font-bold uppercase tracking-[0.05em] text-on-hero-muted">Readiness</span>
         </div>
 
         <div aria-hidden className="relative hidden w-px self-stretch bg-white/15 lg:block" />
@@ -863,7 +863,7 @@ export default function ProgressPage() {
           <div className="relative min-w-[126px]">
             <div className="text-[16px] font-extrabold tabular-nums leading-[1.2] text-white">{streakDays}-day streak</div>
             {shieldCount > 0 && (
-              <div className="mt-px text-[10.5px] tabular-nums text-[#93ac97]">
+              <div className="mt-px text-[10.5px] tabular-nums text-on-hero-faint">
                 {shieldCount} shield{shieldCount === 1 ? '' : 's'} banked
               </div>
             )}
@@ -873,8 +873,8 @@ export default function ProgressPage() {
         {xpTotal > 0 && (
           <div className="relative min-w-[126px]">
             <div className="text-[16px] font-extrabold tabular-nums leading-[1.2] text-white">{xpTotal.toLocaleString()} XP</div>
-            <div className="text-[11px] text-[#c6d9c9]">Level {level}</div>
-            <div className="mt-px text-[10.5px] tabular-nums text-[#93ac97]">
+            <div className="text-[11px] text-on-hero-muted">Level {level}</div>
+            <div className="mt-px text-[10.5px] tabular-nums text-on-hero-faint">
               {xpToNext.toLocaleString()} XP to Level {level + 1}
             </div>
           </div>

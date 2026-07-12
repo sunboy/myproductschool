@@ -77,7 +77,7 @@ export function DashboardHero({
             <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-white/55">
               Your first rep
             </div>
-            <h1 className="mb-3 max-w-[36ch] font-headline text-[27px] font-semibold leading-[1.22] text-[#f9faf5]">
+            <h1 className="mb-3 max-w-[36ch] font-headline text-[27px] font-semibold leading-[1.22] text-on-hero-strong">
               {highlightWord(title, extractHighlightWord(title))}
             </h1>
             {firstRepScenario?.context && (
@@ -151,7 +151,7 @@ export function DashboardHero({
       <div className="relative z-10 grid grid-cols-1 items-stretch gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_190px]">
         <div className="flex min-w-0 flex-col">
           <div className="mb-1.5 text-[13.5px] font-bold text-white/85">Welcome back, {displayName}</div>
-          <h1 className="mb-4 max-w-[32ch] font-headline text-[26px] font-semibold leading-[1.2] text-[#f9faf5]">
+          <h1 className="mb-4 max-w-[32ch] font-headline text-[26px] font-semibold leading-[1.2] text-on-hero-strong">
             {highlightWord(headline, highlight)}
           </h1>
 
@@ -159,7 +159,7 @@ export function DashboardHero({
             {isResume ? 'In Progress' : 'Picked for you'}
           </div>
           <div className="mb-1 flex items-center gap-2">
-            <span className="size-[7px] shrink-0 rounded-full bg-[#7fd398]" />
+            <span className="size-[7px] shrink-0 rounded-full bg-on-hero-accent" />
             <span className="font-body text-[16.5px] font-bold text-white">{action.title}</span>
           </div>
           <div className="mb-2.5 text-[12.5px] leading-[1.45] text-white/68">

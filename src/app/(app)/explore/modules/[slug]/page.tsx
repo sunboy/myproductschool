@@ -292,7 +292,7 @@ function ReaderRail({
         <h3 className="m-0 mb-2.5 font-body text-xs font-bold uppercase tracking-[0.04em] text-ink-secondary">
           Reading progress
         </h3>
-        <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-[#eee9df]">
+        <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-hairline">
           <div className="h-full rounded-full bg-forest-600" style={{ width: `${pct}%` }} />
         </div>
         <div className="flex items-center justify-between font-body text-xs tabular-nums text-ink-muted">

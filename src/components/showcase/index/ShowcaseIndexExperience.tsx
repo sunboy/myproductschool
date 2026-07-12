@@ -178,7 +178,7 @@ function HubHero({
           <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
             Product autopsies
           </div>
-          <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-[#f9faf5]">
+          <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-on-hero-strong">
             Learn from real product wins and misses.
           </h1>
           <p className="mb-3.5 max-w-[54ch] text-[13px] leading-[1.5] text-white/72">
@@ -280,7 +280,7 @@ function FeaturedStoryCard({
           {' · '}
           {formatReadTime(story.estimatedReadTime)}
         </div>
-        <h2 className="mb-3 max-w-[26ch] font-headline text-[28px] font-semibold leading-[1.16] text-[#f9faf5]">
+        <h2 className="mb-3 max-w-[26ch] font-headline text-[28px] font-semibold leading-[1.16] text-on-hero-strong">
           {story.title}
         </h2>
         <p className="mb-5 max-w-[52ch] text-sm leading-[1.55] text-white/78">{story.dek}</p>

@@ -144,3 +144,14 @@ Worktree: `/Users/sandeep/Projects/myproductschool/.worktrees/redesign-options` 
 ### 2026-07-11 ~17:16 · Limit event (B14 wave killed at launch)
 - wf_c5f036fe-764: all 7 agents failed immediately — session limit, resets 5:20pm CT. No work lost (workflow resumable from cache: resumeFromRunId wf_c5f036fe-764, though 0 agents completed so it is a clean relaunch). Retry scheduled minutes after reset.
 - 17:28: B14 relaunched post-reset (task wjq6512kn, same run wf_c5f036fe-764); auditors confirmed alive and working.
+
+### 2026-07-11 ~18:45 · Iteration 14 (B14 audits reviewed; closeout wave dispatched)
+- wf_c5f036fe-764 (resumed) all 7 agents done. Results:
+  - API parity: 194/194 route files byte-identical vs origin/main, proxy zero-diff, src/lib diffs all additive/known. FLAG documented (not reverted): coding-submit + interview-submit now fall OPEN to correctness/neutral-grade fallback on plan-limit/AI-budget errors instead of 402 limit_reached (deliberate completion fix pattern matching the P0-P5 funnel work; PARITY.md notes it).
+  - No-stub sweep: zero stubs/dead handlers/placeholder copy across the 290-file diff; 3 MOCK sites all IS_MOCK-gated or misnamed-but-real (V3TryRep mock-interview prompts). Raw-hex token-extraction list produced.
+  - PostHog: pageviews + challenge_started fire; REGRESSION found — autopsy_opened/section/finished events only exist in the legacy AARRR reader; CinematicReader + StoryReader (the paths most stories take) have zero tracking, starving the article-resume cron. Also StrictMode double attempt-creation reconfirmed (dev-only double-mount, idempotency worth a prod check).
+  - Visual QA 10 routes × 3 widths: 26/30 PASS; overflow FAILs at 375 on dashboard+progress (StatStrip min-width) and 375/768 explore-modules (resume-bar shrink-0); 768 nav gap (BottomTabs md:hidden vs sidebar lg:) flagged.
+  - Final verify: tsc clean, build pass, lint 108 errors but repo-wide a11y (main already lint-red); only branch-new logic errors = react-hooks/refs pair in IdleReapModal.
+  - Route sweep agent quit mid-run — PARITY.md page evidence unfilled (re-dispatched).
+- COMMITTED audit artifacts. DISPATCHED wf_61bb8ad2-25d closeout: [routes] finish sweep + fill PARITY page evidence, [responsive] StatStrip/modules-bar/orphan-period/BottomTabs-lg fixes, [autopsy-events] restore tracking in CinematicReader+StoryReader (exact legacy payloads), [quality] IdleReapModal refs fix + hero-ink token extraction + MOCK_PROMPTS rename; then verify (scrollWidth at 375, autopsy_opened fires, hex grep).
+- Next on wake: review closeout verify; commit; check off B14; write FINAL-REPORT.md founder report; mark loop COMPLETE.

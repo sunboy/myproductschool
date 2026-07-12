@@ -90,7 +90,7 @@ export default async function ModulesPage() {
             <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
               Guides
             </div>
-            <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-[#f9faf5]">
+            <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-on-hero-strong">
               Read the theory. Then go train it.
             </h1>
             <p className="max-w-[54ch] text-[13px] leading-[1.5] text-white/72">
@@ -128,21 +128,23 @@ export default async function ModulesPage() {
       {continueModule && (
         <NoteCard
           tint="amber"
-          className="mb-5 flex items-center gap-4 px-[18px] py-3"
+          className="mb-5 flex flex-col gap-3 px-[18px] py-3 md:flex-row md:items-center md:gap-4"
         >
-          <span className="font-label shrink-0 whitespace-nowrap text-[11.5px] font-bold text-on-surface-muted">
-            In progress
-          </span>
-          <span className="h-4 w-px shrink-0 bg-outline-variant" aria-hidden="true" />
-          <div className="flex min-w-0 flex-1 items-center gap-2.5">
-            <span className="font-body truncate text-sm font-bold text-on-surface">
-              {continueModule.name}
+          <div className="flex min-w-0 items-center gap-4 md:flex-1">
+            <span className="font-label shrink-0 whitespace-nowrap text-[11.5px] font-bold text-on-surface-muted">
+              In progress
             </span>
-            <span className="font-label shrink-0 text-xs font-semibold tabular-nums text-on-surface-muted">
-              {continueModule.tagline ? `${continueModule.tagline} · ` : ''}Ch. {continueModule.completed_chapters} of {continueModule.chapter_count}
-            </span>
+            <span className="h-4 w-px shrink-0 bg-outline-variant" aria-hidden="true" />
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <span className="font-body truncate text-sm font-bold text-on-surface">
+                {continueModule.name}
+              </span>
+              <span className="font-label min-w-0 truncate text-xs font-semibold tabular-nums text-on-surface-muted">
+                {continueModule.tagline ? `${continueModule.tagline} · ` : ''}Ch. {continueModule.completed_chapters} of {continueModule.chapter_count}
+              </span>
+            </div>
           </div>
-          <div className="flex w-[130px] shrink-0 items-center gap-2">
+          <div className="flex w-full shrink-0 items-center gap-2 md:w-[130px]">
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-outline-variant/60">
               <div
                 className="h-full rounded-full"
@@ -155,7 +157,7 @@ export default async function ModulesPage() {
           </div>
           <Link
             href={`/explore/modules/${continueModule.slug}`}
-            className="font-label inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[8px] px-[18px] py-2.5 text-[12.5px] font-extrabold text-white"
+            className="font-label inline-flex shrink-0 items-center gap-1.5 self-start whitespace-nowrap rounded-[8px] px-[18px] py-2.5 text-[12.5px] font-extrabold text-white md:self-auto"
             style={{ background: 'var(--color-forest-950, #052316)' }}
           >
             Resume chapter {resumeChapterNumber}

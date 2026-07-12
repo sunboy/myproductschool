@@ -167,7 +167,7 @@ export function TopUtilityBar({
 
         {avatarSlot ?? (
           <button type="button" onClick={onAvatarClick} className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#6b6358] to-[#3f3a32] text-xs font-extrabold text-white">
+            <span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-secondary to-secondary-deep text-xs font-extrabold text-white">
               {avatarImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={avatarImageUrl} alt="" className="size-full object-cover" />

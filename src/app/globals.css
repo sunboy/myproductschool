@@ -145,6 +145,17 @@
   --color-forest-500: #1c5a34;
   --color-mint-glow:  #a3ebb1;
 
+  /* Stage B — text on dark forest heroes. Named on-hero-* (not hero-ink-*)
+     because --color-hero-ink above is already a dark surface color. */
+  --color-on-hero-strong: #f9faf5;
+  --color-on-hero-soft:   #dff0e2;
+  --color-on-hero-muted:  #c6d9c9;
+  --color-on-hero-faint:  #93ac97;
+
+  /* Stage B — misc extracted from raw hex in className */
+  --color-secondary-deep:   #3f3a32; /* dark end of the avatar gradient (pairs with --color-secondary) */
+  --color-hairline-strong:  #c8c2b6; /* pending-step ring; darker than --color-hairline */
+
   /* Stage B — redesign page surfaces (light screens) */
   --color-page-field:     #faf8f4;
   --color-card-bright:    #fffdfa;

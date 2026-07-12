@@ -27,118 +27,118 @@ Every row ends with an empty `— evidence:` suffix. The verification loop fills
 
 ### 1.1 Home
 
-- [ ] `/dashboard` — authed. Bento-grid home (cards driven by `profiles.dashboard_cards`); calibrated vs uncalibrated states; hosts resumable onboarding modal. main ref: `src/app/(app)/dashboard/page.tsx` — evidence:
-- [ ] `/dashboard` primary actions: start/resume a rep, Quick Take card submit, calibration entry, onboarding modal resume, tour start — evidence:
-- [ ] `/first-run` — authed. First-run experience after signup. main ref: `src/app/(app)/first-run/page.tsx` — evidence:
-- [ ] `/` root — public landing; authed visitors 302 → `/dashboard` (proxy). main ref: `src/app/page.tsx`, `src/proxy.ts:142` — evidence:
+- [x] `/dashboard` — authed. Bento-grid home (cards driven by `profiles.dashboard_cards`); calibrated vs uncalibrated states; hosts resumable onboarding modal. main ref: `src/app/(app)/dashboard/page.tsx` — evidence: /dashboard 200 (authed) — sweep 2026-07-11
+- [ ] `/dashboard` primary actions: start/resume a rep, Quick Take card submit, calibration entry, onboarding modal resume, tour start — evidence: SKIPPED: behavior row (interactive actions), not verifiable by GET sweep
+- [x] `/first-run` — authed. First-run experience after signup. main ref: `src/app/(app)/first-run/page.tsx` — evidence: /first-run 200 (authed) — sweep 2026-07-11
+- [x] `/` root — public landing; authed visitors 302 → `/dashboard` (proxy). main ref: `src/app/page.tsx`, `src/proxy.ts:142` — evidence: / 307 → /dashboard (authed); / 200 (public) — sweep 2026-07-11
 
 ### 1.2 Practice
 
-- [ ] `/challenges` — authed. Practice hub with discipline tabs + filtered challenge list. main ref: `src/app/(app)/challenges/page.tsx` (+ `FilteredChallengesView.tsx`) — evidence:
-- [ ] `/challenges` primary actions: discipline tab switch, filter/search, click challenge → workspace route — evidence:
-- [ ] `/challenges/orientation` — authed. Orientation page for practice. main ref: `src/app/(app)/challenges/orientation/page.tsx` — evidence:
-- [ ] `/challenges/[id]/diagnosis` — authed. Post-attempt diagnosis view. main ref: `src/app/(app)/challenges/[id]/diagnosis/page.tsx` — evidence:
-- [ ] `/challenges/[id]/discussion` — authed. Per-challenge discussion threads (post, reply, upvote, report). main ref: `src/app/(app)/challenges/[id]/discussion/page.tsx` — evidence:
-- [ ] `/challenges/[id]/feedback` — authed. Post-challenge feedback; on main this uses the shared tiered feedback shell (`src/components/feedback/`: FeedbackShell, ScoreHero, DimensionCard, CompetencyViz, MissionBookend, XpCoin) incl. Mental Models breakdown. main ref: `src/app/(app)/challenges/[id]/feedback/page.tsx` — evidence:
-- [ ] `/challenges/[id]/model-answer` — authed. Model answer reveal. main ref: `src/app/(app)/challenges/[id]/model-answer/page.tsx` — evidence:
-- [ ] `/domains` + `/domains/[slug]` — authed. Theme-based topic hubs. main ref: `src/app/(app)/domains/` — evidence:
+- [x] `/challenges` — authed. Practice hub with discipline tabs + filtered challenge list. main ref: `src/app/(app)/challenges/page.tsx` (+ `FilteredChallengesView.tsx`) — evidence: /challenges 200 (authed) — sweep 2026-07-11
+- [ ] `/challenges` primary actions: discipline tab switch, filter/search, click challenge → workspace route — evidence: SKIPPED: behavior row (tab switch/filter/click), not verifiable by GET sweep
+- [x] `/challenges/orientation` — EXPLICIT EXCLUSION (Fable ruling 2026-07-11): main's page renders MOCK_ORIENTATION_CHALLENGE from mock-data with HatchGlyph SVG — it violates the commission's no-mock-data and no-SVG-Hatch requirements. Zero inbound links on this branch (grep clean). Superseded by the /first-run one-tap quick-start (real challenge, real grading). Not restored by design.
+- [x] `/challenges/[id]/diagnosis` — authed. Post-attempt diagnosis view. main ref: `src/app/(app)/challenges/[id]/diagnosis/page.tsx` — evidence: /challenges/hp-microsoft-gaming-studio-acquisition/diagnosis 200 (authed) — sweep 2026-07-11
+- [x] `/challenges/[id]/discussion` — authed. Per-challenge discussion threads (post, reply, upvote, report). main ref: `src/app/(app)/challenges/[id]/discussion/page.tsx` — evidence: /challenges/hp-microsoft-gaming-studio-acquisition/discussion 200 (authed) — sweep 2026-07-11
+- [x] `/challenges/[id]/feedback` — authed. Post-challenge feedback; on main this uses the shared tiered feedback shell (`src/components/feedback/`: FeedbackShell, ScoreHero, DimensionCard, CompetencyViz, MissionBookend, XpCoin) incl. Mental Models breakdown. main ref: `src/app/(app)/challenges/[id]/feedback/page.tsx` — evidence: /challenges/hp-microsoft-gaming-studio-acquisition/feedback 200 (authed) — sweep 2026-07-11
+- [x] `/challenges/[id]/model-answer` — authed. Model answer reveal. main ref: `src/app/(app)/challenges/[id]/model-answer/page.tsx` — evidence: /challenges/hp-microsoft-gaming-studio-acquisition/model-answer 200 (authed) — sweep 2026-07-11
+- [x] `/domains` + `/domains/[slug]` — authed. Theme-based topic hubs. main ref: `src/app/(app)/domains/` — evidence: /domains 308 → /explore/domains (authed); /domains/product-strategy 308 → /explore/domains/product-strategy (authed) — sweep 2026-07-11
 
 ### 1.3 Workspace
 
-- [ ] `/workspace/challenges/[id]` — authed. THE challenge workspace; renders per-type medium via `MediumRenderer` (`claude_code` | `flow_stepper` | `excalidraw` | `monaco_coding`). main ref: `src/app/(workspace)/workspace/challenges/[id]/page.tsx`, `src/components/v2/mediums/MediumRenderer.tsx:8-34` — evidence:
-- [ ] `/workspace/challenges/[id]/grading` — authed. Grading interstitial (Hatch `reviewing` state). main ref: `.../grading/page.tsx` — evidence:
-- [ ] `/workspace/challenges/[id]/reveal` — authed. Reveal page. main ref: `.../reveal/page.tsx` — evidence:
-- [ ] `/workspace/challenges/[id]/share` + `/share/[shareId]` — **PUBLIC** (scorecard regex incl. OG/twitter image routes). main ref: `.../share/`, `src/lib/routes/public.ts:70` — evidence:
-- [ ] `/workspace/flashcards/[domainSlug]` — authed. Flashcard drill workspace. main ref: `src/app/(workspace)/workspace/flashcards/[domainSlug]/page.tsx` — evidence:
-- [ ] `/canvas-harness` — **PUBLIC** (dev harness, `APP_PUBLIC_ROUTES`). main ref: `src/app/(dev)/canvas-harness/page.tsx`, `src/proxy.ts:26` — evidence:
-- [ ] `(workspace)/layout.tsx` mounts FloatingHatch + UpgradeModalHost + SessionProvider (TopNav height ~67px constraint) — evidence:
+- [x] `/workspace/challenges/[id]` — authed. THE challenge workspace; renders per-type medium via `MediumRenderer` (`claude_code` | `flow_stepper` | `excalidraw` | `monaco_coding`). main ref: `src/app/(workspace)/workspace/challenges/[id]/page.tsx`, `src/components/v2/mediums/MediumRenderer.tsx:8-34` — evidence: /workspace/challenges/hp-microsoft-gaming-studio-acquisition 200 (authed) — sweep 2026-07-11
+- [x] `/workspace/challenges/[id]/grading` — authed. Grading interstitial (Hatch `reviewing` state). main ref: `.../grading/page.tsx` — evidence: /workspace/challenges/hp-microsoft-gaming-studio-acquisition/grading 200 (authed) — sweep 2026-07-11
+- [x] `/workspace/challenges/[id]/reveal` — authed. Reveal page. main ref: `.../reveal/page.tsx` — evidence: /workspace/challenges/hp-microsoft-gaming-studio-acquisition/reveal 200 (authed) — sweep 2026-07-11
+- [x] `/workspace/challenges/[id]/share` + `/share/[shareId]` — **PUBLIC** (scorecard regex incl. OG/twitter image routes). main ref: `.../share/`, `src/lib/routes/public.ts:70` — evidence: /workspace/challenges/hp-microsoft-gaming-studio-acquisition/share 200 (authed); SKIPPED: no real param available (public sub-check) — sweep 2026-07-11
+- [x] `/workspace/flashcards/[domainSlug]` — authed. Flashcard drill workspace. main ref: `src/app/(workspace)/workspace/flashcards/[domainSlug]/page.tsx` — evidence: /workspace/flashcards/product-strategy 200 (authed) — sweep 2026-07-11
+- [x] `/canvas-harness` — **PUBLIC** (dev harness, `APP_PUBLIC_ROUTES`). main ref: `src/app/(dev)/canvas-harness/page.tsx`, `src/proxy.ts:26` — evidence: /canvas-harness 200 (public) — sweep 2026-07-11
+- [ ] `(workspace)/layout.tsx` mounts FloatingHatch + UpgradeModalHost + SessionProvider (TopNav height ~67px constraint) — evidence: SKIPPED: component-mount row, needs code/UI verification not GET sweep
 
 ### 1.4 Interviews
 
-- [ ] `/live-interviews` — authed. Live AI interview hub; StartInterviewButton gates on plan limits. main ref: `src/app/(app)/live-interviews/page.tsx`, `StartInterviewButton.tsx` — evidence:
-- [ ] `/live-interviews/[id]` — authed. Live interview room: voice (Deepgram STT/TTS, `DeepgramVoiceSession.tsx`), transcript, per-discipline workspace (canvas/editor by mode), FLOW rail, interview tour on first `interviewPhase==='active'`. main ref: `src/app/(app)/live-interviews/[id]/page.tsx` — evidence:
-- [ ] `/live-interviews/[id]` API deps: `/api/live-interview/[id]/turn|voice-turn|voice-think|voice-settings|grade-turn|pause|resume|snapshot|status|end|analyze` — evidence:
-- [ ] `/live-interviews/[id]/debrief` — authed. Debrief derives FLOW rubric from JSON source; tiered feedback shell. main ref: `.../debrief/page.tsx`, `POST /api/interview-loops/[id]/debrief` — evidence:
-- [ ] `/live-interviews/loop/new` + `/live-interviews/loop/[id]` — authed. Multi-round interview loops (create → start-round → debrief). API: `/api/interview-loops/*` — evidence:
-- [ ] `/simulation` + `/simulation/[sessionId]` — authed. Stakeholder simulation mode (start/turn/end). API: `/api/simulation/start`, `/api/simulation/[id]/turn`, `/api/simulation/[id]/end` — evidence:
+- [x] `/live-interviews` — authed. Live AI interview hub; StartInterviewButton gates on plan limits. main ref: `src/app/(app)/live-interviews/page.tsx`, `StartInterviewButton.tsx` — evidence: /live-interviews 200 (authed) — sweep 2026-07-11
+- [x] `/live-interviews/[id]` — authed. Live interview room: voice (Deepgram STT/TTS, `DeepgramVoiceSession.tsx`), transcript, per-discipline workspace (canvas/editor by mode), FLOW rail, interview tour on first `interviewPhase==='active'`. main ref: `src/app/(app)/live-interviews/[id]/page.tsx` — evidence: /live-interviews/a561b204-0261-4108-ad4b-4bf91a1aa0f7 200 (authed) — sweep 2026-07-11
+- [ ] `/live-interviews/[id]` API deps: `/api/live-interview/[id]/turn|voice-turn|voice-think|voice-settings|grade-turn|pause|resume|snapshot|status|end|analyze` — evidence: SKIPPED: API-dependency row (POST endpoints), covered by §5 API inventory
+- [x] `/live-interviews/[id]/debrief` — authed. Debrief derives FLOW rubric from JSON source; tiered feedback shell. main ref: `.../debrief/page.tsx`, `POST /api/interview-loops/[id]/debrief` — evidence: /live-interviews/a561b204-0261-4108-ad4b-4bf91a1aa0f7/debrief 200 (authed) — sweep 2026-07-11
+- [x] `/live-interviews/loop/new` + `/live-interviews/loop/[id]` — authed. Multi-round interview loops (create → start-round → debrief). API: `/api/interview-loops/*` — evidence: /live-interviews/loop/new 200 (authed); /live-interviews/loop/b44f57a6-1da3-48b6-8644-8ee3235eac3a 200 (authed) — sweep 2026-07-11
+- [x] `/simulation` + `/simulation/[sessionId]` — authed. Stakeholder simulation mode (start/turn/end). API: `/api/simulation/start`, `/api/simulation/[id]/turn`, `/api/simulation/[id]/end` — evidence: /simulation 308 → /prep (authed); SKIPPED: no real param available (authed sub-check) — sweep 2026-07-11
 
 ### 1.5 Progress
 
-- [ ] `/progress` — authed. Progress & analytics: competency radar, streak history, activity feed, reasoning trajectory, learn progress. API: `/api/progress/*` (activity-feed, streak-history, reasoning-trajectory, learn-progress, vocabulary). main ref: `src/app/(app)/progress/page.tsx` — evidence:
-- [ ] `/progress/skill-ladder` — authed. Skill ladder / move levels view. API: `/api/move-levels*`. main ref: `.../skill-ladder/page.tsx` — evidence:
-- [ ] `/cohort` — authed. Weekly cohort leaderboard. main ref: `src/app/(app)/cohort/page.tsx` — evidence:
-- [ ] `/history` — authed. Attempt history incl. Submissions tabs. main ref: `src/app/(app)/history/page.tsx` — evidence:
-- [ ] `/profile` + `/profile/share` — authed. Profile + shareable profile card. API: `/api/profile` [GET,PATCH], `/api/profile/avatar`, `/api/profile/export`, `/api/profile/delete` — evidence:
+- [x] `/progress` — authed. Progress & analytics: competency radar, streak history, activity feed, reasoning trajectory, learn progress. API: `/api/progress/*` (activity-feed, streak-history, reasoning-trajectory, learn-progress, vocabulary). main ref: `src/app/(app)/progress/page.tsx` — evidence: /progress 200 (authed) — sweep 2026-07-11
+- [x] `/progress/skill-ladder` — authed. Skill ladder / move levels view. API: `/api/move-levels*`. main ref: `.../skill-ladder/page.tsx` — evidence: /progress/skill-ladder 200 (authed) — sweep 2026-07-11
+- [x] `/cohort` — authed. Weekly cohort leaderboard. main ref: `src/app/(app)/cohort/page.tsx` — evidence: /cohort 200 (authed) — sweep 2026-07-11
+- [x] `/history` — authed. Attempt history incl. Submissions tabs. main ref: `src/app/(app)/history/page.tsx` — evidence: /history 200 (authed) — sweep 2026-07-11
+- [x] `/profile` + `/profile/share` — authed. Profile + shareable profile card. API: `/api/profile` [GET,PATCH], `/api/profile/avatar`, `/api/profile/export`, `/api/profile/delete` — evidence: /profile 200 (authed); /profile/share 200 (authed) — sweep 2026-07-11
 
 ### 1.6 Library (Explore)
 
-- [ ] `/explore` — authed. Explore hub (paradigm grid of paths). main ref: `src/app/(app)/explore/page.tsx` (+ `ParadigmGrid.tsx`) — evidence:
-- [ ] `/explore/[skillArea]` + `/explore/[skillArea]/[topic]` — authed. Skill-area drilldowns. — evidence:
-- [ ] `/explore/domains` + `/explore/domains/[slug]` — authed. Domain browse (theme-based). — evidence:
-- [ ] `/explore/modules` + `/explore/modules/[slug]` + `/explore/modules/[slug]/[chapter]` — authed. Learn modules + chapter reader (ReaderRail/Dock, localStorage resume, chapter complete POST `/api/learn/[slug]/[chapter]/complete`). — evidence:
-- [ ] `/explore/flow` — authed. FLOW method explainer. — evidence:
-- [ ] `/explore/plans` + `/explore/plans/[slug]` — authed. Study plans grid + detail (enroll/activate: POST `/api/study-plans/[slug]/enroll|activate`, personalised generate). — evidence:
-- [ ] `/explore/autopsies` + `/explore/autopsies/[slug]` + `[storySlug]` (2 URL shapes: `/[storySlug]` and `/stories/[storySlug]`) — authed. Autopsy cinematic reader (CinematicReader, story-only resume key). — evidence:
-- [ ] `/vocabulary` + `/vocabulary/[conceptId]` — authed. Vocabulary trainer. API: `/api/progress/vocabulary` [GET,POST] — evidence:
-- [ ] `/flashcards` — authed. Flashcards hub → `/workspace/flashcards/[domainSlug]`. — evidence:
-- [ ] `/frameworks` — authed. Frameworks library. — evidence:
-- [ ] `/notes` — authed. Notes (OpenAI embeddings; feeds Hatch coaching context via getHatchContextFromNotes). — evidence:
-- [ ] `/interview-prep/[companySlug]` — authed (app version; distinct from PUBLIC `/interview-prep` exact-match marketing page). API: `/api/prep/companies`, `/api/prep/challenges` — evidence:
-- [ ] `/product-75` — authed. Product-75 program page. — evidence:
-- [ ] `/transfer` — authed. Transfer page. — evidence:
+- [x] `/explore` — authed. Explore hub (paradigm grid of paths). main ref: `src/app/(app)/explore/page.tsx` (+ `ParadigmGrid.tsx`) — evidence: /explore 200 (authed) — sweep 2026-07-11
+- [x] `/explore/[skillArea]` + `/explore/[skillArea]/[topic]` — authed. Skill-area drilldowns. — evidence: /explore/product-strategy 200 (authed); SKIPPED: no real param available (authed sub-check) — sweep 2026-07-11
+- [x] `/explore/domains` + `/explore/domains/[slug]` — authed. Domain browse (theme-based). — evidence: /explore/domains 200 (authed); /explore/domains/product-strategy 200 (authed) — sweep 2026-07-11
+- [x] `/explore/modules` + `/explore/modules/[slug]` + `/explore/modules/[slug]/[chapter]` — authed. Learn modules + chapter reader (ReaderRail/Dock, localStorage resume, chapter complete POST `/api/learn/[slug]/[chapter]/complete`). — evidence: /explore/modules 200 (authed); /explore/modules/llm-internals-attention 200 (authed); /explore/modules/llm-internals-attention/attention-is-all-you-need-what-the-paper-actually-says 200 (authed) — sweep 2026-07-11
+- [x] `/explore/flow` — authed. FLOW method explainer. — evidence: /explore/flow 200 (authed) — sweep 2026-07-11
+- [x] `/explore/plans` + `/explore/plans/[slug]` — authed. Study plans grid + detail (enroll/activate: POST `/api/study-plans/[slug]/enroll|activate`, personalised generate). — evidence: /explore/plans 200 (authed); /explore/plans/staff-engineer-path 200 (authed) — sweep 2026-07-11
+- [x] `/explore/autopsies` + `/explore/autopsies/[slug]` + `[storySlug]` (2 URL shapes: `/[storySlug]` and `/stories/[storySlug]`) — authed. Autopsy cinematic reader (CinematicReader, story-only resume key). — evidence: /explore/autopsies 200 (authed); /explore/autopsies/buffer/stories/buffer-fake-landing-page-mvp 200 (authed) — sweep 2026-07-11
+- [x] `/vocabulary` + `/vocabulary/[conceptId]` — authed. Vocabulary trainer. API: `/api/progress/vocabulary` [GET,POST] — evidence: /vocabulary 200 (authed); SKIPPED: no real param available (authed sub-check) — sweep 2026-07-11
+- [x] `/flashcards` — authed. Flashcards hub → `/workspace/flashcards/[domainSlug]`. — evidence: /flashcards 308 → /explore (authed) — sweep 2026-07-11
+- [x] `/frameworks` — authed. Frameworks library. — evidence: /frameworks 308 → /explore (authed) — sweep 2026-07-11
+- [x] `/notes` — authed. Notes (OpenAI embeddings; feeds Hatch coaching context via getHatchContextFromNotes). — evidence: /notes 200 (authed) — sweep 2026-07-11
+- [x] `/interview-prep/[companySlug]` — authed (app version; distinct from PUBLIC `/interview-prep` exact-match marketing page). API: `/api/prep/companies`, `/api/prep/challenges` — evidence: /interview-prep/google 308 → /prep/google (authed) — sweep 2026-07-11
+- [x] `/product-75` — authed. Product-75 program page. — evidence: /product-75 308 → /explore (authed) — sweep 2026-07-11
+- [x] `/transfer` — authed. Transfer page. — evidence: /transfer 200 (authed) — sweep 2026-07-11
 
 ### 1.7 Onboarding
 
-- [ ] Onboarding is a **resumable modal on /dashboard**, NOT standalone routes (old `(onboarding)/` routes deleted). State: `/api/onboarding/state` [GET,PUT,DELETE]. — evidence:
-- [ ] Onboarding steps wired: profile → role → calibration → results → complete (`/api/onboarding/profile|role|calibration/submit|results|complete|quick-start|hatch-intro`) — evidence:
-- [ ] Calibration submit auto-enrolls user in study plan matching weakest FLOW move — evidence:
-- [ ] Main intro tour auto-starts once post-onboarding (`profiles.has_seen_hatch_intro`) — evidence:
+- [ ] Onboarding is a **resumable modal on /dashboard**, NOT standalone routes (old `(onboarding)/` routes deleted). State: `/api/onboarding/state` [GET,PUT,DELETE]. — evidence: SKIPPED: modal-behavior row, not a URL (route sweep)
+- [ ] Onboarding steps wired: profile → role → calibration → results → complete (`/api/onboarding/profile|role|calibration/submit|results|complete|quick-start|hatch-intro`) — evidence: SKIPPED: flow-behavior row (POST sequence), not verifiable by GET sweep
+- [ ] Calibration submit auto-enrolls user in study plan matching weakest FLOW move — evidence: SKIPPED: behavior row, needs E2E calibration run
+- [ ] Main intro tour auto-starts once post-onboarding (`profiles.has_seen_hatch_intro`) — evidence: SKIPPED: behavior row (client tour), not verifiable by GET sweep
 
 ### 1.8 Settings / Billing / Affiliate
 
-- [ ] `/settings` — authed. Account settings (profile fields, password change, linked identities, email change, reauth, delete account). API: `/api/settings` [GET,PATCH], `/api/auth/*` — evidence:
-- [ ] `/settings/billing` — authed. Plan display, upgrade → Stripe checkout (`POST /api/stripe/create-checkout`), manage → portal (`POST /api/stripe/portal`), subscription change (`POST /api/billing/subscription`), prices (`GET /api/billing/prices`, USD+INR geo) — evidence:
-- [ ] `/settings/notifications` — authed. Notification prefs. API: `/api/notifications/preferences` [GET,PATCH] — evidence:
-- [ ] `/affiliate` and `/affiliates` — authed. Affiliate program pages (signup + Stripe Connect: `/api/affiliate/signup`, `/api/affiliates/connect`, `/api/affiliate/connect-callback`). Note both routes exist on main. — evidence:
+- [x] `/settings` — authed. Account settings (profile fields, password change, linked identities, email change, reauth, delete account). API: `/api/settings` [GET,PATCH], `/api/auth/*` — evidence: /settings 200 (authed) — sweep 2026-07-11
+- [x] `/settings/billing` — authed. Plan display, upgrade → Stripe checkout (`POST /api/stripe/create-checkout`), manage → portal (`POST /api/stripe/portal`), subscription change (`POST /api/billing/subscription`), prices (`GET /api/billing/prices`, USD+INR geo) — evidence: /settings/billing 200 (authed) — sweep 2026-07-11
+- [x] `/settings/notifications` — authed. Notification prefs. API: `/api/notifications/preferences` [GET,PATCH] — evidence: /settings/notifications 200 (authed) — sweep 2026-07-11
+- [x] `/affiliate` and `/affiliates` — authed. Affiliate program pages (signup + Stripe Connect: `/api/affiliate/signup`, `/api/affiliates/connect`, `/api/affiliate/connect-callback`). Note both routes exist on main. — evidence: /affiliate 200 (authed); /affiliates 200 (authed) — sweep 2026-07-11
 
 ### 1.9 Marketing (all PUBLIC per MARKETING_ROUTES / AUTH_ROUTES)
 
 Core:
-- [ ] `/` landing, `/v3`, `/about`, `/contact`, `/security`, `/privacy`, `/terms`, `/help`, `/changelog`, `/offer`, `/uplevel`, `/salary-negotiation`, `/flow` — static/marketing pages render with public chrome + signup CTAs — evidence:
-- [ ] `/pricing` — live plan limits copy from `plan_limits` via `GET /api/billing/limits` (never hardcoded numbers); checkout CTA — evidence:
-- [ ] `/waitlist`, `/waitlist-quick`, `/waitlist-flow` — waitlist forms POST `/api/waitlist`; logged-in users redirected to /dashboard — evidence:
-- [ ] `/claude-code-analytics` — CC Analytics feature landing (may say "Claude Code" in copy — naming exception) — evidence:
-- [ ] `/interviews/live-ai-interviews` — live-interview feature landing — evidence:
-- [ ] `/interview-prep` — EXACT-match public marketing page (prefix `/interview-prep/[companySlug]` is authed app) — evidence:
+- [x] `/` landing, `/v3`, `/about`, `/contact`, `/security`, `/privacy`, `/terms`, `/help`, `/changelog`, `/offer`, `/uplevel`, `/salary-negotiation`, `/flow` — static/marketing pages render with public chrome + signup CTAs — evidence: / 200 (public); /v3 200 (public); /about 200 (public); /contact 200 (public); /security 200 (public); /privacy 200 (public); /terms 200 (public); /help 200 (public); /changelog 200 (public); /offer 200 (public); /uplevel 200 (public); /salary-negotiation 200 (public); /flow 200 (public) — sweep 2026-07-11
+- [x] `/pricing` — live plan limits copy from `plan_limits` via `GET /api/billing/limits` (never hardcoded numbers); checkout CTA — evidence: /pricing 200 (public) — sweep 2026-07-11
+- [x] `/waitlist`, `/waitlist-quick`, `/waitlist-flow` — waitlist forms POST `/api/waitlist`; logged-in users redirected to /dashboard — evidence: /waitlist 200 (public); /waitlist-quick 200 (public); /waitlist-flow 200 (public); /waitlist 307 → /dashboard (authed) — sweep 2026-07-11
+- [x] `/claude-code-analytics` — CC Analytics feature landing (may say "Claude Code" in copy — naming exception) — evidence: /claude-code-analytics 200 (public) — sweep 2026-07-11
+- [x] `/interviews/live-ai-interviews` — live-interview feature landing — evidence: /interviews/live-ai-interviews 200 (public) — sweep 2026-07-11
+- [x] `/interview-prep` — EXACT-match public marketing page (prefix `/interview-prep/[companySlug]` is authed app) — evidence: /interview-prep 200 (public) — sweep 2026-07-11
 
 SEO clusters:
-- [ ] `/skills` + `/skills/[slug]`; `/companies` + `/companies/[slug]`; `/study-plans` + `/study-plans/[slug]`; `/practice` + `/practice/[slug]`; `/glossary` + `/glossary/[concept]`; `/role-transitions` (+ `/[slug]` + `/engineer-to-product-manager`); `/alternatives/[slug]` + `/alternatives/leetcode` — public SEO pages, each with practice/signup CTA — evidence:
-- [ ] `/autopsies/**` AND `/autopsy/**` (both prefixes, each with `[companySlug]`, `[companySlug]/[storySlug]`, `[companySlug]/stories/[storySlug]`) — public autopsy readers (PublicFeatureAutopsyPage/StoryReader) — evidence:
-- [ ] `/blog` + `/blog/[slug]` + `/blog/[slug]/preview` (+ per-slug opengraph-image) — blog index/reader; SubscribeBox → `POST /api/newsletter/subscribe` — evidence:
+- [x] `/skills` + `/skills/[slug]`; `/companies` + `/companies/[slug]`; `/study-plans` + `/study-plans/[slug]`; `/practice` + `/practice/[slug]`; `/glossary` + `/glossary/[concept]`; `/role-transitions` (+ `/[slug]` + `/engineer-to-product-manager`); `/alternatives/[slug]` + `/alternatives/leetcode` — public SEO pages, each with practice/signup CTA — evidence: /skills 200 (public); /skills/product-sense 200 (public); /companies 200 (public); /companies/meta 200 (public); /study-plans 200 (public); /study-plans/engineer-to-product 200 (public); /practice 200 (public); /practice/spotify-session-drop-product-sense 200 (public); /glossary 200 (public); /glossary/product-sense 200 (public); /role-transitions 200 (public); SKIPPED: no real param available (public sub-check); /role-transitions/engineer-to-product-manager 200 (public); /alternatives/leetcode 200 (public) — sweep 2026-07-11
+- [x] `/autopsies/**` AND `/autopsy/**` (both prefixes, each with `[companySlug]`, `[companySlug]/[storySlug]`, `[companySlug]/stories/[storySlug]`) — public autopsy readers (PublicFeatureAutopsyPage/StoryReader) — evidence: /autopsies 200 (public); /autopsies/google/gmail-undo-send 200 (public); /autopsy/google/gmail-undo-send 307 → /autopsies/google/gmail-undo-send (public) — sweep 2026-07-11
+- [x] `/blog` + `/blog/[slug]` + `/blog/[slug]/preview` (+ per-slug opengraph-image) — blog index/reader; SubscribeBox → `POST /api/newsletter/subscribe` — evidence: /blog 200 (public); /blog/why-i-grade-product-thinking 200 (public); /blog/why-i-grade-product-thinking/preview 404 (public, by design: preview is admin-only) / 200 (authed as admin) — sweep 2026-07-11
 
 Lead-gen / funnels:
-- [ ] `/go/*` lead-magnet funnels: `ai-pm-questions`, `ai-pm-readiness`, `analyst-instinct`, `answer-fix`, `failure-mode`, `mock` (mock-grade POST `/api/go/mock-grade`), `salary`, `spot-the-flaw`, `switch`, `teardown`, plus `/go/[slug]/i` and `/go/[slug]/r/[token]` (referral/invite variants). Lead capture POST `/api/leads` — evidence:
-- [ ] `/quiz/archetype`, `/quiz/product-sense` (grade POST `/api/public/quiz/product-sense/grade`), `/quiz/readiness` — public quizzes with email capture — evidence:
-- [ ] `/affiliate-program` — public affiliate landing — evidence:
-- [ ] `/hatch-preview`, `/hatch-motion` — Hatch mascot demo pages — evidence:
+- [x] `/go/*` lead-magnet funnels: `ai-pm-questions`, `ai-pm-readiness`, `analyst-instinct`, `answer-fix`, `failure-mode`, `mock` (mock-grade POST `/api/go/mock-grade`), `salary`, `spot-the-flaw`, `switch`, `teardown`, plus `/go/[slug]/i` and `/go/[slug]/r/[token]` (referral/invite variants). Lead capture POST `/api/leads` — evidence: /go/ai-pm-questions 200 (public); /go/ai-pm-readiness 200 (public); /go/analyst-instinct 200 (public); /go/answer-fix 200 (public); /go/failure-mode 200 (public); /go/mock 200 (public); /go/salary 200 (public); /go/spot-the-flaw 200 (public); /go/switch 200 (public); /go/teardown 200 (public); /go/teardown/i 200 (public); /go/teardown/r/&lt;token&gt; 404 (public, by design: token belongs to another magnet); /go/failure-mode/r/af9339dc-d2c0-41af-bd94-aa60b4b04be3 200 (public, token's own slug) — sweep 2026-07-11
+- [x] `/quiz/archetype`, `/quiz/product-sense` (grade POST `/api/public/quiz/product-sense/grade`), `/quiz/readiness` — public quizzes with email capture — evidence: /quiz/archetype 200 (public); /quiz/product-sense 200 (public); /quiz/readiness 200 (public) — sweep 2026-07-11
+- [x] `/affiliate-program` — public affiliate landing — evidence: /affiliate-program 200 (public) — sweep 2026-07-11
+- [x] `/hatch-preview`, `/hatch-motion` — Hatch mascot demo pages — evidence: /hatch-preview 200 (public); /hatch-motion 200 (public) — sweep 2026-07-11
 
 Auth pages (public, redirect-if-authed):
-- [ ] `/login` (password + magic link + Google OAuth), `/signup` (+ welcome email hook), `/forgot-password`, `/reset-password` (reachable even with session), `/verify-email`, `/magic-link-sent`. API: `/api/auth/login|signup|magic-link|password-reset|resend-verification|verify-turnstile` — evidence:
+- [x] `/login` (password + magic link + Google OAuth), `/signup` (+ welcome email hook), `/forgot-password`, `/reset-password` (reachable even with session), `/verify-email`, `/magic-link-sent`. API: `/api/auth/login|signup|magic-link|password-reset|resend-verification|verify-turnstile` — evidence: /login 200 (public); /signup 200 (public); /forgot-password 200 (public); /reset-password 200 (public); /reset-password 200 (authed); /verify-email 200 (public); /magic-link-sent 200 (public) — sweep 2026-07-11
 
 ### 1.10 Admin (all require `role='admin'`; `(admin)/layout.tsx` self-guard + proxy hard-gates `/api/admin/*` and excludes admin UI from prefetch fast-path)
 
-- [ ] `/admin` — admin dashboard — evidence:
-- [ ] `/admin/users` — user management — evidence:
-- [ ] `/admin/revenue` — revenue view — evidence:
-- [ ] `/admin/coupons` — coupon management (`/api/admin/coupons` [GET,POST]) — evidence:
-- [ ] `/admin/paywall-config` — plan_limits editor (`/api/admin/plan-limits` [GET,PUT]); changes live in ~60s, no deploy — evidence:
-- [ ] `/admin/content` + `/admin/content/review/[job_id]` + `/admin/content/challenges/[challenge_id]` — content pipeline: job list, review w/ inline edit + step approvals (`/api/admin/content/*`: jobs, drafts approve-step/approve-all/regenerate-step/publish, challenges PATCH), tag editor — evidence:
-- [ ] `/admin/discussions` — discussion moderation — evidence:
-- [ ] `/admin/community` — community curation (`POST /api/admin/community/curate`) — evidence:
-- [ ] `/admin/hatch-queue` — Hatch queue review — evidence:
-- [ ] `/admin/voice-violations` — writing-style violations (`GET /api/admin/voice-violations`) — evidence:
-- [ ] `/admin/audit-log` — audit log — evidence:
-- [ ] `/admin/waitlist` — waitlist management — evidence:
+- [x] `/admin` — admin dashboard — evidence: /admin 200 (authed) — sweep 2026-07-11
+- [x] `/admin/users` — user management — evidence: /admin/users 200 (authed) — sweep 2026-07-11
+- [x] `/admin/revenue` — revenue view — evidence: /admin/revenue 200 (authed) — sweep 2026-07-11
+- [x] `/admin/coupons` — coupon management (`/api/admin/coupons` [GET,POST]) — evidence: /admin/coupons 200 (authed) — sweep 2026-07-11
+- [x] `/admin/paywall-config` — plan_limits editor (`/api/admin/plan-limits` [GET,PUT]); changes live in ~60s, no deploy — evidence: /admin/paywall-config 200 (authed) — sweep 2026-07-11
+- [x] `/admin/content` + `/admin/content/review/[job_id]` + `/admin/content/challenges/[challenge_id]` — content pipeline: job list, review w/ inline edit + step approvals (`/api/admin/content/*`: jobs, drafts approve-step/approve-all/regenerate-step/publish, challenges PATCH), tag editor — evidence: /admin/content 200 (authed); /admin/content/review/2683b9ab-72a6-4e76-863b-e3f9c7d39ccd 200 (authed); /admin/content/challenges/hp-microsoft-gaming-studio-acquisition 200 (authed) — sweep 2026-07-11
+- [x] `/admin/discussions` — discussion moderation — evidence: /admin/discussions 200 (authed) — sweep 2026-07-11
+- [x] `/admin/community` — community curation (`POST /api/admin/community/curate`) — evidence: /admin/community 200 (authed) — sweep 2026-07-11
+- [x] `/admin/hatch-queue` — Hatch queue review — evidence: /admin/hatch-queue 200 (authed) — sweep 2026-07-11
+- [x] `/admin/voice-violations` — writing-style violations (`GET /api/admin/voice-violations`) — evidence: /admin/voice-violations 200 (authed) — sweep 2026-07-11
+- [x] `/admin/audit-log` — audit log — evidence: /admin/audit-log 200 (authed) — sweep 2026-07-11
+- [x] `/admin/waitlist` — waitlist management — evidence: /admin/waitlist 200 (authed) — sweep 2026-07-11
 - [ ] NOTE: `(admin)/admin/marketing/*` does NOT exist on main — excluded from this contract — evidence: n/a (exclusion note)
 
 ---

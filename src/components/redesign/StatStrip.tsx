@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface StatStripCell {
@@ -33,22 +33,22 @@ export function StatStrip({ cells, className }: StatStripProps) {
   return (
     <div
       className={cn(
-        'grid rounded-2xl border border-hairline bg-card-bright py-4 shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)]',
+        'grid grid-cols-2 gap-y-4 rounded-2xl border border-hairline bg-card-bright py-4 shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)] sm:grid-cols-3 md:gap-y-0 md:[grid-template-columns:var(--statstrip-cols)]',
         className
       )}
-      style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}
+      style={{ '--statstrip-cols': `repeat(${cells.length}, minmax(0, 1fr))` } as CSSProperties}
     >
       {cells.map((cell, i) => (
         <div
           key={cell.key}
           className={cn(
-            'flex flex-col gap-2 px-5',
-            i < cells.length - 1 && 'border-r border-hairline'
+            'flex min-w-0 flex-col gap-2 px-5',
+            i < cells.length - 1 && 'md:border-r md:border-hairline'
           )}
         >
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-ink-secondary">
+          <div className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-ink-secondary">
             {cell.icon}
-            {cell.label}
+            <span className="min-w-0 truncate">{cell.label}</span>
           </div>
           <div className="flex items-baseline gap-1.5 font-headline text-[25px] font-bold tabular-nums text-ink-strong">
             {cell.value}

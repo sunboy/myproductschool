@@ -7,7 +7,7 @@ import {
   EVENT_MAGNET_QUIZ_STARTED,
   EVENT_MAGNET_QUIZ_COMPLETED,
 } from '@/lib/posthog/events'
-import { MOCK_PROMPTS } from '@/lib/lead-magnets/quizzes/mock'
+import { MOCK_INTERVIEW_PROMPTS } from '@/lib/lead-magnets/quizzes/mock'
 
 const MAX_CHARS = 1200
 const MOVE_LABELS: Record<string, string> = {
@@ -39,14 +39,14 @@ function getDailyPromptIndex(): number {
   const dayOfYear = Math.floor(
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
   )
-  return dayOfYear % MOCK_PROMPTS.length
+  return dayOfYear % MOCK_INTERVIEW_PROMPTS.length
 }
 
 export function MockClient() {
   const { track } = useMagnetTracking('mock')
 
   const promptIndex = getDailyPromptIndex()
-  const prompt = MOCK_PROMPTS[promptIndex]
+  const prompt = MOCK_INTERVIEW_PROMPTS[promptIndex]
 
   const [answer, setAnswer] = useState('')
   const [hasStarted, setHasStarted] = useState(false)

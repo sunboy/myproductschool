@@ -323,7 +323,7 @@ function CatalogHero({ lead }: { lead: Awaited<ReturnType<typeof loadHeroLead>> 
 
       <div className="relative z-10 min-w-0 flex-[1.15]">
         <div className="mb-2 text-[13px] font-bold text-white/88">Welcome back, {lead.displayName}</div>
-        <h1 className="mb-3.5 max-w-[460px] font-headline text-[24px] font-semibold leading-[1.22] text-[#f9faf5] sm:text-[26px]">
+        <h1 className="mb-3.5 max-w-[460px] font-headline text-[24px] font-semibold leading-[1.22] text-on-hero-strong sm:text-[26px]">
           {highlightWord(title, weakestLabel)}
         </h1>
         <div className="flex flex-wrap gap-2.5">
