@@ -5,9 +5,15 @@ coding + canvas workspace consolidation, canvas autosave hardening) merged into 
 on 2026-07-17 as a single `--no-ff` merge commit. This runbook is the fallback path if
 production misbehaves after that deploy.
 
-The redesign is UI-only. It ships **no DB migrations and no API contract changes**
-(the only API change, `resume=1` on `GET /api/challenges`, is additive), so every
-rollback option below is safe to run without touching Supabase.
+The redesign makes **no breaking API or DB changes**, so every rollback option
+below is safe to run without touching Supabase:
+
+- The only API change (`resume=1` on `GET /api/challenges`) is additive.
+- One migration ships with the branch (`20260712000000_hatch_interactions.sql`),
+  but it is additive (`create table if not exists` + own RLS policies), was
+  already applied to the shared dev/prod Supabase DB during Stage B development
+  (verified 2026-07-17: table exists with rows), and the old code never touches
+  the table. Do NOT drop it on rollback.
 
 ## Frozen fallback refs (created before the merge)
 
