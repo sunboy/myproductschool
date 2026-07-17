@@ -28,6 +28,7 @@ import { CanvasEmptyState } from '@/components/challenge/CanvasEmptyState'
 import { canvasStarterTemplate, canvasTemplatesFor, type CanvasTemplate } from '@/lib/hatch/canvasSeeds'
 import { DesignStepForm } from '@/components/challenge/design/DesignStepForm'
 import { DesignRail } from '@/components/challenge/design/DesignRail'
+import { CompactStepPips } from '@/components/challenge/design/CompactStepPips'
 import {
   designStepsFor,
   allDesignSections,
@@ -52,7 +53,9 @@ import { CodingStepper } from '@/components/challenge/coding/CodingStepper'
 import { advanceCodingStep, isCodingStep, type CodingStep } from '@/components/challenge/coding/codingSteps'
 import { splitProblemSections } from '@/components/challenge/coding/descriptionTabs'
 import { TestCasePanel } from '@/components/challenge/coding/TestCasePanel'
-import { CodingRail, type CodingRailSelfCheck } from '@/components/challenge/coding/CodingRail'
+import { GuidanceTab, type CodingRailSelfCheck } from '@/components/challenge/coding/GuidanceTab'
+import { HintsTab } from '@/components/challenge/coding/HintsTab'
+import { AdaptiveTabStrip } from '@/components/challenge/coding/AdaptiveTabStrip'
 import { CodingStatusBar } from '@/components/challenge/coding/StatusBar'
 import { SchemaDiagram } from '@/components/challenge/SchemaDiagram'
 import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
@@ -785,13 +788,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<(() => void) | null>(null)
 
-  // Load leftWidth + leftCollapsed from localStorage on challenge load
+  // Load leftWidth + leftCollapsed from localStorage on challenge load. Record
+  // what was stored so the coding default-width effect below can tell a fresh
+  // user (no record) or a stale pre-v2 default apart from a dragged width.
+  const storedLayoutRef = useRef<{ had: boolean; v?: number; leftWidth?: number }>({ had: false })
   useEffect(() => {
     if (!challengeId) return
     try {
       const stored = localStorage.getItem(`flowworkspace:${challengeId}`)
       if (stored) {
-        const parsed = JSON.parse(stored) as { leftWidth?: number; leftCollapsed?: boolean }
+        const parsed = JSON.parse(stored) as { leftWidth?: number; leftCollapsed?: boolean; v?: number }
+        storedLayoutRef.current = { had: true, v: parsed.v, leftWidth: parsed.leftWidth }
         if (typeof parsed.leftWidth === 'number') setLeftWidth(parsed.leftWidth)
         if (typeof parsed.leftCollapsed === 'boolean') setLeftCollapsed(parsed.leftCollapsed)
       }
@@ -799,13 +806,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [challengeId])
 
-  // Persist leftWidth + leftCollapsed to localStorage on change
-  useEffect(() => {
-    if (!challengeId) return
-    try {
-      localStorage.setItem(`flowworkspace:${challengeId}`, JSON.stringify({ leftWidth, leftCollapsed }))
-    } catch { /* ignore */ }
-  }, [challengeId, leftWidth, leftCollapsed])
+  // (The persist effect for leftWidth/leftCollapsed lives below, after the
+  // challenge type derivation — it must not write before the type is known.)
 
   // Left description tab state. Coding challenges add doc tabs (Examples /
   // Constraints, present only when the description carries those sections) and
@@ -813,7 +815,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [leftTab, setLeftTab] = useState<
     'Description' | 'Examples' | 'Constraints' | 'Notes' | 'Discussions' | 'Submissions' | 'Solutions'
   >('Description')
-  const [moreTabsOpen, setMoreTabsOpen] = useState(false)
 
   // ── Coding workspace state (round-4 rebuild) ─────────────────────────────
   // Advisory solving path (Understand → Plan → Code → Test → Optimize).
@@ -857,6 +858,31 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // behind the trailing More menu. The 38vw term keeps narrow desktops from
   // starving the editor; the strip's overflow scroll remains the fallback.
   const leftPaneMinWidth = isCodingChallenge && !leftCollapsed ? 'min(400px, 38vw)' : undefined
+
+  // Coding + canvas default split moved 30 → 35 (description/work area 35-65).
+  // Runs here, not in the load effect, because the challenge type is only known
+  // once detail loads. Only two cases migrate: no stored record (fresh user)
+  // and a pre-v2 record still sitting on the old 30 default (never dragged).
+  // Anything else is a deliberate user width and is left alone.
+  useEffect(() => {
+    if (!isInterviewChallenge) return
+    const stored = storedLayoutRef.current
+    if (!stored.had) { setLeftWidth(35); return }
+    if (stored.v === undefined && stored.leftWidth === 30) setLeftWidth(35)
+  }, [isInterviewChallenge])
+
+  // Persist leftWidth + leftCollapsed to localStorage on change. v:2 marks the
+  // record as post-coding-default-change so the migration effect never touches
+  // it. Held back until the challenge type is known: detail loads async, and an
+  // early write would stamp the pre-migration default (30) with v:2, which the
+  // coding 35% migration above would then respect as a user choice.
+  const challengeTypeKnown = !isApiMode || Boolean(apiChallengeType)
+  useEffect(() => {
+    if (!challengeId || !challengeTypeKnown) return
+    try {
+      localStorage.setItem(`flowworkspace:${challengeId}`, JSON.stringify({ leftWidth, leftCollapsed, v: 2 }))
+    } catch { /* ignore */ }
+  }, [challengeId, challengeTypeKnown, leftWidth, leftCollapsed])
 
   // Coding challenges use the Notes tab fields (Plan / Edge cases / Complexity),
   // not the canvas Context Pack defaults the state initializes with. Swap them
@@ -1816,36 +1842,99 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     scene,
   ])
 
-  // Autosave canvas snapshot, Context Pack, and write-up every 10s when changed
+  // ── Canvas draft autosave ─────────────────────────────────────────────────
+  // The freshest draft payload lives in a ref; every change marks it dirty and
+  // schedules a save. Scheduling is a debounce WITH a max wait: quiet for 2.5s
+  // → save, but while changes keep arriving a save still lands at least every
+  // 10s (a pure debounce starved forever during continuous drawing). Flushes
+  // also fire on tab hide/close (keepalive) and when the canvas overlay closes,
+  // so resuming later always finds the drawing.
+  const canvasDraftPayloadRef = useRef<{ attemptId: string; draftSnapshot: Record<string, unknown>; updatedAt: string } | null>(null)
+  const canvasDraftDirtyRef = useRef(false)
+  const canvasLastSaveAtRef = useRef(0)
+  const [canvasSaveState, setCanvasSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+
+  const flushCanvasDraft = useCallback(async (opts?: { keepalive?: boolean; force?: boolean }) => {
+    const payload = canvasDraftPayloadRef.current
+    if (!payload) return
+    if (!canvasDraftDirtyRef.current && !opts?.force) return
+    // The inner ExcalidrawCanvas snapshot is itself debounced (~2s), so strokes
+    // made just before a flush may not have reached React state yet. Read the
+    // live elements straight from the Excalidraw API when available.
+    const api = excalidrawApiRef.current
+    if (api) {
+      try {
+        payload.draftSnapshot = { ...payload.draftSnapshot, elements: api.getSceneElements() }
+      } catch { /* keep the last snapshot's elements */ }
+    }
+    canvasDraftDirtyRef.current = false
+    canvasLastSaveAtRef.current = Date.now()
+    setCanvasSaveState('saving')
+    try {
+      await fetch('/api/hatch/session/autosave', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, updatedAt: new Date().toISOString() }),
+        // keepalive lets the request outlive a closing tab (64KB payload cap;
+        // an oversized scene falls back to the last periodic save).
+        keepalive: opts?.keepalive,
+      })
+      setCanvasSaveState('saved')
+    } catch {
+      // A failed save re-arms: the next change tick (or flush) retries.
+      canvasDraftDirtyRef.current = true
+      setCanvasSaveState('idle')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     if (
       !isCanvasChallenge ||
       !attemptId ||
       (!canvasScene && !contextPackText && Object.keys(stepAnswers).length === 0)
     ) return
+    canvasDraftPayloadRef.current = {
+      attemptId,
+      draftSnapshot: {
+        type: 'canvas',
+        ...(canvasScene ?? { elements: [], appState: {} }),
+        context_pack: contextPackText || null,
+        context_pack_fields: contextPack,
+        step_answers: stepAnswers,
+        active_design_step: activeDesignStep,
+      },
+      updatedAt: new Date().toISOString(),
+    }
+    canvasDraftDirtyRef.current = true
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
-    autosaveTimerRef.current = setTimeout(async () => {
-      try {
-        await fetch('/api/hatch/session/autosave', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            attemptId,
-            draftSnapshot: {
-              type: 'canvas',
-              ...(canvasScene ?? { elements: [], appState: {} }),
-              context_pack: contextPackText || null,
-              context_pack_fields: contextPack,
-              step_answers: stepAnswers,
-              active_design_step: activeDesignStep,
-            },
-            updatedAt: new Date().toISOString(),
-          }),
-        })
-      } catch { /* fire and forget */ }
-    }, 10000)
+    const sinceLastSave = Date.now() - canvasLastSaveAtRef.current
+    const delay = Math.min(2500, Math.max(250, 10000 - sinceLastSave))
+    autosaveTimerRef.current = setTimeout(() => { void flushCanvasDraft() }, delay)
     return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current) }
-  }, [canvasScene, contextPack, contextPackText, stepAnswers, activeDesignStep, isCanvasChallenge, attemptId])
+  }, [canvasScene, contextPack, contextPackText, stepAnswers, activeDesignStep, isCanvasChallenge, attemptId, flushCanvasDraft])
+
+  // Flush pending canvas work when the tab hides, closes, or this workspace
+  // unmounts (client-side nav away), so nothing drawn is lost between ticks.
+  useEffect(() => {
+    if (!isCanvasChallenge || !attemptId) return
+    const flush = () => { void flushCanvasDraft({ keepalive: true, force: true }) }
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush() }
+    window.addEventListener('pagehide', flush)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('pagehide', flush)
+      document.removeEventListener('visibilitychange', onVisibility)
+      flush()
+    }
+  }, [isCanvasChallenge, attemptId, flushCanvasDraft])
+
+  // Closing the drawing overlay is a natural save point — flush immediately so
+  // "Done, back to write-up" always leaves the diagram persisted.
+  useEffect(() => {
+    if (!isCanvasChallenge || canvasMaximised) return
+    if (canvasDraftDirtyRef.current) void flushCanvasDraft()
+  }, [canvasMaximised, isCanvasChallenge, flushCanvasDraft])
 
   // Autosave coding drafts every 10s when the code, notes, path step, or
   // confidence changes. Still silent in the chrome, but the status bar reflects
@@ -5034,7 +5123,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {challengeTitle}
           </span>
         )}
-        {!leftCollapsed && (
+        {/* Coding: one adaptive strip over ALL seven doc tabs — as many render
+            inline as the panel width allows, the rest fold behind a three-dots
+            menu that only appears when something is actually hidden. The menu
+            is fixed-positioned so this bar's overflow:hidden can't clip it. */}
+        {!leftCollapsed && isCodingChallenge && (
+          <AdaptiveTabStrip
+            tabs={[...codingPrimaryTabs, ...codingMoreTabs]}
+            active={leftTab}
+            onSelect={(t) => setLeftTab(t as typeof leftTab)}
+            badges={{
+              Discussions: discussionsLoaded ? workspaceTabBadge(discussions.length, leftTab === 'Discussions') : undefined,
+              Submissions: submissionBadgeCount > 0 ? workspaceTabBadge(submissionBadgeCount, leftTab === 'Submissions') : undefined,
+            }}
+          />
+        )}
+        {!leftCollapsed && !isCodingChallenge && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -5046,18 +5150,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
           }}>
-            {(isCodingChallenge ? codingPrimaryTabs : tabs).map(t => {
+            {tabs.map(t => {
               const active = leftTab === t
               return (
                 <button
                   key={t}
-                  onClick={() => { setLeftTab(t); setMoreTabsOpen(false) }}
+                  onClick={() => setLeftTab(t)}
                   style={{
                     flexShrink: 0,
                     whiteSpace: 'nowrap',
-                    /* Coding packs four content tabs plus the More trigger into
-                       the strip — tighter padding keeps them all inline. */
-                    padding: isCodingChallenge ? '8px 8px' : '8px 10px',
+                    padding: '8px 10px',
                     fontSize: 12.5,
                     fontWeight: active ? 800 : 650,
                     color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
@@ -5084,100 +5186,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             })}
           </div>
         )}
-        {/* Coding: Solutions / Discussions / Submissions live behind a trailing
-            More menu so the doc tabs (the ref's left-panel anatomy) stay primary.
-            Sits OUTSIDE the scrollable strip so the dropdown never clips. */}
-        {!leftCollapsed && isCodingChallenge && (() => {
-          const activeMoreTab = (codingMoreTabs as readonly string[]).includes(leftTab)
-            ? leftTab
-            : null
-          return (
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <button
-                onClick={() => setMoreTabsOpen(v => !v)}
-                aria-haspopup="menu"
-                aria-expanded={moreTabsOpen}
-                aria-label="More tabs"
-                title="More"
-                data-testid="coding-more-tabs"
-                style={{
-                  whiteSpace: 'nowrap',
-                  padding: '8px 8px',
-                  fontSize: 12.5,
-                  fontWeight: activeMoreTab ? 800 : 650,
-                  color: activeMoreTab ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
-                  background: 'transparent',
-                  border: 'none',
-                  boxShadow: activeMoreTab ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
-                  borderRadius: 0,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 3,
-                  minHeight: 36,
-                }}
-              >
-                {/* Icon-only when idle: the trigger stays discoverable while
-                    leaving the strip room for all four content tabs. */}
-                {activeMoreTab && <span>{activeMoreTab}</span>}
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                  {activeMoreTab ? (moreTabsOpen ? 'expand_less' : 'expand_more') : 'more_horiz'}
-                </span>
-              </button>
-              {moreTabsOpen && (
-                <div
-                  role="menu"
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    zIndex: 40,
-                    minWidth: 156,
-                    background: 'var(--color-card-bright)',
-                    border: '1px solid var(--color-hairline)',
-                    borderRadius: 10,
-                    boxShadow: '0 8px 24px -8px rgba(30,27,20,0.25)',
-                    padding: 4,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  {codingMoreTabs.map(t => {
-                    const active = leftTab === t
-                    return (
-                      <button
-                        key={t}
-                        role="menuitem"
-                        onClick={() => { setLeftTab(t); setMoreTabsOpen(false) }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 8,
-                          padding: '7px 10px',
-                          fontSize: 12.5,
-                          fontWeight: active ? 800 : 650,
-                          color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
-                          background: active ? 'var(--color-page-field)' : 'transparent',
-                          border: 'none',
-                          borderRadius: 7,
-                          cursor: 'pointer',
-                          fontFamily: 'inherit',
-                          textAlign: 'left',
-                        }}
-                      >
-                        <span>{t}</span>
-                        {t === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, active)}
-                        {t === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, active)}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )
-        })()}
         {/* Collapse button - only shown when expanded and on coding challenges */}
         {!leftCollapsed && isCodingChallenge && (
           <button
@@ -5210,9 +5218,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', gap: 16 }}>
         {isCanvasChallenge ? (
           <>
-            {/* Round-4 structured workspace chrome: title + discipline chip on the
-                left; the single guidance voice lives in the DesignRail, so the old
-                thinking dock is gone. */}
+            {/* Round-4 structured workspace chrome: title + discipline chip on
+                the left, the FLOW steps inlined as compact pips (the standalone
+                "FLOW Method" band was consolidated into this bar). */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
               {challengeTitle && (
                 <span
@@ -5226,6 +5234,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-secondary-container px-2.5 py-1 font-label text-xs font-bold text-on-secondary-container">
                 {apiChallengeType === 'data_modeling' ? 'Data modeling' : 'System design'}
               </span>
+            </div>
+            <div style={{ flexShrink: 0, overflow: 'hidden' }} className="hidden min-[1100px]:flex items-center">
+              <CompactStepPips
+                steps={designSteps.map(s => ({ id: s.id, label: s.label }))}
+                activeId={activeDesignStep}
+                doneIds={completedDesignSteps}
+                onSelect={(id) => { if (isDesignStepId(id)) selectDesignStep(id) }}
+                ariaLabel="FLOW method steps"
+              />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <button
@@ -5244,7 +5261,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </>
         ) : isCodingChallenge ? (
           <>
-            <div style={{ flex: 1 }} />
+            {/* Advisory solving path, inlined since the standalone "Solving
+                path" band was consolidated into this bar. Hidden on narrow
+                desktops; Run/Submit (flexShrink 0) always wins the space. */}
+            <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }} className="hidden min-[1100px]:flex items-center justify-center">
+              {phase === 'question' && (
+                <CodingStepper
+                  compact
+                  activeStep={codingStep}
+                  onSelectStep={(id) => {
+                    setCodingStep(id)
+                    if (id === 'understand') setLeftTab('Description')
+                    else if (id === 'plan') setLeftTab('Notes')
+                    else if (id === 'test') setConsoleCollapsed(false)
+                  }}
+                />
+              )}
+            </div>
+            <div className="flex-1 min-[1100px]:hidden" />
             {codingActions}
             <button
               onClick={() => setCodingMaximised((v) => !v)}
@@ -5324,50 +5358,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           questionIdx={questionIdx}
           questionCount={activeStepData?.questions.length}
         />
-      </div>
-    </div>
-  ) : null
-
-  // Structured SD/DM workspace: the same FLOW method strip drives the four
-  // design steps. Navigation is free (unlike MCQ commit-forward) — the stepper
-  // and the DesignRail both call selectDesignStep.
-  const designStepperStrip = isCanvasChallenge ? (
-    <div style={{ flexShrink: 0, padding: '10px 16px 2px', background: 'var(--color-page-field)' }}>
-      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '12px 20px' }}>
-        <div className="font-label" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)', marginBottom: 8 }}>
-          FLOW Method
-        </div>
-        <FlowStepper
-          currentStep={activeDesignStep}
-          completedSteps={completedDesignSteps}
-          onStepClick={(step) => { if (isDesignStepId(step)) selectDesignStep(step) }}
-        />
-      </div>
-    </div>
-  ) : null
-
-  // Coding workspace: the advisory Understand → Plan → Code → Test → Optimize
-  // path in the header (round-4 coding ref). Purely advisory — clicking a node
-  // never gates or submits anything, it just points the workspace at the
-  // matching surface (Understand → Description, Plan → Notes, Test → console).
-  const codingStepperStrip = isCodingChallenge && phase === 'question' && !mobileStacked ? (
-    <div style={{ flexShrink: 0, padding: '10px 16px 2px', background: 'var(--color-page-field)' }}>
-      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-        <div className="font-label" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)', flexShrink: 0 }}>
-          Solving path
-        </div>
-        <CodingStepper
-          activeStep={codingStep}
-          onSelectStep={(id) => {
-            setCodingStep(id)
-            if (id === 'understand') setLeftTab('Description')
-            else if (id === 'plan') setLeftTab('Notes')
-            else if (id === 'test') setConsoleCollapsed(false)
-          }}
-        />
-        <span className="font-label hidden min-[1180px]:inline" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-ink-muted)', flexShrink: 0 }}>
-          A path, not a gate
-        </span>
       </div>
     </div>
   ) : null
@@ -5890,6 +5880,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       solutionsOpen={solutionsOpen}
                       activeSolutionApproach={activeSolutionApproach}
                       guidanceLevel={coachRegister}
+                      dockSurface="coding"
                     />
                   )
                 })()}
@@ -5972,8 +5963,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         <>
           {topChrome}
           {flowStepperStrip}
-          {designStepperStrip}
-          {codingStepperStrip}
         </>
       )}
 
@@ -6051,11 +6040,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                         aria-label="How this canvas works"
                       >?</button>
                       {attemptId && (
-                        <span className="flex items-center gap-1.5 font-label text-xs font-semibold text-ink-muted">
-                          <span className="flex h-[15px] w-[15px] items-center justify-center rounded-full bg-note-mint text-forest-600">
-                            <span className="material-symbols-outlined" style={{ fontSize: 11 }}>check</span>
-                          </span>
-                          Autosave on
+                        <span className="flex items-center gap-1.5 font-label text-xs font-semibold text-ink-muted" data-testid="canvas-autosave-state">
+                          {canvasSaveState === 'saving' ? (
+                            <span className="material-symbols-outlined animate-spin text-forest-600" style={{ fontSize: 13 }}>progress_activity</span>
+                          ) : (
+                            <span className="flex h-[15px] w-[15px] items-center justify-center rounded-full bg-note-mint text-forest-600">
+                              <span className="material-symbols-outlined" style={{ fontSize: 11 }}>check</span>
+                            </span>
+                          )}
+                          {canvasSaveState === 'saving' ? 'Saving…' : canvasSaveState === 'saved' ? 'Saved' : 'Autosave on'}
                         </span>
                       )}
                       <button
@@ -6073,8 +6066,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 <div style={{ flex: 1, display: 'flex', minWidth: 0, minHeight: 0 }}>
                   {/* Write-up column (inline only, kept mounted so scroll and
                       focus state survive the overlay round trip) */}
-                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', display: canvasMaximised ? 'none' : 'block', padding: '2px 8px 16px' }}>
-                    <div className="rounded-2xl border border-hairline bg-card-bright" style={{ maxWidth: 780, margin: '0 auto', padding: '20px 24px' }}>
+                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', display: canvasMaximised ? 'none' : 'flex', flexDirection: 'column', padding: '2px 8px 16px' }}>
+                    {/* Full-width card: with the old 300px rail folded into the
+                        Hatch dock this column owns the center, so the write-up
+                        stretches instead of floating at 780px in empty space. */}
+                    <div className="rounded-2xl border border-hairline bg-card-bright" style={{ width: '100%', minHeight: 'calc(100% - 2px)', padding: '20px 28px' }}>
                       {activeDesignStepDef && (
                         <DesignStepForm
                           step={activeDesignStepDef}
@@ -6121,38 +6117,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       })()}
                     </div>
                   </div>
-                  {/* Design rail (inline only): progress ring, free step nav,
-                      live guidance, and the hint / self-check actions */}
-                  <aside style={{ width: 300, flexShrink: 0, display: canvasMaximised ? 'none' : 'flex', flexDirection: 'column', gap: 10, minHeight: 0, overflowY: 'auto', paddingBottom: 8 }}>
-                    <DesignRail
-                      steps={designSteps}
-                      activeStepId={activeDesignStep}
-                      onSelectStep={selectDesignStep}
-                      isSectionDone={isDesignSectionDone}
-                      guidance={guidance}
-                      nudge={proactiveNudge ? { text: proactiveNudge.text, onDismiss: () => setProactiveNudge(null) } : null}
-                    />
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => { void requestManualHint() }}
-                        disabled={hintLoading || !attemptId}
-                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-2 font-label text-xs font-bold text-ink-strong hover:bg-page-field disabled:opacity-50 transition-colors"
-                      >
-                        <Lightbulb size={14} strokeWidth={1.8} />
-                        {hintLoading ? 'Asking…' : 'Show me a hint'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={runSelfCheck}
-                        disabled={!attemptId}
-                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-2 font-label text-xs font-bold text-ink-strong hover:bg-page-field disabled:opacity-50 transition-colors"
-                      >
-                        <ListChecks size={14} strokeWidth={1.8} />
-                        Run self-check
-                      </button>
-                    </div>
-                  </aside>
                   {/* Canvas column — mounted always so Excalidraw keeps its scene
                       and undo stack; visible only while the overlay is up. */}
                   <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: canvasMaximised ? 'flex' : 'none', flexDirection: 'column' }}>
@@ -6205,7 +6169,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   </div>
                   {/* Hatch chat — stable tree position so the thread survives the
                       overlay toggle. Docked, it is the rail's chat slot inline and
-                      the right column of the overlay when the canvas is up. */}
+                      the right column of the overlay when the canvas is up. The
+                      old 300px DesignRail folded into it as the Guidance tab. */}
                   <CanvasChatPanel
                     attemptId={attemptId ?? ''}
                     challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
@@ -6228,6 +6193,46 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     activeSection={effectiveActiveSectionId}
                     solutionsOpen={solutionsOpen}
                     activeSolutionApproach={activeSolutionApproach}
+                    sideTabs={[
+                      {
+                        id: 'guidance',
+                        label: 'Guidance',
+                        icon: ListChecks,
+                        content: (
+                          <div className="flex flex-col gap-3 overflow-y-auto p-3" data-testid="design-guidance-tab">
+                            <DesignRail
+                              steps={designSteps}
+                              activeStepId={activeDesignStep}
+                              onSelectStep={selectDesignStep}
+                              isSectionDone={isDesignSectionDone}
+                              guidance={guidance}
+                              nudge={proactiveNudge ? { text: proactiveNudge.text, onDismiss: () => setProactiveNudge(null) } : null}
+                            />
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => { void requestManualHint() }}
+                                disabled={hintLoading || !attemptId}
+                                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-2 font-label text-xs font-bold text-ink-strong hover:bg-page-field disabled:opacity-50 transition-colors"
+                              >
+                                <Lightbulb size={14} strokeWidth={1.8} />
+                                {hintLoading ? 'Asking…' : 'Show me a hint'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={runSelfCheck}
+                                disabled={!attemptId}
+                                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-2 font-label text-xs font-bold text-ink-strong hover:bg-page-field disabled:opacity-50 transition-colors"
+                              >
+                                <ListChecks size={14} strokeWidth={1.8} />
+                                Run self-check
+                              </button>
+                            </div>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    sideTabUnreadSignals={{ guidance: proactiveNudge?.id ?? '' }}
                   />
                 </div>
               </div>
@@ -6389,27 +6394,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 </div>
               </div>
 
-              {/* Coding rail — live guidance, hints, patterns, self-check,
-                  confidence. The chat dock renders beside it (its chat slot). */}
-              <aside
-                style={{ width: 288, flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', paddingLeft: 8, paddingBottom: 4 }}
-              >
-                <CodingRail
-                  nudge={proactiveNudge ? { text: proactiveNudge.text, onDismiss: () => setProactiveNudge(null) } : null}
-                  lastRun={lastRunResult ? { testsPassed: lastRunResult.testsPassed, testsTotal: lastRunResult.testsTotal } : null}
-                  isRunning={outputPanelStatus === 'running'}
-                  hints={codingHints}
-                  hintPending={codingHintPending}
-                  onRequestHint={() => { void requestCodingHint() }}
-                  patterns={(detail?.challenge as { tags?: string[] } | null | undefined)?.tags?.filter(t => typeof t === 'string' && t.trim().length > 0)}
-                  selfCheck={codingSelfCheck}
-                  onRunSelfCheck={() => { void runCodingSelfCheck() }}
-                  confidence={codingConfidence}
-                  onConfidenceChange={setCodingConfidence}
-                />
-              </aside>
-
-              {/* Hatch chat panel - right side */}
+              {/* Hatch chat panel - right side. The old 288px CodingRail folded
+                  into it as Guidance/Hints tabs (opened from the top bar). */}
               {(() => {
                 const activePart = codingParts.find(p => p.id === activePartId)
                 return (
@@ -6426,6 +6412,39 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     proactiveNudge={proactiveNudge}
                     guidanceLevel={coachRegister}
                     onDismissNudge={() => setProactiveNudge(null)}
+                    dockSurface="coding"
+                    sideTabs={[
+                      {
+                        id: 'guidance',
+                        label: 'Guidance',
+                        icon: ListChecks,
+                        content: (
+                          <GuidanceTab
+                            nudge={proactiveNudge ? { text: proactiveNudge.text, onDismiss: () => setProactiveNudge(null) } : null}
+                            lastRun={lastRunResult ? { testsPassed: lastRunResult.testsPassed, testsTotal: lastRunResult.testsTotal } : null}
+                            isRunning={outputPanelStatus === 'running'}
+                            patterns={(detail?.challenge as { tags?: string[] } | null | undefined)?.tags?.filter(t => typeof t === 'string' && t.trim().length > 0)}
+                            selfCheck={codingSelfCheck}
+                            onRunSelfCheck={() => { void runCodingSelfCheck() }}
+                            confidence={codingConfidence}
+                            onConfidenceChange={setCodingConfidence}
+                          />
+                        ),
+                      },
+                      {
+                        id: 'hints',
+                        label: 'Hints',
+                        icon: Lightbulb,
+                        content: (
+                          <HintsTab
+                            hints={codingHints}
+                            hintPending={codingHintPending}
+                            onRequestHint={() => { void requestCodingHint() }}
+                          />
+                        ),
+                      },
+                    ]}
+                    sideTabUnreadSignals={{ guidance: proactiveNudge?.id ?? '', hints: codingHints.length }}
                     onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
                     currentCode={currentCode}
                     currentLanguage={currentLanguage}

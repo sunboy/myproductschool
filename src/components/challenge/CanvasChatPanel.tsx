@@ -8,7 +8,8 @@ import { VoiceInputButton } from './VoiceInputButton'
 import type { CanvasScene } from '@/lib/hatch/canvas-scene'
 import type { GuidancePhase, GuidanceLabels } from '@/lib/hatch/canvasGuidance'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
-import { useHatchDockState } from '@/hooks/useHatchDockState'
+import type { LucideIcon } from 'lucide-react'
+import { useHatchDockState, type HatchDockMode, type HatchDockSurface } from '@/hooks/useHatchDockState'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
 
@@ -97,6 +98,19 @@ interface CanvasChatPanelProps {
   // so Hatch can coach relative to the approach they are reading.
   solutionsOpen?: boolean
   activeSolutionApproach?: { title: string; tagline: string; stepTitle?: string; stepDecision?: string } | null
+  /** localStorage surface for dock mode/width. Defaults to 'canvas' (legacy shared key). */
+  dockSurface?: HatchDockSurface
+  /** Extra panel tabs rendered after Chat (e.g. coding Guidance / Hints). Absent = today's chat-only panel. */
+  sideTabs?: Array<{ id: string; label: string; icon: LucideIcon; content: React.ReactNode }>
+  /** Imperative "open docked on this tab" command (queuedPrompt-style: new id = new command). */
+  openCommand?: { id: string; tab: string } | null
+  /** Reports dock mode changes so the workspace chrome can badge its own buttons. */
+  onModeChange?: (mode: HatchDockMode) => void
+  /** Reports active tab changes (only fires when sideTabs are present). */
+  onActiveTabChange?: (tabId: string) => void
+  /** Per-tab change signals: when a tab's signal changes while it isn't visible,
+   *  the tab shows an unread dot until selected. Keys must match sideTabs ids. */
+  sideTabUnreadSignals?: Record<string, string | number>
 }
 
 // Defensive guard: a chat turn should be prose, but a malformed structured-output
@@ -266,8 +280,14 @@ export function CanvasChatPanel({
   activeSection = null,
   solutionsOpen = false,
   activeSolutionApproach = null,
+  dockSurface = 'canvas',
+  sideTabs,
+  openCommand = null,
+  onModeChange,
+  onActiveTabChange,
+  sideTabUnreadSignals,
 }: CanvasChatPanelProps) {
-  const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
+  const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState(dockSurface)
   const { muted, toggleMuted, play } = useHatchSonics()
 
   // One-shot: capture the phase-aware opener at mount only. Not reactive to
@@ -307,6 +327,66 @@ export function CanvasChatPanel({
   // Suppress unused variable warnings - grade is reserved for future use; isOpen kept for callers
   void grade
   void isOpen
+
+  // Side tabs (coding Guidance / Hints). Chat is always the first tab; the strip
+  // only renders when a caller passes sideTabs, so canvas/analytics are unchanged.
+  const hasSideTabs = !!sideTabs && sideTabs.length > 0
+  const [activeTab, setActiveTab] = useState('chat')
+  const [unreadTabs, setUnreadTabs] = useState<ReadonlySet<string>>(() => new Set())
+  const selectTab = useCallback((tabId: string) => {
+    setActiveTab(tabId)
+    setUnreadTabs((prev) => {
+      if (!prev.has(tabId)) return prev
+      const next = new Set(prev)
+      next.delete(tabId)
+      return next
+    })
+  }, [])
+
+  // Report dock mode / active tab up so workspace chrome (Guidance/Hints buttons)
+  // can reflect state without lifting the dock state out of this panel.
+  useEffect(() => { onModeChange?.(mode) }, [mode, onModeChange])
+  useEffect(() => {
+    if (hasSideTabs) onActiveTabChange?.(activeTab)
+  }, [activeTab, hasSideTabs, onActiveTabChange])
+
+  // Imperative open-to-tab command (mirrors the queuedPrompt id-ref pattern).
+  const lastOpenCommandIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!openCommand || openCommand.id === lastOpenCommandIdRef.current) return
+    lastOpenCommandIdRef.current = openCommand.id
+    setMode('docked')
+    if (openCommand.tab === 'chat' || sideTabs?.some((t) => t.id === openCommand.tab)) {
+      selectTab(openCommand.tab)
+    }
+  }, [openCommand, sideTabs, setMode, selectTab])
+
+  // Unread dots: when a tab's change signal moves while that tab isn't visible
+  // (dock closed or another tab active), mark it unread until selected.
+  const lastSignalsRef = useRef<Record<string, string | number>>({})
+  useEffect(() => {
+    if (!hasSideTabs || !sideTabUnreadSignals) return
+    const prev = lastSignalsRef.current
+    const changed: string[] = []
+    for (const [tabId, signal] of Object.entries(sideTabUnreadSignals)) {
+      if (tabId in prev && prev[tabId] !== signal) changed.push(tabId)
+    }
+    lastSignalsRef.current = { ...sideTabUnreadSignals }
+    if (changed.length === 0) return
+    setUnreadTabs((current) => {
+      let next: Set<string> | null = null
+      for (const tabId of changed) {
+        if (mode !== 'closed' && activeTab === tabId) continue
+        if (!current.has(tabId)) {
+          next = next ?? new Set(current)
+          next.add(tabId)
+        }
+      }
+      return next ?? current
+    })
+  // mode/activeTab read at signal-change time only; re-marking on tab switches would be wrong
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasSideTabs, sideTabUnreadSignals])
 
   // First-session coaching: open the dock once (docked) the first time autoOpenKey
   // is seen, then never again. The dock state lives in useHatchDockState (a parent
@@ -577,6 +657,44 @@ export function CanvasChatPanel({
     }
   }
 
+  const activeSideTab = hasSideTabs && activeTab !== 'chat'
+    ? sideTabs!.find((t) => t.id === activeTab) ?? null
+    : null
+
+  // Tab strip shared by the docked and floating branches. Absent without sideTabs.
+  const tabStrip = hasSideTabs ? (
+    <div className="flex shrink-0 items-center gap-1 border-b border-hairline bg-card-bright px-2" role="tablist">
+      {[{ id: 'chat', label: 'Chat', icon: null as LucideIcon | null }, ...sideTabs!].map((tab) => {
+        const selected = activeTab === tab.id
+        const Icon = tab.icon
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            data-testid={`hatch-tab-${tab.id}`}
+            onClick={() => selectTab(tab.id)}
+            className={`relative flex items-center gap-1.5 border-b-2 px-2.5 py-2 font-label text-[12.5px] font-bold transition-colors ${
+              selected
+                ? 'border-forest-700 text-forest-800'
+                : 'border-transparent text-ink-secondary hover:text-ink-strong'
+            }`}
+          >
+            {Icon && <Icon size={13} />}
+            {tab.label}
+            {unreadTabs.has(tab.id) && (
+              <span
+                className="absolute right-0 top-1.5 h-2 w-2 rounded-full bg-gold"
+                aria-label={`New activity in ${tab.label}`}
+              />
+            )}
+          </button>
+        )
+      })}
+    </div>
+  ) : null
+
   if (mode === 'closed') {
     const pillCopy = getPillCopy(challengeType)
     return (
@@ -662,6 +780,13 @@ export function CanvasChatPanel({
             </button>
           </div>
         </div>
+        {tabStrip}
+        {activeSideTab ? (
+          <div className="flex-1 min-h-0 overflow-y-auto" data-testid="hatch-side-tab-content">
+            {activeSideTab.content}
+          </div>
+        ) : (
+        <>
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
           {messages.map((msg, i) => (
@@ -769,6 +894,8 @@ export function CanvasChatPanel({
             )}
           </div>
         )}
+        </>
+        )}
         </div>
         <PaywallModal
           open={!!limitGate}
@@ -828,7 +955,13 @@ export function CanvasChatPanel({
           </button>
         </div>
       </div>
-
+      {tabStrip}
+      {activeSideTab ? (
+        <div className="flex-1 min-h-0 overflow-y-auto" data-testid="hatch-side-tab-content">
+          {activeSideTab.content}
+        </div>
+      ) : (
+      <>
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
         {messages.map((msg, i) => (
@@ -943,6 +1076,8 @@ export function CanvasChatPanel({
             </p>
           )}
         </div>
+      )}
+      </>
       )}
     </div>
     <PaywallModal

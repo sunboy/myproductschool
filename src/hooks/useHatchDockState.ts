@@ -8,7 +8,9 @@ const DEFAULT_WIDTH = 320
 const MIN_WIDTH = 240
 const MAX_WIDTH = 480
 
-export function useHatchDockState(surface: 'canvas' | 'flow') {
+export type HatchDockSurface = 'canvas' | 'flow' | 'coding'
+
+export function useHatchDockState(surface: HatchDockSurface) {
   const modeKey = useMemo(() => `hatch-mode:${surface}`, [surface])
   const widthKey = useMemo(() => `hatch-width:${surface}`, [surface])
 
@@ -30,13 +32,17 @@ export function useHatchDockState(surface: 'canvas' | 'flow') {
     localStorage.setItem(widthKey, String(clamped))
   }, [widthKey])
 
-  // Sync on mount in case another tab changed localStorage
+  // Sync on mount in case another tab changed localStorage. The coding surface
+  // historically shared the canvas keys (CanvasChatPanel hardcoded 'canvas'),
+  // so fall back to those values once; writes always go to the new keys.
   useEffect(() => {
-    const stored = localStorage.getItem(modeKey) as HatchDockMode | null
+    const legacy = (key: string) =>
+      surface === 'coding' ? localStorage.getItem(key.replace(':coding', ':canvas')) : null
+    const stored = (localStorage.getItem(modeKey) ?? legacy(modeKey)) as HatchDockMode | null
     if (stored) setModeState(stored)
-    const storedW = parseInt(localStorage.getItem(widthKey) ?? '', 10)
+    const storedW = parseInt(localStorage.getItem(widthKey) ?? legacy(widthKey) ?? '', 10)
     if (!isNaN(storedW)) setPanelWidthState(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, storedW)))
-  }, [modeKey, widthKey])
+  }, [surface, modeKey, widthKey])
 
   return { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH }
 }

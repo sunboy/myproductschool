@@ -12,6 +12,9 @@ export interface CodingStepperProps {
    * the caller may scroll or focus the matching surface (Test → test panel).
    */
   onSelectStep?: (id: CodingStep) => void
+  /** Slimmer variant for the consolidated top bar: 18/20px pips, short
+   *  connectors, and only the current step keeps its label (wide screens). */
+  compact?: boolean
   className?: string
 }
 
@@ -22,7 +25,7 @@ export interface CodingStepperProps {
  * done = filled forest circle with a thick white check, current = chunky
  * forest-800 numbered node, upcoming = quiet grey hairline ring.
  */
-export function CodingStepper({ activeStep, onSelectStep, className }: CodingStepperProps) {
+export function CodingStepper({ activeStep, onSelectStep, compact = false, className }: CodingStepperProps) {
   const activeIdx = codingStepIndex(activeStep)
 
   return (
@@ -40,7 +43,8 @@ export function CodingStepper({ activeStep, onSelectStep, className }: CodingSte
               <span
                 aria-hidden="true"
                 className={cn(
-                  'mx-1.5 h-px w-4 shrink-0 transition-colors duration-150 lg:w-6',
+                  'h-px shrink-0 transition-colors duration-150',
+                  compact ? 'mx-1 w-3' : 'mx-1.5 w-4 lg:w-6',
                   i <= activeIdx ? 'bg-forest-600' : 'bg-hairline'
                 )}
               />
@@ -49,6 +53,7 @@ export function CodingStepper({ activeStep, onSelectStep, className }: CodingSte
               type="button"
               onClick={onSelectStep ? () => onSelectStep(step.id) : undefined}
               aria-current={current ? 'step' : undefined}
+              title={compact ? step.label : undefined}
               className={cn(
                 'group flex items-center gap-1.5 rounded-lg px-1 py-0.5',
                 onSelectStep && 'cursor-pointer'
@@ -59,25 +64,37 @@ export function CodingStepper({ activeStep, onSelectStep, className }: CodingSte
               <span
                 className={cn(
                   'flex shrink-0 items-center justify-center rounded-full transition-[background-color,border-color,color] duration-150',
-                  done && 'size-[22px] bg-forest-600 text-white',
-                  current && 'size-[24px] bg-forest-800 text-[11.5px] font-extrabold text-white',
+                  done && (compact ? 'size-[18px] bg-forest-600 text-white' : 'size-[22px] bg-forest-600 text-white'),
+                  current &&
+                    (compact
+                      ? 'size-[20px] bg-forest-800 text-[10px] font-extrabold text-white'
+                      : 'size-[24px] bg-forest-800 text-[11.5px] font-extrabold text-white'),
                   !done && !current &&
-                    'size-[22px] border-[1.4px] border-hairline-strong text-[10.5px] font-bold text-ink-muted'
+                    (compact
+                      ? 'size-[18px] border-[1.4px] border-hairline-strong text-[9.5px] font-bold text-ink-muted'
+                      : 'size-[22px] border-[1.4px] border-hairline-strong text-[10.5px] font-bold text-ink-muted')
                 )}
               >
-                {done ? <Check size={12} strokeWidth={2.2} className="animate-check-in" /> : i + 1}
+                {done ? <Check size={compact ? 10 : 12} strokeWidth={2.2} className="animate-check-in" /> : i + 1}
               </span>
               <span
                 className={cn(
-                  'hidden font-label text-[12.5px] transition-colors duration-150 xl:inline',
-                  current
-                    ? 'font-extrabold text-ink-strong'
-                    : done
-                      ? 'font-bold text-ink-strong'
-                      : 'font-semibold text-ink-muted'
+                  'hidden font-label transition-colors duration-150',
+                  compact
+                    ? current
+                      ? 'font-extrabold text-ink-strong text-[11.5px] min-[1280px]:inline'
+                      : ''
+                    : cn(
+                        'text-[12.5px] xl:inline',
+                        current
+                          ? 'font-extrabold text-ink-strong'
+                          : done
+                            ? 'font-bold text-ink-strong'
+                            : 'font-semibold text-ink-muted'
+                      )
                 )}
               >
-                {step.label}
+                {compact && !current ? null : step.label}
               </span>
             </button>
           </div>
